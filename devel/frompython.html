@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="11. Programming with Larch" href="index.html" />
     <link rel="prev" title="11.3. Plugins" href="plugins.html" />
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -83,23 +83,21 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">11. Programming with Larch</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">11. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="plugins.html"
                         title="previous chapter">11.3. Plugins</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/devel/frompython.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/devel/frompython.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -118,7 +116,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="using-larch-from-python">
 <span id="frompython-section"></span><h1>11.4. Using Larch from Python<a class="headerlink" href="#using-larch-from-python" title="Permalink to this headline">¶</a></h1>
@@ -134,18 +132,18 @@ system, there are two points to keep in mind when using Larch from Python.</p>
 <em>not</em> installed into the standard Python tree of installed modules, but
 into a folder specific to Larch.  This means that, while Larch can be used
 from Python, Python will need to be told about where Larch is installed in
-order for the <code class="docutils literal"><span class="pre">import</span></code> statements to work.</p>
+order for the <tt class="docutils literal"><span class="pre">import</span></tt> statements to work.</p>
 <span class="target" id="module-larch"></span><dl class="function">
 <dt id="larch.use_plugin_path">
-<code class="descclassname">larch.</code><code class="descname">use_plugin_path</code><span class="sig-paren">(</span><em>folder_name</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.use_plugin_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>add the named Plugin folder to Python's <code class="docutils literal"><span class="pre">sys.path</span></code>, allowing python
+<tt class="descclassname">larch.</tt><tt class="descname">use_plugin_path</tt><big>(</big><em>folder_name</em><big>)</big><a class="headerlink" href="#larch.use_plugin_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>add the named Plugin folder to Python's <tt class="docutils literal"><span class="pre">sys.path</span></tt>, allowing python
 functions to be imported from the modules in the specified plugin folder.</p>
 <p>The argument is the subfolder for each plugin, relative to the
-installed Larch plugins (typically <code class="docutils literal"><span class="pre">$HOME/.larch/plugins</span></code> for
-Unix or Mac OSX or <code class="docutils literal"><span class="pre">$USER\larch\plugins</span></code> on Windows).</p>
+installed Larch plugins (typically <tt class="docutils literal"><span class="pre">$HOME/.larch/plugins</span></tt> for
+Unix or Mac OSX or <tt class="docutils literal"><span class="pre">$USER\larch\plugins</span></tt> on Windows).</p>
 </dd></dl>
 
-<p>Thus to get the <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></code></a> function into a Python module, you
+<p>Thus to get the <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> function into a Python module, you
 could do either:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">larch</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
@@ -162,13 +160,13 @@ could do either:</p>
 will only work if they are passed an instance of the Larch interpreter.
 This interpreter instance is primarily used inside Larch plugins to create
 Groups and place them in the current symbol table, or to access
-data from the builtin <code class="docutils literal"><span class="pre">_sys</span></code> module  or from data resouces loaded into
-the <code class="docutils literal"><span class="pre">_xray</span></code> module.
+data from the builtin <tt class="docutils literal"><span class="pre">_sys</span></tt> module  or from data resouces loaded into
+the <tt class="docutils literal"><span class="pre">_xray</span></tt> module.
 Though you won't need to write Larch scripts inside
 python (you <strong>can</strong>, but if you're reading this section, you probably want
 to use Python instead of Larch), you will need an instance of the
 interpreter.  This is easily created, and can then be passed to any of the
-plugin functions with the <code class="docutils literal"><span class="pre">_larch</span></code> keyword argument:</p>
+plugin functions with the <tt class="docutils literal"><span class="pre">_larch</span></tt> keyword argument:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interpreter</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
@@ -179,11 +177,11 @@ plugin functions with the <code class="docutils literal"><span class="pre">_larc
 <span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">mylarch</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That is, the <code class="docutils literal"><span class="pre">_larch=mylarch</span></code> argument is vital to having
-<a class="reference internal" href="../data/index.html#_io.read_xdi" title="_io.read_xdi"><code class="xref py py-func docutils literal"><span class="pre">_io.read_xdi()</span></code></a> properly create a Larch group, and for allowing
-<a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></code></a> to do the actual fit, and organize the results.</p>
+<p>That is, the <tt class="docutils literal"><span class="pre">_larch=mylarch</span></tt> argument is vital to having
+<a class="reference internal" href="../data/index.html#_io.read_xdi" title="_io.read_xdi"><tt class="xref py py-func docutils literal"><span class="pre">_io.read_xdi()</span></tt></a> properly create a Larch group, and for allowing
+<a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> to do the actual fit, and organize the results.</p>
 <p>Note that you can create the interpreter without loading all the plugins
-using <code class="docutils literal"><span class="pre">with_plugins=False</span></code>.  When running from python, this may be a
+using <tt class="docutils literal"><span class="pre">with_plugins=False</span></tt>.  When running from python, this may be a
 reasonable default.  If you want to add some of the plugins for a
 particular interpreter session, you can:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
@@ -202,7 +200,7 @@ particular interpreter session, you can:</p>
 <span class="go">(8046.3, 0.577108, u&#39;K&#39;, u&#39;L3&#39;)</span>
 </pre></div>
 </div>
-<p>except that the former Larch session retains the value in <code class="docutils literal"><span class="pre">cu_ka</span></code>.</p>
+<p>except that the former Larch session retains the value in <tt class="docutils literal"><span class="pre">cu_ka</span></tt>.</p>
 </div>
 
 
@@ -211,7 +209,7 @@ particular interpreter session, you can:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -228,12 +226,12 @@ particular interpreter session, you can:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >11. Programming with Larch</a> &raquo;</li> 
+          <li><a href="index.html" >11. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

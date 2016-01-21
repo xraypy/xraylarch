@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -112,14 +112,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="flow.html"
                         title="next chapter">4.4. Tutorial: Conditional Execution and Flow Control</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/arrays.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/arrays.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -138,7 +136,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="tutorial-basic-array-manipulation">
 <span id="tutor-array-sec"></span><h1>4.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
@@ -160,7 +158,7 @@ and well-written, and should be consulted for more details.</p>
 <div class="section" id="functions-for-creating-arrays">
 <h2>4.3.1. Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
 <p>There are a handful of builtin functions for creating arrays from scratch.
-These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><span>Table of Array Creation Functions</span></a> In addition, when dealing with data stored in
+These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a> In addition, when dealing with data stored in
 files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter">5</a>) with Larch will create
 arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
 arrays can be changed without changing the rest of the array.</p>
@@ -231,11 +229,11 @@ create arrays in Larch.</div></blockquote>
 </pre></div>
 </div>
 <p>Here, the <strong>dtype</strong> argument sets the data type for the array members.  For
-example, <code class="docutils literal"><span class="pre">float</span></code> means a double precision floating point representation
+example, <tt class="docutils literal"><span class="pre">float</span></tt> means a double precision floating point representation
 of a real number and complex means double precision complex floating point.
-The <a class="reference internal" href="#tutor-arraydtype-table"><span>Table of Array Data types</span></a> below
-lists the available data types that can be passed as a <code class="docutils literal"><span class="pre">dtype</span></code> argument.</p>
-<p>The <code class="xref py py-func docutils literal"><span class="pre">linspace()</span></code> function is particularly useful for creating arrays,
+The <a class="reference internal" href="#tutor-arraydtype-table"><em>Table of Array Data types</em></a> below
+lists the available data types that can be passed as a <tt class="docutils literal"><span class="pre">dtype</span></tt> argument.</p>
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">linspace()</span></tt> function is particularly useful for creating arrays,
 as it takes a starting value, ending value, and number of points between
 these:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
@@ -279,11 +277,11 @@ the documentation string from the underlying numpy function):</p>
     ....
 </pre></div>
 </div>
-<p>The <code class="xref py py-func docutils literal"><span class="pre">eye()</span></code> function creates a 2 dimensional square array (or, possibly
-<code class="docutils literal"><span class="pre">matrix</span></code>, though that term can connote additional meaning that a square
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">eye()</span></tt> function creates a 2 dimensional square array (or, possibly
+<tt class="docutils literal"><span class="pre">matrix</span></tt>, though that term can connote additional meaning that a square
 array does not necessarily have) with values of 1 for the diagonal
 elements, and 0 elsewhere.</p>
-<p>The function <code class="xref py py-func docutils literal"><span class="pre">meshgrid()</span></code> can be used to build a mesh of values from two one dimensional
+<p>The function <tt class="xref py py-func docutils literal"><span class="pre">meshgrid()</span></tt> can be used to build a mesh of values from two one dimensional
 arrays.  That is:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; x = array([0, 1, 2, 3, 4])
 larch&gt; y = array([-1, 0.5, 0, 0.5, 1])
@@ -302,8 +300,8 @@ array([[-1. , -1. , -1. , -1. , -1. ],
        [ 1. ,  1. ,  1. ,  1. ,  1. ]])
 </pre></div>
 </div>
-<p>That is, the values of each <code class="docutils literal"><span class="pre">mx</span></code> and <code class="docutils literal"><span class="pre">my</span></code> contain the coordinates of a
-two-dimensional mesh or map of the input <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> values.</p>
+<p>That is, the values of each <tt class="docutils literal"><span class="pre">mx</span></tt> and <tt class="docutils literal"><span class="pre">my</span></tt> contain the coordinates of a
+two-dimensional mesh or map of the input <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
 <h2>4.3.2. The array <em>dtype</em> -- datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
@@ -319,8 +317,8 @@ listed in the</p>
 <span id="index-1"></span><div><blockquote>
 <div>Table of Array Data types.  Each array has exactly one of these create
 arrays in Larch.  The <strong>dtype</strong> can be used in any of the array creation
-functions using the <code class="docutils literal"><span class="pre">dtype</span></code> keyword argument (e.g,
-<code class="docutils literal"><span class="pre">dtype=float32</span></code>).</div></blockquote>
+functions using the <tt class="docutils literal"><span class="pre">dtype</span></tt> keyword argument (e.g,
+<tt class="docutils literal"><span class="pre">dtype=float32</span></tt>).</div></blockquote>
 <table border="1" class="docutils">
 <colgroup>
 <col width="33%" />
@@ -333,7 +331,7 @@ functions using the <code class="docutils literal"><span class="pre">dtype</span
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>bool</td>
-<td>boolean (<code class="docutils literal"><span class="pre">True</span></code> or <code class="docutils literal"><span class="pre">False</span></code>)</td>
+<td>boolean (<tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt>)</td>
 </tr>
 <tr class="row-odd"><td>int8</td>
 <td>signed 8-bit integer (-128 to 127)</td>
@@ -401,8 +399,8 @@ of the larger array to match the size of the smaller one.</p>
 [False False  True  True  True]
 </pre></div>
 </div>
-<p>The <a class="reference internal" href="builtins.html#any" title="any"><code class="xref py py-func docutils literal"><span class="pre">any()</span></code></a> and <a class="reference internal" href="builtins.html#all" title="all"><code class="xref py py-func docutils literal"><span class="pre">all()</span></code></a> functions (in the tables below) can be used to determine if any or
-all of the Boolean values are <code class="docutils literal"><span class="pre">True</span></code>.</p>
+<p>The <a class="reference internal" href="builtins.html#any" title="any"><tt class="xref py py-func docutils literal"><span class="pre">any()</span></tt></a> and <a class="reference internal" href="builtins.html#all" title="all"><tt class="xref py py-func docutils literal"><span class="pre">all()</span></tt></a> functions (in the tables below) can be used to determine if any or
+all of the Boolean values are <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
 <p>You can extract single elements from arrays with brackets, just as for lists:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print y[2]
 14
@@ -414,12 +412,12 @@ larch&gt; print (y-3*x)[2]
 </div>
 <div class="section" id="slicing-and-extracting-sub-arrays">
 <h2>4.3.4. Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
-<p>An important aspect of arrays is that they can be treated as a single entity.  That is, <code class="docutils literal"><span class="pre">sin(x)</span></code>
-operates on each element of <code class="docutils literal"><span class="pre">x</span></code>.  But sometimes it is necessary to get a particular element from
+<p>An important aspect of arrays is that they can be treated as a single entity.  That is, <tt class="docutils literal"><span class="pre">sin(x)</span></tt>
+operates on each element of <tt class="docutils literal"><span class="pre">x</span></tt>.  But sometimes it is necessary to get a particular element from
 an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
 -- a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
-straightforward, using the range of indices needed for the slice between square brackets <code class="docutils literal"><span class="pre">[</span></code> and
-<code class="docutils literal"><span class="pre">]</span></code>.  For example:</p>
+straightforward, using the range of indices needed for the slice between square brackets <tt class="docutils literal"><span class="pre">[</span></tt> and
+<tt class="docutils literal"><span class="pre">]</span></tt>.  For example:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; arr = linspace(0, 2, 21)
 larch&gt; print arr
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4
@@ -433,18 +431,18 @@ larch&gt; print arr[10:15]
 </pre></div>
 </div>
 <p>The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
-As with lists, <code class="docutils literal"><span class="pre">arr[i]</span></code> selects value at index <code class="docutils literal"><span class="pre">i</span></code> (counting from 0).  Similarly, <code class="docutils literal"><span class="pre">arr[i:j]</span></code>
-selects elements starting at <code class="docutils literal"><span class="pre">i</span></code> and ending at (but not including -- see the example above)
-<code class="docutils literal"><span class="pre">j</span></code>.  If <code class="docutils literal"><span class="pre">i</span></code> is omitted,
-it is taken as 0 (the first element), and if <code class="docutils literal"><span class="pre">j</span></code> is omitted, it defaults to the last element of
-the array.  In addition, if <code class="docutils literal"><span class="pre">i</span></code> and/or <code class="docutils literal"><span class="pre">j</span></code> are negative, they count from the end of the array:</p>
+As with lists, <tt class="docutils literal"><span class="pre">arr[i]</span></tt> selects value at index <tt class="docutils literal"><span class="pre">i</span></tt> (counting from 0).  Similarly, <tt class="docutils literal"><span class="pre">arr[i:j]</span></tt>
+selects elements starting at <tt class="docutils literal"><span class="pre">i</span></tt> and ending at (but not including -- see the example above)
+<tt class="docutils literal"><span class="pre">j</span></tt>.  If <tt class="docutils literal"><span class="pre">i</span></tt> is omitted,
+it is taken as 0 (the first element), and if <tt class="docutils literal"><span class="pre">j</span></tt> is omitted, it defaults to the last element of
+the array.  In addition, if <tt class="docutils literal"><span class="pre">i</span></tt> and/or <tt class="docutils literal"><span class="pre">j</span></tt> are negative, they count from the end of the array:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[:-8]
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2]
 larch&gt; print arr[-2:]
 [ 1.9  2.]
 </pre></div>
 </div>
-<p>A slice can take a third argument <code class="docutils literal"><span class="pre">k</span></code> -- the stride -- which allows selection of every <code class="docutils literal"><span class="pre">k</span></code>
+<p>A slice can take a third argument <tt class="docutils literal"><span class="pre">k</span></tt> -- the stride -- which allows selection of every <tt class="docutils literal"><span class="pre">k</span></tt>
 elements.  That is:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[1:6:2]
 [ 0.1  0.3  0.5]
@@ -452,7 +450,7 @@ larch&gt; print arr[::2]
 [ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]
 </pre></div>
 </div>
-<p>If <code class="docutils literal"><span class="pre">k</span></code> is negative, it starts from the end of the array:</p>
+<p>If <tt class="docutils literal"><span class="pre">k</span></tt> is negative, it starts from the end of the array:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[::-3]
 [2.   1.7  1.4  1.1  0.8  0.5  0.2]
 </pre></div>
@@ -486,17 +484,17 @@ larch&gt; print x[1,:4]   # same
 [5 6 7 8]
 </pre></div>
 </div>
-<p>In general, the syntax for a slice is then <code class="docutils literal"><span class="pre">arr[i1:j1,:k1,</span> <span class="pre">i2:j2:k2,</span> <span class="pre">...]</span></code> with default values for <code class="docutils literal"><span class="pre">i</span></code>
-of 0, for <code class="docutils literal"><span class="pre">j</span></code> of the length of the array, and for <code class="docutils literal"><span class="pre">k</span></code> of 1.</p>
+<p>In general, the syntax for a slice is then <tt class="docutils literal"><span class="pre">arr[i1:j1,:k1,</span> <span class="pre">i2:j2:k2,</span> <span class="pre">...]</span></tt> with default values for <tt class="docutils literal"><span class="pre">i</span></tt>
+of 0, for <tt class="docutils literal"><span class="pre">j</span></tt> of the length of the array, and for <tt class="docutils literal"><span class="pre">k</span></tt> of 1.</p>
 </div>
 <div class="section" id="array-attributes-and-methods">
 <h2>4.3.5. Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
 <p>Arrays have several useful attributes and methods.  As mentioned above, each array has a
-<code class="xref py py-data docutils literal"><span class="pre">dtype</span></code> attribute describing how its data is mapped in memory.  In addition, each
-has a <code class="xref py py-data docutils literal"><span class="pre">size</span></code> attribute giving the number of elements, a <code class="xref py py-data docutils literal"><span class="pre">ndim</span></code> giving the
-number of dimensions, and <code class="xref py py-data docutils literal"><span class="pre">shape</span></code> giving the a tuple with the length along each
+<tt class="xref py py-data docutils literal"><span class="pre">dtype</span></tt> attribute describing how its data is mapped in memory.  In addition, each
+has a <tt class="xref py py-data docutils literal"><span class="pre">size</span></tt> attribute giving the number of elements, a <tt class="xref py py-data docutils literal"><span class="pre">ndim</span></tt> giving the
+number of dimensions, and <tt class="xref py py-data docutils literal"><span class="pre">shape</span></tt> giving the a tuple with the length along each
 dimension.  The dimensionality and shape of a multi-dimensional array can be specified
-by setting the value of <code class="xref py py-data docutils literal"><span class="pre">shape</span></code> to the desired value:</p>
+by setting the value of <tt class="xref py py-data docutils literal"><span class="pre">shape</span></tt> to the desired value:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span>
 <span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">,</span> <span class="mf">11.</span><span class="p">,</span> <span class="mf">12.</span><span class="p">])</span>
@@ -508,10 +506,10 @@ by setting the value of <code class="xref py py-data docutils literal"><span cla
 </div>
 <blockquote id="tutor-arraymethods-table">
 <span id="index-2"></span><div><blockquote>
-<div>Table of Array Attribute and Methods.  Those ending with parentheses (<code class="docutils literal"><span class="pre">()</span></code>) are
+<div>Table of Array Attribute and Methods.  Those ending with parentheses (<tt class="docutils literal"><span class="pre">()</span></tt>) are
 methods, that act on the array.  Most of the attributes and the vast majority of
 methods return a value based on the array contents, leaving the array unchanged.  The
-attributes and methods marked <code class="docutils literal"><span class="pre">read/write</span></code> operate in place, changing the array.</div></blockquote>
+attributes and methods marked <tt class="docutils literal"><span class="pre">read/write</span></tt> operate in place, changing the array.</div></blockquote>
 <table border="1" class="docutils">
 <colgroup>
 <col width="27%" />
@@ -558,11 +556,11 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>all()</td>
-<td>boolean: if all values are <code class="docutils literal"><span class="pre">True</span></code></td>
+<td>boolean: if all values are <tt class="docutils literal"><span class="pre">True</span></tt></td>
 <td>(non-zero)</td>
 </tr>
 <tr class="row-odd"><td>any()</td>
-<td>boolean: if any value is <code class="docutils literal"><span class="pre">True</span></code></td>
+<td>boolean: if any value is <tt class="docutils literal"><span class="pre">True</span></tt></td>
 <td>(non-zero)</td>
 </tr>
 <tr class="row-even"><td>min()</td>
@@ -610,7 +608,7 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 <td>&nbsp;</td>
 </tr>
 <tr class="row-odd"><td>astype()</td>
-<td>array re-cast as a different <code class="docutils literal"><span class="pre">dtype</span></code></td>
+<td>array re-cast as a different <tt class="docutils literal"><span class="pre">dtype</span></tt></td>
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>round()</td>
@@ -648,7 +646,7 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 <div class="section" id="mathematical-functions-for-arrays">
 <h2>4.3.6. Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
-element-by-element.  For example, <code class="xref py py-func docutils literal"><span class="pre">sqrt()</span></code> returns the square-root of a single
+element-by-element.  For example, <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> returns the square-root of a single
 value or for each element in an array:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print sqrt(3)
 1.73205080757
@@ -676,13 +674,13 @@ looping over elements of the array:</p>
 </pre></div>
 </div>
 <p>There are a large number of general purpose mathematical functions available in larch --
-the <code class="docutils literal"><span class="pre">_math</span></code> group contains over 500 items on startup.  A partial list is given in the
-The <a class="reference internal" href="#tutor-arrayfuncs-table"><span>Table of Array-aware Mathematical functions</span></a> below.
+the <tt class="docutils literal"><span class="pre">_math</span></tt> group contains over 500 items on startup.  A partial list is given in the
+The <a class="reference internal" href="#tutor-arrayfuncs-table"><em>Table of Array-aware Mathematical functions</em></a> below.
 What's more, many more are available by importing them from the scipy library.</p>
 <blockquote id="tutor-arrayfuncs-table">
 <span id="index-3"></span><div><blockquote>
 <div>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
-builtin <a class="reference internal" href="builtins.html#help" title="help"><code class="xref py py-func docutils literal"><span class="pre">help()</span></code></a> function.  The table is broken up by categories to make printing easier.</div></blockquote>
+builtin <a class="reference internal" href="builtins.html#help" title="help"><tt class="xref py py-func docutils literal"><span class="pre">help()</span></tt></a> function.  The table is broken up by categories to make printing easier.</div></blockquote>
 <p><strong>General Purpose Functions</strong></p>
 <table border="1" class="docutils">
 <colgroup>
@@ -696,7 +694,7 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>all</td>
-<td>all values are <code class="docutils literal"><span class="pre">True</span></code></td>
+<td>all values are <tt class="docutils literal"><span class="pre">True</span></tt></td>
 </tr>
 <tr class="row-odd"><td>allclose</td>
 <td>all values of 2 arrays are close</td>
@@ -909,7 +907,7 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
 <td>integrate using composite trapezoidal rule</td>
 </tr>
 <tr class="row-even"><td>remainder</td>
-<td>remainder of division (<code class="docutils literal"><span class="pre">x1</span> <span class="pre">-</span> <span class="pre">floor(x1</span> <span class="pre">/</span> <span class="pre">x2)</span> <span class="pre">*</span> <span class="pre">x2</span></code>)</td>
+<td>remainder of division (<tt class="docutils literal"><span class="pre">x1</span> <span class="pre">-</span> <span class="pre">floor(x1</span> <span class="pre">/</span> <span class="pre">x2)</span> <span class="pre">*</span> <span class="pre">x2</span></tt>)</td>
 </tr>
 <tr class="row-odd"><td>percentile</td>
 <td>returns the given  percentile of array elements</td>
@@ -1097,7 +1095,7 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1117,12 +1115,12 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

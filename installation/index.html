@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="next" title="3. Larch: Motivation and Overview" href="../overview/index.html" />
     <link rel="prev" title="Larch" href="../index.html" />
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,20 +89,21 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
-<li><a class="reference internal" href="#using-anaconda-python-2-7">1.1. Using Anaconda Python 2.7</a></li>
-<li><a class="reference internal" href="#binary-installation-windows">1.2. Binary Installation (Windows)</a></li>
+<li><a class="reference internal" href="#using-anaconda-python">1.1. Using Anaconda Python</a></li>
+<li><a class="reference internal" href="#windows-binary-installation">1.2. Windows Binary Installation</a></li>
 <li><a class="reference internal" href="#source-installation">1.3. Source Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">1.3.1. Prerequisites</a></li>
 <li><a class="reference internal" href="#installation">1.3.2. Installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#acknowledgements">1.4. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.5. License</a></li>
+<li><a class="reference internal" href="#documentation-and-examples">1.4. Documentation and Examples</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.5. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.6. License</a></li>
 </ul>
 </li>
 </ul>
@@ -113,14 +114,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="../overview/index.html"
                         title="next chapter">3. Larch: Motivation and Overview</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/installation/index.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/installation/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -139,7 +138,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
@@ -149,14 +148,13 @@ there are definitely some missing desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.</p>
 <p>There are several ways to download and install Larch.  Starting with Larch
 0.9.27, the <strong>recommended</strong> way to install and run Larch on Windows and Mac
-OS X is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> (version 2.7:
-Note that Larch does not yet work with Python 3. series).  For Windows, a
-binary installer may be available soon, though this is not updated as often
-as the source code or Anaconda package.  In addition, Larch can be
-installed from its source code, which works easily on most modern Linux
-systems.</p>
-<div class="section" id="using-anaconda-python-2-7">
-<h2>1.1. Using Anaconda Python 2.7<a class="headerlink" href="#using-anaconda-python-2-7" title="Permalink to this headline">¶</a></h2>
+OS X is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> (version 2.7).  Note that Larch does not yet
+work with Python 3. series).  For Windows, a binary installer may be
+available soon, though this is not updated as often as the source code or
+Anaconda package.  In addition, Larch can be installed from its source
+code, which works easily on most modern Linux systems.</p>
+<div class="section" id="using-anaconda-python">
+<h2>1.1. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and
 well-supported version of Python for scientific work with many useful
 packages included.  By default, Anaconda Python installs into your own home
@@ -165,9 +163,8 @@ remove components.  Anaconda includes a robust package manager called
 <em>conda</em> that makes it easy to update to the latest versions of Larch when
 you are ready.</p>
 <p>So, begin by installing the latest version of Anaconda Python 2.7 from
-their <a class="reference external" href="http://www.continuum.io/downloads">download anaconda python</a> site.
-Once that is installed, you can open a Terminal (Linux or Mac OSX) or the
-Anaconda prompt (Windows) and type</p>
+their <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is installed, you can open a
+Terminal (Linux or Mac OSX) or the Anaconda prompt (Windows) and type</p>
 <div class="highlight-python"><div class="highlight"><pre>conda install -yc newville xraylarch
 
 # on Windows or Mac OSX
@@ -192,22 +189,21 @@ OSX) to run the following Larch programs:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="binary-installation-windows">
-<h2>1.2. Binary Installation (Windows)<a class="headerlink" href="#binary-installation-windows" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="windows-binary-installation">
+<h2>1.2. Windows Binary Installation<a class="headerlink" href="#windows-binary-installation" title="Permalink to this headline">¶</a></h2>
 <p>The binary installer for Windows provides working executables for the Larch
 programs.   These are likely to be slightly out-of-date from the source
 code and the Anaconda package.</p>
-<p>Downloads are available from the   <a class="reference external" href="http://cars.uchicago.edu/xraylarch">larch pages at cars.uchicago.edu</a>,
-with a mirror site at sourceforge.net:   <a class="reference external" href="http://sourceforge.net/projects/xraylarch">larch pages at sourceforge.net</a>.</p>
+<p>Downloads are available at the <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads">Larch Downloads (cars.uchicago.edu)</a>
+or at <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases (github.com)</a>.</p>
 </div>
 <div class="section" id="source-installation">
 <h2>1.3. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
 <p>Larch can be installed from source code.  If not using Anaconda, this is
 necessary for Linux, and can be done for other systems as well.</p>
-<p>The latest releases of the source code will be available from
-<a class="reference external" href="https://github.com/xraypy/xraylarch/releases">xraylarch releases</a>.</p>
-<p>In addition, you can use <cite>git</cite> to grab the latest development version of
-the source code:</p>
+<p>The latest releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch
+releases (github.com)</a>.  In addition, you can use <cite>git</cite> to grab the latest
+development version of the source code:</p>
 <div class="highlight-python"><div class="highlight"><pre>git clone http://github.com/xraypy/xraylarch.git
 </pre></div>
 </div>
@@ -230,8 +226,14 @@ standard packages on almost all platforms.</p>
 </div>
 </div>
 </div>
+<div class="section" id="documentation-and-examples">
+<h2>1.4. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
+<p>A zip file of the latest documentation and examples is available at <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/docs">Larch
+Docs and Examples (cars.uchicago.edu)</a></p>
+<p>The source kit includes sources for documentation and examples.</p>
+</div>
 <div class="section" id="acknowledgements">
-<h2>1.4. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2>1.5. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable
 influence on the design and implementation of this code and has provided
@@ -274,7 +276,7 @@ uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
 <div class="section" id="license">
-<h2>1.5. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>1.6. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
@@ -320,7 +322,7 @@ distributed under the following license:
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -342,9 +344,9 @@ distributed under the following license:
  
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

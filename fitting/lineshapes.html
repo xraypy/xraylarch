@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.6. Fit Examples" href="examples.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="results.html"
@@ -99,14 +99,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
                         title="next chapter">7.6. Fit Examples</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/fitting/lineshapes.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/lineshapes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -125,17 +123,17 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="some-builtin-line-shape-functions">
 <span id="lineshape-functions-label"></span><h1>7.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
 <p>Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
 be amended easily.  All these functions return either a floating point
-scalar or array, depending on the input <code class="docutils literal"><span class="pre">x</span></code>.</p>
+scalar or array, depending on the input <tt class="docutils literal"><span class="pre">x</span></tt>.</p>
 <dl class="function">
 <dt id="gaussian">
-<code class="descname">gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">gaussian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Gaussian or normal distribution function:</p>
 </dd></dl>
 
@@ -146,7 +144,7 @@ The Full-Width at Half-Maximum is <span class="math">\(2\sigma\sqrt{2\ln{2}}\)</
 approximately <span class="math">\(2.3548\sigma\)</span></p>
 <dl class="function">
 <dt id="lorentzian">
-<code class="descname">lorentzian</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">lorentzian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Lorentzian or Cauchy-Lorentz distribution function:</p>
 </dd></dl>
 
@@ -156,7 +154,7 @@ approximately <span class="math">\(2.3548\sigma\)</span></p>
 <span class="math">\(2\sigma\)</span>.</p>
 <dl class="function">
 <dt id="voigt">
-<code class="descname">voigt</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">voigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><big>)</big><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Voigt distribution function.   The definition used here is</p>
 </dd></dl>
 
@@ -167,14 +165,14 @@ approximately <span class="math">\(2.3548\sigma\)</span></p>
 \[\begin{eqnarray*}
   z &=& \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
   w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
-\end{eqnarray*}\]</div><p>and <code class="xref py py-func docutils literal"><span class="pre">erfc()</span></code> is the complimentary error function.  As above, <em>cen</em> is
+\end{eqnarray*}\]</div><p>and <tt class="xref py py-func docutils literal"><span class="pre">erfc()</span></tt> is the complimentary error function.  As above, <em>cen</em> is
 used for <span class="math">\(\mu\)</span> here, <em>sigma</em> for <span class="math">\(\sigma\)</span>, and <em>gamma</em> for the
-parameter <span class="math">\(\gamma\)</span>.  If <em>gamma</em> is left as <code class="docutils literal"><span class="pre">None</span></code>, it is set equal
+parameter <span class="math">\(\gamma\)</span>.  If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal
 to <em>sigma</em>.  For the case when <span class="math">\(\gamma = \sigma\)</span>, the Full-Width at
 Half-Maximum is approximately <span class="math">\(3.6013\sigma\)</span>.</p>
 <dl class="function">
 <dt id="pvoigt">
-<code class="descname">pvoigt</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>a pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
 <em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>), and <em>frac</em> setting the
@@ -186,7 +184,7 @@ Lorentzian fraction:</p>
 
 <dl class="function">
 <dt id="pearson7">
-<code class="descname">pearson7</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>expon=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">pearson7</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>expon=0.5</em><big>)</big><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Pearson-7 lineshape.  This is another Voigt-like distribution
 function, defined as</p>
 </dd></dl>
@@ -200,7 +198,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 <p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="students_t">
-<code class="descname">students_t</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">students_t</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>Student's t distribution function.</p>
 </dd></dl>
 
@@ -209,7 +207,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 <p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="breit_wigner">
-<code class="descname">breit_wigner</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">breit_wigner</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>q=1</em><big>)</big><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Breit-Wigner-Fano distribution function.</p>
 </dd></dl>
 
@@ -217,7 +215,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 \[f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}\]</div>
 <dl class="function">
 <dt id="logistic">
-<code class="descname">logistic</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#logistic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">logistic</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#logistic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logistic lineshape, a sigmoidal curve</p>
 </dd></dl>
 
@@ -225,7 +223,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 \[f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}\]</div>
 <dl class="function">
 <dt id="lognormal">
-<code class="descname">lognormal</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">lognormal</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
 <dd><p>log-normal function</p>
 </dd></dl>
 
@@ -233,7 +231,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 \[f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
 <p>Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
-in the <a class="reference internal" href="#fit-funcs-table"><span>Table of Useful Line shapes</span></a>.</p>
+in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful Line shapes</em></a>.</p>
 <blockquote id="fit-funcs-table">
 <span id="index-0"></span><div><p>Table of Useful Line shapes.</p>
 <table border="1" class="docutils">
@@ -304,7 +302,7 @@ etc) can be accessed from scipy.special:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -324,12 +322,12 @@ etc) can be accessed from scipy.special:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="next" title="2. Larch Community and Support" href="../community.html" />
     <link rel="prev" title="1. Downloading and Installation" href="../installation/index.html" />
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -106,14 +106,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="../community.html"
                         title="next chapter">2. Larch Community and Support</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/overview/index.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/overview/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -132,7 +130,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="larch-motivation-and-overview">
 <h1>3. Larch: Motivation and Overview<a class="headerlink" href="#larch-motivation-and-overview" title="Permalink to this headline">¶</a></h1>
@@ -216,10 +214,10 @@ as with:</p>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The Group <code class="docutils literal"><span class="pre">my_group</span></code> holds data for <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">title</span></code>.  Here,
-the <code class="docutils literal"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, ..., 10])
-that will be held by <code class="docutils literal"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
-with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal"><span class="pre">show()</span></code></a> function:</p>
+<p>The Group <tt class="docutils literal"><span class="pre">my_group</span></tt> holds data for <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, and <tt class="docutils literal"><span class="pre">title</span></tt>.  Here,
+the <tt class="docutils literal"><span class="pre">range()</span></tt> function gives an array of 11 elements ([0, 1, 2, ..., 10])
+that will be held by <tt class="docutils literal"><span class="pre">my_group.x</span></tt>.  You can see the contents of a group
+with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; show(my_group)
 == Group 0x6e15970: 4 symbols ==
   scale: 10.2
@@ -229,7 +227,7 @@ with the <a class="reference internal" href="../tutorial/builtins.html#show" tit
 </pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
-As the <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> members hold array, the size and datatype of the
+As the <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print my_group.y
 [  0.           8.58300405   9.27483375   1.43942408  -7.71938545
@@ -237,7 +235,7 @@ array is shown.  Doing:</p>
   -5.54901533]
 </pre></div>
 </div>
-<p>will show the array elements.  The <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code> function will show a graph
+<p>will show the array elements.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function will show a graph
 of y(x).</p>
 <p>Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
@@ -282,7 +280,7 @@ and analysis steps that Ifeffit can do, including:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -304,9 +302,9 @@ and analysis steps that Ifeffit can do, including:</p>
  
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

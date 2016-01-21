@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.5. Some Builtin Line-shape Functions" href="lineshapes.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,26 +87,24 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="previous chapter">7.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and Objective Functions</a></p>
+                        title="previous chapter">7.3. <tt class="docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="lineshapes.html"
                         title="next chapter">7.5. Some Builtin Line-shape Functions</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/fitting/results.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/results.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -125,7 +123,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="fit-results-and-outputs">
 <span id="fitting-results-sec"></span><h1>7.4. Fit Results and Outputs<a class="headerlink" href="#fit-results-and-outputs" title="Permalink to this headline">¶</a></h1>
@@ -134,14 +132,14 @@ describe the quality of the fit and the estimated values for the Parameter
 values and uncertainties.  The main statistics are written to <em>paramgroup</em>.</p>
 <p>The estimated values, uncertainties, and correlations for each varied
 Parameter are written as attributes of that Parameter.  Thus, after a fit,
-each variable Parameter <code class="docutils literal"><span class="pre">par</span></code> will be updated so that <code class="docutils literal"><span class="pre">par.value</span></code> will
-hold the estimated best-fit value, <code class="docutils literal"><span class="pre">par.stderr</span></code> will hold the estimated
-uncertainty (1-<span class="math">\(\sigma\)</span> standard error), and <code class="docutils literal"><span class="pre">par.correl</span></code> will hold
+each variable Parameter <tt class="docutils literal"><span class="pre">par</span></tt> will be updated so that <tt class="docutils literal"><span class="pre">par.value</span></tt> will
+hold the estimated best-fit value, <tt class="docutils literal"><span class="pre">par.stderr</span></tt> will hold the estimated
+uncertainty (1-<span class="math">\(\sigma\)</span> standard error), and <tt class="docutils literal"><span class="pre">par.correl</span></tt> will hold
 a dictionary of correlation values with the other variable Parameters.</p>
 <p>General Fit statistics describing the quality of the fit and details about
 how the fit proceeded will be put into components of <em>paramgroup</em>, with
 variable names and meanings as outlines in
-<a class="reference internal" href="#minimize-stats-table"><span>Table of Fit Statistics</span></a>.  For advanced users,
+<a class="reference internal" href="#minimize-stats-table"><em>Table of Fit Statistics</em></a>.  For advanced users,
 the full residual vector,
 covarance matrix, and jacobian matrix from the fit, as well as several more
 esoteric outputs from MINPACK's lmdif function are put in
@@ -196,11 +194,11 @@ the statistical quantity it holds.</p>
 </table>
 </div></blockquote>
 </div></blockquote>
-<p>Additional outputs written to the <code class="docutils literal"><span class="pre">fit_details</span></code> group vary for each
+<p>Additional outputs written to the <tt class="docutils literal"><span class="pre">fit_details</span></tt> group vary for each
 fitting method.</p>
 <dl class="function">
 <dt id="fit_report">
-<code class="descname">fit_report</code><span class="sig-paren">(</span><em>paramgroup</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fit_report</tt><big>(</big><em>paramgroup</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><big>)</big><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a fit report for a fit given a parameter group.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -208,7 +206,7 @@ fitting method.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>paramgroup</strong> -- parameter group, after being used in a fit.</li>
-<li><strong>show_correl</strong> -- flag (<code class="docutils literal"><span class="pre">True</span></code>/<code class="docutils literal"><span class="pre">False</span></code>) to show parameter correlations.</li>
+<li><strong>show_correl</strong> -- flag (<tt class="docutils literal"><span class="pre">True</span></tt>/<tt class="docutils literal"><span class="pre">False</span></tt>) to show parameter correlations.</li>
 <li><strong>min_correl</strong> -- smallest absolute value of correlation to show.</li>
 </ul>
 </td>
@@ -220,7 +218,7 @@ fitting method.</p>
 </table>
 </dd></dl>
 
-<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal"><span class="pre">fit_report()</span></code></a> would look like this:</p>
+<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><tt class="xref py py-func docutils literal"><span class="pre">fit_report()</span></tt></a> would look like this:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print fit_report(params)
 ===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
@@ -251,7 +249,7 @@ fitting method.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -271,12 +269,12 @@ fitting method.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

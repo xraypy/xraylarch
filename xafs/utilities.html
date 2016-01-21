@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,24 +87,24 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.1. XAFS Functions: Overview and Naming Conventions</a><ul>
 <li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">8.1.1. Naming conventions for XAFS arrays</a><ul>
-<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">8.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code></a></li>
+<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">8.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt></a></li>
 <li><a class="reference internal" href="#first-argument-group-convention">8.1.1.2. First Argument Group convention</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#utility-functions-for-xafs">8.1.2. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#the-ktoe-and-etok-functions">8.1.2.1. The <code class="docutils literal"><span class="pre">ktoe()</span></code> and <code class="docutils literal"><span class="pre">etok()</span></code> functions</a></li>
-<li><a class="reference internal" href="#the-estimate-noise-function">8.1.2.2. The <code class="docutils literal"><span class="pre">estimate_noise()</span></code> function</a></li>
-<li><a class="reference internal" href="#the-xas-deconvolve-function">8.1.2.3. The <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-ktoe-and-etok-functions">8.1.2.1. The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
+<li><a class="reference internal" href="#the-estimate-noise-function">8.1.2.2. The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
+<li><a class="reference internal" href="#the-xas-deconvolve-function">8.1.2.3. The <tt class="docutils literal"><span class="pre">xas_deconvolve()</span></tt> function</a></li>
 </ul>
 </li>
 </ul>
@@ -117,14 +117,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="preedge.html"
                         title="next chapter">8.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/xafs/utilities.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/xafs/utilities.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -143,7 +141,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="module-_xafs">
 <span id="xafs-functions-overview-and-naming-conventions"></span><h1>8.1. XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
@@ -169,7 +167,7 @@ you can add data with other names), but following the expected naming
 conventions will make processing XAFS data much easier.</p>
 <p>The naming convention define a set of <strong>expected names and meaning</strong> for
 data arrays and scalars within a Group.  This is summarized in the
-<a class="reference internal" href="#xafsnames-table"><span>Table of Conventional Names for an XAFS Group</span></a> below.</p>
+<a class="reference internal" href="#xafsnames-table"><em>Table of Conventional Names for an XAFS Group</em></a> below.</p>
 <p id="xafsnames-table"><strong>Table of Conventional Names for an XAFS Group</strong> These are the standard names for arrays and
 scalars for various data associated with XAFS, including FEFF calculations.  Given are the name,
 the physical quantity described, and the name of function that will generate this value.</p>
@@ -202,143 +200,143 @@ the physical quantity described, and the name of function that will generate thi
 <tr class="row-even"><td>e0</td>
 <td>scalar</td>
 <td><span class="math">\(E_0\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>, <a class="reference internal" href="preedge.html#find_e0" title="find_e0"><code class="xref py py-func docutils literal"><span class="pre">find_e0()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>, <a class="reference internal" href="preedge.html#find_e0" title="find_e0"><tt class="xref py py-func docutils literal"><span class="pre">find_e0()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>edge_step</td>
 <td>scalar</td>
 <td><span class="math">\(\Delta \mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>dmude</td>
 <td>array</td>
 <td><span class="math">\(d\mu/dE\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>norm</td>
 <td>array</td>
 <td>normalized <span class="math">\(\mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>flat</td>
 <td>array</td>
 <td>flattened <span class="math">\(\mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>pre_edge</td>
 <td>array</td>
 <td>pre-edge curve</td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>post_edge</td>
 <td>array</td>
 <td>normalization curve</td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a></td>
+<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>bkg</td>
 <td>array</td>
 <td><span class="math">\(\mu_0(E)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a></td>
+<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chie</td>
 <td>array</td>
 <td><span class="math">\(\chi(E)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a></td>
+<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>k</td>
 <td>array</td>
 <td><span class="math">\(k\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a></td>
+<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chi</td>
 <td>array</td>
 <td><span class="math">\(\chi(k)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a></td>
+<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>kwin</td>
 <td>array</td>
 <td><span class="math">\(\Omega(k)\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, <a class="reference internal" href="xafsft.html#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, <a class="reference internal" href="xafsft.html#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>r</td>
 <td>array</td>
 <td><span class="math">\(R\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chir</td>
 <td>array</td>
 <td><span class="math">\(\chi(R)\)</span> (complex)</td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chir_mag</td>
 <td>array</td>
 <td><span class="math">\(|\chi(R)|\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chir_re</td>
 <td>array</td>
 <td><span class="math">\(\rm Re[\chi(R)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chir_im</td>
 <td>array</td>
 <td><span class="math">\(\rm Im[\chi(R)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>rwin</td>
 <td>array</td>
 <td><span class="math">\(\Omega(R)\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>q</td>
 <td>array</td>
 <td><span class="math">\(q\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chiq</td>
 <td>array</td>
 <td><span class="math">\(\chi(q)\)</span> (complex)</td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chiq_mag</td>
 <td>array</td>
 <td><span class="math">\(|\chi(q)|\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chiq_re</td>
 <td>array</td>
 <td><span class="math">\(\rm Re[\chi(q)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chiq_im</td>
 <td>array</td>
 <td><span class="math">\(\rm Im[\chi(q)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal"><span class="pre">xftr()</span></code></a></td>
+<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>where <span class="math">\(q\)</span>, <span class="math">\(\chi(q)\)</span>, and so on indicates back-transformed <span class="math">\(k\)</span>.</p>
 <p>The XAFS functions encourage following this convention, in that they are consistent in wanting
-<span class="math">\(\chi(k)\)</span> to be represented by the two arrays <code class="docutils literal"><span class="pre">GROUP.k</span></code> and <code class="docutils literal"><span class="pre">GROUP.chi</span></code></p>
+<span class="math">\(\chi(k)\)</span> to be represented by the two arrays <tt class="docutils literal"><span class="pre">GROUP.k</span></tt> and <tt class="docutils literal"><span class="pre">GROUP.chi</span></tt></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
-<h3>8.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
 <p>The XAFS functions need to write outputs to some group -- there are simply too many outputs to
 return and expect you to manage.   So, all functions take a <strong>group</strong> argument, which is used
 as the group into which results are written.  Again, this allows maximum flexibility, but gets
 tedious to provide this argument repeatedly when working with a particular data set.</p>
-<p>There is also a special group, <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code> that is used as the default group to write
+<p>There is also a special group, <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> that is used as the default group to write
 outputs to if no <strong>group</strong> argument is supplied.  When an an explicit <strong>group</strong> argument is given,
-<code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code> is set to this group.  This means that when working with a set of XAFS data all
+<tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> is set to this group.  This means that when working with a set of XAFS data all
 contained within a single group (which is expected to be the normal case), the <strong>group</strong> argument
 does not need to be typed repeatedly.</p>
 </div>
 <div class="section" id="first-argument-group-convention">
 <span id="index-0"></span><h3>8.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
-<p>In addition to the <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code> convention above, there is an even simpler approach when
+<p>In addition to the <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> convention above, there is an even simpler approach when
 working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
 generally meant to take arrays of data as the first two arguments, they allow the first argument to
 be a Group if that Group has the expected named arrays.  This convention, known as the <strong>First
-Argument Group</strong> convention is worth understanding and using.  For example, the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a>
+Argument Group</strong> convention is worth understanding and using.  For example, the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>
 function generally expects the first argument to be an array of energy values and the second to be
 an array of absorbance values.  But a normal use case would look like:</p>
 <div class="highlight-python"><div class="highlight"><pre>autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
@@ -348,8 +346,8 @@ an array of absorbance values.  But a normal use case would look like:</p>
 <div class="highlight-python"><div class="highlight"><pre>autobk(dat, rbkg=1, ....)
 </pre></div>
 </div>
-<p>That is, as long as the Group <code class="docutils literal"><span class="pre">dat</span></code> follows the XAFS naming conventions (for <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a> that
-it has an energy array named <code class="docutils literal"><span class="pre">energy</span></code> and absorbance array named <code class="docutils literal"><span class="pre">mu</span></code>) the two forms above are
+<p>That is, as long as the Group <tt class="docutils literal"><span class="pre">dat</span></tt> follows the XAFS naming conventions (for <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> that
+it has an energy array named <tt class="docutils literal"><span class="pre">energy</span></tt> and absorbance array named <tt class="docutils literal"><span class="pre">mu</span></tt>) the two forms above are
 equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or in this case,
 <strong>Group oriented</strong>.</p>
 </div>
@@ -358,17 +356,17 @@ equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or i
 <h2>8.1.2. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
 <p>Listed below are some general purpose functions for XAFS.</p>
 <div class="section" id="the-ktoe-and-etok-functions">
-<h3>8.1.2.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><code class="xref py py-func docutils literal"><span class="pre">ktoe()</span></code></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><code class="xref py py-func docutils literal"><span class="pre">etok()</span></code></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><tt class="xref py py-func docutils literal"><span class="pre">ktoe()</span></tt></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><tt class="xref py py-func docutils literal"><span class="pre">etok()</span></tt></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.etok">
-<code class="descclassname">_xafs.</code><code class="descname">etok</code><span class="sig-paren">(</span><em>energies</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">_xafs.</tt><tt class="descname">etok</tt><big>(</big><em>energies</em><big>)</big><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert photo-electron energy in eV to wavenumber in <span class="math">\(\AA^{-1}\)</span>.
 energies can be a single number or array of numbers.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.ktoe">
-<code class="descclassname">_xafs.</code><code class="descname">ktoe</code><span class="sig-paren">(</span><em>wavenumbers</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ktoe" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">_xafs.</tt><tt class="descname">ktoe</tt><big>(</big><em>wavenumbers</em><big>)</big><a class="headerlink" href="#_xafs.ktoe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert photo-electron wavenumber in <span class="math">\(\AA^{-1}\)</span> ot energy in eV.
 wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
@@ -409,10 +407,10 @@ larch&gt; endfor
 </div>
 </div>
 <div class="section" id="the-estimate-noise-function">
-<h3>8.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><code class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></code></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.estimate_noise">
-<code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">_xafs.</tt><tt class="descname">estimate_noise</tt><big>(</big><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><big>)</big><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically estimate the noise level in a <span class="math">\(\chi(k)\)</span> spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -438,7 +436,7 @@ larch&gt; endfor
 </tbody>
 </table>
 <p>The method uses an XAFS Fourier transform, and many of arguments
-(<strong>kmin</strong>, <strong>kmax</strong>, etc) are identical to those of <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>.</p>
+(<strong>kmin</strong>, <strong>kmax</strong>, etc) are identical to those of <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>.</p>
 <p>This function follows the First Argument Group convention with arrarys named <cite>k</cite> and <cite>chi</cite>.
 The following outputs are written to the supplied <strong>group</strong> (or <cite>_sys.xafsGroup</cite> if
 <strong>group</strong> is not supplied):</p>
@@ -487,10 +485,10 @@ again, considering that the estimate for <span class="math">\(\epsilon\)</span> 
 small, the estimate may not be that bad.</p>
 </div>
 <div class="section" id="the-xas-deconvolve-function">
-<h3>8.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><tt class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></tt></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.xas_deconvolve">
-<code class="descclassname">_xafs.</code><code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=Noned group=None</em>, <em>form='gaussian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">_xafs.</tt><tt class="descname">xas_deconvolve</tt><big>(</big><em>energy</em>, <em>norm=Noned group=None</em>, <em>form='gaussian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><big>)</big><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>de-convolves a normalized mu(E) spectra with a peak shape, enhancing separation
 of XANES features.  This procedure can be unstable -- Use results with caution!</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -504,14 +502,14 @@ of XANES features.  This procedure can be unstable -- Use results with caution!<
 <li><strong>form</strong> -- form of deconvolution function. One of
 'gaussian' (default) or 'lorentzian'</li>
 <li><strong>esigma</strong> -- energy <span class="math">\(\sigma\)</span> (in eV) to pass to
-<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [default=1.0]</li>
+<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><tt class="xref py py-func docutils literal"><span class="pre">gaussian()</span></tt></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><tt class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></tt></a> lineshape [default=1.0]</li>
 <li><strong>eshift</strong> -- energy shift (in eV) to apply to result. [default=0]</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">norm</span></tt>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -543,7 +541,7 @@ The following data is put into the output group:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -563,12 +561,12 @@ The following data is put into the output group:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

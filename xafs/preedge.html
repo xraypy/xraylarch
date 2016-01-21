@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,16 +87,16 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.2. XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li><a class="reference internal" href="#the-pre-edge-function">8.2.1. The <code class="docutils literal"><span class="pre">pre_edge()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-pre-edge-function">8.2.1. The <tt class="docutils literal"><span class="pre">pre_edge()</span></tt> function</a></li>
 <li><a class="reference internal" href="#pre-edge-subtraction-example">8.2.2. Pre-Edge Subtraction Example</a></li>
 <li><a class="reference internal" href="#the-mback-algorithm">8.2.3. The MBACK algorithm</a></li>
 <li><a class="reference internal" href="#over-absorption-corrections">8.2.4. Over-absorption Corrections</a></li>
@@ -110,14 +110,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="autobk.html"
                         title="next chapter">8.3. XAFS: Post-edge Background Subtraction</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/xafs/preedge.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/xafs/preedge.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -136,21 +134,21 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
 <h1>8.2. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
 <p>After reading in data and constructing <span class="math">\(\mu(E)\)</span>, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
 normalization.  Reading data and constructing <span class="math">\(\mu(E)\)</span> are handled by
-internal larch functions, especially <code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code>.  The main
+internal larch functions, especially <tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt>.  The main
 XAFS-specific function for pre-edge subtraction and normalization is
-<a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
+<a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 <div class="section" id="the-pre-edge-function">
-<h2>8.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pre_edge">
-<code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">pre_edge</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
@@ -186,7 +184,7 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -252,7 +250,7 @@ That is, a line <span class="math">\((m E + b)\)</span> is fit to
 </dl>
 <dl class="function">
 <dt id="find_e0">
-<code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine <span class="math">\(E_0\)</span>, the energy threshold of the absorption edge,
 from the arrays energy and mu for <span class="math">\(\mu(E)\)</span>.</p>
 <p>This finds the point with maximum derivative with some
@@ -270,8 +268,8 @@ checks to avoid spurious glitches.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
-The value of <code class="docutils literal"><span class="pre">e0</span></code> will be written to the output group.</p>
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
+The value of <tt class="docutils literal"><span class="pre">e0</span></tt> will be written to the output group.</p>
 </dd></dl>
 
 </div>
@@ -298,9 +296,9 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 </pre></div>
 </div>
 <p>gives the following results:</p>
-<div class="figure align-center" id="id3">
-<span id="xafs-fig1"></span><a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> XAFS Pre-edge subtraction.</span></p>
+<div class="figure align-center" id="xafs-fig1">
+<a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 8.1:</strong> XAFS Pre-edge subtraction.</p>
 </div>
 </div>
 <div class="section" id="the-mback-algorithm">
@@ -339,7 +337,7 @@ the total number of data points.</p>
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span>.</p>
 <dl class="function">
 <dt id="mback">
-<code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">mback</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -359,7 +357,7 @@ the total number of data points.</p>
 <li><strong>tables</strong> -- 'CL' (Cromer-Liberman) or 'Chantler', ['CL']</li>
 <li><strong>fit_erfc</strong> -- if True, fit the amplitude and width of the complementary error function [False]</li>
 <li><strong>return_f1</strong> -- if True, put f1 in the output group [False]</li>
-<li><strong>pre_edge_kws</strong> -- dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>pre_edge_kws</strong> -- dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
 </ul>
 </td>
 </tr>
@@ -368,7 +366,7 @@ the total number of data points.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -389,7 +387,7 @@ The following data is put into the output group:</p>
 <td>tabulated <span class="math">\(f''(E)\)</span> data</td>
 </tr>
 <tr class="row-even"><td>f1</td>
-<td>tabulated <span class="math">\(f'(E)\)</span> data (if <code class="docutils literal"><span class="pre">return_f1</span></code> is True)</td>
+<td>tabulated <span class="math">\(f'(E)\)</span> data (if <tt class="docutils literal"><span class="pre">return_f1</span></tt> is True)</td>
 </tr>
 <tr class="row-odd"><td>mback_params</td>
 <td>params group for the MBACK minimization function</td>
@@ -402,22 +400,22 @@ The following data is put into the output group:</p>
 <p>Notes:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is used to exclude the region around the
+<li>The <tt class="docutils literal"><span class="pre">whiteline</span></tt> parameter is used to exclude the region around the
 white line in the data from the fit.  The large spectral weight under
 the white line can skew the fit result, particularly in data
 measured over a short data range.  The value is eV units.</li>
-<li>The <code class="docutils literal"><span class="pre">order</span></code> parameter is the order of the Legendre polynomial.
+<li>The <tt class="docutils literal"><span class="pre">order</span></tt> parameter is the order of the Legendre polynomial.
 Data measured over a very short data range are likely best processed
-with <code class="docutils literal"><span class="pre">order=2</span></code>.  Extended XAS data are often better processed with
+with <tt class="docutils literal"><span class="pre">order=2</span></tt>.  Extended XAS data are often better processed with
 a value of 3 or 4.  The order is enforced to be an integer between 1
 and 6.</li>
-<li>A call to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> is made if <code class="docutils literal"><span class="pre">e0</span></code> is not supplied.</li>
-<li>The option to return <span class="math">\(f'(E)\)</span> is used by <code class="xref py py-func docutils literal"><span class="pre">diffkk()</span></code>.</li>
+<li>A call to <a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> is made if <tt class="docutils literal"><span class="pre">e0</span></tt> is not supplied.</li>
+<li>The option to return <span class="math">\(f'(E)\)</span> is used by <tt class="xref py py-func docutils literal"><span class="pre">diffkk()</span></tt>.</li>
 </ul>
 </div></blockquote>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
-result shown in <a href="#fig-mback-copper">8.4</a>.</p>
+result shown in <a href="#fig-mback-copper">8.2</a>.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;$f_2$&#39;</span><span class="p">,</span>
@@ -425,16 +423,16 @@ result shown in <a href="#fig-mback-copper">8.4</a>.</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Copper foil&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id4">
-<span id="fig-mback-copper"></span><a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(e)</strong> Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
+<div class="figure align-center" id="fig-mback-copper">
+<a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 8.2:</strong> Using MBACK to match Cu K edge data measured on a copper foil.</p>
 </div>
 <p>Here is an example of processing XANES data measured over a rather
 short data range.  This example is the magnesium silicate mineral
 talc, Mg<sub>3</sub>Si<sub>4</sub>O<sub>10</sub>(OH)<sub>2</sub>,
 measured at the Si K edge, with the result shown in
-<a href="#fig-mback-talc">8.6</a>.  Note that the order of the Legendre polynomial
-is set to 2 and that the <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is set to avoid the
+<a href="#fig-mback-talc">8.3</a>.  Note that the order of the Legendre polynomial
+is set to 2 and that the <tt class="docutils literal"><span class="pre">whiteline</span></tt> parameter is set to avoid the
 large features near the edge.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;Talc.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -443,9 +441,9 @@ large features near the edge.</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Talc ($\mathrm{Mg}_3\mathrm{Si}_4\mathrm{O}_{10}\mathrm{(OH)}_2$)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id5">
-<span id="fig-mback-talc"></span><a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(i)</strong> Using MBACK to match Si K edge data measured on talc.</span></p>
+<div class="figure align-center" id="fig-mback-talc">
+<a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 8.3:</strong> Using MBACK to match Si K edge data measured on talc.</p>
 </div>
 </div>
 <div class="section" id="over-absorption-corrections">
@@ -467,10 +465,10 @@ and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
 (<span class="citation"><a class="reference internal" href="../biblio.html#citation-fluo">Haskel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-fluo">6</a><span>]</span></span>) can be used.  The algorithm is contained in the
-<a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal"><span class="pre">fluo_corr()</span></code></a> function.</p>
+<a class="reference internal" href="#fluo_corr" title="fluo_corr"><tt class="xref py py-func docutils literal"><span class="pre">fluo_corr()</span></tt></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
-<code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge='K'</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fluo_corr</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge='K'</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><big>)</big><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
 XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
 EXAFS).</p>
@@ -487,7 +485,7 @@ EXAFS).</p>
 <li><strong>edge</strong> -- name of edge ('K', 'L3', ...) [default 'K']</li>
 <li><strong>anginp</strong> -- input angle in degrees  [default 45]</li>
 <li><strong>angout</strong> -- output angle in degrees [default 45]</li>
-<li><strong>**pre_kws</strong> -- <p>additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
+<li><strong>**pre_kws</strong> -- <p>additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 </li>
 </ul>
 </td>
@@ -498,7 +496,7 @@ EXAFS).</p>
 </tbody>
 </table>
 <p>Follows the First Argument Group convention, using group members named
-<code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.  The value of <code class="docutils literal"><span class="pre">mu_corr</span></code> and <code class="docutils literal"><span class="pre">norm_corr</span></code> will be written to the
+<tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.  The value of <tt class="docutils literal"><span class="pre">mu_corr</span></tt> and <tt class="docutils literal"><span class="pre">norm_corr</span></tt> will be written to the
 output group, containing <span class="math">\(\mu(E)\)</span> and normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</p>
 </dd></dl>
 
@@ -511,7 +509,7 @@ output group, containing <span class="math">\(\mu(E)\)</span> and normalized <sp
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -531,12 +529,12 @@ output group, containing <span class="math">\(\mu(E)\)</span> and normalized <sp
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
