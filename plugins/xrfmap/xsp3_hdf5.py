@@ -42,7 +42,7 @@ class XSP3Data(object):
         # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
 def read_xsp3_hdf5(fname, npixels=None, verbose=False,
-                   kludge_dtc=False, _larch=None):
+                   estimate_dtc=True, _larch=None):
     # Reads a HDF5 file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     npixels = None
@@ -71,7 +71,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     else:
         out.counts = counts[:]
 
-    if kludge_dtc:
+    if estimate_dtc:
         dtc_taus = XSPRESS3_TAUS
         if _larch is not None and _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
             dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
@@ -84,12 +84,12 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
         ocounts = out.counts[:, i, 1:-1].sum(axis=1)
         ocounts[np.where(ocounts<0.1)] = 0.1
         out.outputCounts[:, i] = ocounts
-        out.inputCounts[:, i]  = ocounts
-        if kludge_dtc:
+        if estimate_dtc:
             ocr = ocounts/(rtime*1.e-6)
             icr = estimate_icr(ocr, dtc_taus[i], niter=3)
             out.inputCounts[:, i]  = icr * (rtime*1.e-6)
-
+        else:
+            out.inputCounts[:, i]  = ocounts
 
     h5file.close()
     t2 = time.time()
