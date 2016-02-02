@@ -1400,22 +1400,46 @@ class GSEXRM_MapFile(object):
         if mapdat is None:
             mapdat = self._det_group(det)
 
-
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
         ix, iy, nmca = mapdat['counts'].shape
         cell   = mapdat['counts'].regionref[sy, sx, :]
-
         counts = mapdat['counts'][cell]
         counts = counts.reshape(ny, nx, nmca)
+        if dtcorrect:
+            if det in range(1, self.ndet+1):
+                cell   = mapdat['dtfactor'].regionref[sy, sx]
+                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
+            elif det is None: # indicating sum of deadtime-corrected spectra
+                _md    = self._det_group(self.ndet)
+                cell   = _md['counts'].regionref[sy, sx, :]
+                _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                cell   = _md['dtfactor'].regionref[sy, sx]
+                dtfact = _md['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = _cts * dtfact
+                for _idet in range(1, self.ndet):
+                    _md    = self._det_group(_idet)
+                    cell   = _md['counts'].regionref[sy, sx, :]
+                    _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                    cell   = _md['dtfactor'].regionref[sy, sx]
+                    dtfact = _md['dtfactor'][cell].reshape(ny, nx)
+                    dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                    counts += _cts * dtfact
 
-        if dtcorrect and det in range(1, self.ndet+1):
-            cell   = mapdat['dtfactor'].regionref[sy, sx]
-            dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = counts * dtfact
+        elif det is None: # indicating sum un-deadtime-corrected spectra
+            _md    = self._det_group(self.ndet)
+            cell   = _md['counts'].regionref[sy, sx, :]
+            counts = _md['counts'][cell].reshape(ny, nx, nmca)
+            for _idet in range(1, self.ndet):
+                _md    = self._det_group(_idet)
+                cell   = _md['counts'].regionref[sy, sx, :]
+                _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                counts += _cts
 
         if area is not None:
             counts = counts[area[sy, sx]]
