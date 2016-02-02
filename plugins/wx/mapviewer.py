@@ -820,6 +820,8 @@ WARNING: This cannot be undone!
         self.bimport = Button(pane, 'Import Areas', size=(135, -1),
                              action=self.onImport)
 
+        self.cor  = Check(pane, label='Correct Deadtime?')
+
         legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms',
                                 size=(200, -1))
 
@@ -840,10 +842,11 @@ WARNING: This cannot be undone!
 
         sizer.Add(self.xrf,                 (5, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (5, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onreport,            (5, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.cor,                 (5, 4), (1, 2), ALL_LEFT, 2)
 
         sizer.Add(self.bexport,             (6, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.bimport,             (6, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            (6, 4), (1, 1), ALL_LEFT, 2)
 
         sizer.Add(legend,                   (7, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
@@ -1098,8 +1101,8 @@ WARNING: This cannot be undone!
             imd.panel.conf.highlight_areas = []
             imd.panel.redraw()
 
-    def _getmca_area(self, areaname):
-        self._mca = self.owner.current_file.get_mca_area(areaname)
+    def _getmca_area(self, areaname, **kwargs):
+        self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
@@ -1107,9 +1110,11 @@ WARNING: This cannot be undone!
         area  = xrmfile.xrfmap['areas/%s' % aname]
         label = area.attrs.get('description', aname)
         self._mca  = None
+        dtcorrect = self.cor.IsChecked()
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
-        mca_thread = Thread(target=self._getmca_area, args=(aname,))
+        mca_thread = Thread(target=self._getmca_area, args=(aname,),
+                            kwargs={'dtcorrect': dtcorrect})
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
