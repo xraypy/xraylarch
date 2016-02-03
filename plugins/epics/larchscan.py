@@ -125,6 +125,72 @@ HC       = 12398.4193
 RAD2DEG  = 180.0/np.pi
 MAXPTS   = 8192
 
+class PVSlaveThread(threading.Thread):
+    """
+    Sets up a Thread to allow a Master Index PV (say, an advancing channel)
+    to send a Slave PV to a value from a pre-defined array.
+
+    undulator = PVSlaveThread(master_pvname='13IDE:SIS1:CurrentChannel', 
+                              slave_pvname='ID13us:ScanEnergy')
+    undulator.set_array(array_of_values)
+    undulator.enable()
+    # start thread
+    undulator.start()
+    
+    # other code that may trigger the master PV
+    
+    # to finish, set 'running' to False, and join() thread
+    undulator.running = False
+    undulator.join()
+
+    """
+    def __init__(self, master_pvname=None,  slave_pvname=None,
+                 values=None, maxpts=8192, wait_time=0.05, offset=3):
+        threading.Thread.__init__(self)
+        self.maxpts = maxpts
+        self.offset = offset
+        self.wait_time = wait_time
+        self.pulse = -1
+        self.last  = None
+        self.running = False
+        self.vals = values
+        if self.vals is None:
+            self.vals  = np.zeros(self.maxpts)
+        self.master = None
+        self.slave = None
+        if master_pvname is not None: self.set_master(master_pvname)
+        if slave_pvname is not None: self.set_slave(drive_pvname)
+
+    def set_maser(self, pvname):
+        self.master = PV(pvname, callback=self.onPulse)
+
+    def set_slave(self, pvname):
+        self.slave = PV(pvname)
+
+    def onPulse(self, pvname, value=1, **kws):
+        self.pulse  = max(0, min(self.maxpts, value + self.offset))
+        
+    def set_array(self, vals):
+        "set array values for slave PV"
+        n = len(vals)
+        if n > self.maxpts:
+            vals = vals[:self.maxpts]
+        self.vals  = np.ones(self.maxpts) * vals[-1]
+        self.vals[:n] = vals
+
+    def enable(self):
+        self.last = self.pulse = -1
+        self.running = True
+
+    def run(self):
+        while self.running:
+            time.sleep(self.wait_time)
+            if self.pulse > self.last and self.last is not None:
+                val = self.vals[self.pulse]
+                self.slave.put(val)
+                self.last = self.pulse
+
+
 def etok(energy):
     return np.sqrt(energy/XAFS_K2E)
 
@@ -976,9 +1042,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         self.is_qxafs = True
         self.scantype = 'xafs'
-
-        qcf  = self.scandb.get_config('QXAFS')
-        qcf  = json.loads(qcf[0].notes)
+        qconf = self.scandb.get_config('QXAFS')
+        qconf = self.qconf = json.loads(qconf[0].notes)
 
         self.xps = XPSTrajectory(qcf['host'], 
                                  user=qcf['user'],
@@ -995,8 +1060,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         """this method builds the text of a Trajectory script for
         a Newport XPS Controller based on the energies and dwelltimes"""
 
-        qconf  = self.scandb.get_config('QXAFS')
-        qconf  = json.loads(qconf[0].notes)
+        qconf = self.qconf
+
         dspace = caget(qconf['dspace_pv'])
         height = caget(qconf['height_pv'])
         th_off = caget(qconf['theta_motor'] + '.OFF')
@@ -1044,13 +1109,24 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
                       energy=energy, width=width, wvelo=wvelo)
 
 
+    def init_qscan(self, traj):
+        """initialize a QXAFS scan"""
+        qconf = self.qconf
+        
+        caput(qconf['id_track_pv'],  1)
+        caput(qconf['y2_track_pv'],  1)
+
+        time.sleep(0.1)
+        caput(qconf['width_motor'] + '.DVAL', traj.start_width)
+        caput(qconf['theta_motor'] + '.DVAL', traj.start_theta)
+        caput(qconf['id_track_pv'], 0)
+        caput(qconf['id_wait_pv'], 0)
+        caput(qconf['y2_track_pv'], 0)
+
+
     def run(self, filename=None, comments=None, debug=False, reverse=False):
-        """ run the actual scan:
-           Verify, Save original positions,
-           Setup output files and messenger thread,
-           run pre_scan methods
-           Loop over points
-           run post_scan methods
+        """ 
+        run the actual QXAFS scan
         """
         print(" qxafs run ")
         self.dtimer = dtimer = debugtime(verbose=debug)
@@ -1067,39 +1143,36 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             self.set_info('scan_message', 'cannot execute scan')
             return
 
-        qconf  = self.scandb.get_config('QXAFS')
-        qconf  = json.loads(qconf[0].notes)
+        qconf = self.qconf
+        energy_orig = caget(qconf['energy_pv'])
 
+        self.init_qscan(traj)
 
         traj = self.make_XPS_trajectory(reverse=reverse)
-        traj_file = qconf['traj_name']
-
-        energy_orig = caget(qconf['energy_pv'])
-        id_off = caget(qconf['id_offset_pv'])
-
-        dtimer.add('Created Trajectory')
-
-        idarray = 0.001*traj.energy + id_off
+        idarray = 0.001*traj.energy + caget(qconf['id_offset_pv'])
         
-        last_en = idarray[-1]
-        idarray = np.concatenate((idarray,  last_en *np.ones(MAXPTS)))[:MAXPTS]
-        
-        caput(qconf['qxafs_record'] + ':idarray',  idarray)
-        caput(qconf['qxafs_record'] + ':status', 2)  
-        caput(qconf['id_track_pv'],  1)
-        caput(qconf['y2_track_pv'],  1)
-    
         caput(qconf['id_drive_pv'], idarray[0], wait=False)    
-        caput(qconf['energy_pv'], traj.energy[0], wait=False)
+        caput(qconf['energy_pv'],  traj.energy[0], wait=False)
 
-        self.xps.upload_trajectoryFile(traj_file, traj.buffer)
+        self.xps.upload_trajectoryFile(qconf['traj_name'], traj.buffer)
 
         self.clear_interrupts()
 
         dtimer.add('PRE: cleared interrupts')
-        orig_positions = [p.current() for p in self.positioners]
-        out = [p.move_to_start(wait=False) for p in self.positioners]
-        self.check_outputs(out, msg='move to start')
+        #  move to start here?
+
+        sis_prefix = qconf['mcs_prefix']
+        und_thread = PVSlaveThread(pulse_pvname=sis_prefix++'CurrentChannel',
+                                   drive_pvname=qconf['id_drive_pv'])
+
+        und_thread.set_array(idarray)
+        und_thread.running = False
+
+        npulses = len(traj.energy) + 1
+
+        caput(qconf['energy_pv'], traj.energy[0], wait=True)
+        caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
+
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -1107,13 +1180,11 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         time_est = npts*dtime
 
         self.set_info('scan_progress', 'preparing scan')
-
         extra_vals = []
         for desc, pv in self.extra_pvs:
             extra_vals.append((desc, pv.get(as_string=True), pv.pvname))
 
         sis_opts = {}
-        sis_prefix = qconf['mcs_pv']
         xsp3_prefix = None
 
         for d in self.detectors:
@@ -1211,7 +1282,10 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         i = -1
         caput(qconf['width_motor'] + '.DVAL', traj.start_width, wait=True)
         caput(qconf['theta_motor'] + '.DVAL', traj.start_theta, wait=True)
-        caput(qconf['qxafs_record'] + ':status', 1)
+
+        und_thread.enable()
+        und_thread.start()
+        time.sleep(0.2)
 
 
         ts_init = time.time()
@@ -1220,13 +1294,11 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         start_time = time.strftime('%Y-%m-%d %H:%M:%S')
                 
         dtimer.show()
-        self.xps.SetupTrajectory(npts+1, dtime, traj_file=traj_file)
-        # print("QXAFS Ready to Scan ", sis, qxsp3, traj_file)
+        self.xps.SetupTrajectory(npts+1, dtime, traj_file=qconf['traj_name'])
 
         sis.start()
         qxsp3.FileCaptureOn()
         qxsp3.Acquire = 1
-        caput(qconf['qxafs_record'] + ':status', 3)
         time.sleep(0.1)
         print("Trajectory Start")
         self.xps.RunTrajectory()
@@ -1252,13 +1324,16 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         print( 'Gathering: ', GatherFile, '  %i lines ' % ngather)
         print( 'DataFile:  ', DataFile,   '  %i lines ' % sis.CurrentChannel)
 
+        und_thread.running = False
+        und_thread.join()
+
         time.sleep(1.00)
         caput(qconf['energy_pv'], energy_orig-2.0)
 
         nout = sis.CurrentChannel
         narr = 0
         t0  = time.time()
-        # print("QXAFS Counters" , qxafs_counters)
+        print("QXAFS Counters" , qxafs_counters)
         while narr < (nout-1) and (time.time()-t0 )<30.0:
             time.sleep(0.25)
             dat =  [p.get() for p in qxafs_counters]
@@ -1290,92 +1365,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         caput(qconf['energy_pv'], energy_orig, wait=True)
         print( 'Wrote %s' % DataFile)
-        return DataFile
 
-
-        while not self.abort:
-            i += 1
-            if i >= npts:
-                break
-            try:
-                point_ok = True
-                self.cpt = i+1
-                self.look_for_interrupts()
-                while self.pause:
-                    time.sleep(0.25)
-                    if self.look_for_interrupts():
-                        break
-                # move to next position, wait for moves to finish
-                [p.move_to_pos(i) for p in self.positioners]
-
-                # publish scan data while waiting for move to finish
-                if i > 1:
-                    self.publish_scandata()
-                dtimer.add('Pt %i : publish data' % i)
-                if self.dwelltime_varys:
-                    for d in self.detectors:
-                        d.set_dwelltime(self.dwelltime[i])
-                t0 = time.time()
-                mcount = 0
-                while (not all([p.done for p in self.positioners]) and
-                       time.time() - t0 < self.pos_maxmove_time):
-                    if self.look_for_interrupts():
-                        break
-                    poll(5*MIN_POLL_TIME, 0.25)
-                    mcount += 1
-                # wait for positioners to settle
-                dtimer.add('Pt %i : pos done' % i)
-                # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
-                poll(self.pos_settle_time, 0.25)
-                dtimer.add('Pt %i : pos settled' % i)
-                # start triggers, wait for them to finish
-                [trig.start() for trig in self.triggers]
-                dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
-                t0 = time.time()
-                time.sleep(max(0.05, self.min_dwelltime/2.0))
-                while not all([trig.done for trig in self.triggers]):
-                    if (time.time() - t0 > (5.0 + 10*self.max_dwelltime)):
-                        break
-                    poll(MIN_POLL_TIME, 0.1)
-                dtimer.add('Pt %i : triggers done' % i)
-                if self.look_for_interrupts():
-                    break
-                point_ok = (all([trig.done for trig in self.triggers]) and
-                            time.time()-t0 > (0.75*self.min_dwelltime))
-                if not point_ok:
-                    point_ok = True
-                    poll(5*MIN_POLL_TIME, 0.25)
-                    for trig in self.triggers:
-                        point_ok = point_ok and (trig.runtime > (0.75*self.min_dwelltime))
-                        if not point_ok:
-                            print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
-
-                # wait, then read read counters and actual positions
-                poll(self.det_settle_time, 0.1)
-                dtimer.add('Pt %i : det settled done.' % i)
-                [c.read() for c in self.counters]
-                dtimer.add('Pt %i : read counters' % i)
-                # self.cdat = [c.buff[-1] for c in self.counters]
-                self.pos_actual.append([p.current() for p in self.positioners])
-                dtimer.add('Pt %i : added positions' % i)
-                # if a messenger exists, let it know this point has finished
-                self._messenger(cpt=self.cpt, npts=npts)
-                dtimer.add('Pt %i : sent message' % i)
-                # if this is a breakpoint, execute those functions
-                if i in self.breakpoints:
-                    self.at_break(breakpoint=i, clear=True)
-                dtimer.add('Pt %i: done.' % i)
-                self.look_for_interrupts()
-
-            except KeyboardInterrupt:
-                self.set_info('request_abort', 1)
-                self.abort = True
-            if not point_ok:
-                self.write('point messed up... try again?')
-                i -= 1
-
-        # scan complete
-        # return to original positions, write data
+        ## 
         dtimer.add('Post scan start')
         self.publish_scandata()
         ts_loop = time.time()
@@ -1392,15 +1383,11 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         # run post_scan methods
         self.set_info('scan_progress', 'finishing')
+
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
         dtimer.add('Post: post_scan done')
         self.complete = True
-
-        # end messenger thread
-        # if self.msg_thread is not None:
-        #      self.msg_thread.cpt = None
-        #      self.msg_thread.join()
 
         self.set_info('scan_progress', 
                       'scan complete. Wrote %s' % self.datafile.filename)
