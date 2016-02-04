@@ -174,8 +174,10 @@ class GSEXRM_MapRow:
         self.read_ok = False
         self.nrows_expected = nrows_expected
         xrf_reader = read_xsp3_hdf5
+        npts_offset = 1
         if not xmapfile.startswith('xsp'):
             xrf_reader = read_xmap_netcdf
+            npts_offset = 0
 
         # print('MapRow: expect %i rows' % self.nrows_expected)
 
@@ -249,7 +251,8 @@ class GSEXRM_MapRow:
         # npts = min(gnpts, xnpts, snpts)
         # print('  MapRow: ', self.npts, npts, gnpts, snpts, xnpts)
         if self.npts is None:
-            self.npts = min(gnpts, xnpts) - 1
+            self.npts = min(gnpts, xnpts) - npts_offset
+
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data!', snpts, self.npts)
             sdata = list(sdata)
