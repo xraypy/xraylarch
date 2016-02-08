@@ -610,7 +610,7 @@ class LarchStepScan(object):
 
 
         npts = len(self.positioners[0].array)
-	self.message_points = min(100, max(10, 25*round(npts/250.0)))
+        self.message_points = min(100, max(10, 25*round(npts/250.0)))
         self.dwelltime_varys = False
         if self.dwelltime is not None:
             self.min_dwelltime = self.dwelltime
