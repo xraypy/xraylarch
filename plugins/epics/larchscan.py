@@ -159,9 +159,9 @@ class PVSlaveThread(threading.Thread):
         self.master = None
         self.slave = None
         if master_pvname is not None: self.set_master(master_pvname)
-        if slave_pvname is not None: self.set_slave(drive_pvname)
+        if slave_pvname is not None: self.set_slave(slave_pvname)
 
-    def set_maser(self, pvname):
+    def set_master(self, pvname):
         self.master = PV(pvname, callback=self.onPulse)
 
     def set_slave(self, pvname):
@@ -187,7 +187,10 @@ class PVSlaveThread(threading.Thread):
             time.sleep(self.wait_time)
             if self.pulse > self.last and self.last is not None:
                 val = self.vals[self.pulse]
-                self.slave.put(val)
+                try:
+                    self.slave.put(val)
+                except:
+                    print("Cannot Caput: ", self.slave.pvname , val)
                 self.last = self.pulse
 
 
@@ -495,6 +498,7 @@ class LarchStepScan(object):
             if name is None:
                 name = c.label
             c.db_label = fix_varname(name)
+            print(" - publish scandata - ", c, c.db_label, c.buff)
             self.scandb.set_scandata(c.db_label, c.buff)
 
     def set_error(self, msg):
@@ -1044,14 +1048,14 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.is_qxafs = True
         self.scantype = 'xafs'
         qconf = self.scandb.get_config('QXAFS')
-        qconf = self.qconf = json.loads(qconf[0].notes)
+        qconf = self.qconf = json.loads(qconf.notes)
 
-        self.xps = XPSTrajectory(qcf['host'], 
-                                 user=qcf['user'],
-                                 password=qcf['passwd'],
-                                 group=qcf['group'],
-                                 positioners=qcf['positioners'],
-                                 outputs=qcf['outputs'])
+        self.xps = XPSTrajectory(qconf['host'], 
+                                 user=qconf['user'],
+                                 password=qconf['passwd'],
+                                 group=qconf['group'],
+                                 positioners=qconf['positioners'],
+                                 outputs=qconf['outputs'])
 
 
         self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
@@ -1112,24 +1116,33 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
     def init_qscan(self, traj):
         """initialize a QXAFS scan"""
+
         qconf = self.qconf
-        
+
         caput(qconf['id_track_pv'],  1)
         caput(qconf['y2_track_pv'],  1)
 
         time.sleep(0.1)
         caput(qconf['width_motor'] + '.DVAL', traj.start_width)
         caput(qconf['theta_motor'] + '.DVAL', traj.start_theta)
-        caput(qconf['id_track_pv'], 0)
-        caput(qconf['id_wait_pv'], 0)
+        # caput(qconf['id_track_pv'], 0)
+        # caput(qconf['id_wait_pv'], 0)
         caput(qconf['y2_track_pv'], 0)
 
+
+    def finish_qscan(self):
+        """initialize a QXAFS scan"""
+        qconf = self.qconf
+
+        caput(qconf['id_track_pv'],  1)
+        caput(qconf['y2_track_pv'],  1)
+        time.sleep(0.1)
 
     def run(self, filename=None, comments=None, debug=False, reverse=False):
         """ 
         run the actual QXAFS scan
         """
-        print(" qxafs run ")
+        print(" QXAFS run!!!! ")
         self.dtimer = dtimer = debugtime(verbose=debug)
 
         self.complete = False
@@ -1147,24 +1160,27 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         qconf = self.qconf
         energy_orig = caget(qconf['energy_pv'])
 
+        traj = self.make_XPS_trajectory(reverse=reverse)
+
         self.init_qscan(traj)
 
-        traj = self.make_XPS_trajectory(reverse=reverse)
         idarray = 0.001*traj.energy + caget(qconf['id_offset_pv'])
         
-        caput(qconf['id_drive_pv'], idarray[0], wait=False)    
+        # caput(qconf['id_drive_pv'], idarray[0], wait=False)    
         caput(qconf['energy_pv'],  traj.energy[0], wait=False)
 
         self.xps.upload_trajectoryFile(qconf['traj_name'], traj.buffer)
 
         self.clear_interrupts()
-
+        print("QXAFS Positioners ", self.positioners)
+        orig_positions = [p.current() for p in self.positioners]
         dtimer.add('PRE: cleared interrupts')
         #  move to start here?
 
         sis_prefix = qconf['mcs_prefix']
-        und_thread = PVSlaveThread(pulse_pvname=sis_prefix++'CurrentChannel',
-                                   drive_pvname=qconf['id_drive_pv'])
+
+        und_thread = PVSlaveThread(master_pvname=sis_prefix+'CurrentChannel',
+                                   slave_pvname=qconf['id_drive_pv'])
 
         und_thread.set_array(idarray)
         und_thread.running = False
@@ -1172,7 +1188,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         npulses = len(traj.energy) + 1
 
         caput(qconf['energy_pv'], traj.energy[0], wait=True)
-        caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
+        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
 
 
         npts = len(self.positioners[0].array)
@@ -1259,13 +1275,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         caput(qconf['energy_pv'], traj.energy[0], wait=True)
         
-        time.sleep(0.1)
-        caput(qconf['width_motor'] + '.DVAL', traj.start_width)
-        caput(qconf['theta_motor'] + '.DVAL', traj.start_theta)
-        caput(qconf['id_track_pv'], 0)
-        caput(qconf['id_wait_pv'], 0)
-        caput(qconf['y2_track_pv'], 0)
-        caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
+        time.sleep(0.05)
+        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
 
         dtimer.add('PRE: caputs done')
 
@@ -1288,7 +1299,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         und_thread.start()
         time.sleep(0.2)
 
-
         ts_init = time.time()
         self.inittime = ts_init - ts_start
         dtimer.add('Start scan:')
@@ -1310,11 +1320,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         sis.stop()
         qxsp3.Acquire = 0
 
-        caput(qconf['qxafs_record'] + ':status', 0)    
-        caput(qconf['id_track_pv'], 1)
-        caput(qconf['y2_track_pv'], 1)
+        self.finish_qscan()
 
-        time.sleep(0.1)
         print(" FILENAME ", self.filename)
         GatherFile = '%s.gat' % self.filename
         DataFile   = '%s.dat' % self.filename
@@ -1327,14 +1334,16 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         und_thread.running = False
         und_thread.join()
-
+        
         time.sleep(1.00)
         caput(qconf['energy_pv'], energy_orig-2.0)
 
         nout = sis.CurrentChannel
         narr = 0
         t0  = time.time()
-        print("QXAFS Counters" , qxafs_counters)
+        print("QXAFS Counters: %i" % (len(qxafs_counters)))
+        for qc in  qxafs_counters: print("   " , qc.pvname)
+        print("---")
         while narr < (nout-1) and (time.time()-t0 )<30.0:
             time.sleep(0.25)
             dat =  [p.get() for p in qxafs_counters]
@@ -1369,13 +1378,15 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         ## 
         dtimer.add('Post scan start')
+        print(" --> Publish Scandata ")
         self.publish_scandata()
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
-
+        print(" --> Publish Scandata Done")
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
         dtimer.add('Post: return move issued')
+        print(" --> write datafile ", self.datafile)
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         dtimer.add('Post: file written')
         if self.look_for_interrupts():
