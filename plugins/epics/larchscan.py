@@ -388,7 +388,7 @@ class LarchStepScan(object):
         """set scan dwelltime per point to constant value"""
         if dtime is not None:
             self.dwelltime = dtime
-	for d in self.detectors:
+        for d in self.detectors:
             d.set_dwelltime(self.dwelltime)
 
     def at_break(self, breakpoint=0, clear=False):
