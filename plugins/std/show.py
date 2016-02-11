@@ -137,17 +137,18 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
 
     count = 0
     for item, obj in dmembers:
-        dval = None
-        if isinstance(obj, numpy.ndarray):
-            if len(obj) > 10 or len(obj.shape)>1:
-                dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                         repr(obj.dtype))
-        if ((isinstance(obj, list) or isinstance(obj, tuple)) and truncate):
-            if len(repr(obj)) > 50:
-                dval = "[%s, %s, ... %s, %s]" % (repr(obj[0]), repr(obj[1]),
-                                                 repr(obj[-2]), repr(obj[-1]))
-        if dval is None:
-            dval = repr(obj)
+        if (isinstance(obj, numpy.ndarray) and
+            (len(obj) > 10 or len(obj.shape)>1)):
+            dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                                                 repr(obj.dtype))
+        elif isinstance(obj, (list, tuple)) and truncate and len(obj) > 5:
+            dval = "[%s, %s, ... %s, %s]" % (repr(obj[0]), repr(obj[1]),
+                                             repr(obj[-2]), repr(obj[-1]))
+        else:
+            try:
+                dval = repr(obj)
+            except:
+                dval = obj
         count += 1
         copts = _copts[count % 2]
         write('  %s: %s\n' % (item, dval), **copts)
