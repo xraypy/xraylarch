@@ -53,6 +53,59 @@ def pvoigt(x, cen=0, sigma=1, frac=0.5):
     return ((1-frac)*gaussian(x, cen=cen, sigma=sigma) +
                 frac*lorentzian(x, cen=cen, sigma=sigma))
 
+
+
+def hypermet(x, amplitude, center, sigma, step=0, tail=0, gamma=0.1):
+    """
+    hypermet function to simulate XRF peaks and/or Compton Scatter Peak
+
+    Arguments
+    ---------
+      x          array of ordinate (energy) values
+      amplitude  overall scale factor
+      center     peak centroid
+      sigma      Gaussian sigma
+      step       step parameter for low-x erfc step [0]
+      tail       amplitude of tail function         [0]
+      gamma      slope of tail function             [0.1]
+
+
+    Notes
+    -----
+    The function is given by (with error checking for
+    small values of sigma, gamma and s2 = sqrt(2) and
+    s2pi = sqrt(2*pi)):
+
+        arg  = (x - center)/sigma
+        gaus = exp(-arg**2/2.0) / (s2pi*sigma)
+        step = step * erfc(arg/s2) / (2*center)
+        tail = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/(s2*gamma))
+        tail = tail / (2*sigma*gamma*exp(-1.0/(2*gamma**2)))
+
+        hypermet = amplitude * (peak + step + tail)
+
+    This follows the definitions given in
+        ED-XRF SPECTRUM EVALUATION AND QUANTITATIVE ANALYSIS
+        USING MULTIVARIATE AND NONLINEAR TECHNIQUES
+        P. Van Espen, P. Lemberge
+        JCPDS-International Centre for Diffraction Data 2000,
+        Advances in X-ray Analysis,Vol.43 560
+
+    """
+
+    sigma = max(1.e-8, sigma)
+    gamma = max(0.1, gamma)
+    arg   = (x - center)/sigma
+
+    gaus = exp(-arg**2/2.0) / (s2pi*sigma)
+
+    step = step * erfc(arg/s2) / (2*center)
+
+    tail = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/(s2*gamma))
+    tail = tail / (2*sigma*gamma*exp(-1.0/(2*gamma**2)))
+
+    return amplitude * (gaus + step + tail)
+
 def pearson7(x, cen=0, sigma=1, expon=0.5):
     """pearson7 lineshape, according to NIST StRD
     though it seems wikpedia gives a different formula...
@@ -171,6 +224,7 @@ def registerLarchPlugin():
                       'lorentzian': lorentzian,
                       'voigt': voigt,
                       'pvoigt': pvoigt,
+                      'hypermet': hypermet,
                       'pearson7': pearson7,
                       'lognormal': lognormal,
                       'gammaln': gammaln,
