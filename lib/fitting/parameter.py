@@ -174,7 +174,7 @@ class Parameter(object):
         if self.name is not None:
             w.append("name='%s'" % self.name)
 
-        if self.decimals is not None:
+        if self.decimals is not None and val is not None:
             fmtstr = "value=%." + str(self.decimals) + "f"
             string = fmtstr % float(repr(val))
             if self.stderr is not None:
