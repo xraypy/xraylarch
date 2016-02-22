@@ -9,7 +9,7 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
 from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
-from larch import ValidateLarchPlugin
+from larch import Group, ValidateLarchPlugin
 from larch_plugins.std import parse_group_args
 from larch_plugins.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
@@ -194,6 +194,12 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
     group.chiq_im  =  out.imag[:nkpts]
     if with_phase:
         group.chiq_pha =  complex_phase(out[:nkpts])
+    
+    group.xftr_details = Group()
+    group.xftr_details.params=dict()
+    for i in ['rmin', 'rmax', 'with_phase', 'dr', ' dr2', ' rw', 
+              'window', ' qmax_out', 'nfft', 'kstep']:
+        group.xftr_details.params[i]=eval(i)
 
 @ValidateLarchPlugin
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
@@ -265,7 +271,13 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     group.chir_im  =  out.imag[:irmax]
     if with_phase:
         group.chir_pha =  complex_phase(out[:irmax])
-
+        
+    group.xftf_details = Group()
+    group.xftf_details.params=dict()
+    for i in ['kmin', 'kmax', 'kweight', 'dk', 'dk2', 
+              'with_phase','window','rmax_out','nfft', 'kstep']:
+        group.xftf_details.params[i]=eval(i)
+    
 
 @ValidateLarchPlugin
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,

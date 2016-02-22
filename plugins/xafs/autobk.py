@@ -86,12 +86,20 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     Follows the 'First Argument Group' convention.
     """
     msg = _larch.writer.write
+    e0start=e0
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
         msg('Unrecognized a:rguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
+        
+    params_ini=dict()
+    for i in ['e0','rbkg', 'nknots',  'edge_step', 'kmin', 'kmax','kweight',
+              'dk', 'win', 'k_std', 'chi_std', 'nfft', 'kstep','pre_edge_kws', 
+              'nclamp', 'clamp_lo', 'clamp_hi', 'calc_uncertainties']:
+        params_ini[i]=eval(i) 
+
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
@@ -204,7 +212,13 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.knots_y  = np.array([coefs[i] for i in range(nspl)])
     params.init_knots_y = spl_y
     params.nfev = params.fit_details.nfev
+    params.kmin = kmin
+    params.kmax = kmax  
     group.autobk_details = params
+    # define a 'params' dictionary in 'autobk_details' with input parameter
+    group.autobk_details.params=params_ini
+
+
 
     # uncertainties in mu0 and chi:  fairly slow!!
     if HAS_UNCERTAIN and calc_uncertainties:
