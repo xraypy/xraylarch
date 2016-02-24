@@ -10,6 +10,7 @@ from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
 from larch import Group, ValidateLarchPlugin
+from Call_args import DefCallArgs
 from larch_plugins.std import parse_group_args
 from larch_plugins.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
@@ -117,7 +118,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     return fwin
 
 @ValidateLarchPlugin
-@DefCallArgs("xftr",["r", "chir"])
+@DefCallArgs("xftr_details",["r", "chir"])
 def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -196,10 +197,10 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
     if with_phase:
         group.chiq_pha =  complex_phase(out[:nkpts])
     
-    group.xftr_details = Group()
+
 
 @ValidateLarchPlugin
-@DefCallArgs("xftf",["k", "chi"])
+@DefCallArgs("xftf_details",["k", "chi"])
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
          nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -270,7 +271,7 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     if with_phase:
         group.chir_pha =  complex_phase(out[:irmax])
         
-    group.xftf_details = Group()
+
 
     
 

@@ -4,6 +4,7 @@ from scipy.interpolate import splrep, splev, UnivariateSpline
 
 from larch import Group, Parameter, Minimizer
 from larch import ValidateLarchPlugin, isgroup
+from Call_args import DefCallArgs
 
 # import other plugins from std, math, and xafs modules...
 from larch_plugins.std  import parse_group_args
@@ -93,9 +94,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         msg('Unrecognized a:rguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
-        
-
-
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
@@ -211,9 +209,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.kmin = kmin
     params.kmax = kmax  
     group.autobk_details = params
-
-
-
 
     # uncertainties in mu0 and chi:  fairly slow!!
     if HAS_UNCERTAIN and calc_uncertainties:
