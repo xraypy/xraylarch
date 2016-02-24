@@ -48,6 +48,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
                            abs(clamp_hi)*scaled_chik[-nclamp:]))
 
 @ValidateLarchPlugin
+@DefCallArgs("autobk_details",["energy","mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
@@ -86,7 +87,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     Follows the 'First Argument Group' convention.
     """
     msg = _larch.writer.write
-    e0start=e0
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
@@ -94,11 +94,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         msg('    %s\n' % (', '.join(kws.keys())))
         return
         
-    params_ini=dict()
-    for i in ['e0','rbkg', 'nknots',  'edge_step', 'kmin', 'kmax','kweight',
-              'dk', 'win', 'k_std', 'chi_std', 'nfft', 'kstep','pre_edge_kws', 
-              'nclamp', 'clamp_lo', 'clamp_hi', 'calc_uncertainties']:
-        params_ini[i]=eval(i) 
+
 
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -215,8 +211,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.kmin = kmin
     params.kmax = kmax  
     group.autobk_details = params
-    # define a 'params' dictionary in 'autobk_details' with input parameter
-    group.autobk_details.params=params_ini
+
 
 
 

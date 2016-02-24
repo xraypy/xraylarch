@@ -5,6 +5,7 @@
 
 import numpy as np
 from scipy import polyfit
+from Call_args import DefCallArgs
 
 from larch import (Group, Parameter, ValidateLarchPlugin,
                    Minimizer, isgroup)
@@ -172,7 +173,9 @@ def preedge(energy, mu, e0=None, step=None,
 
     return out
 
+
 @ValidateLarchPlugin
+@DefCallArgs("pre_edge_details",["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, make_flat=True, _larch=None):
@@ -241,19 +244,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     
     
     group = set_xafsGroup(group, _larch=_larch)
-    group.pre_edge_details = Group()
-    group.pre_edge_details.params=dict()    
-    group.pre_edge_details.params['e0']=e0
-    group.pre_edge_details.params['step'] = step
-    group.pre_edge_details.params['nvict'] = nvict
-    group.pre_edge_details.params['nnorm'] = nnorm
-    group.pre_edge_details.params['norm1'] = norm1
-    group.pre_edge_details.params['norm2'] = norm2
-    group.pre_edge_details.params['pre1']  = pre1
-    group.pre_edge_details.params['pre2']  = pre2
-    group.pre_edge_details.params['make_flat'] = make_flat    
-    
-    
 
     e0    = pre_dat['e0']
     norm  = pre_dat['norm']
@@ -293,6 +283,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.edge_step  = pre_dat['edge_step']
     group.pre_edge   = pre_dat['pre_edge']
     group.post_edge  = pre_dat['post_edge']
+    
+    group.pre_edge_details = Group()
     group.pre_edge_details.pre1   = pre_dat['pre1']
     group.pre_edge_details.pre2   = pre_dat['pre2']    
     group.pre_edge_details.norm1  = pre_dat['norm1']
