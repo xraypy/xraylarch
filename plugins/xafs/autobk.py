@@ -4,6 +4,7 @@ from scipy.interpolate import splrep, splev, UnivariateSpline
 
 from larch import Group, Parameter, Minimizer
 from larch import ValidateLarchPlugin, isgroup
+from Call_args import DefCallArgs
 
 # import other plugins from std, math, and xafs modules...
 from larch_plugins.std  import parse_group_args
@@ -48,6 +49,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
                            abs(clamp_hi)*scaled_chik[-nclamp:]))
 
 @ValidateLarchPlugin
+@DefCallArgs("autobk_details",["energy","mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
@@ -204,6 +206,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.knots_y  = np.array([coefs[i] for i in range(nspl)])
     params.init_knots_y = spl_y
     params.nfev = params.fit_details.nfev
+    params.kmin = kmin
+    params.kmax = kmax  
     group.autobk_details = params
 
     # uncertainties in mu0 and chi:  fairly slow!!

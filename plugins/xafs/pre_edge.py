@@ -5,6 +5,7 @@
 
 import numpy as np
 from scipy import polyfit
+from Call_args import DefCallArgs
 
 from larch import (Group, Parameter, ValidateLarchPlugin,
                    Minimizer, isgroup)
@@ -172,7 +173,9 @@ def preedge(energy, mu, e0=None, step=None,
 
     return out
 
+
 @ValidateLarchPlugin
+@DefCallArgs("pre_edge_details",["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, make_flat=True, _larch=None):
@@ -229,16 +232,23 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
     """
+    
+
+    
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
+    
+    
+    group = set_xafsGroup(group, _larch=_larch)
+
     e0    = pre_dat['e0']
     norm  = pre_dat['norm']
     norm1 = pre_dat['norm1']
-    norm2 = pre_dat['norm2']
+    norm2 = pre_dat['norm2'] 
     # generate flattened spectra, by fitting a quadratic to .norm
     # and removing that.
     flat = norm
@@ -265,27 +275,28 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         flat        = norm - flat_diff  + flat_diff[ie0]
         flat[:ie0]  = norm[:ie0]
 
-    group = set_xafsGroup(group, _larch=_larch)
+
     group.e0 = e0
     group.norm = norm
     group.flat = flat
     group.dmude = np.gradient(mu)/np.gradient(energy)
-    group.nvict = nvict
-    group.nnorm = nnorm
-    group.norm1 = norm1
-    group.norm2 = norm2
-    group.pre1 = pre_dat['pre1']
-    group.pre2 = pre_dat['pre2']
     group.edge_step  = pre_dat['edge_step']
     group.pre_edge   = pre_dat['pre_edge']
     group.post_edge  = pre_dat['post_edge']
-    group.pre_slope  = pre_dat['precoefs'][0]
-    group.pre_offset = pre_dat['precoefs'][1]
+    
+    group.pre_edge_details = Group()
+    group.pre_edge_details.pre1   = pre_dat['pre1']
+    group.pre_edge_details.pre2   = pre_dat['pre2']    
+    group.pre_edge_details.norm1  = pre_dat['norm1']
+    group.pre_edge_details.norm2  = pre_dat['norm2']
+    group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
+    group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
+    
     for i in range(MAX_NNORM):
         if hasattr(group, 'norm_c%i' % i):
             delattr(group, 'norm_c%i' % i)
     for i, c in enumerate(pre_dat['norm_coefs']):
-        setattr(group, 'norm_c%i' % i, c)
+        setattr(group.pre_edge_details, 'norm_c%i' % i, c)
     return
 
 def registerLarchPlugin():
