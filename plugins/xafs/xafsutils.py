@@ -51,7 +51,7 @@ def set_xafsGroup(group, _larch=None):
     if needed, a new, empty _sys.xafsGroup may be created.
     """
     if group is None:
-        if not hasattr(_larch.symtable._sys, 'xafsG<roup'):
+        if not hasattr(_larch.symtable._sys, 'xafsGroup'):
             _larch.symtable._sys.xafsGroup = Group()
     else:
         _larch.symtable._sys.xafsGroup = group
