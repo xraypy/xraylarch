@@ -375,7 +375,7 @@ class Filling(wx.SplitterWindow):
 
         # self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
         #                       action=self.onRefresh)
-        
+
         self.tree = FillingTree(parent=leftpanel, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace,
@@ -384,11 +384,11 @@ class Filling(wx.SplitterWindow):
         # leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
         leftsizer.Add(self.tree, 1, wx.EXPAND|wx.ALL, 1)
         pack(leftpanel, leftsizer)
-                
+
         # self.text = FillingRST(parent=self, static=static)
         self.text = FillingText(parent=self, static=static)
 
-        wx.FutureCall(1, self.SplitVertically, leftpanel, self.text, 200)
+        wx.CallLater(1, self.SplitVertically, leftpanel, self.text, 200)
 
         self.SetMinimumPaneSize(1)
 
@@ -451,8 +451,8 @@ class Filling(wx.SplitterWindow):
             self.tree.SelectItem(node)
         except:
             pass
-        
-            
+
+
     def LoadSettings(self, config):
         pos = config.ReadInt('Sash/FillingPos', 200)
         wx.FutureCall(250, self.SetSashPosition, pos)
