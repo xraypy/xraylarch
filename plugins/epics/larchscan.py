@@ -101,7 +101,7 @@ try:
 except ImportError:
     HAS_EPICS = False
 
-try: 
+try:
     import epicsscan
     from epicsscan import (Counter, Trigger, AreaDetector, get_detector,
                            ASCIIScanFile, Positioner)
@@ -130,15 +130,15 @@ class PVSlaveThread(threading.Thread):
     Sets up a Thread to allow a Master Index PV (say, an advancing channel)
     to send a Slave PV to a value from a pre-defined array.
 
-    undulator = PVSlaveThread(master_pvname='13IDE:SIS1:CurrentChannel', 
+    undulator = PVSlaveThread(master_pvname='13IDE:SIS1:CurrentChannel',
                               slave_pvname='ID13us:ScanEnergy')
     undulator.set_array(array_of_values)
     undulator.enable()
     # start thread
     undulator.start()
-    
+
     # other code that may trigger the master PV
-    
+
     # to finish, set 'running' to False, and join() thread
     undulator.running = False
     undulator.join()
@@ -169,7 +169,7 @@ class PVSlaveThread(threading.Thread):
 
     def onPulse(self, pvname, value=1, **kws):
         self.pulse  = max(0, min(self.maxpts, value + self.offset))
-        
+
     def set_array(self, vals):
         "set array values for slave PV"
         n = len(vals)
@@ -405,7 +405,11 @@ class LarchStepScan(object):
         if self.debug: print('Stepscan PRE SCAN ')
         for (desc, pv) in self.extra_pvs:
             pv.connect()
-        out = [m(scan=self) for m in self.pre_scan_methods]
+
+        for meth in self.pre_scan_methods:
+            out = meth(scan=self)
+            time.sleep(0.1)
+
         for det in self.detectors:
             for counter in det.counters:
                 self.add_counter(counter)
@@ -422,7 +426,7 @@ class LarchStepScan(object):
             try:
                 ret = prescan_proc(scan=self)
             except:
-                ret = None                
+                ret = None
             out.append(ret)
         return out
 
@@ -498,7 +502,7 @@ class LarchStepScan(object):
             if name is None:
                 name = c.label
             c.db_label = fix_varname(name)
-            print(" - publish scandata - ", c, c.db_label, c.buff)
+            # print(" - publish scandata - ", c, c.db_label, c.buff)
             self.scandb.set_scandata(c.db_label, c.buff)
 
     def set_error(self, msg):
@@ -567,7 +571,7 @@ class LarchStepScan(object):
 
     def write(self, msg):
         self._larch.writer.write(msg)
-        
+
     def clear_interrupts(self):
         """re-set interrupt requests:
 
@@ -758,6 +762,8 @@ class LarchStepScan(object):
                 self.abort = True
             if not point_ok:
                 self.write('point messed up... try again?')
+                for det in self.detectors:
+                    det.pre_scan(scan=self)
                 i -= 1
 
         # scan complete
@@ -788,7 +794,7 @@ class LarchStepScan(object):
         #      self.msg_thread.cpt = None
         #      self.msg_thread.join()
 
-        self.set_info('scan_progress', 
+        self.set_info('scan_progress',
                       'scan complete. Wrote %s' % self.datafile.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
@@ -1050,7 +1056,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         qconf = self.scandb.get_config('QXAFS')
         qconf = self.qconf = json.loads(qconf.notes)
 
-        self.xps = XPSTrajectory(qconf['host'], 
+        self.xps = XPSTrajectory(qconf['host'],
                                  user=qconf['user'],
                                  password=qconf['passwd'],
                                  group=qconf['group'],
@@ -1060,7 +1066,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
 
-    def make_XPS_trajectory(self, reverse=False, 
+    def make_XPS_trajectory(self, reverse=False,
                             theta_accel=0.25, width_accel=0.25, **kws):
         """this method builds the text of a Trajectory script for
         a Newport XPS Controller based on the energies and dwelltimes"""
@@ -1139,7 +1145,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         time.sleep(0.1)
 
     def run(self, filename=None, comments=None, debug=False, reverse=False):
-        """ 
+        """
         run the actual QXAFS scan
         """
         print(" QXAFS run!!!! ")
@@ -1165,8 +1171,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.init_qscan(traj)
 
         idarray = 0.001*traj.energy + caget(qconf['id_offset_pv'])
-        
-        # caput(qconf['id_drive_pv'], idarray[0], wait=False)    
+
+        # caput(qconf['id_drive_pv'], idarray[0], wait=False)
         caput(qconf['energy_pv'],  traj.energy[0], wait=False)
 
         self.xps.upload_trajectoryFile(qconf['traj_name'], traj.buffer)
@@ -1188,7 +1194,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         npulses = len(traj.energy) + 1
 
         caput(qconf['energy_pv'], traj.energy[0], wait=True)
-        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
+        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)
 
 
         npts = len(self.positioners[0].array)
@@ -1219,7 +1225,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
         dtimer.add('PRE: pre_scan done')
-        
+
         self.counters = []
         qxafs_counters = []
         for i, mca in enumerate(sis.mcas):
@@ -1260,7 +1266,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         self.filename =  self.datafile.filename
 
-        dtimer.add('PRE: open datafile')       
+        dtimer.add('PRE: open datafile')
         self.clear_data()
         dtimer.add('PRE: clear data')
         self.datafile.write_data(breakpoint=0)
@@ -1274,9 +1280,9 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.set_info('scan_total_points', npts)
 
         caput(qconf['energy_pv'], traj.energy[0], wait=True)
-        
+
         time.sleep(0.05)
-        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)    
+        # caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)
 
         dtimer.add('PRE: caputs done')
 
@@ -1303,7 +1309,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.inittime = ts_init - ts_start
         dtimer.add('Start scan:')
         start_time = time.strftime('%Y-%m-%d %H:%M:%S')
-                
+
         dtimer.show()
         self.xps.SetupTrajectory(npts+1, dtime, traj_file=qconf['traj_name'])
 
@@ -1334,7 +1340,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         und_thread.running = False
         und_thread.join()
-        
+
         time.sleep(1.00)
         caput(qconf['energy_pv'], energy_orig-2.0)
 
@@ -1353,7 +1359,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         print( 'Read Data from SIS: ', narr)
         fout = open(DataFile, 'w')
         obuff =['# Gathered XRF and IO data',
-                '# Scan.start_time: %s' % (start_time), 
+                '# Scan.start_time: %s' % (start_time),
                 '# Scan.end_time: %s' % (time.strftime('%Y-%m-%d %H:%M:%S'))]
 
         for desc, val, addr in extra_vals:
@@ -1376,7 +1382,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         caput(qconf['energy_pv'], energy_orig, wait=True)
         print( 'Wrote %s' % DataFile)
 
-        ## 
+        ##
         dtimer.add('Post scan start')
         print(" --> Publish Scandata ")
         self.publish_scandata()
@@ -1401,7 +1407,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         dtimer.add('Post: post_scan done')
         self.complete = True
 
-        self.set_info('scan_progress', 
+        self.set_info('scan_progress',
                       'scan complete. Wrote %s' % self.datafile.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
@@ -1412,7 +1418,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         ##
 
 @ValidateLarchPlugin
-def scan_from_json(text, filename='scan.001', current_rois=None, 
+def scan_from_json(text, filename='scan.001', current_rois=None,
                    is_qxafs=False, _larch=None):
     """(PRIVATE)
 
@@ -1427,8 +1433,8 @@ def scan_from_json(text, filename='scan.001', current_rois=None,
         min_dtime = sdict['dwelltime']
         if isinstance(min_dtime, np.ndarray):
             min_dtime = min(dtime)
-        is_qxafs = (is_qxafs or 
-                    sdict.get('is_qxafs', False) or 
+        is_qxafs = (is_qxafs or
+                    sdict.get('is_qxafs', False) or
                     (min_dtime < 0.45))
         kwargs = dict(energy_pv=sdict['energy_drive'],
                       read_pv=sdict['energy_read'],
@@ -1523,7 +1529,7 @@ def scan_from_json(text, filename='scan.001', current_rois=None,
     return scan
 
 @ValidateLarchPlugin
-def scan_from_db(name, filename='scan.001', timeout=5.0, is_qxafs=False, 
+def scan_from_db(name, filename='scan.001', timeout=5.0, is_qxafs=False,
                  _larch=None):
     """(PRIVATE)
 
@@ -1681,4 +1687,3 @@ def registerLarchPlugin():
                    'get_dbinfo': get_dbinfo}
 
     return (MODNAME, symbols)
-
