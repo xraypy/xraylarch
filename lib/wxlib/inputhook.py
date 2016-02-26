@@ -16,15 +16,15 @@ from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
 import larch
 
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
+if is_wxPhoenix:
+    is_wxMain = wx.IsMainThread
+    wx_EvtLoop = wx.GUIEventLoop
+else:
+    is_wxMain = wx.Thread_IsMain
+    wx_EvtLoop = wx.EventLoop
 
 POLLTIME = 10 # milliseconds
 ON_INTERRUPT = None
@@ -93,7 +93,7 @@ class EventLoopRunner(object):
         if poll_time is None:
             poll_time = POLLTIME
         self.t0 = clock()
-        self.evtloop = wx.EventLoop()
+        self.evtloop = wx_EvtLoop()
         self.timer = wx.Timer()
         self.parent.Bind(wx.EVT_TIMER, self.check_stdin)
         self.timer.Start(poll_time)
@@ -124,11 +124,11 @@ def inputhook_wx():
     try:
         app = wx.GetApp()
         if app is not None:
-            assert wx.Thread_IsMain()
+            assert is_wxMain()
 
             if not callable(signal.getsignal(signal.SIGINT)):
                 signal.signal(signal.SIGINT, signal.default_int_handler)
-            evtloop = wx.EventLoop()
+            evtloop = wx_EvtLoop()
             ea = wx.EventLoopActivator(evtloop)
             t = clock()
             while not stdin_ready() and not update_requested():
@@ -168,7 +168,7 @@ def inputhook_darwin():
     try:
         app = wx.GetApp()
         if app is not None:
-            assert wx.Thread_IsMain()
+            assert is_wxMain()
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested():
@@ -200,11 +200,11 @@ def ping(timeout=0.001):
         t0 = clock()
         app = wx.GetApp()
         if app is not None:
-            assert wx.Thread_IsMain()
+            assert is_wxMain()
             # Make a temporary event loop and process system events until
             # there are no more waiting, then allow idle events (which
             # will also deal with pending or posted wx events.)
-            evtloop = wx.EventLoop()
+            evtloop = wx_EventLoop()
             ea = wx.EventLoopActivator(evtloop)
             t0 = clock()
             while clock()-t0 < timeout:

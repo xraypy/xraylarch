@@ -214,7 +214,7 @@ class LarchFrame(wx.Frame):
 
         sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
         self.SetFont(sfont)
-        sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
+        sbar = self.CreateStatusBar(2, wx.CAPTION)
 
         self.SetStatusWidths([-2,-1])
         self.SetStatusText("Larch initializing...", 0)
