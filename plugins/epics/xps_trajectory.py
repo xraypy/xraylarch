@@ -2,7 +2,7 @@ import time
 import sys
 import ftplib
 import logging
-from cStringIO import StringIO
+from six import StringIO
 from XPS_C8_drivers import  XPS
 
 ##
@@ -30,10 +30,10 @@ class config:
     # group_name    = 'FINE'
     # positioners   = 'X Y THETA'
     gather_titles = "# XPS Gathering Data\n#--------------"
-    # gather_outputs =  ('CurrentPosition', 'FollowingError', 
+    # gather_outputs =  ('CurrentPosition', 'FollowingError',
     #                    'SetpointPosition', 'CurrentVelocity')
     gather_outputs =  ('CurrentPosition', 'SetpointPosition')
-    
+
 class XPSTrajectory(object):
     """XPS trajectory....
     """
@@ -117,7 +117,7 @@ class XPSTrajectory(object):
                                                           ('0','0'), ('0','0'))
 
         r2 = self.xps.EventExtendedConfigurationActionSet(self.ssid,
-                                                         ('GatheringOneData',), 
+                                                         ('GatheringOneData',),
                                                          ('',), ('',),
                                                          ('',), ('',))
 
@@ -126,13 +126,13 @@ class XPSTrajectory(object):
         return  self.xps.MultipleAxesPVTExecution(self.ssid,
                                                   self.group,
                                                   self.traj_file, 1)
-            
+
 
     def EndTrajectory(self):
         """clear trajectory setup"""
         r1 = self.xps.EventExtendedRemove(self.ssid, self.event_id)
         r2 = self.xps.GatheringStop(self.ssid)
-        
+
     def ftp_connect(self):
         self.ftpconn.connect(self.host)
         self.ftpconn.login(self.user, self.passwd)
@@ -185,10 +185,10 @@ class XPSTrajectory(object):
         fore_traj = {'scantime':scantime, 'axis':axis, 'accel': accel,
                      'ramptime': ramptime, 'pixeltime': pixeltime,
                      'zero': 0.}
-        # print 'Scan Times: ', scantime, pixeltime, (dist)/(step), accel
+        # print( 'Scan Times: ', scantime, pixeltime, (dist)/(step), accel)
         this = {'start': start, 'stop': stop, 'step': step,
                 'velo': velo, 'ramp': ramp, 'dist': dist}
-        
+
         for attr in this.keys():
             for ax in self.positioners:
                 if ax == axis:
@@ -232,7 +232,7 @@ class XPSTrajectory(object):
         self.xps.GroupMoveRelative(self.ssid, 'FINE', ramps)
 
         # print '=====Run Trajectory =  ', traj, axis, ramps, traj_file
-        
+
         self.gather_outputs = []
         gather_titles = []
         for out in gather_outputs:
@@ -289,7 +289,7 @@ class XPSTrajectory(object):
             time.sleep(1)
             ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
         return npulses
-    
+
     def SaveResults(self,  fname, verbose=False):
         """read gathering data from XPS
         """
@@ -301,14 +301,14 @@ class XPSTrajectory(object):
             counter += 1
             time.sleep(1.50)
             ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
-            print 'Had to do repeat XPS Gathering: ', ret, npulses, nx
-            
+            print('Had to do repeat XPS Gathering: ', ret, npulses, nx)
+
         # db.add(' Will Save %i pulses , ret=%i ' % (npulses, ret))
         ret, buff = self.xps.GatheringDataMultipleLinesGet(self.ssid, 0, npulses)
         # db.add('MLGet ret=%i, buff_len = %i ' % (ret, len(buff)))
 
         if ret < 0:  # gathering too long: need to read in chunks
-            print 'Need to read Data in Chunks!!!'  # how many chunks are needed??
+            print('Need to read Data in Chunks!!!')  # how many chunks are needed??
             Nchunks = 3
             nx    = int( (npulses-2) / Nchunks)
             ret = 1
@@ -320,9 +320,9 @@ class XPSTrajectory(object):
                 Nchunks = Nchunks + 2
                 nx      = int( (npulses-2) / Nchunks)
                 if Nchunks > 10:
-                    print 'looks like something is wrong with the XPS!'
+                    print( 'looks like something is wrong with the XPS!')
                     break
-            print  ' -- will use %i Chunks for %i Pulses ' % (Nchunks, npulses)
+            print( ' -- will use %i Chunks for %i Pulses ' % (Nchunks, npulses))
             # db.add(' Will use %i chunks ' % (Nchunks))
             buff = [xbuff]
             for i in range(1, Nchunks):
@@ -345,9 +345,7 @@ class XPSTrajectory(object):
         f.close()
         nlines = len(obuff.split('\n')) - 1
         if verbose:
-            print 'Wrote %i lines, %i bytes to %s' % (nlines, len(buff), fname)
+            print('Wrote %i lines, %i bytes to %s' % (nlines, len(buff), fname))
         self.nlines_out = nlines
         # db.show()
         return npulses
-
-
