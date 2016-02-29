@@ -64,7 +64,7 @@ class XPS:
         except socket.timeout:
             return [-2, '']
         except socket.error (errNb, errString):
-            print 'Socket error : ' + errString
+            print( 'Socket error : ' + errString)
             return [-2, '']
 
         for i in range(len(ret)):
@@ -78,7 +78,7 @@ class XPS:
         """
         if socketId is None:
             socketId = self.socketId
-        self.socketId = socketId        
+        self.socketId = socketId
         err, msg = self.__sendAndReceive(socketId, cmd)
         if err != 0 and check:
             raise XPSException(msg)
@@ -228,7 +228,7 @@ class XPS:
         return self.Send(socketId, 'Login(%s, %s)' % ( Name,  Password) )
 
     # CloseAllOtherSockets :  Close all socket beside the one used to send this command
-    def CloseAllOtherSockets (self, socketId):        
+    def CloseAllOtherSockets (self, socketId):
         return self.Send(socketId, 'CloseAllOtherSockets()')
 
     # HardwareDateAndTimeGet :  Return hardware date and time
@@ -243,7 +243,7 @@ class XPS:
     def EventAdd (self, socketId, PositionerName, EventName, EventParameter, ActionName, ActionParameter1, ActionParameter2, ActionParameter3):
         command = 'EventAdd(' + PositionerName + ',' + EventName + ',' + EventParameter + ',' + ActionName + ',' + ActionParameter1 + ',' + ActionParameter2 + ',' + ActionParameter3 + ')'
         return self.Send(socketId, command)
-     
+
     # EventGet :  ** OBSOLETE ** Read events and actions list
     def EventGet (self, socketId, PositionerName):
         command = 'EventGet(' + PositionerName + ',char *)'
@@ -294,7 +294,7 @@ class XPS:
     # EventExtendedStart :  Launch the last event and action configuration and return an ID
     def EventExtendedStart (self, socketId):
         command = 'EventExtendedStart(int *)'
-        error, returnedString = self.Send(socketId, command) 
+        error, returnedString = self.Send(socketId, command)
         if (error != 0):
             return [error, returnedString]
 
@@ -517,7 +517,7 @@ class XPS:
 
         return self.Send(socketId, command)
 
-    # GPIODigitalGet :  Read digital output or digital input 
+    # GPIODigitalGet :  Read digital output or digital input
     def GPIODigitalGet (self, socketId, GPIOName):
 
         command = 'GPIODigitalGet(' + GPIOName + ',unsigned short *)'
@@ -727,7 +727,7 @@ class XPS:
     # GroupMotionDisable :  Set Motion disable on selected group
     def GroupMotionDisable (self, socketId, GroupName):
         return self.Send(socketId, 'GroupMotionDisable(%s)' % GroupName )
-    
+
     # GroupMotionEnable :  Set Motion enable on selected group
     def GroupMotionEnable (self, socketId, GroupName):
         return self.Send(socketId, 'GroupMotionEnable(%s)' % GroupName)
@@ -954,12 +954,12 @@ class XPS:
     def PositionerBacklashDisable (self, socketId, PositionerName):
         return self.Send(socketId, 'PositionerBacklashDisable(%s)' % PositionerName)
 
-    # PositionerCorrectorNotchFiltersSet :  Update filters parameters 
+    # PositionerCorrectorNotchFiltersSet :  Update filters parameters
     def PositionerCorrectorNotchFiltersSet (self, socketId, PositionerName, NotchFrequency1, NotchBandwith1, NotchGain1, NotchFrequency2, NotchBandwith2, NotchGain2):
         command = 'PositionerCorrectorNotchFiltersSet(' + PositionerName + ',' + str(NotchFrequency1) + ',' + str(NotchBandwith1) + ',' + str(NotchGain1) + ',' + str(NotchFrequency2) + ',' + str(NotchBandwith2) + ',' + str(NotchGain2) + ')'
         return self.Send(socketId, command)
 
-    # PositionerCorrectorNotchFiltersGet :  Read filters parameters 
+    # PositionerCorrectorNotchFiltersGet :  Read filters parameters
     def PositionerCorrectorNotchFiltersGet (self, socketId, PositionerName):
         command = 'PositionerCorrectorNotchFiltersGet(' + PositionerName + ',double *,double *,double *,double *,double *,double *)'
         error, returnedString = self.Send(socketId, command)
@@ -1303,7 +1303,7 @@ class XPS:
     def PositionerMotionDoneSet (self, socketId, PositionerName, PositionWindow, VelocityWindow, CheckingTime, MeanPeriod, TimeOut):
         command = 'PositionerMotionDoneSet(' + PositionerName + ',' + str(PositionWindow) + ',' + str(VelocityWindow) + ',' + str(CheckingTime) + ',' + str(MeanPeriod) + ',' + str(TimeOut) + ')'
         return self.Send(socketId, command)
-    
+
     # PositionerPositionCompareAquadBAlwaysEnable :  Enable AquadB signal in always mode
     def PositionerPositionCompareAquadBAlwaysEnable (self, socketId, PositionerName):
         command = 'PositionerPositionCompareAquadBAlwaysEnable(' + PositionerName + ')'
@@ -1418,7 +1418,7 @@ class XPS:
         retList.append(eval(returnedString[i:i+j]))
         return retList
 
-    # PositionerSGammaParametersGet :  Read dynamic parameters for one axe of a group for a future displacement 
+    # PositionerSGammaParametersGet :  Read dynamic parameters for one axe of a group for a future displacement
     def PositionerSGammaParametersGet (self, socketId, PositionerName):
         command = 'PositionerSGammaParametersGet(' + PositionerName + ',double *,double *,double *,double *)'
         error, returnedString = self.Send(socketId, command)
@@ -1807,7 +1807,7 @@ class XPS:
             retList.append(eval(returnedString[i:i+j]))
             i, j = i+j+1, 0
         return retList
-    
+
     # XYZSplineVerification :  XYZ trajectory verifivation
     def XYZSplineVerification (self, socketId, GroupName, TrajectoryFileName):
         command = 'XYZSplineVerification(' + GroupName + ',' + TrajectoryFileName + ')'
@@ -2020,4 +2020,3 @@ class XPS:
     # TestTCP :  Test TCP/IP transfert
     def TestTCP (self, socketId, InputString):
         return self.Send(socketId, 'TestTCP(%s, char *)' % InputString)
-
