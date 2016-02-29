@@ -3,7 +3,7 @@ import numpy as np
 from larch import ValidateLarchPlugin
 from larch_plugins.std import parse_group_args
 from larch_plugins.xray import xray_line, xray_edge, material_mu
-from larch_plugins.xafs import preedge
+from larch_plugins.xafs import preedge, set_xafsGroup
 
 MODNAME = '_xafs'
 
