@@ -462,6 +462,8 @@ class LarchStepScan(object):
         That is, return values must be None or evaluate to False
         to indicate success.
         """
+        if not isinstance(out, (tuple, list)):
+            out = [out]
         if any(out):
             raise Warning('error on output: %s' % msg)
 
@@ -711,7 +713,7 @@ class LarchStepScan(object):
                        time.time() - t0 < self.pos_maxmove_time):
                     if self.look_for_interrupts():
                         break
-                    poll(5*MIN_POLL_TIME, 0.25)
+                    poll(10*MIN_POLL_TIME, 0.25)
                     mcount += 1
                 # wait for positioners to settle
                 dtimer.add('Pt %i : pos done' % i)
@@ -724,19 +726,20 @@ class LarchStepScan(object):
                 t0 = time.time()
                 time.sleep(max(0.05, self.min_dwelltime/2.0))
                 while not all([trig.done for trig in self.triggers]):
-                    if (time.time() - t0 > (5.0 + 10*self.max_dwelltime)):
+                    if (time.time() - t0) > 5.0*(1 + 2*self.max_dwelltime):
                         break
-                    poll(MIN_POLL_TIME, 0.1)
+                    poll(MIN_POLL_TIME, 0.5)
                 dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
                 point_ok = (all([trig.done for trig in self.triggers]) and
-                            time.time()-t0 > (0.75*self.min_dwelltime))
+                            time.time()-t0 > (0.95*self.min_dwelltime))
                 if not point_ok:
                     point_ok = True
-                    poll(5*MIN_POLL_TIME, 0.25)
+                    time.sleep(2.0)
                     for trig in self.triggers:
-                        point_ok = point_ok and (trig.runtime > (0.75*self.min_dwelltime))
+                        poll(10*MIN_POLL_TIME, 1.0)
+                        point_ok = point_ok and (trig.runtime > (0.95*self.min_dwelltime))
                         if not point_ok:
                             print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
 
@@ -745,15 +748,20 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i : det settled done.' % i)
                 [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
+
                 # self.cdat = [c.buff[-1] for c in self.counters]
+
                 self.pos_actual.append([p.current() for p in self.positioners])
                 dtimer.add('Pt %i : added positions' % i)
+
                 # if a messenger exists, let it know this point has finished
                 self._messenger(cpt=self.cpt, npts=npts)
                 dtimer.add('Pt %i : sent message' % i)
+
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
+
                 dtimer.add('Pt %i: done.' % i)
                 self.look_for_interrupts()
 
@@ -762,6 +770,7 @@ class LarchStepScan(object):
                 self.abort = True
             if not point_ok:
                 self.write('point messed up... try again?')
+                time.sleep(5.0)
                 for det in self.detectors:
                     det.pre_scan(scan=self)
                 i -= 1
