@@ -406,8 +406,9 @@ class LarchStepScan(object):
         for (desc, pv) in self.extra_pvs:
             pv.connect()
 
+        out = []
         for meth in self.pre_scan_methods:
-            out = meth(scan=self)
+            out.append( meth(scan=self))
             time.sleep(0.1)
 
         for det in self.detectors:
@@ -733,10 +734,11 @@ class LarchStepScan(object):
                 if self.look_for_interrupts():
                     break
                 point_ok = (all([trig.done for trig in self.triggers]) and
-                            time.time()-t0 > (0.95*self.min_dwelltime))
+                            time.time()-t0 > (0.75*self.min_dwelltime))
                 if not point_ok:
                     point_ok = True
-                    time.sleep(2.0)
+                    time.sleep(0.5)
+                    poll(0.1, 2.0)
                     for trig in self.triggers:
                         poll(10*MIN_POLL_TIME, 1.0)
                         point_ok = point_ok and (trig.runtime > (0.95*self.min_dwelltime))
