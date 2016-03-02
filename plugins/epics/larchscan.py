@@ -190,7 +190,7 @@ class PVSlaveThread(threading.Thread):
                 try:
                     self.slave.put(val)
                 except:
-                    print("Cannot Caput: ", self.slave.pvname , val)
+                    pass # print("PVSlave Put: ", self.slave.pvname , val)
                 self.last = self.pulse
 
 
@@ -505,7 +505,7 @@ class LarchStepScan(object):
             if name is None:
                 name = c.label
             c.db_label = fix_varname(name)
-            # print(" - publish scandata - ", c, c.db_label, c.buff)
+            print("Push scandata - ", c.db_label, len(c.buff))
             self.scandb.set_scandata(c.db_label, c.buff)
 
     def set_error(self, msg):
@@ -658,6 +658,8 @@ class LarchStepScan(object):
         dtimer.add('PRE: openend file')
 
         self.filename =  self.datafile.filename
+
+
         self.clear_data()
         dtimer.add('PRE: cleared data')
 
@@ -1155,16 +1157,41 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         caput(qconf['y2_track_pv'],  1)
         time.sleep(0.1)
 
+    def gathering2energy(self, text):
+        """read gathering file, calculate and return
+        energy and height. Gathering data is text with columns of
+         Theta_Current, Theta_Set, Height_Current, Height_Set
+        """
+        angle, height = [], []
+        for line in text.split('\n'):
+            line = line[:-1].strip()
+            if len(line) > 4:
+                words = line[:-1].split()
+                angle.append(float(words[0]))
+                height.append(float(words[2]))
+        angle  = np.array(angle)
+        height = np.array(height)
+        angle  = (angle[1:] + angle[:-1])/2.0
+        height = (height[1:] + height[:-1])/2.0
+
+        angle += caget(self.qconf['theta_motor'] + '.OFF')
+        dspace = caget(self.qconf['dspace_pv'])
+        energy = HC/(2.0 * dspace * np.sin(angle/RAD2DEG))
+        return (energy, height)
+
+
     def run(self, filename=None, comments=None, debug=False, reverse=False):
         """
         run the actual QXAFS scan
         """
-        print(" QXAFS run!!!! ")
         self.dtimer = dtimer = debugtime(verbose=debug)
 
         self.complete = False
         if filename is not None:
             self.filename  = filename
+
+            self.set_info('filename', filename)
+
         if comments is not None:
             self.comments = comments
 
@@ -1189,7 +1216,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.xps.upload_trajectoryFile(qconf['traj_name'], traj.buffer)
 
         self.clear_interrupts()
-        print("QXAFS Positioners ", self.positioners)
         orig_positions = [p.current() for p in self.positioners]
         dtimer.add('PRE: cleared interrupts')
         #  move to start here?
@@ -1237,19 +1263,27 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.check_outputs(out, msg='pre scan')
         dtimer.add('PRE: pre_scan done')
 
+        orig_counters = self.counters[:]
         self.counters = []
+        # specialized QXAFS Counters
         qxafs_counters = []
         for i, mca in enumerate(sis.mcas):
             scalername = getattr(sis.scaler, 'NM%i' % (i+1), '')
             if len(scalername) > 1:
-                qxafs_counters.append(mca._pvs['VAL'])
+                qxafs_counters.append((scalername, mca._pvs['VAL']))
 
         for roi in range(1, 5):
             desc = caget('%sC1_ROI%i:ValueSum_RBV.DESC' % (xsp3_prefix, roi))
-            if len(desc) > 0:
+            if len(desc) > 0 and not desc.lower().startswith('unused'):
                 for card in range(1, 5):
                     pvname = '%sC%i_ROI%i:ArrayData_RBV' % (xsp3_prefix, card, roi)
-                    qxafs_counters.append(PV(pvname))
+                    _desc = "%s_mca%i" % (desc, card)
+                    qxafs_counters.append((_desc, PV(pvname)))
+
+        # SCAs for count time
+        for card in range(1, 5):
+            pvname = '%sC%i_SCA0:ArrayData_RBV' % (xsp3_prefix, card)
+            qxafs_counters.append(("Clock_mca%i" % card, PV(pvname)))
 
         dtimer.add('PRE: got counters')
         sis.stop()
@@ -1276,13 +1310,13 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
                                               comments=self.comments)
 
         self.filename =  self.datafile.filename
+        self.set_info('filename', self.filename)
 
         dtimer.add('PRE: open datafile')
         self.clear_data()
         dtimer.add('PRE: clear data')
-        self.datafile.write_data(breakpoint=0)
+        # self.datafile.write_data(breakpoint=0)
         dtimer.add('PRE: start data')
-        self.init_scandata()
 
         dtimer.add('PRE: init data')
 
@@ -1321,17 +1355,14 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         dtimer.add('Start scan:')
         start_time = time.strftime('%Y-%m-%d %H:%M:%S')
 
-        dtimer.show()
+        # dtimer.show()
         self.xps.SetupTrajectory(npts+1, dtime, traj_file=qconf['traj_name'])
 
         sis.start()
         qxsp3.FileCaptureOn()
         qxsp3.Acquire = 1
         time.sleep(0.1)
-        print("Trajectory Start")
         self.xps.RunTrajectory()
-        print("Trajectory Done")
-
         self.xps.EndTrajectory()
 
         sis.stop()
@@ -1339,71 +1370,50 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         self.finish_qscan()
 
-        print(" FILENAME ", self.filename)
-        GatherFile = '%s.gat' % self.filename
-        DataFile   = '%s.dat' % self.filename
-
-        self.xps.SaveResults(GatherFile)
-        gather_text = open(GatherFile, 'r').readlines()
-        ngather = len(gather_text)
-        print( 'Gathering: ', GatherFile, '  %i lines ' % ngather)
-        print( 'DataFile:  ', DataFile,   '  %i lines ' % sis.CurrentChannel)
-
         und_thread.running = False
         und_thread.join()
+
+        npulses, gather_text = self.xps.ReadGathering()
+        energy, height = self.gathering2energy(gather_text)
+        ne = len(energy)
+        print( 'Gathering:  %i pulses, %i epoints ' % (npulses, ne))
 
         time.sleep(1.00)
         caput(qconf['energy_pv'], energy_orig-2.0)
 
+        for e in energy:
+            self.pos_actual.append([e])
+
         nout = sis.CurrentChannel
         narr = 0
         t0  = time.time()
-        print("QXAFS Counters: %i" % (len(qxafs_counters)))
-        for qc in  qxafs_counters: print("   " , qc.pvname)
-        print("---")
-        while narr < (nout-1) and (time.time()-t0 )<30.0:
+        while narr < (nout-1) and (time.time()-t0) < 30.0:
             time.sleep(0.25)
-            dat =  [p.get() for p in qxafs_counters]
+            dat =  [p.get() for (_d, p) in qxafs_counters]
             narr = min([len(d) for d in dat])
-            print( " Wait for data ", narr)
 
-        print( 'Read Data from SIS: ', narr)
-        fout = open(DataFile, 'w')
-        obuff =['# Gathered XRF and IO data',
-                '# Scan.start_time: %s' % (start_time),
-                '# Scan.end_time: %s' % (time.strftime('%Y-%m-%d %H:%M:%S'))]
+        for label, cpv in qxafs_counters:
+            _counter = Counter(cpv.pvname, label=label)
+            self.counters.append(_counter)
+            arr = cpv.get().tolist()
+            _counter.buff = arr
 
-        for desc, val, addr in extra_vals:
-            obuff.append("# %s: %s || %s" % (desc, val, addr))
+        self.init_scandata()
+        self.publish_scandata()
 
-        obuff.append('#--------------------------------------------')
-        obuff.append('# Time  I0  I1 I2  MCA1R1 MCA2R1 MCA3R1 MCA4R1 MCA1R2 MCA2R2 MCA3R3 MCA4R4 OCR1 OCR2 OCR3 OCR4')
-
-        for i in obuff:
-            fout.write("%s\n"% ( i))
-
-        for i in range(narr):
-            # fout.write('  %13.4f  ' % (scan.energies[i])
-            s = ' '.join(["%13.4f" % d[i] for d in dat])
-            fout.write("%s\n" % s)
-
-        fout.write('\n')
-        fout.close()
-
-        caput(qconf['energy_pv'], energy_orig, wait=True)
-        print( 'Wrote %s' % DataFile)
-
+        self.datafile.write_data(breakpoint=0)
+        self.set_info('filename', self.datafile.filename)
         ##
         dtimer.add('Post scan start')
-        print(" --> Publish Scandata ")
-        self.publish_scandata()
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
-        print(" --> Publish Scandata Done")
+
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
+
+        caput(qconf['energy_pv'], energy_orig, wait=True)
+
         dtimer.add('Post: return move issued')
-        print(" --> write datafile ", self.datafile)
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         dtimer.add('Post: file written')
         if self.look_for_interrupts():
