@@ -1343,7 +1343,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             dat =  [p.get() for (_d, p) in qxafs_counters]
             narr = min([len(d) for d in dat])
 
-        print("Read All Data Buffers: ", ne, nout, narr)
+        # print("Read All Data Buffers: ", ne, nout, narr)
         # note that we may need to trim *1st point* from
         # qxspress3 data
         for label, cpv in qxafs_counters:
