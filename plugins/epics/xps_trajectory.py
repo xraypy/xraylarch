@@ -283,18 +283,11 @@ class XPSTrajectory(object):
         if tpos is None:  tpos = ret[3]
         self.xps.GroupMoveAbsolute(self.ssid, 'FINE', (xpos, ypos, tpos))
 
-    def ReadGatheringPulses(self):
-        ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
-        if npulses < 1:
-            time.sleep(1)
-            ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
-        return npulses
-
-    def SaveResults(self,  fname, verbose=False):
-        """read gathering data from XPS
+    def ReadGathering(self):
         """
-        # self.xps.GatheringStop(self.ssid)
-        # db = debugtime()
+        read gathering data from XPS, return as buffer
+        returns npulses and text buffer of results
+        """
         ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
         counter = 0
         while npulses < 1 and counter < 5:
@@ -303,12 +296,9 @@ class XPSTrajectory(object):
             ret, npulses, nx = self.xps.GatheringCurrentNumberGet(self.ssid)
             print('Had to do repeat XPS Gathering: ', ret, npulses, nx)
 
-        # db.add(' Will Save %i pulses , ret=%i ' % (npulses, ret))
         ret, buff = self.xps.GatheringDataMultipleLinesGet(self.ssid, 0, npulses)
-        # db.add('MLGet ret=%i, buff_len = %i ' % (ret, len(buff)))
-
         if ret < 0:  # gathering too long: need to read in chunks
-            print('Need to read Data in Chunks!!!')  # how many chunks are needed??
+            # how many chunks are needed??
             Nchunks = 3
             nx    = int( (npulses-2) / Nchunks)
             ret = 1
@@ -322,23 +312,24 @@ class XPSTrajectory(object):
                 if Nchunks > 10:
                     print( 'looks like something is wrong with the XPS!')
                     break
-            print( ' -- will use %i Chunks for %i Pulses ' % (Nchunks, npulses))
-            # db.add(' Will use %i chunks ' % (Nchunks))
             buff = [xbuff]
             for i in range(1, Nchunks):
                 ret, xbuff = self.xps.GatheringDataMultipleLinesGet(self.ssid, i*nx, nx)
                 buff.append(xbuff)
-                # db.add('   chunk %i' % (i))
             ret, xbuff = self.xps.GatheringDataMultipleLinesGet(self.ssid, Nchunks*nx,
                                                                 npulses-Nchunks*nx)
             buff.append(xbuff)
             buff = ''.join(buff)
-            # db.add('   chunk last')
 
         obuff = buff[:]
         for x in ';\r\t':
             obuff = obuff.replace(x,' ')
-        # db.add('  data fixed')
+        return npulses, obuff
+    
+    def SaveResults(self,  fname, verbose=False):
+        """read gathering data from XPS and save to file
+        """
+        npulses, obuff = self.ReadGathering()
         f = open(fname, 'w')
         f.write(self.gather_titles)
         f.write(obuff)
@@ -347,5 +338,4 @@ class XPSTrajectory(object):
         if verbose:
             print('Wrote %i lines, %i bytes to %s' % (nlines, len(buff), fname))
         self.nlines_out = nlines
-        # db.show()
         return npulses
