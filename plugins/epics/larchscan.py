@@ -505,7 +505,6 @@ class LarchStepScan(object):
             if name is None:
                 name = c.label
             c.db_label = fix_varname(name)
-            print("Push scandata - ", c.db_label, len(c.buff))
             self.scandb.set_scandata(c.db_label, c.buff)
 
     def set_error(self, msg):
@@ -522,6 +521,8 @@ class LarchStepScan(object):
         if self.scandb is None:
             return
         self.scandb.clear_scandata()
+        self.scandb.commit()
+        time.sleep(0.1)
         names = []
         npts = len(self.positioners[0].array)
         for p in self.positioners:
@@ -657,6 +658,8 @@ class LarchStepScan(object):
 
         self.datafile.write_data(breakpoint=0)
 
+        # print(" OPENED DATAFILE ", self.filename, self.scandb)
+        self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
             self.set_info('request_abort', 0)
@@ -1343,13 +1346,12 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             dat =  [p.get() for (_d, p) in qxafs_counters]
             narr = min([len(d) for d in dat])
 
-        # print("Read All Data Buffers: ", ne, nout, narr)
-        # note that we may need to trim *1st point* from
-        # qxspress3 data
+        # reset the counters, and fill in data read from arrays
+        # note that we may need to trim *1st point* from qxspress3 data
+        self.counters = []
         for label, cpv in qxafs_counters:
             _c = Counter(cpv.pvname, label=label)
             arr = cpv.get()
-            # print(" " , label, len(arr))
             if len(arr) > ne:
                 arr = arr[-ne:]
             _c.buff = arr.tolist()
