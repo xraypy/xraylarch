@@ -654,11 +654,11 @@ class LarchStepScan(object):
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
 
-        self.filename =  self.datafile.filename
 
         self.datafile.write_data(breakpoint=0)
+        self.filename =  self.datafile.filename
+        self.set_info('filename', self.filename)
 
-        # print(" OPENED DATAFILE ", self.filename, self.scandb)
         self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
@@ -1183,7 +1183,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.complete = False
         if filename is not None:
             self.filename  = filename
-            self.set_info('filename', filename)
 
         if comments is not None:
             self.comments = comments
