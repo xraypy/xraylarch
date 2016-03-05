@@ -47,7 +47,7 @@ Examples:
 
   # List of all sources of error:
   print sum_value  # Prints "11+/-0.1414..."
-  for (var, error) in sum_value.error_components().iteritems():
+  for (var, error) in sum_value.error_components().items():
       print "%s: %f" % (var.tag, error)  # Individual error components
 
   # Covariance matrices:
@@ -1024,7 +1024,7 @@ class AffineScalarFunc(object):
         #not need to have their std_dev calculated: only the final
         #AffineScalarFunc returned to the user does).
         return sqrt(sum(
-            delta**2 for delta in self.error_components().itervalues()))
+            delta**2 for delta in self.error_components().values()))
 
     def _general_representation(self, to_string):
         """
@@ -1642,4 +1642,3 @@ def ufloat(representation, tag=None):
     #! The special ** syntax is for Python 2.5 and before (Python 2.6+
     # understands tag=tag):
     return Variable(*representation, **{'tag': tag})
-
