@@ -82,7 +82,7 @@ if sys.platform == 'win32':
     def ignore_CtrlC():
         pass
 elif sys.platform == 'darwin':
-    from allow_idle_macosx import allow_idle
+    from .allow_idle_macosx import allow_idle
 
 
 class EventLoopRunner(object):
