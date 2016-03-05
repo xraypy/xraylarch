@@ -85,9 +85,9 @@ class Interpreter:
                        'excepthandler', 'expr', 'expression', 'extslice',
                        'for', 'functiondef', 'if', 'ifexp', 'import',
                        'importfrom', 'index', 'interrupt', 'list',
-                       'listcomp', 'module', 'name', 'num', 'pass',
-                       'print', 'raise', 'repr', 'return', 'slice', 'str',
-                       'subscript', 'tryexcept', 'tuple', 'unaryop',
+                       'listcomp', 'module', 'name', 'nameconstant', 'num',
+                       'pass', 'print', 'raise', 'repr', 'return', 'slice',
+                       'str', 'subscript', 'tryexcept', 'tuple', 'unaryop',
                        'while')
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
@@ -384,6 +384,10 @@ class Interpreter:
     def on_str(self, node):
         'return string'
         return node.s  # ('s',)
+
+    def on_nameconstant(self, node):    # ('value')
+        """ Name Constant node (new in Python3.4)"""
+        return node.value
 
     def on_name(self, node):    # ('id', 'ctx')
         """ Name node """
