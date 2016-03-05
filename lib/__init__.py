@@ -15,7 +15,8 @@ if major < 2 or (major == 2 and minor < 6):
 
 from .larchlib import (plugin_path, use_plugin_path, enable_plugins,
                        isNamedClass, LarchPluginException,
-                       Make_CallArgs, ValidateLarchPlugin)
+                       Make_CallArgs, ValidateLarchPlugin,
+                       parse_group_args)
 from .site_config import show_site_config
 from .symboltable import Group, SymbolTable, isgroup
 from .fitting import Minimizer, Parameter, isParameter, param_value
