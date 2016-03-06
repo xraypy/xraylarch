@@ -13,6 +13,7 @@ import types
 import ast
 import math
 import numpy
+import six
 
 from . import builtins
 from . import site_config
@@ -725,14 +726,19 @@ class Interpreter:
             isinstance(node.body[0].value, ast.Str)):
             docnode = node.body[0]
             doc = docnode.value.s
+        vararg = node.args.vararg
+        varkws = node.args.kwarg
+        if six.PY3:
+            vararg = self.run(vararg)
+            varkws = self.run(varkws)
         proc = Procedure(node.name, _larch=self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,
                          lineno = self.lineno,
                          args   = args,
                          kwargs = kwargs,
-                         vararg = node.args.vararg,
-                         varkws = node.args.kwarg)
+                         vararg = vararg,
+                         varkws = varkws)
         self.symtable.set_symbol(node.name, value=proc)
 
     # imports
