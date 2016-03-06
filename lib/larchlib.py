@@ -11,7 +11,7 @@ import inspect
 import ctypes
 import ctypes.util
 from .utils import Closure
-from .symboltable import Group
+from .symboltable import Group, isgroup
 from .site_config import larchdir, usr_larchdir
 
 HAS_TERMCOLOR = False
@@ -604,37 +604,42 @@ def parse_group_args(arg0, members=None, group=None, defaults=None,
     out.append(group)
     return out
 
-def Make_CallArgs(attr_name, required_attrs):
+def Make_CallArgs(skipped_args):
     """
     decorator to create a 'call_args' dictionary
     containing function arguments
     """
     def wrap(fcn):
-        def wrapped_fcn(*args, **kwargs):
-            call_args = inspect.getcallargs(fcn, *args, **kwargs)
+        def wrapper(*args, **kwargs):
             result = fcn(*args, **kwargs)
-            a1,a2,groupx= parse_group_args(call_args[required_attrs[0]],
-                                           members=required_attrs,
-                                           defaults=(call_args[required_attrs[1]],),
-                                           group=call_args['group'],
-                                           fcn_name=fcn.__name__)
+            call_args = inspect.getcallargs(fcn, *args, **kwargs)
+            skipped = skipped_args[:]
+            at0 = skipped[0]
+            at1 = skipped[1]
+            a, b, groupx = parse_group_args(call_args[at0],
+                                            members=(at0, at1),
+                                            defaults=(call_args[at1],),
+                                            group=call_args['group'],
+                                            fcn_name=fcn.__name__)
 
-            required_attrs.extend(['group','_larch'])
-            for k in required_attrs:
+            for attr in ('group', '_larch'):
+                if attr not in skipped: skipped.append(attr)
+
+            for k in skipped:
                 call_args.pop(k)
-            if not hasattr(groupx, attr_name):
-                setattr(groupx, attr_name, larch.Group())
-            subject=getattr(groupx, attr_name)
-            setattr(subject, 'call_args', call_args)
+            details_name = '%s_details' % fcn.__name__
+            if not hasattr(groupx, details_name):
+                setattr(groupx, details_name, Group())
+            setattr(getattr(groupx, details_name),
+                    'call_args', call_args)
             return result
-        wrapped_fcn.__doc__ = fcn.__doc__
-        wrapped_fcn.__name__ = fcn.__name__
-        wrapped_fcn._larchfunc_ = fcn
-        wrapped_fcn.__filename__ = fcn.__code__.co_filename
-        wrapped_fcn.__dict__.update(fcn.__dict__)
-        return wrapped_fcn
+        wrapper.__doc__ = fcn.__doc__
+        wrapper.__name__ = fcn.__name__
+        wrapper._larchfunc_ = fcn
+        wrapper__filename__ = fcn.__code__.co_filename
+        wrapper.__dict__.update(fcn.__dict__)
+        return wrapper
     return wrap
-
 
 def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
