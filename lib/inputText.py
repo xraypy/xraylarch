@@ -3,6 +3,7 @@
 handle input Text for Larch -- inclides translation to Python text
 """
 from __future__ import print_function
+from six.moves import input
 from .utils import isValidName, isNumber, isLiteralStr, find_delims
 
 def strip_comments(sinp, char='#'):
@@ -127,7 +128,7 @@ class InputText:
     def __init__(self, prompt=None, interactive=True, input=None,
                  filename=None, _larch=None):
         if prompt is not None:
-            self.ps1 = prompt 
+            self.ps1 = prompt
         self.input = None
         self._larch = _larch
         self.interactive = interactive
@@ -136,7 +137,7 @@ class InputText:
         if interactive:
             self.input = input or self.__defaultInput
         self.clear()
-        
+
     def readfile(self, fname):
         fh = open(fname, 'r')
         self.put(fh.read(), filename=fname, lineno=0)
@@ -209,7 +210,7 @@ class InputText:
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, eos, fname, lineno = self.input_buff.pop()
-            
+
             text = self.clean_text(text)
 
             long_text = eos in '"\''
@@ -328,7 +329,7 @@ class InputText:
         self.in_string   = False
         self.input_buff  = []
         self.input_complete = True
-            
+
     def __isCommand(self, key, word2):
         """ decide if a keyword and next word are of the form
           'command arg, ...'
@@ -414,7 +415,7 @@ class InputText:
     def __defaultInput(self, prompt=None):
         if prompt is None:
             prompt = self.prompt
-        return raw_input(prompt)
+        return input(prompt)
 
 if __name__ == '__main__':
     inp = InputText()
