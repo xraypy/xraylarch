@@ -173,7 +173,7 @@ def preedge(energy, mu, e0=None, step=None,
     return out
 
 @ValidateLarchPlugin
-@Make_CallArgs("pre_edge_details",["energy","mu"])
+@Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, make_flat=True, _larch=None):
