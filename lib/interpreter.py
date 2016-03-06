@@ -87,8 +87,8 @@ class Interpreter:
                        'importfrom', 'index', 'interrupt', 'list',
                        'listcomp', 'module', 'name', 'nameconstant', 'num',
                        'pass', 'print', 'raise', 'repr', 'return', 'slice',
-                       'str', 'subscript', 'tryexcept', 'tuple', 'unaryop',
-                       'while')
+                       'str', 'subscript', 'try', 'tryexcept', 'tuple',
+                       'unaryop', 'while')
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
         self.writer = writer or StdWriter()
@@ -152,8 +152,10 @@ class Interpreter:
                         builtins._addplugin(pdir, _larch=self)
                         loaded_plugins.append(pname)
 
+        self.on_try = self.on_tryexcept
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
+
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
@@ -677,8 +679,7 @@ class Interpreter:
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.run(node.func)
-        if (not hasattr(func, '__call__') and
-            not isinstance(func, (type, types.ClassType)) ):
+        if not callable(func):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
 
@@ -692,7 +693,10 @@ class Interpreter:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node, msg=msg)
-            keywords[key.arg] = self.run(key.value)
+            if key.arg is None:   # Py3 **kwargs !
+                keywords.update(self.run(key.value))
+            else:
+                keywords[key.arg] = self.run(key.value)
 
         kwargs = getattr(node, 'kwargs', None)
         if kwargs is not None:
