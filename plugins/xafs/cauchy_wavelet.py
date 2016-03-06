@@ -23,9 +23,8 @@
 # 2014-Apr M Newville : translated to Python for Larch
 
 import numpy as np
-from larch import ValidateLarchPlugin
+from larch import ValidateLarchPlugin, parse_group_args
 
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
