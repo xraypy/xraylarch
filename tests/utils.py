@@ -7,6 +7,7 @@ Basic unit testing utilities for larch
 import unittest
 import time
 import os
+import sys
 import numpy as np
 from tempfile import NamedTemporaryFile
 from larch import Interpreter, InputText
@@ -26,7 +27,18 @@ class LarchSession(object):
         self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
         self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
         self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
-        
+
+        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+
+    def read_stdout(self):
+        sys.stdout.flush()
+        time.sleep(0.1)
+        with open(sys.stdout.name) as inp:
+            out = inp.read()
+        sys.stdout.close()
+        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+        return out
+
     def run(self, text):
         self.input.put(text)
         ret = None
@@ -39,7 +51,6 @@ class LarchSession(object):
                 break
         return ret
 
-
     def get_errors(self):
         return self._larch.error
 
@@ -51,7 +62,6 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         self.session = LarchSession()
         self.symtable = self.session.symtable
-        self.set_stdout()
 
     def runscript(self, fname, dirname='.'):
         origdir = os.getcwd()
@@ -62,36 +72,18 @@ class TestCase(unittest.TestCase):
         self.session.run(text)
         os.chdir(origdir)
 
-    def set_stdout(self):
-        self.stdout = NamedTemporaryFile('w', delete=False,
-                                    prefix='larch_test_')
-        self.session._larch.writer = self.stdout
-
-    def read_stdout(self):
-        self.stdout.flush()
-        self.stdout.close()
-        time.sleep(0.25)
-        fname = self.stdout.name
-        with open(self.stdout.name) as inp:
-            out = inp.read()
-        self.set_stdout()
-        # os.unlink(fname)
-        return out
-
     def trytext(self, text):
         ret = self.session.run(text)
-        out = self.read_stdout()
+        out = self.session.read_stdout()
         err = self.session.get_errors()
         return out, err
 
     def tearDown(self):
-        if not self.stdout.closed:
-            self.stdout.close()
-        #try:
-        #    os.unlink(self.stdout.name)
-        #except:
-        #    pass
-
+        sys.stdout.close()
+        try:
+            os.unlink(sys.stdout.name)
+        except:
+            pass
 
     def getSym(self, sym):
         return self.session.get_symbol(sym)
@@ -132,4 +124,3 @@ class TestCase(unittest.TestCase):
 
     def NoExceptionRaised(self):
         return self.assertTrue(len(self.session.get_errors()) == 0)
-
