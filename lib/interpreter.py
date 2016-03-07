@@ -720,7 +720,10 @@ class Interpreter:
             keyval = self.run(node.args.args[idef+offset])
             kwargs.append((keyval, defval))
         # kwargs.reverse()
-        args = [tnode.id for tnode in node.args.args[:offset]]
+        if six.PY3:
+            args = [tnode.arg for tnode in node.args.args[:offset]]
+        else:
+            args = [tnode.id for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
