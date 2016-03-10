@@ -51,7 +51,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 @ValidateLarchPlugin
 @DefCallArgs("autobk_details",["energy","mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
-           edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
+           edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
            calc_uncertainties=False, _larch=None, **kws):
@@ -71,7 +71,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       kmin:      minimum k value   [0]
       kmax:      maximum k value   [full data range].
       kweight:   k weight for FFT.  [1]
-      dk:        FFT window window parameter.  [0]
+      dk:        FFT window window parameter.  [0.1]
       win:       FFT window function name.     ['hanning']
       nfft:      array size to use for FFT [2048]
       kstep:     k step size to use for FFT [0.05]
@@ -145,7 +145,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         chi_std = np.interp(kout, k_std, chi_std)
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
-                                     window=win, dx=dk)
+                                     window=win, dx=dk, dx2=dk)
     # calc k-value and initial guess for y-values of spline params
     nspl = max(4, min(128, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
     spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
