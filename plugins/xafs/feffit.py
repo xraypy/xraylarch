@@ -149,7 +149,7 @@ class TransformGroup(Group):
 
 class FeffitDataSet(Group):
     def __init__(self, data=None, pathlist=None, transform=None,
-                 _larch=None, **kws):
+                 epsilon_k=None, _larch=None, **kws):
         self._larch = _larch
         Group.__init__(self, **kws)
 
@@ -159,6 +159,9 @@ class FeffitDataSet(Group):
         if transform is None:
             transform = TransformGroup()
         self.transform = transform
+        if epsilon_k is not None:
+            self.data.epsilon_k = epsilon_k
+
         self.model = Group()
         self.model.k = None
         self.__chi = None
@@ -317,7 +320,8 @@ class FeffitDataSet(Group):
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
 @ValidateLarchPlugin
-def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
+def feffit_dataset(data=None, pathlist=None, transform=None,
+                   epsilon_k=None, _larch=None):
     """create a Feffit Dataset group.
 
      Parameters:
@@ -325,6 +329,8 @@ def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
       data:      group containing experimental EXAFS (needs arrays 'k' and 'chi').
       pathlist:  list of FeffPath groups, as created from feffpath()
       transform: Feffit Transform group.
+      epsilon_k: Uncertainty in data (either single value or array of
+                 same length as data.k)
 
      Returns:
      ----------
