@@ -1429,15 +1429,18 @@ class MapViewerFrame(wx.Frame):
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
             try:
-                sys.path.insert(0, '//cars5/Data/xas_user/bin')
+                sys.path.insert(0, '//cars5/Data/xas_user/bin/python')
                 from scan_credentials import conn as DBCONN
+                import scan_credentials
+
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
                 connect_scandb(**DBCONN)
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
-                print(" Connected to scandb!")
+                print(" Connected to scandb='%s' on server at '%s'" % 
+                      (DBCONN['dbname'], DBCONN['host']))
             except:
                 print('Could not connect to ScanDB')
                 self.use_scandb = False
