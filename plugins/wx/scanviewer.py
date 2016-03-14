@@ -960,7 +960,7 @@ class ScanViewerFrame(wx.Frame):
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
-                            wildcard=FILE_WILDCARDS, style=wx.OPEN)
+                            wildcard=FILE_WILDCARDS, style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             path = path.replace('\\', '/')

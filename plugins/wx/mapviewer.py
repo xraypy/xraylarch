@@ -1024,7 +1024,7 @@ WARNING: This cannot be undone!
         wildcards = "Area Files (*_Areas.npz)|*_Areas.npz|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Read Areas File",
                             defaultDir=os.getcwd(),
-                            wildcard=wildcards, style=wx.OPEN)
+                            wildcard=wildcards, style=wx.FD_OPEN)
 
         if dlg.ShowModal() == wx.ID_OK:
             fname = dlg.GetPath().replace('\\', '/')
@@ -1439,7 +1439,7 @@ class MapViewerFrame(wx.Frame):
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
-                print(" Connected to scandb='%s' on server at '%s'" % 
+                print(" Connected to scandb='%s' on server at '%s'" %
                       (DBCONN['dbname'], DBCONN['host']))
             except:
                 print('Could not connect to ScanDB')
@@ -1577,7 +1577,7 @@ class MapViewerFrame(wx.Frame):
 
         dlg = wx.DirDialog(self, message="Read Map Folder",
                            defaultPath=os.getcwd(),
-                           style=wx.OPEN)
+                           style=wx.FD_OPEN)
 
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -1623,7 +1623,7 @@ class MapViewerFrame(wx.Frame):
         dlg = wx.FileDialog(self, message="Read Map File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style=wx.OPEN)
+                            style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True

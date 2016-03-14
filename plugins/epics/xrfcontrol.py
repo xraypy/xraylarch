@@ -274,7 +274,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         dlg = wx.FileDialog(self, message="Save ROI File",
                             defaultDir=os.getcwd(),
                             wildcard=ROI_WILDCARD,
-                            style = wx.SAVE|wx.CHANGE_DIR)
+                            style = wx.FD_SAVE|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
             roifile = dlg.GetPath()
@@ -285,7 +285,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         dlg = wx.FileDialog(self, message="Read ROI File",
                             defaultDir=os.getcwd(),
                             wildcard=ROI_WILDCARD,
-                            style = wx.OPEN|wx.CHANGE_DIR)
+                            style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
             roifile = dlg.GetPath()

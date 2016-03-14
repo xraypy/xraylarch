@@ -1174,7 +1174,7 @@ class XRFDisplayFrame(wx.Frame):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style = wx.OPEN|wx.CHANGE_DIR)
+                            style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
         fnew= None
         if dlg.ShowModal() == wx.ID_OK:
@@ -1258,7 +1258,7 @@ class XRFDisplayFrame(wx.Frame):
         dlg = wx.FileDialog(self, message="Read MCA File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style=wx.OPEN)
+                            style=wx.FD_OPEN)
         path, re1ad = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
