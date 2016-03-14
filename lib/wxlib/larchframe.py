@@ -305,7 +305,7 @@ class LarchFrame(wx.Frame):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open Data File',
                             wildcard=wildcard,
-                            style=wx.OPEN|wx.CHANGE_DIR)
+                            style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             fout = os.path.abspath(dlg.GetPath())
             path, fname = os.path.split(fout)
@@ -318,7 +318,7 @@ class LarchFrame(wx.Frame):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open and Run Larch Script',
                             wildcard=wildcard,
-                            style=wx.OPEN|wx.CHANGE_DIR)
+                            style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             fout = os.path.abspath(dlg.GetPath())
             path, fname = os.path.split(fout)
@@ -335,7 +335,7 @@ class LarchFrame(wx.Frame):
         dlg = wx.FileDialog(self, message='Save Session History File',
                             wildcard=wildcard,
                             defaultFile=deffile,
-                            style=wx.SAVE|wx.CHANGE_DIR)
+                            style=wx.FD_SAVE|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             fout = os.path.abspath(dlg.GetPath())
             self.input.SaveHistory(filename=fout, session_only=True)

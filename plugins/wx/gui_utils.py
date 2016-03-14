@@ -124,7 +124,7 @@ class DataBrowserFrame(wx.Frame):
 
 def databrowser(_larch=None, **kws):
     """show DataBrowser window for exploring Larch Groups and Data"""
-    
+
     return DataBrowserFrame(parent=None, _larch=_larch)
 
 
@@ -168,13 +168,13 @@ def fileprompt(mode='open', multi=True, message = None,
     wildcard = '|'.join(wildcard)
 
     if mode == 'open':
-        style = wx.OPEN|wx.CHANGE_DIR
+        style = wx.FD_OPEN|wx.FD_CHANGE_DIR
         if multi:
-            style = style|wx.MULTIPLE
+            style = style|wx.FD_MULTIPLE
         if message is None:
             message = 'Open File '
     else:
-        style = wx.SAVE|wx.CHANGE_DIR
+        style = wx.FD_SAVE|wx.FD_CHANGE_DIR
         if message is None:
             message = 'Save As '
 
