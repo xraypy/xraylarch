@@ -12,7 +12,7 @@ from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
-from . import larchlib
+from .larchlib import parse_group_args
 from .symboltable import isgroup
 
 PLUGINSTXT = 'plugins.txt'
@@ -525,6 +525,7 @@ def _isgroup(obj, *args, **kws):
         obj = stable.get_symbol(obj)
     return isgroup(obj, *args)
 
+
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
         raise Warning("cannot pause() -- larch broken?")
@@ -557,6 +558,7 @@ local_funcs = {'_builtin': {'group':_group,
                             'isgroup': _isgroup,
                             'subgroups': _subgroups,
                             'group_items': _groupitems,
+                            'parse_group_args': parse_group_args,
                             'pause': _pause,
                             'sleep': _sleep,
                             'systime': _time,

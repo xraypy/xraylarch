@@ -181,7 +181,7 @@ endif
         self.trytext("y = ['a', 'b', 'c']")
         self.trytext("rep_x = repr(x['a'])")
         self.trytext("rep_y = repr(y)")
-        self.trytext("print rep_y , rep_x")
+        self.trytext("print(rep_y , rep_x)")
 
         self.isValue("rep_x", "1")
         self.isValue("rep_y", "['a', 'b', 'c']")
@@ -328,7 +328,6 @@ a = arange(7)''')
             if len(err) > 0:
                 errtype, errmsg = err[0].get_error()
                 failed = True
-
             self.assertTrue(failed)
             self.assertTrue(errtype == errname)
             #self.assertTrue(errmsg.startswith('invalid syntax'))
@@ -453,7 +452,6 @@ x = 5
 try:
     x = x/0
 except ZeroDivsionError:
-    print( 'Error Seen!')
     x = -999
 endtry
 """)

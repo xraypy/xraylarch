@@ -20,7 +20,7 @@ def get(sym=None, _larch=None, **kws):
 
     """
     if sym is None:
-        sym = '_main'
+        sym = _larch.symtable
     group = None
     symtable = _larch.symtable
     if symtable.isgroup(sym):
@@ -82,7 +82,7 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
 
     """
     if sym is None:
-        sym = '_main'
+        sym = _larch.symtable
     group = None
     symtable = _larch.symtable
     display  = symtable._sys.display

@@ -32,7 +32,6 @@ def f1_kwargs(x, **kws):
 
 def f1_varargs(x, *args):
     """1 arg, with *args"""
-    print 'F1 VARARGS ', x, args
     return 2*x
     # return kws
 
@@ -43,5 +42,3 @@ def registerLarchPlugin():
                            f1_larch=f1_larch,
                            f1_kwargs=f1_kwargs,
                            f1_varargs=f1_varargs))
-    
-            

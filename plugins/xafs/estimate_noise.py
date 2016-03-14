@@ -3,9 +3,9 @@
   Estimate Noise in an EXAFS spectrum
 """
 from numpy import pi, sqrt, where
-from larch import ValidateLarchPlugin, Group, isgroup
+from larch import (ValidateLarchPlugin, parse_group_args,
+                   Group, isgroup)
 
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import index_of, realimag
 from larch_plugins.xafs import set_xafsGroup, xftf, xftr
 
