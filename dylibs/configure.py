@@ -8,6 +8,7 @@
 #     linux64/   Linux, 64-bit
 #     darwin/    Mac OS X, universal dynamic libraries
 
+from __future__ import print_function
 import  os, sys
 from platform import uname, architecture
 
@@ -25,13 +26,13 @@ else:
     if system.lower().startswith('linu'):
         dlldir = 'linux32'
         makefile = 'Mk.linux'
-        if arch.startswith('64'):   
+        if arch.startswith('64'):
             dlldir = 'linux64'
     elif system.lower().startswith('darw'):
         dlldir = 'darwin'
         makefile = 'Mk.darwin'
 
-print 'Writing Makefiles for %s' % (system)
+print('Writing Makefiles for %s' % (system))
 
 if dlldir is not None:
     os.system('cp ../conf/%s Mk.config' % (makefile))
@@ -39,4 +40,3 @@ if dlldir is not None:
     fout.write("INSTALLDIR=../../dlls/%s/" % dlldir)
     fout.write("")
     fout.close()
-

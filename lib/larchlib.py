@@ -11,7 +11,7 @@ import inspect
 import ctypes
 import ctypes.util
 from .utils import Closure
-from .symboltable import Group
+from .symboltable import Group, isgroup
 from .site_config import larchdir, usr_larchdir
 
 HAS_TERMCOLOR = False
@@ -533,3 +533,128 @@ def save_workdir(conffile):
         fh.close()
     except:
         pass
+
+
+def parse_group_args(arg0, members=None, group=None, defaults=None,
+                     fcn_name=None, check_outputs=True):
+    """parse arguments for functions supporting First Argument Group convention
+
+    That is, if the first argument is a Larch Group and contains members
+    named in 'members', this will return data extracted from that group.
+
+    Arguments
+    ----------
+    arg0:         first argument for function call.
+    members:      list/tuple of names of required members (in order)
+    defaults:     tuple of default values for remaining required
+                  arguments past the first (in order)
+    group:        group sent to parent function, used for outputs
+    fcn_name:     name of parent function, used for error messages
+    check_output: True/False (default True) setting whether a Warning should
+                  be raised in any of the outputs (except for the final group)
+                  are None.  This effectively checks that all expected inputs
+                  have been specified
+    Returns
+    -------
+     tuple of output values in the order listed by members, followed by the
+     output group (which could be None).
+
+    Notes
+    -----
+    This implements the First Argument Group convention, used for many Larch functions.
+    As an example, the function _xafs.find_e0 is defined like this:
+       find_e0(energy, mu=None, group=None, ...)
+
+    and uses this function as
+       energy, mu, group = parse_group_arg(energy, members=('energy', 'mu'),
+                                           defaults=(mu,), group=group,
+                                           fcn_name='find_e0', check_output=True)
+
+    This allows the caller to use
+         find_e0(grp)
+    as a shorthand for
+         find_e0(grp.energy, grp.mu, group=grp)
+
+    as long as the Group grp has member 'energy', and 'mu'.
+
+    With 'check_output=True', the value for 'mu' is not actually allowed to be None.
+
+    The defaults tuple should be passed so that correct values are assigned
+    if the caller actually specifies arrays as for the full call signature.
+    """
+    if members is None:
+        members = []
+    if isgroup(arg0, *members):
+        if group is None:
+            group = arg0
+        out = [getattr(arg0, attr) for attr in members]
+    else:
+        out = [arg0] + list(defaults)
+
+    # test that all outputs are non-None
+    if check_outputs:
+        _errmsg = """%s: needs First Argument Group or valid arguments for
+  %s"""
+        if fcn_name is None:
+            fcn_name ='unknown function'
+        for i, nam in enumerate(members):
+            if out[i] is None:
+                raise Warning(_errmsg % (fcn_name, ', '.join(members)))
+
+    out.append(group)
+    return out
+
+def Make_CallArgs(skipped_args):
+    """
+    decorator to create a 'call_args' dictionary
+    containing function arguments
+    """
+    def wrap(fcn):
+        def wrapper(*args, **kwargs):
+            result = fcn(*args, **kwargs)
+            call_args = inspect.getcallargs(fcn, *args, **kwargs)
+            skipped = skipped_args[:]
+            at0 = skipped[0]
+            at1 = skipped[1]
+            a, b, groupx = parse_group_args(call_args[at0],
+                                            members=(at0, at1),
+                                            defaults=(call_args[at1],),
+                                            group=call_args['group'],
+                                            fcn_name=fcn.__name__)
+
+            for attr in ('group', '_larch'):
+                if attr not in skipped: skipped.append(attr)
+
+            for k in skipped:
+                call_args.pop(k)
+            details_name = '%s_details' % fcn.__name__
+            if not hasattr(groupx, details_name):
+                setattr(groupx, details_name, Group())
+            setattr(getattr(groupx, details_name),
+                    'call_args', call_args)
+            return result
+        wrapper.__doc__ = fcn.__doc__
+        wrapper.__name__ = fcn.__name__
+        wrapper._larchfunc_ = fcn
+        wrapper__filename__ = fcn.__code__.co_filename
+        wrapper.__dict__.update(fcn.__dict__)
+        return wrapper
+    return wrap
+
+def ValidateLarchPlugin(fcn):
+    """function decorator to ensure that _larch is included in keywords,
+    and that it is a valid Interpeter"""
+    errmsg = "plugin function '%s' needs a valid '_larch' argument"
+
+    def wrapper(*args, **keywords):
+        "ValidateLarchPlugin"
+        if ('_larch' not in keywords or
+            ('Interpreter' not in keywords['_larch'].__class__.__name__)):
+            raise LarchPluginException(errmsg % fcn.__name__)
+        return fcn(*args, **keywords)
+    wrapper.__doc__ = fcn.__doc__
+    wrapper.__name__ = fcn.__name__
+    wrapper._larchfunc_ = fcn
+    wrapper.__filename__ = fcn.__code__.co_filename
+    wrapper.__dict__.update(fcn.__dict__)
+    return wrapper

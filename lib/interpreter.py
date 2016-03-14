@@ -13,6 +13,7 @@ import types
 import ast
 import math
 import numpy
+import six
 
 from . import builtins
 from . import site_config
@@ -85,10 +86,10 @@ class Interpreter:
                        'excepthandler', 'expr', 'expression', 'extslice',
                        'for', 'functiondef', 'if', 'ifexp', 'import',
                        'importfrom', 'index', 'interrupt', 'list',
-                       'listcomp', 'module', 'name', 'num', 'pass',
-                       'print', 'raise', 'repr', 'return', 'slice', 'str',
-                       'subscript', 'tryexcept', 'tuple', 'unaryop',
-                       'while')
+                       'listcomp', 'module', 'name', 'nameconstant', 'num',
+                       'pass', 'print', 'raise', 'repr', 'return', 'slice',
+                       'str', 'subscript', 'try', 'tryexcept', 'tuple',
+                       'unaryop', 'while')
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
         self.writer = writer or StdWriter()
@@ -152,8 +153,10 @@ class Interpreter:
                         builtins._addplugin(pdir, _larch=self)
                         loaded_plugins.append(pname)
 
+        self.on_try = self.on_tryexcept
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
+
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
@@ -384,6 +387,10 @@ class Interpreter:
     def on_str(self, node):
         'return string'
         return node.s  # ('s',)
+
+    def on_nameconstant(self, node):    # ('value')
+        """ Name Constant node (new in Python3.4)"""
+        return node.value
 
     def on_name(self, node):    # ('id', 'ctx')
         """ Name node """
@@ -673,8 +680,7 @@ class Interpreter:
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.run(node.func)
-        if (not hasattr(func, '__call__') and
-            not isinstance(func, (type, types.ClassType)) ):
+        if not callable(func):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
 
@@ -688,7 +694,10 @@ class Interpreter:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node, msg=msg)
-            keywords[key.arg] = self.run(key.value)
+            if key.arg is None:   # Py3 **kwargs !
+                keywords.update(self.run(key.value))
+            else:
+                keywords[key.arg] = self.run(key.value)
 
         kwargs = getattr(node, 'kwargs', None)
         if kwargs is not None:
@@ -711,20 +720,28 @@ class Interpreter:
             keyval = self.run(node.args.args[idef+offset])
             kwargs.append((keyval, defval))
         # kwargs.reverse()
-        args = [tnode.id for tnode in node.args.args[:offset]]
+        if six.PY3:
+            args = [tnode.arg for tnode in node.args.args[:offset]]
+        else:
+            args = [tnode.id for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
             docnode = node.body[0]
             doc = docnode.value.s
+        vararg = node.args.vararg
+        varkws = node.args.kwarg
+        if six.PY3:
+            vararg = self.run(vararg)
+            varkws = self.run(varkws)
         proc = Procedure(node.name, _larch=self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,
                          lineno = self.lineno,
                          args   = args,
                          kwargs = kwargs,
-                         vararg = node.args.vararg,
-                         varkws = node.args.kwarg)
+                         vararg = vararg,
+                         varkws = varkws)
         self.symtable.set_symbol(node.name, value=proc)
 
     # imports

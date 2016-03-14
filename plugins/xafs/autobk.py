@@ -2,12 +2,10 @@
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
-from larch import Group, Parameter, Minimizer
-from larch import ValidateLarchPlugin, isgroup
-from Call_args import DefCallArgs
+from larch import (Group, Parameter, Minimizer, Make_CallArgs,
+                   ValidateLarchPlugin, parse_group_args, isgroup)
 
 # import other plugins from std, math, and xafs modules...
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import (index_of, index_nearest,
                                 realimag, remove_dups)
 
@@ -49,7 +47,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
                            abs(clamp_hi)*scaled_chik[-nclamp:]))
 
 @ValidateLarchPlugin
-@DefCallArgs("autobk_details",["energy","mu"])
+@Make_CallArgs(["energy" ,"mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
@@ -94,7 +92,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         msg('Unrecognized a:rguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='autobk')
@@ -207,7 +204,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.init_knots_y = spl_y
     params.nfev = params.fit_details.nfev
     params.kmin = kmin
-    params.kmax = kmax  
+    params.kmax = kmax
     group.autobk_details = params
 
     # uncertainties in mu0 and chi:  fairly slow!!
