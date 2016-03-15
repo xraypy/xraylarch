@@ -144,7 +144,7 @@ class PVSlaveThread(threading.Thread):
     undulator.join()
 
     """
-    def __init__(self, master_pvname=None,  slave_pvname=None,
+    def __init__(self, master_pvname=None,  slave_pvname=None, scan=None,
                  values=None, maxpts=8192, wait_time=0.05, offset=3):
         threading.Thread.__init__(self)
         self.maxpts = maxpts
@@ -152,6 +152,7 @@ class PVSlaveThread(threading.Thread):
         self.wait_time = wait_time
         self.pulse = -1
         self.last  = None
+        self.scan = scan
         self.running = False
         self.vals = values
         if self.vals is None:
@@ -192,6 +193,18 @@ class PVSlaveThread(threading.Thread):
                 except:
                     pass # print("PVSlave Put: ", self.slave.pvname , val)
                 self.last = self.pulse
+                if (self.scan is not None and self.pulse > 3 and self.pulse % 5 == 0):
+                    for c in self.scan.counters:
+                        try:
+                            c.buff = c.pv.get().tolist()
+                        except:
+                            pass
+                        name = getattr(c, 'db_label', None)
+                        if name is None:
+                            name = c.label
+                        c.db_label = fix_varname(name)
+                        self.scan.scandb.set_scandata(c.db_label, c.buff)
+                    self.scan.scandb.commit()
 
 
 def etok(energy):
@@ -654,7 +667,6 @@ class LarchStepScan(object):
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
 
-
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
         self.set_info('filename', self.filename)
@@ -732,6 +744,7 @@ class LarchStepScan(object):
                     break
                 point_ok = (all([trig.done for trig in self.triggers]) and
                             time.time()-t0 > (0.75*self.min_dwelltime))
+
                 if not point_ok:
                     point_ok = True
                     time.sleep(0.5)
@@ -740,7 +753,8 @@ class LarchStepScan(object):
                         poll(10*MIN_POLL_TIME, 1.0)
                         point_ok = point_ok and (trig.runtime > (0.95*self.min_dwelltime))
                         if not point_ok:
-                            print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
+                            print('Trigger problem?: ', trig, trig.runtime, self.min_dwelltime)
+                            trig.abort()
 
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.1)
@@ -1214,7 +1228,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         sis_prefix = qconf['mcs_prefix']
         und_thread = PVSlaveThread(master_pvname=sis_prefix+'CurrentChannel',
-                                   slave_pvname=qconf['id_drive_pv'])
+                                   slave_pvname=qconf['id_drive_pv'],
+                                   scan=self)
 
         und_thread.set_array(idarray)
         und_thread.running = False
@@ -1253,7 +1268,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.check_outputs(out, msg='pre scan')
 
         orig_counters = self.counters[:]
-        self.counters = []
         # specialized QXAFS Counters
         qxafs_counters = []
         for i, mca in enumerate(sis.mcas):
@@ -1274,6 +1288,13 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             pvname = '%sC%i_SCA0:ArrayData_RBV' % (xsp3_prefix, card)
             qxafs_counters.append(("Clock_mca%i" % card, PV(pvname)))
 
+        self.counters = []
+        for label, cpv in qxafs_counters:
+            _c = Counter(cpv.pvname, label=label)
+            self.counters.append(_c)
+
+        self.init_scandata()
+
         sis.stop()
         sis.ExternalMode()
         sis.NuseAll = MAXPTS
@@ -1289,7 +1310,9 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
 
+        self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
+
         self.set_info('filename', self.filename)
         self.set_info('request_abort', 0)
         self.set_info('scan_time_estimate', npts*dtime)
@@ -1342,8 +1365,11 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         t0  = time.time()
         while narr < (nout-1) and (time.time()-t0) < 30.0:
             time.sleep(0.05)
-            dat =  [p.get() for (_d, p) in qxafs_counters]
-            narr = min([len(d) for d in dat])
+            try:
+                dat =  [p.get(timeout=5.0) for (_d, p) in qxafs_counters]
+                narr = min([len(d) for d in dat])
+            except:
+                narr = 0
 
         # reset the counters, and fill in data read from arrays
         # note that we may need to trim *1st point* from qxspress3 data
@@ -1356,11 +1382,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             _c.buff = arr.tolist()
             self.counters.append(_c)
 
-        self.init_scandata()
         self.publish_scandata()
-
-        self.datafile.write_data(breakpoint=0)
-        self.set_info('filename', self.datafile.filename)
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
