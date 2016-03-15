@@ -88,6 +88,7 @@ import time
 import threading
 import json
 import numpy as np
+import random
 
 from datetime import timedelta
 
@@ -731,16 +732,21 @@ class LarchStepScan(object):
                 if self.look_for_interrupts():
                     break
                 point_ok = (all([trig.done for trig in self.triggers]) and
-                            time.time()-t0 > (0.75*self.min_dwelltime))
+                            time.time()-t0 > (0.8*self.min_dwelltime))
+
+                # for simulating random trigger errors:
+                # point_ok = point_ok and (random.randint(1, 20) < 17)
                 if not point_ok:
                     point_ok = True
-                    time.sleep(0.5)
+                    time.sleep(0.25)
                     poll(0.1, 2.0)
                     for trig in self.triggers:
                         poll(10*MIN_POLL_TIME, 1.0)
-                        point_ok = point_ok and (trig.runtime > (0.95*self.min_dwelltime))
+                        point_ok = point_ok and (trig.runtime > (0.8*self.min_dwelltime))
                         if not point_ok:
                             print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
+                            # print('Has abort? ', callable(getattr(trig, 'abort', None)))
+                            trig.abort()
 
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.1)
@@ -768,8 +774,10 @@ class LarchStepScan(object):
                 self.set_info('request_abort', 1)
                 self.abort = True
             if not point_ok:
-                self.write('point messed up... try again?')
-                time.sleep(5.0)
+                self.write('point messed up.  Will try again\n')
+                time.sleep(0.25)
+                for trig in self.triggers:
+                    trig.abort()
                 for det in self.detectors:
                     det.pre_scan(scan=self)
                 i -= 1
