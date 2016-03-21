@@ -195,6 +195,20 @@ class PVSlaveThread(threading.Thread):
                     pass # print("PVSlave Put: ", self.slave.pvname , val)
                 self.last = self.pulse
                 if (self.scan is not None and self.pulse > 3 and self.pulse % 5 == 0):
+                    npts = self.scan.npts
+                    cpt = self.pulse
+                    dtime = self.scan.dwelltime
+                    if isinstance(dtime, list):
+                        dtime = dtime[0]
+                    time_left = (npts-cpt)*dtime
+                    self.scan.set_info('scan_time_estimate', time_left)
+                    time_est  = hms(time_left)
+                    msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
+                    if cpt % self.scan.message_points == 0:
+                        self.scan.write("%s\n" % msg)
+
+                    self.scan.set_info('scan_progress', msg)
+
                     for c in self.scan.counters:
                         try:
                             c.buff = c.pv.get().tolist()
@@ -1356,6 +1370,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.finish_qscan()
         und_thread.running = False
         und_thread.join()
+
+        self.set_info('scan_progress', 'reading data')
 
         npulses, gather_text = self.xps.ReadGathering()
         energy, height = self.gathering2energy(gather_text)
