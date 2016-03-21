@@ -43,7 +43,10 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
             setattr(group, "%s_%s" % (family, key), val)
 
     ocrs, icrs = [], []
-    ctime = xdi.CountTime
+    try:
+        ctime = xdi.CountTime
+    except AttributeError:
+        ctime = xdi.TSCALER / 5.e7
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
     for i in range(nmca):
