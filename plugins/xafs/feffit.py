@@ -285,7 +285,10 @@ class FeffitDataSet(Group):
             iqmin = max(0, int(0.01 + trans.kmin/trans.kstep))
             iqmax = min(trans.nfft/2,  int(0.01 + trans.kmax/trans.kstep))
             if all_kweights:
-                return np.concatenate([((diff/eps_k)*k**kw)[iqmin:iqmax] for kw in trans.kweight])
+                out = []
+                for i, kw in enumerate(trans.kweight):
+                    out.append(((diff/eps_k[i])*k**kw)[iqmin:iqmax])
+                return np.concatenate(out)
             else:
                 return ((diff/eps_k) * k**trans.kweight)[iqmin:iqmax]
         else:
