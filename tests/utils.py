@@ -64,7 +64,8 @@ class TestCase(unittest.TestCase):
         self.symtable = self.session.symtable
 
     def runscript(self, fname, dirname='.'):
-        origdir = os.getcwd()
+        origdir = os.path.abspath(os.getcwd())
+        dirname = os.path.abspath(dirname)
         os.chdir(dirname)
         fh = open(fname, 'r')
         text = fh.read()
