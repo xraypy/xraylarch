@@ -144,7 +144,6 @@ class TransformGroup(Group):
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
         cx = chir * self.rwin[:len(chir)]
-        # print( 'FFTR"   ', chir[:30], self.rwin[:30])
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
 class FeffitDataSet(Group):
@@ -189,6 +188,7 @@ class FeffitDataSet(Group):
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
+        # print(" Prepare fit " , hasattr(self.data, 'epsilon_k'))
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
             if isinstance(eps_k, np.ndarray):
@@ -197,7 +197,8 @@ class FeffitDataSet(Group):
         else:
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
         self.__prepared = True
-        # print( 'feffit dataset prepare_fit ', dir(self.data), self.n_idp, self.epsilon_k)
+        # print('Prepare fit done', self.epsilon_k, self.epsilon_r)
+
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
         """estimage noise in a chi spectrum from its high r components"""
@@ -244,13 +245,26 @@ class FeffitDataSet(Group):
     def set_epsilon_k(self, eps_k):
         """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
         trans = self.transform
-        w = 2 * trans.get_kweight() + 1
-        scale = 2*sqrt((pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
-        eps_r = eps_k / scale
-        self.epsilon_k = eps_k
-        self.epsilon_r = eps_r
-        if isinstance(eps_r, np.ndarray):
-            self.epsilon_r = eps_r.mean()
+        all_kweights = isinstance(trans.kweight, Iterable)
+        if isinstance(trans.kweight, Iterable):
+            self.epsilon_k = []
+            self.epsilon_r = []
+            for kw in trans.kweight:
+                w = 2 * kw + 1
+                scale = 2*sqrt((pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
+                self.epsilon_k.append(eps_k)
+                eps_r = eps_k / scale
+                if isinstance(eps_r, np.ndarray): eps_r = eps_r.mean()
+                self.epsilon_r.append(eps_r)
+
+        else:
+            w = 2 * trans.get_kweight() + 1
+            scale = 2*sqrt((pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
+            self.epsilon_k = eps_k
+            eps_r = eps_k / scale
+            if isinstance(eps_r, np.ndarray): eps_r = eps_r.mean()
+            self.epsilon_r = eps_r
+
 
     def _residual(self, paramgroup=None, data_only=False, **kws):
         """return the residual for this data set
