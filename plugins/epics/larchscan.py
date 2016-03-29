@@ -1450,15 +1450,17 @@ def scan_from_json(text, filename='scan.001', current_rois=None,
 
         if is_qxafs:
             scan = QXAFS_Scan(**kwargs)
+            sdict['time_kw'] = 0
+            sdict['max_time'] = 0
         else:
             scan = XAFS_Scan(**kwargs)
 
         t_kw  = sdict['time_kw']
         t_max = sdict['max_time']
         nreg  = len(sdict['regions'])
-        kws  = {'relative': sdict['is_relative']}
         for i, det in enumerate(sdict['regions']):
             start, stop, npts, dt, units = det
+            kws  = {'relative': sdict['is_relative']}
             kws['dtime'] =  dt
             kws['use_k'] =  units.lower() !='ev'
             if i == nreg-1: # final reg
