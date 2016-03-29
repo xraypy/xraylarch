@@ -21,3 +21,4 @@ play/
 AMAP/
 *.h5
 *.mca
+*credentials*
