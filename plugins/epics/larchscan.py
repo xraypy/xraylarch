@@ -146,11 +146,14 @@ class PVSlaveThread(threading.Thread):
 
     """
     def __init__(self, master_pvname=None,  slave_pvname=None, scan=None,
-                 values=None, maxpts=8192, wait_time=0.05, offset=3):
+                 values=None, maxpts=8192, wait_time=0.05, dead_time=0.5,
+                 offset=3):
         threading.Thread.__init__(self)
         self.maxpts = maxpts
         self.offset = offset
         self.wait_time = wait_time
+        self.dead_time = dead_time
+        self.last_move_time = time.time() - 100.0
         self.pulse = -1
         self.last  = None
         self.scan = scan
@@ -187,12 +190,16 @@ class PVSlaveThread(threading.Thread):
     def run(self):
         while self.running:
             time.sleep(self.wait_time)
-            if self.pulse > self.last and self.last is not None:
+            now = time.time()
+            if (self.pulse > self.last and self.last is not None and
+                (now - self.last_move_time) > self.deadtime):
                 val = self.vals[self.pulse]
                 try:
                     self.slave.put(val)
+                    self.last_move_time = time.time()
                 except:
-                    pass # print("PVSlave Put: ", self.slave.pvname , val)
+                    # pass
+                    print("PVFollow Put failed: ", self.slave.pvname , val)
                 self.last = self.pulse
                 if (self.scan is not None and self.pulse > 3 and self.pulse % 5 == 0):
                     npts = self.scan.npts
@@ -206,9 +213,7 @@ class PVSlaveThread(threading.Thread):
                     msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
                     if cpt % self.scan.message_points == 0:
                         self.scan.write("%s\n" % msg)
-
                     self.scan.set_info('scan_progress', msg)
-
                     for c in self.scan.counters:
                         try:
                             c.buff = c.pv.get().tolist()
