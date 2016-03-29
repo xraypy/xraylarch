@@ -325,7 +325,7 @@ class XRFDisplayFrame(wx.Frame):
                              ('downarrow', 'down')):
             self.wids[wname] = wx.BitmapButton(arrowpanel, -1,
                                                get_icon(wname),
-                                               size=(40, 40),
+                                               size=(25, 25),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
                                  partial(ptable.onKey, name=dname))
@@ -861,7 +861,7 @@ class XRFDisplayFrame(wx.Frame):
             return
         if not self.wids['xray_lines'].HasSelection():
             return
-        item = self.wids['xray_lines'].GetSelection().GetID()
+        item = self.wids['xray_lines'].GetSelectedRow()
         en = self.wids['xray_linesdata'][item]
 
         if self.highlight_xrayline is not None:
@@ -887,7 +887,7 @@ class XRFDisplayFrame(wx.Frame):
         xlines = self.wids['xray_lines']
         if xlines is not None:
             xlines.DeleteAllItems()
-        self.wids['xray_linesdata'] = [0]
+        self.wids['xray_linesdata'] = []
         minors, majors = [], []
         conf = self.conf
         line_data = {}
@@ -922,8 +922,6 @@ class XRFDisplayFrame(wx.Frame):
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
-                # dat = (label, "%.4f" % e, "%.4f" % frac,
-                #      "%s->%s" % (ilevel, flevel))
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
