@@ -1,9 +1,0 @@
-conn = dict(dbname='escan2016_1',
-            server='postgresql',
-            host='millenia.cars.aps.anl.gov',
-            user='epics',
-            password='epics')
-
-connect_scandb(**conn)
-
-s = scan_from_db('Fe_XANES')
