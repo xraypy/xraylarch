@@ -134,6 +134,10 @@ class XRFDisplayFrame(wx.Frame):
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
+        self.hold_markers = []
+
+        self.hold_lines = None
+        self.major_saved = None
         self.energy_for_zoom = None
         self.xview_range = None
         self.show_yaxis = False
@@ -195,7 +199,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def clear_lines(self, evt=None):
         "remove all Line Markers"
-        for m in self.major_markers + self.minor_markers:
+        for m in self.major_markers + self.minor_markers + self.hold_markers:
             try:
                 m.remove()
             except:
@@ -209,6 +213,7 @@ class XRFDisplayFrame(wx.Frame):
         self.highlight_xrayline = None
         self.major_markers = []
         self.minor_markers = []
+        self.hold_markers = []
         self.draw()
 
     def draw(self):
@@ -335,8 +340,11 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['kseries'] = Check(arrowpanel, ' K ', action=self.onKLM)
         self.wids['lseries'] = Check(arrowpanel, ' L ', action=self.onKLM)
         self.wids['mseries'] = Check(arrowpanel, ' M ', action=self.onKLM)
+        self.wids['holdbtn'] = wx.ToggleButton(arrowpanel, -1, 'Hold   ', size=(65, 25))
+        self.wids['holdbtn'].Bind(wx.EVT_TOGGLEBUTTON, self.onToggleHold)
 
         ssizer.Add(txt(arrowpanel, '  '),   0, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['holdbtn'],    0, wx.EXPAND|wx.ALL, 2)
         ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
@@ -856,6 +864,21 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem = self.selected_elem)
 
+    def onToggleHold(self, event=None):
+        if event.IsChecked():
+            self.wids['holdbtn'].SetLabel("Hide %s" % self.selected_elem)
+            self.hold_lines = self.major_saved[:]
+        else:
+            self.wids['holdbtn'].SetLabel("Hold %s" % self.selected_elem)
+            self.hold_lines = None
+            for m in self.hold_markers:
+                try:
+                    m.remove()
+                except:
+                    pass
+            self.hold_markers = []
+            self.draw()
+
     def onSelectXrayLine(self, evt=None):
         if self.wids['xray_lines'] is None:
             return
@@ -907,6 +930,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.wids['mseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.M_major])
 
+        self.major_saved = majors[:]
         erange = [max(conf.e_min, self.xdata.min()),
                   min(conf.e_max, self.xdata.max())]
 
@@ -947,6 +971,24 @@ class XRFDisplayFrame(wx.Frame):
                 if xlines is not None:
                     xlines.AppendItem(dat)
                 self.minor_markers.append(l)
+
+        if not self.wids['holdbtn'].GetValue():
+            self.wids['holdbtn'].SetLabel("Hold %s" % elem)
+        elif self.hold_lines is not None:
+            for label, eev, frac, ilevel, flevel in self.hold_lines:
+                e = float(eev) * 0.001
+                if (e >= erange[0] and e <= erange[1]):
+                    l = vline(e, color = self.conf.hold_elinecolor,
+                              linewidth=1.75, zorder=-27)
+                    l.set_label(label)
+                    self.hold_markers.append(l)
+                    #dat = (label,  e, "%.4f" % frac,
+                    #       "%s->%s" % (ilevel, flevel))
+
+                    # self.wids['xray_linesdata'].append(e)
+                    #if xlines is not None:
+                    #    xlines.AppendItem(dat)
+                    #self.minor_markers.append(l)
 
         if xlines is not None:
             xlines.Refresh()

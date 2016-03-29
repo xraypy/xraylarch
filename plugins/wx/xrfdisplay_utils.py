@@ -200,6 +200,7 @@ class ColorsFrame(wx.Frame):
         scolor(' Major X-ray Lines:',   'major_elinecolor', newrow=True)
         scolor(' Minor X-ray Lines:',   'minor_elinecolor')
         scolor(' Selected X-ray Line:', 'emph_elinecolor', newrow=True)
+        scolor(' Held  X-ray Lines:',   'hold_elinecolor')
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
@@ -230,6 +231,10 @@ class ColorsFrame(wx.Frame):
         elif item == 'minor_elinecolor':
             for l in self.parent.minor_markers:
                 l.set_color(color)
+        elif item == 'hold_elinecolor':
+            for l in self.parent.hold_markers:
+                l.set_color(color)
+
         self.parent.panel.canvas.draw()
         self.parent.panel.Refresh()
 
@@ -360,6 +365,7 @@ class XRFDisplayConfig:
     emph_elinecolor  = '#444444'
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#F4DAC0'
+    hold_elinecolor  = '#CAC8DA'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'
