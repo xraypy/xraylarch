@@ -979,7 +979,7 @@ class XRFDisplayFrame(wx.Frame):
                 e = float(eev) * 0.001
                 if (e >= erange[0] and e <= erange[1]):
                     l = vline(e, color = self.conf.hold_elinecolor,
-                              linewidth=1.75, zorder=-27)
+                              linewidth=1.5, zorder=-20, dashes=(5, 5))
                     l.set_label(label)
                     self.hold_markers.append(l)
 
