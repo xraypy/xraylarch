@@ -1,0 +1,30 @@
+#############################
+info_head = 'Ca edge Energy(eV)  Fyield   EdgeJump'
+
+info_l3 = ' L3       %.1f    %.5f    %.2f' % xray_edge('Ca', 'L3')
+info_l2 = ' L2       %.1f    %.5f    %.2f' % xray_edge('Ca', 'L2')
+info_l1 = ' L1       %.1f    %.5f    %.2f' % xray_edge('Ca', 'L1')
+
+l3_en = xray_edge('Ca', 'L3')[0]
+l2_en = xray_edge('Ca', 'L2')[0]
+l3_jump = mu_elam('Ca', l3_en+1) - mu_elam('Ca', l3_en-1)
+l2_jump = mu_elam('Ca', l2_en+1) - mu_elam('Ca', l2_en-1)
+
+info_jump = 'Jumps: L3=%10.1f, L2=%10.1f, L3/L2=%10.3f' 
+info_jump = info_jump % (l3_jump, l2_jump, l3_jump/l2_jump)
+
+
+energies = linspace(340, 360, 101)
+muca_chantler = mu_chantler('Ca', energies)
+muca_elam = mu_elam('Ca', energies)
+
+newplot(energies, muca_chantler, ymax = 50000, label='Chantler',
+        xlabel=r'$E\rm\, (eV)$', ylabel=r'$\mu\rm\, (cm^2/gr)$', 
+        show_legend=True, title='Ca L3, L2 edges')
+plot(energies, muca_elam, label='Elam')
+
+
+write_ascii('CaMu_fine.dat', energies, muca_elam, muca_chantler, 
+             info_head, info_l3, info_l2, info_l1, info_jump,
+             label='Energy  MuCa_Elam  MuCa_Chantler')
+#############################
