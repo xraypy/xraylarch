@@ -149,10 +149,15 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         print('Could not read XDI file ', fname)
         return
 
-    for attr in ('energy', 'i0', 'i1', 'i2',
+    for attr in ('energy', 'i0', 'i1', 'i2', 'tscaler',
                  'counttime',  'scan_start_time', 'scan_end_time'):
         if hasattr(xdi, attr):
             setattr(out, attr, getattr(xdi, attr))
+
+    # some scans may not record separate counttime, but TSCALER
+    # is clock ticks for a 50MHz clock
+    if not hasattr(out, 'counttime'):
+        out.counttime = xdi.tscaler * 2.e-8
 
     if hasattr(xdi, 'energy_readback'):
         out.energy = xdi.energy_readback
