@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 import sys
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
+
 import time
 import os
 
