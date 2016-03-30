@@ -192,7 +192,7 @@ class PVSlaveThread(threading.Thread):
             time.sleep(self.wait_time)
             now = time.time()
             if (self.pulse > self.last and self.last is not None and
-                (now - self.last_move_time) > self.deadtime):
+                (now - self.last_move_time) > self.dead_time):
                 val = self.vals[self.pulse]
                 try:
                     self.slave.put(val)
