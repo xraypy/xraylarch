@@ -76,7 +76,10 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
             datraw = dat*1.0
             rawname = sumname + '_nodtc'
             dat   = dat * icrs[imca]/ ocrs[imca]
-
+            if any(np.isnan(dat)):
+                nan_pts = np.where(np.isnan(dat))[0]
+                dat[nan_pts] = datraw[nan_pts]
+            
         setattr(group, aname, dat)
         if sumname not in labels:
             labels.append(sumname)
