@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+
+from six.moves.xmlrpc_server import SimpleXMLRPCServer
 import os
 import sys
 import time
+from threading import Timer
 import larch
 from larch.interpreter import Interpreter
 from larch.inputText import InputText
@@ -23,6 +25,8 @@ except ImportError:
     HAS_WX = False
 
 class LarchServer(SimpleXMLRPCServer):
+    IDLE_TIME = 3*86400.0
+    IDLE_POLL_TIME = 60.0
     def __init__(self, host='127.0.0.1', port=5465, with_wx=True,
                  local_echo=True, quiet=False, **kws):
         self.keep_alive = True
@@ -31,6 +35,7 @@ class LarchServer(SimpleXMLRPCServer):
         self.local_echo = local_echo
         self.quiet = quiet
         self.out_buffer = []
+        self.keep_alive_time = time.time() + self.IDLE_TIME
         SimpleXMLRPCServer.__init__(self, (host, port),
                                     logRequests=False, allow_none=True, **kws)
         self.initialized = False
@@ -64,13 +69,24 @@ class LarchServer(SimpleXMLRPCServer):
     def len_messages(self):
         return len(self.out_buffer)
 
+    def check_activity(self):
+        if (time.time() > self.keep_alive_time) or not self.keep_alive:
+            print("Shutting down due to inactivity")
+            self.keep_alive = False
+            sys.exit()
+        else:
+            self.timer = Timer(self.IDLE_POLL_TIME, self.check_activity)
+            self.timer.start()
+
     def run(self):
         """run server until keep_alive is set to False"""
         self.help()
+        self.check_activity()
         try:
             while self.keep_alive:
                 self.handle_request()
         except KeyboardInterrupt:
+            self.keep_alive = False
             sys.exit()
 
     def list_dir(self, dir_name):
@@ -149,6 +165,7 @@ class LarchServer(SimpleXMLRPCServer):
 
     def get_data(self, expr):
         "return json encoded data for a larch expression"
+        self.keep_alive_time = time.time() + self.IDLE_TIME
         return encode4js(self.larch.eval(expr))
 
     def larch_exec(self, text, debug=True):
@@ -181,6 +198,7 @@ class LarchServer(SimpleXMLRPCServer):
                     break
                 elif ret is not None:
                     self.write("%s\n" % repr(ret))
+            self.keep_alive_time = time.time() + self.IDLE_TIME
         return ret is None
 
 if __name__ == '__main__':
