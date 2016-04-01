@@ -58,7 +58,7 @@ def test_server(port=4966):
         return False
     ret = ''
     try:
-        server.larch('print _sys.config.usr_larchdir')
+        server.larch('print _sys.config.user_larchdir')
         ret = server.get_messages()
     except:
         return False
@@ -89,7 +89,7 @@ if command == 'start':
         if not options.quiet: print 'Yes: Larch server on port %d running' % port
     else:
         start_server(port=port, quiet=options.quiet)
-        
+
 elif command == 'stop':
     if test_server(port=port):
         stop_server(port=port)
@@ -109,4 +109,3 @@ elif command == 'status':
     else:
         if not options.quiet: print 'No: Larch server on port %d not running' % port
         sys.exit(1)
-
