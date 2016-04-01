@@ -13,7 +13,9 @@ from glob import glob
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
-required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy']
+
+required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six']
+
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
                        'color-enhanced error messages': ('termcolor', ),
