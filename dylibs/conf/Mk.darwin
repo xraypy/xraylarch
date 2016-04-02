@@ -1,8 +1,8 @@
-# General purpose make configuration for Mac OS X (using 10.6.8)
+# General purpose make configuration for Mac OS X (using 10.11.3)
 
 ARCH_TARGS   = -arch x86_64
 MAC_SDK      = -mmacosx-version-min=10.7
-GFORT_LIBDIR = -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin13/4.9.0/ -L/usr/local/gfortran/lib/
+GFORT_LIBDIR = -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin14/5.2.0/ -L/usr/local/gfortran/lib/
 
 # GFORT_LIBDIR = /Users/Newville/Codes/ifeffit/local/lib
 #GFORT_LIBDIR = /usr/local/lib
