@@ -899,7 +899,8 @@ WARNING: This cannot be undone!
            for dat in json.loads(area.attrs['roistats']):
                dat = tuple(dat)
                self.report_data.append(dat)
-               wx.CallAfter(self.report.AppendItem, dat)
+               self.report.AppendItem(dat)
+               # wx.CallAfter(self.report.AppendItem, dat)
            self.choice.Enable()
            return
 
@@ -914,6 +915,7 @@ WARNING: This cannot be undone!
             ctime.append(1.e-6*xrfmap[tname].value[amask])
 
         for idet, dname in enumerate(d_names):
+            # print(" -- ", idet, dname)
             daddr = d_addrs[idet]
             det = 0
             if 'mca' in daddr:
@@ -1061,8 +1063,7 @@ WARNING: This cannot be undone!
     def onShowStats(self, event=None):
         if self.report is None:
             return
-        self.stats_thread = Thread(target=self.show_stats)
-        self.stats_thread.start()
+        self.show_stats()
 
     def onLabel(self, event=None):
         aname = self._getarea()
