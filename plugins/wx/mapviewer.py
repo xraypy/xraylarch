@@ -900,22 +900,26 @@ WARNING: This cannot be undone!
                dat = tuple(dat)
                self.report_data.append(dat)
                self.report.AppendItem(dat)
-               # wx.CallAfter(self.report.AppendItem, dat)
            self.choice.Enable()
            return
-
 
         d_addrs = [d.lower() for d in xrfmap['roimap/det_address']]
         d_names = [d for d in xrfmap['roimap/det_name']]
 
         # count times
-        ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][amask]]
+        ctime = xrfmap['roimap/det_raw'][:,:,0]
+        if amask.shape[1] == ctime.shape[1] - 2: # hotcols
+            ctime = ctime[:,1:-1]
+
+        ctime = [1.e-6*ctime[amask]]
         for i in range(xrfmap.attrs['N_Detectors']):
             tname = 'det%i/realtime' % (i+1)
-            ctime.append(1.e-6*xrfmap[tname].value[amask])
+            rtime = xrfmap[tname].value
+            if amask.shape[1] == rtime.shape[1] - 2: # hotcols
+                rtime = rtime[:,1:-1]
+            ctime.append(1.e-6*rtime[amask])
 
         for idet, dname in enumerate(d_names):
-            # print(" -- ", idet, dname)
             daddr = d_addrs[idet]
             det = 0
             if 'mca' in daddr:
@@ -926,7 +930,10 @@ WARNING: This cannot be undone!
             if idet == 0:
                 d = 1.e3*ctime[0]
             else:
-                d = xrfmap['roimap/det_raw'][:,:,idet][amask]/ctime[det]
+                d = xrfmap['roimap/det_raw'][:,:,idet]
+                if amask.shape[1] == d.shape[1] - 2: # hotcols
+                    d = d[:,1:-1]
+                d = d[amask]/ctime[det]
 
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
@@ -944,8 +951,8 @@ WARNING: This cannot be undone!
             dat = (dname, fmt(d.min()), fmt(d.max()), fmt(d.mean()),
                    fmt(d.std()), fmt(np.median(d)), smode)
             self.report_data.append(dat)
-            wx.CallAfter(self.report.AppendItem, dat)
-        if 'roistats' not in area.attrs:
+            self.report.AppendItem(dat)
+        if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
 
