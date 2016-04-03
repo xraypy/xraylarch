@@ -1175,7 +1175,8 @@ class XRFDisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
-    def oplot(self, x, y, color='darkgreen', mca=None, zorder=-2, **kws):
+    def oplot(self, x, y, color='darkgreen', label='spectra2',
+              mca=None, zorder=-2, **kws):
         if mca is not None:
             self.mca2 = mca
 
@@ -1186,7 +1187,7 @@ class XRFDisplayFrame(wx.Frame):
         else:
             ymax = max(y)*1.25
 
-        kws.update({'zorder': zorder, 'label': 'spectra2',
+        kws.update({'zorder': zorder, 'label': label,
                     'ymax' : ymax, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
         self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
