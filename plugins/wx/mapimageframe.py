@@ -17,6 +17,9 @@ try:
     from wx._core import PyDeadObjectError
 except:
     PyDeadObjectError = Exception
+
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
@@ -113,14 +116,17 @@ class MapImageFrame(ImageFrame):
         zdc.SetBrush(wx.TRANSPARENT_BRUSH)
         zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
         zdc.ResetBoundingBox()
-        zdc.BeginDrawing()
+        if not is_wxPhoenix:
+            zdc.BeginDrawing()
+
 
         # erase previous box
         if self.rbbox is not None:
             zdc.DrawLine(*self.rbbox)
         self.rbbox = (xmin, ymin, xmax, ymax)
         zdc.DrawLine(*self.rbbox)
-        zdc.EndDrawing()
+        if not is_wxPhoenix:
+            zdc.EndDrawing()
 
     def prof_leftdown(self, event=None):
         self.report_leftdown(event=event)
@@ -137,9 +143,12 @@ class MapImageFrame(ImageFrame):
             zdc.SetBrush(wx.TRANSPARENT_BRUSH)
             zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
             zdc.ResetBoundingBox()
-            zdc.BeginDrawing()
+            if not is_wxPhoenix:
+                zdc.BeginDrawing()
             zdc.DrawLine(*self.rbbox)
-            zdc.EndDrawing()
+            if not is_wxPhoenix:
+                zdc.EndDrawing()
+
             self.rbbox = None
 
         if self.zoom_ini is None or self.lastpoint[0] is None:
