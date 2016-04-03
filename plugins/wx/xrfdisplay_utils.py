@@ -70,7 +70,7 @@ class CalibrationFrame(wx.Frame):
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
-            w_use  = Check(panel, size=(40, -1), default=fwhm<0.50)
+            w_use  = Check(panel, label='use?', size=(40, -1), default=fwhm<0.50)
 
             panel.Add(w_name, style=LEFT, newrow=True)
             panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
