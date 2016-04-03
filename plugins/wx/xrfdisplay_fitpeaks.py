@@ -13,8 +13,9 @@ import wx.lib.scrolledpanel as scrolled
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
 
-from larch import Group, Parameter
+from larch import Group, Parameter, Minimizer, fitting
 from larch.larchlib import Empty
+from larch_plugins.math import index_of, gaussian
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
@@ -40,6 +41,33 @@ def read_filterdata(flist, _larch):
     return out
 
 
+def xrf_resid(pars, peaks=None, mca=None, det=None, bgr=None,
+              sig=None, filters=None, flyield=None, use_bgr=False,
+              xray_en=30.0, emin=0.0, emax=30.0, **kws):
+
+    sig_o = pars.sig_o.value
+    sig_s = pars.sig_s.value
+    sig_q = pars.sig_q.value
+    model = mca.data * 0.0
+    if use_bgr:
+        model += mca.bgr
+    for use, pcen, psig, pamp in peaks:
+        amp = pamp.value
+        cen = pcen.value
+        sig = sig_o + cen * (sig_s + sig_q * cen)
+        psig.value = sig
+        if use: model += amp*gaussian(mca.energy, cen, sig)
+
+    mca.model = model
+    imin = index_of(mca.energy, emin)
+    imax = index_of(mca.energy, emax)
+    resid = (mca.data - model)
+    if det['use']:
+        resid = resid / np.maximum(1.e-49, (1.0 - mca.det_atten))
+
+    return resid[imin:imax]
+
+
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
@@ -51,9 +79,9 @@ class FitSpectraFrame(wx.Frame):
 
     Detector_Materials = ['Si', 'Ge']
 
-    gsig_offset = '_sigma_off'
-    gsig_slope  = '_sigma_slope'
-    gsig_quad   = '_sigma_quad'
+    gsig_offset = 'sig_o'
+    gsig_slope  = 'sig_s'
+    gsig_quad   = 'sig_q'
 
     def __init__(self, parent, size=(675, 525)):
         self.parent = parent
@@ -137,7 +165,7 @@ class FitSpectraFrame(wx.Frame):
             setattr(self.paramgroup, cennam, p_cen)
             setattr(self.paramgroup, signam, p_sig)
 
-            _use   = Check(p, default=True)
+            _use   = Check(p, label='use' , default=True)
             _cen   = ParameterPanel(p, p_cen, precision=3)
             _sig   = ParameterPanel(p, p_sig, precision=3)
             _amp   = ParameterPanel(p, p_amp, precision=2)
@@ -159,9 +187,9 @@ class FitSpectraFrame(wx.Frame):
         conf = self.parent.conf
         wids = self.wids
 
-        width = getattr(mca, 'bgr_width', 2.5)
+        width = getattr(mca, 'bgr_width',   5)
         compr = getattr(mca, 'bgr_compress', 2)
-        expon = getattr(mca, 'bgr_exponent', 2.5)
+        expon = getattr(mca, 'bgr_exponent', 2)
 
         p = GridPanel(self, itemstyle=LEFT)
         wids.bgr_use = Check(p, label='Fit Background-Subtracted Spectra',
@@ -174,17 +202,17 @@ class FitSpectraFrame(wx.Frame):
                                    size=(70, -1), default=0)
 
         sopts = {'vary': True, 'precision': 5}
-        sig_offset = Parameter(value=0.050, name=self.gsig_offset, **sopts)
-        sig_slope  = Parameter(value=0.005, name=self.gsig_slope, **sopts)
-        sig_quad   = Parameter(value=0.000, name=self.gsig_quad, **sopts)
+        sig_offset = Parameter(value=0.050, name=self.gsig_offset, vary=True)
+        sig_slope  = Parameter(value=0.005, name=self.gsig_slope, vary=True)
+        sig_quad   = Parameter(value=0.000, name=self.gsig_quad, vary=False)
 
         setattr(self.paramgroup, self.gsig_offset, sig_offset)
         setattr(self.paramgroup, self.gsig_slope, sig_slope)
         setattr(self.paramgroup, self.gsig_quad,  sig_quad)
 
-        wids.sig_offset = ParameterPanel(p, sig_offset, **sopts)
-        wids.sig_slope  = ParameterPanel(p, sig_slope, **sopts)
-        wids.sig_quad   = ParameterPanel(p, sig_quad, **sopts)
+        wids.sig_offset = ParameterPanel(p, sig_offset, vary=True, precision=5)
+        wids.sig_slope  = ParameterPanel(p, sig_slope, vary=True, precision=5)
+        wids.sig_quad   = ParameterPanel(p, sig_quad, vary=False, precision=5)
 
         wids.xray_en = FloatCtrl(p, value=20.0, size=(70, -1),
                                  minval=0, maxval=1000, precision=3)
@@ -266,8 +294,7 @@ class FitSpectraFrame(wx.Frame):
         mca.bgr_exponent = exponent
         parent.plotmca(mca)
         parent.oplot(mca.energy, mca.bgr, label='background',
-                     color=parent.conf.bgr_color)
-
+                     color=parent.conf.bgr_color, linewidth=1, style='--')
 
     def onFilterMaterial(self, evt=None, index=0):
         name = evt.GetString()
@@ -319,7 +346,6 @@ class FitSpectraFrame(wx.Frame):
         return p
 
     def onFitPeaks(self, event=None):
-        print( 'Fit Peaks')
         opts = {}
         filters, peaks = [], []
         sig, det, bgr = {}, {}, {}
@@ -347,29 +373,54 @@ class FitSpectraFrame(wx.Frame):
             filters.append(f)
 
         for k in self.wids.peaks:
+            use = k[0].IsChecked()
             p = (k[0].IsChecked(), k[1].param, k[2].param, k[3].param)
             peaks.append(p)
+            if not use:
+                k[1].param.vary = False
+                k[2].param.vary = False
+                k[3].param.vary = False
 
-        opts  = {'det': det, 'bgr': bgr, 'sig': sig,
-                 'filters': filters, 'peaks': peaks}
-        for key, val in opts.items():
-            print( key, val)
+
+        opts['det'] = det
+        opts['bgr'] = bgr
+        opts['sig'] = sig
+        opts['filters'] = filters
+        opts['peaks'] = peaks
 
         mca    = self.mca
         mca.data = mca.counts*1.0
         energy = mca.energy
         _larch = self.parent.larch
-        if bgr.pop('use'):
+        if bgr['use']:
+            bgr.pop('use')
             xrf_background(energy=mca.energy, counts=mca.counts,
                            group=mca, _larch=_larch, **bgr)
-            mca.data = mca.data - mca.bgr
-
-        if det.pop('use'):
-            # mu in 1/mm, note energy is needed in eV
-            mu = material_mu(det['material'], energy*1000.0, _larch=_larch)/10.0
+            opts['use_bgr']=True
+        opts['mca'] = mca
+        if det['use']:
+            mu = material_mu(det['material'], energy*1000.0,
+                             _larch=_larch)/10.0
             t = det['thickness']
             mca.det_atten = np.exp(-t*mu)
-            mca.data = mca.data / np.maximum(1.e-49, (1.0 - mca.det_atten))
+            # mca.data = mca.data / np.maximum(1.e-49, (1.0 - mca.det_atten))
+
+        # do fit
+        # for name in dir(self.paramgroup):
+        #     p = getattr(self.paramgroup, name)
+        #     if (isinstance(p, Parameter) and p.vary):
+        #         print(name, p)
+
+        fit = Minimizer(xrf_resid, self.paramgroup, toler=1.e-4,
+                        _larch=_larch, fcn_kws = opts)
+        fit.leastsq()
+        parent = self.parent
+        parent.oplot(mca.energy, mca.model,
+                     label='fit', style='solid',
+                     color='#DD33DD')
+
+        print( fitting.fit_report(self.paramgroup, _larch=_larch))
+
         # filters:
         #  75 microns kapton, etc
         #
