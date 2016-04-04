@@ -102,11 +102,9 @@ class XRFDisplayFrame(wx.Frame):
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
 
-
-        # kws["style"] = wx.DEFAULT_FRAME_STYLE|wx
+        if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
-                          title=title, size=size,
-                          **kws)
+                          title=title, size=size,  **kws)
         self.conf = XRFDisplayConfig()
         # 1 ROI Averager per status line
         self.roi_aves = [ROI_Averager(nsamples=11) for i in range(4)]
@@ -164,7 +162,6 @@ class XRFDisplayFrame(wx.Frame):
             self._mcagroup.mca1 = self.mca
             self._mcagroup.mca2 = None
             self.plotmca(self.mca, show_mca2=False)
-
 
     def ignoreEvent(self, event=None):
         pass

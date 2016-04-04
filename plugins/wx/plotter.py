@@ -67,9 +67,10 @@ xrf_plot         browsable display for XRF spectra
 MAX_WINDOWS = 20
 
 class XRFDisplay(XRFDisplayFrame):
-    def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
-        XRFDisplayFrame.__init__(self, parent=None, size=size,
-                                 output_title='XRF', _larch=_larch,
+    def __init__(self, wxparent=None, window=1, _larch=None,
+                 size=(725, 425), **kws):
+        XRFDisplayFrame.__init__(self, parent=wxparent, size=size,
+                                 _larch=_larch,
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
