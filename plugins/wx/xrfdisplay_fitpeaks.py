@@ -62,8 +62,8 @@ def xrf_resid(pars, peaks=None, mca=None, det=None, bgr=None,
     imin = index_of(mca.energy, emin)
     imax = index_of(mca.energy, emax)
     resid = (mca.data - model)
-    if det['use']:
-        resid = resid / np.maximum(1.e-49, (1.0 - mca.det_atten))
+    # if det['use']:
+    #     resid = resid / np.maximum(1.e-29, (1.0 - mca.det_atten))
 
     return resid[imin:imax]
 
@@ -187,7 +187,7 @@ class FitSpectraFrame(wx.Frame):
         conf = self.parent.conf
         wids = self.wids
 
-        width = getattr(mca, 'bgr_width',   5)
+        width = getattr(mca, 'bgr_width',    4)
         compr = getattr(mca, 'bgr_compress', 2)
         expon = getattr(mca, 'bgr_exponent', 2)
 
@@ -381,7 +381,6 @@ class FitSpectraFrame(wx.Frame):
                 k[2].param.vary = False
                 k[3].param.vary = False
 
-
         opts['det'] = det
         opts['bgr'] = bgr
         opts['sig'] = sig
@@ -403,13 +402,6 @@ class FitSpectraFrame(wx.Frame):
                              _larch=_larch)/10.0
             t = det['thickness']
             mca.det_atten = np.exp(-t*mu)
-            # mca.data = mca.data / np.maximum(1.e-49, (1.0 - mca.det_atten))
-
-        # do fit
-        # for name in dir(self.paramgroup):
-        #     p = getattr(self.paramgroup, name)
-        #     if (isinstance(p, Parameter) and p.vary):
-        #         print(name, p)
 
         fit = Minimizer(xrf_resid, self.paramgroup, toler=1.e-4,
                         _larch=_larch, fcn_kws = opts)
