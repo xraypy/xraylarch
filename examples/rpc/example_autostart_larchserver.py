@@ -23,7 +23,7 @@ def server_connect(port=4966):
         server = xmlrpclib.ServerProxy('http://127.0.0.1:%i' % port)
         methods = server.system.listMethods()
     except:
-        print 'server not found, trying to create new server process....'
+        print( 'server not found, trying to create new server process....')
         server_start()
         time.sleep(1)
         methods = None
@@ -39,14 +39,13 @@ adict = server.get_data('adict')
 if adict is None:  # that is, 'adict' is not found in larch session
     server.larch('adict = {"a": 1, "b": 2, "c": 3}')
 
-print 'adict (raw val return from get_data) = ', server.get_data('adict')
-print 'adict (decoded dictionary): = ', json_decode(server.get_data('adict'))
+print( 'adict (raw val return from get_data) = ', server.get_data('adict'))
+print( 'adict (decoded dictionary): = ', json_decode(server.get_data('adict')))
 
 ## Array Data
 arr = server.get_data('arr')
 if arr is None:  # that is, 'arr' is not found in larch session
     server.larch('arr = linspace(0, 1, 11)')
 
-print 'arr (raw val return from get_data) = ', server.get_data('arr')
-print 'arr (decoded array): = ', json_decode(server.get_data('arr'))
-
+print( 'arr (raw val return from get_data) = ', server.get_data('arr'))
+print( 'arr (decoded array): = ', json_decode(server.get_data('arr')))
