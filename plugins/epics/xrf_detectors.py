@@ -23,21 +23,21 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
     realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
     nelem = len(self._xsp3.mcas)
     mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
-    
+
     npts = len(mcas[0].counts)
     nrois = len(rois[0])
     nelem = len(mcas)
-    """    
+    """
     nelem = len(mcas)
     npts  = len(mcas[0].counts)
     nrois = len(rois[0])
-    
+
     s_rtime = " ".join(["%.4f" % m.real_time for m in mcas])
     s_off   = " ".join(["%.6f" % m.offset    for m in mcas])
     s_quad  = " ".join(["%.6f" % m.quad      for m in mcas])
     s_slope = " ".join(["%.6f" % m.slope     for m in mcas])
     s_rois  = " ".join(["%i"   % nrois       for m in mcas])
-    
+
     buff = []
     buff.append('VERSION:    3.1')
     buff.append('ELEMENTS:   %i' % nelem)
@@ -107,7 +107,7 @@ class Epics_Xspress3(object):
         if self.prefix is not None:
             self.connect()
 
-        # determine max frames 
+        # determine max frames
         self.frametime = self.MIN_FRAMETIME
         rbv = 0
         while rbv != self.MAX_FRAMES:
@@ -181,7 +181,7 @@ class Epics_Xspress3(object):
         thismca = MCA(counts=counts, offset=0.0, slope=0.01)
         thismca.energy = self.get_energy()
         thismca.counts = counts
-        thismca.quad   = 0.0        
+        thismca.quad   = 0.0
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
@@ -319,7 +319,7 @@ class Epics_MultiXMAP(object):
         self.energies = []
         self.connected = False
         self.elapsed_real = None
-        self.elapsed_textwidget = None        
+        self.elapsed_textwidget = None
         self.needs_refresh = False
         if self.prefix is not None:
             self.connect()
@@ -454,3 +454,11 @@ class Epics_MultiXMAP(object):
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
 
+
+def epics_xspress3(prefix='13XQX4:', nmca=4):
+    " return Epics Xspress3"
+    return Epics_Xspress3(prefix=prefix, nmca=nmca)
+
+
+def registerLarchPlugin():
+    return ('_epics', {'epics_xspress3': epics_xspress3})
