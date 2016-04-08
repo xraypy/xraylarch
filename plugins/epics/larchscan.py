@@ -108,12 +108,13 @@ try:
                            ASCIIScanFile, Positioner)
     from epicsscan.scandb import ScanDBException, ScanDBAbort
 
+    from epics.devices.struck import Struck
+    from epics.devices.xspress3 import Xspress3
+
     HAS_EPICSSCAN = True
 except ImportError:
     HAS_EPICSSCAN = False
 
-from epics.devices.struck import Struck
-from epics.devices.xspress3 import Xspress3
 
 from larch_plugins.epics.xps_trajectory import XPSTrajectory
 
