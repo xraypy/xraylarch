@@ -527,10 +527,16 @@ class ScanViewerFrame(wx.Frame):
         if self.xas_autostep.IsChecked():
             self.xas_step.SetValue(lgroup.edge_step)
 
-        self.xas_pre1.SetValue(lgroup.pre1)
-        self.xas_pre2.SetValue(lgroup.pre2)
-        self.xas_nor1.SetValue(lgroup.norm1)
-        self.xas_nor2.SetValue(lgroup.norm2)
+        details_group = lgroup
+        try:
+            details_group = lgroup.pre_edge_details
+        except:
+            pass
+            
+        self.xas_pre1.SetValue(details_group.pre1)
+        self.xas_pre2.SetValue(details_group.pre2)
+        self.xas_nor1.SetValue(details_group.norm1)
+        self.xas_nor2.SetValue(details_group.norm2)
 
         popts1 = dict(style='solid', linewidth=3,
                       marker='None', markersize=4)
