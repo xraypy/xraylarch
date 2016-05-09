@@ -102,10 +102,9 @@ class Epics_Xspress3(object):
         self.nmca = nmca
         self.prefix = prefix
         self.version = version
-        self.mca_array_name = 'MCASUM:%i:ArrayData'
+        self.mca_array_name = 'MCASUM%i:ArrayData'
         if version < 2:
-            self.mca_array_name = 'ARRSUM:%i:ArrayData'
-
+            self.mca_array_name = 'ARRSUM%i:ArrayData'
         self.environ = []
         self.mcas = []
         self.npts  = 4096
@@ -133,7 +132,6 @@ class Epics_Xspress3(object):
         Creator = Xspress3
         if self.version < 2:
             Creator = Xspress310
-
         self._xsp3 = Creator(self.prefix)
 
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
@@ -143,6 +141,7 @@ class Epics_Xspress3(object):
             self._xsp3.PV(self.mca_array_name % imca)
         time.sleep(0.001)
         self.connected = True
+        self.mcas = self._xsp3.mcas
 
     @EpicsFunction
     def connect_displays(self, status=None, elapsed=None, deadtime=None):
@@ -219,11 +218,14 @@ class Epics_Xspress3(object):
         out[np.where(out<0.91)]= 0.91
         return out
 
-    def start(self):
+    def start(self, erase=True):
         'xspress3 start '
         self.stop()
-        self._xsp3.start(capture=False)
-        time.sleep(0.01)
+        if erase:
+            self._xsp3.ERASE = 1
+            time.sleep(0.01)
+
+        return self._xsp3.start(capture=False)
 
     def stop(self, timeout=0.5):
         self._xsp3.stop()
