@@ -61,11 +61,12 @@ class DetectorSelectDialog(wx.Dialog):
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
     det_types = ('ME-4', 'other')
+    ioc_types = ('Xspress3', 'Xspress3(old)', 'xmap')
     def_prefix = '13QX4:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
-                 is_xsp3=False, nmca=4,
+                 ioc_type='Xspress3', nmca=4,
                  title='Select Epics MCA Detector'):
         if prefix is None: prefix = self.def_prefix
         if det_type not in self.det_types:
@@ -78,7 +79,8 @@ class DetectorSelectDialog(wx.Dialog):
         if parent is not None:
             self.SetFont(parent.GetFont())
 
-        self.is_xsp3 = Check(self, size=(120, -1), default=False)
+        self.ioctype = Choice(self,size=(120, -1), choices=self.ioc_types)
+        self.dettype.SetStringSelection(ioc_type)
 
         self.dettype = Choice(self,size=(120, -1), choices=self.det_types)
         self.dettype.SetStringSelection(det_type)
@@ -113,7 +115,7 @@ class DetectorSelectDialog(wx.Dialog):
         sizer.Add(txt('  Epics Prefix'),  (2, 0), (1, 1), sty, 2)
         sizer.Add(txt('  # Elements'),    (3, 0), (1, 1), sty, 2)
         sizer.Add(self.dettype,         (0, 1), (1, 1), sty, 2)
-        sizer.Add(self.is_xsp3,         (1, 1), (1, 1), sty, 2)
+        sizer.Add(self.ioctype,         (1, 1), (1, 1), sty, 2)
         sizer.Add(self.prefix,          (2, 1), (1, 1), sty, 2)
         sizer.Add(self.nelem,           (3, 1), (1, 1), sty, 2)
 
@@ -130,13 +132,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
     main_title = 'Epics XRF Control'
     def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4',  is_xsp3=False,
+                 det_type='ME-4',  ioc_type='Xspress3',
                  nmca=4, size=(725, 580),  scandb_conn=None,
                  title='Epics XRF Display',
                  output_title='XRF', **kws):
 
         self.det_type = det_type
-        self.is_xsp3 = is_xsp3
+        self.ioc_type = ioc_type
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
@@ -152,15 +154,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
-                                            is_xsp3=self.is_xsp3,
+                                            ioc_type=self.ioc_type,
                                             nmca=self.nmca)
-            self.prefix, self.det_type, self.is_xsp3, self.nmca = res
+            self.prefix, self.det_type, self.ioc_type, self.nmca = res
         else:
             self.prefix = prefix
         self.det_fore = 1
         self.det_back = 0
         self.clear_mcas()
-        self.connect_to_detector(prefix=self.prefix, is_xsp3=self.is_xsp3,
+        self.connect_to_detector(prefix=self.prefix, ioc_type=self.ioc_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
     def ConnectScanDB(self, **kws):
@@ -218,22 +220,29 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
         pass
 
-    def prompt_for_detector(self, prefix=None, is_xsp3=False,  nmca=4):
-        dlg = DetectorSelectDialog(prefix=prefix, is_xsp3=is_xsp3, nmca=nmca)
+    def prompt_for_detector(self, prefix=None, ioc_type='Xspress3',  nmca=4):
+        dlg = DetectorSelectDialog(prefix=prefix, ioc_type=ioc_type, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
             dpref = dlg.prefix.GetValue()
-            atype = dlg.is_xsp3.IsChecked()
+            atype = dlg.ioctype.GetStringSelection()
             dtype = dlg.dettype.GetStringSelection()
             nmca = dlg.nelem.GetValue()
             dlg.Destroy()
         return dpref, dtype, atype, nmca
 
-    def connect_to_detector(self, prefix=None, is_xsp3=False,
+    def connect_to_detector(self, prefix=None, ioc_type='Xspress3',
                             det_type=None, nmca=4):
         self.det = None
-        if is_xsp3:
-            self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
+        ioc_type = ioc_type.lower()
+        if ioc_type.startswith('xspress3'):
+            version = 2
+            mca_array_name = 'MCASUM%i:ArrayData'
+            if 'old' in ioc_type:
+                version = 1
+                mca_array_name = 'ARRSUM%i:ArrayData'
+
+            self.det = Epics_Xspress3(prefix=prefix, nmca=nmca, version=version)
             self.det.connect()
             time.sleep(0.5)
             self.det.get_mca(mca=1)
