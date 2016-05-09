@@ -665,6 +665,11 @@ class XRFDisplayFrame(wx.Frame):
 
 
     def ShowROIPatch(self, left, right):
+        """show colored XRF Patch:
+        Note: ROIs larger than half the energy are not colored"""
+        xnpts = 1.0/len(self.mca.energy)
+        if xnpts*(right - left) > 0.5:
+            return
         try:
             self.roi_patch.remove()
         except:
@@ -677,7 +682,7 @@ class XRFDisplayFrame(wx.Frame):
         e[0]  = e[1]
         e[-1] = e[-2]
         self.roi_patch = self.panel.axes.fill_between(e, r, zorder=-20,
-                                          color=self.conf.roi_fillcolor)
+                                           color=self.conf.roi_fillcolor)
 
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
