@@ -95,8 +95,8 @@ class Epics_Xspress3(object):
     multi-element MCA detector using Quantum Xspress3 electronics
     and Epics IOC based on AreaDetector2 IOC (3.2?)
     """
-    MIN_FRAMETIME = 0.20
-    MAX_FRAMES    = 5000
+    MIN_FRAMETIME = 0.25
+    MAX_FRAMES    = 16380
     def __init__(self, prefix=None, nmca=4, version=2, **kws):
 
         self.nmca = nmca
