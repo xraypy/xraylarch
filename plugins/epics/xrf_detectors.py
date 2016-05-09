@@ -14,6 +14,12 @@ except (NameError, ImportError):
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
 
+try:
+    from epics.devices.xspress3 import Xspress310
+except:
+    Xspress310 = Xspress3
+
+
 from larch_plugins.xrf import MCA, ROI, Environment
 
 def save_gsemcafile(filename, mcas, rois, environ=None):
@@ -84,16 +90,22 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
     fp.write("\n".join(buff))
     fp.close()
 
-
 class Epics_Xspress3(object):
-    """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
+    """
+    multi-element MCA detector using Quantum Xspress3 electronics
+    and Epics IOC based on AreaDetector2 IOC (3.2?)
     """
     MIN_FRAMETIME = 0.20
-    MAX_FRAMES    = 10000
+    MAX_FRAMES    = 5000
+    def __init__(self, prefix=None, nmca=4, version=2, **kws):
 
-    def __init__(self, prefix=None, nmca=4, **kws):
         self.nmca = nmca
         self.prefix = prefix
+        self.version = version
+        self.mca_array_name = 'MCASUM:%i:ArrayData'
+        if version < 2:
+            self.mca_array_name = 'ARRSUM:%i:ArrayData'
+
         self.environ = []
         self.mcas = []
         self.npts  = 4096
@@ -101,7 +113,6 @@ class Epics_Xspress3(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
-
         self.needs_refresh = False
         self._xsp3 = None
         if self.prefix is not None:
@@ -119,12 +130,17 @@ class Epics_Xspress3(object):
 
     # @EpicsFunction
     def connect(self):
-        self._xsp3 = Xspress3(self.prefix)
+        Creator = Xspress3
+        if self.version < 2:
+            Creator = Xspress310
+
+        self._xsp3 = Creator(self.prefix)
+
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
         counterpv.clear_callbacks()
         counterpv.add_callback(self.onRealTime)
         for imca in range(1, self.nmca+1):
-            self._xsp3.PV('ARRSUM%i:ArrayData' % imca)
+            self._xsp3.PV(self.mca_array_name % imca)
         time.sleep(0.001)
         self.connected = True
 
@@ -185,8 +201,8 @@ class Epics_Xspress3(object):
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
-                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
-                                        left=eroi.LO, right=eroi.HI))
+                thismca.rois.append(ROI(name=eroi.name, address=eroi._prefix,
+                                        left=eroi.left, right=eroi.right))
         return thismca
 
     def get_energy(self, mca=1):
@@ -194,7 +210,7 @@ class Epics_Xspress3(object):
 
     def get_array(self, mca=1):
         try:
-            out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+            out = 1.0*self._xsp3.get(self.mca_array_name % mca)
         except TypeError:
             out = np.arange(self.npts)*0.91
 
@@ -232,15 +248,11 @@ class Epics_Xspress3(object):
 
     @EpicsFunction
     def rename_roi(self, i, newname):
-        roi = self._xsp3.mcas[0].rois[i]
-        roi.NM = newname
-        rootname = roi._prefix
-        for imca in range(1, len(self._xmap.mcas)):
-            pvname = rootname.replace('mca1', 'mca%i'  % (1+imca))
-            epics.caput(pvname+'NM', newname)
+        for mca in self._xsp3.mcas:
+            roi = mca.rois[i]
+            roi.Name = newname
 
     def restore_rois(self, roifile):
-
         self._xsp3.restore_rois(roifile)
         self.rois = self._xsp3.mcas[0].get_rois()
 
@@ -293,6 +305,7 @@ class Epics_Xspress3(object):
             m.live_time = realtime
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
+
 
 class Epics_MultiXMAP(object):
     """multi-element MCA detector using XIA xMAP electronics
