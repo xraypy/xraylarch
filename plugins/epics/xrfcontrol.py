@@ -80,7 +80,7 @@ class DetectorSelectDialog(wx.Dialog):
             self.SetFont(parent.GetFont())
 
         self.ioctype = Choice(self,size=(120, -1), choices=self.ioc_types)
-        self.dettype.SetStringSelection(ioc_type)
+        self.ioctype.SetStringSelection(ioc_type)
 
         self.dettype = Choice(self,size=(120, -1), choices=self.det_types)
         self.dettype.SetStringSelection(det_type)
@@ -237,11 +237,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         ioc_type = ioc_type.lower()
         if ioc_type.startswith('xspress3'):
             version = 2
-            mca_array_name = 'MCASUM%i:ArrayData'
             if 'old' in ioc_type:
                 version = 1
-                mca_array_name = 'ARRSUM%i:ArrayData'
-
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca, version=version)
             self.det.connect()
             time.sleep(0.5)
@@ -389,7 +386,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
         b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart,
-                                                                      dtime=0))
+                                                                       dtime=0))
 
         bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
         pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
@@ -464,13 +461,26 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if left > right:
             return
         sum = self.ydata[left:right].sum()
-        dt = self.mca.real_time
-        roi_ave = self.roi_aves[panel]
-        roi_ave.update(sum)
-        cps = roi_ave.get_cps()
+        try:
+            rate  = 1.0  / self.det.elapsed_real
+        except:
+            try:
+                nframes = self.det.ArrayCounter_RBV
+                ftime   = self.det.AcquireTime
+                self.det.elapsed_real = nframes * ftime
+                rate = 1.0  / self.det.elapsed_real
+            except:
+                rate = 0
+        cps = sum * rate
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
             nmsg = " %s" % name
+            for roi in self.det.mcas[self.det_fore-1].rois:
+                if name.lower() == roi.name.lower():
+                    counts = roi.sum
+                    ftime = self.det.frametime
+                    cps = counts/ftime
+
         cmsg = " Counts={:10,.0f}".format(sum)
         if cps is not None and cps > 0:
             rmsg = " CPS={:10,.1f}".format(cps)
@@ -537,15 +547,22 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onDelROI(self, event=None):
         roiname = self.get_roiname()
         errmsg = None
+        t0 = time.time()
         if self.roilist_sel is None:
             errmsg = 'No ROI selected to delete.'
         if errmsg is not None:
             return Popup(self, errmsg, 'Cannot Delete ROI')
+        print("onDelROI (epics) %.1f" % (time.time()-t0))
         self.det.del_roi(roiname)
+        print("onDelROI (epics) %.1f" % (time.time()-t0))
+
         XRFDisplayFrame.onDelROI(self)
+        print("onDelROI (epics) %.1f" % (time.time()-t0))
+
 
     def onNewROI(self, event=None):
         roiname = self.get_roiname()
+        print(" NEW ROI ", roiname)
         errmsg = None
         if self.xmarker_left is None or self.xmarker_right is None:
             errmsg = 'Must select right and left markers to define ROI'
