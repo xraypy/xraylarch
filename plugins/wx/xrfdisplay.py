@@ -667,9 +667,9 @@ class XRFDisplayFrame(wx.Frame):
     def ShowROIPatch(self, left, right):
         """show colored XRF Patch:
         Note: ROIs larger than half the energy are not colored"""
-        xnpts = 1.0/len(self.mca.energy)
-        if xnpts*(right - left) > 0.5:
-            return
+        # xnpts = 1.0/len(self.mca.energy)
+        # if xnpts*(right - left) > 0.5:
+        #    return
         try:
             self.roi_patch.remove()
         except:
@@ -1114,11 +1114,14 @@ class XRFDisplayFrame(wx.Frame):
             kwargs['xmax'] = self.xview_range[1]
 
         if mca is not None:
+            xnpts = 1.0/len(self.mca.energy)
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
             yroi = -1*np.ones(len(y))
             for r in mca.rois:
                 if (r.left, r.right) in ((0, 0), (-1, -1)):
+                    continue
+                if xnpts*(r.right - r.left) > 0.5:
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
                 ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
@@ -1153,10 +1156,13 @@ class XRFDisplayFrame(wx.Frame):
         mca.counts = counts[:]
         if energy is not None:
             mca.energy = energy[:]
+        xnpts = 1.0/len(energy)
         nrois = len(mca.rois)
         if not is_mca2 and with_rois and nrois > 0:
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
+                if xnpts*(r.right - r.left) > 0.5:
+                    continue
                 yroi[r.left:r.right] = counts[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
             self.panel.update_line(1, mca.energy, yroi, draw=False,
