@@ -194,7 +194,10 @@ class Epics_Xspress3(object):
         emca = self._xsp3.mcas[mca-1]
         if with_rois:
             emca.get_rois()
+
         counts = self.get_array(mca=mca)
+        print(" GetMCA ", mca, self.npts, counts)
+
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
             counts[0] = 2.0
@@ -219,7 +222,12 @@ class Epics_Xspress3(object):
         except TypeError:
             out = np.arange(self.npts)*0.91
 
-        if len(out) != self.npts:
+        if len(out) < 1:
+            out = np.ones(self.npts)*1.7 + np.sin(np.arange(self.npts)/177.0)*0.8
+
+
+
+        if len(out) != self.npts and len(out)>0:
             self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
         return out
