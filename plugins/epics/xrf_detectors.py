@@ -224,6 +224,10 @@ class Epics_Xspress3(object):
         out[np.where(out<0.91)]= 0.91
         return out
 
+    def get_deadtime(self, mca=1):
+        """return deadtime info"""
+        return 1
+
     def start(self, erase=True):
         'xspress3 start '
         self.stop()
@@ -376,6 +380,10 @@ class Epics_MultiXMAP(object):
         self.needs_refresh = True
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    def get_deadtime(self, mca=1):
+        """return deadtime info"""
+        return self._xmap.get("Deadtime")
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:
