@@ -196,8 +196,6 @@ class Epics_Xspress3(object):
             emca.get_rois()
 
         counts = self.get_array(mca=mca)
-        print(" GetMCA ", mca, self.npts, counts)
-
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
             counts[0] = 2.0
