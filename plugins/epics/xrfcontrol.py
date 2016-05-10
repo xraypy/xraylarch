@@ -272,7 +272,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             i = self.wids['roilist'].GetStrings().index(roiname)
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
-
+        dtime = self.det.get_deadtime(mca=self.det_fore)
+        self.wids['deadtime'].SetLabel("%.3f" % dtime)
         self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
@@ -392,7 +393,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
         ela_lab = SimpleText(pane, 'Elapsed Time (s):', size=(125, -1))
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
-        dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
+        dea_lab = SimpleText(pane, 'OCR/ICR:',         size=(100, -1))
 
 
         psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
@@ -414,8 +415,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
         self.det.connect_displays(status=self.wids['det_status'],
-                                  elapsed=self.wids['elapsed'],
-                                  deadtime=self.wids['deadtime'])
+                                  elapsed=self.wids['elapsed'])
 
         wx.CallAfter(self.onSelectDet, index=1, init=True)
         self.timer_counter = 0
@@ -423,9 +423,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.Bind(wx.EVT_TIMER, self.UpdateData, self.mca_timer)
         self.mca_timer.Start(100)
         return pane
-
-    # def update_mca(self, counts, **kws):
-    #    self.det.needs_refresh = False
 
     def UpdateData(self, event=None, force=False):
         self.timer_counter += 1
@@ -449,6 +446,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
             if self.mca is None:
                 self.mca = self.det.get_mca(mca=self.det_fore)
+
+            dtime = self.det.get_deadtime(mca=self.det_fore)
+            self.wids['deadtime'].SetLabel("%.3f" % dtime)
 
             counts = self.det.get_array(mca=self.det_fore)*1.0
             energy = self.det.get_energy(mca=self.det_fore)
@@ -552,17 +552,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             errmsg = 'No ROI selected to delete.'
         if errmsg is not None:
             return Popup(self, errmsg, 'Cannot Delete ROI')
-        print("onDelROI (epics) %.1f" % (time.time()-t0))
-        self.det.del_roi(roiname)
-        print("onDelROI (epics) %.1f" % (time.time()-t0))
 
+        self.det.del_roi(roiname)
         XRFDisplayFrame.onDelROI(self)
-        print("onDelROI (epics) %.1f" % (time.time()-t0))
 
 
     def onNewROI(self, event=None):
         roiname = self.get_roiname()
-        print(" NEW ROI ", roiname)
         errmsg = None
         if self.xmarker_left is None or self.xmarker_right is None:
             errmsg = 'Must select right and left markers to define ROI'
