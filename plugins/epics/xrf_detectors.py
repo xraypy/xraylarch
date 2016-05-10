@@ -164,6 +164,12 @@ class Epics_Xspress3(object):
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel("  %8.2f" % self.elapsed_real)
 
+    def get_deadtime(self, mca=1):
+        """return OCR / ICR"""
+        _icr = self._xsp3.get("C%iSCA4" % (mca))
+        _ocr = self._xsp3.get("C%iSCA5" % (mca))
+        return _ocr/(1.*max(_icr, 1))
+
     def set_dwelltime(self, dtime=1.0, **kws):
         self._xsp3.useInternalTrigger()
         self._xsp3.FileCaptureOff()
