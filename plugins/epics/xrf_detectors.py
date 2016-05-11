@@ -14,10 +14,12 @@ except (NameError, ImportError):
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
 
-try:
-    from epics.devices.xspress3 import Xspress310
-except:
+if HAS_EPICS:
     Xspress310 = Xspress3
+    try:
+        from epics.devices.xspress3 import Xspress310
+    except:
+        pass
 
 
 from larch_plugins.xrf import MCA, ROI, Environment
