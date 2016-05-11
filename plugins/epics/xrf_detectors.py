@@ -98,7 +98,7 @@ class Epics_Xspress3(object):
     and Epics IOC based on AreaDetector2 IOC (3.2?)
     """
     MIN_FRAMETIME = 0.25
-    MAX_FRAMES    = 16380
+    MAX_FRAMES    = 16384
     def __init__(self, prefix=None, nmca=4, version=2, **kws):
 
         self.nmca = nmca
@@ -119,14 +119,20 @@ class Epics_Xspress3(object):
         if self.prefix is not None:
             self.connect()
 
+        self.nframes = 1
+        self.frametime = 1.0
+
         # determine max frames
         self.frametime = self.MIN_FRAMETIME
-        rbv = 0
+        self._xsp3.NumImages = self.MAX_FRAMES
+        epics.poll(0.010, 1.0)
+        rbv = self._xsp3.NumImages_RBV
+
         while rbv != self.MAX_FRAMES:
-            self.MAX_FRAMES -= 50
+            self.MAX_FRAMES = int(0.96*self.MAX_FRAMES)
             self._xsp3.NumImages = self.MAX_FRAMES
             rbv = self._xsp3.NumImages_RBV
-            if self.MAX_FRAMES < 1000:
+            if self.MAX_FRAMES < 100:
                 break
 
     # @EpicsFunction
@@ -185,8 +191,13 @@ class Epics_Xspress3(object):
             frametime = 1.0*dtime/nframes
         else:
             nframes   = int((dtime+frametime*0.1)/frametime)
-        self._xsp3.NumImages = nframes
+        self._xsp3.NumImages   = self.nframes   = nframes
         self._xsp3.AcquireTime = self.frametime = frametime
+
+    def get_frametime(self):
+        self.nframes = self._xsp3.NumImages
+        self.frametime = self._xsp3.AcquireTime
+        return self.frametime, self.nframes
 
     def get_mca(self, mca=1, with_rois=True):
         if self._xsp3 is None:
