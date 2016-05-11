@@ -461,16 +461,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if left > right:
             return
         sum = self.ydata[left:right].sum()
+
         try:
-            rate  = 1.0  / self.det.elapsed_real
+            ftime, nframes = self.det.get_frametime()
         except:
-            try:
-                nframes = self.det.ArrayCounter_RBV
-                ftime   = self.det.AcquireTime
-                self.det.elapsed_real = nframes * ftime
-                rate = 1.0  / self.det.elapsed_real
-            except:
-                rate = 0
+            ftime   = self.det.frametime
+            nframes = self.det.nframes
+        self.det.elapsed_real = nframes * ftime
+        rate  = 1.0  / (nframes * ftime)
         cps = sum * rate
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
@@ -478,7 +476,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             for roi in self.det.mcas[self.det_fore-1].rois:
                 if name.lower() == roi.name.lower():
                     counts = roi.sum
-                    ftime = self.det.frametime
                     cps = counts/ftime
 
         cmsg = " Counts={:10,.0f}".format(sum)
