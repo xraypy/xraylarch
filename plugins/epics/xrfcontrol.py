@@ -528,7 +528,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det.set_dwelltime(dtime=dtime)
         else:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
-        [rave.clear() for rave in self.roi_aves]
         self.det.start()
 
     def onStop(self, event=None, **kws):

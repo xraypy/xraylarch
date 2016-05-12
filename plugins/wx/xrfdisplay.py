@@ -44,7 +44,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
 
 from larch_plugins.wx.periodictable import PeriodicTablePanel
 from larch_plugins.wx.xrfdisplay_utils import (CalibrationFrame,
-                                               ColorsFrame, ROI_Averager,
+                                               ColorsFrame,
                                                XrayLinesFrame,
                                                XRFDisplayConfig)
 
@@ -106,8 +106,6 @@ class XRFDisplayFrame(wx.Frame):
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
         self.conf = XRFDisplayConfig()
-        # 1 ROI Averager per status line
-        self.roi_aves = [ROI_Averager(nsamples=11) for i in range(4)]
 
         self.subframes = {}
         self.data = None
@@ -512,7 +510,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def _set_xview(self, e1, e2, keep_zoom=False):
         if not keep_zoom:
-            self.energy_for_zoom = None
+            self.energy_for_zoom = (e1+e2)/2.0
         self.panel.axes.set_xlim((e1, e2))
         self.xview_range = [e1, e2]
         self.draw()
@@ -652,17 +650,13 @@ class XRFDisplayFrame(wx.Frame):
             return
         sum = self.ydata[left:right].sum()
         dt = self.mca.real_time
-        self.roi_aves[panel].update(sum)
-
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
             nmsg = " %s" % name
         cmsg = " Counts={:10,.0f}".format(sum)
         if dt is not None and dt > 1.e-9:
             rmsg = " CPS={:10,.1f}".format(sum/dt)
-
         self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
-
 
     def ShowROIPatch(self, left, right):
         """show colored XRF Patch:
@@ -703,8 +697,6 @@ class XRFDisplayFrame(wx.Frame):
                     break
         if name is None or right == -1:
             return
-
-        [rave.clear() for rave in self.roi_aves]
 
         self.ShowROIStatus(left, right, name=name)
         self.ShowROIPatch(left, right)
