@@ -52,7 +52,22 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
 
     root  = h5file['entry/instrument']
     counts = root['detector/data']
-    ndattr = root['detector/NDAttributes']
+    #
+    # support bother newer and earlier location of NDAttributes
+    ndattr = None
+    try:
+        ndattr = root['detector/NDAttributes']
+    except KeyError:
+        pass
+
+    if 'CHAN1SCA0' not in ndattr:
+        try:
+            ndattr = root['NDAttributes']
+        except KeyError:
+            pass
+    if 'CHAN1SCA0' not in ndattr:
+        raise ValueError("cannot find NDAttributes for '%s'" % fname)
+
     # note: sometimes counts has npix-1 pixels, while the time arrays
     # really have npix...  So we take npix from the time array, and
     npix = ndattr['CHAN1SCA0'].shape[0]
