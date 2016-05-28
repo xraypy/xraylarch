@@ -40,6 +40,8 @@ if not os.path.exists(mpl_dir):
     except:
         pass
 
+from matplotlib.axes import Axes
+HIST_DOC = Axes.hist.__doc__
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
@@ -586,6 +588,30 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
     if force_draw:
         wx_update(_larch=_larch)
 
+@larch.ValidateLarchPlugin
+def _hist(x, bins=10, win=1, new=False,
+           _larch=None, wxparent=None, size=None, force_draw=True,  *args, **kws):
+
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    if new:
+        plotter.panel.axes.clear()
+
+    out = plotter.panel.axes.hist(x, bins=bins, **kws)
+    plotter.panel.canvas.draw()
+    if force_draw:
+        wx_update(_larch=_larch)
+    return out
+
+
+_hist.__doc__ = """
+    hist(x, bins, win=1, options)
+
+  %s
+""" % (HIST_DOC)
+
 
 @larch.ValidateLarchPlugin
 def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
@@ -675,6 +701,7 @@ def registerLarchPlugin():
                       'plot_axvline':  _plot_axvline,
                       'plot_axhline':  _plot_axhline,
                       'scatterplot': _scatterplot,
+                      'hist': _hist,
                       'update_trace': _update_trace,
                       'save_plot': _saveplot,
                       'save_image': _saveimg,
