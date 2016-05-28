@@ -95,6 +95,10 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='autobk')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
 
     energy = remove_dups(energy)
     # if e0 or edge_step are not specified, get them, either from the

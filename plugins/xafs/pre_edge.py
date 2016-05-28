@@ -44,6 +44,11 @@ def find_e0(energy, mu=None, group=None, _larch=None):
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
 
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
     energy = remove_dups(energy)
     dmu = np.gradient(mu)/np.gradient(energy)
     # find points of high derivative
@@ -236,6 +241,11 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)

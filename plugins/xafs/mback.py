@@ -12,7 +12,7 @@ MAXORDER = 6
 
 def match_f2(p):
     """
-    Objective function for matching mu(E) data to tabulated f"(E) using the MBACK
+    Objective function for matching mu(E) data to tabulated f''(E) using the MBACK
     algorithm and, optionally, the Lee & Xiang extension.
     """
     s      = p.s.value
@@ -38,7 +38,7 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
           whiteline=None, leexiang=False, tables='cl', fit_erfc=False, return_f1=False,
           _larch=None):
     """
-    Match mu(E) data for tabulated f"(E) using the MBACK algorithm and,
+    Match mu(E) data for tabulated f''(E) using the MBACK algorithm and,
     optionally, the Lee & Xiang extension
 
     Arguments:
@@ -76,6 +76,11 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='mback')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
     group = set_xafsGroup(group, _larch=_larch)
 
     if e0 is None:              # need to run find_e0:
