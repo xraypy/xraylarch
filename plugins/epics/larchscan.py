@@ -859,6 +859,8 @@ class LarchStepScan(object):
         server  = self.scandb.get_info('server_fileroot')
         workdir = self.scandb.get_info('user_folder')
         basedir = os.path.join(server, workdir, 'Maps')
+        if not os.path.exists(basedir):
+            os.mkdir(basedir)
         sname = os.path.join(server, workdir, 'Maps', currscan)
         oname = os.path.join(server, workdir, 'Maps', 'PreviousScan.ini')
 
