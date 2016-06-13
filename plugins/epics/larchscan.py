@@ -1462,6 +1462,8 @@ def scan_from_json(text, filename='scan.001', current_rois=None,
             sdict['max_time'] = 0
         else:
             scan = XAFS_Scan(**kwargs)
+            pos_stime = min(0.1, sdict.get('pos_settle_time', 0.1))
+            sdict['pos_settle_time'] = pos_stime
 
         t_kw  = sdict['time_kw']
         t_max = sdict['max_time']
@@ -1539,7 +1541,7 @@ def scan_from_json(text, filename='scan.001', current_rois=None,
     scan.filename = sdict.get('filename', 'scan.dat')
     if filename is not None:
         scan.filename  = filename
-    scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
+    scan.pos_settle_time = sdict.get('pos_settle_time', 0.1)
     scan.det_settle_time = sdict.get('det_settle_time', 0.01)
     scan.nscans          = sdict.get('nscans', 1)
     if scan.dwelltime is None:
