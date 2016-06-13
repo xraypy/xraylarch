@@ -468,20 +468,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             ftime   = self.det.frametime
             nframes = self.det.nframes
         self.det.elapsed_real = nframes * ftime
-        rate  = 1.0  / (nframes * ftime)
-        cps = sum * rate
-        nmsg, cmsg, rmsg = '', '', ''
-        if len(name) > 0:
-            nmsg = " %s" % name
+
+        mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
+        cps =  mca_counts[left:right].sum() / ftime
+        if name in (None, ''):
+            name = 'Selected'
+        else:
             for roi in self.det.mcas[self.det_fore-1].rois:
                 if name.lower() == roi.name.lower():
-                    counts = roi.sum
-                    cps = counts/ftime
+                    _counts = roi.sum
+                    cps = _counts/ftime
 
-        cmsg = " Counts={:10,.0f}".format(sum)
-        if cps is not None and cps > 0:
-            rmsg = " CPS={:10,.1f}".format(cps)
-        self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
+        if cps < 0: cps = 0
+        fmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
+        self.write_message(fmt.format(name, sum, cps), panel=panel)
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
