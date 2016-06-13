@@ -166,20 +166,18 @@ class GSEXRM_MapRow:
     """
     read one row worth of data:
     """
+
     def __init__(self, yvalue, xmapfile, xpsfile, sisfile, folder,
                  xrftype='xmap', reverse=False, ixaddr=0, dimension=2,
-                 nrows_expected=None,
-                 npts=None,  irow=None, dtime=None):
+                 nrows_expected=None, npts=None,  irow=None, dtime=None):
 
         self.read_ok = False
         self.nrows_expected = nrows_expected
         xrf_reader = read_xsp3_hdf5
-        npts_offset = 1
+        npts_offset = 0
         if not xmapfile.startswith('xsp'):
             xrf_reader = read_xmap_netcdf
             npts_offset = 0
-
-        # print('MapRow: expect %i rows' % self.nrows_expected)
 
         self.npts = npts
         self.irow = irow
@@ -249,9 +247,9 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         # npts = min(gnpts, xnpts, snpts)
-        # print('  MapRow: ', self.npts, npts, gnpts, snpts, xnpts)
+        # print('  MapRow: ', self.npts, npts, gdata.shape, sdata.shape, self.counts.shape, npts_offset)
         if self.npts is None:
-            self.npts = min(gnpts, xnpts) - npts_offset
+            self.npts = min(gnpts, xnpts)  # - npts_offset
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data!', snpts, self.npts)
@@ -687,7 +685,6 @@ class GSEXRM_MapFile(object):
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
-        self.npts = None
         if len(self.rowdata) < 1:
             return
         self.last_row = -1
@@ -750,6 +747,7 @@ class GSEXRM_MapFile(object):
         """read a row's worth of raw data from the Map Folder
         returns arrays of data
         """
+        # print("--> read_rowdata ", self.dimension, irow, len(self.rowdata), self.npts)
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
 
@@ -773,6 +771,7 @@ class GSEXRM_MapFile(object):
         nmca, xnpts, nchan = row.counts.shape
         mcas = []
         nrows = 0
+
         map_items = sorted(self.xrfmap.keys())
         for gname in map_items:
             g = self.xrfmap[gname]
@@ -785,27 +784,32 @@ class GSEXRM_MapFile(object):
 
         total = None
         # self.dt.add('add_rowdata b4 adding mcas')
-        # print(" ROW ", thisrow, len(mcas),
-        #       row.dtfactor.shape, row.realtime.shape, row.counts.shape)
-
+        _nr, npts, nchan = mcas[0]['counts'].shape
+        # print(" ROW ",  xnpts, npts, nchan, self.npts)
+        npts = min(npts, xnpts, self.npts)
         for imca, grp in enumerate(mcas):
-            grp['dtfactor'][thisrow, :]  = row.dtfactor[imca, :]
-            grp['realtime'][thisrow, :]  = row.realtime[imca, :]
-            grp['livetime'][thisrow, :]  = row.livetime[imca, :]
-            grp['inpcounts'][thisrow, :] = row.inpcounts[imca, :]
-            grp['outcounts'][thisrow, :] = row.outcounts[imca, :]
-            grp['counts'][thisrow, :, :] = row.counts[imca, :, :]
+            grp['dtfactor'][thisrow, :npts]  = row.dtfactor[imca, :npts]
+            grp['realtime'][thisrow, :npts]  = row.realtime[imca, :npts]
+            grp['livetime'][thisrow, :npts]  = row.livetime[imca, :npts]
+            grp['inpcounts'][thisrow, :npts] = row.inpcounts[imca, :npts]
+            grp['outcounts'][thisrow, :npts] = row.outcounts[imca, :npts]
+            grp['counts'][thisrow, :npts, :] = row.counts[imca, :npts, :]
 
         # self.dt.add('add_rowdata for mcas')
         # here, we add the total dead-time-corrected data to detsum.
-        self.xrfmap['detsum']['counts'][thisrow, :] = row.total[:]
+
+        self.xrfmap['detsum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
         # self.dt.add('add_rowdata for detsum')
 
         pos    = self.xrfmap['positions/pos']
-        # print(" ADD ROWDATA ", row)
-        # print(" ADD ROWDATA ", row.posvals)
+        # print("Pos Vals: ",  npts, len(row.posvals), [len(p) for p in row.posvals])
+        rowpos = np.array([p[:npts] for p in row.posvals])
+        
+        tpos = rowpos.transpose()
+        # tpos = np.array(row.posvals).transpose()
+        # print(" pos ", pos.shape, tpos.shape)
 
-        pos[thisrow, :, :] = np.array(row.posvals).transpose()
+        pos[thisrow, :npts, :] = tpos[:npts, :]
 
         # now add roi map data
         roimap = self.xrfmap['roimap']
@@ -820,6 +824,7 @@ class GSEXRM_MapFile(object):
             pform = "Add row %4i, yval=%s, npts=%i, xrffile=%s"
             print(pform % (thisrow+1, row.yvalue, npts, row.xmapfile))
 
+        # print("DET RAW Shape: ", np.array(detraw).shape, det_raw.shape)
         detcor = detraw[:]
         sumraw = detraw[:]
         sumcor = detraw[:]
@@ -828,6 +833,7 @@ class GSEXRM_MapFile(object):
         if self.roi_slices is None:
             lims = self.xrfmap['config/rois/limits'].value
             nrois, nmca, nx = lims.shape
+        
             self.roi_slices = []
             for iroi in range(nrois):
                 x = [slice(lims[iroi, i, 0],
@@ -835,9 +841,9 @@ class GSEXRM_MapFile(object):
                 self.roi_slices.append(x)
 
         for slices in self.roi_slices:
-            iraw = [row.counts[i, :, slices[i]].sum(axis=1)
+            iraw = [row.counts[i, :npts, slices[i]].sum(axis=1)
                     for i in range(nmca)]
-            icor = [row.counts[i, :, slices[i]].sum(axis=1)*row.dtfactor[i, :]
+            icor = [row.counts[i, :npts, slices[i]].sum(axis=1)*row.dtfactor[i, :npts]
                     for i in range(nmca)]
             detraw.extend(iraw)
             detcor.extend(icor)
@@ -845,10 +851,12 @@ class GSEXRM_MapFile(object):
             sumcor.append(np.array(icor).sum(axis=0))
 
         # self.dt.add('add_rowdata after roi')
-        det_raw[thisrow, :, :] = np.array(detraw).transpose()
-        det_cor[thisrow, :, :] = np.array(detcor).transpose()
-        sum_raw[thisrow, :, :] = np.array(sumraw).transpose()
-        sum_cor[thisrow, :, :] = np.array(sumcor).transpose()
+        # print( "DET ", det_raw.shape, np.array(detraw).shape)
+
+        det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
+        det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
+        sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
+        sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
         # self.dt.add('add_rowdata end')
         self.last_row = thisrow
@@ -864,8 +872,10 @@ class GSEXRM_MapFile(object):
             self.npts = row.npts
         npts = self.npts
         nmca, xnpts, nchan = row.counts.shape
+        print(".. Build Schema", npts, row.npts, ' ---- ', nmca, xnpts, nchan)
 
         if self.chunksize is None:
+            if xnpts < 10: xnpts=10
             nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
             nxm = 1024
             if nxx > 256:
@@ -1237,6 +1247,7 @@ class GSEXRM_MapFile(object):
         step  = mapconf['scan']['step1']
         span = abs(stop-start)
         self.npts = int(abs(abs(step)*1.01 + span)/abs(step))
+        # print("ReadMaster set npts ", self.npts)
 
         try:
             self.xrfdet_type = mapconf['xrf']['type'].lower()
@@ -1740,3 +1751,4 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
+

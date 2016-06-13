@@ -151,7 +151,7 @@ class XRFDisplayFrame(wx.Frame):
         self.createMenus()
         self.SetFont(Font(9, serif=True))
         self.statusbar = self.CreateStatusBar(4)
-        self.statusbar.SetStatusWidths([-1, -1, -1, -1])
+        self.statusbar.SetStatusWidths([-5, -3, -3, -4])
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
@@ -233,7 +233,7 @@ class XRFDisplayFrame(wx.Frame):
         self.plotmca(self.mca)
 
     def update_status(self):
-        fmt = "{:s}: Chan={:} En={:.3f}  Counts={:,.0f}".format
+        fmt = "{:s}:{:}, E={:.3f}, Cts={:,.0f}".format
         if (self.xmarker_left is None and
             self.xmarker_right is None and
             self.selected_roi is None):
@@ -653,7 +653,7 @@ class XRFDisplayFrame(wx.Frame):
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
             nmsg = " %s" % name
-        cmsg = " Counts={:10,.0f}".format(sum)
+        cmsg = " Cts={:10,.0f}".format(sum)
         if dt is not None and dt > 1.e-9:
             rmsg = " CPS={:10,.1f}".format(sum/dt)
         self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
@@ -1113,7 +1113,7 @@ class XRFDisplayFrame(wx.Frame):
             for r in mca.rois:
                 if (r.left, r.right) in ((0, 0), (-1, -1)):
                     continue
-                if xnpts*(r.right - r.left) > 0.5:
+                if xnpts*(r.right - r.left) > 0.5: # suppress very large ROIs
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
                 ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
