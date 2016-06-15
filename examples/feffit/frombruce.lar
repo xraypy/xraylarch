@@ -1,0 +1,27 @@
+##    data = read_xdi('Copper/Copper.chik')
+    data = read_ascii('../xafsdata/cu10k.chi', labels='k chi')
+    gds = group(amp    = param(1,     vary=True),
+                enot   = param(0,     vary=True),
+                alpha  = param(0,     vary=True),
+                sig    = param(0,     vary=True),
+                ss1    = param(expr='sig**2.0'))
+#    firstpath = feffpath('Copper/baseline/noSCF/feff0001.dat',
+    firstpath = feffpath('feff0001.dat',
+                         s02    = 'amp',
+                         e0     = 'enot',
+                         sigma2 = 'ss1',
+                         deltar = 'alpha*reff')
+    trans = feffit_transform(kmin=3, kmax=20, kw=(2, 1, 3), dk=1, window='hanning',
+                             rmin=1.5, rmax=2.6)
+    dset  = feffit_dataset(data=data, pathlist=[firstpath], transform=trans)
+    fit   = feffit(gds, dset, method='nelder')
+    print 'fit done!'
+    #show(gds)
+
+    print feffit_report(fit)
+
+    newplot(dset.data.r,  dset.data.chir_mag, xmax=8, win=2,
+            xlabel=r'$R \rm\,(\AA)$', label='data',
+            ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
+            title='Fit to Copper', show_legend=True)
+    plot(dset.model.r, dset.model.chir_mag, label='fit', win=2)
