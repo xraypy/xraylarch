@@ -1,0 +1,14 @@
+cu = read_ascii('cu.xmu')
+
+print(cu.energy.shape)
+
+find_e0(cu.energy,cu.mu,group=cu)
+print(cu.e0)
+
+
+e = reshape(cu.energy,(-1,1))
+print(e.shape)
+
+plot(e,cu.mu)
+
+find_e0(e,cu.mu,group=cu)

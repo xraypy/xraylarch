@@ -1,0 +1,25 @@
+add_plugin('x')
+
+fname = 'cell5.001.h5'
+fname = 'A1.h5'
+
+map = read_xrfmap(fname)
+
+det1 = map.get_det(1)
+
+##en =  det1.energy()
+##print en.shape
+
+print '==================='
+df =  det1.dtfactor
+print '==================='
+
+print df.shape
+
+# df =  det1.foop
+
+
+# print df.shape
+print '--> counts '
+ct =  det1.counts
+# ;
