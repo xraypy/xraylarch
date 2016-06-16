@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8. XAFS Analysis &mdash; larch 0.9.27 documentation</title>
+    <title>8. XAFS Analysis &mdash; larch 0.9.28 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.27',
+        VERSION:     '0.9.28',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
     <link rel="next" title="8.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
     <link rel="prev" title="7.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" />
   <script type="text/x-mathjax-config">
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../fitting/confidence.html"
@@ -97,12 +97,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="utilities.html"
                         title="next chapter">8.1. XAFS Functions: Overview and Naming Conventions</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/xafs/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/xafs/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -121,7 +123,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="xafs-analysis">
 <span id="xafs-chapter"></span><h1>8. XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
@@ -151,7 +153,7 @@ fixed.</p>
 </ol>
 </div></blockquote>
 <p>The XAFS-specific functions in Larch follow these general steps.  They are
-all kept in the <a class="reference internal" href="xafsft.html#module-_xafs" title="_xafs"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group, which can be easily accessed, as this
+all kept in the <a class="reference internal" href="xafsft.html#module-_xafs" title="_xafs"><code class="xref py py-data docutils literal"><span class="pre">_xafs</span></code></a> Group, which can be easily accessed, as this
 is in the default search path.</p>
 <span class="target" id="module-_xafs"></span><div class="toctree-wrapper compound">
 <ul>
@@ -161,14 +163,14 @@ is in the default search path.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="preedge.html">8.2. XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">8.2.1. The <tt class="docutils literal"><span class="pre">pre_edge()</span></tt> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">8.2.1. The <code class="docutils literal"><span class="pre">pre_edge()</span></code> function</a></li>
 <li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-subtraction-example">8.2.2. Pre-Edge Subtraction Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="preedge.html#the-mback-algorithm">8.2.3. The MBACK algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="preedge.html#over-absorption-corrections">8.2.4. Over-absorption Corrections</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="autobk.html">8.3. XAFS: Post-edge Background Subtraction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">8.3.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">8.3.1. The <code class="docutils literal"><span class="pre">autobk()</span></code> function</a></li>
 <li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-algorithm">8.3.2. The AUTOBK Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="autobk.html#examples">8.3.3. Examples</a></li>
 </ul>
@@ -177,21 +179,21 @@ is in the default search path.</p>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">8.4.1. Overview of XAFS Fourier transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">8.4.2. Forward XAFS Fourier transforms (<span class="math">\(k{\rightarrow}R\)</span>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">8.4.3. Reverse XAFS Fourier transforms (<span class="math">\(R{\rightarrow}q\)</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">8.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">8.4.4. <code class="docutils literal"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">8.4.5. Catalog of Fourier transform window</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">8.4.6. Examples: Forward XAFS Fourier transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">8.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wavelets.html">8.5. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wavelets.html#cauchy-wavelet">8.5.1. <tt class="docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wavelets.html#cauchy-wavelet">8.5.1. <code class="docutils literal"><span class="pre">cauchy_wavelet()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="wavelets.html#wavelet-example">8.5.2. Wavelet Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="feffpaths.html">8.6. XAFS: Reading and using Feff Paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#running-feff">8.6.1. Running Feff</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">8.6.2. <tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">8.6.3. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <span class="math">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">8.6.2. <code class="docutils literal"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">8.6.3. <code class="docutils literal"><span class="pre">path2chi()</span></code> and <code class="docutils literal"><span class="pre">ff2chi()</span></code>: Generating <span class="math">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">8.6.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">8.6.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">8.6.6. Models for Calculating <span class="math">\(\sigma^2\)</span></a></li>
@@ -202,12 +204,12 @@ is in the default search path.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="feffit.html">8.7. XAFS: Fitting XAFS to Feff Paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-strategy-for-modeling-exafs-data">8.7.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">8.7.2. Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">8.7.2. Fit statistics and goodness-of-fit meassures for <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-functions-in-larch">8.7.3. The Feffit functions in Larch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform-and-the-feffit-transform-group">8.7.4. <tt class="docutils literal"><span class="pre">feffit_transform()</span></tt> and the Feffit Transform Group</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset">8.7.5. <tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit">8.7.6. <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report">8.7.7. <tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform-and-the-feffit-transform-group">8.7.4. <code class="docutils literal"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset">8.7.5. <code class="docutils literal"><span class="pre">feffit_dataset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit">8.7.6. <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report">8.7.7. <code class="docutils literal"><span class="pre">feffit_report()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">8.7.8. Example 1: Simple fit with 1 Path</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-2-fit-1-dataset-with-3-paths">8.7.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">8.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
@@ -231,7 +233,7 @@ is in the default search path.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -253,9 +255,9 @@ is in the default search path.</p>
  
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

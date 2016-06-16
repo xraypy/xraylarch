@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. Reading and Writing Data &mdash; larch 0.9.27 documentation</title>
+    <title>5. Reading and Writing Data &mdash; larch 0.9.28 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.27',
+        VERSION:     '0.9.28',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
     <link rel="next" title="6. Plotting and Displaying Data" href="../plotting/index.html" />
     <link rel="prev" title="4.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
   <script type="text/x-mathjax-config">
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -112,12 +112,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="../plotting/index.html"
                         title="next chapter">6. Plotting and Displaying Data</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/data/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/data/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -136,7 +138,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="reading-and-writing-data">
 <span id="data-io-chapter"></span><h1>5. Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
@@ -166,10 +168,10 @@ information.  For instance:</p>
 </pre></div>
 </div>
 <p>This file and others like it can be read with the builtin
-<a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt></a> function.</p>
+<a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_io.read_ascii">
-<tt class="descclassname">_io.</tt><tt class="descname">read_ascii</tt><big>(</big><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><big>)</big><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and read an plaintext data file, returning a new group containing
 the data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -187,7 +189,7 @@ the data.</p>
 </table>
 </dd></dl>
 
-<p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt></a>:</p>
+<p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; g = read_ascii(&#39;mydata.dat&#39;)
 larch&gt; show(g)
 == Group ascii_file mydata.dat: 6 symbols ==
@@ -227,7 +229,7 @@ larch&gt;
 </div>
 <dl class="function">
 <dt id="_io.write_ascii">
-<tt class="descclassname">_io.</tt><tt class="descname">write_ascii</tt><big>(</big><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><big>)</big><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">write_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and writes arrays, scalars, and text to an ASCII file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -246,7 +248,7 @@ larch&gt;
 
 <dl class="function">
 <dt id="_io.write_group">
-<tt class="descclassname">_io.</tt><tt class="descname">write_group</tt><big>(</big><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar='#'</em><big>)</big><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">write_group</code><span class="sig-paren">(</span><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>write data from a specified group to an ASCII data file.
 This is pretty minimal and may work poorly for large groups of complex
 data.</p>
@@ -262,14 +264,14 @@ The interface used in Larch is based on <a class="reference external" href="http
 for further documentation.</p>
 <dl class="function">
 <dt id="_io.h5_group">
-<tt class="descclassname">_io.</tt><tt class="descname">h5_group</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#_io.h5_group" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">h5_group</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.h5_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and maps and HDF5 file to a Larch Group, with HDF5 Groups map as
 Larch Groups.  Note that the full set of data is not read and
 copied. Instead, the HDF5 file is kept open and data accessed from the
 file as needed.</p>
 </dd></dl>
 
-<p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><tt class="xref py py-func docutils literal"><span class="pre">h5_group()</span></tt></a> shows that one can browse through the
+<p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><code class="xref py py-func docutils literal"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
 data heirarchy of the HDF5 file, and pick out the needed data:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; g = h5group(&#39;test.h5&#39;)
 larch&gt; show(g)
@@ -305,13 +307,13 @@ top of this approach.</p>
 efficient for storing array data and still in wide use.</p>
 <dl class="function">
 <dt id="_io.netcdf_group">
-<tt class="descclassname">_io.</tt><tt class="descname">netcdf_group</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#_io.netcdf_group" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">netcdf_group</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a group with data from a NetCDF4 file.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.netcdf_file">
-<tt class="descclassname">_io.</tt><tt class="descname">netcdf_file</tt><big>(</big><em>filename</em>, <em>mode='r'</em><big>)</big><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">netcdf_file</code><span class="sig-paren">(</span><em>filename</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and returns a netcdf file.</p>
 </dd></dl>
 
@@ -322,14 +324,14 @@ efficient for storing array data and still in wide use.</p>
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="function">
 <dt id="_io.read_tiff">
-<tt class="descclassname">_io.</tt><tt class="descname">read_tiff</tt><big>(</big><em>fname</em><big>)</big><a class="headerlink" href="#_io.read_tiff" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_tiff</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_tiff" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads a TIFF image from a TIFF File.  This returns just the image data as an
 array, and does return any metadata.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.tiff_object">
-<tt class="descclassname">_io.</tt><tt class="descname">tiff_object</tt><big>(</big><em>fname</em><big>)</big><a class="headerlink" href="#_io.tiff_object" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">tiff_object</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.tiff_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and returns a TIFF file.  This is useful for extracting metadata
 and multiple series.</p>
 </dd></dl>
@@ -345,24 +347,24 @@ on <a class="reference external" href="http://pyepics.github.com/pyepics/">pyepi
 access is encapsulated into three functions:</p>
 <dl class="function">
 <dt id="_io.caget">
-<tt class="descclassname">_io.</tt><tt class="descname">caget</tt><big>(</big><em>PV_name</em>, <em>as_string=False</em><big>)</big><a class="headerlink" href="#_io.caget" title="Permalink to this definition">¶</a></dt>
-<dd><p>get the value of the Process Variable.  The optional <tt class="docutils literal"><span class="pre">as_string</span></tt>
+<code class="descclassname">_io.</code><code class="descname">caget</code><span class="sig-paren">(</span><em>PV_name</em>, <em>as_string=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caget" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the Process Variable.  The optional <code class="docutils literal"><span class="pre">as_string</span></code>
 argument ensures the returned value is the string representation for the
 variable.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.caput">
-<tt class="descclassname">_io.</tt><tt class="descname">caput</tt><big>(</big><em>PV_name</em>, <em>value</em>, <em>wait=False</em><big>)</big><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
-<dd><p>set the value of the Process Variable.  If the optional <tt class="docutils literal"><span class="pre">wait</span></tt> is
-<tt class="docutils literal"><span class="pre">True</span></tt>, the function will not return until the put &quot;completes&quot;. For
+<code class="descclassname">_io.</code><code class="descname">caput</code><span class="sig-paren">(</span><em>PV_name</em>, <em>value</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
+<dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal"><span class="pre">wait</span></code> is
+<code class="docutils literal"><span class="pre">True</span></code>, the function will not return until the put &quot;completes&quot;. For
 some types of data, this may wait for some process (moving a motor,
 triggering a detector) to finish before returning.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.PV">
-<tt class="descclassname">_io.</tt><tt class="descname">PV</tt><big>(</big><em>PV_name</em><big>)</big><a class="headerlink" href="#_io.PV" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">PV</code><span class="sig-paren">(</span><em>PV_name</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.PV" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return an Epics PV object for a Process Variable.  This will
 have get() and put() methods, and allows you to add callback functions
 which will be run with new values everytime the PV value changes.</p>
@@ -375,7 +377,7 @@ which will be run with new values everytime the PV value changes.</p>
 facilities and beamlines.</p>
 <dl class="function">
 <dt id="_io.read_mda">
-<tt class="descclassname">_io.</tt><tt class="descname">read_mda</tt><big>(</big><em>filename</em>, <em>maxdim=4</em><big>)</big><a class="headerlink" href="#_io.read_mda" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_mda</code><span class="sig-paren">(</span><em>filename</em>, <em>maxdim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_mda" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a binary MDA (multi-Dimensional Array) file from the Epics SScan
 Record, and return a group based on the scans it contains.  This is not
 very well tested -- use with caution!</p>
@@ -383,13 +385,13 @@ very well tested -- use with caution!</p>
 
 <dl class="function">
 <dt id="_io.read_gsescan">
-<tt class="descclassname">_io.</tt><tt class="descname">read_gsescan</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#_io.read_gsescan" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_gsescan</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_gsescan" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a (old-style) GSECARS Escan data file into a group.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.read_stepscan">
-<tt class="descclassname">_io.</tt><tt class="descname">read_stepscan</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#_io.read_stepscan" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_stepscan</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_stepscan" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a GSECARS StepScan data file into a group.</p>
 </dd></dl>
 
@@ -400,7 +402,7 @@ very well tested -- use with caution!</p>
 to standardize the format of XAFS data files (see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange">xdi</a>.)</p>
 <dl class="function">
 <dt id="_io.read_xdi">
-<tt class="descclassname">_io.</tt><tt class="descname">read_xdi</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#_io.read_xdi" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_xdi</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_xdi" title="Permalink to this definition">¶</a></dt>
 <dd><p>read an XDI data file into a Larch group.</p>
 </dd></dl>
 
@@ -408,7 +410,7 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 <div class="section" id="saving-and-restoring-larch-groups">
 <h2>5.8. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to save groups of data and be able to open them again
-later.  The <a class="reference internal" href="#_io.save" title="_io.save"><tt class="xref py py-func docutils literal"><span class="pre">save()</span></tt></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><tt class="xref py py-func docutils literal"><span class="pre">restore()</span></tt></a> mechanism here allows you to
+later.  The <a class="reference internal" href="#_io.save" title="_io.save"><code class="xref py py-func docutils literal"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><code class="xref py py-func docutils literal"><span class="pre">restore()</span></code></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
 <p>Some precautions should be kept in mind, as not all Larch data is easily
 transferrable.  Most importantly, Python functions cannot be saved to any
@@ -418,16 +420,16 @@ the functions will be present in the later session.  All the built-in Larch
 groups and data structures can be saved and restored.</p>
 <dl class="function">
 <dt id="_io.save">
-<tt class="descclassname">_io.</tt><tt class="descname">save</tt><big>(</big><em>filename</em>, <em>list_of_groups</em><big>)</big><a class="headerlink" href="#_io.save" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>list_of_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>save a set of Larch groups and data into an HDF5 file.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.restore">
-<tt class="descclassname">_io.</tt><tt class="descname">restore</tt><big>(</big><em>filename</em>, <em>group=None</em><big>)</big><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>recover groups from a Larch 'save' file.  If <tt class="docutils literal"><span class="pre">group</span></tt> is None, the
+<code class="descclassname">_io.</code><code class="descname">restore</code><span class="sig-paren">(</span><em>filename</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>recover groups from a Larch 'save' file.  If <code class="docutils literal"><span class="pre">group</span></code> is None, the
 groups in the save file will be returned (in the order in which they
-were saved).  If <tt class="docutils literal"><span class="pre">group</span></tt> is an existing Larch group, the groups in
+were saved).  If <code class="docutils literal"><span class="pre">group</span></code> is an existing Larch group, the groups in
 the save file will be put inside that group, and will not be returned.</p>
 </dd></dl>
 
@@ -440,7 +442,7 @@ the save file will be put inside that group, and will not be returned.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -462,9 +464,9 @@ the save file will be put inside that group, and will not be returned.</p>
  
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

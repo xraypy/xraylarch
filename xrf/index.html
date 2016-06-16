@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10. X-ray Fluorescence Analysis with Larch &mdash; larch 0.9.27 documentation</title>
+    <title>10. X-ray Fluorescence Analysis with Larch &mdash; larch 0.9.28 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.27',
+        VERSION:     '0.9.28',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
     <link rel="next" title="11. Programming with Larch" href="../devel/index.html" />
     <link rel="prev" title="9. X-ray Databases" href="../xray/index.html" />
   <script type="text/x-mathjax-config">
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -106,12 +106,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="../devel/index.html"
                         title="next chapter">11. Programming with Larch</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/xrf/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/xrf/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -130,7 +132,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="x-ray-fluorescence-analysis-with-larch">
 <h1>10. X-ray Fluorescence Analysis with Larch<a class="headerlink" href="#x-ray-fluorescence-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
@@ -162,19 +164,19 @@ MCA spectrum may have many (typically 10s) of ROIs defined for particular
 emission lines.</p>
 <p>In Larch, MCAs and ROIs are exposed as Groups, each with several
 attributes, and some built-in functions.  For example, An MCA has arrays
-for <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">counts</span></tt>, as well as values for <tt class="docutils literal"><span class="pre">real_time</span></tt> and
-<tt class="docutils literal"><span class="pre">live_time</span></tt>, a deadtime correction factor <tt class="docutils literal"><span class="pre">dt_factor</span></tt>, and several
-ROIs.  Each ROI has a <tt class="docutils literal"><span class="pre">left</span></tt> and <tt class="docutils literal"><span class="pre">right</span></tt> channel index, and a
-<tt class="xref py py-meth docutils literal"><span class="pre">roi.get_counts()</span></tt> method.</p>
+for <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">counts</span></code>, as well as values for <code class="docutils literal"><span class="pre">real_time</span></code> and
+<code class="docutils literal"><span class="pre">live_time</span></code>, a deadtime correction factor <code class="docutils literal"><span class="pre">dt_factor</span></code>, and several
+ROIs.  Each ROI has a <code class="docutils literal"><span class="pre">left</span></code> and <code class="docutils literal"><span class="pre">right</span></code> channel index, and a
+<code class="xref py py-meth docutils literal"><span class="pre">roi.get_counts()</span></code> method.</p>
 </div>
 <div class="section" id="creating-mca-objects">
 <h2>10.2. Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to create an MCA object is to read one from a disk file.  For
-data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><tt class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></tt></a>
+data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></code></a>
 function.</p>
 <dl class="function">
 <dt id="read_gsemca">
-<tt class="descname">read_gsemca</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_gsemca</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a GSECARS MCA spectra file, returning a Group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -246,7 +248,7 @@ function.</p>
 
 <dl class="function">
 <dt id="xrf_plot">
-<tt class="descname">xrf_plot</tt><big>(</big><em>energy</em>, <em>counts</em>, <em>mca=None</em><big>)</big><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">xrf_plot</code><span class="sig-paren">(</span><em>energy</em>, <em>counts</em>, <em>mca=None</em><span class="sig-paren">)</span><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>create an interactive window for displaying an X-ray Fluorescence spectra</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -255,7 +257,7 @@ function.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>energy</strong> -- array of energy values</li>
 <li><strong>counts</strong> -- array of counts</li>
-<li><strong>mca</strong> -- MCA group (as read from <a class="reference internal" href="#read_gsemca" title="read_gsemca"><tt class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></tt></a>), containing
+<li><strong>mca</strong> -- MCA group (as read from <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></code></a>), containing
 ROI definitions, calibration values, and related data.</li>
 </ul>
 </td>
@@ -265,10 +267,10 @@ ROI definitions, calibration values, and related data.</li>
 </dd></dl>
 
 <p>An example plot is shown below</p>
-<div class="figure" id="xrf-fig1">
-<a class="reference external image-reference" href="../_images/xrf_display1.png"><img alt="../_images/xrf_display1.png" src="../_images/xrf_display1.png" style="width: 75%;" /></a>
-<p class="caption"><strong>Figure 10.1:</strong> Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
-(in red), and Periodic Table for showing predicted emission lines.</p>
+<div class="figure" id="id1">
+<span id="xrf-fig1"></span><a class="reference external image-reference" href="../_images/xrf_display1.png"><img alt="../_images/xrf_display1.png" src="../_images/xrf_display1.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
+(in red), and Periodic Table for showing predicted emission lines.</span></p>
 </div>
 </div>
 </div>
@@ -279,7 +281,7 @@ ROI definitions, calibration values, and related data.</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -301,9 +303,9 @@ ROI definitions, calibration values, and related data.</li>
  
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

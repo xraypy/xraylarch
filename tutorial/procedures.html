@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.6. Tutorial: Writing Functions or Procedures &mdash; larch 0.9.27 documentation</title>
+    <title>4.6. Tutorial: Writing Functions or Procedures &mdash; larch 0.9.28 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.27',
+        VERSION:     '0.9.28',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
     <link rel="prev" title="4.5. Tutorial: Dealing With Errors" href="errors.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -111,12 +111,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="modules.html"
                         title="next chapter">4.7. Tutorial: Running Larch Scripts, and Modules</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/tutorial/procedures.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/procedures.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -135,7 +137,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="tutorial-writing-functions-or-procedures">
 <h1>4.6. Tutorial: Writing Functions or Procedures<a class="headerlink" href="#tutorial-writing-functions-or-procedures" title="Permalink to this headline">¶</a></h1>
@@ -155,7 +157,7 @@ about running Larch scripts and modules in the next section of this tutorial.</p
 code.  This looks much like the <strong>if</strong>, <strong>for</strong>, and <strong>while</strong> blocks
 discussed earlier. A simple example would be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sayhello</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">&#39;hello!&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;hello!&#39;</span>
 <span class="n">enddef</span>
 </pre></div>
 </div>
@@ -170,7 +172,7 @@ hello!
   <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
      <span class="k">print</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span>
-     <span class="k">print</span> <span class="s">&#39;Did you want sqrt(</span><span class="si">%f</span><span class="s">) = </span><span class="si">%f</span><span class="s">?&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">,</span>  <span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+     <span class="k">print</span> <span class="s1">&#39;Did you want sqrt(</span><span class="si">%f</span><span class="s1">) = </span><span class="si">%f</span><span class="s1">?&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">,</span>  <span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
   <span class="n">endif</span>
 <span class="n">enddef</span>
 </pre></div>
@@ -186,7 +188,7 @@ Did you want sqrt(9.000000) = 3.000000?
 done with the <strong>return</strong> statement.  A <strong>return</strong> statement can be put
 anywhere in a procedure definition.  When encountered, it will cause the
 procedure to immediately exist, passing back any indicated value(s).  If no
-<strong>return</strong> statement is given in a procedure, it will return <tt class="docutils literal"><span class="pre">None</span></tt> when
+<strong>return</strong> statement is given in a procedure, it will return <code class="docutils literal"><span class="pre">None</span></code> when
 the procedure has fully executed.  An example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -233,9 +235,9 @@ which all the available variables exist.</p>
 <p>In Larch (to be clear, the rules here are slightly different than Python),
 every named object (variable, function, etc) exists in a Group.  The
 top-level group is <cite>_main</cite>, and all groups descend from it.  There is a
-special list <tt class="docutils literal"><span class="pre">_sys.searchGroupObjects</span></tt> holding the list of Groups to be
+special list <code class="docutils literal"><span class="pre">_sys.searchGroupObjects</span></code> holding the list of Groups to be
 searched for names.  There are several related variables listed in
-<a class="reference internal" href="#namespace-table"><em>Table of Namespace-related Variables</em></a>.</p>
+<a class="reference internal" href="#namespace-table"><span>Table of Namespace-related Variables</span></a>.</p>
 <blockquote id="namespace-table">
 <span id="index-0"></span><div><p>Table of Namespace-related Variables</p>
 <p>Listed are the name of variables holding information used in the looking
@@ -278,13 +280,13 @@ definied in the same file as the current procedure.</td>
 </div></blockquote>
 <p><cite>_sys.searchGroups</cite> and <cite>_sys.searchGroupObjects</cite> are always kept in sync,
 and always contain the groups named in <cite>_sys.core_groups</cite>.  In addition,
-they always contain (in order, if not <tt class="docutils literal"><span class="pre">None</span></tt>), <cite>_sys.localGroup</cite>,
+they always contain (in order, if not <code class="docutils literal"><span class="pre">None</span></code>), <cite>_sys.localGroup</cite>,
 <cite>_sys.paramGroup</cite>, <cite>_sys.moduleGroup</cite>.  If not inside a function or module,
 <cite>_sys.localGroup</cite> and <cite>_sys.moduleGroup</cite> are set to <cite>_main</cite>.</p>
 <p>Thus, inside a procedure, the way names are looked up are:</p>
 <p>1. First, variables defined in the current <em>parameter group</em>.  This is
 meant to be used exclusively for fitting procedures. Only during a fit
-should <cite>_sys.paramGroup</cite> have any value other than <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+should <cite>_sys.paramGroup</cite> have any value other than <code class="docutils literal"><span class="pre">None</span></code>.</p>
 <p>2. Second, variables defined in the procedure definition (command-line
 arguments and created inside the procedure.</p>
 <p>3. Third, variable declared at the top-level in the same module in which the
@@ -378,9 +380,9 @@ any number of positional arguments beyond those explicitly given.  Inside
 the procedure, a tuple named 'args' will hold any positional parameters
 included in the call to 'addall' past the first two (which will be held by
 'a' and 'b').  Thus, this procedure can be used as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c"># args = ()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c1"># args = ()</span>
 <span class="mi">5</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c"># args = (5, 7)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c1"># args = (5, 7)</span>
 <span class="mi">17</span>
 </pre></div>
 </div>
@@ -465,7 +467,7 @@ enddef
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -485,12 +487,12 @@ enddef
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

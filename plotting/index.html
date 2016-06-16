@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6. Plotting and Displaying Data &mdash; larch 0.9.27 documentation</title>
+    <title>6. Plotting and Displaying Data &mdash; larch 0.9.28 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.27',
+        VERSION:     '0.9.28',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
     <link rel="next" title="7. Fitting and Modeling Data" href="../fitting/index.html" />
     <link rel="prev" title="5. Reading and Writing Data" href="../data/index.html" />
   <script type="text/x-mathjax-config">
@@ -34,7 +34,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -113,12 +113,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="../fitting/index.html"
                         title="next chapter">7. Fitting and Modeling Data</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/plotting/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plotting/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -137,7 +139,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="plotting-and-displaying-data">
 <span id="plotting-chapter"></span><h1>6. Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
@@ -159,7 +161,7 @@ graphic elements.</p>
 <div class="section" id="line-plots">
 <h2>6.1. Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides a few functions for making line plots, with the principle
-function being called <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt>.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function takes two
+function being called <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code>.  The <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code> function takes two
 arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
 accepts a very large number of optional arguments for setting properties
 like color, line style, labels, and so on.  Most of these properties can
@@ -172,12 +174,12 @@ the plot, or saving a PNG image of the plot.  Menus on the window frame
 give even more options, including Copy-to-clipboard and printing.</p>
 <p>Multiple plot windows can be shown simultaneously, each in an independent
 window, and you can control which one is drawn to with a plot window index
-<tt class="docutils literal"><span class="pre">win</span></tt>.</p>
+<code class="docutils literal"><span class="pre">win</span></code>.</p>
 <span class="target" id="module-_plotter"></span><div class="section" id="plotting-commands">
 <h3>6.1.1. Plotting commands<a class="headerlink" href="#plotting-commands" title="Permalink to this headline">¶</a></h3>
 <dl class="method">
 <dt id="_plotter.plot">
-<tt class="descclassname">_plotter.</tt><tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -193,19 +195,19 @@ window, and you can control which one is drawn to with a plot window index
 <p>Plot y(x) given 1-dimensional x and y arrays -- these must be of the
 same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 <p>There are many options for a plot, all specified by the keyword/value
-parameters described in the   <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a> below.</p>
+parameters described in the   <a class="reference internal" href="#plotopt-table"><span>Table of Plot Arguments</span></a> below.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.newplot">
-<tt class="descclassname">_plotter.</tt><tt class="descname">newplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, but with the option  <cite>new=True</cite>.
-The rest of the arguments are as listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
+<code class="descclassname">_plotter.</code><code class="descname">newplot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
+The rest of the arguments are as listed in  <a class="reference internal" href="#plotopt-table"><span>Table of Plot Arguments</span></a>.</p>
 </dd></dl>
 
-<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a>, <a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>, and
-<a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> and
-<a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>.  In addition, the <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> method uses many of the same arguments for the
+<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal"><span class="pre">newplot()</span></code></a>, and
+<a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></code></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal"><span class="pre">plot()</span></code></a> and
+<a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal"><span class="pre">newplot()</span></code></a>.  In addition, the <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></code></a> method uses many of the same arguments for the
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
 <div><blockquote>
@@ -301,7 +303,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td>use_dates</td>
 <td>bool</td>
 <td>False</td>
-<td>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> only)</td>
+<td>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal"><span class="pre">plot()</span></code></a> only)</td>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>linewidth</td>
@@ -413,7 +415,7 @@ same meaning, as indicated by the right-most column.</p>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>&nbsp;</td>
-<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a></td>
+<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></code></a></td>
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>size</td>
@@ -440,7 +442,7 @@ same meaning, as indicated by the right-most column.</p>
 displays, etc) and the properties of each trace (color, linewidth, ...)
 are preserved for the duration of that window.   A few specific notes:</p>
 <blockquote>
-<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> default to <tt class="docutils literal"><span class="pre">None</span></tt>,
+<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> default to <code class="docutils literal"><span class="pre">None</span></code>,
 which means to use the previously used value.</p>
 <p>2. The <em>use_dates</em> option is not very rich, and simply turns x-values that
 are Unix timestamps into x labels showing the dates.</p>
@@ -466,16 +468,16 @@ transition to a new value as a sudden step, you want 'steps-post'.</p>
 </div></blockquote>
 <dl class="method">
 <dt id="_plotter.scatterplot">
-<tt class="descclassname">_plotter.</tt><tt class="descname">scatterplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">scatterplot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
 are not assumed to be in any particular order, and so are not connected
-with a line.  Arguments are very similar to those for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, and
-are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
+with a line.  Arguments are very similar to those for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a>, and
+are listed in  <a class="reference internal" href="#plotopt-table"><span>Table of Plot Arguments</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.update_trace">
-<tt class="descclassname">_plotter.</tt><tt class="descname">update_trace</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">update_trace</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates an existing trace of a plot.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -493,7 +495,7 @@ are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of 
 </tbody>
 </table>
 <p>This function is particularly useful for data to be plotted is changing
-and you wish to update traces from a previous <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new
+and you wish to update traces from a previous <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> with new
 data without completely redrawing the entire plot.  Using this method
 is substantially faster than replotting, and should be used for dynamic
 plots, such as plottting the progress of some function during a fit.
@@ -505,7 +507,7 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.plot_text">
-<tt class="descclassname">_plotter.</tt><tt class="descname">plot_text</tt><big>(</big><em>text</em>, <em>x</em>, <em>y</em>, <em>win=1</em>, <em>side='left'</em>, <em>rotation=None</em>, <em>ha='left'</em>, <em>va='center'</em><big>)</big><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">plot_text</code><span class="sig-paren">(</span><em>text</em>, <em>x</em>, <em>y</em>, <em>win=1</em>, <em>side='left'</em>, <em>rotation=None</em>, <em>ha='left'</em>, <em>va='center'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>add text at x, y coordinates of the plot window</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -529,7 +531,7 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.plot_arrow">
-<tt class="descclassname">_plotter.</tt><tt class="descname">plot_arrow</tt><big>(</big><em>x1</em>, <em>y1</em>, <em>x2</em>, <em>y2</em>, <em>win=1</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">plot_arrow</code><span class="sig-paren">(</span><em>x1</em>, <em>y1</em>, <em>x2</em>, <em>y2</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
 <dd><p>draw arrow from x1, y1 to x2, y2.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -556,7 +558,7 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.save_plot">
-<tt class="descclassname">_plotter.</tt><tt class="descname">save_plot</tt><big>(</big><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><big>)</big><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">save_plot</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current plot to a PNG or other output formats.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -579,8 +581,8 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.save_image">
-<tt class="descclassname">_plotter.</tt><tt class="descname">save_image</tt><big>(</big><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><big>)</big><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>save the current 2D image from <a class="reference internal" href="#_plotter.imshow" title="_plotter.imshow"><tt class="xref py py-meth docutils literal"><span class="pre">imshow()</span></tt></a> to a PNG or other output formats.</p>
+<code class="descclassname">_plotter.</code><code class="descname">save_image</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>save the current 2D image from <a class="reference internal" href="#_plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -602,11 +604,11 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.get_display">
-<tt class="descclassname">_plotter.</tt><tt class="descname">get_display</tt><big>(</big><em>win=1</em><big>)</big><a class="headerlink" href="#_plotter.get_display" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">get_display</code><span class="sig-paren">(</span><em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.get_display" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the underlying Display object. For advanced usage, this allows
 access to the PlotDisplay object, which is the wxPython frame for the
-plot window.  The plot itself is contained in the <tt class="docutils literal"><span class="pre">panel</span></tt> attribute,
-which contains the matplotlib components  <tt class="docutils literal"><span class="pre">axes</span></tt> and <tt class="docutils literal"><span class="pre">canvas</span></tt>.  For
+plot window.  The plot itself is contained in the <code class="docutils literal"><span class="pre">panel</span></code> attribute,
+which contains the matplotlib components  <code class="docutils literal"><span class="pre">axes</span></code> and <code class="docutils literal"><span class="pre">canvas</span></code>.  For
 more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p>
 </dd></dl>
 
@@ -621,18 +623,18 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p
 </pre></div>
 </div>
 <p>will make this plot:</p>
-<div class="figure" id="plotting-fig1">
-<a class="reference external image-reference" href="../_images/plot_basic1.png"><img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.1:</strong> A basic line plot.</p>
+<div class="figure" id="id1">
+<span id="plotting-fig1"></span><a class="reference external image-reference" href="../_images/plot_basic1.png"><img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> A basic line plot.</span></p>
 </div>
 <p>Adding a second curve, and setting some labels:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Example Plot&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example Plot&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will make this plot:</p>
-<div class="figure" id="plotting-fig2">
-<a class="reference external image-reference" href="../_images/plot_basic2.png"><img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.2:</strong> A line plot with two curves.</p>
+<div class="figure" id="id2">
+<span id="plotting-fig2"></span><a class="reference external image-reference" href="../_images/plot_basic2.png"><img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(a)</strong> A line plot with two curves.</span></p>
 </div>
 </div>
 <div class="section" id="interactive-use-of-the-plot-windows">
@@ -642,8 +644,8 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p
 <p>From the plot window you can click the left button of your mouse, and see
 the X, Y coordinates of where you clicked displayed in the status bar at
 the bottom of the plot window.   You can also read the values from the
-variables <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_x</span></tt>  and <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_y</span></tt>, for plot
-window 1, and <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot2_x</span></tt>  and on for other plot windows.</p>
+variables <code class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_x</span></code>  and <code class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_y</span></code>, for plot
+window 1, and <code class="xref py py-data docutils literal"><span class="pre">_plotter.plot2_x</span></code>  and on for other plot windows.</p>
 <p><strong>Zooming in and out</strong>:</p>
 <p>Left-clicking on the plot window and then dragging the mouse around with
 the button still pressed will draw a rectangular box around part of the
@@ -677,9 +679,9 @@ all systems, in which case saving an image and printing that should</p>
 Options-&gt;'Configure Plot' (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
 like this:</p>
-<div class="figure" id="plotting-fig3">
-<a class="reference external image-reference" href="../_images/plot_config.png"><img alt="../_images/plot_config.png" src="../_images/plot_config.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.3:</strong> Screenshot of the Configuration window for Plots.</p>
+<div class="figure" id="id3">
+<span id="plotting-fig3"></span><a class="reference external image-reference" href="../_images/plot_config.png"><img alt="../_images/plot_config.png" src="../_images/plot_config.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> Screenshot of the Configuration window for Plots.</span></p>
 </div>
 <p>From here you can set the titles, axis labels, and styles, colors, symbols,
 labels, and so on for each of the line traces drawn.</p>
@@ -689,7 +691,7 @@ labels, and so on for each of the line traces drawn.</p>
 <p>The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">&#39;$ k </span><span class="se">\r</span><span class="s">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;$ k </span><span class="se">\r</span><span class="s1">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The portion of the strings between the dollar signs ('$') will be rendered
@@ -704,7 +706,7 @@ you may recall from the tutorial is also used as an escape sequence.  Thus
 some TeX sequences, such as '\theta' may require an additional backslash,
 so that the '\t' part isn't rendered as a tab character. More generally,
 use of <em>raw strings</em> is recommended in this context, so that one uses:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that this does not actually use TeX (so you don't need TeX installed),
@@ -720,7 +722,7 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <h2>6.2. Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
 <dt id="_plotter.imshow">
-<tt class="descclassname">_plotter.</tt><tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">imshow</code><span class="sig-paren">(</span><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -740,7 +742,7 @@ normal white color) if there is an error in rendering your TeX string.</p>
 
 <dl class="method">
 <dt id="_plotter.contour">
-<tt class="descclassname">_plotter.</tt><tt class="descname">contour</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>nlevels=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">contour</code><span class="sig-paren">(</span><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>nlevels=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -773,7 +775,7 @@ the image, change the color table, change the intensity scaling, change the
 interpolattion algorithm used.  You can also toggle between showing an
 image of continuously varying intensities and a contour map.  An example
 image, generated with</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/plotting/doc_image2d.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/plotting/doc_image2d.lar</span>
 
 <span class="k">def</span> <span class="nf">gauss2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">outer</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
@@ -789,20 +791,20 @@ image, generated with</p>
 <span class="n">dat</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.05</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span> <span class="o">+</span>
              <span class="mf">2.0</span><span class="o">*</span><span class="n">gauss2d</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">iy</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span>   <span class="mi">176</span><span class="p">,</span>  <span class="mi">57</span><span class="p">,</span>  <span class="mi">69</span><span class="p">))</span>
 
-<span class="n">imshow</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s">&#39;coolwarm&#39;</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
 
-<span class="c">## end of examples/plotting/doc_image2d.lar</span>
+<span class="c1">## end of examples/plotting/doc_image2d.lar</span>
 </pre></div>
 </div>
 <p>is shown below:</p>
-<div class="figure" id="plotting-fig4">
-<a class="reference external image-reference" href="../_images/plot_image1.png"><img alt="../_images/plot_image1.png" src="../_images/plot_image1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.4:</strong> A false-color display of 2 dimensional image data.</p>
+<div class="figure" id="id4">
+<span id="plotting-fig4"></span><a class="reference external image-reference" href="../_images/plot_image1.png"><img alt="../_images/plot_image1.png" src="../_images/plot_image1.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(e)</strong> A false-color display of 2 dimensional image data.</span></p>
 </div>
 <p>and as a contour plot, with a different color table:</p>
-<div class="figure" id="plotting-fig5">
-<a class="reference external image-reference" href="../_images/plot_contour1.png"><img alt="../_images/plot_contour1.png" src="../_images/plot_contour1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.5:</strong> A contour plot of 2 dimensional image data.</p>
+<div class="figure" id="id5">
+<span id="plotting-fig5"></span><a class="reference external image-reference" href="../_images/plot_contour1.png"><img alt="../_images/plot_contour1.png" src="../_images/plot_contour1.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(i)</strong> A contour plot of 2 dimensional image data.</span></p>
 </div>
 </div>
 <div class="section" id="advanced-plotting-using-matplotlib">
@@ -816,8 +818,8 @@ plots and images to do plotting tasks not covered above.</p>
 functionality, as well as some support for 3-dimensioanl plotting.  Larch
 gives you access to the maplotlib API by giving you access to the
 matplotlib Axes and Canvas for any displayed plot.   To get this, you would
-use <a class="reference internal" href="#_plotter.get_display" title="_plotter.get_display"><tt class="xref py py-func docutils literal"><span class="pre">get_display()</span></tt></a> to get the current display window, then access the
-<tt class="docutils literal"><span class="pre">panel.axes</span></tt> member:</p>
+use <a class="reference internal" href="#_plotter.get_display" title="_plotter.get_display"><code class="xref py py-func docutils literal"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
+<code class="docutils literal"><span class="pre">panel.axes</span></code> member:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -827,52 +829,52 @@ use <a class="reference internal" href="#_plotter.get_display" title="_plotter.g
 </div>
 <p>As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses
-matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt> function,</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/plotting/doc_use_mpl.lar</span>
-<span class="c">#</span>
+matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/plotting/doc_use_mpl.lar</span>
+<span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">gamma</span>
 
-<span class="n">title</span> <span class="o">=</span> <span class="s">&#39;GNXAS-like distribution function&#39;</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;GNXAS-like distribution function&#39;</span>
 
 <span class="n">sigma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">r0</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">3.0</span>
 <span class="n">q</span>    <span class="o">=</span> <span class="mi">4</span><span class="o">/</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span>
 <span class="n">amp</span>  <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span><span class="o">*</span><span class="n">gamma</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
 
-<span class="c"># calculate g(r) on a fine r-grid:</span>
+<span class="c1"># calculate g(r) on a fine r-grid:</span>
 <span class="n">r</span>   <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">arg</span> <span class="o">=</span> <span class="n">q</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">r0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>
 <span class="n">gr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">arg</span><span class="p">)</span><span class="o">*</span><span class="n">arg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="c"># note removal of nan&#39;s and impossible values</span>
+<span class="c1"># note removal of nan&#39;s and impossible values</span>
 <span class="n">gr</span><span class="p">[</span><span class="n">isnan</span><span class="p">(</span><span class="n">gr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">gr</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">gr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 
-<span class="c"># standard plot of g(r)</span>
+<span class="c1"># standard plot of g(r)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gr</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R\,\rm(\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$g(R)$&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$R\,\rm(\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$g(R)$&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">fullbox</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
-<span class="c"># calculate g(r) on a coarse r-grid:</span>
+<span class="c1"># calculate g(r) on a coarse r-grid:</span>
 <span class="n">hr</span>   <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
 <span class="n">harg</span> <span class="o">=</span> <span class="n">q</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">hr</span><span class="o">-</span><span class="n">r0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>
 <span class="n">hgr</span>  <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">harg</span><span class="p">)</span><span class="o">*</span><span class="n">harg</span><span class="o">**</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">hgr</span><span class="p">[</span><span class="n">isnan</span><span class="p">(</span><span class="n">hgr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">hgr</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">hgr</span><span class="p">[</span><span class="n">where</span><span class="p">(</span><span class="n">hgr</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 
-<span class="c"># get panel, matplotlib axes</span>
+<span class="c1"># get panel, matplotlib axes</span>
 <span class="n">panel</span> <span class="o">=</span> <span class="n">get_display</span><span class="p">()</span><span class="o">.</span><span class="n">panel</span>
 <span class="n">axes</span>  <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">axes</span>
 
-<span class="c"># plot histogram of coarse-grid data</span>
-<span class="n">histo</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">hgr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">hr</span><span class="p">),</span> <span class="n">rwidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="c1"># plot histogram of coarse-grid data</span>
+<span class="n">histo</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">hgr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">hr</span><span class="p">),</span> <span class="n">rwidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 <span class="n">panel</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 
-<span class="c">## end of examples/plotting/doc_use_mpl.lar</span>
+<span class="c1">## end of examples/plotting/doc_use_mpl.lar</span>
 </pre></div>
 </div>
 <p>which generates a plot that looks like</p>
-<div class="figure" id="plotting-fig6">
-<a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 6.6:</strong> A histogram plot made using matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt> function.</p>
+<div class="figure" id="id6">
+<span id="plotting-fig6"></span><a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(k)</strong> A histogram plot made using matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function.</span></p>
 </div>
 </div>
 </div>
@@ -883,7 +885,7 @@ matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -905,9 +907,9 @@ matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist
  
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>
