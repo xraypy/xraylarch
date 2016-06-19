@@ -35,7 +35,7 @@ def match_f2(p):
 
 
 def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
-          whiteline=None, leexiang=False, tables='cl', fit_erfc=False, return_f1=False,
+          whiteline=None, leexiang=False, tables='chantler', fit_erfc=False, return_f1=False,
           _larch=None):
     """
     Match mu(E) data for tabulated f''(E) using the MBACK algorithm and,
@@ -52,7 +52,7 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
       emax:          ending energy for fit
       whiteline:     exclusion zone around white lines
       leexiang:      flag to use the Lee & Xiang extension
-      tables:        'cl' or 'chantler'
+      tables:        'chantler' (default) or 'cl'
       fit_erfc:      True to float parameters of error function
       return_f1:     True to put the f1 array in the group
 
@@ -94,8 +94,8 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     ### theta is an array used to exclude the regions <emin, >emax, and
     ### around white lines, theta=0.0 in excluded regions, theta=1.0 elsewhere
     (i1, i2) = (0, len(energy)-1)
-    if emin != None: i1 = index_of(energy, emin)
-    if emax != None: i2 = index_of(energy, emax)
+    if emin is not None: i1 = index_of(energy, emin)
+    if emax is not None: i2 = index_of(energy, emax)
     theta = np.ones(len(energy)) # default: 1 throughout
     theta[0:i1]  = 0
     theta[i2:-1] = 0

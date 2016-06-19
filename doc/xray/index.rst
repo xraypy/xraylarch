@@ -291,6 +291,16 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
     Note that both f' and f'' are returned here.
 
+.. warning::
+
+   The Cromer-Liberman calculation sometimes generate spurious data,
+   especially at high and low energies.  The data from Chantler's tables
+   should be used in its place.  That is, in almost all places where the
+   Cromer-Liberman values differ from the Chantler values, the
+   Cromer-Liberman data is obviously wrong.
+
+   The Cromer-Liberman tables are kept for historical reasons and backward
+   compatibility, but may be dropped in the future.
 
 
 X-ray Properties of Materials and Chemicals
@@ -444,4 +454,3 @@ and so on are then given.
 
 .. math::
     n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
-
