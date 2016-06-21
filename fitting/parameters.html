@@ -266,21 +266,21 @@ The arguments here are identical to <a class="reference internal" href="#_math.p
 </dd></dl>
 
 <p>An example of creating some parameters,  and creating a group of parameters would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># create some Parameters</span>
-<span class="n">c1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>              <span class="c1"># a constant (non-varying) parameter</span>
-<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>     <span class="c1"># a bounded variable parameter</span>
-<span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c1"># a semi-bounded variable parameter</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create some Parameters</span>
+<span class="n">c1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>              <span class="c"># a constant (non-varying) parameter</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>     <span class="c"># a bounded variable parameter</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c"># a semi-bounded variable parameter</span>
 
-<span class="c1"># create a group of parameters, either from existing parameters</span>
-<span class="c1"># or ones created right here</span>
+<span class="c"># create a group of parameters, either from existing parameters</span>
+<span class="c"># or ones created right here</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a2</span><span class="p">,</span>
                <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="p">)</span>
 
-<span class="c1"># add more parameters to the group:</span>
+<span class="c"># add more parameters to the group:</span>
 <span class="n">params</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="n">c1</span>
 
-<span class="c1"># add a constrained parameter: dependent on other parameters in the group</span>
-<span class="n">params</span><span class="o">.</span><span class="n">e1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;a1 - c1*sqrt(a2)&#39;</span><span class="p">)</span>
+<span class="c"># add a constrained parameter: dependent on other parameters in the group</span>
+<span class="n">params</span><span class="o">.</span><span class="n">e1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;a1 - c1*sqrt(a2)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="setting-bounds">
@@ -323,7 +323,7 @@ definitions of the parameters and have them obeyed within the fit.  That
 is, one could constrain the two widths of the Gaussians to be the same
 value with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;wid1&#39;</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;wid1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>and the value of <cite>params.wid2</cite> will have the same value as <cite>params.wid1</cite>
@@ -331,7 +331,7 @@ every time the objective is called, but won't be an independent variable in
 the fit.  As a second  example, one could constrain the two amplitude
 parameters to add to 1 and each be between 0 and 1 as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - amp1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>of course, one can use more complex expressions -- any valid Larch
@@ -418,7 +418,7 @@ propagating errors.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

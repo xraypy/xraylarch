@@ -210,8 +210,8 @@ better than another.</p>
 <h2>7.8.1. Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
 <p>Let's begin with a shortened version of the first example from the previous
 section.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
-<span class="c1"># create mock data</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_conf1.lar</span>
+<span class="c"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
@@ -224,20 +224,20 @@ section.</p>
                <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
 
-<span class="c1"># define objective function for fit residual</span>
+<span class="c"># define objective function for fit residual</span>
 <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
 <span class="n">enddef</span>
 
-<span class="c1"># perform fit</span>
+<span class="c"># perform fit</span>
 <span class="n">mout</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
 
-<span class="c1"># print report of parameters, uncertainties</span>
+<span class="c"># print report of parameters, uncertainties</span>
 <span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">out</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="k">print</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="c1">## end of examples/fitting/doc_example_conf1.lar</span>
+<span class="c">## end of examples/fitting/doc_example_conf1.lar</span>
 </pre></div>
 </div>
 <p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will include this:</p>
@@ -493,10 +493,10 @@ sets how far from the best value to extend the ranges.</p>
 <p>As an example usage, we return to the first example of the &quot;well-behaved&quot;
 fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></code></a> on a pair of variables with low correlation
 and a pair with high correlation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
-<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">chi2_ampwid</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;wid&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
-<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampcen</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, cen)&#39;</span><span class="p">)</span>
-<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampwid</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, wid)&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s">&#39;amp&#39;</span><span class="p">,</span> <span class="s">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">chi2_ampwid</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s">&#39;amp&#39;</span><span class="p">,</span> <span class="s">&#39;wid&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampcen</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Correlation(amp, cen)&#39;</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampwid</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Correlation(amp, wid)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>with the resulting Chi-square maps looking like this:</p>
@@ -518,10 +518,10 @@ are exactly as would be expected, and what the automated estimate of
 uncertainties and correlations assumes.</p>
 <p>But now, if we turn to the more pathological case of the double
 exponential, we calculate the chi-square maps as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
-<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
-<span class="n">contour</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span>        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, a2)&#39;</span><span class="p">)</span>
-<span class="n">contour</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, t1)&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s">&#39;a1&#39;</span><span class="p">,</span> <span class="s">&#39;a2&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s">&#39;a1&#39;</span><span class="p">,</span> <span class="s">&#39;t1&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span>        <span class="n">title</span><span class="o">=</span><span class="s">&#39;Correlation(a1, a2)&#39;</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Correlation(a1, t1)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>with the resulting contour plots:</p>
@@ -577,7 +577,7 @@ correlation, or when nearing a final analysis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

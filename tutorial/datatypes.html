@@ -188,8 +188,8 @@ if the numerator and denominator are integers, and '//' for integer or
 <p>Several other operators are supported for bit manipulation.</p>
 <p>Literal strings are created with either matched closing single or double
 quotes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="s2">&quot;a different string&quot;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;a string&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;a different string&quot;</span>
 </pre></div>
 </div>
 <p>A string can include a '\n' character (for newline) or '\t' (for tab) and
@@ -199,8 +199,8 @@ tab as well as several other standard escape sequence.  The quote character
 and the backslash character themselves can be backslashed.  Thus, to get an
 actual backslash character in the string, you would have to use '\\', and
 to get a single quote, one might say:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="s1">&#39;A string with a backslash-&gt; </span><span class="se">\\</span><span class="s1"> &#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s4</span> <span class="o">=</span> <span class="s1">&#39;Bob</span><span class="se">\&#39;</span><span class="s1">s string&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&#39;A string with a backslash-&gt; </span><span class="se">\\</span><span class="s"> &#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&#39;Bob</span><span class="se">\&#39;</span><span class="s">s string&#39;</span>
 </pre></div>
 </div>
 <p>One can also use so-called a <em>raw string</em>, in which the backslash character
@@ -233,8 +233,8 @@ cannot concatenate &#39;str&#39; and &#39;int&#39; objects
 </pre></div>
 </div>
 <p>and you can multiply a string by an integer:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;string&#39;</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="s1">&#39;stringstring&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;string&#39;</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="s">&#39;stringstring&#39;</span>
 </pre></div>
 </div>
 <p>Larch has special variables for boolean or logical operations: <code class="docutils literal"><span class="pre">True</span></code> and
@@ -336,9 +336,9 @@ strings have many attributes and methods, as do the container objects
 <p>To get a listing of all the attributes and methods of a object, use the
 builtin <a class="reference internal" href="builtins.html#dir" title="dir"><code class="xref py py-func docutils literal"><span class="pre">dir()</span></code></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="p">[</span><span class="s1">&#39;__abs__&#39;</span><span class="p">,</span> <span class="s1">&#39;__add__&#39;</span><span class="p">,</span> <span class="s1">&#39;__and__&#39;</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">,</span> <span class="s1">&#39;__cmp__&#39;</span><span class="p">,</span> <span class="s1">&#39;__coerce__&#39;</span><span class="p">,</span> <span class="s1">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__div__&#39;</span><span class="p">,</span> <span class="s1">&#39;__divmod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s1">&#39;__float__&#39;</span><span class="p">,</span> <span class="s1">&#39;__floordiv__&#39;</span><span class="p">,</span> <span class="s1">&#39;__format__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s1">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s1">&#39;__hex__&#39;</span><span class="p">,</span> <span class="s1">&#39;__index__&#39;</span><span class="p">,</span> <span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="s1">&#39;__int__&#39;</span><span class="p">,</span> <span class="s1">&#39;__invert__&#39;</span><span class="p">,</span> <span class="s1">&#39;__long__&#39;</span><span class="p">,</span> <span class="s1">&#39;__lshift__&#39;</span><span class="p">,</span> <span class="s1">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s1">&#39;__neg__&#39;</span><span class="p">,</span> <span class="s1">&#39;__new__&#39;</span><span class="p">,</span> <span class="s1">&#39;__nonzero__&#39;</span><span class="p">,</span> <span class="s1">&#39;__oct__&#39;</span><span class="p">,</span> <span class="s1">&#39;__or__&#39;</span><span class="p">,</span> <span class="s1">&#39;__pos__&#39;</span><span class="p">,</span> <span class="s1">&#39;__pow__&#39;</span><span class="p">,</span> <span class="s1">&#39;__radd__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rand__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rdiv__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rdivmod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s1">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s1">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rfloordiv__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rlshift__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s1">&#39;__ror__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rpow__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rrshift__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rshift__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rsub__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rtruediv__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rxor__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s1">&#39;__str__&#39;</span><span class="p">,</span> <span class="s1">&#39;__sub__&#39;</span><span class="p">,</span> <span class="s1">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s1">&#39;__truediv__&#39;</span><span class="p">,</span> <span class="s1">&#39;__trunc__&#39;</span><span class="p">,</span> <span class="s1">&#39;__xor__&#39;</span><span class="p">,</span> <span class="s1">&#39;conjugate&#39;</span><span class="p">,</span> <span class="s1">&#39;denominator&#39;</span><span class="p">,</span> <span class="s1">&#39;imag&#39;</span><span class="p">,</span> <span class="s1">&#39;numerator&#39;</span><span class="p">,</span> <span class="s1">&#39;real&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="s1">&#39;a string&#39;</span><span class="p">)</span>
-<span class="p">[</span><span class="s1">&#39;__add__&#39;</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">,</span> <span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s1">&#39;__eq__&#39;</span><span class="p">,</span> <span class="s1">&#39;__format__&#39;</span><span class="p">,</span> <span class="s1">&#39;__ge__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getslice__&#39;</span><span class="p">,</span> <span class="s1">&#39;__gt__&#39;</span><span class="p">,</span> <span class="s1">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="s1">&#39;__le__&#39;</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">,</span> <span class="s1">&#39;__lt__&#39;</span><span class="p">,</span> <span class="s1">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s1">&#39;__ne__&#39;</span><span class="p">,</span> <span class="s1">&#39;__new__&#39;</span><span class="p">,</span> <span class="s1">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s1">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s1">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s1">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s1">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s1">&#39;__str__&#39;</span><span class="p">,</span> <span class="s1">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s1">&#39;_formatter_field_name_split&#39;</span><span class="p">,</span> <span class="s1">&#39;_formatter_parser&#39;</span><span class="p">,</span> <span class="s1">&#39;capitalize&#39;</span><span class="p">,</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;decode&#39;</span><span class="p">,</span> <span class="s1">&#39;encode&#39;</span><span class="p">,</span> <span class="s1">&#39;endswith&#39;</span><span class="p">,</span> <span class="s1">&#39;expandtabs&#39;</span><span class="p">,</span> <span class="s1">&#39;find&#39;</span><span class="p">,</span> <span class="s1">&#39;format&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;isalnum&#39;</span><span class="p">,</span> <span class="s1">&#39;isalpha&#39;</span><span class="p">,</span> <span class="s1">&#39;isdigit&#39;</span><span class="p">,</span> <span class="s1">&#39;islower&#39;</span><span class="p">,</span> <span class="s1">&#39;isspace&#39;</span><span class="p">,</span> <span class="s1">&#39;istitle&#39;</span><span class="p">,</span> <span class="s1">&#39;isupper&#39;</span><span class="p">,</span> <span class="s1">&#39;join&#39;</span><span class="p">,</span> <span class="s1">&#39;ljust&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;lstrip&#39;</span><span class="p">,</span> <span class="s1">&#39;partition&#39;</span><span class="p">,</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="s1">&#39;rfind&#39;</span><span class="p">,</span> <span class="s1">&#39;rindex&#39;</span><span class="p">,</span> <span class="s1">&#39;rjust&#39;</span><span class="p">,</span> <span class="s1">&#39;rpartition&#39;</span><span class="p">,</span> <span class="s1">&#39;rsplit&#39;</span><span class="p">,</span> <span class="s1">&#39;rstrip&#39;</span><span class="p">,</span> <span class="s1">&#39;split&#39;</span><span class="p">,</span> <span class="s1">&#39;splitlines&#39;</span><span class="p">,</span> <span class="s1">&#39;startswith&#39;</span><span class="p">,</span> <span class="s1">&#39;strip&#39;</span><span class="p">,</span> <span class="s1">&#39;swapcase&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;translate&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="s1">&#39;zfill&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;__abs__&#39;</span><span class="p">,</span> <span class="s">&#39;__add__&#39;</span><span class="p">,</span> <span class="s">&#39;__and__&#39;</span><span class="p">,</span> <span class="s">&#39;__class__&#39;</span><span class="p">,</span> <span class="s">&#39;__cmp__&#39;</span><span class="p">,</span> <span class="s">&#39;__coerce__&#39;</span><span class="p">,</span> <span class="s">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__div__&#39;</span><span class="p">,</span> <span class="s">&#39;__divmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s">&#39;__float__&#39;</span><span class="p">,</span> <span class="s">&#39;__floordiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__format__&#39;</span><span class="p">,</span> <span class="s">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s">&#39;__hex__&#39;</span><span class="p">,</span> <span class="s">&#39;__index__&#39;</span><span class="p">,</span> <span class="s">&#39;__init__&#39;</span><span class="p">,</span> <span class="s">&#39;__int__&#39;</span><span class="p">,</span> <span class="s">&#39;__invert__&#39;</span><span class="p">,</span> <span class="s">&#39;__long__&#39;</span><span class="p">,</span> <span class="s">&#39;__lshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s">&#39;__neg__&#39;</span><span class="p">,</span> <span class="s">&#39;__new__&#39;</span><span class="p">,</span> <span class="s">&#39;__nonzero__&#39;</span><span class="p">,</span> <span class="s">&#39;__oct__&#39;</span><span class="p">,</span> <span class="s">&#39;__or__&#39;</span><span class="p">,</span> <span class="s">&#39;__pos__&#39;</span><span class="p">,</span> <span class="s">&#39;__pow__&#39;</span><span class="p">,</span> <span class="s">&#39;__radd__&#39;</span><span class="p">,</span> <span class="s">&#39;__rand__&#39;</span><span class="p">,</span> <span class="s">&#39;__rdiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rdivmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s">&#39;__rfloordiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rlshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s">&#39;__ror__&#39;</span><span class="p">,</span> <span class="s">&#39;__rpow__&#39;</span><span class="p">,</span> <span class="s">&#39;__rrshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rsub__&#39;</span><span class="p">,</span> <span class="s">&#39;__rtruediv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rxor__&#39;</span><span class="p">,</span> <span class="s">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">,</span> <span class="s">&#39;__sub__&#39;</span><span class="p">,</span> <span class="s">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s">&#39;__truediv__&#39;</span><span class="p">,</span> <span class="s">&#39;__trunc__&#39;</span><span class="p">,</span> <span class="s">&#39;__xor__&#39;</span><span class="p">,</span> <span class="s">&#39;conjugate&#39;</span><span class="p">,</span> <span class="s">&#39;denominator&#39;</span><span class="p">,</span> <span class="s">&#39;imag&#39;</span><span class="p">,</span> <span class="s">&#39;numerator&#39;</span><span class="p">,</span> <span class="s">&#39;real&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="s">&#39;a string&#39;</span><span class="p">)</span>
+<span class="p">[</span><span class="s">&#39;__add__&#39;</span><span class="p">,</span> <span class="s">&#39;__class__&#39;</span><span class="p">,</span> <span class="s">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s">&#39;__eq__&#39;</span><span class="p">,</span> <span class="s">&#39;__format__&#39;</span><span class="p">,</span> <span class="s">&#39;__ge__&#39;</span><span class="p">,</span> <span class="s">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s">&#39;__getslice__&#39;</span><span class="p">,</span> <span class="s">&#39;__gt__&#39;</span><span class="p">,</span> <span class="s">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s">&#39;__init__&#39;</span><span class="p">,</span> <span class="s">&#39;__le__&#39;</span><span class="p">,</span> <span class="s">&#39;__len__&#39;</span><span class="p">,</span> <span class="s">&#39;__lt__&#39;</span><span class="p">,</span> <span class="s">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s">&#39;__ne__&#39;</span><span class="p">,</span> <span class="s">&#39;__new__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">,</span> <span class="s">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s">&#39;_formatter_field_name_split&#39;</span><span class="p">,</span> <span class="s">&#39;_formatter_parser&#39;</span><span class="p">,</span> <span class="s">&#39;capitalize&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;count&#39;</span><span class="p">,</span> <span class="s">&#39;decode&#39;</span><span class="p">,</span> <span class="s">&#39;encode&#39;</span><span class="p">,</span> <span class="s">&#39;endswith&#39;</span><span class="p">,</span> <span class="s">&#39;expandtabs&#39;</span><span class="p">,</span> <span class="s">&#39;find&#39;</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;isalnum&#39;</span><span class="p">,</span> <span class="s">&#39;isalpha&#39;</span><span class="p">,</span> <span class="s">&#39;isdigit&#39;</span><span class="p">,</span> <span class="s">&#39;islower&#39;</span><span class="p">,</span> <span class="s">&#39;isspace&#39;</span><span class="p">,</span> <span class="s">&#39;istitle&#39;</span><span class="p">,</span> <span class="s">&#39;isupper&#39;</span><span class="p">,</span> <span class="s">&#39;join&#39;</span><span class="p">,</span> <span class="s">&#39;ljust&#39;</span><span class="p">,</span> <span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="s">&#39;lstrip&#39;</span><span class="p">,</span> <span class="s">&#39;partition&#39;</span><span class="p">,</span> <span class="s">&#39;replace&#39;</span><span class="p">,</span> <span class="s">&#39;rfind&#39;</span><span class="p">,</span> <span class="s">&#39;rindex&#39;</span><span class="p">,</span> <span class="s">&#39;rjust&#39;</span><span class="p">,</span> <span class="s">&#39;rpartition&#39;</span><span class="p">,</span> <span class="s">&#39;rsplit&#39;</span><span class="p">,</span> <span class="s">&#39;rstrip&#39;</span><span class="p">,</span> <span class="s">&#39;split&#39;</span><span class="p">,</span> <span class="s">&#39;splitlines&#39;</span><span class="p">,</span> <span class="s">&#39;startswith&#39;</span><span class="p">,</span> <span class="s">&#39;strip&#39;</span><span class="p">,</span> <span class="s">&#39;swapcase&#39;</span><span class="p">,</span> <span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;translate&#39;</span><span class="p">,</span> <span class="s">&#39;upper&#39;</span><span class="p">,</span> <span class="s">&#39;zfill&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Again, we'll see properties of objects below, as we look into more
@@ -386,7 +386,7 @@ Group. If not specified, it will be set to a hexidecimal value.  Groups
 have no other builtin properties or methods.  Since they're objects, you
 can use the <a class="reference internal" href="builtins.html#dir" title="dir"><code class="xref py py-func docutils literal"><span class="pre">dir()</span></code></a> function as above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>(Note that the order shown may vary).  You can also use the builtin
@@ -403,7 +403,7 @@ contents:</p>
 <a class="reference internal" href="#tutor-objectids-sec">4.2.4</a>).  The <a class="reference internal" href="builtins.html#group" title="group"><code class="xref py py-func docutils literal"><span class="pre">group()</span></code></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Many Larch functions act on groups, either returning groups, expecting
@@ -411,7 +411,7 @@ groups as certain arguments, or taking a 'group' argument to write data
 into.  For example, the built-in functions that read data from an external
 files will likely organize that data into a group and that group perhaps
 something like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;cu_150k.xmu&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;cu_150k.xmu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -508,11 +508,11 @@ further details can be found in the standard Python documentation.</p>
 list is constructed using brackets, with commas to separate the
 individual:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>A list can contain a list as one of its elements:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">nested_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">]]]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">nested_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">]]]</span>
 </pre></div>
 </div>
 <p>You can access the elements of a list using brackets and the integer index
@@ -527,17 +527,17 @@ larch&gt; print nested_list[2][0]
 </div>
 <p>Lists are <strong>mutable</strong> -- they can be changed, in place.   To do this, you
 can replace an element in a list:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;hello&#39;</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
-<span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>As above, lists are python <strong>objects</strong>, and so come with methods for
 interacting with them.  For example, you can also change a list by
 appending to it with the 'append' method:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;number 4, the larch&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;number 4, the larch&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
-<span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;number 4, the larch&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;number 4, the larch&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>All lists will have an 'append' method, as well as several others:</p>
@@ -561,7 +561,7 @@ optional custom comparison function passed in), do this:</p>
 </pre></div>
 </div>
 <p>but not this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>  <span class="c1"># WRONG!!</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>  <span class="c"># WRONG!!</span>
 </pre></div>
 </div>
 <p>as that will sort the list, then happily set 'my_list' to None.</p>
@@ -578,27 +578,27 @@ True
 and ending indices between brackets, separated by a colon.  Of course, the counting
 for a slice starts at 0. It also excludesthe final index:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
-<span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>   <span class="c1"># Note implied 0!</span>
-<span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>   <span class="c"># Note implied 0!</span>
+<span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>You can count backwards, and using '-1' is a convenient way to get the last
 element of a list.  You can also add an optional third value to the slice for a step:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="s1">&#39;j&#39;</span>
+<span class="s">&#39;j&#39;</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
-<span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># every other element, starting at 0</span>
-<span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># every other element, starting at 1</span>
-<span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>  <span class="c"># every other element, starting at 0</span>
+<span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>  <span class="c"># every other element, starting at 1</span>
+<span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>A final important property of lists, and of basic variable creation in
 Larch (and Python) is related to the discussion above about variable
 creation and assignment.  There we said that 'creating a variable':</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>was best thought of as creating a value (here, the
@@ -639,14 +639,14 @@ difference is that tuples are <strong>immutable</strong> -- they cannot be chang
 they are created.  Instead, tuples are a simple ordered container of data.
 The syntax for tuples uses comma separated values inside (optional!)
 parentheses in place of brackets:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;hydrogen&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;hydrogen&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Like lists, tuples can be indexed and sliced:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-<span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="s1">&#39;hydrogen&#39;</span>
+<span class="s">&#39;hydrogen&#39;</span>
 </pre></div>
 </div>
 <p>Due to their immutability, tuples have only a few methods ('count' and
@@ -681,19 +681,19 @@ related to lists as well -- they are best thought of as a sequence of
 characters.  Like tuples, strings are actually immutable, in that you
 cannot change part of a string, instead you must create a new string.
 Strings can be indexed and sliced as with lists and tuples:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Montaigne&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Montaigne&#39;</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">name</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
-<span class="s1">&#39;Mont&#39;</span>
+<span class="s">&#39;Mont&#39;</span>
 </pre></div>
 </div>
 <p>Strings have many methods -- over 30 of them, in fact.  To convert a string
 to lower case, use its <code class="xref py py-meth docutils literal"><span class="pre">lower()</span></code> method, and so on:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-<span class="s1">&#39;here is a string&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-<span class="s1">&#39;HERE IS A STRING&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
-<span class="s1">&#39;Here Is A String&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="s">&#39;here is a string&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="s">&#39;HERE IS A STRING&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+<span class="s">&#39;Here Is A String&#39;</span>
 </pre></div>
 </div>
 <p>This aslo shows that the methods are associated with strings themselves --
@@ -701,11 +701,11 @@ even literal strings, and simply with variable names.</p>
 <p>Strings can be split into words with the <code class="xref py py-meth docutils literal"><span class="pre">split()</span></code> method, which splits
 a string on whitespace by default, but can take an argument to change the
 character (or substring) to use to split the string:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-<span class="p">[</span><span class="s1">&#39;Here&#39;</span><span class="p">,</span> <span class="s1">&#39;is&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;String&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="p">[</span><span class="s">&#39;Here&#39;</span><span class="p">,</span> <span class="s">&#39;is&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;String&#39;</span><span class="p">]</span>
 
-<span class="n">larch</span><span class="o">&gt;</span> <span class="s1">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
-<span class="p">[</span><span class="s1">&#39;Here &#39;</span><span class="p">,</span> <span class="s1">&#39;s a Str&#39;</span><span class="p">,</span> <span class="s1">&#39;ng&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">)</span>
+<span class="p">[</span><span class="s">&#39;Here &#39;</span><span class="p">,</span> <span class="s">&#39;s a Str&#39;</span><span class="p">,</span> <span class="s">&#39;ng&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>As above, this is really only touching the tip of the iceberg of string
@@ -746,8 +746,8 @@ larch&gt; print atomic_weight[&#39;He&#39;]
 </pre></div>
 </div>
 <p>You can also add more elements to a dictionary by assigning to a new key:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">10.811</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">12.01</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">10.811</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">12.01</span>
 </pre></div>
 </div>
 <p>Dictionaries have several methods.  These include</p>
@@ -803,8 +803,8 @@ cover here includes:</p>
 (for the C, C++, and Java programmers, every variable is reference or
 pointer).  Assignment to a Larch variable as with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="s">&#39;a string&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">]</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="n">some_function</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -814,8 +814,8 @@ assigns the variable <em>name</em> (w, x, y, z) to point to the corresponding
 value.  Larch doesn't pre-assign variable names so that 'w' there can only
 ever hold an integer -- you can change not only its value but the <em>type</em> of
 data its pointing to:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>  <span class="c1"># now a floating point number</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># now a list</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>  <span class="c"># now a floating point number</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c"># now a list</span>
 </pre></div>
 </div>
 <p>For this reason, a variable name is best thought of as something very
@@ -874,7 +874,7 @@ larch&gt; print x
 </div>
 <p>Here, <code class="docutils literal"><span class="pre">x</span></code> changed because it is identical to <code class="docutils literal"><span class="pre">y</span></code> and is mutable.
 However, if we make another variable that happens to have the same value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 <span class="mi">108399752</span>
 </pre></div>
@@ -916,7 +916,7 @@ common approach is to make a <em>full slice</em>:</p>
 the values element-by-element.  This will be discussed the next section.</p>
 <p>Larch Groups are also mutable objects and so assignment to a group does not
 make a new copy of the group but another reference to the same group:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s">&#39;hello&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">h</span> <span class="o">=</span> <span class="n">g</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">h</span> <span class="ow">is</span> <span class="n">g</span>
 <span class="bp">True</span>
@@ -933,7 +933,7 @@ larch&gt; show(g)
 </div>
 <p>we see the hexidecimal representation of its  memory address:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">),</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
-<span class="p">(</span><span class="mi">113186800</span><span class="p">,</span> <span class="s1">&#39;0x6bf17f0&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">113186800</span><span class="p">,</span> <span class="s">&#39;0x6bf17f0&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In practice, this issue is not as confusing as it sounds, and the model for
@@ -976,7 +976,7 @@ another variable that points to the same value.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
