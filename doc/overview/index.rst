@@ -8,30 +8,30 @@ Larch: Motivation and Overview
 .. _matplotlib: http://matplotlib.org/
 
 
-Larch is an attempt to bring together data processing routines for many
-synchrotron X-ray techniques, and to provide better scripting tools for
-data manipulation, visualization, and analysis.  The initial goal was to
-replace the Ifeffit package for XAFS analysis, in order to better deal with
-larger datasets, make it easier to modify and improve XAFS analysis
-algorithms, and to provide more modern data manipulation and visualization
-tools.  Visualization and analysis of X-ray fluorescence spatial maps and
-spectra as from X-ray microprobe beamlines was also a key requirement, and
-having tools for related techniques like X-ray standing waves and X-ray
-diffraction was highly desirable.  It was also hoped to be able to tie
-these visualization, processing, and analysis routines with data
-collection, to give a more seamless workflow.  Having both high-level
-routines that could be scripted and be used as the core functionality of
-GUIs was viewed as necessary.  Though a work in progress, Larch has already
-met most of these initial goals.
+Larch brings together data processing routines for synchrotron X-ray
+techniques and provides high-level scripting tools for data manipulation,
+visualization, and analysis.  The initial goal was to replace the Ifeffit
+package for XAFS analysis in order to better deal with larger datasets,
+make it easier to modify and improve XAFS analysis algorithms, and to
+provide more modern data manipulation and visualization tools.
+Visualization and analysis of X-ray fluorescence spatial maps and spectra
+from X-ray microprobe beamlines was is a key requirement, and incorporating
+tools for related techniques like X-ray standing waves and X-ray
+diffraction is a high priority.  Larch also makes it easy to bring
+visualization, processing, and analysis routines with data collection
+processes to give a more seamless workflow that spans data collection and
+analysis, using core functionality that can be scripted and GUIs built on
+top of these core functions.  While Larch is a work in progress, it has
+already met most of these initial goals.
 
-Using Python to implement this set of tools is an obvious choice.  Python
-is a free, general-purpose interpreted language known for its clear syntax
-and readability.  It has become quite popular in a range of scientific
-disciplines due to many well-designed an supported libraries, including
-`numpy`_, `scipy`_, `h5py`_, and `matplotlib`_.  Python is being adopted by
-many groups in the synchrotron X-ray community, and being able to build on
-existing tools and tap into a large pool of scientists who are able and
-willing to work in Python was seen as a huge benefit.
+Larch is written in Python, a free, general-purpose interpreted language
+known for its clear syntax and readability.  Python has become quite
+popular in a range of scientific disciplines due to many well-designed an
+supported libraries, including `numpy`_, `scipy`_, `h5py`_, and
+`matplotlib`_, and is being adopted by many groups in the synchrotron X-ray
+community.  Being able to build on existing tools and tap into a large pool
+of scientists who are able and willing to work in Python was seen as a huge
+benefit in the development of Larch.
 
 The key design decision for Larch is to build a domain-specific language or
 *macro language* as the framework to tie together the various
@@ -150,6 +150,3 @@ and analysis steps that Ifeffit can do, including:
    * reading and manipulating Feff Path files
    * fitting Feff Paths to XAFS data
    * general-purpose minimization and curve-fitting.
-
-
-
