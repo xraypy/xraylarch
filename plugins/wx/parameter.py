@@ -88,7 +88,7 @@ class ParameterDialog(wx.Dialog):
         btnsizer.Realize()
 
         panel.AddText(' Name:',       style=LEFT)
-        panel.AddText(param.name,     style=LEFT, colour='#DD0000')
+        panel.AddText(param.name,     style=LEFT)
         panel.AddText(' Type:',       style=LEFT)
         panel.Add(self.wids.vary,     style=LEFT)
         panel.AddText(' Value:',      style=LEFT, newrow=True)
@@ -131,20 +131,20 @@ class ParameterPanel(wx.Panel):
     param = Parameter(value=11.22, vary=True, min=0, name='x1')
     wid   = ParameterPanel(parent_wid, param)
     """
-    def __init__(self, parent, param, size=(80, -1), precision=4, **kws):
+    def __init__(self, parent, param, size=(80, -1), show_name=False, precision=4, **kws):
         self.param = param
         self.precision = precision
         wx.Panel.__init__(self, parent, -1)
         self.wids = Empty()
 
-        self.wids.conf = wx.BitmapButton(self, -1, infoicon.GetBitmap(),
-                                         size=(24, 24))
-
-        self.wids.conf.Bind(wx.EVT_BUTTON, self.onConfigure)
-        self.wids.conf.SetToolTip(wx.ToolTip("Configure Parameter"))
         self.wids.val = FloatCtrl(self, value=param.value,
                                   minval=param.min, maxval=param.max,
                                   precision=precision, size=size)
+
+        self.wids.name = None
+        self.wids.edit = wx.Button(self, label='edit', size=(45, 25))
+        self.wids.edit.Bind(wx.EVT_BUTTON, self.onConfigure)
+        self.wids.edit.SetToolTip(wx.ToolTip("Configure Parameter"))
 
         self.wids.vary = Choice(self, choices=VARY_CHOICES,
                                 action=self.onVaryChoice, size=(80, -1))
@@ -157,9 +157,16 @@ class ParameterPanel(wx.Panel):
         self.wids.vary.SetSelection(vary_choice)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.wids.val,   0, LEFT|wx.TOP)
-        sizer.Add(self.wids.vary,  0, LEFT|wx.TOP|wx.ALL)
-        sizer.Add(self.wids.conf,  0, LEFT)
+        CLEFT = LEFT|wx.ALL|wx.ALIGN_CENTER_VERTICAL
+        if show_name:
+            self.wids.name = wx.StaticText(self,
+                                           label="%s: " %  param.name,
+                                           size=(len(param.name)*8, -1))
+            sizer.Add(self.wids.name,  0, CLEFT)
+
+        sizer.Add(self.wids.val,   0, CLEFT)
+        sizer.Add(self.wids.vary,  0, CLEFT)
+        sizer.Add(self.wids.edit,  0, CLEFT)
         pack(self, sizer)
 
     def onVaryChoice(self, evt=None):
@@ -201,24 +208,18 @@ class TestFrame(wx.Frame):
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
         panel = GridPanel(self)
 
-        name1 = 'peak1_amp'
-        param1 = Parameter(value=99.0, vary=True, min=0, name=name1)
-        name2 = 'peak1_cen'
-        param2 = Parameter(value=1.23, vary=True, min=0.5, max=2.0, name=name2)
+        param1 = Parameter(value=99.0, vary=True, min=0,            name='peak1_amplitude')
+        param2 = Parameter(value=110.2, vary=True, min=100, max=120, name='peak1_center')
+        param3 = Parameter(value=1.23, vary=True, min=0.5, max=2.0, name='peak1_sigma')
 
-        p1 = ParameterPanel(panel, param1)
-        p2 = ParameterPanel(panel, param2)
-        panel.AddText(" %s: " % name1, style=LEFT)
-        panel.Add(p1,  style=LEFT)
-        panel.NewRow()
-
-        panel.AddText(" %s: " % name2, style=LEFT)
-        panel.Add(p2,  style=LEFT)
-
+        panel.Add(ParameterPanel(panel, param1, show_name=True), style=LEFT)
+        # panel.NewRow()
+        panel.Add(ParameterPanel(panel, param2, show_name=True), style=LEFT)
+        panel.Add(ParameterPanel(panel, param3, show_name=True), style=LEFT)
         panel.pack()
         self.createMenus()
 
-        self.SetSize((400, 90))
+        self.SetSize((700, 200))
         self.Show()
         self.Raise()
 
@@ -227,7 +228,7 @@ class TestFrame(wx.Frame):
         fmenu = wx.Menu()
         wid = wx.NewId()
         fmenu.Append(wid, "Show Widget Frame\tCtrl+I", "")
-        wx.EVT_MENU(self, wid, self.onShowInspection)
+        # wx.EVT_MENU(self, wid, self.onShowInspection)
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
@@ -251,5 +252,3 @@ class TestApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
 if __name__ == "__main__":
     TestApp().MainLoop()
-
-
