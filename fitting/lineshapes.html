@@ -31,39 +31,25 @@
     <link rel="prev" title="7.4. Fit Results and Outputs" href="results.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -165,8 +151,8 @@ approximately <span class="math">\(2.3548\sigma\)</span></p>
 <p>where</p>
 <div class="math">
 \[\begin{eqnarray*}
-  z &=& \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
-  w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
+  z &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
+  w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
 \end{eqnarray*}\]</div><p>and <code class="xref py py-func docutils literal"><span class="pre">erfc()</span></code> is the complimentary error function.  As above, <em>cen</em> is
 used for <span class="math">\(\mu\)</span> here, <em>sigma</em> for <span class="math">\(\sigma\)</span>, and <em>gamma</em> for the
 parameter <span class="math">\(\gamma\)</span>.  If <em>gamma</em> is left as <code class="docutils literal"><span class="pre">None</span></code>, it is set equal
@@ -291,8 +277,8 @@ in the <a class="reference internal" href="#fit-funcs-table"><span>Table of Usef
 </div></blockquote>
 <p>Other standard special functions (Bessel functions, Legendre polynomials,
 etc) can be accessed from scipy.special:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c"># Bessel function of order 0,</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c"># Bessel function of second kind of order 1</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>
 <p>A host of functions to generate other distribution functions can be accessed from scipy.stats.</p>
@@ -329,7 +315,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

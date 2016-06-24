@@ -30,39 +30,25 @@
     <link rel="prev" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="../xafs/diffkk.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -644,6 +630,16 @@ Lorentzian profile (with <code class="docutils literal"><span class="pre">width<
 <p>Note that both f' and f'' are returned here.</p>
 </dd></dl>
 
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The Cromer-Liberman calculation sometimes generate spurious data,
+especially at high and low energies.  The data from Chantler's tables
+should be used in its place.  That is, in almost all places where the
+Cromer-Liberman values differ from the Chantler values, the
+Cromer-Liberman data is obviously wrong.</p>
+<p class="last">The Cromer-Liberman tables are kept for historical reasons and backward
+compatibility, but may be dropped in the future.</p>
+</div>
 </div>
 <div class="section" id="x-ray-properties-of-materials-and-chemicals">
 <h2>9.2. X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Permalink to this headline">¶</a></h2>
@@ -703,10 +699,10 @@ material, using data from Chantler.</td>
 <code class="descclassname">_xray.</code><code class="descname">chemparse</code><span class="sig-paren">(</span><em>formula</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
 <dd><p>parse a chemical formula, returning a dictionary with element symbols as
 keys and number for each element as values.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;H2O&quot;</span><span class="p">)</span>
-<span class="p">{</span><span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
-<span class="p">{</span><span class="s">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Note that factional weights and scientific notation for weights is
@@ -719,8 +715,8 @@ is 'Fe0.8' is supported, but 'Fe.8' is not.</p>
 <code class="descclassname">_xray.</code><code class="descname">material_get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.material_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>look up chemical compound by naming returning formula (not parsed!) and
 density.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s">&#39;kapton&#39;</span><span class="p">)</span>
-<span class="p">(</span><span class="s">&#39;C22H10N2O5&#39;</span><span class="p">,</span> <span class="mf">1.43</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;C22H10N2O5&#39;</span><span class="p">,</span> <span class="mf">1.43</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>material names are not case sensitive.</p>
@@ -800,9 +796,9 @@ for known materials)</li>
 'elements' (list of atomic symbols for elements in material). For each element, there
 will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <span class="math">\(\mu\)</span>).
 For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
-<span class="p">{</span><span class="s">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">],</span>
-<span class="s">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">60.0843</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">15.9994</span><span class="p">,</span> <span class="mf">5.9528248152970837</span><span class="p">),</span> <span class="s">&#39;density&#39;</span><span class="p">:</span> <span class="mf">2.65</span><span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s1">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">],</span>
+<span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">60.0843</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">15.9994</span><span class="p">,</span> <span class="mf">5.9528248152970837</span><span class="p">),</span> <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="mf">2.65</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -905,7 +901,7 @@ factor <span class="math">\(f_j\)</span>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

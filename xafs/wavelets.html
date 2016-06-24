@@ -31,39 +31,25 @@
     <link rel="prev" title="8.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -214,36 +200,37 @@ values with spacing <code class="docutils literal"><span class="pre">kstep</span
 <h2>8.5.2. Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
 <p>Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
 straightforward:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># wavelet transform in larch</span>
-<span class="c"># follows method of Munuz, Argoul, and Farges</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># wavelet transform in larch</span>
+<span class="c1"># follows method of Munuz, Argoul, and Farges</span>
 
-<span class="n">f</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="n">kopts</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;xlabel&#39;</span><span class="p">:</span> <span class="s">r&#39;$k \,(\AA^{-1})$&#39;</span><span class="p">,</span> 
-         <span class="s">&#39;ylabel&#39;</span><span class="p">:</span> <span class="s">r&#39;$k^2\chi(k) \, (\AA^{-2})$&#39;</span><span class="p">,</span> 
-         <span class="s">&#39;linewidth&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="s">&#39;FeO&#39;</span><span class="p">,</span> <span class="s">&#39;show_legend&#39;</span><span class="p">:</span><span class="bp">True</span><span class="p">}</span>
+<span class="n">kopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;xlabel&#39;</span><span class="p">:</span> <span class="s1">r&#39;$k \,(\AA^{-1})$&#39;</span><span class="p">,</span> 
+         <span class="s1">&#39;ylabel&#39;</span><span class="p">:</span> <span class="s1">r&#39;$k^2\chi(k) \, (\AA^{-2})$&#39;</span><span class="p">,</span> 
+         <span class="s1">&#39;linewidth&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;FeO&#39;</span><span class="p">,</span> <span class="s1">&#39;show_legend&#39;</span><span class="p">:</span><span class="bp">True</span><span class="p">}</span>
 
-<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;original data&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;original data&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
 
-<span class="c"># do wavelet transform (no window function yet)</span>
+<span class="c1"># do wavelet transform (no window function yet)</span>
 <span class="n">cauchy_wavelet</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="c"># display wavelet magnitude, real part</span>
-<span class="c"># horizontal axis is k, vertical is R</span>
-<span class="n">imopts</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">}</span>
-<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Wavelet Transform: Magnitude&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
-<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Wavelet Transform: Real Part&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
+<span class="c1"># display wavelet magnitude, real part</span>
+<span class="c1"># horizontal axis is k, vertical is R</span>
+<span class="n">imopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">}</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Wavelet Transform: Magnitude&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Wavelet Transform: Real Part&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
 
-<span class="c"># plot wavelet projected to k space</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
+<span class="c1"># plot wavelet projected to k space</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
 
 <span class="n">ropts</span> <span class="o">=</span> <span class="n">kopts</span>
-<span class="n">ropts</span><span class="p">[</span><span class="s">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">r&#39;$R \, (\AA) $&#39;</span>
-<span class="n">ropts</span><span class="p">[</span><span class="s">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">r&#39;$|\chi(R)| \, (\AA^{-3})$&#39;</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">r&#39;$R \, (\AA) $&#39;</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">r&#39;$|\chi(R)| \, (\AA^{-3})$&#39;</span>
 
-<span class="c"># plot wavelet projected to R space</span>
-<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ropts</span><span class="p">)</span>
+<span class="c1"># plot wavelet projected to R space</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ropts</span><span class="p">)</span>
+
 </pre></div>
 </div>
 <p>With results for the Cauchy transforms looking like (here, <span class="math">\(k\)</span>is
@@ -304,7 +291,7 @@ is shown for comparison.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

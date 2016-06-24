@@ -31,39 +31,25 @@
     <link rel="prev" title="4.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -205,7 +191,7 @@ expression.  If the test evaluates to <code class="docutils literal"><span class
 <p>If statements can execute multiple statements by putting the statements
 into a &quot;block of code&quot;:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">endif</span>
 </pre></div>
@@ -223,23 +209,23 @@ be run if x is equal to 0 -- there is no restriction on how many statements
 can be run.</p>
 <p>An 'else' statement can be added to execute code if the test is False:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is not 0&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is not 0&#39;</span>
 <span class="n">endif</span>
 </pre></div>
 </div>
 <p>Multiple tests can be chained together with the 'elif' (a contraction of
 'else if'):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
 <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is positive&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is positive&#39;</span>
 <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">10</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is a small negative number&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is a small negative number&#39;</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;x is negative&#39;</span>
+    <span class="k">print</span> <span class="s1">&#39;x is negative&#39;</span>
 <span class="n">endif</span>
 </pre></div>
 </div>
@@ -309,7 +295,7 @@ loop</strong>.  For those familiar with other languages, a Larch for loop is a b
 different from a C for loop or Fortran do loop.  A for loop in Larch
 iterates over an ordered set of values as from a list, tuple, or array, or
 over the keys from a dictionary.   Thus a loop like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">x</span>
 <span class="n">endfor</span>
 </pre></div>
@@ -349,7 +335,7 @@ integers, and can take more than 1 argument to indicate a starting value
 and step.  It is important to note that the sequence that is iterated order
 does not be generated from the <a class="reference internal" href="builtins.html#range" title="range"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a> function, but can be any list,
 array, or Python sequence.  Importantly, this includes strings(!) so that:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s">&#39;hello&#39;</span><span class="p">:</span>  <span class="k">print</span> <span class="n">char</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s1">&#39;hello&#39;</span><span class="p">:</span>  <span class="k">print</span> <span class="n">char</span>
 </pre></div>
 </div>
 <p>will print:</p>
@@ -363,7 +349,7 @@ array, or Python sequence.  Importantly, this includes strings(!) so that:</p>
 <p>This can cause a common sort of error, in that you might expect some
 variabe to hold a list of string values, but it actually holds a single
 string.   Notice that:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filelist</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;file1&#39;</span><span class="p">,</span> <span class="s">&#39;file2&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filelist</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;file1&#39;</span><span class="p">,</span> <span class="s1">&#39;file2&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="n">process_file</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
@@ -374,7 +360,7 @@ string.   Notice that:</p>
 <p>would act very differently if filelist was changed to 'file1'!</p>
 <p>Multiple values can be assigned in each iteration of the for loop.  Thus,
 iterating over a sequence of equal-length tuples, as in:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">((</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
     <span class="k">print</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
 <span class="n">endfor</span>
 </pre></div>
@@ -389,7 +375,7 @@ c 3
 especially when dealing with dictionaries or with arrays or lists of equal
 length.   For a dictionary <em>d</em>, <em>d.items()</em> will return a list of
 two-element tuples as above of key, value.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mydict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mydict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span>
 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">mydict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span>
 <span class="n">endfor</span>
@@ -447,7 +433,7 @@ in the sequence.   The <em>break</em> statement will exit a for loop immediately
     <span class="n">endif</span>
     <span class="n">more_processing</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">endfor</span>
-<span class="k">print</span> <span class="s">&#39;processed up to i = &#39;</span><span class="p">,</span> <span class="n">i</span>
+<span class="k">print</span> <span class="s1">&#39;processed up to i = &#39;</span><span class="p">,</span> <span class="n">i</span>
 </pre></div>
 </div>
 <p>may jump out of the loop before the sequence generated by 'range(10)' is
@@ -498,8 +484,8 @@ each iteration.   A more realistic use would be:</p>
 </div>
 <p>An additional use for a while loop is to use an implicit or external
 condition, such as time:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c"># return the time in seconds since Unix epoch</span>
-<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>   <span class="c"># That is &#39;for 15 seconds&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c1"># return the time in seconds since Unix epoch</span>
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>   <span class="c1"># That is &#39;for 15 seconds&#39;</span>
    <span class="n">do_someting</span><span class="p">()</span>
 <span class="n">endwhile</span>
 </pre></div>
@@ -507,12 +493,12 @@ condition, such as time:</p>
 <p>The <em>break</em> and <em>continue</em> statements also work for while loops, just as they
 do with for loops.   These can be used as ways to exit an other-wise infinite
 while loop:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c"># will never exit without break!</span>
-   <span class="n">answer</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;guess my favorite color&gt;&#39;</span><span class="p">)</span>
-   <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s">&#39;lime&#39;</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c1"># will never exit without break!</span>
+   <span class="n">answer</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s1">&#39;guess my favorite color&gt;&#39;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;lime&#39;</span><span class="p">:</span>
        <span class="k">break</span>
    <span class="k">else</span><span class="p">:</span>
-       <span class="k">print</span> <span class="s">&#39;Nope, try again&#39;</span>
+       <span class="k">print</span> <span class="s1">&#39;Nope, try again&#39;</span>
    <span class="n">endif</span>
 <span class="n">endwhile</span>
 </pre></div>
@@ -551,7 +537,7 @@ while loop:</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

@@ -30,39 +30,25 @@
     <link rel="prev" title="Larch" href="../index.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="#" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -95,15 +81,14 @@
   <ul>
 <li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
 <li><a class="reference internal" href="#using-anaconda-python">1.1. Using Anaconda Python</a></li>
-<li><a class="reference internal" href="#windows-binary-installation">1.2. Windows Binary Installation</a></li>
-<li><a class="reference internal" href="#source-installation">1.3. Source Installation</a><ul>
-<li><a class="reference internal" href="#prerequisites">1.3.1. Prerequisites</a></li>
-<li><a class="reference internal" href="#installation">1.3.2. Installation</a></li>
+<li><a class="reference internal" href="#source-installation">1.2. Source Installation</a><ul>
+<li><a class="reference internal" href="#prerequisites">1.2.1. Prerequisites</a></li>
+<li><a class="reference internal" href="#installation">1.2.2. Installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#documentation-and-examples">1.4. Documentation and Examples</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.5. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.6. License</a></li>
+<li><a class="reference internal" href="#documentation-and-examples">1.3. Documentation and Examples</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.4. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.5. License</a></li>
 </ul>
 </li>
 </ul>
@@ -144,9 +129,10 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest version of Larch is 0.9.27 (December 2015).  Larch is in
-active development, so there may be bugs and unintended features, and
-there are definitely some missing desired features.  Still, most of
+<p>The latest release version of Larch is 0.9.28.  Larch is in active and
+continuing development, and the intention is to tag a new release version
+every six months or so.  Of course, there may be bugs and unintended
+features, and some missing or incomplete desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.</p>
 <p>There are several ways to download and install Larch.  Starting with Larch
 0.9.27, the <strong>recommended</strong> way to install and run Larch on Windows and Mac
@@ -166,7 +152,8 @@ remove components.  Anaconda includes a robust package manager called
 you are ready.</p>
 <p>So, begin by installing the latest version of Anaconda Python 2.7 from
 their <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is installed, you can open a
-Terminal (Linux or Mac OSX) or the Anaconda prompt (Windows) and type</p>
+Terminal (on Linux or Mac OSX) or the Anaconda prompt (on Windows) and
+type:</p>
 <div class="highlight-python"><div class="highlight"><pre>conda install -yc newville xraylarch
 
 # on Windows or Mac OSX
@@ -191,16 +178,8 @@ OSX) to run the following Larch programs:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="windows-binary-installation">
-<h2>1.2. Windows Binary Installation<a class="headerlink" href="#windows-binary-installation" title="Permalink to this headline">¶</a></h2>
-<p>The binary installer for Windows provides working executables for the Larch
-programs.   These are likely to be slightly out-of-date from the source
-code and the Anaconda package.</p>
-<p>Downloads are available at the <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads">Larch Downloads (cars.uchicago.edu)</a>
-or at <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases (github.com)</a>.</p>
-</div>
 <div class="section" id="source-installation">
-<h2>1.3. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
+<h2>1.2. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
 <p>Larch can be installed from source code.  If not using Anaconda, this is
 necessary for Linux, and can be done for other systems as well.</p>
 <p>The latest releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch
@@ -210,18 +189,18 @@ development version of the source code:</p>
 </pre></div>
 </div>
 <div class="section" id="prerequisites">
-<h3>1.3.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<h3>1.2.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
 <p>Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
 partial, in that the core of Larch does work, and numpy, and scipy, h5py,
 and matplotlib have all been ported to Python 3.X.  But the testing for
 Python 3.X has been minimal, and the graphical interfaces, based on
-wxWidgets, has not yet been ported to Python 3.X.</p>
+wxPython, has not yet been fully ported to Python 3.X.</p>
 <p>The following Python packages are all required for Larch: numpy, scipy,
 matplotlib, h5py, sqlalchemy, and wxpython.  These are easily installed as
 standard packages on almost all platforms.</p>
 </div>
 <div class="section" id="installation">
-<h3>1.3.2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<h3>1.2.2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <p>After unpacking the source distribution kit, installation from source on any platform is:</p>
 <div class="highlight-python"><div class="highlight"><pre>python setup.py install
 </pre></div>
@@ -229,13 +208,13 @@ standard packages on almost all platforms.</p>
 </div>
 </div>
 <div class="section" id="documentation-and-examples">
-<h2>1.4. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
-<p>A zip file of the latest documentation and examples is available at <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/docs">Larch
-Docs and Examples (cars.uchicago.edu)</a></p>
-<p>The source kit includes sources for documentation and examples.</p>
+<h2>1.3. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
+<p>The source kit includes sources for documentation in the <cite>docs</cite> folder and
+several examples (including all those shown in this documentation) in the
+<cite>examples</cite> folder.</p>
 </div>
 <div class="section" id="acknowledgements">
-<h2>1.5. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2>1.4. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable
 influence on the design and implementation of this code and has provided
@@ -278,7 +257,7 @@ uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
 <div class="section" id="license">
-<h2>1.6. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>1.5. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
@@ -348,7 +327,7 @@ distributed under the following license:
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

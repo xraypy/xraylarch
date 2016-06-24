@@ -31,39 +31,25 @@
     <link rel="prev" title="7.6. Fit Examples" href="examples.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -294,24 +280,24 @@ be included, which (depending on the form chosen) will add parameters named
 make a simple mock data set and fit a Gaussian function to it. Here we also
 add a linear background, and do the whole fit with a single function,
 instead of a dozen or so lines of code used before:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_fitpeak1.lar</span>
-<span class="c"># create mock data</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example_fitpeak1.lar</span>
+<span class="c1"># create mock data</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
 <span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.025</span> <span class="o">+</span> <span class="n">noise</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">89</span><span class="o">*</span><span class="n">voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">44.25</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
 
-<span class="c"># fit to Gaussian with linear background</span>
-<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
+<span class="c1"># fit to Gaussian with linear background</span>
+<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
 
-<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
-     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit_init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;init&#39;</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;best fit&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit_init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;init&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;best fit&#39;</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-<span class="c">## end examples/fitting/doc_example_fitpeak1.lar</span>
+<span class="c1">## end examples/fitting/doc_example_fitpeak1.lar</span>
 </pre></div>
 </div>
 <p>Here we first create mock data that's fairly noisy, and ask it to be fit
@@ -359,8 +345,8 @@ with a single line of code.</p>
 <h2>7.7.2. Example: Fitting a Rectangular function with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></code></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
 <p>Here, we simulate data that might represent a line-up scan at a beamline.
 The fit is to a function that takes a step up and a step down.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_fitpeak2.lar</span>
-<span class="c"># create mock rectangular data</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example_fitpeak2.lar</span>
+<span class="c1"># create mock rectangular data</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">81</span><span class="p">)</span>
 <span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="mf">6.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.001</span> <span class="o">+</span> <span class="n">noise</span>
@@ -376,16 +362,16 @@ The fit is to a function that takes a step up and a step down.</p>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">72</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">6</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">71</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">7</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">0.7</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
 
-<span class="c"># fit to rectangle shape</span>
-<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&#39;rectangle&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s">&#39;erf&#39;</span><span class="p">)</span>
+<span class="c1"># fit to rectangle shape</span>
+<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span>
 
-<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
-     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;best fit&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;best fit&#39;</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-<span class="c">## end examples/fitting/doc_example_fitpeak2.lar</span>
+<span class="c1">## end examples/fitting/doc_example_fitpeak2.lar</span>
 </pre></div>
 </div>
 <p>Again, we first create mock data that's fairly noisy.  The data is clearly
@@ -468,7 +454,7 @@ analysis of any data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

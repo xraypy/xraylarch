@@ -90,16 +90,6 @@ div.sphinxsidebar {
     text-align: left;
 }
 
- /* for collapsible sidebar */
-div#sidebarbutton {
-    background-color: #AFC1C4;
-    width: 10 px;
-}
-div#sidebarbutton.hover {
-    background-color: #AFC1C4;
-    width: 10 px;
-}
-
 
 /* #3c6e83; */
 

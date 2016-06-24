@@ -31,39 +31,25 @@
     <link rel="prev" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -155,9 +141,9 @@ the XAFS Fourier transform function described here.</p>
 <p>The standard Fourier transform of a signal <span class="math">\(f(t)\)</span> can be written as</p>
 <div class="math">
 \[\begin{eqnarray*}
-      {\tilde{f}}(\omega) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
+      {\tilde{f}}(\omega) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     f(t) e^{-i{\omega}t} dt \\
-    f(t) &=& \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
+    f(t) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
 \end{eqnarray*}\]</div><p>where the symmetric normalization is one of the more common choices of
 conventions.  This gives conjugate variables of <span class="math">\(\omega\)</span> and
@@ -202,10 +188,10 @@ points <span class="math">\(k_n = n \, \delta k\)</span>, and samples of <span c
 points <span class="math">\(R_m = m \, \delta R\)</span>, the definitions become:</p>
 <div class="math">
 \[\begin{eqnarray*}
-\tilde\chi(R_m) &=& \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
+\tilde\chi(R_m) &amp;=&amp; \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
                     \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
-\tilde\chi(k_n) &=& \frac{2 i \delta R}{\sqrt{\pi N_{\rm fft}}} \,
+\tilde\chi(k_n) &amp;=&amp; \frac{2 i \delta R}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
                     \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
 \end{eqnarray*}\]</div><p>These normalizations preserve the symmetry properties of the Fourier
@@ -542,8 +528,8 @@ center of the widows.  For the Gaussian window, the form is:</p>
 The Kaiser-Bessel window is slightly more complicated:</p>
 <div class="math">
 \[\begin{eqnarray*}
-   a       &=& \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
-  \Omega(x) &=& \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
+   a       &amp;=&amp; \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
+  \Omega(x) &amp;=&amp; \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
 \end{eqnarray*}\]</div><p>where <span class="math">\(i_0\)</span> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
@@ -607,11 +593,11 @@ well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
 <p>We start with a comparison of a small value of <code class="docutils literal"><span class="pre">dk</span></code> and a larger value.
 A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, changing on <code class="docutils literal"><span class="pre">dk</span></code> would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
-<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c"># make a copy of the group</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1"># make a copy of the group</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -628,23 +614,23 @@ Fourier transforms.  Increasing <code class="docutils literal"><span class="pre"
 to broaden peaks, but the effects are rather small.</span></p>
 </div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a> with consistent parameters, but different
 window types:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
-<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c"># make a copy of the group</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;parzen&#39;</span><span class="p">,</span>
+<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1"># make a copy of the group</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;parzen&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat2</span><span class="p">)</span>
 
-<span class="n">dat3</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">dat3</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat3</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;welch&#39;</span><span class="p">,</span>
+<span class="n">dat3</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat3</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat3</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;welch&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat3</span><span class="p">)</span>
 
-<span class="n">dat4</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">dat4</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat4</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;kaiser&#39;</span><span class="p">,</span>
+<span class="n">dat4</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat4</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat4</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat4</span><span class="p">)</span>
 
-<span class="n">dat5</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
-<span class="n">xftf</span><span class="p">(</span><span class="n">dat5</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat5</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;gaussian&#39;</span><span class="p">,</span>
+<span class="n">dat5</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat5</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat5</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat5</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -663,12 +649,12 @@ transform.  As above, it is most common to plot the magnitude of the
 Fourier transform.  But, as the transformed <span class="math">\(\chi(R)\)</span> is complex, it
 can be instructive to plot the real and imaginary components, as shown
 below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_mag&#39;</span><span class="p">,</span>
-        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_mag&#39;</span><span class="p">,</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
 
-<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_re&#39;</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_im</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_im&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_re&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_im</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_im&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>which results in</p>
@@ -734,7 +720,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

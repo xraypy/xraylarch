@@ -30,39 +30,25 @@
     <link rel="prev" title="1. Downloading and Installation" href="../installation/index.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-                         "HTML-CSS": {scale: 90}});
+			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
   <body role="document">
-<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
-    <td width=20% padding=0 rowspan=2>
+    <td width=20%>
 	<a href="../index.html">
-         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
-    <td width=54% padding=0>
-	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
     </td>
-    <td width=8%>
-	<a href="../installation/index.html" style="color: #772211"> Install</a>
-	</td>
-    <td width=8%>
-	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
-        </td>
-    <td width=8%>
-	<a href="../community.html" style="color: #772211"> Community</a></td>
-        </td>
-   </tr>
-  <tr>
-   <td width=54% padding=0>
-	 <font size=+2><a href="../index.html" style="color: #772211">
-   Data Analysis Tools for X-ray Spectroscopy </a></font>
-   </td>
-    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
-    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
-    <td width=8%> <a href="#" style="color: #772211"> Overview</a></td>
    </tr></table>
 </div>
 
@@ -136,29 +122,29 @@
             
   <div class="section" id="larch-motivation-and-overview">
 <h1>3. Larch: Motivation and Overview<a class="headerlink" href="#larch-motivation-and-overview" title="Permalink to this headline">¶</a></h1>
-<p>Larch is an attempt to bring together data processing routines for many
-synchrotron X-ray techniques, and to provide better scripting tools for
-data manipulation, visualization, and analysis.  The initial goal was to
-replace the Ifeffit package for XAFS analysis, in order to better deal with
-larger datasets, make it easier to modify and improve XAFS analysis
-algorithms, and to provide more modern data manipulation and visualization
-tools.  Visualization and analysis of X-ray fluorescence spatial maps and
-spectra as from X-ray microprobe beamlines was also a key requirement, and
-having tools for related techniques like X-ray standing waves and X-ray
-diffraction was highly desirable.  It was also hoped to be able to tie
-these visualization, processing, and analysis routines with data
-collection, to give a more seamless workflow.  Having both high-level
-routines that could be scripted and be used as the core functionality of
-GUIs was viewed as necessary.  Though a work in progress, Larch has already
-met most of these initial goals.</p>
-<p>Using Python to implement this set of tools is an obvious choice.  Python
-is a free, general-purpose interpreted language known for its clear syntax
-and readability.  It has become quite popular in a range of scientific
-disciplines due to many well-designed an supported libraries, including
-<a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>.  Python is being adopted by
-many groups in the synchrotron X-ray community, and being able to build on
-existing tools and tap into a large pool of scientists who are able and
-willing to work in Python was seen as a huge benefit.</p>
+<p>Larch brings together data processing routines for synchrotron X-ray
+techniques and provides high-level scripting tools for data manipulation,
+visualization, and analysis.  The initial goal was to replace the Ifeffit
+package for XAFS analysis in order to better deal with larger datasets,
+make it easier to modify and improve XAFS analysis algorithms, and to
+provide more modern data manipulation and visualization tools.
+Visualization and analysis of X-ray fluorescence spatial maps and spectra
+from X-ray microprobe beamlines was is a key requirement, and incorporating
+tools for related techniques like X-ray standing waves and X-ray
+diffraction is a high priority.  Larch also makes it easy to bring
+visualization, processing, and analysis routines with data collection
+processes to give a more seamless workflow that spans data collection and
+analysis, using core functionality that can be scripted and GUIs built on
+top of these core functions.  While Larch is a work in progress, it has
+already met most of these initial goals.</p>
+<p>Larch is written in Python, a free, general-purpose interpreted language
+known for its clear syntax and readability.  Python has become quite
+popular in a range of scientific disciplines due to many well-designed an
+supported libraries, including <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and
+<a class="reference external" href="http://matplotlib.org/">matplotlib</a>, and is being adopted by many groups in the synchrotron X-ray
+community.  Being able to build on existing tools and tap into a large pool
+of scientists who are able and willing to work in Python was seen as a huge
+benefit in the development of Larch.</p>
 <p>The key design decision for Larch is to build a domain-specific language or
 <em>macro language</em> as the framework to tie together the various
 functionality.  In the synchrotron community, many scientists are familiar
@@ -211,7 +197,7 @@ with organizing data is <strong>Group</strong>.  This is simply a container into
 any sort of data or function can be placed, including other Groups.  The
 data in a Group can be accessed using a syntax of <strong>&lt;Group&gt;.&lt;Member&gt;</strong>,
 as with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;group 1&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
@@ -306,7 +292,7 @@ and analysis steps that Ifeffit can do, including:</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>
