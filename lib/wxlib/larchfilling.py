@@ -35,6 +35,8 @@ from larch.symboltable import SymbolTable, Group
 from larch.utils import Closure
 from wxutils import Button, pack
 
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+
 VERSION = '0.9.5(Larch)'
 
 COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
@@ -88,7 +90,10 @@ class FillingTree(wx.TreeCtrl):
             return
         if not self.rootLabel:
             self.rootLabel = 'Larch Data'
-        rootData = wx.TreeItemData(rootObject)
+        
+        rootData = rootObject
+        if not is_wxPhoenix:
+            rootData = wx.TreeItemData(rootObject)
         self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  rootData)
 
         self.SetItemHasChildren(self.root,  self.objHasChildren(self.rootObject))
@@ -129,7 +134,7 @@ class FillingTree(wx.TreeCtrl):
         """Launch a DirFrame."""
         item = event.GetItem()
         text = self.getFullName(item)
-        obj = self.GetPyData(item)
+        obj = self.GetItemData(item)
         frame = FillingFrame(parent=self, size=(500, 500),
                              rootObject=obj,
                              rootLabel=text, rootIsNamespace=False)
@@ -184,7 +189,7 @@ class FillingTree(wx.TreeCtrl):
 
     def addChildren(self, item):
         self.DeleteChildren(item)
-        obj = self.GetPyData(item)
+        obj = self.GetItemData(item)
         children = self.objGetChildren(obj)
         if not children:
             return
@@ -204,7 +209,9 @@ class FillingTree(wx.TreeCtrl):
                      or (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
             child = children[key]
-            data = wx.TreeItemData(child)
+            data = child
+            if not is_wxPhoenix:
+                data = wx.TreeItemData(child)
             branch = self.AppendItem(parent=item, text=itemtext, data=data)
             self.SetItemHasChildren(branch, self.objHasChildren(child))
 
@@ -212,7 +219,8 @@ class FillingTree(wx.TreeCtrl):
         item = self.item
         if not item:
             return
-        obj = self.GetPyData(item)
+
+        obj = self.GetItemData(item)
         if isinstance(obj, Closure):
             obj = obj.func
 
@@ -267,7 +275,7 @@ class FillingTree(wx.TreeCtrl):
         obj = None
         if item != self.root:
             parent = self.GetItemParent(item)
-            obj = self.GetPyData(parent)
+            obj = self.GetItemData(item)
         # Apply dictionary syntax to dictionary items, except the root
         # and first level children of a namepace.
         if (type(obj) is types.DictType \
