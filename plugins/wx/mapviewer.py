@@ -1368,7 +1368,9 @@ class MapViewerFrame(wx.Frame):
                 title = '%s: %s' % (datafile.filename, name)
 
             notes = {'source': title}
-            #  print(" Save Position : ", self.inst_name, name, position, notes)
+            # print(" Save Position : ", self.inst_name, name, 
+            #       position, notes)
+
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
 

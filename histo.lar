@@ -1,5 +1,0 @@
-# wxlarch history saved Tue Feb 04 11:28:30 2014
-
-x =99
-y = 21
-print x/ y
