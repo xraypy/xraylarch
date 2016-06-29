@@ -638,17 +638,9 @@ class GSEXRM_MapFile(object):
         self.xrfmap.attrs['N_Detectors'] = self.ndet
         roi_desc, roi_addr, roi_lim = [], [], []
         roi_slices = []
-
-        # for reading older maps
-        xrfdet_pref= None
-        if 'xrf' in config:
-            xrfdet_pref = config['xrf'].get('prefix', None)
-        else:
-            xrfdet_pref = config['general']['xmap']
-            
         for iroi, label, lims in roidat:
             roi_desc.append(label)
-            roi_addr.append("%smca%%i.R%i" % (xrfdet_pref, iroi))
+            roi_addr.append("%smca%%i.R%i" % (config['xrf']['prefix'], iroi))
             roi_lim.append([lims[i] for i in range(self.ndet)])
             roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
         roi_lim = np.array(roi_lim)
@@ -1260,7 +1252,8 @@ class GSEXRM_MapFile(object):
         try:
             self.xrfdet_type = mapconf['xrf']['type'].lower()
         except:
-            self.xrfdet_type = 'xmap'
+            print( 'Could not read xrf type')
+
 
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]
