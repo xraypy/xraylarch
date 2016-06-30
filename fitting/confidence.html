@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.8. Advanced Confidence Intervals and Chi-square maps &mdash; larch 0.9.28 documentation</title>
+    <title>7.8. Advanced Confidence Intervals and Chi-square maps &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="8. XAFS Analysis" href="../xafs/index.html" />
     <link rel="prev" title="7.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
@@ -196,7 +196,7 @@ better than another.</p>
 <h2>7.8.1. Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
 <p>Let's begin with a shortened version of the first example from the previous
 section.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
 <span class="c1"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
@@ -227,7 +227,7 @@ section.</p>
 </pre></div>
 </div>
 <p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will include this:</p>
-<div class="highlight-python"><div class="highlight"><pre>[[Variables]]
+<div class="highlight-python"><div class="highlight"><pre><span></span>[[Variables]]
    amp            =  12.129867 +/- 0.124722 (init=  5.000000)
    cen            =  1.476822 +/- 0.017266 (init=  2.000000)
    off            =  0.998814 +/- 0.007131 (init=  0.000000)
@@ -242,7 +242,7 @@ section.</p>
 </div>
 <p>while the output from the much more explicit search done in
 <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a> and reported by <a class="reference internal" href="#confidence_report" title="confidence_report"><code class="xref py py-func docutils literal"><span class="pre">confidence_report()</span></code></a> will be:</p>
-<div class="highlight-python"><div class="highlight"><pre># Confidence Interval Report
+<div class="highlight-python"><div class="highlight"><pre><span></span># Confidence Interval Report
 # Sigmas:          -3         -2         -1          0          1          2          3
 # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
 #==========================================================================================
@@ -310,7 +310,7 @@ values are approximately 3 times the 1-<span class="math">\(\sigma\)</span> valu
 <p>Of course, there are more challenging cases than the one above.  A double
 exponential function is one such example, so we start with a fit to mock
 data</p>
-<div class="highlight-python"><div class="highlight"><pre>## examples/fitting/doc_example_conf2.lar
+<div class="highlight-python"><div class="highlight"><pre><span></span>## examples/fitting/doc_example_conf2.lar
 #  Shows usage of fitting with non-normal correlation of variables,
 #  and confidence intervals.
 
@@ -339,7 +339,7 @@ newplot (dat.x, dat.y, label=&#39;data&#39;, marker=&#39;o&#39;, linewidth=0)
 </pre></div>
 </div>
 <p>The resulting statistics report with the automated uncertainties is:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 101, 4, 97
@@ -371,12 +371,12 @@ above 90%.  The resulting plot of the best-fit looks fairly reasonable:</p>
 </div>
 <p>But if we we ask for the more thorough investigation of the confidence
 intervals in these parameters with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">conf_int</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">minout</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">conf_int</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">minout</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">conf_int</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>the resulting report is:</p>
-<div class="highlight-python"><div class="highlight"><pre># Confidence Interval Report
+<div class="highlight-python"><div class="highlight"><pre><span></span># Confidence Interval Report
 # Sigmas:          -3         -2         -1          0          1          2          3
 # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
 #==========================================================================================
@@ -479,7 +479,7 @@ sets how far from the best value to extend the ranges.</p>
 <p>As an example usage, we return to the first example of the &quot;well-behaved&quot;
 fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></code></a> on a pair of variables with low correlation
 and a pair with high correlation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
 <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">chi2_ampwid</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;wid&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
 <span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampcen</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, cen)&#39;</span><span class="p">)</span>
 <span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampwid</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, wid)&#39;</span><span class="p">)</span>
@@ -504,7 +504,7 @@ are exactly as would be expected, and what the automated estimate of
 uncertainties and correlations assumes.</p>
 <p>But now, if we turn to the more pathological case of the double
 exponential, we calculate the chi-square maps as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 <span class="n">contour</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span>        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, a2)&#39;</span><span class="p">)</span>
 <span class="n">contour</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, t1)&#39;</span><span class="p">)</span>

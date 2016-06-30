@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6. Plotting and Displaying Data &mdash; larch 0.9.28 documentation</title>
+    <title>6. Plotting and Displaying Data &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="next" title="7. Fitting and Modeling Data" href="../fitting/index.html" />
     <link rel="prev" title="5. Reading and Writing Data" href="../data/index.html" />
   <script type="text/x-mathjax-config">
@@ -602,7 +602,7 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p
 <div class="section" id="plot-examples">
 <h3>6.1.2. Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
 <p>Here are a few example line plots, to whet your appetite:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">y1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">y2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">+</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
@@ -614,7 +614,7 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p
 <p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> A basic line plot.</span></p>
 </div>
 <p>Adding a second curve, and setting some labels:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example Plot&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example Plot&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will make this plot:</p>
@@ -677,7 +677,7 @@ labels, and so on for each of the line traces drawn.</p>
 <p>The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;$ k </span><span class="se">\r</span><span class="s1">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;$ k </span><span class="se">\r</span><span class="s1">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The portion of the strings between the dollar signs ('$') will be rendered
@@ -692,7 +692,7 @@ you may recall from the tutorial is also used as an escape sequence.  Thus
 some TeX sequences, such as '\theta' may require an additional backslash,
 so that the '\t' part isn't rendered as a tab character. More generally,
 use of <em>raw strings</em> is recommended in this context, so that one uses:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that this does not actually use TeX (so you don't need TeX installed),
@@ -761,7 +761,7 @@ the image, change the color table, change the intensity scaling, change the
 interpolattion algorithm used.  You can also toggle between showing an
 image of continuously varying intensities and a contour map.  An example
 image, generated with</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/plotting/doc_image2d.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_image2d.lar</span>
 
 <span class="k">def</span> <span class="nf">gauss2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">outer</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
@@ -806,7 +806,7 @@ gives you access to the maplotlib API by giving you access to the
 matplotlib Axes and Canvas for any displayed plot.   To get this, you would
 use <a class="reference internal" href="#_plotter.get_display" title="_plotter.get_display"><code class="xref py py-func docutils literal"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
 <code class="docutils literal"><span class="pre">panel.axes</span></code> member:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">display</span> <span class="o">=</span> <span class="n">get_display</span><span class="p">(</span><span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -816,7 +816,7 @@ use <a class="reference internal" href="#_plotter.get_display" title="_plotter.g
 <p>As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses
 matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function,</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/plotting/doc_use_mpl.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_use_mpl.lar</span>
 <span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">gamma</span>
 

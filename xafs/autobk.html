@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.3. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.28 documentation</title>
+    <title>8.3. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
     <link rel="prev" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
@@ -496,7 +496,7 @@ features.</p>
 <h3>8.3.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
 <p>The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/xafs/doc_autobk1.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk1.lar</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu_rt01.xmu&#39;</span>
 <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
@@ -532,7 +532,7 @@ default values for pararmeters, but pass explicit parameters such as
 <code class="docutils literal"><span class="pre">nnorm</span></code> to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> using <code class="docutils literal"><span class="pre">pre_edge_kws</span></code>.  Setting these
 parameters is not critically important for this data set, and is mostly
 here to demonstrate the method for passing arguments to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/xafs/doc_autobk2.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk2.lar</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;FeAsSO4  (scorodite)&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
@@ -571,7 +571,7 @@ better, which brings us to the next section.</p>
 high-<span class="math">\(k\)</span> end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
 clamp:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/xafs/doc_autobk3.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk3.lar</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;FeAsSO4  (scorodite)&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
@@ -619,7 +619,7 @@ expected leakage from the first shell.  To do this, you can provide a
 specify arrays for <cite>k_std</cite> and <cite>chi_std</cite> arrays to the <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a>
 function.</p>
 <p>As an example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/xafs/doc_autobk4.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk4.lar</span>
 
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu.xmu&#39;</span>
 <span class="n">chi_fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu10k.chi&#39;</span>

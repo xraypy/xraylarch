@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>9. X-ray Databases &mdash; larch 0.9.28 documentation</title>
+    <title>9. X-ray Databases &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="next" title="10. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
     <link rel="prev" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="../xafs/diffkk.html" />
   <script type="text/x-mathjax-config">
@@ -699,7 +699,7 @@ material, using data from Chantler.</td>
 <code class="descclassname">_xray.</code><code class="descname">chemparse</code><span class="sig-paren">(</span><em>formula</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
 <dd><p>parse a chemical formula, returning a dictionary with element symbols as
 keys and number for each element as values.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
@@ -715,7 +715,7 @@ is 'Fe0.8' is supported, but 'Fe.8' is not.</p>
 <code class="descclassname">_xray.</code><code class="descname">material_get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.material_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>look up chemical compound by naming returning formula (not parsed!) and
 density.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
 <span class="p">(</span><span class="s1">&#39;C22H10N2O5&#39;</span><span class="p">,</span> <span class="mf">1.43</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -759,7 +759,7 @@ known materials)</td>
 </tbody>
 </table>
 <p>uses <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>. Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print material_mu(&#39;water&#39;, 10000.0)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print material_mu(&#39;water&#39;, 10000.0)
 5.32986401658495
 larch&gt; print material_mu(&#39;H2O&#39;, 10000.0, density=1.0)
 5.32986401658495
@@ -796,7 +796,7 @@ for known materials)</li>
 'elements' (list of atomic symbols for elements in material). For each element, there
 will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <span class="math">\(\mu\)</span>).
 For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s1">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">],</span>
 <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">60.0843</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">15.9994</span><span class="p">,</span> <span class="mf">5.9528248152970837</span><span class="p">),</span> <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="mf">2.65</span><span class="p">}</span>
 </pre></div>

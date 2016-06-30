@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.2. XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.28 documentation</title>
+    <title>8.2. XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
     <link rel="prev" title="8.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
@@ -264,7 +264,7 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 <div class="section" id="pre-edge-subtraction-example">
 <h2>8.2.2. Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
@@ -404,7 +404,7 @@ and 6.</li>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
 result shown in <a href="#fig-mback-copper">8.4</a>.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
         <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -422,7 +422,7 @@ measured at the Si K edge, with the result shown in
 <a href="#fig-mback-talc">8.6</a>.  Note that the order of the Legendre polynomial
 is set to 2 and that the <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
         <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>

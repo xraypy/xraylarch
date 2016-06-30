@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.7. XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.28 documentation</title>
+    <title>8.7. XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="diffkk.html" />
     <link rel="prev" title="8.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
@@ -668,7 +668,7 @@ Transforms for XAFS</span></a>.</p>
 <h2>8.7.8. Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
 <p>We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_feffit1.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit1.lar</span>
 
 <span class="c1"># read data</span>
 <span class="n">cu_data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu.chi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;k, chi&#39;</span><span class="p">)</span>
@@ -740,7 +740,7 @@ report (shown below).</p>
 commands.</p>
 </div></blockquote>
 <p>running this example prints out the following report:</p>
-<div class="highlight-python"><div class="highlight"><pre>=================== FEFFIT RESULTS ====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 104, 4, 100
    chi_square         = 1005.6072
@@ -808,7 +808,7 @@ useful for the other examples as well, so we'll create a slightly
 generalized function to make such plots and put this and several other
 plotting functions into a separate file, <em>doc_macros.lar</em>.  This will look
 like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_macros.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_macros.lar</span>
 <span class="c1">## general purpose macros, mostly for showing XAFS data</span>
 <span class="c1">##</span>
 <span class="n">label_k</span>     <span class="o">=</span> <span class="s1">r&#39;$k \rm\,(\AA^{-1})$&#39;</span>
@@ -950,7 +950,7 @@ like this:</p>
 <code class="xref py py-func docutils literal"><span class="pre">plot_path_k()</span></code>, and <code class="xref py py-func docutils literal"><span class="pre">plot_path_r()</span></code>, and so on which we'll find
 useful in later examples.  Using the first of these, we can then replace
 the plot commands in the script above with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;First shell fit to Cu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -982,7 +982,7 @@ will be updated to the correct value for each path.  Thus, as the value of
 <code class="docutils literal"><span class="pre">reff</span></code>, so that each <code class="docutils literal"><span class="pre">deltar</span></code> will be different but not independent.
 This ensures that all the path lengths change in a manner consistent with
 one another.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_feffit2.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit2.lar</span>
 
 <span class="c1"># read data</span>
 <span class="n">cu_data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu.chi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;k, chi&#39;</span><span class="p">)</span>
@@ -1030,7 +1030,7 @@ are that the  <span class="math">\(R\)</span> range for the fit has been increas
 fit will try to fit the second shell, and that  <code class="docutils literal"><span class="pre">sigma2</span></code> is allowed to
 vary independently for each path.</p>
 <p>The output for this fit is a bit longer, being:</p>
-<div class="highlight-python"><div class="highlight"><pre>=================== FEFFIT RESULTS ====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 130, 6, 124
    chi_square         = 843.76181
@@ -1125,7 +1125,7 @@ to the real part shows excellent agreement over the fit <span class="math">\(R\)
 [1.4, 3.4] <span class="math">\(\AA\)</span>.  It is often useful the contributions from the
 individual paths.  With the macros defined above, this is pretty
 straightforward, as we can just do:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot_modelpaths_k</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">plot_modelpaths_k</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_modelpaths_r</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="s1">&#39;re&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1168,7 +1168,7 @@ multiple-scattering paths in simple systems.  The model then uses 2
 variable parameters for three temperature-dependent distances and 1
 variable parameter for three temperature-dependent mean-square
 displacements. The full script for the fit looks like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_feffit3.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit3.lar</span>
 
 <span class="c1"># read 3 datasets</span>
 <span class="n">cu_10</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
@@ -1228,7 +1228,7 @@ subtraction on each of them.  We define 5 fitting parameters, including the
 characteristic (here, Einstein) temperature which will determine the value of
 <span class="math">\(\sigma^2\)</span>, and two parameters for the linear temperature dependence
 of <span class="math">\(R\)</span>. The output for this fit is:</p>
-<div class="highlight-python"><div class="highlight"><pre>=================== FEFFIT RESULTS ====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 390, 5, 385
    chi_square         = 2993.448
@@ -1329,7 +1329,7 @@ Such derived uncertainties do reflect the uncertainties and correlations
 between variables.  For example, a simplistic evaluation for the standard
 error in one of the <code class="docutils literal"><span class="pre">sigma2</span></code> parameters using the estimated variance in
 the <code class="docutils literal"><span class="pre">theta</span></code> might be done as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; _ave = sigma2_eins(10, pars.theta)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; _ave = sigma2_eins(10, pars.theta)
 larch&gt; _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
 larch&gt; _dhi = sigma2_eins(10, pars.theta+pars.theta.stderr) - _ave
 larch&gt; print &quot;sigma2(T=10) = %.5f  (%+.5f, %+.5f)&quot; % (_ave, _dlo, _dhi)
@@ -1393,7 +1393,7 @@ amplitude to be <code class="docutils literal"><span class="pre">s02*n1</span></
 We'll allow <code class="docutils literal"><span class="pre">n1</span></code> and <code class="docutils literal"><span class="pre">n2</span></code> to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
 <span class="math">\(\Delta R\)</span> and <span class="math">\(\sigma^2\)</span>.  The script for this fit is below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_feffit4.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit4.lar</span>
 
 <span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="s1">&#39;energy xmu&#39;</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">feo_dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">feo_dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">feo_dat</span><span class="p">)</span>
@@ -1447,7 +1447,7 @@ Path's amplitude.   A secondary note is that we gave two different
 k-weights to <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><code class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></code></a>, which causes both k-weights to be
 used in the fit.</p>
 <p>The resulting output is</p>
-<div class="highlight-python"><div class="highlight"><pre>=================== FEFFIT RESULTS ====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 288, 7, 281
    chi_square         = 532.47218
@@ -1540,7 +1540,7 @@ previous example.</p>
 parameter groups and dataset groups, make a few changes, and re-run the
 fits.  For example, we can change the fitting space with (see
 examples/feffit/doc_feffit5.lar):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c1"># copy parameters</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c1"># copy parameters</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>   <span class="c1"># copy dataset</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s1">&#39;q&#39;</span>
 </pre></div>
@@ -1549,7 +1549,7 @@ examples/feffit/doc_feffit5.lar):</p>
 group, and compare the results either by plotting models from the different
 copies of the dataset or by viewing the parameter values and fit statistics
 with:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; out2  = feffit(pars2, dset2)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; out2  = feffit(pars2, dset2)
 larch&gt; print &#39;*** R Space ***&#39;
 larch&gt; print feffit_report(out, with_paths=False, min_correl=0.5)
 larch&gt; print &#39;*** Q Space ***&#39;
@@ -1557,7 +1557,7 @@ larch&gt; print feffit_report(out2, with_paths=False, min_correl=0.5)
 </pre></div>
 </div>
 <p>which gives</p>
-<div class="highlight-python"><div class="highlight"><pre>*** R Space***
+<div class="highlight-python"><div class="highlight"><pre><span></span>*** R Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 288, 7, 281
@@ -1633,7 +1633,7 @@ larch&gt; print feffit_report(out2, with_paths=False, min_correl=0.5)
 and uncertainties for the varied parameters are quite close for the fit in
 'R' space and 'Q' space.</p>
 <p>Now, we can try the fit in unfiltered 'K' space:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; pars3 = copy(pars)   # copy parameters
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; pars3 = copy(pars)   # copy parameters
 larch&gt; dset3 = copy(dset)   # copy dataset
 larch&gt; dset3.transform.kweight = 2
 larch&gt; dset3.transform.fitspace = &#39;k&#39;
@@ -1642,7 +1642,7 @@ larch  print feffit_report(out3, with_paths=False, min_correl=0.5)
 </pre></div>
 </div>
 <p>(we need to specify only one k-weight for a k-space fit) which gives:</p>
-<div class="highlight-python"><div class="highlight"><pre>*** K Space***
+<div class="highlight-python"><div class="highlight"><pre><span></span>*** K Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 230, 7, 223
@@ -1735,7 +1735,7 @@ ATOMS program, and add an IPOT to the list of atomic potentials (here the
 line <code class="docutils literal"><span class="pre">3</span>&nbsp;&nbsp;&nbsp; <span class="pre">35</span>&nbsp;&nbsp;&nbsp; <span class="pre">Br</span></code>), and then replace the IPOTs for 1 of the neighboring Se
 atoms (that is, replacing a 2 with a 3, and changing the tag for
 convenience).  The resulting feff.inp file for Br looks this:</p>
-<div class="highlight-python"><div class="highlight"><pre>
+<div class="highlight-python"><div class="highlight"><pre><span></span>
  TITLE  ZnSe (cubic zinc sulfide structure)
  HOLE 1   1.0   *  Zn K edge  (9659.0 eV), second number is S0^2
 
@@ -1802,7 +1802,7 @@ advantage of several features of the Larch scripting capabilities,
 including defining functions, and constructs like loops and dictionaries,
 as well as mathematical manipulation of the resulting arrays for the phase
 correction.  The full script is:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/feffit/doc_feffit6.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit6.lar</span>
 
 <span class="c1"># Testing sensitivity to Z of backscatterer, and</span>
 <span class="c1"># how well &quot;phase corrected&quot; Fourier transforms predict distance</span>

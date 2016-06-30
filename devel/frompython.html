@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.4. Using Larch from Python &mdash; larch 0.9.28 documentation</title>
+    <title>11.4. Using Larch from Python &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="11. Programming with Larch" href="index.html" />
     <link rel="prev" title="11.3. Plugins" href="plugins.html" />
   <script type="text/x-mathjax-config">
@@ -133,12 +133,12 @@ Unix or Mac OSX or <code class="docutils literal"><span class="pre">$USER\larch\
 
 <p>Thus to get the <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></code></a> function into a Python module, you
 could do either:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">larch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">larch</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">use_plugin_path</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">use_plugin_path</span>
 <span class="n">use_plugin_path</span><span class="p">(</span><span class="s1">&#39;xafs&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">autobk</span> <span class="kn">import</span> <span class="n">autobk</span>
 </pre></div>
@@ -155,7 +155,7 @@ python (you <strong>can</strong>, but if you're reading this section, you probab
 to use Python instead of Larch), you will need an instance of the
 interpreter.  This is easily created, and can then be passed to any of the
 plugin functions with the <code class="docutils literal"><span class="pre">_larch</span></code> keyword argument:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interpreter</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interpreter</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
 <span class="kn">from</span> <span class="nn">larch_plugins.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
 
@@ -172,7 +172,7 @@ plugin functions with the <code class="docutils literal"><span class="pre">_larc
 using <code class="docutils literal"><span class="pre">with_plugins=False</span></code>.  When running from python, this may be a
 reasonable default.  If you want to add some of the plugins for a
 particular interpreter session, you can:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">(</span><span class="n">with_plugins</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;xray&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;cu_ka = xray_line(&#39;Cu&#39;, &#39;Ka1&#39;)&quot;</span><span class="p">)</span>
@@ -181,7 +181,7 @@ particular interpreter session, you can:</p>
 </pre></div>
 </div>
 <p>This would be nearly the same as doing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch_plugins.xray</span> <span class="kn">import</span> <span class="n">xray_line</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">(</span><span class="n">with_plugins</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>

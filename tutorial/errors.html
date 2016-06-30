@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.5. Tutorial: Dealing With Errors &mdash; larch 0.9.28 documentation</title>
+    <title>4.5. Tutorial: Dealing With Errors &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
     <link rel="prev" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
@@ -133,7 +133,7 @@ execution of your script is stopped.</p>
 <h2>4.5.1. Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = 3 +
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; x = 3 +
 SyntaxError: invalid syntax
 x = 3 +
 
@@ -155,7 +155,7 @@ referred to as a parsing errors.</p>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; n = 1
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; n = 1
 larch&gt; print 4.0 / ( n - 1)
 ZeroDivisionError(&#39;float division&#39;)
 &lt;StdInput&gt;
@@ -169,7 +169,7 @@ didn't test if the denominator was 0 before doing the division.</p>
 <p>Larch (as inherited from Python) has many different types of exceptions, so
 that dividing by zero, as above, is detected as a different exception from,
 say, trying to open a file that doesn't exist:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; fh = open(&#39;foo&#39;, &#39;r&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; fh = open(&#39;foo&#39;, &#39;r&#39;)
 Error running &lt;built-in function open&gt;
 IOError(2, &#39;No such file or directory&#39;)
 &lt;StdInput&gt;
@@ -178,7 +178,7 @@ IOError(2, &#39;No such file or directory&#39;)
 </pre></div>
 </div>
 <p>or trying to add an integer and a string together:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; 4 + &#39;a&#39;
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; 4 + &#39;a&#39;
 TypeError(&quot;unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;&quot;)
 &lt;StdInput&gt;
     4 + &#39;a&#39;
@@ -196,7 +196,7 @@ its <strong>try</strong> and <strong>except</strong> statements.</p>
 types of exceptions.  One or more <strong>except</strong> statements can be added to
 specify blocks of code to execute if the specified exception occurs.
 As a simple example:</p>
-<div class="highlight-python"><div class="highlight"><pre>try:
+<div class="highlight-python"><div class="highlight"><pre><span></span>try:
     x = a/b
 except ZeroDivisionError:
     print &#39;saw a divide by zero!
@@ -213,7 +213,7 @@ such as the case if <em>a</em> holds a string value with <em>b</em> holds an int
 execution will stop and the corresponding exception will be raised.</p>
 <p>There can be several <strong>except</strong> statements for each <strong>try</strong> statement,
 to check for multiple types of problems.  These will be checked in order.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>try:
+<div class="highlight-python"><div class="highlight"><pre><span></span>try:
     x = a/b
 except ZeroDivisionError:
     print &#39;saw a divide by zero!
@@ -229,7 +229,7 @@ not occurred.  For example, it is often agood idea to test when opening a
 file for IOError (which covers a range of issues such as the file not being
 found), and only reading that file if it actually opened.  For example, to
 read in a file into a list of lines, the recommended practice is to do:</p>
-<div class="highlight-python"><div class="highlight"><pre>try:
+<div class="highlight-python"><div class="highlight"><pre><span></span>try:
     fh = open(filename, &#39;r&#39;)
 except IOError:
     print &#39;cannot open file %s!&#39; % filename
@@ -252,7 +252,7 @@ most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
 <p>To cause an exception, you use the <strong>raise</strong> statement, and you are said to
 be &quot;raising an exception&quot;:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; raise TypeError(&quot;wrong data type&quot;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; raise TypeError(&quot;wrong data type&quot;)
 </pre></div>
 </div>
 </div>

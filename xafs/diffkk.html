@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.8. XAFS: Computing anomalous scattering factors from XAFS data &mdash; larch 0.9.28 documentation</title>
+    <title>8.8. XAFS: Computing anomalous scattering factors from XAFS data &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="9. X-ray Databases" href="../xray/index.html" />
     <link rel="prev" title="8.7. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
@@ -244,7 +244,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 </div></blockquote>
 <p>All four arrays are on the same energy grid as the input data.</p>
 <p>Here is an example script to make the figure shown above:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
 <span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">8979</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">})</span>
 
@@ -287,7 +287,7 @@ tabulated <span class="math">\(f'(E)\)</span>.</p>
 </div>
 <p class="caption"><span class="caption-text"><strong>Figure 8.39:</strong> DiffKK analysis of CeO<sub>2</sub> L edge data</span></p>
 </div><p id="fig-CeO2-diffkk">These larch command created the plot in the middle of <a href="#fig-CeO2-diffkk">8.39</a>.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
@@ -298,7 +298,7 @@ tabulated data.  This results in a suspicious <span class="math">\(f'(E)\)</span
 situation is even worse when a higher order polynomial is used for
 the normalization.</p>
 <p>The situation is improved somewhat by a simple trick.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;whiteline&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>

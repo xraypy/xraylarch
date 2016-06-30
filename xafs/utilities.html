@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.1. XAFS Functions: Overview and Naming Conventions &mdash; larch 0.9.28 documentation</title>
+    <title>8.1. XAFS Functions: Overview and Naming Conventions &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
     <link rel="prev" title="8. XAFS Analysis" href="index.html" />
@@ -327,11 +327,11 @@ be a Group if that Group has the expected named arrays.  This convention, known 
 Argument Group</strong> convention is worth understanding and using.  For example, the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a>
 function generally expects the first argument to be an array of energy values and the second to be
 an array of absorbance values.  But a normal use case would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre>autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
+<div class="highlight-python"><div class="highlight"><pre><span></span>autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
 </pre></div>
 </div>
 <p>This can be abbreviated as:</p>
-<div class="highlight-python"><div class="highlight"><pre>autobk(dat, rbkg=1, ....)
+<div class="highlight-python"><div class="highlight"><pre><span></span>autobk(dat, rbkg=1, ....)
 </pre></div>
 </div>
 <p>That is, as long as the Group <code class="docutils literal"><span class="pre">dat</span></code> follows the XAFS naming conventions (for <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a> that
@@ -360,7 +360,7 @@ wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
 
 <p>An example use would be to print out a table of energies and <span class="math">\(k\)</span> values:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; kvals = linspace(0, 25, 26)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; kvals = linspace(0, 25, 26)
 larch&gt; evals = ktoe(kvals)
 larch&gt; for k,e in zip(kvals, evals)):
 larch&gt;      print &quot; %5.1f 1/Ang -&gt;  %8.2f eV&quot; %(k , e)

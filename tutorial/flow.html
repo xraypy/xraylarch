@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.4. Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.28 documentation</title>
+    <title>4.4. Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.5. Tutorial: Dealing With Errors" href="errors.html" />
     <link rel="prev" title="4.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
@@ -139,25 +139,25 @@ So far we've seen three types of statements:</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p class="first">simple statements or expressions, such as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>where we have an expression evaluated.  At the command line, these
 values are printed -- in a script they would not be printed.</p>
 </li>
 <li><p class="first">print statements, such as:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print sqrt(3)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print sqrt(3)
 </pre></div>
 </div>
 <p>where we explicitly command larch to print the evaluated
 expression -- this would print if run from a script.</p>
 </li>
 <li><p class="first">assignment statements, such as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where we assign the name 'x' to hold the evaluated expression.</p>
@@ -173,7 +173,7 @@ of test.</p>
 <p>A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the <strong>if</strong> statement, an example of
 which is:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; if x == 0: print &#39;x is 0!&#39;
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; if x == 0: print &#39;x is 0!&#39;
 </pre></div>
 </div>
 <p>Which will print 'x is 0!' if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
@@ -190,7 +190,7 @@ value of <code class="docutils literal"><span class="pre">True</span></code> or 
 expression.  If the test evaluates to <code class="docutils literal"><span class="pre">True</span></code>, the statement is executed.</p>
 <p>If statements can execute multiple statements by putting the statements
 into a &quot;block of code&quot;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">endif</span>
@@ -198,7 +198,7 @@ into a &quot;block of code&quot;:</p>
 </div>
 <p>Which is to say that the multiple-line form of the if statement looks like
 this:</p>
-<div class="highlight-python"><div class="highlight"><pre>if &lt;test&gt;:
+<div class="highlight-python"><div class="highlight"><pre><span></span>if &lt;test&gt;:
   &lt;statements&gt;
 endif
 </pre></div>
@@ -208,7 +208,7 @@ required (see <a class="reference internal" href="../devel/notpython.html#code-b
 be run if x is equal to 0 -- there is no restriction on how many statements
 can be run.</p>
 <p>An 'else' statement can be added to execute code if the test is False:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="k">else</span><span class="p">:</span>
@@ -218,7 +218,7 @@ can be run.</p>
 </div>
 <p>Multiple tests can be chained together with the 'elif' (a contraction of
 'else if'):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
 <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">print</span> <span class="s1">&#39;x is positive&#39;</span>
@@ -295,20 +295,20 @@ loop</strong>.  For those familiar with other languages, a Larch for loop is a b
 different from a C for loop or Fortran do loop.  A for loop in Larch
 iterates over an ordered set of values as from a list, tuple, or array, or
 over the keys from a dictionary.   Thus a loop like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">x</span>
 <span class="n">endfor</span>
 </pre></div>
 </div>
 <p>will go through values 'a', 'b', and 'c',  assigning each value to <em>x</em>,
 then printing the value of x, which will result in printing out:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span>
 <span class="n">b</span>
 <span class="n">c</span>
 </pre></div>
 </div>
 <p>Similar to the <em>if</em> statement above, the for loop has the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>for &lt;varlist&gt; in &lt;sequence&gt;:
+<div class="highlight-python"><div class="highlight"><pre><span></span>for &lt;varlist&gt; in &lt;sequence&gt;:
     &lt;statements&gt;
 endfor
 </pre></div>
@@ -317,13 +317,13 @@ endfor
 more like a  <em>foreach</em> loop.  The common C / Fortran use case of interating
 over a set of integers can be emulated using the builtin <a class="reference internal" href="builtins.html#range" title="range"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a>
 function which generates a sequence of integers.   Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
    <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">/</span><span class="mf">2.0</span>
 <span class="n">endfor</span>
 </pre></div>
 </div>
 <p>will result in:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span>
 <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span>
 <span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span>
 <span class="mi">3</span><span class="p">,</span> <span class="mf">1.5</span>
@@ -335,11 +335,11 @@ integers, and can take more than 1 argument to indicate a starting value
 and step.  It is important to note that the sequence that is iterated order
 does not be generated from the <a class="reference internal" href="builtins.html#range" title="range"><code class="xref py py-func docutils literal"><span class="pre">range()</span></code></a> function, but can be any list,
 array, or Python sequence.  Importantly, this includes strings(!) so that:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s1">&#39;hello&#39;</span><span class="p">:</span>  <span class="k">print</span> <span class="n">char</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s1">&#39;hello&#39;</span><span class="p">:</span>  <span class="k">print</span> <span class="n">char</span>
 </pre></div>
 </div>
 <p>will print:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">h</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">h</span>
 <span class="n">e</span>
 <span class="n">l</span>
 <span class="n">l</span>
@@ -349,7 +349,7 @@ array, or Python sequence.  Importantly, this includes strings(!) so that:</p>
 <p>This can cause a common sort of error, in that you might expect some
 variabe to hold a list of string values, but it actually holds a single
 string.   Notice that:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filelist</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;file1&#39;</span><span class="p">,</span> <span class="s1">&#39;file2&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">filelist</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;file1&#39;</span><span class="p">,</span> <span class="s1">&#39;file2&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="n">process_file</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
@@ -360,13 +360,13 @@ string.   Notice that:</p>
 <p>would act very differently if filelist was changed to 'file1'!</p>
 <p>Multiple values can be assigned in each iteration of the for loop.  Thus,
 iterating over a sequence of equal-length tuples, as in:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
     <span class="k">print</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
 <span class="n">endfor</span>
 </pre></div>
 </div>
 <p>will print:</p>
-<div class="highlight-python"><div class="highlight"><pre>a 1
+<div class="highlight-python"><div class="highlight"><pre><span></span>a 1
 b 2
 c 3
 </pre></div>
@@ -375,7 +375,7 @@ c 3
 especially when dealing with dictionaries or with arrays or lists of equal
 length.   For a dictionary <em>d</em>, <em>d.items()</em> will return a list of
 two-element tuples as above of key, value.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mydict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">mydict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span>
 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">mydict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span>
 <span class="n">endfor</span>
@@ -383,7 +383,7 @@ two-element tuples as above of key, value.  Thus:</p>
 </div>
 <p>will print (note that dictionaries do no preserve order, but the (key, val)
 pairs match):</p>
-<div class="highlight-python"><div class="highlight"><pre>a 1
+<div class="highlight-python"><div class="highlight"><pre><span></span>a 1
 c 3
 b 2
 d 4
@@ -392,7 +392,7 @@ d 4
 <p>The builtin <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal"><span class="pre">zip()</span></code></a> function is similarly useful, turning a sequence of
 lists or arrays into a sequence of tuples of the corresponding elements of
 the lists or arrays.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; a = range(10)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; a = range(10)
 larch&gt; b = sin(a)
 larch&gt; c = cos(a)
 larch&gt; print zip(a, b, c)
@@ -403,7 +403,7 @@ larch&gt; print zip(a, b, c)
 <p>(Note that for arrays or lists of unequal length, <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal"><span class="pre">zip()</span></code></a> will return
 tuples until any of its arguments runs out of elements).   Thus a for loop
 can make use of the <a class="reference internal" href="builtins.html#zip" title="zip"><code class="xref py py-func docutils literal"><span class="pre">zip()</span></code></a> function to iterate over multiple arrays:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; a = arange(101)/10.0
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; a = arange(101)/10.0
 larch&gt; print &#39;X   SIN(X)  SIN(Y)\n================\n&#39;
 larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
 .....&gt;     print &#39;%.3f, %.5f, %.5f&#39; % (a, sval, cval)
@@ -413,20 +413,20 @@ larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
 <p>will print a table of sine and cosine values.</p>
 <p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><code class="xref py py-func docutils literal"><span class="pre">enumerate()</span></code></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; for i, a in enumerate(&#39;a&#39;, b&#39;, &#39;c&#39;):
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; for i, a in enumerate(&#39;a&#39;, b&#39;, &#39;c&#39;):
 .....&gt;     print i, a
 .....&gt; endfor
 </pre></div>
 </div>
 <p>will print:</p>
-<div class="highlight-python"><div class="highlight"><pre>0 a
+<div class="highlight-python"><div class="highlight"><pre><span></span>0 a
 1 b
 2 c
 </pre></div>
 </div>
 <p>It is sometimes useful to jump out of a for loop, or go onto the next value
 in the sequence.   The <em>break</em> statement will exit a for loop immediately:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
     <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
        <span class="k">break</span>
@@ -440,7 +440,7 @@ in the sequence.   The <em>break</em> statement will exit a for loop immediately
 complete.  The variable 'i' will have the final used value.</p>
 <p>To skipover an iteration of a loop but continue on, use the <em>continue</em>
 statement:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
     <span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
        <span class="k">continue</span>
@@ -455,7 +455,7 @@ statement:</p>
 <p>While a for loop generally walks through a pre-defined set of values, a
 <em>while</em> loop executes as long as some test is <code class="docutils literal"><span class="pre">True</span></code>.   The basic form
 is:</p>
-<div class="highlight-python"><div class="highlight"><pre>while &lt;test&gt;:
+<div class="highlight-python"><div class="highlight"><pre><span></span>while &lt;test&gt;:
    &lt;statements&gt;
 endwhile
 </pre></div>
@@ -464,7 +464,7 @@ endwhile
 each iteration of the loop. Generally, the expression will test something
 that has been changed inside the loop (even if implicitly).   The classic
 while loop increases a counter at each iteration:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
    <span class="n">do_something</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
    <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
@@ -475,7 +475,7 @@ while loop increases a counter at each iteration:</p>
 incrementing the counter.   Then again, the above loop would easily be
 converted into a for loop, as the counter is incremented by a fixed amout at
 each iteration.   A more realistic use would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
    <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span>
    <span class="k">print</span> <span class="n">n</span>
@@ -484,7 +484,7 @@ each iteration.   A more realistic use would be:</p>
 </div>
 <p>An additional use for a while loop is to use an implicit or external
 condition, such as time:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c1"># return the time in seconds since Unix epoch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c1"># return the time in seconds since Unix epoch</span>
 <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>   <span class="c1"># That is &#39;for 15 seconds&#39;</span>
    <span class="n">do_someting</span><span class="p">()</span>
 <span class="n">endwhile</span>
@@ -493,7 +493,7 @@ condition, such as time:</p>
 <p>The <em>break</em> and <em>continue</em> statements also work for while loops, just as they
 do with for loops.   These can be used as ways to exit an other-wise infinite
 while loop:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c1"># will never exit without break!</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c1"># will never exit without break!</span>
    <span class="n">answer</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s1">&#39;guess my favorite color&gt;&#39;</span><span class="p">)</span>
    <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;lime&#39;</span><span class="p">:</span>
        <span class="k">break</span>

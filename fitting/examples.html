@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.6. Fit Examples &mdash; larch 0.9.28 documentation</title>
+    <title>7.6. Fit Examples &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
     <link rel="prev" title="7.5. Some Builtin Line-shape Functions" href="lineshapes.html" />
@@ -141,7 +141,7 @@ Though a fairly simple example, and one that is guaranteed to work well, it
 touches on all the concepts discussed above, and is a reasonable
 representation of the sort of analysis actually done when modeling many
 kinds of data.  The script to do the fit looks like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example1.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example1.lar</span>
 <span class="c1"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
@@ -209,7 +209,7 @@ report of the fit statistics, best fit values, uncertainties and
 correlations between variables.</p>
 </div></blockquote>
 <p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 201, 4, 197
@@ -250,7 +250,7 @@ error-function.</li>
 </ol>
 </div></blockquote>
 <p>Consequently, the script is a bit longer:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example2a.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example2a.lar</span>
 <span class="c1"># read data</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;doc_example2.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy xmu i0&#39;</span><span class="p">)</span>
 
@@ -340,7 +340,7 @@ and give lousy fits, so here we place fairly tight controls on the
 centroids.  We also place bounds on the amplitudes and widths of the peaks,
 so they can't go too far astray.</p>
 <p>The fit gives a report (ignoring correlations) like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 51, 10, 41
@@ -379,7 +379,7 @@ and an Error function.</span></p>
 that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the <code class="docutils literal"><span class="pre">make_models()</span></code>
 function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
     <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
@@ -395,7 +395,7 @@ function:</p>
 </pre></div>
 </div>
 <p>and 3 more fitting parameters to the parameter group:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
     <span class="o">...</span>
     <span class="n">cen3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7122.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7120</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7124</span><span class="p">),</span>
     <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
@@ -404,7 +404,7 @@ function:</p>
 </pre></div>
 </div>
 <p>The fit now has 13 variables, and gives a report like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 51, 13, 38
@@ -447,13 +447,13 @@ and an Error function.</span></p>
 </div><p id="fig-fit3">Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
 section, we simply change <code class="docutils literal"><span class="pre">make_models()</span></code> to use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
 <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
 <span class="n">p3</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The fit report now reads:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 51, 13, 38
@@ -542,7 +542,7 @@ turns out (and a common issue for XAFS data), the scans here do not have
 identical energy values, so we both select a limited energy range, and
 interpolate the standards onto the energy array of the unknown, and put all
 these spectra into a single group:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example3/ReadData.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example3/ReadData.lar</span>
 <span class="n">d1</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;unknown.dat&#39;</span><span class="p">)</span>
 <span class="n">s1</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;s1.dat&#39;</span><span class="p">)</span>
 <span class="n">s2</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;s2.dat&#39;</span><span class="p">)</span>
@@ -566,7 +566,7 @@ these spectra into a single group:</p>
 </div>
 <p>The initial fit to the unknown spectrum with spectra <em>s1</em> and <em>s2</em> looks
 like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example3/fit1.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example3/fit1.lar</span>
 <span class="n">run</span><span class="p">(</span><span class="s1">&#39;ReadData.lar&#39;</span><span class="p">)</span>
 
 <span class="c1"># create a group of fit parameters</span>
@@ -621,7 +621,7 @@ note that we define an uncertainty in the data that we use to scale the
 <code class="docutils literal"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">model</span></code> returned by the fit.   This is somewhat arbitrarily chosen
 to be 0.001, that is 0.1% of the typical data value.  The
 results of this fit are:</p>
-<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+<div class="highlight-python"><div class="highlight"><pre><span></span>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 160, 1, 159
@@ -656,7 +656,7 @@ To answer the second question, we'll work through all the possibilities.
 Now, we set up a more complicated script to do 5 separate fits so that we
 can compare the results.   This makes use of some of the more advanced
 scripting features of larch:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">## examples/fitting/doc_example3/fit2.lar</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example3/fit2.lar</span>
 <span class="n">run</span><span class="p">(</span><span class="s1">&#39;ReadData.lar&#39;</span><span class="p">)</span>
 
 <span class="c1"># define objective function for fit residual</span>
@@ -777,7 +777,7 @@ Parameters, and checks for the lowest value of <code class="docutils literal"><s
 </ol>
 </div></blockquote>
 <p>The output of running this gives:</p>
-<div class="highlight-python"><div class="highlight"><pre>chi_reduced         fit notes
+<div class="highlight-python"><div class="highlight"><pre><span></span>chi_reduced         fit notes
 -------------------------------------
   58.7363   2 component fit:  s1, s2
   40.1796   3 component fit:  s1, s2, s3
@@ -822,7 +822,7 @@ possible combinations of components.  Included in the examples
 script that runs through all possible combinations of 3 and 4 components,
 though still assuming that <em>s1</em> and <em>s2</em> are components.</p>
 <p>The output gives this:</p>
-<div class="highlight-python"><div class="highlight"><pre>chi_reduced         fit notes
+<div class="highlight-python"><div class="highlight"><pre><span></span>chi_reduced         fit notes
 -------------------------------------
   58.7363   2 component fit:  s1, s2
   40.1796   3 component fit:  s1, s2, s3
@@ -862,7 +862,7 @@ four component fit favors <em>s3</em> and <em>s6</em>.  You might further notice
 four component fit with <em>s3</em> and <em>s5</em> has reduced chi-square of 14.7, only
 slightly worse than the best value.  For completeness, the parameters for
 that are:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print fit_report(pars[6])
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print fit_report(pars[6])
 ===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.

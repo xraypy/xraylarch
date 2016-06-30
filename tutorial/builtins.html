@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.8. Tutorial: Builtin Functions &mdash; larch 0.9.28 documentation</title>
+    <title>4.8. Tutorial: Builtin Functions &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="5. Reading and Writing Data" href="../data/index.html" />
     <link rel="prev" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
@@ -168,13 +168,13 @@ to <code class="docutils literal"><span class="pre">group(**dict)</span></code>.
 <dt id="get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
 <dd><p>get object from symbol table by name.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = group(a = 1,  b=2.3, z = &#39;a string&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = group(a = 1,  b=2.3, z = &#39;a string&#39;)
 larch&gt; print get(&#39;g.z&#39;)
 &#39;a string&#39;
 </pre></div>
 </div>
 <p>this is can also be accomplished by the similar:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print getattr(g, &#39;z&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print getattr(g, &#39;z&#39;)
 &#39;a string&#39;
 </pre></div>
 </div>
@@ -225,7 +225,7 @@ way to loop through all items in a group.</p>
 <dd><p>returns a list of files in the current directory.  If a '*' is used in
 the argument, the returned list is limited to files matching that
 pattern.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; ls(&#39;.&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; ls(&#39;.&#39;)
 [&#39;cu.chi&#39;, &#39;cu.xmu&#39;, &#39;cu10k.chi&#39;, &#39;cu_10k.xmu&#39;, &#39;cu_150k.xmu&#39;,
  &#39;cu_50k.xmu&#39;, &#39;cu_metal_rt.xdi&#39;, &#39;cu_rt01.xmu&#39;, &#39;fe.060&#39;,
  &#39;fe2o3_rt1.xmu&#39;, &#39;fe3c_rt.xdi&#39;, &#39;feo_exafs_pnccat2001.dat&#39;,
@@ -250,7 +250,7 @@ for creating directory (default=0777).</p>
 <code class="descname">more</code><span class="sig-paren">(</span><em>filename</em><span class="optional">[</span>, <em>pagelenghth=32</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">,</span> <span class="n">pagelength</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -305,7 +305,7 @@ members.</p>
 <dt id="which">
 <code class="descname">which</code><span class="sig-paren">(</span><em>object</em><span class="sig-paren">)</span><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
 <dd><p>return full path of object in Larch's symbol table:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
 <span class="s1">&#39;_builtin.which&#39;</span>
 </pre></div>
 </div>

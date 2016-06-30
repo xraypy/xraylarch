@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.3. Tutorial: Basic Array Manipulation &mdash; larch 0.9.28 documentation</title>
+    <title>4.3. Tutorial: Basic Array Manipulation &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
     <link rel="prev" title="4.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
@@ -199,7 +199,7 @@ create arrays in Larch.</div></blockquote>
 </table>
 </div></blockquote>
 <p>Some examples of using these functions are needed:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span>
 <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -224,7 +224,7 @@ lists the available data types that can be passed as a <code class="docutils lit
 <p>The <code class="xref py py-func docutils literal"><span class="pre">linspace()</span></code> function is particularly useful for creating arrays,
 as it takes a starting value, ending value, and number of points between
 these:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span>
 <span class="n">array</span><span class="p">([</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.5</span><span class="p">,</span>   <span class="mf">1.</span> <span class="p">,</span>   <span class="mf">1.5</span><span class="p">,</span>   <span class="mf">2.</span> <span class="p">,</span>   <span class="mf">2.5</span><span class="p">,</span>   <span class="mf">3.</span> <span class="p">,</span>   <span class="mf">3.5</span><span class="p">,</span>   <span class="mf">4.</span> <span class="p">,</span>
          <span class="mf">4.5</span><span class="p">,</span>   <span class="mf">5.</span> <span class="p">,</span>   <span class="mf">5.5</span><span class="p">,</span>   <span class="mf">6.</span> <span class="p">,</span>   <span class="mf">6.5</span><span class="p">,</span>   <span class="mf">7.</span> <span class="p">,</span>   <span class="mf">7.5</span><span class="p">,</span>   <span class="mf">8.</span> <span class="p">,</span>   <span class="mf">8.5</span><span class="p">,</span>
@@ -234,7 +234,7 @@ these:</p>
 <p>Several variants are possible.  For more information, consult the numpy
 tutorials, or use the online help system within Larch (which will print out
 the documentation string from the underlying numpy function):</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; help(linspace)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; help(linspace)
 
     Return evenly spaced numbers over a specified interval.
 
@@ -271,7 +271,7 @@ array does not necessarily have) with values of 1 for the diagonal
 elements, and 0 elsewhere.</p>
 <p>The function <code class="xref py py-func docutils literal"><span class="pre">meshgrid()</span></code> can be used to build a mesh of values from two one dimensional
 arrays.  That is:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = array([0, 1, 2, 3, 4])
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; x = array([0, 1, 2, 3, 4])
 larch&gt; y = array([-1, 0.5, 0, 0.5, 1])
 larch&gt; mx, my = meshgrid(x, y)
 larch&gt; print mx
@@ -366,7 +366,7 @@ functions using the <code class="docutils literal"><span class="pre">dtype</span
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt;  x = arange(5)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt;  x = arange(5)
 larch&gt; print x
 [0 1 2 3 4]
 larch&gt; print 2*x+1
@@ -375,7 +375,7 @@ larch&gt; print 2*x+1
 </div>
 <p>and so on for all of the basic mathematical operators.   To add to arrays of equal lengths
 together is also easy:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt;  y = array([10, 12, 14, 16, 18])
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt;  y = array([10, 12, 14, 16, 18])
 larch&gt; print y - 3*x
 [10  9  8  7  6]
 </pre></div>
@@ -383,14 +383,14 @@ larch&gt; print y - 3*x
 <p>If the arrays are not of equal length, an exception is raised. In that case, you can take a sub-set
 of the larger array to match the size of the smaller one.</p>
 <p>Boolean operators also apply to each element, so that:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print y &gt; 13
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print y &gt; 13
 [False False  True  True  True]
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="builtins.html#any" title="any"><code class="xref py py-func docutils literal"><span class="pre">any()</span></code></a> and <a class="reference internal" href="builtins.html#all" title="all"><code class="xref py py-func docutils literal"><span class="pre">all()</span></code></a> functions (in the tables below) can be used to determine if any or
 all of the Boolean values are <code class="docutils literal"><span class="pre">True</span></code>.</p>
 <p>You can extract single elements from arrays with brackets, just as for lists:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print y[2]
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print y[2]
 14
 larch&gt; print (y-3*x)[2]
 7
@@ -406,7 +406,7 @@ an array or work on only a selected part of an array.  To do these, one takes a 
 -- a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
 straightforward, using the range of indices needed for the slice between square brackets <code class="docutils literal"><span class="pre">[</span></code> and
 <code class="docutils literal"><span class="pre">]</span></code>.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; arr = linspace(0, 2, 21)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; arr = linspace(0, 2, 21)
 larch&gt; print arr
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4
   1.5  1.6  1.7  1.8  1.9  2. ]
@@ -424,7 +424,7 @@ selects elements starting at <code class="docutils literal"><span class="pre">i<
 <code class="docutils literal"><span class="pre">j</span></code>.  If <code class="docutils literal"><span class="pre">i</span></code> is omitted,
 it is taken as 0 (the first element), and if <code class="docutils literal"><span class="pre">j</span></code> is omitted, it defaults to the last element of
 the array.  In addition, if <code class="docutils literal"><span class="pre">i</span></code> and/or <code class="docutils literal"><span class="pre">j</span></code> are negative, they count from the end of the array:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[:-8]
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print arr[:-8]
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2]
 larch&gt; print arr[-2:]
 [ 1.9  2.]
@@ -432,20 +432,20 @@ larch&gt; print arr[-2:]
 </div>
 <p>A slice can take a third argument <code class="docutils literal"><span class="pre">k</span></code> -- the stride -- which allows selection of every <code class="docutils literal"><span class="pre">k</span></code>
 elements.  That is:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[1:6:2]
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print arr[1:6:2]
 [ 0.1  0.3  0.5]
 larch&gt; print arr[::2]
 [ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]
 </pre></div>
 </div>
 <p>If <code class="docutils literal"><span class="pre">k</span></code> is negative, it starts from the end of the array:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[::-3]
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print arr[::-3]
 [2.   1.7  1.4  1.1  0.8  0.5  0.2]
 </pre></div>
 </div>
 <p>For mult-dimensional arrays, slices can be made for each dimension, with slices separated by
 commas.  If no slice is given, the whole array along that dimension is used.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = arange(30).reshape((6, 5)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; x = arange(30).reshape((6, 5)
 larch&gt; print x
 [[ 0  1  2  3  4]
  [ 5  6  7  8  9]
@@ -466,7 +466,7 @@ larch&gt; print x[:3,2:5]
 <p>Note that multi-dimensional arrays use a layout like C and unlike Fortran by default.  In addition
 to the comma-based syntax shown above to extract different dimensions or use brackets around each
 dimension:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print x[1][:4]  # second row, first 4 columns
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print x[1][:4]  # second row, first 4 columns
 [5 6 7 8]
 larch&gt; print x[1,:4]   # same
 [5 6 7 8]
@@ -483,7 +483,7 @@ has a <code class="xref py py-data docutils literal"><span class="pre">size</spa
 number of dimensions, and <code class="xref py py-data docutils literal"><span class="pre">shape</span></code> giving the a tuple with the length along each
 dimension.  The dimensionality and shape of a multi-dimensional array can be specified
 by setting the value of <code class="xref py py-data docutils literal"><span class="pre">shape</span></code> to the desired value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span>
 <span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">,</span> <span class="mf">11.</span><span class="p">,</span> <span class="mf">12.</span><span class="p">])</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
@@ -636,7 +636,7 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
 element-by-element.  For example, <code class="xref py py-func docutils literal"><span class="pre">sqrt()</span></code> returns the square-root of a single
 value or for each element in an array:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print sqrt(3)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print sqrt(3)
 1.73205080757
 larch&gt; x = arange(10)
 larch&gt; print sqrt(x)
@@ -646,7 +646,7 @@ larch&gt; print sqrt(x)
 </div>
 <p>The numpy library provides the underlying functions, and they are much faster than
 looping over elements of the array:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; for el in x:  # this is much slower than sqrt(x)!!
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; for el in x:  # this is much slower than sqrt(x)!!
 .....&gt;     print el, sqrt(el)
 .....&gt; endfor
 0 0.0

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. Reading and Writing Data &mdash; larch 0.9.28 documentation</title>
+    <title>5. Reading and Writing Data &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="next" title="6. Plotting and Displaying Data" href="../plotting/index.html" />
     <link rel="prev" title="4.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
   <script type="text/x-mathjax-config">
@@ -142,7 +142,7 @@ encoded) data files, with whitespace delimited numbers layed out as a
 table, with a fix number of columns and rows indicated by newlines.
 Typically a comment character such as &quot;#&quot; is used to signify header
 information.  For instance:</p>
-<div class="highlight-python"><div class="highlight"><pre># room temperature FeO.
+<div class="highlight-python"><div class="highlight"><pre><span></span># room temperature FeO.
 # data from 20-BM, 2001, as part of NXS school
 #------------------------
 #   energy     xmu       i0
@@ -176,7 +176,7 @@ the data.</p>
 </dd></dl>
 
 <p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = read_ascii(&#39;mydata.dat&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = read_ascii(&#39;mydata.dat&#39;)
 larch&gt; show(g)
 == Group ascii_file mydata.dat: 6 symbols ==
   attributes: &lt;Group header attributes from mydata.dat&gt;
@@ -190,7 +190,7 @@ larch&gt;
 </div>
 <p>which reads the data file and sets array names according to the column
 labels in the file.   You can be explicit:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = read_ascii(&#39;mydata.dat&#39;, label=&#39;e mutrans monitor&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = read_ascii(&#39;mydata.dat&#39;, label=&#39;e mutrans monitor&#39;)
 larch&gt; show(g)
 == Group ascii_file mydata.dat: 6 symbols ==
   attributes: &lt;Group header attributes from mydata.dat&gt;
@@ -203,7 +203,7 @@ larch&gt;
 </pre></div>
 </div>
 <p>and to get the data as a 2-D array:</p>
-<div class="highlight-python"><div class="highlight"><pre> larch&gt; g  = read_ascii(&#39;mydata.dat&#39;, labels=False)
+<div class="highlight-python"><div class="highlight"><pre><span></span> larch&gt; g  = read_ascii(&#39;mydata.dat&#39;, labels=False)
  larch&gt; show(g)
  == Group ascii_file mydata.dat: 4 symbols ==
    attributes: &lt;Group header attributes from mydata.dat&gt;
@@ -259,7 +259,7 @@ file as needed.</p>
 
 <p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><code class="xref py py-func docutils literal"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
 data heirarchy of the HDF5 file, and pick out the needed data:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = h5group(&#39;test.h5&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = h5group(&#39;test.h5&#39;)
 larch&gt; show(g)
 == Group test.h5: 3 symbols ==
   attrs: {u&#39;Collection Time&#39;: &#39;: Sat Feb 4 13:29:00 2012&#39;, u&#39;Version&#39;: &#39;1.0.0&#39;,

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.3. Plugins &mdash; larch 0.9.28 documentation</title>
+    <title>11.3. Plugins &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="11. Programming with Larch" href="index.html" />
     <link rel="next" title="11.4. Using Larch from Python" href="frompython.html" />
     <link rel="prev" title="11.2. Modules" href="modules.html" />
@@ -147,7 +147,7 @@ group containing the added functions, and a dictionary with keys used for
 the names to be put into the Larch symbol table, and values of the functions
 or data to be used. of Larch symbol. A simple plugin module would
 look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="c1"># Note: larch instance passed in to &#39;_larch&#39;</span>
     <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">return</span>
@@ -166,7 +166,7 @@ look like:</p>
 exist), and create a function <code class="docutils literal"><span class="pre">func</span></code> in this group that held the python
 function <code class="docutils literal"><span class="pre">myfunc</span></code>.  To use this function from the Larch interpreter, you
 would use something like:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; out = mymod.func(12, &#39;a string&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; out = mymod.func(12, &#39;a string&#39;)
 larch&gt; print out.x, out.y, out.z
 12  &#39;a string&#39; 100
 </pre></div>
@@ -212,7 +212,7 @@ defined by <code class="xref py py-func docutils literal"><span class="pre">regi
 
 <p>If the above plugin file is saved in a file named <cite>myplugin.py</cite> in the
 user's Larch Plugin folder, then doing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will add a top-level group <code class="docutils literal"><span class="pre">mymod</span></code> with the <code class="docutils literal"><span class="pre">func</span></code> function, as described
@@ -254,7 +254,7 @@ Python modules (and which versions of the modules), a particular plugin
 depends on, you can include a file <cite>requirements.txt</cite> in the plugin folder
 which contains the module name and version strings, one per line.  A
 typical <cite>requirements.txt</cite> file might look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
 <span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">0.13</span>
 </pre></div>
 </div>

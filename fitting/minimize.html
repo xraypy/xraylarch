@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.3. minimize() and Objective Functions &mdash; larch 0.9.28 documentation</title>
+    <title>7.3. minimize() and Objective Functions &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.4. Fit Results and Outputs" href="results.html" />
     <link rel="prev" title="7.2. Parameters" href="parameters.html" />
@@ -130,7 +130,7 @@ two image arrays, or the fourier filtered average of ten spectra.  Because
 of such complexities, the reliance of optional arguments appears to be the
 best approach.</p>
 <p id="index-0">A simple objective function that models data as a line might look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
                <span class="n">slope</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -150,7 +150,7 @@ function, and several keyword arguments to alter the fitting process
 itself.  Here is the function call using the objective function
 defined above, assuming you have a group called <code class="docutils literal"><span class="pre">data</span></code> containing
 the data you are trying to fit:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">minimize</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xdata&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;ydata&#39;</span><span class="p">:</span><span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">})</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">minimize</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xdata&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;ydata&#39;</span><span class="p">:</span><span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>As the fit proceeds, the values the Parameter values will be updated, and

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.5. Some Builtin Line-shape Functions &mdash; larch 0.9.28 documentation</title>
+    <title>7.5. Some Builtin Line-shape Functions &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.6. Fit Examples" href="examples.html" />
     <link rel="prev" title="7.4. Fit Results and Outputs" href="results.html" />
@@ -165,7 +165,7 @@ Half-Maximum is approximately <span class="math">\(3.6013\sigma\)</span>.</p>
 Gaussian and Lorentzian distribution functions with the same values for
 <em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>), and <em>frac</em> setting the
 Lorentzian fraction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -277,7 +277,7 @@ in the <a class="reference internal" href="#fit-funcs-table"><span>Table of Usef
 </div></blockquote>
 <p>Other standard special functions (Bessel functions, Legendre polynomials,
 etc) can be accessed from scipy.special:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>

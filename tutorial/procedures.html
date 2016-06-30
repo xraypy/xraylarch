@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.6. Tutorial: Writing Functions or Procedures &mdash; larch 0.9.28 documentation</title>
+    <title>4.6. Tutorial: Writing Functions or Procedures &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
     <link rel="prev" title="4.5. Tutorial: Dealing With Errors" href="errors.html" />
@@ -142,19 +142,19 @@ about running Larch scripts and modules in the next section of this tutorial.</p
 <p>To define a procedure, you use the <strong>def</strong> statement, and write a block of
 code.  This looks much like the <strong>if</strong>, <strong>for</strong>, and <strong>while</strong> blocks
 discussed earlier. A simple example would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sayhello</span><span class="p">():</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sayhello</span><span class="p">():</span>
     <span class="k">print</span> <span class="s1">&#39;hello!&#39;</span>
 <span class="n">enddef</span>
 </pre></div>
 </div>
 <p>With this definition, one can then run this procedure as you would run any
 other built-in function, by writing:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; sayhello()
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; sayhello()
 hello!
 </pre></div>
 </div>
 <p>Of course, you can write procedures that take input arguments, such as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
      <span class="k">print</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span>
@@ -164,7 +164,7 @@ hello!
 </pre></div>
 </div>
 <p>Here <em>x</em> will hold whatever value is passed to it, so that:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; safe_sqrt(4)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; safe_sqrt(4)
 2.0
 larch&gt; safe_sqrt(-9)
 Did you want sqrt(9.000000) = 3.000000?
@@ -176,7 +176,7 @@ anywhere in a procedure definition.  When encountered, it will cause the
 procedure to immediately exist, passing back any indicated value(s).  If no
 <strong>return</strong> statement is given in a procedure, it will return <code class="docutils literal"><span class="pre">None</span></code> when
 the procedure has fully executed.  An example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
      <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span>
@@ -186,7 +186,7 @@ the procedure has fully executed.  An example:</p>
 </pre></div>
 </div>
 <p>which can now be used as:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; print safe_sqrt(4)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print safe_sqrt(4)
 2.0
 larch&gt; x = safe_sqrt(-10)
 larch&gt; print x
@@ -195,7 +195,7 @@ larch&gt; print x
 </div>
 <p><strong>return</strong> can take multiple arguments, separated by a comma, which is to
 say a <strong>tuple</strong>.  As an example:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; def sum_diff(x, y):
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; def sum_diff(x, y):
 .....&gt;    return x + y, x-y
 .....&gt; enddef
 larch&gt; print sum_diff(3., 4.)
@@ -204,7 +204,7 @@ larch&gt; print sum_diff(3., 4.)
 </div>
 <p>This is discussed in more detail below.</p>
 <p>The formal definition of a procedure looks like:</p>
-<div class="highlight-python"><div class="highlight"><pre>def &lt;procedure_name&gt;(&lt;arguments&gt;):
+<div class="highlight-python"><div class="highlight"><pre><span></span>def &lt;procedure_name&gt;(&lt;arguments&gt;):
     &lt;block of statements&gt;
 enddef
 </pre></div>
@@ -289,7 +289,7 @@ This is a really bad idea, and you should avoid doing it at all costs.</p>
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
 multiple values from a single procedure.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; def my_divmod(x, y):
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; def my_divmod(x, y):
 .....&gt;    return (x // y, x % y)  # note use of // for integer division!
 .....&gt; enddef
 larch&gt; print my_divmod(100, 7)
@@ -298,13 +298,13 @@ larch&gt; print my_divmod(100, 7)
 </div>
 <p>But be careful when assigning the return value to variable(s).  You can
 do:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; xdiv, xmod = my_divmod(100, 7)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; xdiv, xmod = my_divmod(100, 7)
 larch&gt; print xdiv
 14
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; result = my_divmod(100, 7)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; result = my_divmod(100, 7)
 larch&gt; print result[0], result[1]
 14, 2
 </pre></div>
@@ -323,7 +323,7 @@ arguments.  Larch allows this with <strong>keyword</strong> arguments.
 Keyword arguments offer distinct advantages over positional arguments
 in that they have default values, and can be given in any order.
 In a procedure definition, you add an argument name with a default value,  like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>def xlog(a, base=e):
+<div class="highlight-python"><div class="highlight"><pre><span></span>def xlog(a, base=e):
     &quot;&quot;&quot;return log(a) with base = base (default=e=2.71828...)
     &quot;&quot;&quot;
      if base &gt; 1:
@@ -336,7 +336,7 @@ enddef
 </div>
 <p>Unless passed in, the value of <em>base</em> will take the default value of <em>e</em>.
 This can then be used as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
 <span class="mf">2.7725887222397811</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="mf">1.2041199826559246</span>
@@ -351,7 +351,7 @@ keyword parameters, using a special syntax for unspecified positional
 arguments and for unspecified keyword arguments.  To use unspecified
 positional arguments, a procedure definition takes an argument preceded by
 a '*' after all the named positional arguments, like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">addall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">addall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;add all (at least 2!!) arguments given&quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
@@ -366,7 +366,7 @@ any number of positional arguments beyond those explicitly given.  Inside
 the procedure, a tuple named 'args' will hold any positional parameters
 included in the call to 'addall' past the first two (which will be held by
 'a' and 'b').  Thus, this procedure can be used as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c1"># args = ()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c1"># args = ()</span>
 <span class="mi">5</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c1"># args = (5, 7)</span>
 <span class="mi">17</span>
@@ -375,7 +375,7 @@ included in the call to 'addall' past the first two (which will be held by
 <p>To add support for unspecified keyword parameters, one adds a named
 argument to the procedure definition preceded by two asterisks:
 <strong>'**keywords'</strong>.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>def operate(a, b, **options):
+<div class="highlight-python"><div class="highlight"><pre><span></span>def operate(a, b, **options):
     &quot;&quot;&quot;perform operation on a and b&quot;&quot;&quot;
     debug = options.get(&#39;debug&#39;, True)
     verbose = options.get(&#39;verbose&#39;, False)
@@ -401,7 +401,7 @@ enddef
 dictionary of keyword names/values passed into it.  With this (perhaps
 contrived) definition, you can call 'operate' many ways to change its
 behavior:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; operate(3, 2, op=&#39;add&#39;)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; operate(3, 2, op=&#39;add&#39;)
 5
 larch&gt; operate(3, 2, op=&#39;add&#39;, verbose=True)
 op == add
@@ -430,7 +430,7 @@ not assigned to a variable), then this will be used as the procedure
 documentation.  You can use triple-quoted strings for multi-line
 documentation strings.  This doc string will be used by the built-in help
 mechanism, or when viewing details of the procedure.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>def safe_sqrt(x):
+<div class="highlight-python"><div class="highlight"><pre><span></span>def safe_sqrt(x):
   &quot;&quot;&quot;safe sqrt function:
  returns sqrt(abs(x))
  &quot;&quot;&quot;
@@ -439,7 +439,7 @@ enddef
 </pre></div>
 </div>
 <p>With this definition:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; help(safe_sqrt)
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; help(safe_sqrt)
   safe sqrt function:
      returns sqrt(abs(x))
 </pre></div>

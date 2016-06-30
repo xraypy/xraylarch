@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.1. Tutorial: Getting Started &mdash; larch 0.9.28 documentation</title>
+    <title>4.1. Tutorial: Getting Started &mdash; larch 0.9.29 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.28',
+        VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.28 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
     <link rel="prev" title="4. Larch Tutorial" href="index.html" />
@@ -126,7 +126,7 @@
 <p>This tutorial expects that you already have Larch installed and can run
 either the program larch, basic Larch interpreter, or larch_gui, the
 enhanced GUI interpreter:</p>
-<div class="highlight-python"><div class="highlight"><pre>C:&gt; larch
+<div class="highlight-python"><div class="highlight"><pre><span></span>C:&gt; larch
   Larch 0.9.17 (9-Dec-2012) M. Newville, T. Trainor
   using python 2.7.3, numpy 1.6.2, wx-enabled, wx version 2.9.4.0
 larch&gt;
@@ -141,7 +141,7 @@ Larch functions.</p>
 <div class="section" id="larch-as-a-basic-calculator">
 <h2>4.1.1. Larch as a Basic Calculator<a class="headerlink" href="#larch-as-a-basic-calculator" title="Permalink to this headline">¶</a></h2>
 <p>To start with, Larch can be used as a simple calculator:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
 <span class="mi">3</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">4.e5</span><span class="p">)</span>
 <span class="mf">632.45553203367592</span>
@@ -151,7 +151,7 @@ Larch functions.</p>
 </div>
 <p>You can create your own variables holding values, by assigning names to
 values, and then use these in calculations:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; hc = 12398.419
+<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; hc = 12398.419
 larch&gt; d = 3.13556
 larch&gt; energy = (hc/(2*d)) / sin(10.0*pi/180)
 larch&gt; print energy
@@ -172,7 +172,7 @@ Larch (owing to its Python origins) is that variables are created
 <em>dynamically</em>, they are not pre-defined to have some particular data type.
 In fact, the a variable name (say, 'angle' above) can hold any type of
 data, and its type can be changed easily:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="s1">&#39;now I am a string&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="s1">&#39;now I am a string&#39;</span>
 </pre></div>
 </div>
 <p>Although the types of values for a variable can be changed dynamically,
@@ -180,7 +180,7 @@ values in Larch (Python) do have a definite and clear type, and conversion
 between types is rigidly defined -- you can add an integer and a real
 number to give a real number, but you cannot add a string and a real
 number.   In fact, writing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
 </pre></div>
 </div>
 <p>is usually described as &quot;create a variable 'angle' and set its value to the
