@@ -85,7 +85,7 @@ with it.  It will use these for PVs to post data at each point of the scan.
 """
 import os, shutil
 import time
-import threading
+from threading import Thread
 import json
 import numpy as np
 import random
@@ -127,7 +127,7 @@ HC       = 12398.4193
 RAD2DEG  = 180.0/np.pi
 MAXPTS   = 8192
 
-class PVSlaveThread(threading.Thread):
+class PVSlaveThread(Thread):
     """
     Sets up a Thread to allow a Master Index PV (say, an advancing channel)
     to send a Slave PV to a value from a pre-defined array.
@@ -149,7 +149,7 @@ class PVSlaveThread(threading.Thread):
     def __init__(self, master_pvname=None,  slave_pvname=None, scan=None,
                  values=None, maxpts=8192, wait_time=0.05, dead_time=0.5,
                  offset=3):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.maxpts = maxpts
         self.offset = offset
         self.wait_time = wait_time
@@ -242,7 +242,7 @@ def hms(secs):
     "format time in seconds to H:M:S"
     return str(timedelta(seconds=int(secs)))
 
-class ScanMessenger(threading.Thread):
+class ScanMessenger(Thread):
     """ Provides a way to run user-supplied functions per scan point,
     in a separate thread, so as to not delay scan operation.
 
@@ -262,7 +262,7 @@ class ScanMessenger(threading.Thread):
     timeout = 3600.
     def __init__(self, func=None, scan=None,
                  cpt=-1, npts=None, func_kws=None):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.func = func
         self.scan = scan
         self.cpt = cpt
@@ -530,16 +530,25 @@ class LarchStepScan(object):
             self.write("%s\n" % msg)
         self.set_info('scan_progress', msg)
 
-    def publish_scandata(self):
-        "post scan data to db"
-        if self.scandb is None:
-            return
+    def set_all_scandata(self):
+        self.publishing_scandata = True
         for c in self.counters:
             name = getattr(c, 'db_label', None)
             if name is None:
                 name = c.label
             c.db_label = fix_varname(name)
             self.scandb.set_scandata(c.db_label, c.buff)
+        self.publishing_scandata = False
+
+    def publish_scandata(self, wait=False):
+        "post scan data to db"
+        if self.scandb is None:
+            return
+        if wait:
+            self.set_all_scandata()
+        else:
+            self.publish_thread = Thread(target=self.set_all_scandata)
+            self.publish_thread.start()
 
     def set_error(self, msg):
         """set scan error message"""
@@ -632,6 +641,8 @@ class LarchStepScan(object):
            run post_scan methods
         """
         self.dtimer = dtimer = debugtime(verbose=debug)
+        self.publishing_scandata = False
+        self.publish_thread = None
 
         self.complete = False
         if filename is not None:
@@ -724,6 +735,7 @@ class LarchStepScan(object):
                 point_ok = True
                 self.cpt = i+1
                 self.look_for_interrupts()
+                dtimer.add('Pt %i : looked for interrupts' % i)
                 while self.pause:
                     time.sleep(0.25)
                     if self.look_for_interrupts():
@@ -731,8 +743,9 @@ class LarchStepScan(object):
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
 
+                dtimer.add('Pt %i : move_to_pos (%i)' % (i, len(self.positioners)))
                 # publish scan data while waiting for move to finish
-                if i > 1:
+                if i > 1 and not self.publishing_scandata:
                     self.publish_scandata()
                 dtimer.add('Pt %i : publish data' % i)
                 if self.dwelltime_varys:
@@ -812,11 +825,15 @@ class LarchStepScan(object):
                 for det in self.detectors:
                     det.pre_scan(scan=self)
                 i -= 1
+            dtimer.add('Pt %i: joining publish thread.' % i)
+            if self.publish_thread is not None:
+                self.publish_thread.join()
+            dtimer.add('Pt %i: completely done.' % i)
 
         # scan complete
         # return to original positions, write data
         dtimer.add('Post scan start')
-        self.publish_scandata()
+        self.publish_scandata(wait=True)
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
 
@@ -847,6 +864,8 @@ class LarchStepScan(object):
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
         dtimer.add('Post: fully done')
+
+        # dtimer.show()
 
         return self.datafile.filename
         ##
@@ -1411,7 +1430,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             _c.buff = arr.tolist()
             self.counters.append(_c)
 
-        self.publish_scandata()
+        self.publish_scandata(wait=True)
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
