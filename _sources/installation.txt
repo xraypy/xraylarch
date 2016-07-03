@@ -110,7 +110,7 @@ Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
 of Energy GeoSciences (DE-FG02-94ER14466).  In addition, funding
-specifically for Larch was granted by the National Science Foundation --
+specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).
 
 
