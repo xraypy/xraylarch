@@ -5,8 +5,6 @@ Downloading and Installation
 .. _Larch Repository (github.com):               http://github.com/xraypy/xraylarch
 .. _Anaconda Python:                             http://www.continuum.io/
 .. _Anaconda Downloads:                          http://www.continuum.io/downloads
-.. _Larch Downloads (cars.uchicago.edu):         http://cars.uchicago.edu/xraylarch/downloads
-.. _Larch Docs and Examples (cars.uchicago.edu): http://cars.uchicago.edu/xraylarch/downloads/docs
 .. _Larch Releases (github.com):                 https://github.com/xraypy/xraylarch/releases
 
 
@@ -105,6 +103,18 @@ several examples (including all those shown in this documentation) in the
 `examples` folder.
 
 
+Funding and Support
+=======================
+
+Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
+Radiation Sources at the University of Chicago has been supported by the US
+National Science Foundation - Earth Sciences (EAR-1128799), and Department
+of Energy GeoSciences (DE-FG02-94ER14466).  In addition, funding
+specifically for Larch was granted by the National Science Foundation --
+Advanced CyberInfrastructure (ACI-1450468).
+
+
+
 Acknowledgements
 ==================
 
@@ -161,4 +171,4 @@ documentation, and all material associated with Larch are distributed under
 the BSD License:
 
 
-.. literalinclude:: ../../LICENSE
+.. literalinclude:: ../LICENSE
