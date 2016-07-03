@@ -113,9 +113,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -142,15 +139,15 @@ encoded) data files, with whitespace delimited numbers layed out as a
 table, with a fix number of columns and rows indicated by newlines.
 Typically a comment character such as &quot;#&quot; is used to signify header
 information.  For instance:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span># room temperature FeO.
-# data from 20-BM, 2001, as part of NXS school
-#------------------------
-#   energy     xmu       i0
-  6911.7671  -0.35992590E-01  280101.00
-  6916.8730  -0.39081634E-01  278863.00
-  6921.7030  -0.42193483E-01  278149.00
-  6926.8344  -0.45165576E-01  277292.00
-  6931.7399  -0.47365589E-01  265707.00
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO.</span>
+<span class="c1"># data from 20-BM, 2001, as part of NXS school</span>
+<span class="c1">#------------------------</span>
+<span class="c1">#   energy     xmu       i0</span>
+  <span class="mf">6911.7671</span>  <span class="o">-</span><span class="mf">0.35992590E-01</span>  <span class="mf">280101.00</span>
+  <span class="mf">6916.8730</span>  <span class="o">-</span><span class="mf">0.39081634E-01</span>  <span class="mf">278863.00</span>
+  <span class="mf">6921.7030</span>  <span class="o">-</span><span class="mf">0.42193483E-01</span>  <span class="mf">278149.00</span>
+  <span class="mf">6926.8344</span>  <span class="o">-</span><span class="mf">0.45165576E-01</span>  <span class="mf">277292.00</span>
+  <span class="mf">6931.7399</span>  <span class="o">-</span><span class="mf">0.47365589E-01</span>  <span class="mf">265707.00</span>
 </pre></div>
 </div>
 <p>This file and others like it can be read with the builtin
@@ -176,41 +173,41 @@ the data.</p>
 </dd></dl>
 
 <p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = read_ascii(&#39;mydata.dat&#39;)
-larch&gt; show(g)
-== Group ascii_file mydata.dat: 6 symbols ==
-  attributes: &lt;Group header attributes from mydata.dat&gt;
-  column_labels: [&#39;energy&#39;, &#39;xmu&#39;, &#39;i0&#39;]
-  energy: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-  filename: &#39;mydata.dat&#39;
-  i0: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-  xmu: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-larch&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
+  <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
+  <span class="n">column_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;i0&#39;</span><span class="p">]</span>
+  <span class="n">energy</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
+  <span class="n">i0</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">xmu</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">larch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>which reads the data file and sets array names according to the column
 labels in the file.   You can be explicit:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = read_ascii(&#39;mydata.dat&#39;, label=&#39;e mutrans monitor&#39;)
-larch&gt; show(g)
-== Group ascii_file mydata.dat: 6 symbols ==
-  attributes: &lt;Group header attributes from mydata.dat&gt;
-  column_labels: [&#39;e&#39;, &#39;mutrans&#39;, &#39;monitor&#39;]
-  e: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-  filename: &#39;mydata.dat&#39;
-  monitor: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-  mutrans: array&lt;shape=(412,), type=dtype(&#39;float64&#39;)&gt;
-larch&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;e mutrans monitor&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
+  <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
+  <span class="n">column_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;mutrans&#39;</span><span class="p">,</span> <span class="s1">&#39;monitor&#39;</span><span class="p">]</span>
+  <span class="n">e</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
+  <span class="n">monitor</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">mutrans</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">larch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>and to get the data as a 2-D array:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span> larch&gt; g  = read_ascii(&#39;mydata.dat&#39;, labels=False)
- larch&gt; show(g)
- == Group ascii_file mydata.dat: 4 symbols ==
-   attributes: &lt;Group header attributes from mydata.dat&gt;
-   column_labels: []
-   data: array&lt;shape=(3, 412), type=dtype(&#39;float64&#39;)&gt;
-   filename: &#39;mydata.dat&#39;
-larch&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span> <span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+ <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+ <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
+   <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
+   <span class="n">column_labels</span><span class="p">:</span> <span class="p">[]</span>
+   <span class="n">data</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">412</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+   <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <dl class="function">
@@ -259,28 +256,28 @@ file as needed.</p>
 
 <p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><code class="xref py py-func docutils literal"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
 data heirarchy of the HDF5 file, and pick out the needed data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = h5group(&#39;test.h5&#39;)
-larch&gt; show(g)
-== Group test.h5: 3 symbols ==
-  attrs: {u&#39;Collection Time&#39;: &#39;: Sat Feb 4 13:29:00 2012&#39;, u&#39;Version&#39;: &#39;1.0.0&#39;,
-          u&#39;Beamline&#39;: &#39;GSECARS, 13-IDC / APS&#39;, u&#39;Title&#39;: &#39;Epics Scan Data&#39;}
-  data: &lt;Group test.h5/data&gt;
-  h5_file: &lt;HDF5 file &quot;test.h5&quot; (mode r)&gt;
-larch&gt;show(g.data)
-== Group test.h5/data: 5 symbols ==
-  attrs: {u&#39;scan_prefix&#39;: &#39;13IDC:&#39;, u&#39;start_time&#39;: &#39;: Sat Feb 4 13:29:00 2012&#39;,
-        u&#39;correct_deadtime&#39;: &#39;True&#39;, u&#39;dimension&#39;: 2,
-        u&#39;stop_time&#39;: &#39;: Sat Feb 4 13:44:52 2009&#39;}
-  environ: &lt;Group test.h5/data/environ&gt;
-  full_xrf: &lt;Group test.h5/data/full_xrf&gt;
-  merged_xrf: &lt;Group test.h5/data/merged_xrf&gt;
-  scan: &lt;Group test.h5/data/scan&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="p">:</span> <span class="mi">3</span> <span class="n">symbols</span> <span class="o">==</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;Collection Time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span> <span class="s1">u&#39;Version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
+          <span class="s1">u&#39;Beamline&#39;</span><span class="p">:</span> <span class="s1">&#39;GSECARS, 13-IDC / APS&#39;</span><span class="p">,</span> <span class="s1">u&#39;Title&#39;</span><span class="p">:</span> <span class="s1">&#39;Epics Scan Data&#39;</span><span class="p">}</span>
+  <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">&gt;</span>
+  <span class="n">h5_file</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">HDF5</span> <span class="n">file</span> <span class="s2">&quot;test.h5&quot;</span> <span class="p">(</span><span class="n">mode</span> <span class="n">r</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">larch</span><span class="o">&gt;</span><span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="p">:</span> <span class="mi">5</span> <span class="n">symbols</span> <span class="o">==</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;scan_prefix&#39;</span><span class="p">:</span> <span class="s1">&#39;13IDC:&#39;</span><span class="p">,</span> <span class="s1">u&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span>
+        <span class="s1">u&#39;correct_deadtime&#39;</span><span class="p">:</span> <span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="s1">u&#39;dimension&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">u&#39;stop_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:44:52 2009&#39;</span><span class="p">}</span>
+  <span class="n">environ</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">environ</span><span class="o">&gt;</span>
+  <span class="n">full_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">full_xrf</span><span class="o">&gt;</span>
+  <span class="n">merged_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">merged_xrf</span><span class="o">&gt;</span>
+  <span class="n">scan</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">scan</span><span class="o">&gt;</span>
 
 
-larch&gt; g.data.scan.sums
-&lt;HDF5 dataset &quot;det&quot;: shape (15, 26, 26), type &quot;&lt;f8&quot;&gt;
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">sums</span>
+<span class="o">&lt;</span><span class="n">HDF5</span> <span class="n">dataset</span> <span class="s2">&quot;det&quot;</span><span class="p">:</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span> <span class="nb">type</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="o">&gt;</span>
 
-larch&gt; imshow(g.data.scan.sums[8:,:,:])
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">imshow</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">sums</span><span class="p">[</span><span class="mi">8</span><span class="p">:,:,:])</span>
 </pre></div>
 </div>
 <p>This interface is general-purpose but somewhat low-level.  As HDF5 formats
@@ -452,7 +449,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

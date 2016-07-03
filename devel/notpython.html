@@ -111,9 +111,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -156,11 +153,11 @@ easier and more robust when using syntax close to Python.</p>
 then parsed by Python's own  <em>ast</em> module which parses Python code into an
 <em>abstract syntax tree</em> that is much more convenient for a machine to
 execute.   As a brief description of what this module does, the statement:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">c</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">c</span>
 </pre></div>
 </div>
 <p>will be parsed and translated into something like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Add</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="n">Mult</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">),</span> <span class="n">Call</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;sin&#39;</span><span class="p">),</span> <span class="n">Args</span><span class="p">([</span><span class="n">Mult</span><span class="p">(</span><span class="n">Num</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">Name</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">))]))))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Add</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="n">Mult</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">),</span> <span class="n">Call</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s1">&#39;sin&#39;</span><span class="p">),</span> <span class="n">Args</span><span class="p">([</span><span class="n">Mult</span><span class="p">(</span><span class="n">Num</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">Name</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">))]))))</span>
 </pre></div>
 </div>
 <p>Larch then walks through this tree, executing each Add, Mult, etc on its
@@ -188,9 +185,9 @@ translation from Larch-to-Python is minimal.</p>
 <span id="id1"></span><h2>11.1.1. Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h2>
 <p>Unlike Python, Larch does not use significant whitespace to define blocks.
 There, that was easy.  Instead, Larch uses &quot;end blocks&quot;, of the form:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>if test:
-   &lt;block of statements&gt;
-endif
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">test</span><span class="p">:</span>
+   <span class="o">&lt;</span><span class="n">block</span> <span class="n">of</span> <span class="n">statements</span><span class="o">&gt;</span>
+<span class="n">endif</span>
 </pre></div>
 </div>
 <p>Each of the Keywords <em>if</em>, <em>while</em>, <em>for</em>, <em>def</em>, and <em>try</em> must be matched
@@ -202,9 +199,9 @@ means exactly 1 '#' and exactly in front of 'end', so that '#endif' is
 allowed but not '####endif' or '# endfor'.  This allows you to follow
 Python's indenting rules and write code that is valid Larch and valid
 Python, which can be useful in translating code:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>for i in range(5)
-    print(i, i/2.0)
-#endfor
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="c1">#endfor</span>
 </pre></div>
 </div>
 <p>This code is both valid Larch and valid Python.</p>
@@ -224,7 +221,7 @@ using a syntax of <strong>parent.child</strong>, with a dot ('.') separating the
 components of the name.   Such parent/child relationships for symbol names
 are used for modules (files of code), and object attributes.   Thus, one
 could have data objects named:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cu_01</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cu_01</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span>
 <span class="n">cu_02</span><span class="o">.</span><span class="n">path1</span><span class="o">.</span><span class="n">chi</span>
 <span class="n">cu_03</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span>
 </pre></div>
@@ -241,7 +238,7 @@ then in the module namespace.  These rules are focused on <em>code</em> rather
 than <em>data</em>, and leads to having a lot of &quot;import&quot; statements at the top of
 python modules.  For example, to access the <code class="xref py py-func docutils literal"><span class="pre">sqrt()</span></code> function from the
 numpy module, one typically does one of these:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
@@ -249,7 +246,7 @@ numpy module, one typically does one of these:</p>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
@@ -264,7 +261,7 @@ they are not available outside the function.  The functions <code class="xref py
 and <code class="xref py py-func docutils literal"><span class="pre">sqrt()</span></code> are taken from the module-level namespace, using the name
 as defined in the import statement.  A third alternative would be to
 import only the names 'sqrt' and 'arange' into the modules namespace:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
 
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
@@ -272,7 +269,7 @@ import only the names 'sqrt' and 'arange' into the modules namespace:</p>
 </pre></div>
 </div>
 <p>For quick and dirty Python scripts, there is a tendency to use <cite>import *</cite>, as in:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -354,7 +351,7 @@ exhaustive list):</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

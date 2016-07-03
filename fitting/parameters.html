@@ -110,9 +110,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -141,11 +138,11 @@ course -- this is what will happen during a fit -- but other attributes can
 be set to help determine its value too.  In most cases, a Parameter can be
 used as a floating point number, and its value attribute will be used.
 Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; x = param(10)
-larch&gt; print x
-param(10, vary=False)
-larch&gt; print x+2
-12
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span>
+<span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span><span class="o">+</span><span class="mi">2</span>
+<span class="mi">12</span>
 </pre></div>
 </div>
 <p>To create a Parameter, use the <a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal"><span class="pre">param()</span></code></a> function, which takes a value
@@ -252,15 +249,15 @@ The arguments here are identical to <a class="reference internal" href="#_math.p
 </dd></dl>
 
 <p>An example of creating some parameters,  and creating a group of parameters would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># create some Parameters</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># create some Parameters</span>
 <span class="n">c1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>              <span class="c1"># a constant (non-varying) parameter</span>
-<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>     <span class="c1"># a bounded variable parameter</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>     <span class="c1"># a bounded variable parameter</span>
 <span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c1"># a semi-bounded variable parameter</span>
 
 <span class="c1"># create a group of parameters, either from existing parameters</span>
 <span class="c1"># or ones created right here</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a2</span><span class="p">,</span>
-               <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="p">)</span>
+               <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="p">)</span>
 
 <span class="c1"># add more parameters to the group:</span>
 <span class="n">params</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="n">c1</span>
@@ -296,7 +293,7 @@ a more general approach, allowing Parameters to get their value from an
 algebraic expression.  Thus, one might define an objective function for a
 sum of two Gaussian functions (discussed in more detail in
 <a class="reference internal" href="lineshapes.html#lineshape-functions-label">7.5</a>), as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
             <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="p">)</span>
@@ -308,7 +305,7 @@ within the objective function.  But one can place such relations in the
 definitions of the parameters and have them obeyed within the fit.  That
 is, one could constrain the two widths of the Gaussians to be the same
 value with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;wid1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -316,7 +313,7 @@ value with:</p>
 every time the objective is called, but won't be an independent variable in
 the fit.  As a second  example, one could constrain the two amplitude
 parameters to add to 1 and each be between 0 and 1 as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -404,7 +401,7 @@ propagating errors.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

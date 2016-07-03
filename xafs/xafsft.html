@@ -114,9 +114,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -465,7 +462,7 @@ available for constructing windows.  A sampling of windows is shown below.</p>
 </table>
 <p>Note that if <code class="docutils literal"><span class="pre">dx</span></code> is specified but <code class="docutils literal"><span class="pre">dx2</span></code> is not, <code class="docutils literal"><span class="pre">dx2</span></code> will
 generally take the same value as <code class="docutils literal"><span class="pre">dx</span></code>.</p>
-<p>The window type must be one of those listed in the <a class="reference internal" href="#xafs-ftwin-table"><span>Table of
+<p>The window type must be one of those listed in the <a class="reference internal" href="#xafs-ftwin-table"><span class="std std-ref">Table of
 Fourier Transform Window Types</span></a>.</p>
 </dd></dl>
 
@@ -593,7 +590,7 @@ well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
 <p>We start with a comparison of a small value of <code class="docutils literal"><span class="pre">dk</span></code> and a larger value.
 A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, changing on <code class="docutils literal"><span class="pre">dk</span></code> would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
 <span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1"># make a copy of the group</span>
@@ -614,7 +611,7 @@ Fourier transforms.  Increasing <code class="docutils literal"><span class="pre"
 to broaden peaks, but the effects are rather small.</span></p>
 </div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a> with consistent parameters, but different
 window types:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
 <span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c1"># make a copy of the group</span>
@@ -649,8 +646,8 @@ transform.  As above, it is most common to plot the magnitude of the
 Fourier transform.  But, as the transformed <span class="math">\(\chi(R)\)</span> is complex, it
 can be instructive to plot the real and imaginary components, as shown
 below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_mag&#39;</span><span class="p">,</span>
-        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_mag&#39;</span><span class="p">,</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_re&#39;</span><span class="p">)</span>
@@ -720,7 +717,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

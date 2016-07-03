@@ -110,9 +110,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -168,14 +165,14 @@ to <code class="docutils literal"><span class="pre">group(**dict)</span></code>.
 <dt id="get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
 <dd><p>get object from symbol table by name.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; g = group(a = 1,  b=2.3, z = &#39;a string&#39;)
-larch&gt; print get(&#39;g.z&#39;)
-&#39;a string&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>  <span class="n">b</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">get</span><span class="p">(</span><span class="s1">&#39;g.z&#39;</span><span class="p">)</span>
+<span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
 <p>this is can also be accomplished by the similar:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print getattr(g, &#39;z&#39;)
-&#39;a string&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">)</span>
+<span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
 <p>but the <a class="reference internal" href="#get" title="get"><code class="xref py py-func docutils literal"><span class="pre">get()</span></code></a> version uses only the name of the object.</p>
@@ -225,14 +222,14 @@ way to loop through all items in a group.</p>
 <dd><p>returns a list of files in the current directory.  If a '*' is used in
 the argument, the returned list is limited to files matching that
 pattern.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; ls(&#39;.&#39;)
-[&#39;cu.chi&#39;, &#39;cu.xmu&#39;, &#39;cu10k.chi&#39;, &#39;cu_10k.xmu&#39;, &#39;cu_150k.xmu&#39;,
- &#39;cu_50k.xmu&#39;, &#39;cu_metal_rt.xdi&#39;, &#39;cu_rt01.xmu&#39;, &#39;fe.060&#39;,
- &#39;fe2o3_rt1.xmu&#39;, &#39;fe3c_rt.xdi&#39;, &#39;feo_exafs_pnccat2001.dat&#39;,
- &#39;feo_rt1.xmu&#39;, &#39;feo_xafs.dat&#39;, &#39;scorodite_as_xafs.001&#39;, &#39;znse_zn_xafs.001&#39;]
-larch&gt; xdifiles = ls(&#39;*.xdi&#39;)
-larch&gt; print xdifiles
-[&#39;cu_metal_rt.xdi&#39;, &#39;fe3c_rt.xdi&#39;]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="p">[</span><span class="s1">&#39;cu.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu10k.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_10k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_150k.xmu&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;cu_50k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_rt01.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe.060&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;feo_exafs_pnccat2001.dat&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;feo_rt1.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;feo_xafs.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;scorodite_as_xafs.001&#39;</span><span class="p">,</span> <span class="s1">&#39;znse_zn_xafs.001&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xdifiles</span> <span class="o">=</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;*.xdi&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">xdifiles</span>
+<span class="p">[</span><span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;fe3c_rt.xdi&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -250,7 +247,7 @@ for creating directory (default=0777).</p>
 <code class="descname">more</code><span class="sig-paren">(</span><em>filename</em><span class="optional">[</span>, <em>pagelenghth=32</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">,</span> <span class="n">pagelength</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -305,7 +302,7 @@ members.</p>
 <dt id="which">
 <code class="descname">which</code><span class="sig-paren">(</span><em>object</em><span class="sig-paren">)</span><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
 <dd><p>return full path of object in Larch's symbol table:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
 <span class="s1">&#39;_builtin.which&#39;</span>
 </pre></div>
 </div>
@@ -806,7 +803,7 @@ in length to the length of the shortest argument sequence.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

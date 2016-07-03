@@ -111,9 +111,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -137,7 +134,8 @@ XAFS-specific function for pre-edge subtraction and normalization is
 <dl class="function">
 <dt id="pre_edge">
 <code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
+<dd><blockquote>
+<div><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
 <li>determine <span class="math">\(E_0\)</span> (if not supplied) from max of deriv(mu)</li>
@@ -151,24 +149,30 @@ XAFS-specific function for pre-edge subtraction and normalization is
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> -- output group</li>
-<li><strong>e0</strong> -- edge energy, <span class="math">\(E_0\)</span> in eV.  If None, it will be determined here.</li>
-<li><strong>step</strong> -- edge jump.  If None, it will be determined here.</li>
-<li><strong>pre1</strong> -- low E range (relative to E0) for pre-edge fit</li>
-<li><strong>pre2</strong> -- high E range (relative to E0) for pre-edge fit</li>
-<li><strong>nvict</strong> -- energy exponent to use for pre-edge fit.  See Note below.</li>
-<li><strong>norm1</strong> -- low E range (relative to E0) for post-edge fit</li>
-<li><strong>norm2</strong> -- high E range (relative to E0) for post-edge fit</li>
-<li><strong>nnorm</strong> -- number of terms in polynomial (that is, 1+degree) for
-post-edge, normalization curve. Default=3 (quadratic)</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">param energy:</th><td class="field-body">1-d array of x-ray energies, in eV</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
+<tr class="field-even field"><th class="field-name">param mu:</th><td class="field-body">1-d array of <span class="math">\(\mu(E)\)</span></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param group:</th><td class="field-body">output group</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param e0:</th><td class="field-body">edge energy, <span class="math">\(E_0\)</span> in eV.  If None, it will be determined here.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param step:</th><td class="field-body">edge jump.  If None, it will be determined here.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param pre1:</th><td class="field-body">low E range (relative to E0) for pre-edge fit</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param pre2:</th><td class="field-body">high E range (relative to E0) for pre-edge fit</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param nvict:</th><td class="field-body">energy exponent to use for pre-edge fit.  See Note below.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param norm1:</th><td class="field-body">low E range (relative to E0) for post-edge fit</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param norm2:</th><td class="field-body">high E range (relative to E0) for post-edge fit</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param nnorm:</th><td class="field-body">number of terms in polynomial (that is, 1+degree) for
+post-edge, normalization curve. Default=3 (quadratic)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">returns:</th><td class="field-body">None.</td>
 </tr>
 </tbody>
 </table>
@@ -228,14 +232,15 @@ The following data is put into the output group:</p>
 </tbody>
 </table>
 </div></blockquote>
-</dd></dl>
-
+</div></blockquote>
 <dl class="docutils">
 <dt>Notes:</dt>
 <dd>nvict gives an exponent to the energy term for the pre-edge fit.
 That is, a line <span class="math">\((m E + b)\)</span> is fit to
 <span class="math">\(\mu(E) E^{nvict}\)</span>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
 </dl>
+</dd></dl>
+
 <dl class="function">
 <dt id="find_e0">
 <code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
@@ -264,7 +269,7 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 <div class="section" id="pre-edge-subtraction-example">
 <h2>8.2.2. Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
@@ -274,7 +279,7 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 <span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39; $ \mu(E) $ &#39;</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> Pre-Edge &#39;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">,</span>
-        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">pre_edge</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;pre-edge line&#39;</span><span class="p">,</span>
      <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span> <span class="p">)</span>
@@ -284,9 +289,9 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 </pre></div>
 </div>
 <p>gives the following results:</p>
-<div class="figure align-center" id="id3">
+<div class="figure align-center" id="id1">
 <span id="xafs-fig1"></span><a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> XAFS Pre-edge subtraction.</span></p>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> XAFS Pre-edge subtraction.</span></p>
 </div>
 </div>
 <div class="section" id="the-mback-algorithm">
@@ -404,16 +409,16 @@ and 6.</li>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
 result shown in <a href="#fig-mback-copper">8.4</a>.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
-        <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Copper foil&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id4">
+<div class="figure align-center" id="id2">
 <span id="fig-mback-copper"></span><a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(e)</strong> Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
+<p class="caption"><span class="caption-text"><strong>(a)</strong> Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
 </div>
 <p>Here is an example of processing XANES data measured over a rather
 short data range.  This example is the magnesium silicate mineral
@@ -422,16 +427,16 @@ measured at the Si K edge, with the result shown in
 <a href="#fig-mback-talc">8.6</a>.  Note that the order of the Legendre polynomial
 is set to 2 and that the <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
-<span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
+<span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
-        <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Talc ($\mathrm{Mg}_3\mathrm{Si}_4\mathrm{O}_{10}\mathrm{(OH)}_2$)&#39;</span><span class="p">)</span>
+        <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Talc ($\mathrm</span><span class="si">{Mg}</span><span class="s1">_3\mathrm</span><span class="si">{Si}</span><span class="s1">_4\mathrm</span><span class="si">{O}</span><span class="s1">_</span><span class="si">{10}</span><span class="s1">\mathrm{(OH)}_2$)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id5">
+<div class="figure align-center" id="id3">
 <span id="fig-mback-talc"></span><a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(i)</strong> Using MBACK to match Si K edge data measured on talc.</span></p>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> Using MBACK to match Si K edge data measured on talc.</span></p>
 </div>
 </div>
 <div class="section" id="over-absorption-corrections">
@@ -473,8 +478,7 @@ EXAFS).</p>
 <li><strong>edge</strong> -- name of edge ('K', 'L3', ...) [default 'K']</li>
 <li><strong>anginp</strong> -- input angle in degrees  [default 45]</li>
 <li><strong>angout</strong> -- output angle in degrees [default 45]</li>
-<li><strong>**pre_kws</strong> -- <p>additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
-</li>
+<li><strong>pre_kws</strong> -- additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -484,8 +488,9 @@ EXAFS).</p>
 </tbody>
 </table>
 <p>Follows the First Argument Group convention, using group members named
-<code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.  The value of <code class="docutils literal"><span class="pre">mu_corr</span></code> and <code class="docutils literal"><span class="pre">norm_corr</span></code> will be written to the
-output group, containing <span class="math">\(\mu(E)\)</span> and normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</p>
+<code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.  The value of <code class="docutils literal"><span class="pre">mu_corr</span></code> and <code class="docutils literal"><span class="pre">norm_corr</span></code> will
+be written to the output group, containing <span class="math">\(\mu(E)\)</span> and
+normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</p>
 </dd></dl>
 
 </div>
@@ -522,7 +527,7 @@ output group, containing <span class="math">\(\mu(E)\)</span> and normalized <sp
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

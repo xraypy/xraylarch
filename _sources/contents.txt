@@ -8,9 +8,9 @@ Table of Contents
    :maxdepth: 3
    :numbered:
 
-   installation/index.rst
+   installation.rst
    community.rst
-   overview/index.rst
+   overview.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst

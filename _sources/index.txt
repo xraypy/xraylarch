@@ -45,9 +45,9 @@ data handling, and general-purpose data modeling.
 .. toctree::
    :maxdepth: 1
 
-   installation/index.rst
-   overview/index.rst
+   installation.rst
    community.rst
+   overview.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst
@@ -56,4 +56,3 @@ data handling, and general-purpose data modeling.
    xray/index.rst
    xrf/index.rst
    devel/index.rst
-

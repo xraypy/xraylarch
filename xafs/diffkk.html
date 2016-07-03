@@ -109,9 +109,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -244,15 +241,15 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 </div></blockquote>
 <p>All four arrays are on the same energy grid as the input data.</p>
 <p>Here is an example script to make the figure shown above:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
 <span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">8979</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">})</span>
 
-<span class="k">print</span> <span class="s1">&#39;Doing diff KK transform&#39;</span>
+<span class="nb">print</span> <span class="s1">&#39;Doing diff KK transform&#39;</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 
 <span class="n">newplot</span><span class="p">(</span><span class="n">dkk</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dkk</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f2&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;scattering factors&#39;</span><span class="p">,</span>
-        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">)</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dkk</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dkk</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f&quot;(E)&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dkk</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dkk</span><span class="o">.</span><span class="n">f1</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dkk</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dkk</span><span class="o">.</span><span class="n">fp</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f</span><span class="se">\&#39;</span><span class="s1">(E)&#39;</span><span class="p">)</span>
@@ -287,7 +284,7 @@ tabulated <span class="math">\(f'(E)\)</span>.</p>
 </div>
 <p class="caption"><span class="caption-text"><strong>Figure 8.39:</strong> DiffKK analysis of CeO<sub>2</sub> L edge data</span></p>
 </div><p id="fig-CeO2-diffkk">These larch command created the plot in the middle of <a href="#fig-CeO2-diffkk">8.39</a>.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
@@ -298,7 +295,7 @@ tabulated data.  This results in a suspicious <span class="math">\(f'(E)\)</span
 situation is even worse when a higher order polynomial is used for
 the normalization.</p>
 <p>The situation is improved somewhat by a simple trick.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;whiteline&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
@@ -351,7 +348,7 @@ algorithm would be more appropriate for L edge data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -58,10 +58,10 @@ The :func:`pre_edge` function
         norm_c*          higher power coefficients of normalization polynomial
        ==============   =======================================================
 
-Notes:
-   nvict gives an exponent to the energy term for the pre-edge fit.
-   That is, a line :math:`(m E + b)` is fit to
-   :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
+   Notes:
+      nvict gives an exponent to the energy term for the pre-edge fit.
+      That is, a line :math:`(m E + b)` is fit to
+      :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
 
 ..  function:: find_e0(energy, mu=None, group=None, ...)
 
@@ -182,7 +182,7 @@ If this is used in publication, a citation should be given to
     :returns:  None.
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
     The following data is put into the output group:
 
        ==============   ===========================================================
@@ -276,6 +276,7 @@ coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.
 
+
 For XANES, a common correction method from the FLUO program by D. Haskel
 (:cite:ts:`fluo`) can be used.  The algorithm is contained in the
 :func:`fluo_corr` function.
@@ -295,11 +296,11 @@ For XANES, a common correction method from the FLUO program by D. Haskel
     :param edge:      name of edge ('K', 'L3', ...) [default 'K']
     :param anginp:    input angle in degrees  [default 45]
     :param angout:    output angle in degrees [default 45]
-    :param **pre_kws: additional keywords for :func:`pre_edge`.
+    :param pre_kws:   additional keywords for :func:`pre_edge`.
 
     :returns:         None
 
     Follows the First Argument Group convention, using group members named
-    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will be written to the
-    output group, containing :math:`\mu(E)` and normalized :math:`\mu(E)` corrected for over-absorption.
-
+    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will
+    be written to the output group, containing :math:`\mu(E)` and
+    normalized :math:`\mu(E)` corrected for over-absorption.

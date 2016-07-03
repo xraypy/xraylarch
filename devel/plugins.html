@@ -109,9 +109,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -147,9 +144,9 @@ group containing the added functions, and a dictionary with keys used for
 the names to be put into the Larch symbol table, and values of the functions
 or data to be used. of Larch symbol. A simple plugin module would
 look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="c1"># Note: larch instance passed in to &#39;_larch&#39;</span>
-    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;created by myfunc&#39;</span><span class="p">)</span>
 
@@ -166,9 +163,9 @@ look like:</p>
 exist), and create a function <code class="docutils literal"><span class="pre">func</span></code> in this group that held the python
 function <code class="docutils literal"><span class="pre">myfunc</span></code>.  To use this function from the Larch interpreter, you
 would use something like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; out = mymod.func(12, &#39;a string&#39;)
-larch&gt; print out.x, out.y, out.z
-12  &#39;a string&#39; 100
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">out</span> <span class="o">=</span> <span class="n">mymod</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">z</span>
+<span class="mi">12</span>  <span class="s1">&#39;a string&#39;</span> <span class="mi">100</span>
 </pre></div>
 </div>
 <p>This plugin simply puts data into a Group, but of course you can do much
@@ -212,7 +209,7 @@ defined by <code class="xref py py-func docutils literal"><span class="pre">regi
 
 <p>If the above plugin file is saved in a file named <cite>myplugin.py</cite> in the
 user's Larch Plugin folder, then doing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will add a top-level group <code class="docutils literal"><span class="pre">mymod</span></code> with the <code class="docutils literal"><span class="pre">func</span></code> function, as described
@@ -254,7 +251,7 @@ Python modules (and which versions of the modules), a particular plugin
 depends on, you can include a file <cite>requirements.txt</cite> in the plugin folder
 which contains the module name and version strings, one per line.  A
 typical <cite>requirements.txt</cite> file might look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
 <span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">0.13</span>
 </pre></div>
 </div>
@@ -295,7 +292,7 @@ not be installed.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

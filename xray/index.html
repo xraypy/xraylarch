@@ -107,9 +107,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -151,7 +148,7 @@ Dale from CHESS (see <a class="reference external" href="https://github.com/prax
 with some additions and alterations made for Larch.</p>
 <div class="section" id="x-ray-properties-of-the-elements">
 <h2>9.1. X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><span>Table of X-ray data functions</span></a> gives a brief
+<p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><span class="std std-ref">Table of X-ray data functions</span></a> gives a brief
 description to the available functions for accessing these data.  More
 detailed descriptions of function arguments, returned values, and so on are
 then given.</p>
@@ -245,9 +242,9 @@ from Elam, Ravel, and Sieber.</p>
 an element to be specified for the first argment, noted as <code class="docutils literal"><span class="pre">z_or_symbol</span></code> in the functions below.
 This can either be a valid atomic number or a case-insensitive atomic symbol.  Thus, <code class="docutils literal"><span class="pre">28</span></code>, <code class="docutils literal"><span class="pre">Co</span></code>
 and <code class="docutils literal"><span class="pre">co</span></code> all specify cobalt.  Several functions take either an <code class="docutils literal"><span class="pre">edge</span></code> or a <code class="docutils literal"><span class="pre">level</span></code> argument
-to signify an core electronic level.  These must be one of the levels listed in the <a class="reference internal" href="#xraydb-edge-table"><span>Table of
+to signify an core electronic level.  These must be one of the levels listed in the <a class="reference internal" href="#xraydb-edge-table"><span class="std std-ref">Table of
 X-ray edge names</span></a>.  Some functions take emission line arguments.  These follow
-the latinized version of the Siegbahn notation as indicated in the <a class="reference internal" href="#xraydb-lines-table"><span>Table of X-ray emission
+the latinized version of the Siegbahn notation as indicated in the <a class="reference internal" href="#xraydb-lines-table"><span class="std std-ref">Table of X-ray emission
 line names</span></a>.  Finally, all energies are in eV.</p>
 <blockquote id="xraydb-edge-table">
 <span id="index-1"></span><div><blockquote>
@@ -649,7 +646,7 @@ dictionary of material names, with values of (chemical forumla, density)
 that are read on startup, and can be appended too.  There is a system-wide
 set of 50 or so known materials, and you can add your own favorite
 materials that will then be automatically available in later sessions.</p>
-<p>The <a class="reference internal" href="#xraydb-materials-funcs-table"><span>Table of X-ray functions for materials</span></a>
+<p>The <a class="reference internal" href="#xraydb-materials-funcs-table"><span class="std std-ref">Table of X-ray functions for materials</span></a>
 gives a brief description to the available functions for accessing these
 data.  More detailed descriptions of function arguments, returned values,
 and so on are then given.</p>
@@ -699,7 +696,7 @@ material, using data from Chantler.</td>
 <code class="descclassname">_xray.</code><code class="descname">chemparse</code><span class="sig-paren">(</span><em>formula</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
 <dd><p>parse a chemical formula, returning a dictionary with element symbols as
 keys and number for each element as values.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s2">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
@@ -715,7 +712,7 @@ is 'Fe0.8' is supported, but 'Fe.8' is not.</p>
 <code class="descclassname">_xray.</code><code class="descname">material_get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.material_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>look up chemical compound by naming returning formula (not parsed!) and
 density.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s1">&#39;kapton&#39;</span><span class="p">)</span>
 <span class="p">(</span><span class="s1">&#39;C22H10N2O5&#39;</span><span class="p">,</span> <span class="mf">1.43</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -759,10 +756,10 @@ known materials)</td>
 </tbody>
 </table>
 <p>uses <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>. Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print material_mu(&#39;water&#39;, 10000.0)
-5.32986401658495
-larch&gt; print material_mu(&#39;H2O&#39;, 10000.0, density=1.0)
-5.32986401658495
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">material_mu</span><span class="p">(</span><span class="s1">&#39;water&#39;</span><span class="p">,</span> <span class="mf">10000.0</span><span class="p">)</span>
+<span class="mf">5.32986401658495</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">material_mu</span><span class="p">(</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span> <span class="mf">10000.0</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="mf">5.32986401658495</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -796,7 +793,7 @@ for known materials)</li>
 'elements' (list of atomic symbols for elements in material). For each element, there
 will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <span class="math">\(\mu\)</span>).
 For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
 <span class="p">{</span><span class="s1">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s1">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">],</span>
 <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">60.0843</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">15.9994</span><span class="p">,</span> <span class="mf">5.9528248152970837</span><span class="p">),</span> <span class="s1">&#39;density&#39;</span><span class="p">:</span> <span class="mf">2.65</span><span class="p">}</span>
 </pre></div>
@@ -901,7 +898,7 @@ factor <span class="math">\(f_j\)</span>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

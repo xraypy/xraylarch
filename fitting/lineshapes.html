@@ -100,9 +100,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -165,7 +162,7 @@ Half-Maximum is approximately <span class="math">\(3.6013\sigma\)</span>.</p>
 Gaussian and Lorentzian distribution functions with the same values for
 <em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>), and <em>frac</em> setting the
 Lorentzian fraction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -219,7 +216,7 @@ above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 \[f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
 <p>Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
-in the <a class="reference internal" href="#fit-funcs-table"><span>Table of Useful Line shapes</span></a>.</p>
+in the <a class="reference internal" href="#fit-funcs-table"><span class="std std-ref">Table of Useful Line shapes</span></a>.</p>
 <blockquote id="fit-funcs-table">
 <span id="index-0"></span><div><p>Table of Useful Line shapes.</p>
 <table border="1" class="docutils">
@@ -277,8 +274,8 @@ in the <a class="reference internal" href="#fit-funcs-table"><span>Table of Usef
 </div></blockquote>
 <p>Other standard special functions (Bessel functions, Legendre polynomials,
 etc) can be accessed from scipy.special:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>
 <p>A host of functions to generate other distribution functions can be accessed from scipy.stats.</p>
@@ -315,7 +312,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

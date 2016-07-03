@@ -109,9 +109,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -138,20 +135,20 @@ possibilities and their differences here.</p>
 <h2>4.7.1. Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
 <p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a>
 function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># file myscript.lar</span>
-<span class="k">print</span> <span class="s1">&#39;hello from myscript.lar!&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># file myscript.lar</span>
+<span class="nb">print</span> <span class="s1">&#39;hello from myscript.lar!&#39;</span>
 
 <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Fred&#39;</span>
 <span class="n">phi</span>  <span class="o">=</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-   <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+   <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="n">endfor</span>
 <span class="c1"># end of file myscript.lar</span>
 </pre></div>
 </div>
 <p>To run this, you simply type:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; run(&#39;myscript.lar&#39;)
+<div class="highlight-default"><div class="highlight"><pre><span></span>larch&gt; run(&#39;myscript.lar&#39;)
 hello from myscript.lar!
 0 0.0
 1 1.0
@@ -165,8 +162,8 @@ definitions.  After running the script, any variables assigned in the
 script will exist in your larch session.  For example, running the above
 script, there will be variables <code class="docutils literal"><span class="pre">name</span></code>, <code class="docutils literal"><span class="pre">phi</span></code>, and <code class="docutils literal"><span class="pre">i</span></code> (and <code class="docutils literal"><span class="pre">i</span></code>
 will hold the value 4), and you can access these:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print i, name, phi
-4 Fred 1.61803398875
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span>
+<span class="mi">4</span> <span class="n">Fred</span> <span class="mf">1.61803398875</span>
 </pre></div>
 </div>
 <p>These variables are held in the &quot;top-level namespace&quot;, <code class="docutils literal"><span class="pre">_main</span></code>, about which
@@ -176,12 +173,12 @@ we'll see more below.</p>
 <h2>4.7.2. Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it,
 using the <code class="docutils literal"><span class="pre">import</span></code> statement:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; import myscript
-0 0.0
-1 1.0
-2 1.41421356237
-3 1.73205080757
-4 2.0
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">import</span> <span class="nn">myscript</span>
+<span class="mi">0</span> <span class="mf">0.0</span>
+<span class="mi">1</span> <span class="mf">1.0</span>
+<span class="mi">2</span> <span class="mf">1.41421356237</span>
+<span class="mi">3</span> <span class="mf">1.73205080757</span>
+<span class="mi">4</span> <span class="mf">2.0</span>
 </pre></div>
 </div>
 <p>Notice a few differences: First, the '.lar' suffix was removed.  Second,
@@ -203,11 +200,11 @@ created, with variables <code class="docutils literal"><span class="pre">name</s
 group called something else, or you want to not import everything, but only
 selected elements (perhaps only one procedure or piece of data), you can
 use variations on the standard Python <code class="docutils literal"><span class="pre">import</span></code> statement like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">myscript</span> <span class="kn">as</span> <span class="nn">mx</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">myscript</span> <span class="k">as</span> <span class="nn">mx</span>
 
-<span class="kn">from</span> <span class="nn">myscript</span> <span class="kn">import</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span>
+<span class="kn">from</span> <span class="nn">myscript</span> <span class="k">import</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span>
 
-<span class="kn">from</span> <span class="nn">myscript</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">my_name</span>
+<span class="kn">from</span> <span class="nn">myscript</span> <span class="k">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">my_name</span>
 </pre></div>
 </div>
 <p>The first of these will create a group <code class="docutils literal"><span class="pre">mx</span></code> with elements <code class="docutils literal"><span class="pre">name</span></code>,
@@ -258,7 +255,7 @@ used.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

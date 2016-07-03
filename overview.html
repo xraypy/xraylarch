@@ -9,25 +9,25 @@
     
     <title>3. Larch: Motivation and Overview &mdash; larch 0.9.29 documentation</title>
     
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
+        URL_ROOT:    './',
         VERSION:     '0.9.29',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
-    <link rel="next" title="2. Larch Community and Support" href="../community.html" />
-    <link rel="prev" title="1. Downloading and Installation" href="../installation/index.html" />
+    <link rel="top" title="larch 0.9.29 documentation" href="index.html" />
+    <link rel="next" title="4. Larch Tutorial" href="tutorial/index.html" />
+    <link rel="prev" title="2. Larch Community and Support" href="community.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -39,12 +39,12 @@
 <table border=1>
   <tr>
     <td width=20%>
-	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=60px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
-	<a href="../index.html" style="color:#772211">
+	<a href="index.html" style="color:#772211">
 	  Larch: Data Analysis Tools for X-ray Spectroscopy
 	</a>
       </font>
@@ -56,28 +56,28 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../community.html" title="2. Larch Community and Support"
+          <a href="tutorial/index.html" title="4. Larch Tutorial"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../installation/index.html" title="1. Downloading and Installation"
+          <a href="community.html" title="2. Larch Community and Support"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
-   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
-   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li>[<a href="data/index.html">Reading Data</a>|</li>
+   <li><a href="plotting/index.html">Plotting</a>|</li>
+   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">3. Larch: Motivation and Overview</a><ul>
 <li><a class="reference internal" href="#key-concepts-of-larch">3.1. Key Concepts of Larch</a></li>
@@ -87,29 +87,26 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../installation/index.html"
-                        title="previous chapter">1. Downloading and Installation</a></p>
+  <p class="topless"><a href="community.html"
+                        title="previous chapter">2. Larch Community and Support</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../community.html"
-                        title="next chapter">2. Larch Community and Support</a></p>
+  <p class="topless"><a href="tutorial/index.html"
+                        title="next chapter">4. Larch Tutorial</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/overview/index.txt"
+      <li><a href="_sources/overview.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -197,7 +194,7 @@ with organizing data is <strong>Group</strong>.  This is simply a container into
 any sort of data or function can be placed, including other Groups.  The
 data in a Group can be accessed using a syntax of <strong>&lt;Group&gt;.&lt;Member&gt;</strong>,
 as with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
@@ -205,22 +202,22 @@ as with:</p>
 <p>The Group <code class="docutils literal"><span class="pre">my_group</span></code> holds data for <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">title</span></code>.  Here,
 the <code class="docutils literal"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, ..., 10])
 that will be held by <code class="docutils literal"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
-with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal"><span class="pre">show()</span></code></a> function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; show(my_group)
-== Group 0x6e15970: 4 symbols ==
-  scale: 10.2
-  t: &#39;group 1&#39;
-  x: array&lt;shape=(11,), type=dtype(&#39;int32&#39;)&gt;
-  y: array&lt;shape=(11,), type=dtype(&#39;float64&#39;)&gt;
+with the <a class="reference internal" href="tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal"><span class="pre">show()</span></code></a> function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">my_group</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="mh">0x6e15970</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
+  <span class="n">scale</span><span class="p">:</span> <span class="mf">10.2</span>
+  <span class="n">t</span><span class="p">:</span> <span class="s1">&#39;group 1&#39;</span>
+  <span class="n">x</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">y</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
 As the <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>larch&gt; print my_group.y
-[  0.           8.58300405   9.27483375   1.43942408  -7.71938545
-  -9.7810276   -2.85003808   6.70126331  10.09145412   4.20360855
-  -5.54901533]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span>
+<span class="p">[</span>  <span class="mf">0.</span>           <span class="mf">8.58300405</span>   <span class="mf">9.27483375</span>   <span class="mf">1.43942408</span>  <span class="o">-</span><span class="mf">7.71938545</span>
+  <span class="o">-</span><span class="mf">9.7810276</span>   <span class="o">-</span><span class="mf">2.85003808</span>   <span class="mf">6.70126331</span>  <span class="mf">10.09145412</span>   <span class="mf">4.20360855</span>
+  <span class="o">-</span><span class="mf">5.54901533</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>will show the array elements.  The <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code> function will show a graph
@@ -272,27 +269,27 @@ and analysis steps that Ifeffit can do, including:</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../community.html" title="2. Larch Community and Support"
+          <a href="tutorial/index.html" title="4. Larch Tutorial"
              >next</a> |</li>
         <li class="right" >
-          <a href="../installation/index.html" title="1. Downloading and Installation"
+          <a href="community.html" title="2. Larch Community and Support"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
-   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
-   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li>[<a href="data/index.html">Reading Data</a>|</li>
+   <li><a href="plotting/index.html">Plotting</a>|</li>
+   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>
