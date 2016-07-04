@@ -7,10 +7,7 @@ import os
 import time
 from threading import Thread
 import socket
-try:
-    from collections import OrderedDict
-except ImportError:
-    from larch.utils.ordereddict import OrderedDict
+
 from functools import partial
 import wx
 try:
