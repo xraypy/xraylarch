@@ -43,10 +43,16 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
             setattr(group, "%s_%s" % (family, key), val)
 
     ocrs, icrs = [], []
-    try:
-        ctime = xdi.CountTime
-    except AttributeError:
-        ctime = xdi.TSCALER / 5.e7
+    ctime = None
+    for attrname in dir(xdi):
+        if attrname.lower() == 'counttime':
+            ctime = getattr(xdi, attrname)
+    if ctime is None:
+        try:
+            ctime = xdi.TSCALER / 5.e7
+        except AttributeError:
+            ctime = 1.0
+
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
     for i in range(nmca):
@@ -79,7 +85,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
             if any(np.isnan(dat)):
                 nan_pts = np.where(np.isnan(dat))[0]
                 dat[nan_pts] = datraw[nan_pts]
-            
+
         setattr(group, aname, dat)
         if sumname not in labels:
             labels.append(sumname)
@@ -120,13 +126,7 @@ DTC_header = '''# XDI/1.0  GSE/1.0
 # Facility.xray_source: 3.6 cm undulator
 # Detectors.i0:  20cm ion chamber, He
 # Detectors.ifluor:  Si SDD Vortex ME-4, 4 elements
-# Detectors.ifluor_electronics:  Quantum Xspress3 3.1.10
-# Column.1: energy eV
-# Column.2: mufluor
-# Column.3: i0
-# Column.4: ifluor (corrected for deadtime)
-# Column.5: ifluor_raw (not corrected)'''
-# Column.6: count_time (sec)'''
+# Detectors.ifluor_electronics:  Quantum Xspress3 3.1.10'''
 
 def is_GSEXDI(filename):
     """test if file is GSE XDI data file
@@ -134,7 +134,6 @@ def is_GSEXDI(filename):
     """
     line1 = open(filename, 'r').readline()
     return (line1.startswith('#XDI/1') and 'Epics StepScan File' in line1)
-
 
 @ValidateLarchPlugin
 def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
@@ -165,10 +164,6 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     if hasattr(xdi, 'energy_readback'):
         out.energy = xdi.energy_readback
 
-    mono_cut = 'Si(111)'
-    if xdi.mono_dspacing < 2:
-        mono_cut = 'Si(311)'
-    header_args = {'mono_dspace': xdi.mono_dspacing, 'mono_cut': mono_cut}
 
     arrname = None
     channelname = channelname.lower().replace(' ', '_')
@@ -181,51 +176,113 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         print('Cannot find Channel %s in file %s '% (channelname, fname))
         return
 
-    out.fl_corr = getattr(xdi, arrname)
-    out.fl_raw  = getattr(xdi, arrname)
+    out.ifluor = getattr(xdi, arrname)
+    out.ifluor_raw  = getattr(xdi, arrname)
     arrname_raw = arrname + '_nodtc'
     if arrname_raw  in xdi.array_labels:
-        out.fl_raw  = getattr(xdi, arrname_raw)
+        out.ifluor_raw  = getattr(xdi, arrname_raw)
 
-    out.mufluor = out.fl_corr / out.i0
+    out.mufluor = out.ifluor / out.i0
+    if hasattr(out, 'i1'):
+        out.mutrans = -np.log(out.i1 / out.i0)
+
 
     npts   = len(out.energy)
-    ncol   = 6
 
-    arrlabel = ['#', ' energy ', ' mufluor ', ' i0  ', ' fluor_dtc',
-                ' fluor_raw', ' counttime']
+    buff =  ['# XDI/1.0  GSE/1.0']
 
-    header = DTC_header % header_args
-    buff   = [l.strip() for l in header.split('\n')]
+    header = OrderedDict()
 
-    has_i1, has_i2 = False, False
+    hgroups = ['beamline', 'facility', 'mono', 'undulator', 'detectors',
+               'scaler', 'detectorstage', 'samplestage', 'scan', 'scanparameters']
+    hskip = ['scanparameters.end', 'scanparameters.start']
+    for agroup in hgroups:
+        attrs = xdi._xdi.attrs.get(agroup, {})
+        if agroup == 'mono': agroup = 'monochromator'
+        header[agroup] = OrderedDict()
+        for sname in sorted(attrs.keys()):
+            if "%s.%s" %( agroup, sname) not in hskip:
+                header[agroup][sname] = attrs[sname]
+
+
+    header['facility']['name'] = 'APS'
+    header['facility']['xray_source'] = '3.6 cm undulator'
+    header['beamline']['name'] = '13-ID-E, GSECARS'
+
+    header['detectors']['i0'] = '20cm ion chamber, He'
+    header['detectors']['ifluor'] = 'Si SDD Vortex ME-4, 4 elements'
+    header['detectors']['ifluor_electronics'] = 'Quantum Xspress3 3.1.10'
+
+    mono_cut = 'Si(111)'
+    if xdi.mono_dspacing < 2:
+        mono_cut = 'Si(311)'
+    header['monochromator']['name'] = "%s, LN2 cooled"  % mono_cut
+
+    out_arrays = OrderedDict()
+    out_arrays['energy']  = ('energy', 'eV')
+    out_arrays['mufluor'] = ('mufluor', None)
     if hasattr(out, 'i1'):
-        ncol += 1
-        buff.append('# Column.%i: itrans ' % ncol)
-        arrlabel.append(' itrans ')
-        has_i1 = True
+        out_arrays['mutrans'] = ('mutrans', None)
+
+    out_arrays['ifluor']  = ('ifluor', '# deadtime-corrected')
+    out_arrays['ifluor_raw'] = ('ifluor_raw', '# not deadtime-corrected')
+    out_arrays['i0'] = ('i0', None)
+
+    if hasattr(out, 'i1'):
+        out_arrays['itrans'] = ('i1', None)
     if hasattr(out, 'i2'):
-        ncol += 1
-        buff.append('# Column.%i: irefer ' % ncol)
-        arrlabel.append(' irefer ')
-        has_i2 = True
-    arrlabel = '       '.join(arrlabel)
+        out_arrays['irefer'] = ('i2', None)
 
-    buff.extend(["# Scan.start_time: %s" % out.scan_start_time,
-                 "# ///",
-                 "# summed %s fluorescence data from %s" % (channelname, fname),
+    if hasattr(out, 'counttime'):
+        out_arrays['counttime'] = ('counttime', 'sec')
+
+    arrlabel = []
+    for iarr, aname in enumerate(out_arrays):
+        lab = "%12s " % aname
+        if iarr == 0: lab = "%11s " % aname
+        arrlabel.append(lab)
+        extra = out_arrays[aname][1]
+        if extra is None: extra = ''
+        buff.append("# Column.%i: %s %s" % (iarr+1, aname, extra))
+
+    arrlabel = '#%s' % (' '.join(arrlabel))
+    ncol = len(out_arrays)
+
+    for family, fval in header.items():
+        for attr, val in fval.items():
+            buff.append("# %s.%s: %s" % (family.title(), attr, val))
+
+
+    buff.append("# ///")
+    for comment in xdi._xdi.comments.split('\n'):
+        c = comment.strip()
+        if len(c) > 0:
+            buff.append('# %s' % c)
+    buff.extend(["# summed %s fluorescence data from %s" % (channelname, fname),
                  "# Dead-time correction applied",
-                 "#---------------------------------",
-                 arrlabel])
+                 "#"+ "-"*78,   arrlabel])
 
-    fmt = "   %11.3f %15.8f %14.3f %16.5f %14.2f %14.3f"
+    efmt = "%11.4f"
+    ffmt = "%13.7f"
+    gfmt = "%13.7g"
     for i in range(npts):
-        dline = fmt % (out.energy[i],  out.mufluor[i], out.i0[i],
-                       out.fl_corr[i], out.fl_raw[i], out.counttime[i])
-        if has_i1:  dline = "%s %14.3f" % (dline, out.i1[i])
-        if has_i2:  dline = "%s %14.3f" % (dline, out.i2[i])
-        buff.append(dline)
+        dline = ["", efmt % out.energy[i], ffmt % out.mufluor[i]]
 
+        if hasattr(out, 'i1'):
+            dline.append(ffmt % out.mutrans[i])
+
+        dline.extend([gfmt % out.ifluor[i],
+                      gfmt % out.ifluor_raw[i],
+                      gfmt % out.i0[i]])
+
+        if hasattr(out, 'i1'):
+            dline.append(gfmt % out.i1[i])
+        if hasattr(out, 'i2'):
+            dline.append(gfmt % out.i2[i])
+        if hasattr(out, 'counttime'):
+            dline.append(gfmt % out.counttime[i])
+
+        buff.append(" ".join(dline))
     ofile = fname[:]
     if ofile.startswith('..'):
         ofile = ofile[3:]
