@@ -740,17 +740,18 @@ class LarchStepScan(object):
                     time.sleep(0.25)
                     if self.look_for_interrupts():
                         break
-                # move to next position, wait for moves to finish
+                # set dwelltime
+                if self.dwelltime_varys:
+                    for d in self.detectors:
+                        d.set_dwelltime(self.dwelltime[i])
+                # request move to next position
                 [p.move_to_pos(i) for p in self.positioners]
-
                 dtimer.add('Pt %i : move_to_pos (%i)' % (i, len(self.positioners)))
                 # publish scan data while waiting for move to finish
                 if i > 1 and not self.publishing_scandata:
                     self.publish_scandata()
                 dtimer.add('Pt %i : publish data' % i)
-                if self.dwelltime_varys:
-                    for d in self.detectors:
-                        d.set_dwelltime(self.dwelltime[i])
+                # wait for position move to finish
                 t0 = time.time()
                 mcount = 0
                 while (not all([p.done for p in self.positioners]) and
@@ -762,8 +763,8 @@ class LarchStepScan(object):
                 # wait for positioners to settle
                 dtimer.add('Pt %i : pos done' % i)
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
-                poll(self.pos_settle_time, 0.25)
-                dtimer.add('Pt %i : pos settled' % i)
+                time.sleep(self.pos_settle_time) # , 0.25)
+                dtimer.add('Pt %i : pos settled (%.3f)' % (i, self.pos_settle_time))
                 # start triggers, wait for them to finish
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
@@ -793,7 +794,7 @@ class LarchStepScan(object):
                             trig.abort()
 
                 # wait, then read read counters and actual positions
-                poll(self.det_settle_time, 0.1)
+                time.sleep(self.det_settle_time)
                 dtimer.add('Pt %i : det settled done.' % i)
                 [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
