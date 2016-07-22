@@ -5,7 +5,7 @@
 import os
 import time
 import numpy as np
-from larch import ValidateLarchPlugin
+from larch import ValidateLarchPlugin, Group
 from larch.utils import fixName
 from larch.symboltable import isgroup
 
@@ -62,8 +62,6 @@ def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
 
     _labelline, ncol = None, None
     data, footers, headers = [], [], []
-
-    attrs = {'filename': fname}
 
     text.reverse()
     section = 'FOOTER'
@@ -140,28 +138,24 @@ def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
         except:
             pass
 
+    attrs = {'filename': fname}
     attrs['column_labels'] = _labels
     attrs['array_labels'] = _labels
     if sort and sort_column >= 0 and sort_column < nrow:
          data = data[:,np.argsort(data[sort_column])]
 
-    group = attrs
-    if _larch is not None:
-        group = _larch.symtable.create_group(name='ascii_file %s' % fname)
-        setattr(group, 'data', data)
-        for i, nam in enumerate(_labels):
-            setattr(group, nam.lower(), data[i])
-        setattr(group, 'header', headers)
-        if len(footers) > 0:
-            setattr(group, 'footer', footers)
-
-        atgrp = _larch.symtable.create_group(
-            name='header attributes from %s' % fname)
-        for key, val in header_attrs.items():
-            setattr(atgrp, key, val)
-        attrs['attrs'] = atgrp
-        for key, val in attrs.items():
-            setattr(group, key, val)
+    group = Group(name='ascii_file %s' % fname,
+                  filename=fname, header=headers,
+                  column_labels=_labels,
+                  array_labels=_labels,
+                  data=data)
+    if len(footers) > 0:
+        group.footer = footers
+    for i, nam in enumerate(_labels):
+        setattr(group, nam.lower(), data[i])
+    group.attrs = Group(name='header attributes from %s' % fname)
+    for key, val in header_attrs.items():
+        setattr(group.attrs, key, val)
     return group
 
 

@@ -27,6 +27,7 @@ import socket
 from functools import partial
 from threading import Thread
 
+
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
@@ -64,6 +65,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
+from larch.utils import bytes2str
 from larch.wxlib import larchframe
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
@@ -686,7 +688,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
     def update_xrfmap(self, xrfmap):
         self.wids['Scan Started'].SetLabel( xrfmap.attrs['Start_Time'])
 
-        comments = xrfmap['config/scan/comments'].value.split('\n', 2)
+        comments = xrfmap['config/scan/comments'].value
+        comments = bytes2str(comments).split('\n', 2)
         for i, comm in enumerate(comments):
             self.wids['User Comments %i' %(i+1)].SetLabel(comm)
 
@@ -1368,7 +1371,7 @@ class MapViewerFrame(wx.Frame):
                 title = '%s: %s' % (datafile.filename, name)
 
             notes = {'source': title}
-            # print(" Save Position : ", self.inst_name, name, 
+            # print(" Save Position : ", self.inst_name, name,
             #       position, notes)
 
             self.instdb.save_position(self.inst_name, name, position,

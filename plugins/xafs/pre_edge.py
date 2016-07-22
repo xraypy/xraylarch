@@ -129,7 +129,7 @@ def preedge(energy, mu, e0=None, step=None,
                 idmu_max, dmu_max = i, dmu[i]
 
         e0 = energy[idmu_max]
-    nnorm = max(min(nnorm, MAX_NNORM), 1)
+    nnorm = max(min(nnorm, MAX_NNORM), 0)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
@@ -158,7 +158,10 @@ def preedge(energy, mu, e0=None, step=None,
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
-    coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
+    if nnorm == 0:
+        coefs = [omu[p1:p2].mean()]
+    else:
+        coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
     norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):

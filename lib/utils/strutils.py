@@ -6,6 +6,16 @@ from __future__ import print_function
 import re
 import sys
 
+bytes2str = str
+if sys.version_info[0] == 3:
+    def bytes2str(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode(sys.stdout.encoding)
+        return str(s)
+
+
 def PrintExceptErr(err_str, print_trace=True):
     " print error on exceptions"
     print('\n***********************************')
