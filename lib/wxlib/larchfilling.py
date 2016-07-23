@@ -375,28 +375,14 @@ class Filling(wx.SplitterWindow):
                  rootLabel=None, rootIsNamespace=False, static=False):
         """Create a Filling instance."""
         wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
-
-        leftpanel = wx.Panel(self)
-        leftsizer = wx.BoxSizer(wx.VERTICAL)
-
-        # self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
-        #                       action=self.onRefresh)
-
-        self.tree = FillingTree(parent=leftpanel, rootObject=rootObject,
+        self.tree = FillingTree(parent=self, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace,
                                 static=static)
 
-        # leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
-        leftsizer.Add(self.tree, 1, wx.EXPAND|wx.ALL, 1)
-        pack(leftpanel, leftsizer)
-
-        # self.text = FillingRST(parent=self, static=static)
         self.text = FillingText(parent=self, static=static)
-
-        wx.CallLater(1, self.SplitVertically, leftpanel, self.text, 200)
-
-        self.SetMinimumPaneSize(1)
+        self.SplitVertically(self.tree, self.text, 200)
+        self.SetMinimumPaneSize(100)
 
         # Override the filling so that descriptions go to FillingText.
         self.tree.setText = self.text.SetText
@@ -440,12 +426,12 @@ class Filling(wx.SplitterWindow):
         def get_node_by_name(node, name):
             nodecount = self.tree.GetChildrenCount(node)
             item, cookie = self.tree.GetFirstChild(node)
-            if self.tree.GetItemText(item) == name:
+            if not item.IsOk() or self.tree.GetItemText(item) == name:
                 return item
             while nodecount > 1:
                 nodecount -= 1
                 item, cookie = self.tree.GetNextChild(item, cookie)
-                if self.tree.GetItemText(item) == name:
+                if not item.IsOk() or self.tree.GetItemText(item) == name:
                     return item
 
         while len(parents) > 0:

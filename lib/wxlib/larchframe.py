@@ -169,7 +169,7 @@ class LarchFrame(wx.Frame):
                                        prompt = self.prompt,
                                        output = self.output,
                                        input  = self.input)
-        self.datapanel.SetRootObject(self.larchshell.symtable)
+        self.objtree.SetRootObject(self.larchshell.symtable)
         if exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
@@ -181,8 +181,9 @@ class LarchFrame(wx.Frame):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
 
         self.larchshell.write(larch.make_banner(), color='blue', bold=True)
-        root = self.datapanel.tree.GetRootItem()
-        self.datapanel.tree.Expand(root)
+        root = self.objtree.tree.GetRootItem()
+
+        self.objtree.tree.Expand(root)
 
 
     def InputPanel(self, parent):
@@ -225,6 +226,8 @@ class LarchFrame(wx.Frame):
 
         self.SetBackgroundColour('#E9EEE0')
 
+        self.objtree = Filling(splitter,  rootLabel='_main')
+
         self.output = wx.TextCtrl(splitter, -1,  '',
                                   style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
@@ -232,11 +235,11 @@ class LarchFrame(wx.Frame):
         self.output.SetInsertionPointEnd()
         self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
 
-        self.datapanel = Filling(splitter,  rootLabel='_main')
-        splitter.SplitHorizontally(self.datapanel, self.output, 0.5)
+        splitter.SplitHorizontally(self.objtree, self.output, 0.5)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
+
         sizer.Add(splitter,  1, **opts)
         sizer.Add(self.InputPanel(self),  0, **opts)
 
@@ -357,7 +360,7 @@ class LarchFrame(wx.Frame):
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
-            wx.CallAfter(self.datapanel.onRefresh)
+            wx.CallAfter(self.objtree.onRefresh)
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
