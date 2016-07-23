@@ -200,16 +200,15 @@ class FillingTree(wx.TreeCtrl):
             keys = children.keys()
         except:
             return
-        keys.sort(lambda x, y: cmp(str(x).lower(), str(y).lower()))
-        for key in keys:
+        # keys.sort(lambda x, y: cmp(str(x).lower(), str(y).lower()))
+        for key in sorted(keys):
             itemtext = str(key)
             # Show string dictionary items with single quotes, except
             # for the first level of items, if they represent a
             # namespace.
-            if (type(obj) is types.DictType \
-                and type(key) is types.StringType \
-                and (item != self.root \
-                     or (item == self.root and not self.rootIsNamespace))):
+            if (isinstance(obj, dict) and isinstance(key, basestring) and
+                (item != self.root or
+                 (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
             child = data = children[key]
             if not is_wxPhoenix:
@@ -279,11 +278,9 @@ class FillingTree(wx.TreeCtrl):
             obj = self.GetPyData(item)
         # Apply dictionary syntax to dictionary items, except the root
         # and first level children of a namepace.
-        if (type(obj) is types.DictType \
-            or str(type(obj))[17:23] == 'BTrees' \
-            and hasattr(obj, 'keys')) \
-        and ((item != self.root and parent != self.root) \
-            or (parent == self.root and not self.rootIsNamespace)):
+        if ((isinstance(obj, dict) or hasattr(obj, 'keys')) and
+            ((item != self.root and parent != self.root) or
+             (parent == self.root and not self.rootIsNamespace))):
             name = '[' + name + ']'
         # Apply dot syntax to multipart names.
         if partial:
