@@ -82,6 +82,9 @@ class FillingTree(wx.TreeCtrl):
         self.static = static
         self.item = None
         self.root = None
+        if is_wxPhoenix:
+            self.GetPyData = self.GetItemData
+
         self.setRootObject(rootObject)
 
     def setRootObject(self, rootObject=None):
@@ -90,8 +93,10 @@ class FillingTree(wx.TreeCtrl):
             return
         if not self.rootLabel:
             self.rootLabel = 'Larch Data'
-        
-        rootData = wx.TreeItemData(rootObject)
+
+        rootData = rootObject
+        if not is_wxPhoenix:
+            rootData = wx.TreeItemData(rootData)
         self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  rootData)
 
         self.SetItemHasChildren(self.root,  self.objHasChildren(self.rootObject))
@@ -206,8 +211,9 @@ class FillingTree(wx.TreeCtrl):
                 and (item != self.root \
                      or (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
-            child = children[key]
-            data = wx.TreeItemData(child)
+            child = data = children[key]
+            if not is_wxPhoenix:
+                data = wx.TreeItemData(child)
             branch = self.AppendItem(parent=item, text=itemtext, data=data)
             self.SetItemHasChildren(branch, self.objHasChildren(child))
 
