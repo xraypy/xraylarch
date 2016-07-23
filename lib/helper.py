@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 main = """This is Larch main help"""
 
+import six
+
 from . import helpTopics
 Help_topics = helpTopics.generate()
 
@@ -21,14 +23,14 @@ class Helper(object):
         for arg in args:
             if arg is None:
                 continue
-            if isinstance(arg, (str, unicode)) and str(arg) in Help_topics:
+            if isinstance(arg, six.string_types) and str(arg) in Help_topics:
                 self.addtext(Help_topics[arg])
             else:
                 self.show_symbol(arg)
 
     def show_symbol(self, arg):
         "show help for a symbol in the symbol table"
-        if isinstance(arg, (str, unicode)):
+        if isinstance(arg, six.string_types):
             sym = self._larch.symtable.get_symbol(arg, create=False)
             out = None
         else:

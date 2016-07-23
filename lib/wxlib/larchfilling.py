@@ -41,7 +41,7 @@ VERSION = '0.9.5(Larch)'
 
 COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
 if sys.version[0] == '2':
-    COMMONTYPES.append(unicode)
+   COMMONTYPES.append(unicode)
 COMMONTYPES =  tuple(COMMONTYPES)
 
 H5TYPES = ()

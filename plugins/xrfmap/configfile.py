@@ -3,7 +3,7 @@
 import os
 import sys
 import time
-
+import six
 if sys.version[0] == '2':
     from ConfigParser import  ConfigParser
     from cStringIO import StringIO
@@ -147,7 +147,8 @@ class FastMapConfig(object):
                 for opt in optlist:
                     try:
                         val = cnf[sect].get(opt,'<unknown>')
-                        if not isinstance(val,(str,unicode)): val = str(val)
+                        if not isinstance(val, six.string_types):
+                            val = str(val)
                         o.append("%s = %s" % (opt,val))
                     except:
                         pass
@@ -171,7 +172,8 @@ class FastMapConfig(object):
         for opt in optlist:
             val = scan.get(opt,None)
             if val is not None:
-                if not isinstance(val,(str,unicode)): val = str(val)
+                if not isinstance(val, six.string_types):
+                    val = str(val)
                 o.append("%s = %s" % (opt,val))
         o.append('#------------------#\n')
         f = open(fname,'w')

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import six
+
 from .parameter import Parameter, isParameter, param_value
 from .minimizer import Minimizer, minimize, fit_report, eval_stderr
 from .confidence import conf_intervals , chisquare_map, conf_report, f_compare
@@ -46,7 +48,7 @@ def chi2_map(minout, xname, yname, nx=11, ny=11, xrange=None,
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
-    if len(args) > 0 and isinstance(args[0], (str, unicode)):
+    if len(args) > 0 and isinstance(args[0], six.string_types):
         expr = args[0]
         args = args[1:]
         kws.update({'expr': expr})
@@ -67,4 +69,3 @@ def guess(value,  **kws):
 def is_param(obj, _larch=None, **kws):
     """return whether an object is a Parameter"""
     return isParameter(obj)
-

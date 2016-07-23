@@ -37,7 +37,11 @@ class LarchWxShell(object):
         self.symtable = self.larch.symtable
         self.prompt = prompt
         self.output = output
+        if self.output is not None:
+            sys.stdout = self
+
         self.input  = input
+        self.objtree = wxparent.objtree
         self.larch.writer = self
         self.larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
@@ -97,12 +101,15 @@ class LarchWxShell(object):
             sfont = style.GetFont()
             pos1  = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, wx.TextAttr(color, bgcol, sfont))
-        # self.flush()
 
     def flush(self, *args):
-        self.output.SetInsertionPoint(self.output.GetLastPosition())
+        try:
+            self.output.SetInsertionPoint(self.output.GetLastPosition())
+        except:
+            pass
         self.output.Refresh()
         self.output.Update()
+        wx.CallAfter(self.objtree.onRefresh)
         self.needs_flush = False
 
     def clear_input(self):
@@ -360,7 +367,6 @@ class LarchFrame(wx.Frame):
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
-            wx.CallAfter(self.objtree.onRefresh)
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
