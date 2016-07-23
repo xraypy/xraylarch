@@ -160,8 +160,8 @@ class LarchWxShell(object):
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
                  histfile='history_larchgui.lar',
-                 exit_on_close=False, **kwds):
-
+                 with_inspection=False, exit_on_close=False, **kwds):
+        self.with_inspection = with_inspection
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
@@ -258,6 +258,9 @@ class LarchFrame(wx.Frame):
         MenuItem(self, fmenu, 'Clear Input\tCtrl+D',
                  'Clear Input', self.onClearInput)
 
+        if self.with_inspection:
+            MenuItem(self, fmenu, 'Show wxPython Inspector\tCtrl+I',
+                     'Debug wxPython App', self.onWxInspect)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Close Display', 'Close display', self.onClose)
         MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
@@ -265,7 +268,6 @@ class LarchFrame(wx.Frame):
         # fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
         # fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
         # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
-
 
         vmenu = wx.Menu()
         MenuItem(self, vmenu, 'Map Viewer', 'GSECARS Map Viewer',
@@ -285,6 +287,10 @@ class LarchFrame(wx.Frame):
         menuBar.Append(vmenu, 'Applications')
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
+
+
+    def onWxInspect(self, event=None):
+        wx.GetApp().ShowInspectionTool()
 
     def onMapviewer(self, event=None):
         self.larchshell.execute("mapviewer()")
