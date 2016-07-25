@@ -14,8 +14,13 @@ from wxutils import (Button, MenuItem, Choice)
 
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
+from .columnframe import EditColumnFrame
 from . import inputhook
 
+from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
+                              gsescan_group, fix_varname)
+
+FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
 ICON_FILE = 'larch.ico'
 
@@ -32,8 +37,8 @@ class LarchWxShell(object):
         self.larch = _larch
         if _larch is None:
             self.larch  = larch.Interpreter()
-        self.inptext  = larch.InputText(prompt=self.ps1,
-                                        interactive=False)
+        self.inptext  = larch.InputText(prompt=self.ps1, _larch=self.larch)
+
         self.symtable = self.larch.symtable
         self.prompt = prompt
         self.output = output
@@ -122,12 +127,6 @@ class LarchWxShell(object):
 
     def execute(self, text=None):
         if text is not None:
-            if  text.startswith('help'):
-                arg = text[4:]
-                if arg.startswith('(') and arg.endswith(')'): arg = arg[1:-1]
-                if arg.startswith("'") and arg.endswith("'"): arg = arg[1:-1]
-                if arg.startswith('"') and arg.endswith('"'): arg = arg[1:-1]
-                text  = "help(%s)"% (repr(arg))
             if text.startswith('!'):
                 return os.system(text[1:])
             else:
@@ -144,15 +143,15 @@ class LarchWxShell(object):
             block, fname, lineno = self.inptext.get()
             ret = self.larch.eval(block, fname=fname, lineno=lineno)
             self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
-            if hasattr(ret, '__call__') and not isinstance(ret,type):
-                try:
-                    if 1 == len(block.split()):
-                        ret = ret()
-                except:
-                    pass
+
             if self.larch.error:
                 err = self.larch.error.pop(0)
-                fname, lineno = err.fname, err.lineno
+                if err.fname is not None:
+                    fname = err.fname
+                    if err.lineno is not None:
+                        lineno = err.lineno
+                if err.tback is not None:
+                    self.write(err.tback, color='#BB0000')
                 self.write("%s\n" % err.get_error()[1], color='#BB0000')
                 for err in self.larch.error:
                     if ((err.fname != fname or err.lineno != lineno)
@@ -164,12 +163,21 @@ class LarchWxShell(object):
                 except:
                     pass
 
+#             if hasattr(ret, '__call__') and not isinstance(ret,type):
+#                 try:
+#                     if 1 == len(block.split()):
+#                         ret = ret()
+#                 except:
+#                     pass
+
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
                  histfile='history_larchgui.lar',
                  with_inspection=False, exit_on_close=False, **kwds):
         self.with_inspection = with_inspection
         self.histfile = histfile
+        self.subframes = {}
+        self.last_array_sel = {}
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
                                        _larch = _larch,
@@ -317,18 +325,64 @@ class LarchFrame(wx.Frame):
     def onClearInput(self, event=None):
         self.larchshell.clear_input()
 
+    def show_subframe(self, name, frameclass, **opts):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self, **opts)
+
+
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open Data File',
-                            wildcard=wildcard,
+                            defaultDir=os.getcwd(),
+                            wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+        dgroup = None
         if dlg.ShowModal() == wx.ID_OK:
-            fout = os.path.abspath(dlg.GetPath())
-            path, fname = os.path.split(fout)
-            os.chdir(path)
-            print( 'Open ASCII data file? ', fname)
+            path = os.path.abspath(dlg.GetPath()).replace('\\', '/')
+            filedir, filename = os.path.split(path)
+            pref = fix_varname((filename + '_'*8)[:8]).replace('.', '_').lower()
 
+            count, maxcount = 1, 9999
+            groupname = "%s%3.3i" % (pref, count)
+            while hasattr(self.larchshell.symtable, groupname) and count < maxcount:
+                count += 1
+                groupname = '%s%3.3i' % (pref, count)
+
+            fh = open(path, 'r')
+            line1 = fh.readline().lower()
+            fh.close()
+            reader = read_ascii
+            if 'epics stepscan file' in line1:
+                reader = read_gsexdi
+            elif 'epics scan' in line1:
+                reader = gsescan_group
+            elif 'xdi' in line1:
+                reader = read_xdi
+
+            dgroup = reader(str(path), _larch=self.larchshell.larch)
+            dgroup._path = path
+            dgroup._filename = filename
+            dgroup._groupname = groupname
         dlg.Destroy()
+        if dgroup is not None:
+            self.show_subframe('coledit', EditColumnFrame, group=dgroup,
+                               last_array_sel=self.last_array_sel,
+                               read_ok_cb=self.onReadScan_Success)
+
+    def onReadScan_Success(self, datagroup, array_sel):
+        """ called when column data has been selected and is ready to be used"""
+        self.last_array_sel = array_sel
+        filename  = datagroup._filename
+        groupname = datagroup._groupname
+        setattr(self.larchshell.symtable, groupname, datagroup)
+        self.larchshell.flush()
 
     def onRunScript(self, event=None):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
