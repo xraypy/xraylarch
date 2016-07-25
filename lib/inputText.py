@@ -22,35 +22,56 @@ def strip_comments(sinp, char='#'):
         i = i + 1
     return sinp
 
-def get_DefVar(text):
-    """
-    looks for defined variable statement, of the form
-       >>   def varname = exression
-
-    returns (varname, expression) if this is a valid defvar statement
-    or None, None if not a valid defvar statement
-    """
-    if text.find('=') > 0 and text.startswith('def '):
-        t = text[4:].replace('=',' = ').strip()
-        words = t.split()
-        if len(words) > 2 and words[1] == '=':
-            iequal = t.find('=')
-            iparen = t.find('(')
-            icolon = t.find(':')
-            if iparen < 0 :
-                iparen = len(t)+1
-            if icolon < 0 :
-                icolon = len(t)+1
-            # print iequal, iparen, icolon, words[0], isValidName(words[0])
-            if (iequal < iparen and iequal < icolon and
-                isValidName(words[0])):
-                return words[0], t[iequal+1:].strip()
-
-    return None, None
-
 
 OPENS, CLOSES, QUOTES, BSLASH, COMMENT = '{([', '})]', '\'"', '\\', '#'
+PARENS = dict(zip(OPENS, CLOSES))
+
 DBSLASH = "%s%s" % (BSLASH, BSLASH)
+
+def line_complete(txt):
+    """returns whether single line of text is a complete:
+    completeness here means the text (one line only!)
+    contains completed quotes, and parens, braces, brackets
+    are matched (including nesting) and the text does not
+    end with a backslash.
+    """
+
+    lines = txt.split('\n')
+    if len(lines) > 1 or txt.rstrip().endswith(BSLASH):
+        return False
+
+    def find_eostring(txt, eos, istart):
+        while True:
+            inext = txt[istart:].find(eos)
+            if inext < 0:  # reached end of text before match found
+                return eos, len(txt)
+            elif (txt[istart+inext-1] == BSLASH and
+                  txt[istart+inext-2] != BSLASH):  # matched quote was escaped
+                istart = istart+inext+len(eos)
+            else: # real match found! skip ahead in string
+                return '', istart+inext+len(eos)-1
+
+
+    eos, i = '', 0
+    delims = []
+    while i < len(txt):
+        c = txt[i]
+        if c in QUOTES:
+            eos = c
+            if txt[i:i+3] == c*3:
+                eos = c*3
+            istart = i + len(eos)
+            eos, i = find_eostring(txt, eos, istart)
+        elif c in OPENS:
+            delims.append(PARENS[c])
+        elif c in CLOSES and len(delims)>0 and c == delims[-1]:
+            delims.pop()
+        elif c == COMMENT and eos == '': # comment char outside string
+            i = len(txt)
+        i += 1
+
+    return (eos == '' and len(delims) == 0)
+
 
 class InputText:
     """Input Larch Code:  handles loading and reading code text, and
@@ -59,7 +80,7 @@ class InputText:
     InputText accepts and stores single or multiple lines of input text,
 
     including as from an interactive prompt, watching for blocks of code,
-    and keepin track of whether a block are complete.
+    and keeping track of whether a block are complete.
 
     When asked for the next block of code, it emits blocks of valid
     (hopefully!) python code ready to parsed by 'ast.parse'
@@ -84,16 +105,7 @@ class InputText:
         where the token starts a line of text, followed by whitespace or
         a comment starting with a '#'.
 
-    2. Defined Parameters:
-        larch uses 'def VarName = Expression' for Defined Parameters
-        (the expression is stored and accessing the VarName causes the
-        expression to be re-evaluated)
-
-        The tokens are found with "def" "varname" "=" "text of expression"
-        and then translated into
-              param(name="varname", expr="text of expression")
-
-    3. Command Syntax:
+    2. Command Syntax:
         larch allows lines of code which execute a function without return
         value to be viewed as "commands" and written without parentheses,
         so that the function call
@@ -103,7 +115,7 @@ class InputText:
 
         Note that 'function' must be in _sys.valid_commands for this to work.
 
-    4. Print:
+    3. Print:
         as a special case of rule 3, and because Python is going through
         changes in the syntax of "print", print statements are translated
         from either "print(list)" or "print list" to
@@ -119,10 +131,7 @@ class InputText:
                      'try':   ('else', 'except', 'finally'),
                      'while': ('else',) }
 
-    defpar = "_builtin.param(expr='%s', name='%s')"
-
     nonkey = 'NONKEY'
-
     empty_frame = (None, None, -1)
 
     def __init__(self, prompt=None, interactive=True, input=None,
@@ -154,7 +163,6 @@ class InputText:
             self.input_buff.append((txt, complete,
                                     self.eos, self.fname, self.lineno))
             self.lineno += 1
-            # print(' Add : ', self.lineno, complete, self.eos, self.delims, txt)
             return complete
 
         for t in text.split('\n'):
@@ -207,6 +215,10 @@ class InputText:
         indent_level = 0
         oneliner  = False
         startkeys = self.block_friends.keys()
+        valid_cmds = []
+        if self._larch is not None:
+            valid_cmds = self._larch.symtable.get_symbol('_sys.valid_commands')
+
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, eos, fname, lineno = self.input_buff.pop()
@@ -233,13 +245,13 @@ class InputText:
                     tnext, complete, eos, fname, lineno2 = self.input_buff.pop()
                     text = "%s\n %s%s" % (text, sindent, tnext)
 
-            txt   = text.replace('(', ' (').replace(')', ' )')
+            txt   = text.replace('(', ' (')
             words = txt.split(' ', 1)
             thiskey = words.pop(0).strip()
 
             word2 = ''
             if len(words) > 0:
-                word2 = words[0].replace(',', ' ').split()[0]
+                word2 = words[0].strip()
 
             if thiskey.endswith(':'):
                 thiskey = thiskey[:-1]
@@ -247,15 +259,6 @@ class InputText:
             prefix, oneliner = '', False
 
             if thiskey in startkeys:
-                # check for defined variables
-                if thiskey == 'def':
-                    dname, dexpr = get_DefVar(text)
-                    if dname is not None and dexpr is not None:
-                        if "'" in dexpr:
-                            dexpr.replace("'", "\'")
-                        text = self.defpar % (dexpr, dname)
-                        thiskey = self.nonkey
-
                 # note that we **re-test** here,
                 # as thiskey may have changed above for defined variables
                 if thiskey in startkeys:
@@ -287,9 +290,11 @@ class InputText:
                         self.endkeys = ('end',  'end%s'%self.current,
                                         '&end', '&end%s'%self.current)
 
-            elif not text.endswith(')') and self.__isCommand(thiskey, word2):
-                # handle 'command format', including 'print'
-                text = '%s(%s)' % (thiskey, text[len(thiskey):].strip())
+            elif thiskey in valid_cmds and line_complete(word2):
+                if word2.startswith('(') and word2.endswith(')'):
+                    text = '%s%s' % (thiskey, word2)
+                else:
+                    text = '%s(%s)' % (thiskey, word2)
             indent_level = len(self.keys)
             if (not oneliner and len(thiskey)>0 and
                 (thiskey == self.current or thiskey in self.friends)):
@@ -323,38 +328,11 @@ class InputText:
         self.current = None
         self.endkeys = ()
         self.friends = ()
-        self.parens = dict(zip(OPENS, CLOSES))
         self.delims = []
         self.eos = ''
         self.in_string   = False
         self.input_buff  = []
         self.input_complete = True
-
-    def __isCommand(self, key, word2):
-        """ decide if a keyword and next word are of the form
-          'command arg, ...'
-        which will get translated to
-          'command(arg, ...)'
-        to allow 'command syntax'
-        """
-        # this could be in one long test, but we simplify:
-        # first test key:
-        if (not isValidName(key) or
-            key in self.friends or
-            key.startswith('#') or
-            len(key) < 1 or len(word2) < 1):
-            return False
-
-
-        if self._larch is not None:
-            comms = self._larch.symtable.get_symbol('_sys.valid_commands',
-                                                    create=True)
-            if key not in comms:
-                return False
-
-        # next test word2
-        return (isValidName(word2) or isNumber(word2) or
-                isLiteralStr(word2) )
 
     def __isComplete(self, txt, verbose=False):
         """returns whether input text is a complete:
@@ -386,6 +364,7 @@ class InputText:
             return self.eos == ''
 
         i = 0
+        delims = self.delims
         while i < len(txt):
             c = txt[i]
             if c in QUOTES:
@@ -395,17 +374,17 @@ class InputText:
                 istart = i + len(self.eos)
                 self.eos, i = find_eostring(txt, self.eos, istart)
             elif c in OPENS:
-                self.delims.append(self.parens[c])
-            elif c in CLOSES and len(self.delims)>0 and c == self.delims[-1]:
-                self.delims.pop()
+                delims.append(PARENS[c])
+            elif c in CLOSES and len(delims)>0 and c == delims[-1]:
+                delims.pop()
             elif c == COMMENT and self.eos == '': # comment char outside string
                 i = len(txt)
             i += 1
 
-        complete = (self.eos == '' and len(self.delims) == 0 and
+        complete = (self.eos == '' and len(delims) == 0 and
                     not txt.rstrip().endswith(BSLASH))
         if verbose:
-            print(' %s:%s:%i:%s ' % (complete, self.eos, len(self.delims), txt))
+            print(' %s:%s:%i:%s ' % (complete, self.eos, len(delims), txt))
         return complete
 
 
