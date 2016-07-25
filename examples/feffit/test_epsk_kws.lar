@@ -14,8 +14,10 @@ test_kweights = (2, 0,  (3, 2, 1))
 test_fitspace = ('k', 'r', 'q')
 
 
-fitparams = group(amp=guess(1), de0=guess(0.1),
-                  ss2=guess(0.002), delr=guess(0.))
+fitparams = group(amp=guess(1.0),
+                  de0=guess(0.1),
+                  ss2=guess(0.002),
+                  delr=guess(0.))
 
 path1 = feffpath('feffcu01.dat', s02 = 'amp', e0 = 'de0',
                  sigma2 = 'ss2', deltar = 'delr')
@@ -27,18 +29,16 @@ out = []
 for eps_k in test_epsk:
     cu.epsilon_k = eps_k
     eps_type = 'float'
-    if isinstance(eps_k, ndarray):
-        eps_type = 'array'
-    elif eps_k is None:
-        del cu.epsilon_k
+    if eps_k is None:
         eps_type = 'None'
+    elif isinstance(eps_k, ndarray):
+        eps_type = 'array'
     #endif
     for kw in test_kweights:
         for fitspace in test_fitspace:
             trans   = feffit_transform(kw=kw, fitspace=fitspace, **trans_args)
             dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
             result  = feffit(fitparams, dataset)
-
             out.append((fitspace, kw, eps_type,
                         fitparams.fit_details.nfev,
                         fitparams.chi_reduced,
@@ -48,8 +48,10 @@ for eps_k in test_epsk:
                         fitparams.de0.value, fitparams.de0.stderr))
         #endfor
     #endfor
+
 #endfor
 
+
 #
-# for i in out: print i
+# for i in out: print(i)
 #
