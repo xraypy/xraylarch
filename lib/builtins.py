@@ -9,6 +9,9 @@ import re
 import traceback
 
 import six
+if six.PY3:
+    import io
+
 
 from .helper import Helper
 from . import inputText
@@ -222,7 +225,11 @@ def _run(filename=None, new_module=None, _larch=None):
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
 
     text = None
-    if isinstance(filename, file):
+    if six.PY2:
+        filetype = file
+    else:
+        filetype = io.IOBase
+    if isinstance(filename, filetype):
         text = filename.read()
         filename = filename.name
     elif os.path.exists(filename) and os.path.isfile(filename):
@@ -272,7 +279,6 @@ def _help(*args, **kws):
     else:
         for a in args:
             helper.help(a)
-
     if helper._larch is not None:
         helper._larch.writer.write("%s\n" % helper.getbuffer())
     else:
@@ -585,4 +591,7 @@ local_funcs = {'_builtin': {'group':_group,
                }
 
 # list of supported valid commands -- don't need parentheses for these
-valid_commands = ('run', 'help')
+valid_commands = ['run', 'help', 'show', 'which']
+
+if six.PY3:
+    valid_commands.append('print')
