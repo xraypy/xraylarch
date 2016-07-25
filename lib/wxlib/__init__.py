@@ -5,4 +5,4 @@ wx widgets for Larch
 from . import larchframe
 from . import larchfilling
 from . import readlinetextctrl
-
+from .columnframe import EditColumnFrame
