@@ -5,17 +5,17 @@ The data here contain python variable holding text that
 are used as principle help topics.
 
 M. Newville Univ of Chicago, T. Trainor, Univ of Alaska Fairbanks (2005,2006)
- 
+
 """
 ##
 ## usage notes:
 ##    to add a new top level help topic, simply create a variable named '_h_%s' % topic
 ## where 'topic' is a unique (case-insensitive!) name for a help topic.
 ##
-## when  help(topic)  
+## when  help(topic)
 ##
 _h_Shell = """Larch command-line shell help:
-  
+
 """
 
 _h_Help =  """
@@ -30,12 +30,12 @@ _h_Help =  """
 _h_Overview = """
 This is Larch (Matt Newville and Tom Trainor 2009).
 
-Larch is a data processing language designed to be 
+Larch is a data processing language designed to be
   - easy to use for novices.
   - complete enough for intermediate to advanced data processing.
   - data-centric, so that arrays of data are easy to manage and use.
   - easily extendable with python.
- 
+
 Larch uses Numeric Python and SciPy for all its numerical functionality,
 so that processing data in arrays is both easy and fast. There is a wide
 range of 'advanced numeric capabilities' for Larch, including complex
@@ -45,7 +45,7 @@ Larch Features:
 
 ==Simple Syntax:
   Variable and function names are simple, undecorated strings.  The
-  syntax is deliberately close to Python, so that 
+  syntax is deliberately close to Python, so that
 
 ==Data Types:
 
@@ -57,8 +57,8 @@ Larch Features:
   more complicated "slices":
         larch> x   = 1             # int
         larch> y   = 7 + 2j        # complex number:  real + imag'j'
-        larch> arr = arange(10)    # simple array 
-        larch> print arr 
+        larch> arr = arange(10)    # simple array
+        larch> print arr
             [0 1 2 3 4 5 6 7 8 9 10]
         larch> print arr[3]
             3
@@ -79,18 +79,18 @@ Larch Features:
   Each variable and function lives in Group, which can be nested much
   like a file directory structure -- Group.Subgroup.Variable.  These is
   no limit on the number of subgroups, within a group or the level of
-  nesting of groups.  This allows you to organize data,  
+  nesting of groups.  This allows you to organize data,
      print DataSet1.Energy
      print DataSet2.Energy
 
   and so on. To access a variable, you can always use the Full name:
      print Group1.SubgroupA.Variable
-     
+
   If you ask for a name that is NOT a Full name, larch tries to look it up.
 
   It does this by always having a "local group" which is always looked in first.
-  If 
-  
+  If
+
   Unqualified names (ie, a name without a 'group.' prefix) will use a default
   order to determine which Group to associate with a name:  There is always
   a "Default Data Group" and a "Default Function Group" each of which can be
@@ -98,19 +98,19 @@ Larch Features:
   "_builtin", which contains many built in functions and constants (sin and pi,
   for example), and "_main".  At startup, "_main" is empty, and is set as the
   "Default Data Group" and "Default Function Group".
-  
+
   When creating or assigning a variable without an explicit group name, the default
   Data Group is used.  When creating or assigning a procedure without an explicit
   group name, the default Function Group is used.
-  
+
   When using (say, on the right-hand side of a statement) a variable or function with
   an unqualified group name, the first matching name in the list
-     (Default Data Group, Default Function Group, "_main", "_builtin") 
+     (Default Data Group, Default Function Group, "_main", "_builtin")
 
   is used.  The Default Data Group can be changed with
         larch> datagroup('mydata')
 
-  and the Default Function Group can be changed with 
+  and the Default Function Group can be changed with
         larch> funcgroup('myfuncs')
 
   Assigning a fully qualified variable or function to a group that previously did
@@ -129,9 +129,9 @@ Larch Features:
             Default Function Group = _main
             All Groups:
                 _main  _builtin  group1
-  
+
 ==Functions and Commands.  Functions and commands have similiar name structure as
-  data (group.func,group.cmd). 
+  data (group.func,group.cmd).
   The default group name for functions and commands is _main (functions and commands with
   this group name do not need full name qualification).
   Eg. you can also assign variables variable values with setvar() function:
@@ -140,7 +140,7 @@ Larch Features:
 
   The potential advantage here is that 'v' and 'group1' are string types,
   not literal variable names, so they can be computed or passed in a
-  procedure. 
+  procedure.
 
 ==Clean syntax for programming:
   The syntax is "Python Inspired", with some notable exceptions.  Most
@@ -149,16 +149,16 @@ Larch Features:
 
         for i in range(10):
             print i
-        endfor     
+        endfor
 
   There are also while blocks and if-elif-else blocks:
         n = 0
-        while n<10: 
+        while n<10:
            print ' n = ',n
            if n==3: print 'here is 3!!'
                n = n + 1
            endwhile
-     
+
         if n > 10:
             print 'No'
         elif n > 5 and n < 8:
@@ -176,7 +176,7 @@ Larch Features:
              'documentation string'
               print 'this is my funcition ', arg1
               print 'optional param = ', option
-              if type(option) != 'string':     
+              if type(option) != 'string':
                   print 'option must be a string!!'
                   return False
               endif
@@ -185,7 +185,7 @@ Larch Features:
               return value > 10.
         enddef
 
-  which could be called as 
+  which could be called as
         larch> ret = myfunc(3., option = 'xx')
         larch> print ret, x.tmp
           False 1.73205080757
@@ -198,7 +198,7 @@ Larch Features:
   you can construct a larch expression on the fly from strings and execute it:
 
         larch> eval("%s.value = %f" %  ['group', 10.2])
-        larch> print group.value 
+        larch> print group.value
           10.2
 
 ==read_ascii() function:
@@ -206,7 +206,7 @@ Larch Features:
 
         larch> read_ascii('my.dat', group='f')
           ['f', 'x', ''y']
-      
+
   this read 2 columns (labeled 'x' and 'y') from the column file and
   created the array variables f.x and f.y.  Also created was f.titles
   to hold the titles in the data file (non-numeric content at the top of
@@ -215,17 +215,17 @@ Larch Features:
 ==On-line help:
   well, this is in progress....
 
-==Easy to add your python functions, including getting access to all  
+==Easy to add your python functions, including getting access to all
   the 'data groups' inside your python function.
 
 ==Differences between larch and Python (for python users):
-  -  larch has many builtins and assumes Numerical data. 
+  -  larch has many builtins and assumes Numerical data.
   -  larch has no tuples. Lists are used in their place.
-  -  indentation does not matter. blocks are ended with 'end***' 
+  -  indentation does not matter. blocks are ended with 'end***'
      (if / endif , for /endfor, def/enddef)
   -  when in doubt, assignment makes a copy, and does not give a reference
   -  data types are NOT objects, and so have no methods.  You must use
-     procedural approaches 
+     procedural approaches
        x = arange(100)
        reshape(x,[10,10])   instead of x.shape = (10,10)
 """
@@ -253,15 +253,15 @@ _h_Strings = """
       \\"   literal "
       \\'   literal '
       \\\   the backslach character itself.
-      
+
   You can escape quote characters ('\\"' or '\\'') so that they do not mark the end of a
-  string sequence: 
+  string sequence:
       larch> x = 'a string\\'s string'
       larch> y = "\\"a string with a double quote\\", he said."
 
- 
+
   ==Multi-line Strings with Triple Quotes
-   
+
   Larch allows multi-line strings (that is strings that span lines).  One simple way to do this is
   to include a newline character ('\\n') character in the string, but this is not always sufficient.
   Another way is to use triple quotes (three quotes in a row: either ''' or  \"\"\") to enclose the
@@ -285,28 +285,28 @@ _h_Strings = """
   This is done by putting format codes in a string and supplying values to fill in.  Format
   codes use the '%' character to mark the formatting to do.
 
-  Following normal conventions, a formatted string for a floating point number might look like this: 
+  Following normal conventions, a formatted string for a floating point number might look like this:
 
       larch> print "x = %8.4f" % sqrt(12)
       x =   3.4641
-      
+
   The "%8.4f" tells the formatting to format a floating point number (the 'f') with 8 total numbers
   and 4 numbers after the decimal point.   A plain '%' is used to separate the format string and the
   value(s) to format.  Other format codes:
 
       ......
-  
+
   ==Using a dictionary for string formatting
 
     Borrowing from Python, larch also allow you to format a string using a dictionary instead of a
     simple list.  This can be a big advantage when formatting many values or formatting data from
     complicated data structures.  In this method, you explicitly set the dictionary key to use by
     naming them between the '%' and the format code:
-    
+
       larch> data  = {'name':'File 1', 'date':'Monday, April 3, 2006', 'x': 12.4}
       larch> print " %(name)s , x = %(x)f" % data
       File 1 , x = 12.4
-     
+
 """
 
 # dictionaries
@@ -324,7 +324,7 @@ _h_Arrays = """
 # lists
 _h_Lists = """
   Working with lists:
-  
+
 """
 
 # data types
@@ -354,7 +354,7 @@ _h_Control = """
    of code) to be run as a group.  This allows the block of code to be run
    only under some conditions, or to be run repeatedly with different values
    for some variables in the block.
-   
+
    The syntax of larch uses a colon ':' and a small number of keywords to define
    the blocks of code:
        if x==0:
@@ -362,7 +362,7 @@ _h_Control = """
        else:
           x = 2 /x
        endif
-   
+
 
  = If statements:
 
@@ -391,28 +391,28 @@ _h_Control = """
    the case in larch: the entire statement may be evaluated.
 
    The second version uses the same 'if condition:', but on a line by itself, followed
-   by  multiple statements.  This version ends with 'endif' to indicate how far the 
+   by  multiple statements.  This version ends with 'endif' to indicate how far the
    block of code extends:
        if x < 0  :
            x = -x
-           print ' x set to ',x 
+           print ' x set to ',x
        endif
 
    Next, there's the 'if-else-endif' version which runs either one block or the
-   other, and looks like this (note the 
+   other, and looks like this (note the
        if x<0:
            x = -x
-           print ' x set to ',x 
+           print ' x set to ',x
        else:
            print ' x was positive to begin with'
        endif
 
    The final and most complete variation uses 'elif' (pronounced "else if") to allow
    multiple conditions to be tested:
-   
+
        if x<0:
            x = -x
-           print ' x set to ',x 
+           print ' x set to ',x
        elif x>10:
            x = 10
            print ' x was too big, set to ', x
@@ -433,7 +433,7 @@ _h_Control = """
    the loop.  Usually, a for loop runs a predictable number of times (see the
    section below on Break and Continue for when it does not!). A for loop
    looks like:
-    
+
        for i in [1,2,3]:
            print i, i*i
        endfor
@@ -450,9 +450,9 @@ _h_Control = """
    list.
 
    There is also a 'one-line' version of the for loop:
-  
+
        for i in [1,2,3]: call_some_function(i)
-   
+
 
  = While loops:
 
@@ -472,12 +472,12 @@ _h_Control = """
 
    Beware that a while loop makes it easy to make an "infinite loop" (for example, if
    the value of x had not been increased in the block).
-   
+
  = Break and Continue in For and While loops
 
    In both for loops and while loops, the block can be exited with a 'break' statement.
-   
-   
+
+
  = Try / Except blocks:
 
    Sometimes error happen, and it is desirable to run some block of code
@@ -498,8 +498,6 @@ _h_Try = ""
 _h_Builtin = ""
 _h_Functions = ""
 _h_Procedures = ""
-_h_DefVariables = 'Defined Variables'
-
 _h_String_Formatting = "String Formatting"
 
 def generate():
@@ -514,7 +512,7 @@ def generate():
 
     topnames = sorted(topics.keys())
     nx= 2 + sorted([len(i) for i in topnames])[-1]
-    
+
     fmt = "%%%i.%is" % (nx,nx)
     for t in topnames:
         s = "%s %s" % (s,fmt%(t+(' '*nx)))

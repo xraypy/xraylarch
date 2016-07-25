@@ -24,6 +24,7 @@ class Helper(object):
             if arg is None:
                 continue
             if isinstance(arg, six.string_types) and str(arg) in Help_topics:
+                print(' -- TOPICAL HELP ', arg)
                 self.addtext(Help_topics[arg])
             else:
                 self.show_symbol(arg)
@@ -32,25 +33,25 @@ class Helper(object):
         "show help for a symbol in the symbol table"
         if isinstance(arg, six.string_types):
             sym = self._larch.symtable.get_symbol(arg, create=False)
-            out = None
         else:
-            out = sym = arg
+            sym = arg
 
         if sym is None:
             self.addtext(" '%s' not found"  % (arg))
-        atype = str(type(sym))
-        atype = atype.replace('type ','').replace('class ','').replace("'",'')
-        atype = self.TypeNames.get(atype, atype)
 
-        if out is None:
-            out = repr(sym)
-            if hasattr(sym, '__call__') and sym.__doc__ is not None:
+        else:
+            atype = str(type(sym))
+            atype = atype.replace('type ','').replace('class ','').replace("'",'')
+            atype = self.TypeNames.get(atype, atype)
+
+            if atype in ('<tuple>', '<list>', '<dict>', '<array>'):
+                out = "%s %s" % (out, atype)
+            elif hasattr(sym, '__call__') and sym.__doc__ is not None:
+                self.addtext(repr(sym))
                 out = sym.__doc__
-
-        if atype in ('<tuple>','<list>','<dict>','<array>'):
-            out = "%s %s" % (out,atype)
+            else:
+                out = repr(sym)
         self.addtext("  %s" % out)
-
 
     def addtext(self,text):
         self.buff.append(text)

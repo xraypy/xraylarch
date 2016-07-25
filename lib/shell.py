@@ -107,12 +107,7 @@ class shell(cmd.Cmd):
             self.history_written = True
             return 1
 
-        if text.startswith('help'):
-            arg = text[4:]
-            if arg.startswith('(') and arg.endswith(')'): arg = arg[1:-1]
-            if arg.startswith("'") and arg.endswith("'"): arg = arg[1:-1]
-            if arg.startswith('"') and arg.endswith('"'): arg = arg[1:-1]
-            text  = "help(%s)"% (repr(arg))
+        #    text  = "help(%s)"% (repr(arg))
         if text.startswith('!'):
             os.system(text[1:])
         else:
