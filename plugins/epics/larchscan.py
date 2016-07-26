@@ -1307,11 +1307,11 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         qxsp3 = Xspress3(xsp3_prefix)
         sis  = Struck(sis_prefix, scaler=scaler_prefix)
         qxsp3.Acquire = 0
-        sis.stop()
         caput(qconf['energy_pv'], traj.energy[0])
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
         # replace Counters with Array Versions for QXAFS
+        sis.stop()
         qxafs_counters = []
         for c in self.counters:
             qpv = None
@@ -1392,6 +1392,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         sis.stop()
         qxsp3.Acquire = 0
         qxsp3.TimeSeriesCaptureOff()
+        qxsp3.useInternalTrigger()
+
         self.finish_qscan()
         und_thread.running = False
         und_thread.join()
@@ -1407,7 +1409,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         nout = sis.CurrentChannel
         narr = 0
         t0  = time.time()
-        while narr < (nout-1) and (time.time()-t0) < 30.0:
+        while narr < (nout-1) and (time.time()-t0) < 15.0:
             time.sleep(0.1)
             narr = nout
             for c in qxafs_counters:
@@ -1425,7 +1427,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
             if len(dat) > ne:
                 dat = dat[-ne:]
             c.buff = dat.tolist()
-
+        self.set_info('scan_progress', 'publishing data')
         self.publish_scandata(wait=True)
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
