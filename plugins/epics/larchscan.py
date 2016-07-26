@@ -195,12 +195,12 @@ class PVSlaveThread(Thread):
             if (self.pulse > self.last and self.last is not None and
                 (now - self.last_move_time) > self.dead_time):
                 val = self.vals[self.pulse]
-                try:
-                    self.slave.put(val)
-                    self.last_move_time = time.time()
-                except:
-                    # pass
-                    print("PVFollow Put failed: ", self.slave.pvname , val)
+                if self.slave.write_access:
+                    try:
+                        self.slave.put(val)
+                        self.last_move_time = time.time()
+                    except:
+                        print("PVFollow Put failed: ", self.slave.pvname , val)
                 self.last = self.pulse
                 if (self.scan is not None and self.pulse > 3 and self.pulse % 5 == 0):
                     npts = self.scan.npts
@@ -1306,7 +1306,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         qxsp3 = Xspress3(xsp3_prefix)
         sis  = Struck(sis_prefix, scaler=scaler_prefix)
-
+        qxsp3.Acquire = 0
+        sis.stop()
         caput(qconf['energy_pv'], traj.energy[0])
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
@@ -1334,17 +1335,17 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         #######
         self.init_scandata()
 
-        sis.stop()
         sis.ExternalMode()
         sis.NuseAll = MAXPTS
         sis.put('PresetReal', 0.0)
         sis.put('Prescale',   1.0)
 
         qxsp3.NumImages = MAXPTS
-        qxsp3.useExternalTrigger()
-        qxsp3.Acquire = 0
-        time.sleep(0.1)
         qxsp3.ERASE  = 1
+        qxsp3.useExternalTrigger()
+        time.sleep(0.25)
+
+        qxsp3.TimeSeriesCaptureOn(npts=npts+5)
 
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
@@ -1372,7 +1373,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         und_thread.start()
         time.sleep(0.1)
 
-        qxsp3.TimeSeriesCaptureOn(npts=npts+5)
 
         ts_init = time.time()
         self.inittime = ts_init - ts_start
@@ -1382,8 +1382,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
 
         sis.start()
         qxsp3.Acquire = 1
-
         time.sleep(0.1)
+
         self.xps.RunTrajectory()
 
         time.sleep(0.1)
