@@ -1208,7 +1208,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
     def finish_qscan(self):
         """initialize a QXAFS scan"""
         qconf = self.qconf
-
         caput(qconf['id_track_pv'],  1)
         caput(qconf['y2_track_pv'],  1)
         time.sleep(0.1)
@@ -1240,7 +1239,7 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         """
         run the actual QXAFS scan
         """
-
+        print(" preparing QXAFS scan")
         self.complete = False
         if filename is not None:
             self.filename  = filename
@@ -1282,7 +1281,6 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         und_thread.running = False
 
         npulses = len(traj.energy) + 1
-
         caput(qconf['energy_pv'], traj.energy[0], wait=True)
         try:
             caput(qconf['id_drive_pv'], idarray[0], wait=True, timeout=5.0)
@@ -1298,48 +1296,42 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         for desc, pv in self.extra_pvs:
             extra_vals.append((desc, pv.get(as_string=True), pv.pvname))
 
-        sis_opts = {}
         xsp3_prefix = None
+        scaler_prefix = None
         for d in self.detectors:
             if 'scaler' in d.label.lower():
-                sis_opts['scaler'] = d.prefix
+                scaler_prefix = d.prefix
             elif 'xspress3' in d.label.lower():
                 xsp3_prefix = d.prefix
 
         qxsp3 = Xspress3(xsp3_prefix)
-        sis  = Struck(sis_prefix, **sis_opts)
+        sis  = Struck(sis_prefix, scaler=scaler_prefix)
 
         caput(qconf['energy_pv'], traj.energy[0])
-
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-
-        orig_counters = self.counters[:]
-        # specialized QXAFS Counters
+        # replace Counters with Array Versions for QXAFS
         qxafs_counters = []
-        for i, mca in enumerate(sis.mcas):
-            scalername = getattr(sis.scaler, 'NM%i' % (i+1), '')
-            if len(scalername) > 1:
-                qxafs_counters.append((scalername, mca._pvs['VAL']))
-
-        for roi in range(1, 5):
-            desc = caget('%sC1_ROI%i:ValueSum_RBV.DESC' % (xsp3_prefix, roi))
-            if len(desc) > 0 and not desc.lower().startswith('unused'):
-                for card in range(1, 5):
-                    pvname = '%sC%i_ROI%i:ArrayData_RBV' % (xsp3_prefix, card, roi)
-                    _desc = "%s_mca%i" % (desc, card)
-                    qxafs_counters.append((_desc, PV(pvname)))
-
-        # SCAs for count time
-        for card in range(1, 5):
-            pvname = '%sC%i_SCA0:ArrayData_RBV' % (xsp3_prefix, card)
-            qxafs_counters.append(("Clock_mca%i" % card, PV(pvname)))
-
-        self.counters = []
-        for label, cpv in qxafs_counters:
-            _c = Counter(cpv.pvname, label=label)
-            self.counters.append(_c)
-
+        for c in self.counters:
+            qpv = None
+            try:
+                pvname = c.pv.pvname.replace('.VAL', '')
+            except AttributeError:
+                continue
+            if pvname.startswith(scaler_prefix):
+                pvname = pvname.replace(scaler_prefix, '')
+                if '_calc' in pvname or '.S' in pvname:
+                    jsca = int(pvname.replace('_calc', '').replace('.s', '')) - 1
+                    qpv = sis.mcas[jsca]._pvs['VAL'].pvname
+            elif pvname.startswith(xsp3_prefix):
+                if 'MCA' in pvname and pvname.endswith('Total_RBV'):
+                    qpv= pvname.replace('Total_RBV', 'TSTotal')
+                elif 'SCA1' in pvname:
+                    qpv = pvname.replace('Value_RBV', 'TSArrayValue')
+            if qpv is not None:
+                qxafs_counters.append(Counter(qpv, label=c.label))
+        self.counters =qxafs_counters
+        #######
         self.init_scandata()
 
         sis.stop()
@@ -1380,6 +1372,8 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         und_thread.start()
         time.sleep(0.1)
 
+        qxsp3.TimeSeriesCaptureOn(npts=npts+5)
+
         ts_init = time.time()
         self.inittime = ts_init - ts_start
         start_time = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -1387,18 +1381,20 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
         self.xps.SetupTrajectory(npts+1, dtime, traj_file=qconf['traj_name'])
 
         sis.start()
-        qxsp3.FileCaptureOn()
         qxsp3.Acquire = 1
+
         time.sleep(0.1)
         self.xps.RunTrajectory()
+
+        time.sleep(0.1)
         self.xps.EndTrajectory()
 
         sis.stop()
         qxsp3.Acquire = 0
+        qxsp3.TimeSeriesCaptureOff()
         self.finish_qscan()
         und_thread.running = False
         und_thread.join()
-
         self.set_info('scan_progress', 'reading data')
 
         npulses, gather_text = self.xps.ReadGathering()
@@ -1408,31 +1404,29 @@ class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
            self.pos_actual.append([e])
         ne = len(energy)
         caput(qconf['energy_pv'], energy_orig-2.0)
-
         nout = sis.CurrentChannel
         narr = 0
         t0  = time.time()
         while narr < (nout-1) and (time.time()-t0) < 30.0:
-            time.sleep(0.05)
-            try:
-                dat =  [p.get(timeout=5.0) for (_d, p) in qxafs_counters]
-                narr = min([len(d) for d in dat])
-            except:
-                narr = 0
+            time.sleep(0.1)
+            narr = nout
+            for c in qxafs_counters:
+                if len(c.buff) < ne:
+                    dat = c.read(timeout=5.0)
+                try:
+                    ndat = np.array(dat).size
+                except:
+                    ndat = 0
+                narr = min(ndat, narr)
 
-        # reset the counters, and fill in data read from arrays
-        # note that we may need to trim *1st point* from qxspress3 data
-        self.counters = []
-        for label, cpv in qxafs_counters:
-            _c = Counter(cpv.pvname, label=label)
-            arr = cpv.get()
-            if len(arr) > ne:
-                arr = arr[-ne:]
-            _c.buff = arr.tolist()
-            self.counters.append(_c)
+        for c in qxafs_counters:
+            dat = c.read()
+            dat = np.array(dat).squeeze()
+            if len(dat) > ne:
+                dat = dat[-ne:]
+            c.buff = dat.tolist()
 
         self.publish_scandata(wait=True)
-
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
 
