@@ -160,6 +160,10 @@ class InputText:
 
         def addTextInput(txt):
             complete = self.__isComplete(txt)
+            if complete:
+                self.eos = ""
+                self.delims = []
+
             self.input_buff.append((txt, complete,
                                     self.eos, self.fname, self.lineno))
             self.lineno += 1
@@ -347,7 +351,8 @@ class InputText:
            self.delims = current list of closing delims needed to match
                          opening delims seen so far.
         """
-
+        if len(txt) == 0:
+            return True
         def find_eostring(txt, eos, istart):
             while True:
                 inext = txt[istart:].find(eos)
