@@ -46,7 +46,7 @@ def p_trace_to_dict(p_tr, params):
 
 def conf_report(conf_vals):
     out = ['# Confidence Interval Report']
-    names = conf_vals.keys()
+    names = list(conf_vals.keys())
     nvals = len(conf_vals[names[0]])
     maxlen = max([len(i) for i in names])
     if maxlen < 10: maxlen  = 10
@@ -322,5 +322,3 @@ def chisquare_map(minimizer, xname, yname, nx=11, ny=11, xrange=None,
     minimizer.leastsq()
 
     return x_points, y_points, out
-
-
