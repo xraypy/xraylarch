@@ -160,7 +160,7 @@ for pdir in pluginpaths:
 
 
 # now we have all the data files, so we can run setup
-setup(name = 'larch',
+setup(name = 'xraylarch',
       version = version.__version__,
       author = 'Matthew Newville',
       author_email = 'newville@cars.uchicago.edu',
