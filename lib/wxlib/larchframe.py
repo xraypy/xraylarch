@@ -43,6 +43,7 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         if self.output is not None:
+            self.encoding = sys.stdout.encoding
             sys.stdout = self
 
         self.input  = input
