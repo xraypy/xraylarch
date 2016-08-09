@@ -125,39 +125,36 @@ class InputText:
         self.lineno = 0
         self.curline = 0
         self.curtext = ''
-        self.delims = []
+        self.blocks = []
         self._larch = _larch
         self.saved_text = BLANK_TEXT
 
-    def run(self, buffer=None, writer=None, ps1=None, ps2=None):
+    def run(self, buffer=None, writer=None):
         if self._larch is None:
             raise ValueError("need interpreter to run")
 
-        _larch = self._larch
         if buffer is None:
             buffer = []
+        if self.queue.qsize() == 0:
+            return True, buffer
+
+        _larch = self._larch
         if writer is None:
             writer = _larch.writer
-        if ps1 is None:
-            ps1 = self.ps1
-        if ps2 is None:
-            ps2 = self.ps2
+        topts = _larch.symtable._builtin.get_termcolor_opts('text')
+        eopts = _larch.symtable._builtin.get_termcolor_opts('error')
 
-
-        prompt = ps2
-        tcolor_opts = _larch.symtable._builtin.get_termcolor_opts
-        topts = tcolor_opts('text', _larch=_larch)
-        eopts = tcolor_opts('error', _larch=_larch)
-
+        complete = False
         while self.queue.qsize() > 0:
             block, fname, lineno = self.get()
             buffer.append(block)
-            if not self.complete:
+            if len(self.curtext) > 0 or len(self.blocks) > 0:
+                print("Input Expect more.... ")
                 continue
 
             ret = _larch.eval('\n'.join(buffer),
                               fname=fname, lineno=lineno)
-            prompt = ps1
+            complete = True
             buffer = []
             if _larch.error:
                 self.clear()
@@ -177,7 +174,7 @@ class InputText:
             elif ret is not None:
                 writer.write("%s\n" % repr(ret), **topts)
         writer.flush()
-        return prompt, buffer
+        return complete, buffer
 
 
     def __len__(self):
@@ -233,23 +230,23 @@ class InputText:
             if is_complete(self.curtext) and len(self.curtext)>0:
                 blk_start =  block_start(self.curtext)
                 if blk_start:
-                    self.delims.append(blk_start)
+                    self.blocks.append(blk_start)
                 else:
                     blk_end = block_end(self.curtext)
-                    if (blk_end and len(self.delims) > 0 and
-                        blk_end == self.delims[-1]):
-                        self.delims.pop()
+                    if (blk_end and len(self.blocks) > 0 and
+                        blk_end == self.blocks[-1]):
+                        self.blocks.pop()
                         if self.curtext.strip().startswith('end'):
                             nblank = self.curtext.find(self.curtext.strip())
                             self.curtext = '%s#%s' % (' '*nblank,
                                                       self.curtext.strip())
 
                 _delim = None
-                if len(self.delims) > 0:
-                    _delim = self.delims[-1]
+                if len(self.blocks) > 0:
+                    _delim = self.blocks[-1]
 
                 key = get_key(self.curtext)
-                ilevel = len(self.delims)
+                ilevel = len(self.blocks)
                 if ilevel > 0 and (key == _delim or
                                    key in BLOCK_FRIENDS[_delim]):
                     ilevel = ilevel - 1
@@ -263,9 +260,9 @@ class InputText:
                             argtext.endswith(')') ):
                         pytext  = "%s%s(%s)" % (sindent, key, argtext)
 
-                self.queue.put((pytext, self.filename, self.curline, 0==len(self.delims)))
+                self.queue.put((pytext, self.filename, self.curline, 0==len(self.blocks)))
                 self.curtext = ''
 
     @property
     def complete(self):
-        return len(self.curtext)==0 and len(self.delims)==0
+        return len(self.curtext)==0 and len(self.blocks)==0
