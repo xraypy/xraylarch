@@ -4,7 +4,7 @@ import cmd
 import os
 import sys
 import numpy
-import larch
+
 from .interpreter import Interpreter
 from .site_config import history_file, show_site_config
 from .version import __version__, __date__, make_banner
@@ -103,40 +103,6 @@ class shell(cmd.Cmd):
 
         self.input.put(text)
         self.prompt, self.buffer = self.input.run(buffer=self.buffer)
-
-        old = """
-        while len(self.input) > 0:
-            block, fname, lineno = self.input.get()
-            self.buffer.append(block)
-            if not self.input.complete:
-                continue
-
-            ret = self.larch.eval('\n'.join(self.buffer),
-                                  fname=fname, lineno=lineno)
-            self.prompt = self.ps1
-            self.buffer = []
-            if self.larch.error:
-                self.input.clear()
-                eopts = self.termcolor_opts('error', _larch=self.larch)
-                err = self.larch.error.pop(0)
-                if err.fname is not None:
-                    fname = err.fname
-                    if err.lineno is not None:
-                        lineno = err.lineno
-                if err.tback is not None:
-                    write(err.tback, **eopts)
-                if self.debug:
-                    for err in self.larch.error:
-                        write("%s\n" % (err.get_error()[1]), **eopts)
-                thiserr = err.get_error(fname=fname, lineno=lineno)
-                write("%s\n" % thiserr[1], **eopts)
-                break
-            elif ret is not None:
-                wopts = self.termcolor_opts('text', _larch=self.larch)
-                write("%s\n" % repr(ret), **wopts)
-
-        self.larch.writer.flush()
-        """
 
 if __name__ == '__main__':
     t = shell(debug=True).cmdloop()
