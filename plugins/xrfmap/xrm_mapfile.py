@@ -555,8 +555,8 @@ class GSEXRM_MapFile(object):
     def get_coarse_stages(self):
         """return coarse stage positions for map"""
         stages = []
-        env_addrs = list(self.xrfmap['config/environ/address'])
-        env_vals  = list(self.xrfmap['config/environ/value'])
+        env_addrs = h5stringlist(self.xrfmap['config/environ/address'])
+        env_vals  = h5stringlist(self.xrfmap['config/environ/value'])
         for addr, pname in self.xrfmap['config/positioners'].items():
             name = str(pname.value)
             addr = str(addr)
@@ -905,8 +905,8 @@ class GSEXRM_MapFile(object):
         slope  = conf['mca_calib/slope'].value
         quad   = conf['mca_calib/quad'].value
 
-        roi_names = list(conf['rois/name'])
-        roi_addrs = list(conf['rois/address'])
+        roi_names = h5stringlist(conf['rois/name'])
+        roi_addrs = h5stringlist(conf['rois/address'])
         roi_limits = conf['rois/limits'].value
         for imca in range(nmca):
             dname = 'det%i' % (imca+1)
@@ -1549,9 +1549,9 @@ class GSEXRM_MapFile(object):
                    slope=cal['cal_slope'], **kws)
 
         _mca.energy =  map['energy'].value
-        env_names = list(self.xrfmap['config/environ/name'])
-        env_addrs = list(self.xrfmap['config/environ/address'])
-        env_vals  = list(self.xrfmap['config/environ/value'])
+        env_names = h5stringlist(self.xrfmap['config/environ/name'])
+        env_addrs = h5stringlist(self.xrfmap['config/environ/address'])
+        env_vals  = h5stringlist(self.xrfmap['config/environ/value'])
         for desc, val, addr in zip(env_names, env_vals, env_addrs):
             _mca.add_environ(desc=desc, val=val, addr=addr)
 
@@ -1563,7 +1563,7 @@ class GSEXRM_MapFile(object):
         roiname = 'roi_name'
         if roiname not in map:
             roiname = 'roi_names'
-        roinames = list(map[roiname])
+        roinames = h5stringlist(map[roiname])
         roilims  = list(map['roi_limits'])
         for roi, lims in zip(roinames, roilims):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
