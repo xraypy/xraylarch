@@ -8,6 +8,7 @@ import scipy.stats as stats
 import json
 import larch
 from larch.utils.debugtime import debugtime
+from larch.utils.strutils import bytes2str
 
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
@@ -29,6 +30,12 @@ class GSEXRM_FileStatus:
     err_notfound = 'file not found'
     empty        = 'file is empty (read from folder)'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
+
+
+def h5stringlist(h5dataset):
+    """extract list of strings from hdf5 dataset"""
+    return [bytes2str(s).lower().strip() for s in h5dataset]
+
 
 def getFileStatus(filename, root=None, folder=None):
     """return status, top-level group, and version"""
@@ -812,7 +819,7 @@ class GSEXRM_MapFile(object):
         pos    = self.xrfmap['positions/pos']
         # print("Pos Vals: ",  npts, len(row.posvals), [len(p) for p in row.posvals])
         rowpos = np.array([p[:npts] for p in row.posvals])
-        
+
         tpos = rowpos.transpose()
         # tpos = np.array(row.posvals).transpose()
         # print(" pos ", pos.shape, tpos.shape)
@@ -841,7 +848,7 @@ class GSEXRM_MapFile(object):
         if self.roi_slices is None:
             lims = self.xrfmap['config/rois/limits'].value
             nrois, nmca, nx = lims.shape
-        
+
             self.roi_slices = []
             for iroi in range(nrois):
                 x = [slice(lims[iroi, i, 0],
@@ -1114,8 +1121,9 @@ class GSEXRM_MapFile(object):
         amask = area.value
 
         roidata = []
-        d_addrs = [d.lower() for d in self.xrfmap['roimap/det_address']]
-        d_names = [d for d in self.xrfmap['roimap/det_name']]
+
+        d_addrs = h5stringlist(self.xrfmap['roimap/det_address'])
+        d_names = h5stringlist(self.xrfmap['roimap/det_name'])
         # count times
         ctime = [1.e-6*self.xrfmap['roimap/det_raw'][:,:,0][amask]]
         for i in range(self.xrfmap.attrs['N_Detectors']):
@@ -1614,8 +1622,8 @@ class GSEXRM_MapFile(object):
         ndarray for ROI data
         """
         imap = -1
-        roi_names = [r.lower() for r in self.xrfmap['config/rois/name']]
-        det_names = [r.lower() for r in self.xrfmap['roimap/sum_name']]
+        roi_names = h5stringlist(self.xrfmap['config/rois/name'])
+        det_names = h5stringlist(self.xrfmap['roimap/sum_name'])
         dat = 'roimap/sum_raw'
 
         # scaler, non-roi data
@@ -1635,7 +1643,7 @@ class GSEXRM_MapFile(object):
 
         if det in range(1, self.ndet+1):
             name = '%s (mca%i)' % (name, det)
-            det_names = [r.lower() for r in self.xrfmap['roimap/det_name']]
+            det_names = h5stringlist(self.xrfmap['roimap/det_name'])
             dat = 'roimap/det_raw'
             if dtcorrect:
                 dat = 'roimap/det_cor'
@@ -1758,4 +1766,3 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-
