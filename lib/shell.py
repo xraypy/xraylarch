@@ -44,7 +44,7 @@ class shell(cmd.Cmd):
         if banner_msg is None:
             banner_msg = make_banner()
         self.larch  = Interpreter()
-        self.input  = InputText( _larch=self.larch)
+        self.input  = InputText(_larch=self.larch)
         self.prompt = self.ps1
         self.buffer = []
 
@@ -101,10 +101,10 @@ class shell(cmd.Cmd):
                 self.history_written = True
             return True
 
-        ret = None
-        self.prompt = self.ps2
         self.input.put(text)
+        self.prompt, self.buffer = self.input.run(buffer=self.buffer)
 
+        old = """
         while len(self.input) > 0:
             block, fname, lineno = self.input.get()
             self.buffer.append(block)
@@ -136,6 +136,7 @@ class shell(cmd.Cmd):
                 write("%s\n" % repr(ret), **wopts)
 
         self.larch.writer.flush()
+        """
 
 if __name__ == '__main__':
     t = shell(debug=True).cmdloop()

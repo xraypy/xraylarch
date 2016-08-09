@@ -116,6 +116,9 @@ BLANK_TEXT = ('', '<incomplete input>', -1)
 
 class InputText:
     """input text for larch"""
+    ps1 = "larch> "
+    ps2 = ".....> "
+    valid_cmds = ('print', 'run', 'show', 'help')
     def __init__(self, _larch=None, **kws):
         self.queue = queue.Queue()
         self.filename = '<stdin>'
@@ -124,8 +127,58 @@ class InputText:
         self.curtext = ''
         self.delims = []
         self._larch = _larch
-        self.valid_cmds = ('print', 'run', 'show', 'help')
         self.saved_text = BLANK_TEXT
+
+    def run(self, buffer=None, writer=None, ps1=None, ps2=None):
+        if self._larch is None:
+            raise ValueError("need interpreter to run")
+
+        _larch = self._larch
+        if buffer is None:
+            buffer = []
+        if writer is None:
+            writer = _larch.writer
+        if ps1 is None:
+            ps1 = self.ps1
+        if ps2 is None:
+            ps2 = self.ps2
+
+
+        prompt = ps2
+        tcolor_opts = _larch.symtable._builtin.get_termcolor_opts
+        topts = tcolor_opts('text', _larch=_larch)
+        eopts = tcolor_opts('error', _larch=_larch)
+
+        while self.queue.qsize() > 0:
+            block, fname, lineno = self.get()
+            buffer.append(block)
+            if not self.complete:
+                continue
+
+            ret = _larch.eval('\n'.join(buffer),
+                              fname=fname, lineno=lineno)
+            prompt = ps1
+            buffer = []
+            if _larch.error:
+                self.clear()
+                err = _larch.error.pop(0)
+                if err.fname is not None:
+                    fname = err.fname
+                    if err.lineno is not None:
+                        lineno = err.lineno
+                if err.tback is not None:
+                    writer.write(err.tback, **eopts)
+                if False:
+                    for err in _larch.error:
+                        writer.write("%s\n" % (err.get_error()[1]), **eopts)
+                thiserr = err.get_error(fname=fname, lineno=lineno)
+                writer.write("%s\n" % thiserr[1], **eopts)
+                break
+            elif ret is not None:
+                writer.write("%s\n" % repr(ret), **topts)
+        writer.flush()
+        return prompt, buffer
+
 
     def __len__(self):
         return self.queue.qsize()

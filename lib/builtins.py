@@ -138,9 +138,7 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text=None, filename=None, _larch=None,
-          new_module=None, interactive=False,
-          printall=False):
+def _eval(text=None, filename=None, _larch=None, new_module=None):
     """evaluate a string of larch text
     """
     if _larch is None:
@@ -152,25 +150,25 @@ def _eval(text=None, filename=None, _larch=None,
     symtable = _larch.symtable
     lineno = 0
     output = None
-    fname = filename
 
-    inptext = inputText.InputText(interactive=interactive, _larch=_larch)
-    is_complete = inptext.put(text, filename=filename)
-    # print 'eval complete? ', is_complete, inptext.keys
-    if not is_complete:
-        inptext.input_buff.reverse()
-        lline, lineno = 'unknown line', 0
-        for tline, complete, eos, fname, lineno in inptext.input_buff:
-            if complete: break
-            lline = tline
-        _larch.raise_exception(None, expr=lline, fname=fname, lineno=lineno+1,
+    inp = inputText.InputText(_larch=_larch)
+    inp.put(text, filename=filename, lineno=0)
+    if not inp.complete:
+        while not inp.queue.empty():
+            inp.get()
+        text, fname, lineno = inp.saved_text
+        _larch.raise_exception(None, expr=text, fname=fname, lineno=lineno,
                                exc=SyntaxError, msg= 'input is incomplete')
 
-    if len(inptext.keys) > 0 and filename is not None:
-        msg = "file ends with un-terminated '%s' block"
+    if len(inp.delims) > 0 and filename is not None:
+        delim = inp.delims[0]
+        while not inp.queue.empty():
+            inp.get()
+        text, fname, lineno = inp.saved_text
+        msg = "File '%s' ends with un-terminated '%s'" % (filename, delim)
         _larch.raise_exception(None, expr="run('%s')" % filename,
-                               fname=filename, lineno=inptext.lineno,
-                               exc=IOError, msg=msg % inptext.keys[0])
+                               fname=filename, lineno=lineno,
+                               exc=IOError, msg=msg)
 
     if new_module is not None:
         # save current module group
@@ -180,43 +178,20 @@ def _eval(text=None, filename=None, _larch=None,
         symtable._sys.modules[new_module] = thismod
         symtable.set_frame((thismod, thismod))
 
-    output = []
-    # print 'eval %i lines of text ' % len(inptext)
+    buffer = []
     if len(_larch.error) > 0:
-        inptext.clear()
-        return output
+        inp.clear()
+        return buffer
 
-    while len(inptext) > 0:
-        block, fname, lineno = inptext.get()
-        b = block.strip()
-        if len(b) <= 0:
-            continue
-        ret = _larch.eval(block, fname=fname, lineno=lineno)
-        if hasattr(ret, '__call__') and not isinstance(ret, type):
-            try:
-                if 1 == len(block.split()):
-                    ret = ret()
-            except:
-                pass
-        if len(_larch.error) > 0:
-            break
-        #
-    if len(_larch.error) > 0:
-        inptext.clear()
-    elif printall and ret is not None:
-        output.append("%s" % ret)
+    prompt, buffer = inp.run(buffer=buffer)
 
     # for a "newly created module" (as on import),
     # the module group is the return value
     # print 'eval End ', new_module, output
     if new_module is not None:
         symtable.restore_frame()
-        output = thismod
-    elif len(output) > 0:
-        output = "\n".join(output)
-    else:
-        output = None
-    return output
+    return
+
 
 
 def _run(filename=None, new_module=None, _larch=None):
@@ -243,7 +218,7 @@ def _run(filename=None, new_module=None, _larch=None):
         return
 
     return  _eval(text=text, filename=filename, _larch=_larch,
-                  new_module=new_module, interactive=False, printall=False)
+                  new_module=new_module)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
@@ -552,9 +527,7 @@ def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
 def my_eval(text, _larch=None):
-    return  _eval(text=text, _larch=_larch,
-                  new_module=None,  interactive=False,
-                  printall=True)
+    return  _eval(text=text, _larch=_larch, new_module=None)
 
 def _ufloat(arg, _larch=None):
     return fitting.ufloat(arg)
