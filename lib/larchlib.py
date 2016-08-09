@@ -106,7 +106,7 @@ class LarchExceptionHolder:
         if fname != '<stdin>' or self.lineno > 0:
             if fname != '<stdin>':
                 self.lineno = self.lineno + 1
-        fline = 'file %s, line %i' % (fname, self.lineno)
+        fline = ' File %s, line %i' % (fname, self.lineno)
         if self.func is not None:
             func = self.func
             fname = self.fname
@@ -125,7 +125,7 @@ class LarchExceptionHolder:
             for tb in traceback.extract_tb(self.exc_info[2]):
                 found = found or tb[0].startswith(fname)
                 if found:
-                    u = 'File "%s", line %i, in %s\n    %s' % tb
+                    u = ' File "%s", line %i, in %s\n    %s' % tb
                     words = u.split('\n')
                     fline = words[0]
                     call_expr = self.expr
@@ -189,9 +189,9 @@ class LarchExceptionHolder:
                 out.append("    %s^^^" % ((col_offset)*' '))
 
         if call_expr is not None and not isinstance(call_expr, ast.AST):
-            out.append('  %s' % call_expr)
             if call_fname is not None and call_lineno is not None:
-                out.append('file %s, line %i' % (call_fname, call_lineno))
+                out.append(' File %s, line %i' % (call_fname, call_lineno))
+            out.append(call_expr)
 
         return (exc_name, '\n'.join(out))
 
