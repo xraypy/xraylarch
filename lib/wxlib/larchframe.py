@@ -61,7 +61,7 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.display.colors.text_attrs', [])
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
-        self.SetPrompt()
+        self.SetPrompt(True)
         self.larch.run_init_scripts()
         self.flush_timer = wx.Timer(wxparent)
         self.needs_flush = True
@@ -81,15 +81,15 @@ class LarchWxShell(object):
         symtable.set_symbol('_builtin.force_wxupdate', False)
 
 
-    def SetPrompt(self, partial=False):
-        if self.prompt is not None:
-            if partial:
-                self.prompt.SetLabel(self.ps2)
-                self.prompt.SetForegroundColour('#E00075')
-            else:
-                self.prompt.SetLabel(self.ps1)
-                self.prompt.SetForegroundColour('#000075')
-            self.prompt.Refresh()
+    def SetPrompt(self, complete):
+        if self.prompt is None:
+            return
+        sprompt, scolor = self.ps1, '#000075'
+        if not complete:
+            sprompt, scolor = self.ps2, '#E00075'
+        self.prompt.SetLabel(sprompt)
+        self.prompt.SetForegroundColour(scolor)
+        self.prompt.Refresh()
 
     def write(self, text, color=None, bold=None):
         if self.output is None:
@@ -119,7 +119,7 @@ class LarchWxShell(object):
 
     def clear_input(self):
         self.inptext.clear()
-        self.SetPrompt()
+        self.SetPrompt(True)
 
     def onFlushTimer(self, event=None):
         if self.needs_flush:
@@ -130,45 +130,13 @@ class LarchWxShell(object):
             if text.startswith('!'):
                 return os.system(text[1:])
             else:
-                self.inptext.put(text,lineno=0)
+                self.inptext.put(text)
 
-        if not self.inptext.complete:
-            self.SetPrompt(partial = True)
-            return None
-
-        ret = None
-        self.SetPrompt(partial = False)
-
-        while len(self.inptext) > 0:
-            block, fname, lineno = self.inptext.get()
-            ret = self.larch.eval(block, fname=fname, lineno=lineno)
-            self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
-
-            if self.larch.error:
-                err = self.larch.error.pop(0)
-                if err.fname is not None:
-                    fname = err.fname
-                    if err.lineno is not None:
-                        lineno = err.lineno
-                if err.tback is not None:
-                    self.write(err.tback, color='#BB0000')
-                self.write("%s\n" % err.get_error()[1], color='#BB0000')
-                for err in self.larch.error:
-                    if ((err.fname != fname or err.lineno != lineno)
-                        and err.lineno > 0 and lineno > 0):
-                        self.write("%s\n" % (err.get_error()[1]), color='#BB0000')
-            elif ret is not None:
-                try:
-                    self.write("%s\n" % repr(ret))
-                except:
-                    pass
-
-#             if hasattr(ret, '__call__') and not isinstance(ret,type):
-#                 try:
-#                     if 1 == len(block.split()):
-#                         ret = ret()
-#                 except:
-#                     pass
+        buffer = []
+        complete = self.inptext.complete
+        if complete:
+            complete, buffer = self.inptext.run(buffer=buffer, writer=self)
+        self.SetPrompt(complete)
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
