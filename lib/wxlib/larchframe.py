@@ -37,7 +37,7 @@ class LarchWxShell(object):
         self.larch = _larch
         if _larch is None:
             self.larch  = larch.Interpreter()
-        self.inptext  = larch.InputText(prompt=self.ps1, _larch=self.larch)
+        self.inptext  = larch.InputText(_larch=self.larch)
 
         self.symtable = self.larch.symtable
         self.prompt = prompt
@@ -132,7 +132,7 @@ class LarchWxShell(object):
             else:
                 self.inptext.put(text,lineno=0)
 
-        if not self.inptext.input_complete:
+        if not self.inptext.complete:
             self.SetPrompt(partial = True)
             return None
 
