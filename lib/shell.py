@@ -54,7 +54,6 @@ class shell(cmd.Cmd):
             writer.write("\n")
 
         self.larch.run_init_scripts()
-        self.termcolor_opts = self.larch.symtable._builtin.get_termcolor_opts
 
     def __del__(self, *args):
         self._write_history()
@@ -87,10 +86,7 @@ class shell(cmd.Cmd):
         self.default(text)
 
     def default(self, text):
-        txt = text.strip()
-        write = self.larch.writer.write
-
-        if txt in ('quit', 'exit', 'EOF'):
+        if text.strip() in ('quit', 'exit', 'EOF'):
             if HAS_READLINE:
                 try:
                     n = readline.get_current_history_length()
@@ -102,7 +98,10 @@ class shell(cmd.Cmd):
             return True
 
         self.input.put(text)
-        self.prompt, self.buffer = self.input.run(buffer=self.buffer)
+        complete = self.input.complete
+        if complete:
+            complete, self.buffer = self.input.run(buffer=self.buffer)
+        self.prompt = {True:self.ps1, False:self.ps2}[complete]
 
 if __name__ == '__main__':
     t = shell(debug=True).cmdloop()
