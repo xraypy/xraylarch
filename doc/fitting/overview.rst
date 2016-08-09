@@ -39,14 +39,13 @@ generally called the chi-square goodness-of-fit parameter
     \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2
 
 Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.
-It is common to
 As mentioned, the model describing :math:`f(x, \vec{\beta})` can be fairly complex.
 
-There is an extensive literature for case where the model function
+There is an extensive literature for the case in which the model function
 :math:`f(x, \vec{\beta})` depends linearly on its parameters
-:math:`\vec{\beta}` (but not necessarily linearly on a dependent variable --
-a quadratic function :math:`\beta_0 + \beta_1 x + \beta_2 x^2` is linear in
-this sense).  Of course, model function need not be linear in its
+:math:`\vec{\beta}` (but not necessarily linearly on a dependent variable
+-- a quadratic function :math:`\beta_0 + \beta_1 x + \beta_2 x^2` is linear
+in this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ''non-linear
 least-squares optimization'' in the literature.  All the discussion here
 will assume that the models can be non-linear.
@@ -104,7 +103,7 @@ We'll jump in with a simple example fit to a line, with this script::
 
     # define objective function for fit residual
     def fitresid(p, data):
-        return data.y - (p.off + p.slope * data.x)
+	return data.y - (p.off + p.slope * data.x)
     enddef
 
     # perform fit
