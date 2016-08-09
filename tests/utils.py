@@ -42,11 +42,13 @@ class LarchSession(object):
     def run(self, text):
         self.input.put(text)
         ret = None
+        buff = []
         while len(self.input) > 0:
             block, fname, lineno = self.input.get()
-            if len(block) <= 0:
+            buff.append(block)
+            if not self.input.complete:
                 continue
-            ret = self._larch.eval(block, fname=fname, lineno=lineno)
+            ret = self._larch.eval("\n".join(buff), fname=fname, lineno=lineno)
             if self._larch.error:
                 break
         return ret
