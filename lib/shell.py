@@ -4,46 +4,49 @@ import cmd
 import os
 import sys
 import numpy
-
+import larch
 from .interpreter import Interpreter
-from .larchlib import StdWriter
-from .inputText import InputText
 from .site_config import history_file, show_site_config
 from .version import __version__, __date__, make_banner
+from .inputText import InputText
+
+try:
+    import readline
+    HAS_READLINE = True
+except ImportError:
+    HAS_READLINE = False
 
 class shell(cmd.Cmd):
     ps1    = "larch> "
     ps2    = ".....> "
-    def __init__(self,  completekey='tab',   debug=False,
-                 stdin=None, stdout=None, quiet=False,
-                 banner_msg=None, maxhist=5000):
+    def __init__(self,  completekey='tab', debug=False, quiet=False,
+                 stdin=None, stdout=None, banner_msg=None, maxhist=5000):
         self.maxhist = maxhist
         self.debug  = debug
-        try:
-            import readline
-            self.rdline = readline
-        except ImportError:
-            self.rdline = None
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
 
         self.history_written = False
-        if self.rdline is not None:
+        if HAS_READLINE:
+            self.rdline = readline
             try:
-                self.rdline.read_history_file(history_file)
+                readline.read_history_file(history_file)
             except IOError:
                 print('could not read history from %s' % history_file)
 
-        if stdin is not None:   sys.stdin = stdin
-        if stdout is not None:  sys.stdout = stdout
+        if stdin is not None:
+            sys.stdin = stdin
+        if stdout is not None:
+            sys.stdout = stdout
         self.stdin = sys.stdin
         self.stdout = sys.stdout
 
         if banner_msg is None:
             banner_msg = make_banner()
         self.larch  = Interpreter()
-        self.input  = InputText(prompt=self.ps1, _larch=self.larch)
+        self.input  = InputText( _larch=self.larch)
         self.prompt = self.ps1
+        self.buffer = []
 
         writer = self.larch.writer
         if not quiet:
@@ -54,97 +57,85 @@ class shell(cmd.Cmd):
         self.termcolor_opts = self.larch.symtable._builtin.get_termcolor_opts
 
     def __del__(self, *args):
-        self.__write_history()
+        self._write_history()
 
-    def __write_history(self):
-        if self.rdline is None:
-            return
-        try:
-            self.rdline.set_history_length(self.maxhist)
-            if history_file is not None and not self.history_written:
-                self.rdline.write_history_file(history_file)
-        except:
-            pass
+    def _write_history(self):
+        if HAS_READLINE:
+            try:
+                readline.set_history_length(self.maxhist)
+                if history_file is not None and not self.history_written:
+                    readline.write_history_file(history_file)
+            except:
+                pass
 
     def emptyline(self):
         pass
 
-    def parseline(self, line):
-        """Parse the line into a command name and a string containing
-        the arguments.  Returns a tuple containing (command, args, line).
-        'command' and 'args' may be None if the line couldn't be parsed.
-        """
-        line = line.strip()
-        if not line:
-            return None, None, line
-        elif line[0] == '?':
-            line = 'help ' + line[1:]
-        elif line[0] == '!':
-            if hasattr(self, 'do_shell'):
-                line = 'shell ' + line[1:]
-            else:
-                return None, None, line
-        return '', '', line
+    def do_help(self, txt):
+        if txt.startswith('(') and txt.endswith(')'):
+            txt = txt[1:-1]
+        elif txt.startswith("'") and txt.endswith("'"):
+            txt = txt[1:-1]
+        elif txt.startswith('"') and txt.endswith('"'):
+            txt = txt[1:-1]
+        self.default("help(%s)" % txt)
 
-    def larch_execute(self,s_inp):
-        self.default(s_inp)
+    def do_shell(self, txt):
+        os.system(txt)
 
-    def do_shell(self, arg):
-        os.system(arg)
+    def larch_execute(self, text):
+        self.default(text)
 
     def default(self, text):
-        text = text.strip()
+        txt = text.strip()
         write = self.larch.writer.write
 
-        if text in ('quit', 'exit', 'EOF'):
-            if text in ('quit', 'exit'):
+        if txt in ('quit', 'exit', 'EOF'):
+            if HAS_READLINE:
                 try:
-                    n = self.rdline.get_current_history_length()
-                    self.rdline.remove_history_item(n-1)
+                    n = readline.get_current_history_length()
+                    readline.remove_history_item(n-1)
                 except:
                     pass
-            self.__write_history()
-            self.history_written = True
-            return 1
+                self._write_history()
+                self.history_written = True
+            return True
 
-        #    text  = "help(%s)"% (repr(arg))
-        if text.startswith('!'):
-            os.system(text[1:])
-        else:
-            ret = None
-            self.input.put(text, lineno=0)
-            self.prompt = self.ps2
+        ret = None
+        self.prompt = self.ps2
+        self.input.put(text)
 
-            while len(self.input) > 0:
-                block, fname, lineno = self.input.get()
-                # print fname, lineno, block
-                if len(block) == 0:
-                    continue
-                ret = self.larch.eval(block, fname=fname, lineno=lineno)
-                if self.larch.error:
-                    eopts = self.termcolor_opts('error', _larch=self.larch)
-                    err = self.larch.error.pop(0)
-                    if err.fname is not None:
-                        fname = err.fname
-                        if err.lineno is not None:
-                            lineno = err.lineno
-                    if err.tback is not None:
-                        write(err.tback, **eopts)
-                    write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1], **eopts)
+        while len(self.input) > 0:
+            block, fname, lineno = self.input.get()
+            self.buffer.append(block)
+            if not self.input.complete:
+                continue
+
+            ret = self.larch.eval('\n'.join(self.buffer),
+                                  fname=fname, lineno=lineno)
+            self.prompt = self.ps1
+            self.buffer = []
+            if self.larch.error:
+                self.input.clear()
+                eopts = self.termcolor_opts('error', _larch=self.larch)
+                err = self.larch.error.pop(0)
+                if err.fname is not None:
+                    fname = err.fname
+                    if err.lineno is not None:
+                        lineno = err.lineno
+                if err.tback is not None:
+                    write(err.tback, **eopts)
+                if self.debug:
                     for err in self.larch.error:
-                        if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                          and err.lineno > 0 and lineno > 0):
-                            write("%s\n" % (err.get_error()[1]), **eopts)
-                        self.input.clear()
-                    self.prompt = self.ps1
-                    break
-                elif ret is not None:
-                    wopts = self.termcolor_opts('text', _larch=self.larch)
-                    write("%s\n" % repr(ret), **wopts)
-                self.prompt = self.ps1
-            self.larch.writer.flush()
+                        write("%s\n" % (err.get_error()[1]), **eopts)
+                thiserr = err.get_error(fname=fname, lineno=lineno)
+                write("%s\n" % thiserr[1], **eopts)
+                break
+            elif ret is not None:
+                wopts = self.termcolor_opts('text', _larch=self.larch)
+                write("%s\n" % repr(ret), **wopts)
 
+        self.larch.writer.flush()
 
 if __name__ == '__main__':
-    fout = open('larch.out', 'w')
-    t = shell(debug=True, stdout=fout).cmdloop()
+    t = shell(debug=True).cmdloop()
