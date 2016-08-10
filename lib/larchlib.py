@@ -103,9 +103,6 @@ class LarchExceptionHolder:
         call_lineno = None
         fname = self.fname
 
-        if fname != '<stdin>' or self.lineno > 0:
-            if fname != '<stdin>':
-                self.lineno = self.lineno + 1
         fline = ' File %s, line %i' % (fname, self.lineno)
         if self.func is not None:
             func = self.func
