@@ -163,8 +163,10 @@ class InputText:
                     fname = err.fname
                     if err.lineno is not None:
                         lineno = err.lineno
-                if err.tback is not None:
+                if False and err.tback is not None:
+                    writer.write("<TRACE> ")
                     writer.write(err.tback, **eopts)
+                    writer.write("\n")
                 if False:
                     for err in _larch.error:
                         writer.write("%s\n" % (err.get_error()[1]), **eopts)
@@ -230,11 +232,11 @@ class InputText:
             if is_complete(self.curtext) and len(self.curtext)>0:
                 blk_start =  block_start(self.curtext)
                 if blk_start:
-                    self.blocks.append(blk_start)
+                    self.blocks.append((blk_start, self.lineno, text))
                 else:
                     blk_end = block_end(self.curtext)
                     if (blk_end and len(self.blocks) > 0 and
-                        blk_end == self.blocks[-1]):
+                        blk_end == self.blocks[-1][0]):
                         self.blocks.pop()
                         if self.curtext.strip().startswith('end'):
                             nblank = self.curtext.find(self.curtext.strip())
@@ -243,7 +245,7 @@ class InputText:
 
                 _delim = None
                 if len(self.blocks) > 0:
-                    _delim = self.blocks[-1]
+                    _delim = self.blocks[-1][0]
 
                 key = get_key(self.curtext)
                 ilevel = len(self.blocks)
