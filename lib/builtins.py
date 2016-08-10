@@ -154,18 +154,16 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
     inp = inputText.InputText(_larch=_larch)
     inp.put(text, filename=filename, lineno=0)
     if not inp.complete:
+        msg = "File '%s' ends with incomplete input" % (filename)
+        if len(inp.blocks) > 0 and filename is not None:
+            blocktype, lineno, text = inp.blocks[0]
+            msg = "File '%s' ends with un-terminated '%s'" % (filename,
+                                                              blocktype)
+        elif inp.saved_text is not None:
+            text, fname, lineno = inp.saved_text
+            msg = "File '%s' ends with incomplete statement" % (filename)
         while not inp.queue.empty():
             inp.get()
-        text, fname, lineno = inp.saved_text
-        _larch.raise_exception(None, expr=text, fname=fname, lineno=lineno,
-                               exc=SyntaxError, msg= 'input is incomplete')
-
-    if len(inp.blocks) > 0 and filename is not None:
-        block = inp.block[0]
-        while not inp.queue.empty():
-            inp.get()
-        text, fname, lineno = inp.saved_text
-        msg = "File '%s' ends with un-terminated '%s'" % (filename, block)
         _larch.raise_exception(None, expr="run('%s')" % filename,
                                fname=filename, lineno=lineno,
                                exc=IOError, msg=msg)
