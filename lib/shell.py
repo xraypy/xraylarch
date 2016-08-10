@@ -26,7 +26,6 @@ class shell(cmd.Cmd):
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
 
-        self.history_written = False
         if HAS_READLINE:
             self.rdline = readline
             try:
@@ -56,16 +55,19 @@ class shell(cmd.Cmd):
         self.larch.run_init_scripts()
 
     def __del__(self, *args):
-        self._write_history()
+        self.write_history()
 
-    def _write_history(self):
-        if HAS_READLINE:
-            try:
-                readline.set_history_length(self.maxhist)
-                if history_file is not None and not self.history_written:
-                    readline.write_history_file(history_file)
-            except:
-                pass
+    def write_history(self, trim_last=False):
+        if not HAS_READLINE or history_file is None:
+            return
+        try:
+            readline.set_history_length(self.maxhist)
+            if trim_last:
+                n = readline.get_current_history_length()
+                readline.remove_history_item(n-1)
+            readline.write_history_file(history_file)
+        except:
+            print("Warning: could not write history file")
 
     def emptyline(self):
         pass
@@ -87,14 +89,8 @@ class shell(cmd.Cmd):
 
     def default(self, text):
         if text.strip() in ('quit', 'exit', 'EOF'):
-            if HAS_READLINE:
-                try:
-                    n = readline.get_current_history_length()
-                    readline.remove_history_item(n-1)
-                except:
-                    pass
-                self._write_history()
-                self.history_written = True
+            trim_last = text.strip() in ('quit', 'exit')
+            self.write_history(trim_last=trim_last)
             return True
 
         self.input.put(text)
