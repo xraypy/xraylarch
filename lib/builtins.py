@@ -17,7 +17,7 @@ from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
-from .larchlib import parse_group_args
+from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
 
 PLUGINSTXT = 'plugins.txt'
@@ -155,6 +155,7 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
     inp.put(text, filename=filename, lineno=0)
     if not inp.complete:
         msg = "File '%s' ends with incomplete input" % (filename)
+        text = None
         if len(inp.blocks) > 0 and filename is not None:
             blocktype, lineno, text = inp.blocks[0]
             msg = "File '%s' ends with un-terminated '%s'" % (filename,
@@ -164,9 +165,15 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
             msg = "File '%s' ends with incomplete statement" % (filename)
         while not inp.queue.empty():
             inp.get()
-        _larch.raise_exception(None, expr="run('%s')" % filename,
-                               fname=filename, lineno=lineno,
-                               exc=IOError, msg=msg)
+        err = LarchExceptionHolder(node=None, exc=IOError, msg=msg,
+                                   expr=text, fname=filename,
+                                   lineno=lineno)
+
+        _larch.error.append(err)
+        symtable._sys.last_error = err
+
+        # expr=text, # "run('%s')" % filename,
+        # exc=IOError, msg=msg)
 
     if new_module is not None:
         # save current module group
@@ -176,12 +183,10 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
         symtable._sys.modules[new_module] = thismod
         symtable.set_frame((thismod, thismod))
 
-    buffer = []
     if len(_larch.error) > 0:
         inp.clear()
-        return buffer
 
-    complete, buffer = inp.run(buffer=buffer)
+    complete = inp.run()
 
     # for a "newly created module" (as on import),
     # the module group is the return value
