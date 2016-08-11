@@ -3,6 +3,7 @@
 # InputText for  Larch
 
 from __future__ import print_function
+import inspect
 
 from six.moves import queue
 
@@ -138,10 +139,21 @@ class InputText:
             return True
 
         _larch = self._larch
+        symtable = _larch.symtable
         if writer is None:
             writer = _larch.writer
-        topts = _larch.symtable._builtin.get_termcolor_opts('text')
-        eopts = _larch.symtable._builtin.get_termcolor_opts('error')
+
+        topts = symtable._builtin.get_termcolor_opts('text')
+        eopts = symtable._builtin.get_termcolor_opts('error')
+
+        if not hasattr(symtable._sys, 'call_stack'):
+            symtable._sys.call_stack = []
+        larch_call_stack = symtable._sys.call_stack
+
+        larch_call_stack.append(None)
+
+        n_larch_stack = len(larch_call_stack)
+        n_pystack  = len(inspect.stack())
 
         complete = False
         while self.queue.qsize() > 0:
@@ -150,6 +162,8 @@ class InputText:
             if len(self.curtext) > 0 or len(self.blocks) > 0:
                 continue
 
+
+            larch_call_stack[n_larch_stack-1] = (block, fname, lineno)
             ret = _larch.eval('\n'.join(self.buffer),
                               fname=fname, lineno=lineno)
             complete = True
@@ -157,6 +171,24 @@ class InputText:
                 self.buffer = []
             if _larch.error:
                 self.clear()
+
+                if len(inspect.stack()) > n_pystack:
+                    for frame in inspect.stack()[n_pystack:]:
+                        print("Python Call Stack ", frame)
+
+                if larch_call_stack > 1:
+                    for eblock, efname, elineno in larch_call_stack[1:]:
+                        etext = eblock.split('\n')[0]
+                        writer.write(' File %s, line %i\n  %s\n' % (efname, elineno, etext),
+                                     **eopts)
+                for err in _larch.error:
+                    writer.write("%s\n" % err.get_error()[1], **eopts)
+
+
+
+
+                _larch.error = []
+                old = """
                 err = _larch.error.pop(0)
                 if err.fname is not None:
                     fname = err.fname
@@ -171,9 +203,12 @@ class InputText:
                 thiserr = err.get_error(fname=fname, lineno=lineno)
                 writer.write("%s\n" % thiserr[1], **eopts)
                 break
+                """
             elif ret is not None:
                 writer.write("%s\n" % repr(ret), **topts)
+
         writer.flush()
+        larch_call_stack.pop()
         return complete
 
 

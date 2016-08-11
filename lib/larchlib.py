@@ -182,7 +182,7 @@ class LarchExceptionHolder:
                 out.append(' File %s, line %i' % (call_fname, call_lineno))
             out.append(call_expr)
 
-        return '\n'.join(out)
+        return (exc_name, '\n'.join(out))
 
     def get_error_old_DONT_USE(self, fname=None, lineno=None):
 
