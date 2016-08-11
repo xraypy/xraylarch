@@ -177,10 +177,11 @@ class InputText:
                         print("Python Call Stack ", frame)
 
                 if larch_call_stack > 1:
-                    for eblock, efname, elineno in larch_call_stack[1:]:
-                        etext = eblock.split('\n')[0]
-                        writer.write(' File %s, line %i\n  %s\n' % (efname, elineno, etext),
-                                     **eopts)
+                    for eblock, efname, elineno in larch_call_stack:
+                        if efname != fname and elineno != lineno:
+                            etext = eblock.split('\n')[0]
+                            writer.write(' File %s, line %i\n  %s\n' %
+                                         (efname, elineno, etext), **eopts)
                 for err in _larch.error:
                     writer.write("%s\n" % err.get_error()[1], **eopts)
 
