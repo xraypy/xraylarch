@@ -126,17 +126,16 @@ class InputText:
         self.curline = 0
         self.curtext = ''
         self.blocks = []
+        self.buffer = []
         self._larch = _larch
         self.saved_text = BLANK_TEXT
 
-    def run(self, buffer=None, writer=None):
+    def run(self, writer=None):
         if self._larch is None:
             raise ValueError("need interpreter to run")
 
-        if buffer is None:
-            buffer = []
         if self.queue.qsize() == 0:
-            return True, buffer
+            return True
 
         _larch = self._larch
         if writer is None:
@@ -147,15 +146,15 @@ class InputText:
         complete = False
         while self.queue.qsize() > 0:
             block, fname, lineno = self.get()
-            buffer.append(block)
+            self.buffer.append(block)
             if len(self.curtext) > 0 or len(self.blocks) > 0:
-                print("Input Expect more.... ")
                 continue
 
-            ret = _larch.eval('\n'.join(buffer),
+            ret = _larch.eval('\n'.join(self.buffer),
                               fname=fname, lineno=lineno)
             complete = True
-            buffer = []
+            if len(self.buffer) > 0:
+                self.buffer = []
             if _larch.error:
                 self.clear()
                 err = _larch.error.pop(0)
@@ -164,7 +163,6 @@ class InputText:
                     if err.lineno is not None:
                         lineno = err.lineno
                 if False and err.tback is not None:
-                    writer.write("<TRACE> ")
                     writer.write(err.tback, **eopts)
                     writer.write("\n")
                 if False:
@@ -176,7 +174,7 @@ class InputText:
             elif ret is not None:
                 writer.write("%s\n" % repr(ret), **topts)
         writer.flush()
-        return complete, buffer
+        return complete
 
 
     def __len__(self):
@@ -232,7 +230,7 @@ class InputText:
             if is_complete(self.curtext) and len(self.curtext)>0:
                 blk_start =  block_start(self.curtext)
                 if blk_start:
-                    self.blocks.append((blk_start, self.lineno, text))
+                    self.blocks.append((blk_start, self.lineno, txt))
                 else:
                     blk_end = block_end(self.curtext)
                     if (blk_end and len(self.blocks) > 0 and

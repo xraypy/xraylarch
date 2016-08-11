@@ -45,7 +45,6 @@ class shell(cmd.Cmd):
         self.larch  = Interpreter()
         self.input  = InputText(_larch=self.larch)
         self.prompt = self.ps1
-        self.buffer = []
 
         writer = self.larch.writer
         if not quiet:
@@ -96,7 +95,7 @@ class shell(cmd.Cmd):
         self.input.put(text)
         complete = self.input.complete
         if complete:
-            complete, self.buffer = self.input.run(buffer=self.buffer)
+            complete = self.input.run()
         self.prompt = {True:self.ps1, False:self.ps2}[complete]
 
 if __name__ == '__main__':

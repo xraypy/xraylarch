@@ -133,10 +133,9 @@ class LarchWxShell(object):
             else:
                 self.inptext.put(text)
 
-        buffer = []
         complete = self.inptext.complete
         if complete:
-            complete, buffer = self.inptext.run(buffer=buffer, writer=self)
+            complete = self.inptext.run(writer=self)
         self.SetPrompt(complete)
 
 class LarchFrame(wx.Frame):
