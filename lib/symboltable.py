@@ -480,6 +480,8 @@ class SymbolTable(Group):
         if registrar is None:
             return
         groupname, syms = registrar()
+        if not isinstance(syms, dict):
+            raise ValueError('add_plugin requires dictionary of plugins')
 
         if not self.has_group(groupname):
             self.new_group(groupname)
