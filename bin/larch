@@ -60,12 +60,6 @@ else:
 # can we, and should we, use wx?
 HAS_WX = False
 if not options.nowx:
-    if not hasattr(sys, 'frozen'):
-        try:
-            import wxversion
-            wxversion.ensureMinimal('2.8')
-        except:
-            pass
     try:
         import wx
         HAS_WX = True
@@ -105,16 +99,10 @@ if HAS_WX:
 # execute scripts listed on command-line
 if len(args)>0:
     for arg in args:
+        cmd = "run('%s')" % arg
         if arg.endswith('.py'):
-            shell.default("import %s" %  arg[:-3])
-        else:
-            shell.input.interactive = False
-            finp = open(arg, 'r')
-            for itxt, txt in enumerate(finp.readlines()):
-                shell.input.put(txt[:-1], lineno=itxt, filename=arg)
-            finp.close()
-            shell.larch_execute('')
-            shell.input.interactive = True
+            cmd = "import %s" %  arg[:-3]
+        shell.default(cmd)
 
 # if interactive, start command loop
 if not options.noshell:
