@@ -5,7 +5,7 @@ sudo: false
 
 python:
     - 2.7
-    - 3.5
+#     - 3.5
 
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -19,11 +19,11 @@ before_install:
 install:
     - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib pandas nose sphinx
     - source activate test_env
+    - conda install wxpython
     - conda install sqlalchemy
     - pip install termcolor
-    # - conda install wxpython
-    # - pip install wxmplot
-    # - pip install wxutils
+    - pip install wxmplot
+    - pip install wxutils
     - python setup.py install
 
 script:
