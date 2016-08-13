@@ -11,12 +11,6 @@ from larch.interpreter import Interpreter
 from larch.inputText import InputText
 from larch.utils.jsonutils import encode4js
 
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
 try:
     import wx
     from larch.wxlib import inputhook
