@@ -153,7 +153,6 @@ class InputText:
         larch_call_stack.append(None)
 
         n_larch_stack = len(larch_call_stack)
-        n_pystack  = len(inspect.stack())
 
         complete = False
         while self.queue.qsize() > 0:
@@ -161,7 +160,6 @@ class InputText:
             self.buffer.append(block)
             if len(self.curtext) > 0 or len(self.blocks) > 0:
                 continue
-
 
             larch_call_stack[n_larch_stack-1] = (block, fname, lineno)
             ret = _larch.eval('\n'.join(self.buffer),
@@ -171,40 +169,26 @@ class InputText:
                 self.buffer = []
             if _larch.error:
                 self.clear()
+                writer.write('Traceback (most recent calls last): \n', **eopts)
+                for eblock, efname, elineno in larch_call_stack:
+                    if efname != fname and elineno != lineno:
+                        etext = eblock.split('\n')[0]
+                        writer.write('   File %s, line %i\n    %s\n' %
+                                     (efname, elineno, etext), **eopts)
+                    else:
+                        writer.write('   File %s, line %i\n' %
+                                     (efname, elineno), **eopts)
 
-                if len(inspect.stack()) > n_pystack:
-                    for frame in inspect.stack()[n_pystack:]:
-                        print("Python Call Stack ", frame)
-
-                if larch_call_stack > 1:
-                    for eblock, efname, elineno in larch_call_stack:
-                        if efname != fname and elineno != lineno:
-                            etext = eblock.split('\n')[0]
-                            writer.write(' File %s, line %i\n  %s\n' %
-                                         (efname, elineno, etext), **eopts)
+                errors_seen = []
                 for err in _larch.error:
-                    writer.write("%s\n" % err.get_error()[1], **eopts)
-
-
-
+                    exc_name, errmsg = err.get_error()
+                    file_lineno = errmsg.split('\n')[0].strip()
+                    if file_lineno in errors_seen:
+                        continue
+                    errors_seen.append(file_lineno)
+                    writer.write(errmsg, **eopts)
 
                 _larch.error = []
-                old = """
-                err = _larch.error.pop(0)
-                if err.fname is not None:
-                    fname = err.fname
-                    if err.lineno is not None:
-                        lineno = err.lineno
-                if False and err.tback is not None:
-                    writer.write(err.tback, **eopts)
-                    writer.write("\n")
-                if False:
-                    for err in _larch.error:
-                        writer.write("%s\n" % (err.get_error()[1]), **eopts)
-                thiserr = err.get_error(fname=fname, lineno=lineno)
-                writer.write("%s\n" % thiserr[1], **eopts)
-                break
-                """
             elif ret is not None:
                 writer.write("%s\n" % repr(ret), **topts)
 
