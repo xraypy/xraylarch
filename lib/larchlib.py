@@ -44,6 +44,19 @@ class Empty:
 # holder for 'returned None' from Larch procedure
 ReturnedNone = Empty()
 
+def get_filetext(fname, lineno):
+    """try to extract line from source text file"""
+    out = ''
+    try:
+        ftmp = open(fname, 'r')
+        lines = ftmp.readlines()
+        ftmp.close()
+        lineno = min(lineno, len(lines)) - 1
+        out = lines[lineno][:-1]
+    except:
+        pass
+    return out
+
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node=None, msg='', fname='<stdin>',
@@ -56,16 +69,6 @@ class LarchExceptionHolder:
         self.exc  = exc
         self.lineno = lineno
         self.exc_info = sys.exc_info()
-        tbfull = traceback.extract_tb(self.exc_info[2])
-        tb_list = []
-        for tb in tbfull:
-            if not (sys.prefix in tb[0] and
-                    ('ast.py' in tb[0] or
-                     os.path.join('larch', 'utils') in tb[0] or
-                     os.path.join('larch', 'interpreter') in tb[0] or
-                     os.path.join('larch', 'symboltable') in tb[0])):
-                tb_list.append(tb)
-        self.tback = ''.join(traceback.format_list(tb_list))
 
         if self.exc is None and self.exc_info[0] is not None:
             self.exc = self.exc_info[0]
@@ -89,17 +92,23 @@ class LarchExceptionHolder:
             exc_name = 'UnknownError'
 
         out = []
-        call_expr = None
-        call_fname = None
-        call_lineno = None
         fname = self.fname
 
-        fline = ' File %s, line %i' % (fname, self.lineno)
+        if isinstance(self.expr, ast.AST):
+            self.expr = 'In compiled script'
+        if self.expr is None:
+            out.append('unknown error\n')
+        elif '\n' in self.expr:
+            out.append("\n%s" % self.expr)
+        else:
+            out.append("    %s" % self.expr)
+        if col_offset > 0:
+            out.append("%s^^^" % ((col_offset)*' '))
 
+        fline = '  File %s, line %i' % (fname, self.lineno)
         if self.func is not None:
             func = self.func
             fname = self.fname
-
             if fname is None:
                 if isinstance(func, Closure):
                     func = func.func
@@ -110,194 +119,36 @@ class LarchExceptionHolder:
                     fname = 'unknown'
             if fname.endswith('.pyc'):
                 fname = fname[:-1]
-            found = False
-            for tb in traceback.extract_tb(self.exc_info[2]):
-                found = found or tb[0].startswith(fname)
-                if found:
-                    u = ' MMFile "%s", line %i, in %s\n    %s' % tb
-                    words = u.split('\n')
-                    fline = words[0]
-                    call_expr = self.expr
-                    self.expr = words[1]
-                    # 'File "%s", line %i, in %s\n    %s' % tb)
-            if not found and isinstance(self.func, Procedure):
+
+            if hasattr(self.func, 'name'):
+                dec = ''
+                if isinstance(self.func, Procedure):
+                    dec = 'procedure '
                 pname = self.func.name
-                fline = "%s, in %s" % (fline, pname)
+                ftext = get_filetext(self.fname, self.lineno)
+                fline = "%s, in %s%s\n%s" % (fline, dec, pname, ftext)
 
         if fline is not None:
             out.append(fline)
 
-        tline = exc_name
+        tblist = []
+        for tb in traceback.extract_tb(self.exc_info[2]):
+            if not (sys.prefix in tb[0] and
+                    ('ast.py' in tb[0] or
+                     os.path.join('larch', 'utils') in tb[0] or
+                     os.path.join('larch', 'interpreter') in tb[0] or
+                     os.path.join('larch', 'symboltable') in tb[0])):
+                tblist.append(tb)
+        if len(tblist) > 0:
+            out.append(''.join(traceback.format_list(tblist)))
+
         if self.msg not in ('',  None):
-            ex_msg = getattr(e_val, 'msg', '')
+            ex_msg = getattr(e_val, 'message', '')
             if ex_msg is '':
                 ex_msg = str(self.msg)
-            tline = "%s: %s" % (exc_name, ex_msg)
+            out.append("%s: %s" % (exc_name, ex_msg))
 
-        if tline is not None:
-            out.append(tline)
-
-        etext = getattr(e_val, 'text', '')
-        if etext not in (None, ''):
-            out.append(etext)
-#         if call_expr is None and (self.expr == '<>' or
-#                                   fname not in (None, '', '<stdin>')):
-#             # denotes non-saved expression -- go fetch from file!
-#             # print( 'Trying to get non-saved expr ', self.fname, self.lineno)
-#             try:
-#                 if fname is not None and os.path.exists(fname):
-#                     ftmp = open(fname, 'r')
-#                     lines = ftmp.readlines()
-#                     lineno = min(self.lineno, len(lines)) - 1
-#                     try:
-#                         _expr = lines[lineno][:-1]
-#                     except IndexError:
-#                         _expr = 'unknown'
-#                     call_expr = self.expr
-#                     call_lineno = lineno
-#                     for ilx, line in enumerate(lines):
-#                         if line[:-1] == call_expr:
-#                             call_lineno = ilx + 1
-#                     call_fname = fname
-#                     self.expr = _expr
-#                     ftmp.close()
-#             except (IOError, TypeError):
-#                 pass
-        if isinstance(self.expr, ast.AST):
-            self.expr = 'In compiled script'
-        if self.expr is None:
-            out.append('unknown error\n')
-        elif '\n' in self.expr:
-            out.append("\n%s" % self.expr)
-        else:
-            out.append("    %s" % self.expr)
-        if col_offset > 0:
-            if '\n' in self.expr:
-                out.append("%s^^^" % ((col_offset)*' '))
-            else:
-                out.append("    %s^^^" % ((col_offset)*' '))
-
-        if call_expr is not None and not isinstance(call_expr, ast.AST):
-            if call_fname is not None and call_lineno is not None:
-                out.append(' File %s, line %i' % (call_fname, call_lineno))
-            out.append(call_expr)
-
-        return (exc_name, '\n'.join(out))
-
-    def get_error_old_DONT_USE(self, fname=None, lineno=None):
-
-        if fname is not None:
-            self.fname = fname
-        if lineno is not None:
-            self.lineno = lineno
-        "retrieve error data"
-        col_offset = -1
-        e_type, e_val, e_tb = self.exc_info
-        if self.node is not None:
-            try:
-                col_offset = self.node.col_offset
-            except AttributeError:
-                pass
-        try:
-            exc_name = self.exc.__name__
-        except AttributeError:
-            exc_name = str(self.exc)
-        if exc_name in (None, 'None'):
-            exc_name = 'UnknownError'
-
-        out = []
-        call_expr = None
-        call_fname = None
-        call_lineno = None
-        fname = self.fname
-
-        fline = ' File %s, line %i' % (fname, self.lineno)
-        if self.func is not None:
-            func = self.func
-            fname = self.fname
-
-            if fname is None:
-                if isinstance(func, Closure):
-                    func = func.func
-                    fname = inspect.getmodule(func).__file__
-                try:
-                    fname = inspect.getmodule(func).__file__
-                except AttributeError:
-                    fname = 'unknown'
-            if fname.endswith('.pyc'):
-                fname = fname[:-1]
-            found = False
-            for tb in traceback.extract_tb(self.exc_info[2]):
-                found = found or tb[0].startswith(fname)
-                if found:
-                    u = ' File "%s", line %i, in %s\n    %s' % tb
-                    words = u.split('\n')
-                    fline = words[0]
-                    call_expr = self.expr
-                    self.expr = words[1]
-                    # 'File "%s", line %i, in %s\n    %s' % tb)
-            if not found and isinstance(self.func, Procedure):
-                pname = self.func.name
-                fline = "%s, in %s" % (fline, pname)
-
-        if fline is not None:
-            out.append(fline)
-
-        tline = exc_name
-        if self.msg not in ('',  None):
-            ex_msg = getattr(e_val, 'msg', '')
-            if ex_msg is '':
-                ex_msg = str(self.msg)
-            tline = "%s: %s" % (exc_name, ex_msg)
-
-        if tline is not None:
-            out.append(tline)
-
-        etext = getattr(e_val, 'text', '')
-        if etext not in (None, ''):
-            out.append(etext)
-        if call_expr is None and (self.expr == '<>' or
-                                  fname not in (None, '', '<stdin>')):
-            # denotes non-saved expression -- go fetch from file!
-            # print( 'Trying to get non-saved expr ', self.fname, self.lineno)
-            try:
-                if fname is not None and os.path.exists(fname):
-                    ftmp = open(fname, 'r')
-                    lines = ftmp.readlines()
-                    lineno = min(self.lineno, len(lines)) - 1
-                    try:
-                        _expr = lines[lineno][:-1]
-                    except IndexError:
-                        _expr = 'unknown'
-                    call_expr = self.expr
-                    call_lineno = lineno
-                    for ilx, line in enumerate(lines):
-                        if line[:-1] == call_expr:
-                            call_lineno = ilx + 1
-                    call_fname = fname
-                    self.expr = _expr
-                    ftmp.close()
-            except (IOError, TypeError):
-                pass
-        if isinstance(self.expr, ast.AST):
-            self.expr = 'In compiled script'
-        if self.expr is None:
-            out.append('unknown error\n')
-        elif '\n' in self.expr:
-            out.append("\n%s" % self.expr)
-        else:
-            out.append("    %s" % self.expr)
-        if col_offset > 0:
-            if '\n' in self.expr:
-                out.append("%s^^^" % ((col_offset)*' '))
-            else:
-                out.append("    %s^^^" % ((col_offset)*' '))
-
-        if call_expr is not None and not isinstance(call_expr, ast.AST):
-            if call_fname is not None and call_lineno is not None:
-                out.append(' File %s, line %i' % (call_fname, call_lineno))
-            out.append(call_expr)
-
+        out.append("")
         return (exc_name, '\n'.join(out))
 
 
