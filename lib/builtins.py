@@ -172,9 +172,6 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
         _larch.error.append(err)
         symtable._sys.last_error = err
 
-        # expr=text, # "run('%s')" % filename,
-        # exc=IOError, msg=msg)
-
     if new_module is not None:
         # save current module group
         #  create new group, set as moduleGroup and localGroup
