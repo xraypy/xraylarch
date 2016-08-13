@@ -71,6 +71,9 @@ class shell(cmd.Cmd):
     def emptyline(self):
         pass
 
+    def onecmd(self, text):
+        return self.default(text)
+
     def do_help(self, txt):
         if txt.startswith('(') and txt.endswith(')'):
             txt = txt[1:-1]
@@ -92,7 +95,7 @@ class shell(cmd.Cmd):
             self.write_history(trim_last=trim_last)
             return True
 
-        self.input.put(text)
+        self.input.put(text, filename='<stdin>', lineno=0)
         complete = self.input.complete
         if complete:
             complete = self.input.run()
