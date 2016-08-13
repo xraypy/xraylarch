@@ -233,8 +233,8 @@ class Interpreter:
             self.fname  = fname
         if expr  is not None:
             self.expr   = expr
-        if func is not None:
-            self.func = func
+        # if func is not None:
+        self.func = func
 
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc

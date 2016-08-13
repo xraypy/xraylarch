@@ -171,13 +171,10 @@ class InputText:
                 self.clear()
                 writer.write('Traceback (most recent calls last): \n', **eopts)
                 for eblock, efname, elineno in larch_call_stack:
+                    text = "File %s, line %i" % (efname, elineno)
                     if efname != fname and elineno != lineno:
-                        etext = eblock.split('\n')[0]
-                        writer.write('   File %s, line %i\n    %s\n' %
-                                     (efname, elineno, etext), **eopts)
-                    else:
-                        writer.write('   File %s, line %i\n' %
-                                     (efname, elineno), **eopts)
+                        text =  "%s\n    %s" % (text, eblock.split('\n')[0])
+                    writer.write('   %s\n' % (text), **eopts)
 
                 errors_seen = []
                 for err in _larch.error:

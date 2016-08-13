@@ -46,7 +46,7 @@ ReturnedNone = Empty()
 
 def get_filetext(fname, lineno):
     """try to extract line from source text file"""
-    out = ''
+    out = '<could not find text>'
     try:
         ftmp = open(fname, 'r')
         lines = ftmp.readlines()
@@ -105,7 +105,7 @@ class LarchExceptionHolder:
         if col_offset > 0:
             out.append("%s^^^" % ((col_offset)*' '))
 
-        fline = '  File %s, line %i' % (fname, self.lineno)
+        fline = '   File %s, line %i' % (fname, self.lineno)
         if self.func is not None:
             func = self.func
             fname = self.fname
