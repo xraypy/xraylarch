@@ -13,13 +13,6 @@ __revision__ = "$Revision: 37633 $"
 
 
 import sys
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
 import numpy
 import wx.html as html
