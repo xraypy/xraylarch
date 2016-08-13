@@ -165,7 +165,7 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
             msg = "File '%s' ends with incomplete statement" % (filename)
         while not inp.queue.empty():
             inp.get()
-        err = LarchExceptionHolder(node=None, exc=IOError, msg=msg,
+        err = LarchExceptionHolder(node=None, exc=SyntaxError, msg=msg,
                                    expr=text, fname=filename,
                                    lineno=lineno)
 
