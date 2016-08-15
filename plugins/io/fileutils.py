@@ -2,6 +2,10 @@
 """
 general purpose file utilities
 """
+MODDOC = '''
+Functions for Input/Output, especially reading specific types
+of scientific data files.
+'''
 
 import time
 import os
@@ -9,49 +13,35 @@ import sys
 from random import seed, randrange
 from string import printable
 
-BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
+if sys.version[0] == '3':
+    maketrans = str.maketrans
+else:
+    from string import maketrans
+
+BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
-MODDOC = '''
-Functions for Input/Output, especially reading specific types
-of scientific data files.
-'''
+BAD_VARSCHARS = BAD_FILECHARS + '+-.'
+GOOD_VARSCHARS = '_'*len(BAD_VARSCHARS)
 
-if sys.version[0] == '2':
-    from string import maketrans
-    BAD_FILETABLE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
-    def fix_filename(s):
-        """fix string to be a 'good' filename.
-        This may be a more restrictive than the OS, but
-        avoids nasty cases."""
-        t = str(s).translate(BAD_FILETABLE)
-        if t.count('.') > 1:
-            for i in range(t.count('.') - 1):
-                idot = t.find('.')
-                t = "%s_%s" % (t[:idot], t[idot+1:])
-        return t
-    def fix_varname(s):
-        """fix string to be a 'good' variable name."""
-        t = str(s).translate(BAD_FILETABLE)
-        while t.endswith('_'): t = t[:-1]
-        return t
+TRANS_FILE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
+TRANS_VARS = maketrans(BAD_VARSCHARS, GOOD_VARSCHARS)
 
-elif sys.version[0] == '3':
-    def fix_filename(s):
-        """fix string to be a 'good' filename.
-        This may be a more restrictive than the OS, but
-        avoids nasty cases."""
-        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
-        if t.count('.') > 1:
-            for i in range(t.count('.') - 1):
-                idot = t.find('.')
-                t = "%s_%s" % (t[:idot], t[idot+1:])
-        return t
-    def fix_varname(s):
-        """fix string to be a 'good' variable name."""
-        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
-        while t.endswith('_'): t = t[:-1]
-        return t
+def fix_filename(s):
+    """fix string to be a 'good' filename.
+    This may be a more restrictive than the OS, but
+    avoids nasty cases."""
+    t = str(s).translate(TRANS_FILE)
+    if t.count('.') > 1:
+        for i in range(t.count('.') - 1):
+            idot = t.find('.')
+            t = "%s_%s" % (t[:idot], t[idot+1:])
+    return t
+def fix_varname(s):
+    """fix string to be a 'good' variable name."""
+    t = str(s).translate(TRANS_VARS)
+    while t.endswith('_'): t = t[:-1]
+    return t
 
 def strip_quotes(t):
     d3, s3, d1, s1 = '"""', "'''", '"', "'"
@@ -308,7 +298,6 @@ def test_incrementfilename():
         else:
             npass = npass + 1
     print('Passed %i of %i tests' % (npass, npass+nfail))
-
 
 
 
