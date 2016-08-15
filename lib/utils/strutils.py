@@ -13,7 +13,7 @@ if sys.version_info[0] == 3:
             return s
         elif isinstance(s, bytes):
             return s.decode(sys.stdout.encoding)
-        return str(s)
+        return str(s, sys.stdout.encoding)
 
 
 def PrintExceptErr(err_str, print_trace=True):
