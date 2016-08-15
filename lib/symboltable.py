@@ -12,14 +12,10 @@ from .utils import Closure, fixName, isValidName
 from . import site_config
 
 class Group(object):
-    """Generic Group: a container for variables, modules, and subgroups.
-
-    Methods
-    ----------
-       _subgroups(): return list of subgroups
-       _members():   return dict of members
     """
-    __private = ('_main', '_larch', '_parents', '__name__',
+    Generic Group: a container for variables, modules, and subgroups.
+    """
+    __private = ('_main', '_larch', '_parents', '__name__', '__doc__', 
                  '__private', '_subgroups', '_members')
     def __init__(self, name=None, **kws):
         if name is None:
