@@ -184,9 +184,8 @@ class Interpreter:
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-        err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
-                                   fname=fname, lineno=lineno, func=func,
-                                   symtable=self.symtable)
+        err = LarchExceptionHolder(node=node, exc=exc, msg=msg, expr=expr,
+                                   fname=fname, lineno=lineno, func=func)
         self._interrupt = ast.Break()
         self.error.append(err)
         self.symtable._sys.last_error = err
@@ -234,8 +233,8 @@ class Interpreter:
             self.fname  = fname
         if expr  is not None:
             self.expr   = expr
-        if func is not None:
-            self.func = func
+        # if func is not None:
+        self.func = func
 
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc
@@ -400,11 +399,11 @@ class Interpreter:
         elif ctx == ast.Param:  # for Function Def
             val = str(node.id)
         else:
-            # val = self.symtable.get_symbol(node.id)
             try:
                 val = self.symtable.get_symbol(node.id)
             except (NameError, LookupError):
                 msg = "name '%s' is not defined" % node.id
+                val = None
                 self.raise_exception(node, msg=msg)
         return val
 

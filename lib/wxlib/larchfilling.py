@@ -13,13 +13,6 @@ __revision__ = "$Revision: 37633 $"
 
 
 import sys
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
 import numpy
 import wx.html as html
@@ -41,7 +34,7 @@ VERSION = '0.9.5(Larch)'
 
 COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
 if sys.version[0] == '2':
-    COMMONTYPES.append(unicode)
+   COMMONTYPES.append(unicode)
 COMMONTYPES =  tuple(COMMONTYPES)
 
 H5TYPES = ()
@@ -82,6 +75,9 @@ class FillingTree(wx.TreeCtrl):
         self.static = static
         self.item = None
         self.root = None
+        if is_wxPhoenix:
+            self.GetPyData = self.GetItemData
+
         self.setRootObject(rootObject)
 
     def setRootObject(self, rootObject=None):
@@ -90,8 +86,10 @@ class FillingTree(wx.TreeCtrl):
             return
         if not self.rootLabel:
             self.rootLabel = 'Larch Data'
-        
-        rootData = wx.TreeItemData(rootObject)
+
+        rootData = rootObject
+        if not is_wxPhoenix:
+            rootData = wx.TreeItemData(rootData)
         self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  rootData)
 
         self.SetItemHasChildren(self.root,  self.objHasChildren(self.rootObject))
@@ -195,19 +193,19 @@ class FillingTree(wx.TreeCtrl):
             keys = children.keys()
         except:
             return
-        keys.sort(lambda x, y: cmp(str(x).lower(), str(y).lower()))
-        for key in keys:
+        # keys.sort(lambda x, y: cmp(str(x).lower(), str(y).lower()))
+        for key in sorted(keys):
             itemtext = str(key)
             # Show string dictionary items with single quotes, except
             # for the first level of items, if they represent a
             # namespace.
-            if (type(obj) is types.DictType \
-                and type(key) is types.StringType \
-                and (item != self.root \
-                     or (item == self.root and not self.rootIsNamespace))):
+            if (isinstance(obj, dict) and isinstance(key, basestring) and
+                (item != self.root or
+                 (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
-            child = children[key]
-            data = wx.TreeItemData(child)
+            child = data = children[key]
+            if not is_wxPhoenix:
+                data = wx.TreeItemData(child)
             branch = self.AppendItem(parent=item, text=itemtext, data=data)
             self.SetItemHasChildren(branch, self.objHasChildren(child))
 
@@ -273,11 +271,9 @@ class FillingTree(wx.TreeCtrl):
             obj = self.GetPyData(item)
         # Apply dictionary syntax to dictionary items, except the root
         # and first level children of a namepace.
-        if (type(obj) is types.DictType \
-            or str(type(obj))[17:23] == 'BTrees' \
-            and hasattr(obj, 'keys')) \
-        and ((item != self.root and parent != self.root) \
-            or (parent == self.root and not self.rootIsNamespace)):
+        if ((isinstance(obj, dict) or hasattr(obj, 'keys')) and
+            ((item != self.root and parent != self.root) or
+             (parent == self.root and not self.rootIsNamespace))):
             name = '[' + name + ']'
         # Apply dot syntax to multipart names.
         if partial:
@@ -372,28 +368,14 @@ class Filling(wx.SplitterWindow):
                  rootLabel=None, rootIsNamespace=False, static=False):
         """Create a Filling instance."""
         wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
-
-        leftpanel = wx.Panel(self)
-        leftsizer = wx.BoxSizer(wx.VERTICAL)
-
-        # self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
-        #                       action=self.onRefresh)
-
-        self.tree = FillingTree(parent=leftpanel, rootObject=rootObject,
+        self.tree = FillingTree(parent=self, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace,
                                 static=static)
 
-        # leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
-        leftsizer.Add(self.tree, 1, wx.EXPAND|wx.ALL, 1)
-        pack(leftpanel, leftsizer)
-
-        # self.text = FillingRST(parent=self, static=static)
         self.text = FillingText(parent=self, static=static)
-
-        wx.CallLater(1, self.SplitVertically, leftpanel, self.text, 200)
-
-        self.SetMinimumPaneSize(1)
+        self.SplitVertically(self.tree, self.text, 200)
+        self.SetMinimumPaneSize(100)
 
         # Override the filling so that descriptions go to FillingText.
         self.tree.setText = self.text.SetText
@@ -437,12 +419,12 @@ class Filling(wx.SplitterWindow):
         def get_node_by_name(node, name):
             nodecount = self.tree.GetChildrenCount(node)
             item, cookie = self.tree.GetFirstChild(node)
-            if self.tree.GetItemText(item) == name:
+            if not item.IsOk() or self.tree.GetItemText(item) == name:
                 return item
             while nodecount > 1:
                 nodecount -= 1
                 item, cookie = self.tree.GetNextChild(item, cookie)
-                if self.tree.GetItemText(item) == name:
+                if not item.IsOk() or self.tree.GetItemText(item) == name:
                     return item
 
         while len(parents) > 0:

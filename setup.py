@@ -159,6 +159,22 @@ for pdir in pluginpaths:
     data_files.append((os.path.join(larchdir, pdir), pfiles))
 
 
+if (cmdline_args[0] == 'install' and
+    sys.platform == 'darwin' and
+    'Anaconda' in sys.version):
+    for fname in scripts:
+        fh = open(fname, 'r')
+        lines = fh.readlines()
+        fh.close()
+        line0 = lines[0].strip()
+        if not line0.startswith('#!/usr/bin/env pythonw'):
+            fh = open(fname, 'w')
+            fh.write('#!/usr/bin/env pythonw\n')
+            fh.write("".join(lines[1:]))
+            fh.close()
+            print("Rewrote ", fname)
+
+
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = version.__version__,
@@ -173,20 +189,6 @@ setup(name = 'xraylarch',
       packages = ['larch', 'larch.utils', 'larch.wxlib',
                   'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
-
-if cmdline_args[0] == 'install' and sys.platform == 'darwin':
-    dest = os.path.join(larchdir, 'apps')
-    try:
-        os.mkdir(apps)
-    except:
-        pass
-    for app in mac_apps:
-        _, aname = os.path.split(app)
-        adest = os.path.join(dest, aname)
-        if os.path.exists(adest):
-            shutil.rmtree(adest)
-
-        shutil.copytree(app, adest)
 
 
 def remove_cruft(basedir, filelist):

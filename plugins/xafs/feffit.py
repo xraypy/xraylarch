@@ -189,7 +189,7 @@ class FeffitDataSet(Group):
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
         # print(" Prepare fit " , hasattr(self.data, 'epsilon_k'))
-        if hasattr(self.data, 'epsilon_k'):
+        if getattr(self.data, 'epsilon_k', None) is not None:
             eps_k = self.data.epsilon_k
             if isinstance(eps_k, np.ndarray):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
@@ -285,8 +285,6 @@ class FeffitDataSet(Group):
         eps_k = self.epsilon_k
         if isinstance(eps_k, np.ndarray):
             eps_k[np.where(eps_k<1.e-12)[0]] = 1.e-12
-        else:
-            eps_k = max(1.e-12, eps_k)
 
         diff  = (self.__chi - self.model.chi)
         if data_only:  # for extracting transformed data separately from residual

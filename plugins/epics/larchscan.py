@@ -89,6 +89,7 @@ from threading import Thread
 import json
 import numpy as np
 import random
+import six
 
 from datetime import timedelta
 
@@ -364,7 +365,7 @@ class LarchStepScan(object):
 
     def add_counter(self, counter, label=None):
         "add simple counter"
-        if isinstance(counter, (str, unicode)):
+        if isinstance(counter, six.string_types):
             counter = Counter(counter, label)
         if counter not in self.counters:
             self.counters.append(counter)
@@ -374,7 +375,7 @@ class LarchStepScan(object):
         "add simple detector trigger"
         if trigger is None:
             return
-        if isinstance(trigger, (str, unicode)):
+        if isinstance(trigger, six.string_types):
             trigger = Trigger(trigger, label=label, value=value)
         if trigger not in self.triggers:
             self.triggers.append(trigger)

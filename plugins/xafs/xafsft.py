@@ -316,7 +316,7 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return (kstep / sqrt(pi)) * fft(cchi)[:nfft/2]
+    return (kstep / sqrt(pi)) * fft(cchi)[:int(nfft/2)]
 
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -341,7 +341,7 @@ def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chir)] = chir
-    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:nfft/2]
+    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:int(nfft/2)]
 
 
 def registerLarchPlugin():

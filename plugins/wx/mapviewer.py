@@ -252,7 +252,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     def onShowMap(self, event=None, new=True):
         mode = self.map_mode.GetStringSelection()
         def get_expr(wid):
-            val = str(wid.Value)
+            val = bytes2str(wid.Value)
             if len(val) == 0:
                 val = '1'
             return val
@@ -277,7 +277,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             else:
                 map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
 
-            _larch.symtable.set_symbol(str(varname), map)
+            _larch.symtable.set_symbol(bytes2str(varname), map)
             if main_file is None:
                 main_file = self.owner.filemap[fname]
         if mode.startswith('I'):
@@ -693,11 +693,11 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         for i, comm in enumerate(comments):
             self.wids['User Comments %i' %(i+1)].SetLabel(comm)
 
-        pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
-        pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
+        pos_addrs = [bytes2str(x) for x in xrfmap['config/positioners'].keys()]
+        pos_label = [bytes2str(x.value) for x in xrfmap['config/positioners'].values()]
 
-        scan_pos1 = str(xrfmap['config/scan/pos1'].value)
-        scan_pos2 = str(xrfmap['config/scan/pos2'].value)
+        scan_pos1 = bytes2str(xrfmap['config/scan/pos1'].value)
+        scan_pos2 = bytes2str(xrfmap['config/scan/pos2'].value)
         i1 = pos_addrs.index(scan_pos1)
         i2 = pos_addrs.index(scan_pos2)
 
@@ -735,7 +735,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         cur_energy = ''
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
-            name = str(name).lower()
+            name = bytes2str(name).lower()
             if 'ring current' in name:
                 self.wids['Ring Current'].SetLabel("%s mA" % val)
             elif 'mono energy' in name and cur_energy=='':
@@ -746,7 +746,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             elif 'i0 current' in name:
                 i0vals['current'] = val
             else:
-                addr = str(addr)
+                addr = bytes2str(addr)
                 if addr.endswith('.VAL'):
                     addr = addr[:-4]
                 if addr in pos_addrs:
@@ -1078,7 +1078,7 @@ WARNING: This cannot be undone!
     def onLabel(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
-        new_label = str(self.desc.GetValue())
+        new_label = bytes2str(self.desc.GetValue())
         area.attrs['description'] = new_label
         self.owner.current_file.h5root.flush()
         self.set_area_choices(self.owner.current_file.xrfmap)
@@ -1310,11 +1310,11 @@ class MapViewerFrame(wx.Frame):
             return
 
         xrfmap = self.current_file.xrfmap
-        pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
-        pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
+        pos_addrs = [bytes2str(x) for x in xrfmap['config/positioners'].keys()]
+        pos_label = [bytes2str(x.value) for x in xrfmap['config/positioners'].values()]
 
-        pos1 = str(xrfmap['config/scan/pos1'].value)
-        pos2 = str(xrfmap['config/scan/pos2'].value)
+        pos1 = bytes2str(xrfmap['config/scan/pos1'].value)
+        pos2 = bytes2str(xrfmap['config/scan/pos2'].value)
         i1 = pos_addrs.index(pos1)
         i2 = pos_addrs.index(pos2)
         msg = "%s(%s) = %.4f, %s(%s) = %.4f?" % (pos_label[i1], pos_addrs[i1], xval,
@@ -1349,7 +1349,7 @@ class MapViewerFrame(wx.Frame):
             conf = xrfmap['config']
             pos_addrs = [pvn(tval) for tval in conf['positioners']]
             env_addrs = [pvn(tval) for tval in conf['environ/address']]
-            env_vals  = [str(tval) for tval in conf['environ/value']]
+            env_vals  = [bytes2str(tval) for tval in conf['environ/value']]
 
             position = {}
             for p in pos_addrs:
@@ -1530,7 +1530,7 @@ class MapViewerFrame(wx.Frame):
 
 
         if dlg.ShowModal() == wx.ID_OK:
-            basedir = os.path.abspath(str(dlg.GetPath()))
+            basedir = os.path.abspath(bytes2str(dlg.GetPath()))
             try:
                 if len(basedir)  > 0:
                     os.chdir(nativepath(basedir))
@@ -1599,12 +1599,12 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
         if read:
             #try:
-            xrmfile = GSEXRM_MapFile(folder=str(path))
+            xrmfile = GSEXRM_MapFile(folder=bytes2str(path))
             #except:
             #    Popup(self, NOT_GSEXRM_FOLDER % str(path),
             #         "Not a Map folder")
             #    return
-            parent, fx = os.path.split(str(path))
+            parent, fx = os.path.split(bytes2str(path))
             self.add_xrmfile(xrmfile)
 
     def add_xrmfile(self, xrmfile):
@@ -1649,7 +1649,7 @@ class MapViewerFrame(wx.Frame):
 
         if read:
             parent, fname = os.path.split(path)
-            xrmfile = GSEXRM_MapFile(filename=str(path))
+            xrmfile = GSEXRM_MapFile(filename=bytes2str(path))
             self.add_xrmfile(xrmfile)
 
     def onWatchFiles(self, event=None):

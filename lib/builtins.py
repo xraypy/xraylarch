@@ -8,11 +8,16 @@ import time
 import re
 import traceback
 
+import six
+if six.PY3:
+    import io
+
+
 from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
-from .larchlib import parse_group_args
+from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
 
 PLUGINSTXT = 'plugins.txt'
@@ -133,9 +138,7 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text=None, filename=None, _larch=None,
-          new_module=None, interactive=False,
-          printall=False):
+def _eval(text=None, filename=None, _larch=None, new_module=None):
     """evaluate a string of larch text
     """
     if _larch is None:
@@ -147,25 +150,27 @@ def _eval(text=None, filename=None, _larch=None,
     symtable = _larch.symtable
     lineno = 0
     output = None
-    fname = filename
 
-    inptext = inputText.InputText(interactive=interactive, _larch=_larch)
-    is_complete = inptext.put(text, filename=filename)
-    # print 'eval complete? ', is_complete, inptext.keys
-    if not is_complete:
-        inptext.input_buff.reverse()
-        lline, lineno = 'unknown line', 0
-        for tline, complete, eos, fname, lineno in inptext.input_buff:
-            if complete: break
-            lline = tline
-        _larch.raise_exception(None, expr=lline, fname=fname, lineno=lineno+1,
-                               exc=SyntaxError, msg= 'input is incomplete')
+    inp = inputText.InputText(_larch=_larch)
+    inp.put(text, filename=filename, lineno=0)
+    if not inp.complete:
+        msg = "File '%s' ends with incomplete input" % (filename)
+        text = None
+        if len(inp.blocks) > 0 and filename is not None:
+            blocktype, lineno, text = inp.blocks[0]
+            msg = "File '%s' ends with un-terminated '%s'" % (filename,
+                                                              blocktype)
+        elif inp.saved_text is not None:
+            text, fname, lineno = inp.saved_text
+            msg = "File '%s' ends with incomplete statement" % (filename)
+        while not inp.queue.empty():
+            inp.get()
+        err = LarchExceptionHolder(node=None, exc=SyntaxError, msg=msg,
+                                   expr=text, fname=filename,
+                                   lineno=lineno)
 
-    if len(inptext.keys) > 0 and filename is not None:
-        msg = "file ends with un-terminated '%s' block"
-        _larch.raise_exception(None, expr="run('%s')" % filename,
-                               fname=filename, lineno=inptext.lineno,
-                               exc=IOError, msg=msg % inptext.keys[0])
+        _larch.error.append(err)
+        symtable._sys.last_error = err
 
     if new_module is not None:
         # save current module group
@@ -175,43 +180,18 @@ def _eval(text=None, filename=None, _larch=None,
         symtable._sys.modules[new_module] = thismod
         symtable.set_frame((thismod, thismod))
 
-    output = []
-    # print 'eval %i lines of text ' % len(inptext)
     if len(_larch.error) > 0:
-        inptext.clear()
-        return output
+        inp.clear()
 
-    while len(inptext) > 0:
-        block, fname, lineno = inptext.get()
-        b = block.strip()
-        if len(b) <= 0:
-            continue
-        ret = _larch.eval(block, fname=fname, lineno=lineno)
-        if hasattr(ret, '__call__') and not isinstance(ret, type):
-            try:
-                if 1 == len(block.split()):
-                    ret = ret()
-            except:
-                pass
-        if len(_larch.error) > 0:
-            break
-        #
-    if len(_larch.error) > 0:
-        inptext.clear()
-    elif printall and ret is not None:
-        output.append("%s" % ret)
+    complete = inp.run()
 
     # for a "newly created module" (as on import),
     # the module group is the return value
     # print 'eval End ', new_module, output
     if new_module is not None:
         symtable.restore_frame()
-        output = thismod
-    elif len(output) > 0:
-        output = "\n".join(output)
-    else:
-        output = None
-    return output
+    return
+
 
 
 def _run(filename=None, new_module=None, _larch=None):
@@ -220,7 +200,11 @@ def _run(filename=None, new_module=None, _larch=None):
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
 
     text = None
-    if isinstance(filename, file):
+    if six.PY2:
+        filetype = file
+    else:
+        filetype = io.IOBase
+    if isinstance(filename, filetype):
         text = filename.read()
         filename = filename.name
     elif os.path.exists(filename) and os.path.isfile(filename):
@@ -234,7 +218,7 @@ def _run(filename=None, new_module=None, _larch=None):
         return
 
     return  _eval(text=text, filename=filename, _larch=_larch,
-                  new_module=new_module, interactive=False, printall=False)
+                  new_module=new_module)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
@@ -270,7 +254,6 @@ def _help(*args, **kws):
     else:
         for a in args:
             helper.help(a)
-
     if helper._larch is not None:
         helper._larch.writer.write("%s\n" % helper.getbuffer())
     else:
@@ -487,7 +470,7 @@ def _which(sym, _larch=None, **kws):
     stable = _larch.symtable
     if hasattr(sym, '__name__'):
         sym = sym.__name__
-    if isinstance(sym, (str, unicode)) and stable.has_symbol(sym):
+    if isinstance(sym, six.string_types) and stable.has_symbol(sym):
         obj = stable.get_symbol(sym)
         if obj is not None:
             return '%s.%s' % (stable.get_parentpath(sym), sym)
@@ -521,7 +504,7 @@ def _isgroup(obj, *args, **kws):
     if _larch is None:
         raise Warning("cannot run isgroup() -- larch broken?")
     stable = _larch.symtable
-    if isinstance(obj, (str, unicode)) and stable.has_symbol(obj):
+    if isinstance(obj, six.string_types) and stable.has_symbol(obj):
         obj = stable.get_symbol(obj)
     return isgroup(obj, *args)
 
@@ -544,9 +527,7 @@ def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
 def my_eval(text, _larch=None):
-    return  _eval(text=text, _larch=_larch,
-                  new_module=None,  interactive=False,
-                  printall=True)
+    return  _eval(text=text, _larch=_larch, new_module=None)
 
 def _ufloat(arg, _larch=None):
     return fitting.ufloat(arg)
@@ -583,4 +564,7 @@ local_funcs = {'_builtin': {'group':_group,
                }
 
 # list of supported valid commands -- don't need parentheses for these
-valid_commands = ('run', 'help')
+valid_commands = ['run', 'help', 'show', 'which']
+
+if six.PY3:
+    valid_commands.append('print')

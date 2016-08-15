@@ -12,7 +12,7 @@ the path represented by the feffNNNN.dat
 
 creates a group that contains the chi(k) for the sum of paths.
 """
-
+import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from larch import (Group, Parameter, isParameter,
@@ -240,7 +240,7 @@ class FeffPathGroup(Group):
             if param in kws:
                 if kws[param] is not None:
                     val = kws[param]
-            if isinstance(val, (str, unicode)):
+            if isinstance(val, six.string_types):
                 thispar = Parameter(expr=val, _larch=self._larch)
 
                 #if isinstance(thispar, Parameter):

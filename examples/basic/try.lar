@@ -1,3 +1,4 @@
+
 x = 1.0
 try:
     y =  7/(x-1)
@@ -12,13 +13,10 @@ except ArithmeticError:
 
 #endtry
 print y
-    
-
 
 print '-----------------'
 
 y = 3
 if y < 100:
-    raise Warning, 'y cannot be less than 100'
-# raise ArithemticError, 'y cannot be less than 100'
+    raise Warning('y cannot be less than 100')
 endif

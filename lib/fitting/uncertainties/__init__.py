@@ -233,6 +233,7 @@ import math
 from math import sqrt, log  # Optimization: no attribute look-up
 import copy
 import warnings
+import six
 
 # Numerical version:
 __version_info__ = (1, 9)
@@ -1166,7 +1167,6 @@ def add_operators_to_AffineScalarFunc():
     """
     Adds many operators (__add__, etc.) to the AffineScalarFunc class.
     """
-
     ########################################
 
     #! Derivatives are set to return floats.  For one thing,
@@ -1223,10 +1223,7 @@ def add_operators_to_AffineScalarFunc():
     # behavior of float(1j) is similar.
     for coercion_type in ('complex', 'int', 'long', 'float'):
         def raise_error(self):
-            raise TypeError("can't convert an affine function (%s)"
-                            ' to %s; use x.nominal_value'
-                            # In case AffineScalarFunc is sub-classed:
-                            % (self.__class__, coercion_type))
+            raise TypeError("cannot convert an affine function to %s; use x.nominal_value" % (coercion_type))
 
         setattr(AffineScalarFunc, '__%s__' % coercion_type, raise_error)
 
@@ -1628,7 +1625,7 @@ def ufloat(representation, tag=None):
     # thus does not have any overhead.
 
     #! Different, in Python 3:
-    if isinstance(representation, basestring):
+    if isinstance(representation, six.string_types):
         representation = str_to_number_with_uncert(representation)
 
     #! The tag is forced to be a string, so that the user does not
@@ -1637,7 +1634,7 @@ def ufloat(representation, tag=None):
     # from being considered as tags, here:
     if tag is not None:
         #! 'unicode' is removed in Python3:
-        assert isinstance(tag, (str, unicode)), "The tag can only be a string."
+        assert isinstance(tag, six.string_types), "The tag can only be a string."
 
     #! The special ** syntax is for Python 2.5 and before (Python 2.6+
     # understands tag=tag):

@@ -158,10 +158,8 @@ def preedge(energy, mu, e0=None, step=None,
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
-    if nnorm == 0:
-        coefs = [omu[p1:p2].mean()]
-    else:
-        coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
+
+    coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm-1)
     post_edge = 0
     norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):
@@ -238,7 +236,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
     """
-
 
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),

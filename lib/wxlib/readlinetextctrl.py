@@ -3,13 +3,6 @@
 from __future__ import print_function
 import sys
 
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
 import os
 import time

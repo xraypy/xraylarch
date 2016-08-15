@@ -266,7 +266,7 @@ class MapImageFrame(ImageFrame):
         if event.xdata is None or event.ydata is None:
             return
 
-        ix, iy = round(event.xdata), round(event.ydata)
+        ix, iy = int(round(event.xdata)), int(round(event.ydata))
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix

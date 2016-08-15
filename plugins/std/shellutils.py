@@ -11,6 +11,7 @@ import os
 import sys
 from copy import copy, deepcopy
 from glob import glob
+import six
 from larch import ValidateLarchPlugin
 
 MODNAME = '_builtin'
@@ -65,7 +66,7 @@ def _mkdir(name, mode=0o777, **kws):
     """create directory (and any intermediate subdirectories
 
     Options:
-    --------   
+    --------
       mode   permission mask to use for creating directory (default=0777)
     """
     return os.makedirs(name, mode=mode)
@@ -75,7 +76,7 @@ def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
     txt = text[:]
-    if isinstance(txt, (str, unicode)):
+    if isinstance(txt, six.string_types):
         txt = txt.split('\n')
     if len(txt) <1:
         return
@@ -137,6 +138,6 @@ def initializeLarchPlugin(_larch=None):
 
 def registerLarchPlugin():
     return ('_builtin', {'copy': _copy, 'deepcopy': _deepcopy,
-                         'more': _more, 'parent': _parent,  
+                         'more': _more, 'parent': _parent,
                          'ls': _ls,  'mkdir': _mkdir,
                          'cd': _cd,  'cwd': _cwd })

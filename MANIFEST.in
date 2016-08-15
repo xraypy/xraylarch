@@ -1,10 +1,14 @@
-include README.txt LICENSE INSTALL  MANIFEST.in PKG-INFO
-include setup.py publish_docs.sh
-exclude *.pyc core.* *~ *.pdf .deps sandbox
+include README.rst LICENSE INSTALL  MANIFEST.in PKG-INFO
+include setup.py
+exclude *.lar *.pyc core.* *~ *.pdf .deps
 recursive-include lib *.py
 recursive-include tests *.py
 recursive-include doc *
-recursive-exclude doc/_build *
 recursive-include modules *
 recursive-include plugins *
 recursive-include examples *
+recursive-exclude plugins *.pyc
+recursive-exclude plugins __pycache__
+recursive-exclude lib __pycache__
+recursive-exclude doc/_build *
+recursive-exclude sandbox *

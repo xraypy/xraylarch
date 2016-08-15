@@ -74,7 +74,7 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
         chi = chi * k**kweight
 
     # extend EXAFS to 1024 data points...
-    NFT = nfft/2
+    NFT = int(nfft/2)
     if len(k) < NFT:
         knew = np.arange(NFT) * kstep
         xnew = np.zeros(NFT) * kstep
