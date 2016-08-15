@@ -12,6 +12,7 @@ from glob import glob
 
 import numpy as np
 from larch import Group
+from larch.utils.strutils import bytes2str
 from larch_plugins.io import fix_varname
 
 if sys.version[0] == '2':
@@ -19,7 +20,7 @@ if sys.version[0] == '2':
 else:
     maketrans = str.maketrans
 
-alist2json = str.maketrans("();'\n", "[] \" ")
+alist2json = maketrans("();'\n", "[] \" ")
 def perl2json(text):
     return json.loads(text.split('=')[1].strip().translate(alist2json))
 
@@ -64,26 +65,26 @@ def read_athena(filename, match=None, do_preedge=True,
 
     try:
         fh = GzipFile(filename)
-        lines = [str(t, sys.stdin.encoding) for t in fh.readlines()]
+        lines = [bytes2str(t) for t in fh.readlines()]
         fh.close()
     except:
-        raise ValueError("%s '%s': invalid gzip file" % (ERR_MSG, fname))
+        raise ValueError("%s '%s': invalid gzip file" % (ERR_MSG, filename))
 
     athenagroups = []
     dat = {'name':''}
     Athena_version  = None
     vline = lines.pop(0)
     if  "Athena project file -- Demeter version" not in vline:
-        raise ValueError("%s '%s': invalid Athena File" % (ERR_MSG, fname))
+        raise ValueError("%s '%s': invalid Athena File" % (ERR_MSG, filename))
 
     major, minor, fix = '0', '0', '0'
     try:
         vs = vline.split("Athena project file -- Demeter version")[1]
         major, minor, fix = vs.split('.')
     except:
-        raise ValueError("%s '%s': cannot read version" % (ERR_MSG, fname))
+        raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
     if int(minor) < 9 or int(fix[:2]) < 21:
-        raise ValueError("%s '%s': file is too old to read" % (ERR_MSG, fname))
+        raise ValueError("%s '%s': file is too old to read" % (ERR_MSG, filename))
 
     for t in lines:
         if t.startswith('#') or len(t) < 2:
