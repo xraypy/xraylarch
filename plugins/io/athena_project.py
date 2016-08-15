@@ -27,7 +27,7 @@ def perl2json(text):
 
 ERR_MSG = "Error reading Athena Project File"
 def read_athena(filename, match=None, do_preedge=True,
-                do_bkg=True, do_fft=True, _larch=None):
+                do_bkg=True, do_fft=True, use_hashkey=False, _larch=None):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
 
@@ -37,18 +37,22 @@ def read_athena(filename, match=None, do_preedge=True,
         do_preedge (bool): whether to do pre-edge subtraction [True]
         do_bkg (bool): whether to do XAFS background subtraction [True]
         do_fft (bool): whether to do XAFS Fast Fourier transform [True]
+        use_hashkey (bool): whether to use Athena's hash key as the
+                       group name instead of the Athena label [False]
 
     Returns:
         group of groups each named according the label used by Athena.
 
     Notes:
         1. To limit the imported groups, use the pattern in `match`,
-        using '*' to match 'all' '?' to match any single character,
-        or [sequence] to match any of a sequence of letters.  The matching
-        will always be insensitive to case.
-        2. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
-        pre-edge, background subtraction, and FFT from Athena by using
-        the parameters saved in the project file.
+           using '*' to match 'all' '?' to match any single character,
+           or [sequence] to match any of a sequence of letters.  The match
+           will always be insensitive to case.
+        3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
+           pre-edge, background subtraction, and FFT from Athena by using
+           the parameters saved in the project file.
+        2. use_hashkey=True will name groups from the internal 5 character 
+           string used by Athena, instead of the group label.
 
     Example:
         1. read in all groups from a project file:
@@ -105,6 +109,7 @@ def read_athena(filename, match=None, do_preedge=True,
         match = match.lower()
 
     out = Group()
+    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)    
     for dat in athenagroups:
         label = dat['name']
         this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
@@ -121,9 +126,12 @@ def read_athena(filename, match=None, do_preedge=True,
                 elif key.startswith('fft_'):
                     setattr(this.fft_params, key[4:], val)
                 elif key == 'label':
-                    label = this.label = val
+                    this.label = val
+                    if not use_hashkey:
+                        label = this.label
                 else:
                     setattr(this.athena_params, key, val)
+        this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
         olabel = fix_varname(label)
         if match is not None:
             if not fnmatch(olabel.lower(), match):
