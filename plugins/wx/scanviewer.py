@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 """
-
+Scan Data File Viewer
 """
 import os
 import time
-import shutil
 import numpy as np
 np.seterr(all='ignore')
 
-from random import randrange
 from functools import partial
-from datetime import timedelta
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -19,27 +16,24 @@ import wx.lib.mixins.inspection
 
 from wx.richtext import RichTextCtrl
 
-HAS_EPICS = False
-try:
-    import epics
-    from epics.wx import DelayedEpicsCallback, EpicsFunction
-    HAS_EPICS = True
-except ImportError:
-    pass
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 from larch import Interpreter, isParameter
 from larch.larchlib import read_workdir, save_workdir
-from larch.wxlib import larchframe
+from larch.wxlib import larchframe, EditColumnFrame
+
 from larch.fitting import fit_report
 from larch.utils import debugtime
 
+from larch_plugins.std import group2dict
 from larch_plugins.math import fit_peak, index_of
 
-from larch_plugins.io import gsescan_group, read_xdi
+from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
+                              gsescan_group, fix_varname)
 
-from larch_plugins.wx.mapviewer import MapViewerFrame
+from larch_plugins.xafs import pre_edge
 
-from wxmplot import PlotFrame, PlotPanel
+from wxmplot import PlotFrame
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button,
                      Choice,  Check, MenuItem, GUIColors,
@@ -49,128 +43,13 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
+PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
+PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=-5,
+                  marker='None', markersize=4)
+PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=-5,
+                  side='right',  y2label='derivative',
+                  marker='None', markersize=4)
 
-PRE_OPS = ('', 'log', '-log')
-ARR_OPS = ('+', '-', '*', '/')
-
-SCANGROUP = '_scan'
-def randname(n=6):
-    "return random string of n (default 6) lowercase letters"
-    return ''.join([chr(randrange(26)+97) for i in range(n)])
-
-def okcancel(panel, onOK=None, onCancel=None):
-    btnsizer = wx.StdDialogButtonSizer()
-    _ok = wx.Button(panel, wx.ID_OK)
-    _no = wx.Button(panel, wx.ID_CANCEL)
-    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
-    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
-    _ok.SetDefault()
-    btnsizer.AddButton(_ok)
-    btnsizer.AddButton(_no)
-    btnsizer.Realize()
-    return btnsizer
-
-
-class EditColumnFrame(wx.Frame) :
-    """Set Column Labels for a file"""
-    def __init__(self, parent, pos=(-1, -1)):
-
-        self.parent = parent
-        self.larch = parent.larch
-        self.lgroup = parent.lgroup
-
-        message = "Edit Column Labels for %s" % self.lgroup.filename
-
-        wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
-                          style=FRAMESTYLE)
-
-        FWID = 600
-        self.SetFont(Font(10))
-        sizer = wx.GridBagSizer(10, 5)
-        panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((600, 600))
-        self.colors = GUIColors()
-
-        # title row
-        title = SimpleText(panel, message, font=Font(13),
-                           colour=self.colors.title, style=LCEN)
-
-        sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
-
-        ir = 1
-        sizer.Add(SimpleText(panel, label='Column #', size=(55, -1)),
-                  (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(SimpleText(panel, label='Current Label', size=(200, -1)),
-                  (ir, 1), (1, 1), RCEN, 2)
-        sizer.Add(SimpleText(panel, label='New Label'),
-                  (ir, 2), (1, 1), LCEN, 2)
-
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
-
-        self.twids = []
-        for icol, clab in enumerate(self.lgroup.array_labels):
-            ix   = SimpleText(panel, label='%i' % icol, size=(55, -1))
-            old  = SimpleText(panel, label=clab,        size=(200, -1))
-            new  = wx.TextCtrl(panel, -1, value=clab,   size=(200, -1))
-            self.twids.append((clab, new))
-
-            ir +=1
-            sizer.Add(ix,  (ir, 0), (1, 1), RCEN, 2)
-            sizer.Add(old, (ir, 1), (1, 1), LCEN, 2)
-            sizer.Add(new, (ir, 2), (1, 1), LCEN, 2)
-
-
-
-        ir += 1
-        sizer.Add(okcancel(panel, self.onOK, self.onClose),
-                  (ir, 0), (1, 2), LCEN, 3)
-
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
-        #
-        pack(panel, sizer)
-
-        ftext = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY,
-                               size=(-1, 275))
-        try:
-            m = open(self.lgroup.filename, 'r')
-            text = m.read()
-            m.close()
-        except:
-            text = "The file '%s'\n was not found" % self.lgroup.filename
-        ftext.SetValue(text)
-        ftext.SetFont(Font(9))
-
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
-        mainsizer.Add(ftext, 1, LCEN|wx.GROW,   2)
-        pack(self, mainsizer)
-
-        self.Show()
-        self.Raise()
-
-    def onOK(self, event=None):
-        """ rename labels -- note that values for new names are first gathered,
-        and then set, so that renaming 'a' and 'b' works."""
-        labels = []
-        tmp = {}
-        for oldname, twid in self.twids:
-            newname = twid.GetValue()
-            labels.append(newname)
-            if oldname != newname:
-                tmp[newname] = getattr(self.lgroup, oldname)
-        for name, val in tmp.items():
-            setattr(self.lgroup, name, val)
-        self.lgroup.array_labels = labels
-        self.parent.set_array_labels(labels=labels)
-        self.Destroy()
-
-    def onClose(self, event=None):
-        self.Destroy()
 
 
 class ScanViewerFrame(wx.Frame):
@@ -180,8 +59,8 @@ class ScanViewerFrame(wx.Frame):
     def __init__(self, _larch=None, **kws):
 
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
-        self.file_groups = {}
-        self.file_paths  = []
+        self.file_groups = []
+        self.last_array_sel = {}
         title = "Column Data File Viewer"
         self.larch = _larch
         self.larch_buffer = None
@@ -202,13 +81,16 @@ class ScanViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         read_workdir('scanviewer.dat')
-
+        self.need_xas_update = False
+        self.xas_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onXASProcessTimer, self.xas_timer)
+        self.xas_timer.Start(500)
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.filelist  = wx.ListBox(splitter)
+        self.filelist  = wx.CheckListBox(splitter)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
 
@@ -228,73 +110,19 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
         # x-axis
 
-        self.xarr = Choice(panel, choices=[],
-                               action=self.onColumnChoices,  size=(120, -1))
-        self.xop  = Choice(panel, choices=('', 'log'),
-                               action=self.onColumnChoices, size=(90, -1))
+        self.plot_one = Button(panel, 'Plot', size=(200, 30),
+                               action=self.onPlotOne)
+        self.plot_sel = Button(panel, 'Plot Selected', size=(200, 30),
+                               action=self.onPlotSel)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
-        sizer.Add(self.xop,                  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, '('),    (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.xarr,                 (ir, 3), (1, 1), RCEN, 0)
-        sizer.Add(SimpleText(panel, ')'),    (ir, 4), (1, 1), CEN, 0)
-
-        self.yops = []
-        self.yarr = []
-
-        opts= {'choices':[], 'size':(120, -1), 'action':self.onColumnChoices}
-        for i in range(3):
-            self.yarr.append(Choice(panel, **opts))
-
-
-        for opts, sel, siz in ((PRE_OPS, 0, 90),
-                               (ARR_OPS, 3, 50), (ARR_OPS, 3, 50)):
-            w1 = Choice(panel, choices=opts, action=self.onColumnChoices,
-                            size=(siz, -1))
-            w1.SetSelection(sel)
-            self.yops.append(w1)
-
-        ir += 1
-        label = 'Y = '
-        sizer.Add(SimpleText(panel, label), (ir, 0), (1, 1), CEN, 0)
-        sizer.Add(self.yops[0],             (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, '[('),  (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.yarr[0],             (ir, 3), (1, 1), CEN, 0)
-        sizer.Add(self.yops[1],             (ir, 4), (1, 1), CEN, 0)
-        sizer.Add(self.yarr[1],             (ir, 5), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, ')'),   (ir, 6), (1, 1), LCEN, 0)
-        ir += 1
-        sizer.Add(self.yops[2],             (ir, 4), (1, 1), CEN, 0)
-        sizer.Add(self.yarr[2],             (ir, 5), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, ']'),   (ir, 6), (1, 1), LCEN, 0)
-
-        self.use_deriv = Check(panel, default=False, label='Use Derivative?',
-                              action=self.onColumnChoices)
-        self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
-                              action=self.onColumnChoices)
-        ir += 1
-        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)
-        sizer.Add(self.dtcorr,    (ir,   3), (1, 3), LCEN, 0)
-
+        sizer.Add(self.plot_one, (ir, 0), (1, 2), LCEN, 0)
+        sizer.Add(self.plot_sel, (ir, 2), (1, 2), LCEN, 0)
         pack(panel, sizer)
 
-        self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
-
-        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
-        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-
-        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
-
-        self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
-        self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
-
-        self.nb.AddPage(self.fit_panel, ' General Analysis ', True)
-        self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
         mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
 
-
+        o = """
         btnbox   = wx.Panel(mainpanel)
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
         for ttl, opt in (('New Plot',   'new'),
@@ -307,6 +135,23 @@ class ScanViewerFrame(wx.Frame):
 
         pack(btnbox, btnsizer)
         mainsizer.Add(btnbox, 0, LCEN, 2)
+        """
+
+        self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
+
+        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+
+        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+
+        self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
+        self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
+
+        self.nb.AddPage(self.fit_panel, ' General Curve Fitting ', True)
+        self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
+
+
         mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
 
         pack(mainpanel, mainsizer)
@@ -354,33 +199,42 @@ class ScanViewerFrame(wx.Frame):
         pack(panel, sizer)
         return panel
 
-    def InitializeXASPanel(self):
-        if self.groupname is None:
-            lgroup = None
-        lgroup = getattr(self.larch.symtable, self.groupname)
-        self.xas_e0.SetValue(getattr(lgroup, 'e0', 0))
-        self.xas_step.SetValue(getattr(lgroup, 'edge_step', 0))
-        self.xas_pre1.SetValue(getattr(lgroup, 'pre1',   -200))
-        self.xas_pre2.SetValue(getattr(lgroup, 'pre2',   -30))
-        self.xas_nor1.SetValue(getattr(lgroup, 'norm1',  50))
-        self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -10))
+    def InitializeXASPanel(self, dgroup):
+        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
+                       edge_step=0, norm2=-10, nnorm=3, nvict=2,
+                       auto_step=True, auto_e0=True, show_e0=True)
 
-        self.xas_vict.SetSelection(getattr(lgroup, 'nvict', 1))
-        self.xas_nnor.SetSelection(getattr(lgroup, 'nnorm', 2))
+        if hasattr(dgroup, 'pre_edge_details'):
+            predefs.update(group2dict(dgroup.pre_edge_details))
+
+        self.xas_e0.SetValue(predefs['e0'])
+        self.xas_step.SetValue(predefs['edge_step'])
+        self.xas_pre1.SetValue(predefs['pre1'])
+        self.xas_pre2.SetValue(predefs['pre2'])
+        self.xas_nor1.SetValue(predefs['norm1'])
+        self.xas_nor2.SetValue(predefs['norm2'])
+        self.xas_vict.SetSelection(predefs['nvict'])
+        self.xas_nnor.SetSelection(predefs['nnorm'])
+
+        self.xas_showe0.SetValue(predefs['show_e0'])
+        self.xas_autoe0.SetValue(predefs['auto_e0'])
+        self.xas_autostep.SetValue(predefs['auto_step'])
 
     def CreateXASPanel(self, parent):
+        opchoices=('Raw Data', 'Normalized', 'Derivative',
+                   'Normalized + Derivative',
+                   'Pre-edge subtracted',
+                   'Raw Data With Pre-edge/Post-edge Curves')        
         p = panel = wx.Panel(parent)
-        self.xas_autoe0   = Check(panel, default=True, label='auto?')
-        self.xas_showe0   = Check(panel, default=True, label='show?')
-        self.xas_autostep = Check(panel, default=True, label='auto?')
-        self.xas_op       = Choice(panel, size=(225, -1),
-                                       choices=('Raw Data', 'Normalized',
-                                                'Derivative',
-                                                'Normalized + Derivative',
-                                                'Pre-edge subtracted',
-                                   'Raw Data With Pre-edge/Post-edge Curves'),
-                                   action=self.onXASChoice)
-        opts = {'size': (95, -1), 'precision': 3} # , 'action': self.onXASChoice}
+        opts = {'action': self.UpdateXASPlot}
+        self.xas_autoe0   = Check(panel, default=True, label='auto?', **opts)
+        self.xas_showe0   = Check(panel, default=True, label='show?', **opts)
+        self.xas_autostep = Check(panel, default=True, label='auto?', **opts)
+        self.xas_op       = Choice(panel, size=(300, -1),
+                                   choices=opchoices,  **opts)
+
+        opts = {'size': (95, -1), 'precision': 3,
+                'action': self.UpdateXASPlot}
         self.xas_e0   = FloatCtrl(panel, value  = 0, **opts)
         self.xas_step = FloatCtrl(panel, value  = 0, **opts)
         opts['precision'] = 1
@@ -388,8 +242,10 @@ class ScanViewerFrame(wx.Frame):
         self.xas_pre2 = FloatCtrl(panel, value= -30, **opts)
         self.xas_nor1 = FloatCtrl(panel, value=  50, **opts)
         self.xas_nor2 = FloatCtrl(panel, value= -50, **opts)
-        opts = {'size': (50, -1), 'choices': ('0', '1', '2', '3'),
-               'action': self.onXASChoice}
+
+        opts = {'size': (50, -1),
+                'choices': ('0', '1', '2', '3'),
+                'action': self.UpdateXASPlot}
         self.xas_vict = Choice(panel, **opts)
         self.xas_nnor = Choice(panel, **opts)
         self.xas_vict.SetSelection(1)
@@ -402,7 +258,7 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(p, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
         sizer.Add(SimpleText(p, 'Normalization range: '), (4, 0), (1, 1), LCEN)
 
-        sizer.Add(self.xas_op,                 (0, 1), (1, 3), LCEN)
+        sizer.Add(self.xas_op,                 (0, 1), (1, 5), LCEN)
         sizer.Add(self.xas_e0,                 (1, 1), (1, 1), LCEN)
         sizer.Add(self.xas_step,               (2, 1), (1, 1), LCEN)
         sizer.Add(self.xas_pre1,               (3, 1), (1, 1), LCEN)
@@ -424,6 +280,9 @@ class ScanViewerFrame(wx.Frame):
         pack(panel, sizer)
         return panel
 
+    def onCustomColumns(self, evt=None):
+        pass
+
     def onFitPeak(self, evt=None):
         gname = self.groupname
 
@@ -444,8 +303,8 @@ class ScanViewerFrame(wx.Frame):
 
         try:
             lgroup =  getattr(self.larch.symtable, gname)
-            x = lgroup._xdat_
-            y = lgroup._ydat_
+            x = lgroup._xdat
+            y = lgroup._ydat
         except AttributeError:
             self.write_message('need data to fit!')
             return
@@ -465,115 +324,99 @@ class ScanViewerFrame(wx.Frame):
         self.fit_report.SetValue(dtext)
         self.fit_report.SetEditable(False)
 
-        popts1 = dict(style='solid', linewidth=3,
-                      marker='None', markersize=4)
-        popts2 = dict(style='short dashed', linewidth=2,
-                      marker='None', markersize=4)
-
-        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
         if bkg is None:
             lgroup._fit = pgroup.fit[:]
-            lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
         else:
             lgroup._fit     = pgroup.fit[:]
             lgroup._fit_bgr = pgroup.bkg[:]
-            lgroup.plot_yarrays.append((lgroup._fit,     popts2, 'fit'))
-            lgroup.plot_yarrays.append((lgroup._fit_bgr, popts2, 'background'))
+            lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
         self.onPlot()
 
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
+        dgroup = getattr(self.larch.symtable, gname)
 
-        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-        preopts = {'group': gname, 'e0': None}
+        if not hasattr(dgroup, 'energy'):
+            dgroup.energy = dgroup._xdat
+        if not hasattr(dgroup, 'mu'):
+            dgroup.mu = dgroup._ydat
 
-        lgroup = getattr(self.larch.symtable, gname)
-        dtcorr = self.dtcorr.IsChecked()
-        if new_mu:
-            try:
-                del lgroup.e0, lgroup.edge_step
-            except:
-                pass
-
+        e0 = None
         if not self.xas_autoe0.IsChecked():
-            e0 = self.xas_e0.GetValue()
-            if e0 < max(lgroup._xdat_) and e0 > min(lgroup._xdat_):
-                preopts['e0'] = e0
+            _e0 = self.xas_e0.GetValue()
+            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
+                e0 = float(_e0)
 
+        preopts = {'e0': e0}
         if not self.xas_autostep.IsChecked():
             preopts['step'] = self.xas_step.GetValue()
-
-        dt = debugtime()
-
         preopts['pre1']  = self.xas_pre1.GetValue()
         preopts['pre2']  = self.xas_pre2.GetValue()
         preopts['norm1'] = self.xas_nor1.GetValue()
         preopts['norm2'] = self.xas_nor2.GetValue()
-
-        preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nnorm'] = self.xas_nnor.GetSelection()
+        preopts['make_flat'] = False
+        preopts['_larch'] = self.larch
+        print("PRE EDGE ", preopts['nnorm'], preopts['nvict'])
+        pre_edge(dgroup, **preopts)
+        dgroup.pre_edge_details.e0 = dgroup.e0
+        dgroup.pre_edge_details.edge_step = dgroup.edge_step
+        dgroup.pre_edge_details.auto_e0 = self.xas_autoe0.IsChecked()
+        dgroup.pre_edge_details.show_e0 = self.xas_showe0.IsChecked()
+        dgroup.pre_edge_details.auto_step = self.xas_autostep.IsChecked()
 
-        preopts['make_flat'] = 'False'
-        preopts['group'] = gname
-        preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
-
-        preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
-        self.larch(preedge_cmd % (gname, gname, preopts))
         if self.xas_autoe0.IsChecked():
-            self.xas_e0.SetValue(lgroup.e0)
+            self.xas_e0.SetValue(dgroup.e0)
         if self.xas_autostep.IsChecked():
-            self.xas_step.SetValue(lgroup.edge_step)
+            self.xas_step.SetValue(dgroup.edge_step)
 
-        details_group = lgroup
-        try:
-            details_group = lgroup.pre_edge_details
-        except:
-            pass
-            
+        details_group = dgroup.pre_edge_details
         self.xas_pre1.SetValue(details_group.pre1)
         self.xas_pre2.SetValue(details_group.pre2)
         self.xas_nor1.SetValue(details_group.norm1)
         self.xas_nor2.SetValue(details_group.norm2)
 
-        popts1 = dict(style='solid', linewidth=3,
-                      marker='None', markersize=4)
-        popts2 = dict(style='short dashed', linewidth=2, zorder=-5,
-                      marker='None', markersize=4)
-        poptsd = dict(style='solid', linewidth=2, zorder=-5,
-                      side='right',  y2label='derivative',
-                      marker='None', markersize=4)
+        dgroup.orig_ylabel = dgroup.plot_ylabel
+        dgroup.plot_ylabel = '$\mu$'
+        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'        
+        dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
+        y4e0 = dgroup.mu
 
-        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
-        y4e0 = lgroup._ydat_
+        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
         if out.startswith('raw data with'):
-            lgroup.plot_yarrays = [(lgroup._ydat_,    popts1, lgroup.plot_ylabel),
-                                   (lgroup.pre_edge,  popts2, 'pre edge'),
-                                   (lgroup.post_edge, popts2, 'post edge')]
+            dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, dgroup.plot_ylabel),
+                                   (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
+                                   (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
         elif out.startswith('pre'):
-            self.larch('%s.pre_edge_sub = %s.norm * %s.edge_step' %
-                       (gname, gname, gname))
-            lgroup.plot_yarrays = [(lgroup.pre_edge_sub, popts1,
+            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
+            dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
                                     'pre edge subtracted XAFS')]
-            y4e0 = lgroup.pre_edge_sub
+            y4e0 = dgroup.pre_edge_sub
         elif 'norm' in out and 'deriv' in out:
-            lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS'),
-                                   (lgroup.dmude, poptsd, 'derivative')]
-            y4e0 = lgroup.norm
+            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized XAFS'),
+                                   (dgroup.dmude, PLOTOPTS_D, 'derivative')]
+            y4e0 = dgroup.norm
+            dgroup.plot_ylabel = 'normalzed $\mu$'            
 
         elif out.startswith('norm'):
-            lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
-            y4e0 = lgroup.norm
+            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized XAFS')]
+            y4e0 = dgroup.norm
+            dgroup.plot_ylabel = 'normalzed $\mu$'            
         elif out.startswith('deriv'):
-            lgroup.plot_yarrays = [(lgroup.dmude, popts1, 'derivative')]
-            y4e0 = lgroup.dmude
+            dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, 'derivative')]
+            y4e0 = dgroup.dmude
+            dgroup.plot_ylabel = '$d\mu/dE$'
 
-        lgroup.plot_ymarkers = []
+        dgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
-            ie0 = index_of(lgroup._xdat_, lgroup.e0)
-            lgroup.plot_ymarkers = [(lgroup.e0, y4e0[ie0], {'label': 'e0'})]
+            ie0 = index_of(dgroup._xdat, dgroup.e0)
+            dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
         return
 
     def init_larch(self):
@@ -584,132 +427,65 @@ class ScanViewerFrame(wx.Frame):
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
 
         self.SetStatusText('ready')
-        self.datagroups = self.larch.symtable
         self.title.SetLabel('')
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def get_data(self, group, arrayname, correct=False):
-        if hasattr(group, 'get_data'):
-            return group.get_data(arrayname, correct=correct)
-        return getattr(group, arrayname, None)
-
-    def onXASChoice(self, evt=None, **kws):
+    def onXASProcessTimer(self, evt=None):
         if self.groupname is None:
             return
-        self.xas_process(self.groupname, **kws)
-        self.onPlot()
+        if self.need_xas_update:
+            self.xas_process(self.groupname)
+            self.plot_group(self.groupname, new=True)
+            self.need_xas_update = False
 
-    def onColumnChoices(self, evt=None):
-        """column selections changed ..
-        recalculate _xdat_ and _ydat_
-        arrays for this larch group"""
-        dtcorr = self.dtcorr.IsChecked()
-        use_deriv = self.use_deriv.IsChecked()
-        ix  = self.xarr.GetSelection()
-        x   = self.xarr.GetStringSelection()
-        xop = self.xop.GetStringSelection()
-        op1 = self.yops[0].GetStringSelection()
-        op2 = self.yops[1].GetStringSelection()
-        op3 = self.yops[2].GetStringSelection()
-        y1  = self.yarr[0].GetStringSelection()
-        y2  = self.yarr[1].GetStringSelection()
-        y3  = self.yarr[2].GetStringSelection()
+    def UpdateXASPlot(self, evt=None, **kws):
+        self.need_xas_update = True
 
-        array_sel = {'xop': xop, 'xarr': x,
-                     'op1': op1, 'op2': op2, 'op3': op3,
-                     'y1': y1, 'y2': y2, 'y3': y3,
-                     'dtcorr': dtcorr, 'use_deriv': use_deriv}
-        try:
-            gname = self.groupname
-            lgroup = getattr(self.larch.symtable, gname)
-        except:
-            gname = SCANGROUP
-            lgroup = getattr(self.larch.symtable, gname)
+    def onPlotOne(self, evt=None, groupname=None):
+        if groupname is None:
+            groupname = self.groupname
 
-        xlabel = x
-        try:
-            xunits = lgroup.array_units[ix]
-        except:
-            xunits = ''
-        if xop != '':
-            xlabel = "%s(%s)" % (xop, xlabel)
-        if xunits != '':
-            xlabel = '%s (%s)' % (xlabel, xunits)
-
-        ylabel = y1
-        if y2 == '':
-            y2, op2 = '1.0', '*'
-        else:
-            ylabel = "%s%s%s" % (ylabel, op2, y2)
-        if y3 == '':
-            y3, op3 = '1.0', '*'
-        else:
-            ylabel = "(%s)%s%s" % (ylabel, op3, y3)
-
-        if op1 != '':
-            ylabel = "%s(%s)" % (op1, ylabel)
-
-        if y1 in ('0.0', '1.0'):
-            y1 = float(yl1)
-        else:
-            y1 = self.get_data(lgroup, y1, correct=dtcorr)
-
-        if y2 in ('0.0', '1.0'):
-            y2 = float(y2)
-            if op2 == '/': y2 = 1.0
-        else:
-            y2 = self.get_data(lgroup, y2, correct=dtcorr)
-        if y3 in ('0.0', '1.0'):
-            y3 = float(y3)
-            if op3 == '/': y3 = 1.0
-        else:
-            y3 = self.get_data(lgroup, y3, correct=dtcorr)
-        if x not in ('0', '1'):
-            x = self.get_data(lgroup, x)
-        lgroup._x  = x
-        lgroup._y1 = y1
-        lgroup._y2 = y2
-        lgroup._y3 = y3
-
-        self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
-        try:
-            yexpr = "%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  % (gname,
-                    op1, gname, op2, gname, op3, gname)
-            self.larch(yexpr)
-        except RuntimeWarning:
-            self.larch("%s._ydat_ = %s._y1")
-
-        try:
-            if use_deriv:
-                d_calc = "%s._ydat_ = gradient(%s._ydat_)/gradient(%s._xdat_)"
-                self.larch(d_calc % (gname, gname, gname))
-        except:
-            pass
-
-        try:
-            npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
-        except AttributeError:
-            print( 'Error calculating arrays (npts not correct)')
+        dgroup = getattr(self.larch.symtable, groupname, None)
+        if dgroup is None:
             return
+        self.groupname = groupname
+        if (dgroup.is_xas and 
+            (getattr(dgroup, 'plot_yarrays', None) is None or
+             getattr(dgroup, 'energy', None) is None or
+             getattr(dgroup, 'mu', None) is None)):
+            self.xas_process(groupname)
+        self.plot_group(groupname, new=True)
 
-        del lgroup._x, lgroup._y1, lgroup._y2, lgroup._y3
-
-        lgroup.array_sel   = array_sel
-        lgroup.plot_xlabel = xlabel
-        lgroup.plot_ylabel = ylabel
-        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
-        lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
-
-        if (self.nb.GetCurrentPage() == self.xas_panel):
-            self.xas_process(self.groupname, new_mu=True)
+    def onPlotSel(self, evt=None):
+        newplot = True
+        if is_wxPhoenix:
+            group_ids = self.filelist.GetCheckedItems()
         else:
-            lgroup.plot_yarrays = [(lgroup._ydat_, {}, None)]
+            group_ids = self.filelist.GetChecked()
 
-    def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
+        for checked in group_ids:
+            groupname = self.file_groups[checked]
+            dgroup = getattr(self.larch.symtable, groupname, None)
+            if dgroup is None:
+                continue
+            if (dgroup.is_xas and 
+                (getattr(dgroup, 'plot_yarrays', None) is None or
+                 getattr(dgroup, 'energy', None) is None or
+                 getattr(dgroup, 'mu', None) is None)):
+                self.xas_process(groupname)
+            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
+                                    '%s norm' % dgroup._filename)]
+            dgroup.plot_ylabel = 'normalzed $\mu$'
+            dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
+            dgroup.plot_ymarkers = []
 
+            self.plot_group(groupname, title='', new=newplot)
+            newplot=False
+
+    def plot_group(self, groupname, title=None, new=True):
         try:
             self.plotframe.Show()
         except: #  wx.PyDeadObjectError
@@ -717,75 +493,103 @@ class ScanViewerFrame(wx.Frame):
             self.plotframe.Show()
             self.plotpanel = self.plotframe.panel
 
-        if reprocess:
-            if (self.nb.GetCurrentPage() == self.xas_panel):
-                self.xas_process(self.groupname, new_mu=True)
-
-        side = 'left'
-        update = False
-        plotcmd = self.plotpanel.plot
-        if opt in ('left', 'right'):
-            side = opt
-            plotcmd = self.plotpanel.oplot
-        elif opt == 'update'  and npts > 4:
-            plotcmd = self.plotpanel.update_line
-            update = True
-        if 'new' in opt:
+        if new:
             self.plotpanel.clear()
-        popts = {'side': side}
+            plotcmd = self.plotpanel.plot
+        else:
+            plotcmd = self.plotpanel.oplot
+
+        dgroup = getattr(self.larch.symtable, groupname, None)
+        if not hasattr(dgroup, '_xdat'):
+            print("Cannot plot group ", groupname)
+
+        dgroup._xdat = np.array(dgroup._xdat)
+        if hasattr(dgroup, 'plot_yarrays'):
+            plot_yarrays = dgroup.plot_yarrays
+        else:
+            plot_yarrays = [(dgroup._ydat, {}, None)]
+            
+        popts = {}
+        path, fname = os.path.split(dgroup.filename)
+        popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
+        popts['ylabel'] = dgroup.plot_ylabel
+        popts['xlabel'] = dgroup.plot_xlabel        
+
+        if plotcmd == self.plotpanel.plot and title is None:
+            title = fname
+            
+        popts['title'] = title
+
+        for yarr in plot_yarrays:
+            popts.update(yarr[1])
+            if yarr[2] is not None:
+                popts['label'] = yarr[2]
+            plotcmd(dgroup._xdat, yarr[0], **popts)
+            plotcmd = self.plotpanel.oplot
+
+        if hasattr(dgroup, 'plot_ymarkers'):
+            for x, y, opts in dgroup.plot_ymarkers:
+                popts = {'marker': 'o', 'markersize': 4,
+                         'markerfacecolor': 'red',
+                         'markeredgecolor': 'black'}
+                popts.update(opts)
+                self.plotpanel.axes.plot([x], [y], **popts)
+        self.plotpanel.canvas.draw()
+    
+    def onPlot(self, evt=None,  new=True, reprocess=False):
+        try:
+            self.plotframe.Show()
+        except:
+            self.plotframe = PlotFrame(None, size=(650, 400))
+            self.plotframe.Show()
+            self.plotpanel = self.plotframe.panel
+
+        if new:
+            self.plotpanel.clear()
+            plotcmd = self.plotpanel.plot
+        else:
+            plotcmd = self.plotpanel.oplot
+        popts = {'side': 'left'}
 
         try:
             gname = self.groupname
-            lgroup = getattr(self.larch.symtable, gname)
+            dgroup = getattr(self.larch.symtable, gname)
         except:
             gname = SCANGROUP
-            lgroup = getattr(self.larch.symtable, gname)
+            dgroup = getattr(self.larch.symtable, gname)
             return
 
-        if not hasattr(lgroup, '_xdat_'):
+        if not hasattr(dgroup, '_xdat'):
             self.onColumnChoices()
 
-        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
-        plot_yarrays = [(lgroup._ydat_, {}, None)]
-        if hasattr(lgroup, 'plot_yarrays'):
-            plot_yarrays = lgroup.plot_yarrays
-        #for yarr in plot_yarrays:
-        #    yarr = np.array(yarr[:npts])
+        dgroup._xdat = np.array( dgroup._xdat)
+        plot_yarrays = [(dgroup._ydat, {}, None)]
+        if hasattr(dgroup, 'plot_yarrays'):
+            plot_yarrays = dgroup.plot_yarrays
 
-        path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s" % (fname, lgroup.plot_ylabel)
+        path, fname = os.path.split(dgroup.filename)
+        popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
         if side == 'right':
-            popts['y2label'] = lgroup.plot_ylabel
+            popts['y2label'] = dgroup.plot_ylabel
         else:
-            popts['ylabel'] = lgroup.plot_ylabel
+            popts['ylabel'] = dgroup.plot_ylabel
 
         if plotcmd == self.plotpanel.plot:
             popts['title'] = fname
 
-        if update:
-            self.plotpanel.set_xlabel(lgroup.plot_xlabel)
-            self.plotpanel.set_ylabel(lgroup.plot_ylabel)
-            for itrace, yarr, label in enumerate(plot_yarrays):
-                plotcmd(itrace, lgroup._xdat_, yarr[0], draw=True,
-                        update_limits=((npts < 5) or (npts % 5 == 0)),
-                        **yarr[1])
-                self.plotpanel.set_xylims((
-                    min(lgroup._xdat_), max(lgroup._xdat_),
-                    min(yarr), max(yarr)))
+        for yarr in plot_yarrays:
+            popts.update(yarr[1])
+            if yarr[2] is not None:
+                popts['label'] = yarr[2]
+            plotcmd(dgroup._xdat, yarr[0], **popts)
+            plotcmd = self.plotpanel.oplot
 
-        else:
-            for yarr in plot_yarrays:
-                popts.update(yarr[1])
-                if yarr[2] is not None:
-                    popts['label'] = yarr[2]
-                plotcmd(lgroup._xdat_, yarr[0], **popts)
-                plotcmd = self.plotpanel.oplot
-            if hasattr(lgroup, 'plot_ymarkers'):
-                for x, y, opts in lgroup.plot_ymarkers:
-                    popts = {'marker': 'o', 'markersize': 4}
-                    popts.update(opts)
-                    self.plotpanel.oplot([x], [y], **popts)
-            self.plotpanel.canvas.draw()
+        if hasattr(dgroup, 'plot_ymarkers'):
+            for x, y, opts in dgroup.plot_ymarkers:
+                popts = {'marker': 'o', 'markersize': 4}
+                popts.update(opts)
+                self.plotpanel.oplot([x], [y], **popts)
+        self.plotpanel.canvas.draw()
 
 
     def onShowLarchBuffer(self, evt=None):
@@ -797,85 +601,19 @@ class ScanViewerFrame(wx.Frame):
 
     def ShowFile(self, evt=None, groupname=None, **kws):
         if groupname is None and evt is not None:
-            fpath = self.file_paths[evt.GetInt()]
-            groupname = self.file_groups[fpath]
+            groupname = self.file_groups[evt.GetInt()]
 
-        if not hasattr(self.datagroups, groupname):
+        if not hasattr(self.larch.symtable, groupname):
             print( 'Error reading file ', groupname)
             return
 
         self.groupname = groupname
-        self.lgroup = getattr(self.datagroups, groupname, None)
+        self.dgroup = getattr(self.larch.symtable, groupname, None)
 
-        if groupname == SCANGROUP:
-            self.lgroup.filename = filename
-        elif self.lgroup is not None:
-            if hasattr(self.lgroup, 'array_labels'):
-                array_labels = self.lgroup.array_labels[:]
-            elif hasattr(self.lgroup, 'column_labels'):
-                array_labels = self.lgroup.column_labels[:]
-            else:
-                array_labels = []
-                for attr in dir(self.lgroup):
-                    if isinstance(getattr(self.lgroup, attr), np.ndarray):
-                        array_labels.append(attr)
-                self.lgroup.array_labels = array_labels
-            self.set_array_labels()
-            if hasattr(self.lgroup, 'array_sel'):
-                sel = self.lgroup.array_sel
-                try:
-                    self.xarr.SetStringSelection(sel['xarr'])
-                    self.xop.SetStringSelection(sel['xop'])
-                    self.yops[0].SetStringSelection(sel['op1'])
-                    self.yops[1].SetStringSelection(sel['op2'])
-                    self.yops[2].SetStringSelection(sel['op3'])
-                    self.yarr[0].SetStringSelection(sel['y1'])
-                    self.yarr[1].SetStringSelection(sel['y2'])
-                    self.yarr[2].SetStringSelection(sel['y3'])
-                    self.dtcorr.SetValue({True: 1, False:0}[sel['dtcorr']])
-                    self.use_deriv.SetValue({True: 1, False:0}[sel['use_deriv']])
-                except:
-                    pass
-
-    def set_array_labels(self, labels=None):
-        """set choices for array dropdowns from array labels"""
-        array_labels = self.lgroup.array_labels
-        xcols  = array_labels[:]
-        ycols  = array_labels[:]
-        y2cols = array_labels[:] + ['1.0', '0.0', '']
-        ncols  = len(xcols)
-        self.title.SetLabel(self.lgroup.filename)
-
-        _xarr = self.xarr.GetStringSelection()
-        if len(_xarr) < 1 or _xarr not in xcols:
-            _xarr = xcols[0]
-
-        _yarr = [[], [], []]
-        for j in range(3):
-            _yarr[j] = self.yarr[j].GetStringSelection()
-            if _yarr[j] not in ycols:
-                _yarr[j] = ''
-
-        self.xarr.SetItems(xcols)
-        self.xarr.SetStringSelection(_xarr)
-        for j in range(3):
-            if j == 0:
-                self.yarr[j].SetItems(ycols)
-                if _yarr[j] in ycols and len(_yarr[j]) > 0:
-                    self.yarr[j].SetStringSelection(_yarr[j])
-                elif ycols[0] == _xarr and len(ycols)> 1:
-                    self.yarr[j].SetStringSelection(ycols[1])
-            else:
-                self.yarr[j].SetItems(y2cols)
-                self.yarr[j].SetStringSelection(_yarr[j])
-
-        inb = 0
-        for colname in xcols:
-            if 'energ' in colname.lower():
-                inb = 1
-        self.nb.SetSelection(inb)
-        if inb == 1:
-            self.InitializeXASPanel()
+        if self.dgroup.is_xas:
+            self.nb.SetSelection(1)
+        else:
+            self.nb.SetSelection(0)
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -903,10 +641,6 @@ class ScanViewerFrame(wx.Frame):
 
         self.menubar.Append(omenu, "Options")
 
-
-        # fmenu.AppendSeparator()
-        # MenuItem(self, fmenu, "&Copy\tCtrl+C",
-        #          "Copy Figure to Clipboard", self.onClipboard)
         # MenuItem(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.onSaveFig)
         # MenuItem(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
         # MenuItem(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
@@ -948,7 +682,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.Destroy()
 
-    def show_subframe(self, name, frameclass):
+    def show_subframe(self, name, frameclass, **opts):
         shown = False
         if name in self.subframes:
             try:
@@ -957,11 +691,12 @@ class ScanViewerFrame(wx.Frame):
             except:
                 del self.subframes[name]
         if not shown:
-            self.subframes[name] = frameclass(self)
-
+            self.subframes[name] = frameclass(self, **opts)
 
     def onEditColumnLabels(self, evt=None):
-        self.show_subframe('coledit', EditColumnFrame)
+        self.show_subframe('coledit', EditColumnFrame, group=self.dgroup,
+                           last_array_sel=self.last_array_sel,
+                           read_ok_cb=self.onReadScan_Success)
 
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
@@ -975,39 +710,58 @@ class ScanViewerFrame(wx.Frame):
                                       'Re-read file?'):
                     return
 
-            gname = '_sview0001'
+            filedir, filename = os.path.split(path)
+            pref = fix_varname((filename + '____')[:7]).replace('.', '_')
             count, maxcount = 1, 9999
-            while hasattr(self.datagroups, gname) and count < maxcount:
+            groupname = "%s%3.3i" % (pref, count)
+            while hasattr(self.larch.symtable, groupname) and count < maxcount:
                 count += 1
-                gname = '_sview%4.4i' % count
+                groupname = '%s%3.3i' % (pref, count)
 
-            if hasattr(self.datagroups, gname):
-                gname = randname()
-
-            parent, fname = os.path.split(path)
             if self.config['chdir_on_fileopen']:
-                os.chdir(parent)
+                os.chdir(filedir)
 
             fh = open(path, 'r')
             line1 = fh.readline().lower()
             fh.close()
-            reader = 'read_ascii'
-            if 'epics scan' in line1:
-                reader = 'read_gsescan'
+            reader = read_ascii
+            if 'epics stepscan file' in line1:
+                reader = read_gsexdi
+            elif 'epics scan' in line1:
+                reader = gsescan_group
             elif 'xdi' in line1:
-                reader = 'read_xdi'
-                if 'epics stepscan file' in line1:
-                    reader = 'read_gsexdi'
+                reader = read_xdi
 
-            self.larch("%s = %s('%s')" % (gname, reader, path))
-            self.larch("%s.path  = '%s'"     % (gname, path))
-            self.filelist.Append(fname)
-            self.file_paths.append(path)
-            self.file_groups[path] = gname
+            dgroup = reader(str(path), _larch=self.larch)
+            dgroup._path = path
+            dgroup._filename = filename
+            dgroup._groupname = groupname
 
-            self.ShowFile(groupname=gname)
+            self.show_subframe('coledit', EditColumnFrame, group=dgroup,
+                               last_array_sel=self.last_array_sel,
+                               read_ok_cb=self.onReadScan_Success)
 
         dlg.Destroy()
+
+
+    def onReadScan_Success(self, datagroup, array_sel):
+        """ called when column data has been selected and is ready to be used"""
+        self.last_array_sel = array_sel
+        filename = datagroup._filename
+        groupname= datagroup._groupname
+        # print("   storing datagroup ", datagroup, groupname, filename)
+        # file /group may already exist in list
+        if groupname not in self.file_groups:
+            self.filelist.Append(filename)
+            self.file_groups.append(groupname)
+
+        setattr(self.larch.symtable, groupname, datagroup)
+        if datagroup.is_xas:
+            self.nb.SetSelection(1)
+            self.InitializeXASPanel(datagroup)
+        else:
+            self.nb.SetSelection(0)
+        self.onPlotOne(groupname=groupname)
 
 class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, _larch=None, **kws):
@@ -1026,23 +780,15 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-def _scanviewer(wxparent=None, _larch=None,  **kws):
-    s = ScanViewerFrame(_larch=_larch, **kws)
-    s.Show()
-    s.Raise()
+class DebugViewer(ScanViewer, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
+        ScanViewer.__init__(self, **kws)
 
-def _mapviewer(wxparent=None, _larch=None,  **kws):
-    s = MapViewerFrame(_larch=_larch, **kws)
-    s.Show()
-    s.Raise()
+    def OnInit(self):
+        self.Init()
+        self.createApp()
+        self.ShowInspectionTool()
+        return True
 
-def _larchgui(wxparent=None, _larch=None, **kws):
-    lg =larchframe.LarchFrame(_larch=_larch)
-    lg.Show()
-    lg.Raise()
-
-
-def registerLarchPlugin():
-    return ('_plotter', {'scanviewer':_scanviewer,
-                         'mapviewer':_mapviewer,
-                         'larchgui':_larchgui})
+if __name__ == "__main__":
+    ScanViewer().run()
