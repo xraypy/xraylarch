@@ -297,6 +297,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.pre_edge_details.pre2   = pre_dat['pre2']
     group.pre_edge_details.norm1  = pre_dat['norm1']
     group.pre_edge_details.norm2  = pre_dat['norm2']
+    group.pre_edge_details.nnorm  = pre_dat['nnorm']
+    group.pre_edge_details.nvict  = pre_dat['nvict']
     group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
 
