@@ -159,7 +159,7 @@ def preedge(energy, mu, e0=None, step=None,
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
-    coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm-1)
+    coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
     norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):
@@ -297,8 +297,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.pre_edge_details.pre2   = pre_dat['pre2']
     group.pre_edge_details.norm1  = pre_dat['norm1']
     group.pre_edge_details.norm2  = pre_dat['norm2']
-    group.pre_edge_details.nnorm  = pre_dat['nnorm']
-    group.pre_edge_details.nvict  = pre_dat['nvict']
     group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
 
