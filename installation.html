@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>1. Downloading and Installation &mdash; larch 0.9.29 documentation</title>
+    <title>1. Downloading and Installation &mdash; larch 0.9.30 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.29',
+        VERSION:     '0.9.30',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.29 documentation" href="index.html" />
+    <link rel="top" title="larch 0.9.30 documentation" href="index.html" />
     <link rel="next" title="2. Larch Community and Support" href="community.html" />
     <link rel="prev" title="Larch" href="index.html" />
   <script type="text/x-mathjax-config">
@@ -83,7 +83,7 @@
 <li><a class="reference internal" href="#using-anaconda-python">1.1. Using Anaconda Python</a></li>
 <li><a class="reference internal" href="#source-installation">1.2. Source Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">1.2.1. Prerequisites</a></li>
-<li><a class="reference internal" href="#installation">1.2.2. Installation</a></li>
+<li><a class="reference internal" href="#installation-from-source">1.2.2. Installation from Source</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#documentation-and-examples">1.3. Documentation and Examples</a></li>
@@ -127,18 +127,22 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.29.  Larch is in active and
+<p>The latest release version of Larch is 0.9.30.  Larch is in active and
 continuing development, and the intention is to tag a new release version
 every six months or so.  Of course, there may be bugs and unintended
 features, and some missing or incomplete desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.</p>
 <p>There are several ways to download and install Larch.  Starting with Larch
 0.9.27, the <strong>recommended</strong> way to install and run Larch on Windows and Mac
-OS X is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> (version 2.7).  Note that Larch does not yet
-work with Python 3. series).  For Windows, a binary installer may be
-available soon, though this is not updated as often as the source code or
-Anaconda package.  In addition, Larch can be installed from its source
-code, which works easily on most modern Linux systems.</p>
+OS X is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> (version 2.7).  In addition, Larch can be
+installed from its source code, which works easily on most modern Linux and
+Mac OS X systems, but the Anaconda package is certainly easier to use.</p>
+<p>Starting With version 0.9.30, Larch is starting to work with Python 3,
+including GUIs using the unreleased Phoenix version of wxPython.  Thorough
+testing with Python 3 is still in progress, and some bugs may still be
+present when using Python 3, but most of the code is working, and all unit
+tests of functionality pass.  Still, for the time being, Larch with Python
+3 should be considered experimental.</p>
 <div class="section" id="using-anaconda-python">
 <h2>1.1. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and
@@ -189,17 +193,17 @@ development version of the source code:</p>
 <div class="section" id="prerequisites">
 <h3>1.2.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
 <p>Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work, and numpy, and scipy, h5py,
-and matplotlib have all been ported to Python 3.X.  But the testing for
-Python 3.X has been minimal, and the graphical interfaces, based on
-wxPython, has not yet been fully ported to Python 3.X.</p>
+good, but requires the not-yet-supported Phoenix branch of wxPython, and
+should be considered experimental.</p>
 <p>The following Python packages are all required for Larch: numpy, scipy,
-matplotlib, h5py, sqlalchemy, and wxpython.  These are easily installed as
+matplotlib, h5py, sqlalchemy, and wxPython.  Except for wxPython, these all
+come as part of the core Anaconda package, and all are easily installed as
 standard packages on almost all platforms.</p>
 </div>
-<div class="section" id="installation">
-<h3>1.2.2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
-<p>After unpacking the source distribution kit, installation from source on any platform is:</p>
+<div class="section" id="installation-from-source">
+<h3>1.2.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<p>If installing from source, first unpack the source distribution kit, move
+into the created xraylarch-VERSION directory, and type:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>

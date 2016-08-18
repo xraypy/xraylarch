@@ -362,7 +362,7 @@ Feff arrays.  Next, we note that we need the complex wavenumber, defined as
 
 .. math::
    p = p' + i p'' = \sqrt{ \big[ p_{\rm real}(k) - i / \lambda(k) \big]^2 - i \,
-        2 m_e E_i /{\hbar^2} }
+	2 m_e E_i /{\hbar^2} }
 
 where :math:`p_{\rm real}` and :math:`\lambda` are the values from Feff
 (``_feffdat.rep`` and ``_feffdat.lam``) and :math:`E_i` is the complex energy
@@ -386,13 +386,13 @@ calculation is then
    \begin{eqnarray*}
    \chi(k) = & {\rm Im}\Bigl[
       {\displaystyle{
-              \frac{f_{\rm eff(k)} N S_0^2} {k(R_{\rm eff} + \Delta R)^2} }
-            \enskip\exp(-2p''R_{\rm reff} - 2p^2\sigma^2 +
-            \textstyle{\frac{2}{3}}p^4 c_4)}  \hspace{18mm} \,\, \\
-            &{\times  \exp \bigl\{ i\big[  2kR_{\rm eff} + \delta(k)
-            + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
-            - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
-           \Bigr]    \\
+	      \frac{f_{\rm eff}(k) N S_0^2} {k(R_{\rm eff} + \Delta R)^2} }
+	     \exp(-2p''R_{\rm reff} - 2p^2\sigma^2 +
+	    \textstyle{\frac{2}{3}}p^4 c_4)}  \hspace{18mm} \,\, \\
+	    &{\times  \exp \bigl\{ i\big[  2kR_{\rm eff} + \delta(k)
+	    + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
+	    - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
+	   \Bigr]    \\
    \end{eqnarray*}
 
 where the terms are all defined above. Again, note that :math:`k` is used to

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.1. Fitting Overview &mdash; larch 0.9.29 documentation</title>
+    <title>7.1. Fitting Overview &mdash; larch 0.9.30 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.29',
+        VERSION:     '0.9.30',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.29 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.30 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.2. Parameters" href="parameters.html" />
     <link rel="prev" title="7. Fitting and Modeling Data" href="index.html" />
@@ -140,13 +140,12 @@ generally called the chi-square goodness-of-fit parameter</p>
 <div class="math">
 \[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
 <p>Here, <span class="math">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math">\(y_i\)</span>.
-It is common to
 As mentioned, the model describing <span class="math">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
-<p>There is an extensive literature for case where the model function
+<p>There is an extensive literature for the case in which the model function
 <span class="math">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
-<span class="math">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable --
-a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear in
-this sense).  Of course, model function need not be linear in its
+<span class="math">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
+-- a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
+in this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ''non-linear
 least-squares optimization'' in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
