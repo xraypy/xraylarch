@@ -27,7 +27,8 @@ from larch.utils import debugtime
 
 from larch_plugins.std import group2dict
 from larch_plugins.math import fit_peak, index_of
-from larch_plugins.wx import get_icon, _newplot, _plot, _getDisplay
+from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
+from larch_plugins.wx.icons import get_icon
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname)
@@ -68,16 +69,16 @@ def assign_gsescan_groups(group):
         setattr(group, name, group.det_corr[i, :])
 
     group.array_labels = labels
-                
+
 
 def BitmapButton(parent, bmp, action=None, tooltip=None):
     b = wx.BitmapButton(parent, -1, bmp)
     if action is not None:
         parent.Bind(wx.EVT_BUTTON, action, b)
     if tooltip is not None:
-        b.SetToolTipString(tooltip)
+        b.SetToolTip(tooltip)
     return b
-        
+
 class EditableCheckListBox(wx.CheckListBox):
     """
     A ListBox with pop-up menu to arrange order of
@@ -304,7 +305,7 @@ class ScanViewerFrame(wx.Frame):
         opchoices=('Raw Data', 'Normalized', 'Derivative',
                    'Normalized + Derivative',
                    'Pre-edge subtracted',
-                   'Raw Data + Pre-edge/Post-edge')        
+                   'Raw Data + Pre-edge/Post-edge')
         p = panel = wx.Panel(parent)
         opts = {'action': self.UpdateXASPlot}
         self.xas_autoe0   = Check(panel, default=True, label='auto?', **opts)
@@ -316,7 +317,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.btns = {}
         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
-            bb = BitmapButton(panel, get_icon('plus'), 
+            bb = BitmapButton(panel, get_icon('plus'),
                               action=partial(self.onXAS_selpoint, opt=name),
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
@@ -398,7 +399,7 @@ class ScanViewerFrame(wx.Frame):
         elif opt == 'nor2':
             self.xas_nor2.SetValue(xval-e0)
 
-                                
+
     def onCustomColumns(self, evt=None):
         pass
 
@@ -503,13 +504,13 @@ class ScanViewerFrame(wx.Frame):
 
         dgroup.orig_ylabel = dgroup.plot_ylabel
         dgroup.plot_ylabel = '$\mu$'
-        dgroup.plot_y2label = None        
-        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'        
+        dgroup.plot_y2label = None
+        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'
         dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
         y4e0 = dgroup.mu
 
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-        if out.startswith('raw data with'):
+        if out.startswith('raw data + pre'):
             dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
                                    (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
                                    (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
@@ -532,7 +533,7 @@ class ScanViewerFrame(wx.Frame):
         elif out.startswith('deriv'):
             dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
             y4e0 = dgroup.dmude
-            dgroup.plot_ylabel = '$d\mu/dE$'            
+            dgroup.plot_ylabel = '$d\mu/dE$'
 
         dgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
@@ -561,7 +562,7 @@ class ScanViewerFrame(wx.Frame):
             self.xas_process(self.groupname)
             self.plot_group(self.groupname, new=True)
             self.need_xas_update = False
-            
+
     def UpdateXASPlot(self, evt=None, **kws):
         self.need_xas_update = True
 
@@ -573,7 +574,7 @@ class ScanViewerFrame(wx.Frame):
         if dgroup is None:
             return
         self.groupname = groupname
-        if (dgroup.is_xas and 
+        if (dgroup.is_xas and
             (getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
@@ -588,7 +589,7 @@ class ScanViewerFrame(wx.Frame):
             dgroup = getattr(self.larch.symtable, groupname, None)
             if dgroup is None:
                 continue
-            if (dgroup.is_xas and 
+            if (dgroup.is_xas and
                 (getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'energy', None) is None or
                  getattr(dgroup, 'mu', None) is None)):
@@ -602,7 +603,7 @@ class ScanViewerFrame(wx.Frame):
             else:
                 dgroup.plot_yarrays = [(dgroup._ydat, PLOTOPTS_1,
                                         dgroup._filename)]
-                
+
             self.plot_group(groupname, title='', new=newplot)
             newplot=False
 
@@ -624,11 +625,11 @@ class ScanViewerFrame(wx.Frame):
             plot_yarrays = dgroup.plot_yarrays
         else:
             plot_yarrays = [(dgroup._ydat, {}, None)]
-            
+
         popts = {}
         path, fname = os.path.split(dgroup.filename)
         popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
-        popts['xlabel'] = dgroup.plot_xlabel        
+        popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
@@ -636,7 +637,7 @@ class ScanViewerFrame(wx.Frame):
         #if plotcmd == self.plotpanel.plot and title is None:
         if plotcmd == newplot and title is None:
             title = fname
-            
+
         popts['title'] = title
 
         for yarr in plot_yarrays:
@@ -656,7 +657,7 @@ class ScanViewerFrame(wx.Frame):
                 popts.update(opts)
                 axes.plot([x], [y], **popts)
         ppanel.canvas.draw()
-    
+
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
@@ -731,7 +732,7 @@ class ScanViewerFrame(wx.Frame):
     def onClose(self,evt):
         save_workdir('scanviewer.dat')
 
-        
+
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
             try:
@@ -827,7 +828,7 @@ class ScanViewerFrame(wx.Frame):
         # file /group may already exist in list
         if groupname not in self.file_groups:
             self.filelist.Append(filename)
-           
+
             self.file_groups[filename] = groupname
 
         setattr(self.larch.symtable, groupname, datagroup)
