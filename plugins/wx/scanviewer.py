@@ -589,14 +589,15 @@ class ScanViewerFrame(wx.Frame):
             dgroup = getattr(self.larch.symtable, groupname, None)
             if dgroup is None:
                 continue
-            if (dgroup.is_xas and
-                (getattr(dgroup, 'plot_yarrays', None) is None or
-                 getattr(dgroup, 'energy', None) is None or
-                 getattr(dgroup, 'mu', None) is None)):
-                self.xas_process(groupname)
+            if dgroup.is_xas:
+                if ((getattr(dgroup, 'plot_yarrays', None) is None or
+                     getattr(dgroup, 'energy', None) is None or
+                     getattr(dgroup, 'mu', None) is None)):
+                    self.xas_process(groupname)
+
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
                                         '%s norm' % dgroup._filename)]
-                dgroup.plot_ylabel = 'normalzed $\mu$'
+                dgroup.plot_ylabel = 'normalized $\mu$'
                 dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
                 dgroup.plot_ymarkers = []
 
@@ -625,6 +626,7 @@ class ScanViewerFrame(wx.Frame):
             plot_yarrays = dgroup.plot_yarrays
         else:
             plot_yarrays = [(dgroup._ydat, {}, None)]
+        print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
 
         popts = {}
         path, fname = os.path.split(dgroup.filename)
@@ -634,7 +636,7 @@ class ScanViewerFrame(wx.Frame):
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
-        #if plotcmd == self.plotpanel.plot and title is None:
+
         if plotcmd == newplot and title is None:
             title = fname
 
@@ -689,7 +691,7 @@ class ScanViewerFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Read Scan File",  self.onReadScan)
 
-        MenuItem(self, fmenu, "Show Larch Buffer",
+        MenuItem(self, fmenu, "Show Larch Buffer\tCtrl+L",
                   "Show Larch Programming Buffer",
                   self.onShowLarchBuffer)
 
@@ -703,28 +705,13 @@ class ScanViewerFrame(wx.Frame):
         MenuItem(self, omenu, "Edit Column Labels\tCtrl+E",
                  "Edit Column Labels", self.onEditColumnLabels)
 
-
-
         self.menubar.Append(omenu, "Options")
 
-        # MenuItem(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.onSaveFig)
-        # MenuItem(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
-        # MenuItem(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
-        # MenuItem(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
-        #
-
-        #MenuItem(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
-        ##pmenu.AppendSeparator()
-        #MenuItem(self, pmenu, "Toggle Legend\tCtrl+L",
-        #         "Toggle Legend on Plot", self.onToggleLegend)
-        #MenuItem(self, pmenu, "Toggle Grid\tCtrl+G",
-        #         "Toggle Grid on Plot", self.onToggleGrid)
-        # self.menubar.Append(pmenu, "Plot Options")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def onAbout(self,evt):
-        dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
+        dlg = wx.MessageDialog(self, self._about,"About ScanViewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
