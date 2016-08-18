@@ -4,6 +4,7 @@ import h5py
 from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
+from larch_plugins.io import fix_varname
 
 
 class H5PySaveFile(object):
@@ -17,6 +18,7 @@ class H5PySaveFile(object):
         self._ids  = []
         self._objs = []
         self.out = {}
+        self.savednames = []
 
     def search(self, group):
         """search for objects to save,
@@ -42,7 +44,6 @@ class H5PySaveFile(object):
         for group in self._subgroups:
             self.search(group)
 
-
     def add_h5group(self, group, name, dat=None, attrs=None):
         """add an hdf5 group to group"""
         g = group.create_group(name)
@@ -57,20 +58,17 @@ class H5PySaveFile(object):
 
     def add_h5dataset(self, group, name, data, attrs=None, **kws):
         """creata an hdf5 dataset"""
-        kwargs = {}
-        if isinstance(data, np.ndarray):
-            kwargs = {'compression':4}
-        kwargs.update(kws)
         try:
-            d = group.create_dataset(name, data=data, **kwargs)
+            d = group.create_dataset(name, data=data, **kws)
         except TypeError:
-            d = group.create_dataset(name, data=repr(data), **kwargs)
+            d = group.create_dataset(name, data=repr(data), **kws)
         if isinstance(attrs, dict):
             for key, val in attrs.items():
                 d.attrs[key] = val
         return d
 
     def add_data(self, group, name, data):
+        name = fix_varname(name)
         if self.isgroup(data):
             g = self.add_h5group(group, name,
                                  attrs={'larchtype': 'group',
@@ -105,20 +103,16 @@ class H5PySaveFile(object):
         except:
             pass
         for nam, obj in self.out.items():
-            try:
-                self.add_data(self.fh, nam, obj)
-            except:
-                print( 'Could not save ', nam)
+            onam = getattr(obj, '__name__', None)
+            if onam is not None:
+                nam = onam
+            self.add_data(self.fh, nam, obj)
 
         for obj in self._objs:
             nam = getattr(obj, '__name__', hex(id(obj)))
-            nam = fixName(nam, allow_dot=False)
             if nam.startswith('0x'):
                 nam = 'obj_%s' % nam[2:]
-            try:
-                self.add_data(self.fh, nam, obj)
-            except:
-                print( 'Could not save ', nam)
+            self.add_data(self.fh, nam, obj)
 
         self.fh.close()
 
