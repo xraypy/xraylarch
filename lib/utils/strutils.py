@@ -6,14 +6,41 @@ from __future__ import print_function
 import re
 import sys
 
-bytes2str = str
-if sys.version_info[0] == 3:
+if sys.version[0] == '3':
+    maketrans = str.maketrans
     def bytes2str(s):
         if isinstance(s, str):
             return s
         elif isinstance(s, bytes):
             return s.decode(sys.stdout.encoding)
         return str(s, sys.stdout.encoding)
+else:
+    from string import maketrans
+    bytes2str = str
+
+
+
+RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
+                  'def', 'del', 'elif', 'else', 'eval', 'except', 'exec',
+                  'execfile', 'finally', 'for', 'from', 'global', 'if',
+                  'import', 'in', 'is', 'lambda', 'not', 'or', 'pass',
+                  'print', 'raise', 'return', 'try', 'while', 'with',
+                  'group', 'end', 'endwhile', 'endif', 'endfor', 'endtry',
+                  'enddef', 'True', 'False', 'None')
+
+NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").match
+VALID_SNAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+VALID_NAME_CHARS = '.%s' % VALID_SNAME_CHARS
+VALID_CHARS1 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+
+BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
+GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
+
+BAD_VARSCHARS = BAD_FILECHARS + '+-.'
+GOOD_VARSCHARS = '_'*len(BAD_VARSCHARS)
+
+TRANS_FILE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
+TRANS_VARS = maketrans(BAD_VARSCHARS, GOOD_VARSCHARS)
 
 
 def PrintExceptErr(err_str, print_trace=True):
@@ -48,18 +75,16 @@ def strip_comments(sinp, char='#'):
         i = i + 1
     return sinp
 
-
-RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
-                  'def', 'del', 'elif', 'else', 'eval', 'except', 'exec',
-                  'execfile', 'finally', 'for', 'from', 'global', 'if',
-                  'import', 'in', 'is', 'lambda', 'not', 'or', 'pass',
-                  'print', 'raise', 'return', 'try', 'while', 'with',
-                  'group', 'end', 'endwhile', 'endif', 'endfor', 'endtry',
-                  'enddef', 'True', 'False', 'None')
-
-NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").match
-VALID_SNAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
-VALID_NAME_CHARS = '.%s' % VALID_SNAME_CHARS
+def strip_quotes(t):
+    d3, s3, d1, s1 = '"""', "'''", '"', "'"
+    if hasattr(t, 'startswith'):
+        if ((t.startswith(d3) and t.endswith(d3)) or
+            (t.startswith(s3) and t.endswith(s3))):
+            t = t[3:-3]
+        elif ((t.startswith(d1) and t.endswith(d1)) or
+              (t.startswith(s1) and t.endswith(s1))):
+            t = t[1:-1]
+    return t
 
 def isValidName(name):
     "input is a valid name"
@@ -88,6 +113,26 @@ def fixName(name, allow_dot=True):
     if not isValidName(name):
         name = '_%s' % name
     return name
+
+
+def fix_filename(s):
+    """fix string to be a 'good' filename.
+    This may be a more restrictive than the OS, but
+    avoids nasty cases."""
+    t = str(s).translate(TRANS_FILE)
+    if t.count('.') > 1:
+        for i in range(t.count('.') - 1):
+            idot = t.find('.')
+            t = "%s_%s" % (t[:idot], t[idot+1:])
+    return t
+def fix_varname(s):
+    """fix string to be a 'good' variable name."""
+    t = str(s).translate(TRANS_VARS)
+    if t[0] not in VALID_CHARS1:
+        t[0] = '_'
+    while t.endswith('_'):
+        t = t[:-1]
+    return t
 
 def isNumber(num):
     "input is a number"
