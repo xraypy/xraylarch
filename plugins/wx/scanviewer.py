@@ -76,7 +76,10 @@ def BitmapButton(parent, bmp, action=None, tooltip=None):
     if action is not None:
         parent.Bind(wx.EVT_BUTTON, action, b)
     if tooltip is not None:
-        b.SetToolTip(tooltip)
+        if is_wxPhoenix:
+            b.SetToolTip(tooltip)
+        else:
+            b.SetToolTipString(tooltip)
     return b
 
 class EditableCheckListBox(wx.CheckListBox):
