@@ -19,7 +19,7 @@ except ImportError:
     HAS_WX = False
 
 class LarchServer(SimpleXMLRPCServer):
-    IDLE_TIME = 3*86400.0
+    IDLE_TIME = 86400.0
     IDLE_POLL_TIME = 60.0
     def __init__(self, host='127.0.0.1', port=5465, with_wx=True,
                  local_echo=True, quiet=False, **kws):
@@ -39,10 +39,11 @@ class LarchServer(SimpleXMLRPCServer):
         self.register_function(self.current_dir,   'cwd')
         self.register_function(self.exit,          'exit')
         self.register_function(self.larch_exec,    'larch')
-        self.register_function(self.wx_update,     'wx_update')
         self.register_function(self.get_data,      'get_data')
         self.register_function(self.get_messages,  'get_messages')
         self.register_function(self.len_messages,  'len_messages')
+        if self.with_wx:
+            self.register_function(self.wx_update,     'wx_update')
 
     def write(self, text, **kws):
         self.out_buffer.append(text)
@@ -56,7 +57,7 @@ class LarchServer(SimpleXMLRPCServer):
     def get_messages(self):
         if self.local_echo:
             print( '== clear output buffer (%i)' % len(self.out_buffer))
-        out = '\n'.join(self.out_buffer)
+        out = "".join(self.out_buffer)
         self.out_buffer = []
         return out
 
@@ -65,23 +66,10 @@ class LarchServer(SimpleXMLRPCServer):
 
     def check_activity(self):
         if (time.time() > self.keep_alive_time) or not self.keep_alive:
-            print("Shutting down due to inactivity")
-            self.keep_alive = False
             sys.exit()
         else:
             self.timer = Timer(self.IDLE_POLL_TIME, self.check_activity)
             self.timer.start()
-
-    def run(self):
-        """run server until keep_alive is set to False"""
-        self.help()
-        self.check_activity()
-        try:
-            while self.keep_alive:
-                self.handle_request()
-        except KeyboardInterrupt:
-            self.keep_alive = False
-            sys.exit()
 
     def list_dir(self, dir_name):
         """list contents of a directory: """
@@ -103,7 +91,9 @@ class LarchServer(SimpleXMLRPCServer):
             print( 'Serving Larch at port %s' % repr(self.port))
             # print dir(self)
             print('Registered Functions:')
-            fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data']
+            fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'get_data']
+            if self.with_wx:
+                fnames.append('wx_update')
             for kname in self.funcs.keys():
                 if not kname.startswith('system') and kname not in fnames:
                     fnames.append(kname)
@@ -121,15 +111,14 @@ class LarchServer(SimpleXMLRPCServer):
                 print("  %s" % out)
 
 
-    def exit(self, app=None, **kws):
+    def exit(self, **kws):
         "shutdown LarchServer"
         self.keep_alive = False
-        return 1
+        return self.server_close()
 
     def initialize_larch(self):
         self.larch  = Interpreter(writer=self)
-        self.input  = InputText(prompt='', _larch=self.larch,
-                                interactive=False)
+        self.input  = InputText(prompt='', _larch=self.larch)
         self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch.run_init_scripts()
         self.wxapp = None
@@ -168,32 +157,18 @@ class LarchServer(SimpleXMLRPCServer):
         if not self.initialized:
             self.initialize_larch()
         text = text.strip()
+        complete = True
         if text in ('quit', 'exit', 'EOF'):
             self.exit()
         else:
             ret = None
-            self.input.put(text, lineno=0)
-            while len(self.input) > 0:
-                block, fname, lineno = self.input.get()
-                if len(block) == 0:
-                    continue
-                if self.local_echo:
-                    print( block)
-                ret = self.larch.eval(block, fname=fname, lineno=lineno)
-                if self.larch.error:
-                    err = self.larch.error.pop(0)
-                    fname, lineno = err.fname, err.lineno
-                    self.write("%s\n" % err.get_error()[1])
-                    for err in self.larch.error:
-                        if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                     and err.lineno > 0 and lineno > 0):
-                            self.write("%s\n" % (err.get_error()[1]))
-                    self.input.clear()
-                    break
-                elif ret is not None:
-                    self.write("%s\n" % repr(ret))
             self.keep_alive_time = time.time() + self.IDLE_TIME
-        return ret is None
+            self.input.put(text, lineno=0)
+            complete = self.input.complete
+            if complete:
+                complete = self.input.run()
+            self.flush()
+        return 1
 
 if __name__ == '__main__':
     s = LarchServer(host='localhost', port=4966)
