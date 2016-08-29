@@ -12,27 +12,24 @@ __version__ = 'version 1'
 
 import os
 import sys
-import subprocess
 import time
 import json
-
+from distutils.spawn import find_executable
+from subprocess import Popen
 from optparse import OptionParser
 from xmlrpclib import ServerProxy
 
 def start_server(port=4966, host='localhost',
                  local_echo=False, with_wx=False, quiet=False):
     "start server"
-    from larch.xmlrpc_server import LarchServer
+    thispath, thisfile = os.path.split(os.path.abspath(__file__)) 
 
-    server = LarchServer(host=host, port=port,
-                    local_echo=local_echo,
-                    quiet=quiet, with_wx=with_wx)
-
-    server.initialize_larch()
-    try:
-        server.serve_forever()
-    except:
-        sys.exit()
+    args = [find_executable('python'),
+            os.path.join(thispath, 'larch'),
+            '-r', '-x', '-p %d' % port]
+    if quiet:  
+        args.append('-q')
+    return Popen(args)
 
 def get_server(port=4966, host='localhost'):
     "returns server at a port"
