@@ -69,11 +69,14 @@ if not options.nowx:
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
-    s = LarchServer(host='localhost', port=int(options.port),
-                    local_echo=options.echo, quiet=options.quiet)
-    s.initialize_larch()
-    s.run()
-    sys.exit()
+    server = LarchServer(host='localhost', port=int(options.port),
+                         local_echo=options.echo,
+                         quiet=options.quiet, with_wx=False)
+    server.initialize_larch()
+    try:
+        server.serve_forever()
+    except:
+        sys.exit()
 
 shell = larch.shell(quiet=options.quiet)
 
