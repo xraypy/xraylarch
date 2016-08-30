@@ -554,6 +554,8 @@ class GSEXRM_MapFile(object):
     EnvFile    = 'Environ.dat'
     ROIFile    = 'ROI.dat'
     MasterFile = 'Master.dat'
+    ## still in progress - mkak 2016.08.30
+    XRDCalFile = 'calibration.poni'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, FLAGxrf=None, FLAGxrd=None,
