@@ -25,6 +25,7 @@ import time
 import json
 import glob
 import socket
+import datetime
 from functools import partial
 from threading import Thread
 
@@ -1987,11 +1988,13 @@ class MapViewerFrame(wx.Frame):
             self.ShowFile(filename=self.h5convert_fname)
 
     def new_mapdata(self, filename):
+
         xrm_map = self.filemap[filename]
         nrows = len(xrm_map.rowdata)
         self.h5convert_nrow = nrows
         self.h5convert_done = False
         if xrm_map.folder_has_newdata():
+            print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             irow = xrm_map.last_row + 1
             self.h5convert_irow = irow
             while irow < nrows:
@@ -2014,6 +2017,8 @@ class MapViewerFrame(wx.Frame):
         xrm_map.h5root.flush()
         self.h5convert_done = True
         time.sleep(0.025)
+        
+        print 'End:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') 
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)

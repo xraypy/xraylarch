@@ -134,10 +134,10 @@ def calculate_ai(AI):
 
         
     return pyFAI.AzimuthalIntegrator(dist = distance, poni1 = poni_1, poni2 = poni_2,
-                                   rot1 = rot_1, rot2 = rot_2, rot3 = rot_3,
-                                   pixel1 = pixel_1, pixel2 = pixel_2,
-                                   splineFile = spline, detector = detname,
-                                   wavelength = xraylambda)
+                                    rot1 = rot_1, rot2 = rot_2, rot3 = rot_3,
+                                    pixel1 = pixel_1, pixel2 = pixel_2,
+                                    splineFile = spline, detector = detname,
+                                    wavelength = xraylambda)
                                    
     
     

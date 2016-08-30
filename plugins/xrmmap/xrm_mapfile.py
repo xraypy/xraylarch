@@ -883,6 +883,7 @@ class GSEXRM_MapFile(object):
         if maxrow is not None:
             nrows = min(nrows, maxrow)
         if force or self.folder_has_newdata():
+            print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             irow = self.last_row + 1
             while irow < nrows:
                 # self.dt.add('=>PROCESS %i' % irow)
@@ -906,6 +907,7 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
         if self.pixeltime is None:
             self.calc_pixeltime()
+        print 'End:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') 
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
@@ -1077,8 +1079,6 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-
-        print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         print 'XRM Map Folder: %s' % self.folder
         if hasattr(self,'calibration'):
             print 'XRD Calibration file: %s\n' % self.calibration
