@@ -678,9 +678,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       ## add rows for XRD Calibration File:
-                      'XRD Parameters', 'XRD Calibration File', 'XRD Wavelength',
-                      'XRD Detector Distance', 'XRD Pixel Size', 'XRD Beam Center',
-                      'XRD Detector Tilts'):
+                      'XRD Parameters',  'XRD Detector',     
+                      'XRD Wavelength',  'XRD Energy',       'XRD Detector Distance', 
+                      'XRD Pixel Size',  'XRD Beam Center',  'XRD Detector Tilts',
+                      'XRD Spline',      'XRD Calibration File'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -778,22 +779,28 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
             pref, calfile = os.path.split(xrmmap['xrd'].attrs['xrdcalfile'])
+            self.wids['XRD Detector'].SetLabel('%s' % \
+                                                 xrmmap['xrd'].attrs['detector'])
             self.wids['XRD Calibration File'].SetLabel('%s' % calfile)
             self.wids['XRD Wavelength'].SetLabel('% 0.4f A' % \
-                                                xrmmap['xrd'].attrs['wavelength'])
+                                                 xrmmap['xrd'].attrs['wavelength'])
+            self.wids['XRD Energy'].SetLabel('% 0.2f keV' % \
+                                                 xrmmap['xrd'].attrs['energy'])
             self.wids['XRD Detector Distance'].SetLabel('%0.3f mm' % \
                                                  xrmmap['xrd'].attrs['distance'])
             self.wids['XRD Pixel Size'].SetLabel('%0.1f um, %0.1f um ' % ( \
                                                  xrmmap['xrd'].attrs['ps1'],
                                                  xrmmap['xrd'].attrs['ps2']))
-            self.wids['XRD Beam Center'].SetLabel( \
-                                '%0.4f m, %0.4f m' % ( \
-                                 xrmmap['xrd'].attrs['poni1'],
-                                 xrmmap['xrd'].attrs['poni2']))
+            self.wids['XRD Beam Center'].SetLabel('%0.4f m, %0.4f m' % ( \
+                                                 xrmmap['xrd'].attrs['poni1'],
+                                                 xrmmap['xrd'].attrs['poni2']))
             self.wids['XRD Detector Tilts'].SetLabel( \
-                      '%0.6f deg., %0.6f deg., %0.6f deg.' % (xrmmap['xrd'].attrs['rot1'],
-                                                              xrmmap['xrd'].attrs['rot2'],
-                                                              xrmmap['xrd'].attrs['rot3']))
+                                                '%0.6f deg., %0.6f deg., %0.6f deg.' % \
+                                                (xrmmap['xrd'].attrs['rot1'],
+                                                 xrmmap['xrd'].attrs['rot2'],
+                                                 xrmmap['xrd'].attrs['rot3']))
+            self.wids['XRD Spline'].SetLabel('%s' % \
+                                                 xrmmap['xrd'].attrs['spline'])
         else:
             self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
 
@@ -1268,10 +1275,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         _larch = self.owner.larch
         map = self._xrd.data2D
         try:
-            self._xrd.data1D = integrate_xrd(map,
-                                             xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
-                                             aname,
-                                             unit=unit, steps=5001)
+            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
+                                    #calfile=xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
+                                    AI = xrmfile.xrmmap['xrd'],
+                                    aname=aname, prefix=fname, path=pref)
         except:
             self._xrd.data1D = None
             print '1D Error message: Did not work this time.'
@@ -1741,9 +1748,9 @@ class MapViewerFrame(wx.Frame):
                   self.onFolderSelect)
         ## How to add calibration file to already existing mapfile?
         ## mkak 2016.08.23
-        #fmenu.AppendSeparator()
-        #MenuItem(self, fmenu, "&Load XRD calibration file",
-        #         "Load XRD calibration file",  self.onReadXRD)
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "&Update XRD Calibration File to Map File",
+                 "Load XRD Calibration File",  self.onReadXRD)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "Show Larch Buffer",
                   "Show Larch Programming Buffer",
@@ -1835,34 +1842,6 @@ class MapViewerFrame(wx.Frame):
             del obj
         self.Destroy()
 
-#     def onReadFolder(self, evt=None):
-#         if not self.h5convert_done:
-#             print( 'cannot open file while processing a map folder')
-#             return
-# 
-#         dlg = wx.DirDialog(self, message="Read XRF Map Folder",
-#                            defaultPath=os.getcwd(),
-#                            style=wx.FD_OPEN)
-# 
-#         path, read = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             read = True
-#             path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-#         if read:
-#             ## HARD CODING
-#             ## mkak 2016.08.21
-#             FLAGxrf = True
-#             FLAGxrd = True
-#             xrdcalfile = str(glob.glob('%s/*.poni' % path)[0])
-# 
-#             xrmfile = GSEXRM_MapFile(folder=str(path),
-#                                      calibration=xrdcalfile,
-#                                      FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
-#             self.add_xrmfile(xrmfile)
-#             self.add_califile(xrdcalfile)
-#             self.add_flags(FLAGxrf,FLAGxrd)
-
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
@@ -1910,33 +1889,25 @@ class MapViewerFrame(wx.Frame):
 
 ## Requires further editing. How to add calibration file to already existing mapfile?
 ## mkak 2016.08.23
-#     def onReadXRD(self, evt=None):
-#         '''
-#         Read specified poni file.
-# 
-#         mkak 2016.07.21
-#         '''
-# 
-#         ## Choose XRD data calibration file (*.poni)
-#         wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
-#         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
-#                            defaultDir=os.getcwd(),
-#                            wildcard=wildcards, style=wx.FD_OPEN)
-#         path, read = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             read = True
-#             file_path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-# 
-#         if read:
-#             path, file = os.path.split(str(file_path))
-#             print '\nCalibration file selected: %s\n' % file
-#             
-#             xrmfile = GSEXRM_MapFile(folder=str(path))
-#             self.add_xrmfile(xrmfile)
-#             self.add_califile(str(file_path))
+    def onReadXRD(self, evt=None):
+        '''
+        Read specified poni file.
+        mkak 2016.07.21
+        '''
+ 
+        ## Choose XRD data calibration file (*.poni)
+        wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD calibration file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            file_path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
 
-#             
+        if read:
+            self.current_file.xrmmap.add_calibration(file_path)
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
@@ -2166,7 +2137,6 @@ class OpenMapFolder(wx.Dialog):
         dlg.Destroy()
         
         if read:
-            #print '\nCalibration file selected: %s\n' % os.path.split(str(path))[-1]
             self.CalFl.Clear()
             self.CalFl.SetValue(str(path))
             #self.CalFl.AppendText(str(path))

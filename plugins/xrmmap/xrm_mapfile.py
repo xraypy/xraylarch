@@ -2,6 +2,7 @@ import sys
 import os
 import socket
 import time
+import datetime
 import h5py
 import numpy as np
 from scipy import constants
@@ -180,20 +181,34 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
         if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
             ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
         
-            xrdgp.attrs['desc']       = '''xrd detector calibration and data'''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 * 1e6 ## units: um
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 * 1e6 ## units: um
-            xrdgp.attrs['distance']   = ai._dist * 1e3  ## units: mm
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength * 10e9 ## units: A
+            xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
+            try:
+                xrdgp.attrs['detector'] = ai.detector.name
+            except:
+                xrdgp.attrs['detector'] = ''
+            try:
+                xrdgp.attrs['spline']   = ai.detector.splineFile
+            except:
+                xrdgp.attrs['spline']   = ''
+            xrdgp.attrs['ps1']          = ai.detector.pixel1 * 1e6 ## units: um
+            xrdgp.attrs['ps2']          = ai.detector.pixel2 * 1e6 ## units: um
+            xrdgp.attrs['distance']     = ai._dist * 1e3  ## units: mm
+            xrdgp.attrs['poni1']        = ai._poni1
+            xrdgp.attrs['poni2']        = ai._poni2
+            xrdgp.attrs['rot1']         = ai._rot1
+            xrdgp.attrs['rot2']         = ai._rot2
+            xrdgp.attrs['rot3']         = ai._rot3
+            xrdgp.attrs['wavelength']   = ai._wavelength * 1e10 ## units: A
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e7 ## units: keV-A
             xrdgp.attrs['energy']    = hc/(ai._wavelength * 10e10) ## units: keV
+
+    xrmmap.create_group('flags')
+    flaggp = xrmmap['flags']
+    
+    flaggp.attrs['xrf'] = FLAGxrf
+    flaggp.attrs['xrd'] = FLAGxrd
 
     h5root.flush()
 
@@ -541,12 +556,12 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, FLAGxrf=None, FLAGxrd=None):
+                 calibration=None, FLAGxrf=None, FLAGxrd=None,
+                 xchannels=5001, xwedge=1):
         self.filename         = filename
         self.folder           = folder
         self.root             = root
         self.chunksize        = chunksize
-        self.chunksize_XRD    = (1, 1, 1024, 1024)
         self.status           = GSEXRM_FileStatus.err_notfound
         self.dimension        = None
         self.ndet             = None
@@ -561,6 +576,8 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
+        self.xchan            = xchannels
+        self.xwedge           = xwedge
         
 
         if calibration is not None:
@@ -709,6 +726,54 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
+    def add_calibration(self, xrdcalfile, root=None):
+        """
+        adds calibration to exisiting '/xrmmap' group in an open HDF5 file
+        mkak 2016.08.30
+        """
+        try:
+            pyFAI.load(xrdcalfile)
+        except:
+            print 'Not a valid calibration file.'
+            return
+
+        path, file = os.path.split(str(xrdcalfile))
+        print '\nCalibration file selected: %s\n' % file
+
+        try:
+            self.xrmmap['xrd']
+        except:
+            self.xrmmap.create_group('xrd')
+        xrdgp = self.xrmmap['xrd']
+
+        xrdgp.attrs['xrdcalfile'] = '%s' % (xrdcalfile)
+            
+        if self.xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
+            ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
+    
+            xrdgp.attrs['desc']       = '''xrd detector calibration and data'''
+            xrdgp.attrs['detector']   = ai.detector.name
+            try:
+                xrdgp.attrs['spline'] = ai.detector.splineFile
+            except:
+                xrdgp.attrs['spline'] = ''
+            xrdgp.attrs['ps1']        = ai.detector.pixel1 * 1e6 ## units: um
+            xrdgp.attrs['ps2']        = ai.detector.pixel2 * 1e6 ## units: um
+            xrdgp.attrs['distance']   = ai._dist * 1e3  ## units: mm
+            xrdgp.attrs['poni1']      = ai._poni1
+            xrdgp.attrs['poni2']      = ai._poni2
+            xrdgp.attrs['rot1']       = ai._rot1
+            xrdgp.attrs['rot2']       = ai._rot2
+            xrdgp.attrs['rot3']       = ai._rot3
+            xrdgp.attrs['wavelength'] = ai._wavelength * 10e9 ## units: A
+            ## E = hf ; E = hc/lambda
+            hc = constants.value(u'Planck constant in eV s') * \
+                   constants.value(u'speed of light in vacuum') * 1e7 ## units: keV-A
+            xrdgp.attrs['energy']    = hc/(ai._wavelength * 10e10) ## units: keV
+
+        self.h5root.flush()
+
+
     def add_data(self, group, name, data, attrs=None, **kws):
         """ creata an hdf5 dataset"""
         if not self.check_hostid():
@@ -856,6 +921,12 @@ class GSEXRM_MapFile(object):
         """read a row's worth of raw data from the Map Folder
         returns arrays of data
         """
+        try:
+            self.flag_xrf
+        except:
+            self.reset_flags()
+        
+        
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
 
@@ -886,7 +957,6 @@ class GSEXRM_MapFile(object):
 
         t0 = time.time()
         thisrow = self.last_row + 1
-        
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.flag_xrf:
             pform = '%s, xrffile=%s' % (pform,row.xrffile)
@@ -984,17 +1054,19 @@ class GSEXRM_MapFile(object):
             for idet, grp in enumerate(xrd_dets):
                 grp['data2D'][thisrow,] = row.xrd2d
                 
-                #t1a = time.time()
+                t1a = time.time()
                 ### HOW TO DO THIS WITHOUT LOOPING?
-                #for icol in range(xrdpts):
-                #    grp['data1D'][thisrow,icol,] = integrate_xrd(row.xrd2d[icol,],
-                #                      self.xrmmap['xrd'].attrs['xrdcalfile'],
-                #                      'ALL', steps=grp['data1D'].shape[-1])
+                grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
+                                        unit='q', steps=grp['data1D'].shape[-1],
+                                        #calfile=self.xrmmap['xrd'].attrs['xrdcalfile'],
+                                        AI = self.xrmmap['xrd'], 
+                                        save=False)
+
 
         t2 = time.time()
         if verbose:
-            pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
-            print(pform % (t1-t0,t2-t1,t2-t0))
+            pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
+            print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
 
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
@@ -1006,6 +1078,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
 
+        print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         print 'XRM Map Folder: %s' % self.folder
         if hasattr(self,'calibration'):
             print 'XRD Calibration file: %s\n' % self.calibration
@@ -1052,8 +1125,6 @@ class GSEXRM_MapFile(object):
                 self.add_data(dgrp, 'roi_address', [s % (imca+1) for s in roi_addrs])
                 self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
 
-                print 'CHUNK SIZE XRF: ',self.chunksize
-                print 'SHAPE XRF DATASET:',(NINIT, npts, nchan)
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     compression=COMPRESSION_LEVEL,
                                     chunks=self.chunksize,
@@ -1148,8 +1219,11 @@ class GSEXRM_MapFile(object):
         if self.flag_xrd:
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            xchan = 5001
-            xwedge = 1 
+            xchan = self.xchan
+            xwedge = self.xwedge
+            
+            self.chunksize_2DXRD    = (1, 1, xpixx, xpixy)
+            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
 
             if verbose:
                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D: (%i, %i) 1D: (%i, %i)'
@@ -1160,40 +1234,37 @@ class GSEXRM_MapFile(object):
 
             xrdgp = xrmmap['xrd']
             
-            if hasattr(self,'calibration'):
-                xrdgp.attrs['xrdcalfile'] = '%s' % self.calibration
-        
-                if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
-                    ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
-        
-                    xrdgp.attrs['desc']       = '''xrd detector calibration and data'''
-                    xrdgp.attrs['ps1']        = ai.detector.pixel1 * 1e6 ## units: um
-                    xrdgp.attrs['ps2']        = ai.detector.pixel2 * 1e6 ## units: um
-                    xrdgp.attrs['distance']   = ai._dist * 1e3  ## units: mm
-                    xrdgp.attrs['poni1']      = ai._poni1
-                    xrdgp.attrs['poni2']      = ai._poni2
-                    xrdgp.attrs['rot1']       = ai._rot1
-                    xrdgp.attrs['rot2']       = ai._rot2
-                    xrdgp.attrs['rot3']       = ai._rot3
-                    xrdgp.attrs['wavelength'] = ai._wavelength * 10e9 ## units: A
-                    ## E = hf ; E = hc/lambda
-                    hc = constants.value(u'Planck constant in eV s') * \
-                           constants.value(u'speed of light in vacuum') * 1e7 ## units: keV-A
-                    xrdgp.attrs['energy']    = hc/(ai._wavelength * 10e10) ## units: keV
-            
             xrdgp.attrs['type'] = 'xrd detector'
-            print 'CHUNK SIZE XRD: ',self.chunksize_XRD
-            print 'SHAPE XRD DATASET:',(xrdpts, xrdpts, xpixx, xpixy)
             xrdgp.create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.int16,
-                                   chunks = self.chunksize_XRD,
+                                   chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-#            xrdgp.create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), np.int16,
-#                                   chunks = self.chunksize_XRD,
-#                                   compression=COMPRESSION_LEVEL)
+            xrdgp.create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), np.int16,
+                                   chunks = self.chunksize_1DXRD,
+                                   compression=COMPRESSION_LEVEL)
 
         print
         
         self.h5root.flush()
+
+    def reset_flags(self):
+        '''
+        Resets the flags according to hdf5 values or defaults for compatibility with
+        older versions
+        mkak 2016.08.30
+        '''
+    
+        try: 
+            self.xrmmap['flags'].attrs['xrf']
+        except:
+            ## Compatible with older maps (did not have xrd data)
+            self.flag_xrf = True
+            self.flag_xrd = False
+            print 'Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
+                                                                        self.flag_xrd)
+            return
+    
+        self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
+        self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
