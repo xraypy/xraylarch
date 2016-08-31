@@ -1077,8 +1077,8 @@ class GSEXRM_MapFile(object):
                 ## can add in dark (background) and mask
                 grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
                                         unit='q', steps=grp['data1D'].shape[-1],
-                                        #calfile=self.xrmmap['xrd'].attrs['xrdcalfile'],
-                                        AI = self.xrmmap['xrd'], 
+                                        calfile=self.xrmmap['xrd'].attrs['xrdcalfile'],
+                                        #AI = self.xrmmap['xrd'], 
                                         save=False)
 
 

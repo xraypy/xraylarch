@@ -106,11 +106,11 @@ def calculate_ai(AI):
         rot_3 = 0
 
     try:
-        pixel_1 = float(AI.attrs['pixel1']) / 1.e6
+        pixel_1 = float(AI.attrs['pixel1'])
     except:
         pixel_1 = 0
     try:
-        pixel_2 = float(AI.attrs['pixel2']) / 1.e6
+        pixel_2 = float(AI.attrs['pixel2'])
     except:
         pixel_2 = 0
 
@@ -129,7 +129,7 @@ def calculate_ai(AI):
         detname = None
     
     try:
-        xraylambda =float(AI.attrs['wavelength']) / 1.e10
+        xraylambda =float(AI.attrs['wavelength'])
     except:
         xraylambda = None
 

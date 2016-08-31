@@ -1278,12 +1278,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         try:
             ## can add in dark (background) and mask
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-                                    #calfile=xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
-                                    AI = xrmfile.xrmmap['xrd'],
+                                    calfile=xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
+                                    #AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
         except:
             self._xrd.data1D = None
             print '1D Error message: Did not work this time.'
+        
+        ## Cheating - hard coding to eliminate dimension of this parameter
+        ## need to change to allow for multiple slices in eta
+        ## mkak 2016.08.31
+        self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
         
         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
 
