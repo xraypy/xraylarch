@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythonw
 """Larch program -- interactive command-line interface.
 This will use wx graphics device, if available.
 

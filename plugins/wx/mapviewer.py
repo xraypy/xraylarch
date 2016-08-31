@@ -795,7 +795,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                                     float(xrmmap['xrd'].attrs['poni1']),
                                     float(xrmmap['xrd'].attrs['poni2'])))
             self.wids['XRD Detector Tilts'].SetLabel( \
-                                    '%0.6f deg., %0.6f deg., %0.6f deg.' % ( \
+                                    '%0.6f rad., %0.6f rad., %0.6f rad.' % ( \
                                     float(xrmmap['xrd'].attrs['rot1']),
                                     float(xrmmap['xrd'].attrs['rot2']),
                                     float(xrmmap['xrd'].attrs['rot3'])))
@@ -1276,6 +1276,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         _larch = self.owner.larch
         map = self._xrd.data2D
         try:
+            ## can add in dark (background) and mask
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
                                     #calfile=xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
                                     AI = xrmfile.xrmmap['xrd'],
@@ -2052,42 +2053,65 @@ class OpenMapFolder(wx.Dialog):
     
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(450, 400))
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 550))
         
         panel = wx.Panel(self)
 
-        fldrTtl = wx.StaticText(panel,  label='XRM Map Folder:')
-        fldrBtn = wx.Button(panel,      label='Browse...')
-        chTtl   = wx.StaticText(panel,  label='Include data for...')
-        xrfCkBx = wx.CheckBox(panel,    label='XRF')
-        xrdCkBx = wx.CheckBox(panel,    label='XRD')
-        optTtl = wx.StaticBox(panel,    label='Optional')
-        caliTtl = wx.StaticText(panel,  label='XRD Calibration File:')
-        fileBtn = wx.Button(panel,      label='Browse...')
-        
+        fldrTtl  = wx.StaticText(panel,  label='XRM Map Folder:'       )
+        fldrBtn  = wx.Button(panel,      label='Browse...'             )
+        chTtl    = wx.StaticText(panel,  label='Include data for...'   )
+        xrfCkBx  = wx.CheckBox(panel,    label='XRF'                   )
+        xrdCkBx  = wx.CheckBox(panel,    label='XRD'                   )
+        optTtl   = wx.StaticBox(panel,   label='XRD Options'           )
+        caliTtl  = wx.StaticText(panel,  label='XRD Calibration File:' )
+        fileBtn1 = wx.Button(panel,      label='Browse...'             )
+        blnkTtl1 = wx.StaticText(panel,  label=''                      )
+        maskTtl  = wx.StaticText(panel,  label='XRD Mask File:'        )
+        fileBtn2 = wx.Button(panel,      label='Browse...'             )
+        blnkTtl2 = wx.StaticText(panel,  label=''                      )
+        bkgdTtl  = wx.StaticText(panel,  label='XRD Background File:'  )
+        fileBtn3 = wx.Button(panel,      label='Browse...'             )
+
         self.Fldr = wx.TextCtrl(panel,
                                 value ='Please select folder.',
                                 size=(350, 25))
         self.CalFl = wx.TextCtrl(panel, 
                                  value='Please select calibration file.',
                                  size=(350, 25))
+        self.MskFl = wx.TextCtrl(panel, 
+                                 value='Please select mask file.',
+                                 size=(350, 25))
+        self.BkgdFl = wx.TextCtrl(panel, 
+                                 value='Please select background file.',
+                                 size=(350, 25))
+
 
         hlpBtn = wx.Button(panel, wx.ID_HELP   )
         okBtn  = wx.Button(panel, wx.ID_OK     )
         canBtn = wx.Button(panel, wx.ID_CANCEL )
 
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,fldrBtn  )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,fldrBtn  )
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,xrfCkBx )
         self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck,xrdCkBx )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,fileBtn  )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,fileBtn1 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,fileBtn2 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,fileBtn3 )
 
         boxsizer = wx.StaticBoxSizer(optTtl, wx.VERTICAL)
 
-        boxsizer.Add(caliTtl,    flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(self.CalFl, flag=wx.TOP|wx.EXPAND         )
-        boxsizer.Add(fileBtn,    flag=wx.TOP|wx.RIGHT          )
+        boxsizer.Add(caliTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
+        boxsizer.Add(self.CalFl,  flag=wx.TOP|wx.EXPAND         )
+        boxsizer.Add(fileBtn1,    flag=wx.TOP|wx.RIGHT          )
+        boxsizer.Add(blnkTtl1,    flag=wx.TOP|wx.LEFT|wx.BOTTOM )
+        boxsizer.Add(maskTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
+        boxsizer.Add(self.MskFl,  flag=wx.TOP|wx.EXPAND         )
+        boxsizer.Add(fileBtn2,    flag=wx.TOP|wx.RIGHT          )
+        boxsizer.Add(blnkTtl2,    flag=wx.TOP|wx.LEFT|wx.BOTTOM )
+        boxsizer.Add(bkgdTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
+        boxsizer.Add(self.BkgdFl, flag=wx.TOP|wx.EXPAND         )
+        boxsizer.Add(fileBtn3,    flag=wx.TOP|wx.RIGHT          )
 
-        sizer = wx.GridBagSizer(5, 3)
+        sizer = wx.GridBagSizer(5, 6)
 
         sizer.Add(fldrTtl,   pos = (1,1) )
         sizer.Add(self.Fldr, pos = (2,1), span = (1,4) )
@@ -2112,7 +2136,7 @@ class OpenMapFolder(wx.Dialog):
         #print '%s is clicked %s.' % (event.GetEventObject().GetLabel(),event.GetEventObject().GetValue()) 
         self.FLAGxrd = event.GetEventObject().GetValue()
 
-    def onBROWSE1(self, event): 
+    def onBROWSE(self, event): 
         #print '%s is clicked.' % event.GetEventObject().GetLabel()
 
         dlg = wx.DirDialog(self, message="Read XRF Map Folder",
@@ -2131,10 +2155,10 @@ class OpenMapFolder(wx.Dialog):
             #self.Fldr.AppendText(str(path))
             self.FldrPath = path
 
-    def onBROWSE2(self, event): 
+    def onBROWSE1(self, event): 
         #print '%s is clicked.' % event.GetEventObject().GetLabel()
         
-        wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
+        wildcards = "pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -2150,6 +2174,48 @@ class OpenMapFolder(wx.Dialog):
             self.CalFl.SetValue(str(path))
             #self.CalFl.AppendText(str(path))
             self.CaliPath = path
+
+    def onBROWSE2(self, event): 
+        #print '%s is clicked.' % event.GetEventObject().GetLabel()
+        
+        wildcards = "pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD mask file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            print 'No mask file being used yet.'
+            self.MskFl.Clear()
+            self.MskFl.SetValue(str(path))
+            
+            ##self.MaskPath = path
+            
+    def onBROWSE3(self, event): 
+        #print '%s is clicked.' % event.GetEventObject().GetLabel()
+        
+        wildcards = "pyFAI background (*.edf)|*.edf|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD background file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            print 'No background file being used yet.'
+            self.BkgdFl.Clear()
+            self.BkgdFl.SetValue(str(path))
+
+            ##self.BkgdPath = path
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):

@@ -780,10 +780,12 @@ class GSEXRM_MapFile(object):
 #            ## Eventually needs to be put here.
 #            ## mkak 2016.08.31
 #            for i in range(xrdgp['data2D'].shape[0]):
+#                ## can add in dark (background) and mask
 #                xrdgrp['data1D'][i,] = integrate_xrd(xrdgp['data2D'][i,],
 #                                          unit='q', steps=xrdgrp['data1D'].shape[-1],
 #                                          AI = xrdgrp, 
 #                                          save=False)
+
 
         self.h5root.flush()
 
@@ -1072,6 +1074,7 @@ class GSEXRM_MapFile(object):
                 
                 t1a = time.time()
                 ### HOW TO DO THIS WITHOUT LOOPING?
+                ## can add in dark (background) and mask
                 grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
                                         unit='q', steps=grp['data1D'].shape[-1],
                                         #calfile=self.xrmmap['xrd'].attrs['xrdcalfile'],

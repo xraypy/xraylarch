@@ -15,7 +15,7 @@ import numpy as np
 
 def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, wedges= 1,
                   save=True, aname = 'default', prefix = 'XRD', path = '~/',
-                  verbose=False):
+                  mask=None, dark=None, verbose=False):
 
     if AI is None:
         try:
@@ -49,11 +49,12 @@ def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, wedges=
         fname = '%s/%s-%s-%03d.xy' % (path,prefix,aname,counter)
         print '\nSaving %s data in file: %s\n' % (unit,fname)
         for i in range(xrd_map.shape[0]):
-            qI[i,] = ai.integrate1d(xrd_map[i,], steps, unit=iunit,filename=fname)
+            qI[i,] = ai.integrate1d(xrd_map[i,], steps, unit=iunit,filename=fname,
+                                    mask=mask, dark=dark)
     else:
         for i in range(xrd_map.shape[0]):
-            qI[i,] = ai.integrate1d(xrd_map[i], steps, unit=iunit)
-
+            qI[i,] = ai.integrate1d(xrd_map[i], steps, unit=iunit,
+                                    mask=mask, dark=dark)
     t1 = time.time()
     if verbose:
         print('\ttime to integrate data = %0.3f s' % ((t1-t0)))
