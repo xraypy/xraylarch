@@ -682,7 +682,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'XRD Parameters',  'XRD Detector',     
                       'XRD Wavelength',  'XRD Energy',       'XRD Detector Distance', 
                       'XRD Pixel Size',  'XRD Beam Center',  'XRD Detector Tilts',
-                      'XRD Spline',      'XRD Calibration File'):
+                      'XRD Spline'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -782,26 +782,26 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             pref, calfile = os.path.split(xrmmap['xrd'].attrs['xrdcalfile'])
             self.wids['XRD Detector'].SetLabel('%s' % \
                                                  xrmmap['xrd'].attrs['detector'])
-            self.wids['XRD Calibration File'].SetLabel('%s' % calfile)
             self.wids['XRD Wavelength'].SetLabel('% 0.4f A' % \
-                                                 xrmmap['xrd'].attrs['wavelength'])
-            self.wids['XRD Energy'].SetLabel('% 0.2f keV' % \
-                                                 xrmmap['xrd'].attrs['energy'])
+                                    (float(xrmmap['xrd'].attrs['wavelength'])*1.e10))
+            self.wids['XRD Energy'].SetLabel('% 0.3f keV' % \
+                                    float(xrmmap['xrd'].attrs['energy']))
             self.wids['XRD Detector Distance'].SetLabel('%0.3f mm' % \
-                                                 xrmmap['xrd'].attrs['distance'])
+                                    (float(xrmmap['xrd'].attrs['distance'])*1.e3))
             self.wids['XRD Pixel Size'].SetLabel('%0.1f um, %0.1f um ' % ( \
-                                                 xrmmap['xrd'].attrs['ps1'],
-                                                 xrmmap['xrd'].attrs['ps2']))
+                                    float(xrmmap['xrd'].attrs['ps1'])*1.e6,
+                                    float(xrmmap['xrd'].attrs['ps2'])*1.e6))
             self.wids['XRD Beam Center'].SetLabel('%0.4f m, %0.4f m' % ( \
-                                                 xrmmap['xrd'].attrs['poni1'],
-                                                 xrmmap['xrd'].attrs['poni2']))
+                                    float(xrmmap['xrd'].attrs['poni1']),
+                                    float(xrmmap['xrd'].attrs['poni2'])))
             self.wids['XRD Detector Tilts'].SetLabel( \
-                                                '%0.6f deg., %0.6f deg., %0.6f deg.' % \
-                                                (xrmmap['xrd'].attrs['rot1'],
-                                                 xrmmap['xrd'].attrs['rot2'],
-                                                 xrmmap['xrd'].attrs['rot3']))
+                                    '%0.6f deg., %0.6f deg., %0.6f deg.' % ( \
+                                    float(xrmmap['xrd'].attrs['rot1']),
+                                    float(xrmmap['xrd'].attrs['rot2']),
+                                    float(xrmmap['xrd'].attrs['rot3'])))
             self.wids['XRD Spline'].SetLabel('%s' % \
                                                  xrmmap['xrd'].attrs['spline'])
+            self.wids['XRD Parameters'].SetLabel('%s' % calfile)
         else:
             self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
 
@@ -1908,7 +1908,11 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
         if read:
-            self.current_file.xrmmap.add_calibration(file_path)
+            self.current_file.add_calibration(file_path)
+            
+        for p in self.nbpanels:
+            if hasattr(p, 'update_xrmmap'):
+                p.update_xrmmap(self.current_file.xrmmap)
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:

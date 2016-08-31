@@ -190,19 +190,19 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
                 xrdgp.attrs['spline']   = ai.detector.splineFile
             except:
                 xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']          = ai.detector.pixel1 * 1e6 ## units: um
-            xrdgp.attrs['ps2']          = ai.detector.pixel2 * 1e6 ## units: um
-            xrdgp.attrs['distance']     = ai._dist * 1e3  ## units: mm
-            xrdgp.attrs['poni1']        = ai._poni1
-            xrdgp.attrs['poni2']        = ai._poni2
-            xrdgp.attrs['rot1']         = ai._rot1
-            xrdgp.attrs['rot2']         = ai._rot2
-            xrdgp.attrs['rot3']         = ai._rot3
-            xrdgp.attrs['wavelength']   = ai._wavelength * 1e10 ## units: A
+            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgp.attrs['distance']   = ai._dist ## units: m
+            xrdgp.attrs['poni1']      = ai._poni1
+            xrdgp.attrs['poni2']      = ai._poni2
+            xrdgp.attrs['rot1']       = ai._rot1
+            xrdgp.attrs['rot2']       = ai._rot2
+            xrdgp.attrs['rot3']       = ai._rot3
+            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e7 ## units: keV-A
-            xrdgp.attrs['energy']    = hc/(ai._wavelength * 10e10) ## units: keV
+                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
     xrmmap.create_group('flags')
     flaggp = xrmmap['flags']
@@ -753,25 +753,37 @@ class GSEXRM_MapFile(object):
         if self.xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
             ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
     
-            xrdgp.attrs['desc']       = '''xrd detector calibration and data'''
-            xrdgp.attrs['detector']   = ai.detector.name
+            xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
             try:
-                xrdgp.attrs['spline'] = ai.detector.splineFile
+                xrdgp.attrs['detector'] = ai.detector.name
             except:
-                xrdgp.attrs['spline'] = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 * 1e6 ## units: um
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 * 1e6 ## units: um
-            xrdgp.attrs['distance']   = ai._dist * 1e3  ## units: mm
+                xrdgp.attrs['detector'] = ''
+            try:
+                xrdgp.attrs['spline']   = ai.detector.splineFile
+            except:
+                xrdgp.attrs['spline']   = ''
+            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgp.attrs['distance']   = ai._dist ## units: m
             xrdgp.attrs['poni1']      = ai._poni1
             xrdgp.attrs['poni2']      = ai._poni2
             xrdgp.attrs['rot1']       = ai._rot1
             xrdgp.attrs['rot2']       = ai._rot2
             xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength * 10e9 ## units: A
+            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e7 ## units: keV-A
-            xrdgp.attrs['energy']    = hc/(ai._wavelength * 10e10) ## units: keV
+                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+
+            
+#            ## Eventually needs to be put here.
+#            ## mkak 2016.08.31
+#            for i in range(xrdgp['data2D'].shape[0]):
+#                xrdgrp['data1D'][i,] = integrate_xrd(xrdgp['data2D'][i,],
+#                                          unit='q', steps=xrdgrp['data1D'].shape[-1],
+#                                          AI = xrdgrp, 
+#                                          save=False)
 
         self.h5root.flush()
 
