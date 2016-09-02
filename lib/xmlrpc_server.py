@@ -15,22 +15,23 @@ class LarchServer(SimpleXMLRPCServer):
     KEEPALIVE_TIME = 3*24*3600.0
     POLL_TIME = 1.0
 
-    def __init__(self, host='127.0.0.1', port=4966, **kws):
+    def __init__(self, host='127.0.0.1', port=4966, with_wx=False,
+                 logRequests=False, allow_none=True, **kws):
         self.out_buffer = []
         self.keep_alive = True
         self.expiration_time = time() + self.KEEPALIVE_TIME
         self.timer = None
         SimpleXMLRPCServer.__init__(self, (host, port),
-                                    logRequests=False,
-                                    allow_none=True, **kws)
+                                    logRequests=logRequests,
+                                    allow_none=allow_none)
         for method in  ('ls', 'chdir', 'cd', 'cwd', 'exit', 'larch',
                         'get_data', 'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
 
         self.larch = Interpreter(writer=self)
         self.input = InputText(prompt='', _larch=self.larch)
-        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch.run_init_scripts()
+        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
 
     def write(self, text, **kws):
         self.out_buffer.append(text)
