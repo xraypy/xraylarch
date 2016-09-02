@@ -24,6 +24,8 @@ class LarchServer(SimpleXMLRPCServer):
         SimpleXMLRPCServer.__init__(self, (host, port),
                                     logRequests=logRequests,
                                     allow_none=allow_none)
+
+        self.register_introspection_functions()
         for method in  ('ls', 'chdir', 'cd', 'cwd', 'exit', 'larch',
                         'get_data', 'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
@@ -35,6 +37,9 @@ class LarchServer(SimpleXMLRPCServer):
 
     def write(self, text, **kws):
         self.out_buffer.append(text)
+
+    def flush(self):
+        pass
 
     def get_messages(self):
         out = "".join(self.out_buffer)
