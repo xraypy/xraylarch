@@ -71,12 +71,9 @@ if options.server_mode:
     from larch.xmlrpc_server import LarchServer
     server = LarchServer(host='localhost', port=int(options.port),
                          local_echo=options.echo,
-                         quiet=options.quiet, with_wx=False)
-    server.initialize_larch()
-    try:
-        server.serve_forever()
-    except:
-        sys.exit()
+                         quiet=options.quiet)
+    server.run()
+
 
 shell = larch.shell(quiet=options.quiet)
 
