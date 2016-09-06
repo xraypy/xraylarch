@@ -25,7 +25,7 @@ from larch_plugins.xrd import XRD
 from larch_plugins.xrd import integrate_xrd
 
 import pyFAI
-
+from pyFAI.calibration import Calibrant
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
@@ -180,6 +180,10 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
     
         if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
             ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
+            
+            ## Could this work to save ai class? 
+            ## mkak 2016.09.05
+            #xrdgp.attrs['ai'] = json.dumps(ai,cls=Calibrant)
         
             xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
             try:
@@ -203,7 +207,7 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
             xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-
+            
     xrmmap.create_group('flags')
     flaggp = xrmmap['flags']
     
