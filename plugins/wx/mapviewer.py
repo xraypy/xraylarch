@@ -1986,8 +1986,9 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_irow, self.h5convert_nrow = 0, 0
             self.h5convert_t0 = time.time()
             self.htimer.Start(150)
-            self.h5convert_thread = Thread(target=self.new_mapdata,
-                                           args=(filename,))
+            self.h5convert_thread = Thread(target=self.filemap[filename].process)
+#            self.h5convert_thread = Thread(target=self.new_mapdata,
+#                                           args=(filename,))
             self.h5convert_thread.start()
 
     def onTimer(self, event):
@@ -2001,6 +2002,9 @@ class MapViewerFrame(wx.Frame):
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
+## Not being replace 'process()' in xrmmap/xrm_mapfile.py
+## Will not update message in xrm_mapfile.py
+## mkak 2016.09.07
     def new_mapdata(self, filename):
 
         xrm_map = self.filemap[filename]

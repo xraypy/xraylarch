@@ -180,13 +180,19 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
     xrmmap.create_group('xrd')
     xrdgp = xrmmap['xrd']
 
-    xrdgp.attrs['calfile'] = str(xrdcalfile)
-    #xrdgp.attrs['calfile'] = xrdcalfile
-    xrdgp.attrs['maskfile'] = str(mask)
-    xrdgp.attrs['bkgdfile'] = str(bkgd)
+    if xrdcalfile is not None:
+        xrdgp.attrs['calfile'] = xrdcalfile
+    if mask is not None:
+        xrdgp.attrs['maskfile'] = str(mask)
+    if bkgd is not None:
+        xrdgp.attrs['bkgdfile'] = str(bkgd)
 
-    if xrmmap['xrd'].attrs['calfile'].endswith('poni'):
-        ai = pyFAI.load(xrdgp.attrs['calfile'])
+    if hasattr(xrmmap['xrd'],'calfile'):
+        try:
+            ai = pyFAI.load(xrdgp.attrs['calfile'])
+        except:
+            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
+                                           os.path.split(xrdgp.attrs['calfile'])[-1])
         
         ## Could this work to save ai class? 
         ## mkak 2016.09.05
@@ -740,9 +746,10 @@ class GSEXRM_MapFile(object):
         mkak 2016.08.30
         """
         try:
-            pyFAI.load(xrdcalfile)
+            ai = pyFAI.load(xrdcalfile)
         except:
-            print 'Not a valid calibration file.'
+            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
+                                           os.path.split(xrdcalfile)[-1])
             return
 
         path, file = os.path.split(str(xrdcalfile))
@@ -756,31 +763,29 @@ class GSEXRM_MapFile(object):
 
         xrdgp.attrs['calfile'] = '%s' % (xrdcalfile)
             
-        if self.xrmmap['xrd'].attrs['calfile'].endswith('poni'):
-            ai = pyFAI.load(xrdgp.attrs['calfile'])
-    
-            xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
-            try:
-                xrdgp.attrs['detector'] = ai.detector.name
-            except:
-                xrdgp.attrs['detector'] = ''
-            try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
-            except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+   
+        xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
+        try:
+            xrdgp.attrs['detector'] = ai.detector.name
+        except:
+            xrdgp.attrs['detector'] = ''
+        try:
+            xrdgp.attrs['spline']   = ai.detector.splineFile
+        except:
+            xrdgp.attrs['spline']   = ''
+        xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+        xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+        xrdgp.attrs['distance']   = ai._dist ## units: m
+        xrdgp.attrs['poni1']      = ai._poni1
+        xrdgp.attrs['poni2']      = ai._poni2
+        xrdgp.attrs['rot1']       = ai._rot1
+        xrdgp.attrs['rot2']       = ai._rot2
+        xrdgp.attrs['rot3']       = ai._rot3
+        xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+        ## E = hf ; E = hc/lambda
+        hc = constants.value(u'Planck constant in eV s') * \
+               constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+        xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
             
 #            ## Eventually needs to be put here.
@@ -982,7 +987,6 @@ class GSEXRM_MapFile(object):
         if not self.flag_xrf and not self.flag_xrd:
             return
 
-        t0 = time.time()
         thisrow = self.last_row + 1
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.flag_xrf:
@@ -991,6 +995,7 @@ class GSEXRM_MapFile(object):
             pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
         print pform
 
+        t0 = time.time()
         if self.flag_xrf:
        
             nmca, xnpts, nchan = row.counts.shape
@@ -1077,8 +1082,14 @@ class GSEXRM_MapFile(object):
                 if g.attrs.get('type', None) == 'xrd detector' :
                     xrd_dets.append(g)
                     
-            if self.xrmmap['xrd'].attrs['maskfile'] == '':
-                print 'BLANK'
+            if hasattr(self.xrmmap['xrd'],'maskfile'):
+                mask = self.xrmmap['xrd'].attrs['maskfile']
+            else:
+                mask = None
+            if hasattr(self.xrmmap['xrd'],'bkgdfile'):
+                bkgd = self.xrmmap['xrd'].attrs['bkgdfile']
+            else:
+                bkgd = None
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             for idet, grp in enumerate(xrd_dets):
@@ -1086,11 +1097,10 @@ class GSEXRM_MapFile(object):
                 
                 t1a = time.time()
                 ### HOW TO DO THIS WITHOUT LOOPING?
-                ## can add in dark (background) and mask
-                grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
+                if hasattr(self.xrmmap['xrd'],'calfile'):    
+                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
                                         unit='q', steps=grp['data1D'].shape[-1],
-                                        mask=self.xrmmap['xrd'].attrs['maskfile'],
-                                        dark=self.xrmmap['xrd'].attrs['bkgdfile'],
+                                        mask=mask, dark=bkgd,
                                         calfile=self.xrmmap['xrd'].attrs['calfile'],
                                         #AI = self.xrmmap['xrd'], 
                                         save=False)
@@ -1098,13 +1108,19 @@ class GSEXRM_MapFile(object):
 
         t2 = time.time()
         if verbose:
-            if self.flag_xrd and self.flag_xrf:
+            if self.flag_xrd and self.flag_xrf and hasattr(self.xrmmap['xrd'],'calfile'):
                 pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
                 print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
-            #elif self.flag_xrf:
-            #
-            #elif self.flag_xrd:
-
+            elif self.flag_xrd and self.flag_xrf:
+                pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
+                print(pform % (t1-t0,t2-t1,t2-t0))
+            elif self.flag_xrf: 
+                pform = '\tTime: %0.2f s'
+                print(pform % (t2-t0))
+            elif self.flag_xrd: 
+                pform = '\t2D XRD: %0.2f s; 1D XRD %0.2f s; Total: %0.2f s'
+                print(pform % (t1a-t0,t2-t1a,t2-t0))
+                
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
         self.h5root.flush()
