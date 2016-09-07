@@ -778,8 +778,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
-            pref, calfile = os.path.split(xrmmap['xrd'].attrs['xrdcalfile'])
+        if hasattr(xrmmap['xrd'],'calfile'):
+        #xrmmap['xrd'].attrs['calfile'].endswith('poni'):
+            pref, calfile = os.path.split(xrmmap['xrd'].attrs['calfile'])
             self.wids['XRD Detector'].SetLabel('%s' % \
                                                  xrmmap['xrd'].attrs['detector'])
             self.wids['XRD Wavelength'].SetLabel('% 0.4f A' % \
@@ -1278,7 +1279,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         try:
             ## can add in dark (background) and mask
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-                                    calfile=xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
+                                    calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
                                     #AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
         except:
@@ -1780,7 +1781,7 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-
+        
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
@@ -1859,17 +1860,20 @@ class MapViewerFrame(wx.Frame):
         path, read = None, False
         FLAGxrf, FLAGxrd = False, False
         if myDlg.ShowModal() == wx.ID_OK:
-            read       = True
-            path       = myDlg.FldrPath
-            xrdcalfile = myDlg.CaliPath
-            FLAGxrf    = myDlg.FLAGxrf
-            FLAGxrd    = myDlg.FLAGxrd
+            read        = True
+            path        = myDlg.FldrPath
+            xrdcalfile  = myDlg.CaliPath
+            xrdmaskfile = myDlg.MaskPath
+            xrdbkgdfile = myDlg.BkgdPath
+            FLAGxrf     = myDlg.FLAGxrf
+            FLAGxrd     = myDlg.FLAGxrd
 
         myDlg.Destroy()
         
         if read:
             xrmfile = GSEXRM_MapFile(folder=str(path),
                                      calibration=xrdcalfile,
+                                     mask=xrdmaskfile, bkgd=xrdbkgdfile,
                                      FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
             self.add_xrmfile(xrmfile)
 
@@ -2055,6 +2059,8 @@ class OpenMapFolder(wx.Dialog):
         self.FLAGxrd  = False
         self.FldrPath = None
         self.CaliPath = None
+        self.MaskPath = None
+        self.BkgdPath = None
     
     
         """Constructor"""
@@ -2094,13 +2100,14 @@ class OpenMapFolder(wx.Dialog):
         hlpBtn = wx.Button(panel, wx.ID_HELP   )
         okBtn  = wx.Button(panel, wx.ID_OK     )
         canBtn = wx.Button(panel, wx.ID_CANCEL )
+        self.FindWindowById(wx.ID_OK).Disable()
 
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,fldrBtn  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,xrfCkBx )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck,xrdCkBx )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,fileBtn1 )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,fileBtn2 )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,fileBtn3 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,   fldrBtn  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck, xrfCkBx  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck, xrdCkBx  )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,  fileBtn2 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,  fileBtn3 )
 
         boxsizer = wx.StaticBoxSizer(optTtl, wx.VERTICAL)
 
@@ -2128,18 +2135,29 @@ class OpenMapFolder(wx.Dialog):
         sizer.Add(hlpBtn,    pos = (10,1) )
         sizer.Add(okBtn,     pos = (10,3) )
         sizer.Add(canBtn,    pos = (10,2) )
-
+        
         sizer.AddGrowableCol(2)
-
         panel.SetSizer(sizer)       
 
     def onXRFcheck(self, event):
         #print '%s is clicked %s.' % (event.GetEventObject().GetLabel(),event.GetEventObject().GetValue()) 
         self.FLAGxrf = event.GetEventObject().GetValue()
+      
+        if self.FLAGxrf or self.FLAGxrd:
+            if self.FldrPath:
+                self.FindWindowById(wx.ID_OK).Enable()
+        else:
+                self.FindWindowById(wx.ID_OK).Disable()
 
     def onXRDcheck(self, event): 
         #print '%s is clicked %s.' % (event.GetEventObject().GetLabel(),event.GetEventObject().GetValue()) 
         self.FLAGxrd = event.GetEventObject().GetValue()
+        
+        if self.FLAGxrf or self.FLAGxrd:
+            if self.FldrPath:
+                self.FindWindowById(wx.ID_OK).Enable()
+        else:
+                self.FindWindowById(wx.ID_OK).Disable()
 
     def onBROWSE(self, event): 
         #print '%s is clicked.' % event.GetEventObject().GetLabel()
@@ -2159,6 +2177,12 @@ class OpenMapFolder(wx.Dialog):
             self.Fldr.SetValue(str(path))
             #self.Fldr.AppendText(str(path))
             self.FldrPath = path
+        
+        if self.FLAGxrf or self.FLAGxrd:
+            if self.FldrPath:
+                self.FindWindowById(wx.ID_OK).Enable()
+        else:
+                self.FindWindowById(wx.ID_OK).Disable()
 
     def onBROWSE1(self, event): 
         #print '%s is clicked.' % event.GetEventObject().GetLabel()
@@ -2195,11 +2219,9 @@ class OpenMapFolder(wx.Dialog):
         dlg.Destroy()
         
         if read:
-            print 'No mask file being used yet.'
             self.MskFl.Clear()
             self.MskFl.SetValue(str(path))
-            
-            ##self.MaskPath = path
+            self.MaskPath = path
             
     def onBROWSE3(self, event): 
         #print '%s is clicked.' % event.GetEventObject().GetLabel()
@@ -2216,11 +2238,9 @@ class OpenMapFolder(wx.Dialog):
         dlg.Destroy()
         
         if read:
-            print 'No background file being used yet.'
             self.BkgdFl.Clear()
             self.BkgdFl.SetValue(str(path))
-
-            ##self.BkgdPath = path
+            self.BkgdPath = path
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):

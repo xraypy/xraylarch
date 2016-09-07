@@ -131,7 +131,8 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Process_ID': 0}
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
-                  FLAGxrf = True, FLAGxrd = False, xrdcalfile = None):
+                  FLAGxrf = False, FLAGxrd = False,
+                  xrdcalfile = None, mask = None, bkgd = None):
     """creates a skeleton '/xrmmap' group in an open HDF5 file
 
     This is left as a function, not method of GSEXRM_MapFile below
@@ -150,6 +151,11 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)
+    
+    xrmmap.create_group('flags')
+    flaggp = xrmmap['flags']
+    flaggp.attrs['xrf'] = FLAGxrf
+    flaggp.attrs['xrd'] = FLAGxrd
     
     for key, val in attrs.items():
         xrmmap.attrs[key] = str(val)
@@ -171,48 +177,43 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
         
-
     xrmmap.create_group('xrd')
     xrdgp = xrmmap['xrd']
 
-    if xrdcalfile is not None:
-        xrdgp.attrs['xrdcalfile'] = '%s' % (xrdcalfile)
-    
-        if xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
-            ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
-            
-            ## Could this work to save ai class? 
-            ## mkak 2016.09.05
-            #xrdgp.attrs['ai'] = json.dumps(ai,cls=Calibrant)
+    xrdgp.attrs['calfile'] = str(xrdcalfile)
+    #xrdgp.attrs['calfile'] = xrdcalfile
+    xrdgp.attrs['maskfile'] = str(mask)
+    xrdgp.attrs['bkgdfile'] = str(bkgd)
+
+    if xrmmap['xrd'].attrs['calfile'].endswith('poni'):
+        ai = pyFAI.load(xrdgp.attrs['calfile'])
         
-            xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
-            try:
-                xrdgp.attrs['detector'] = ai.detector.name
-            except:
-                xrdgp.attrs['detector'] = ''
-            try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
-            except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-            
-    xrmmap.create_group('flags')
-    flaggp = xrmmap['flags']
+        ## Could this work to save ai class? 
+        ## mkak 2016.09.05
+        #xrdgp.attrs['ai'] = json.dumps(ai,cls=Calibrant)
     
-    flaggp.attrs['xrf'] = FLAGxrf
-    flaggp.attrs['xrd'] = FLAGxrd
+        xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
+        try:
+            xrdgp.attrs['detector'] = ai.detector.name
+        except:
+            xrdgp.attrs['detector'] = ''
+        try:
+            xrdgp.attrs['spline']   = ai.detector.splineFile
+        except:
+            xrdgp.attrs['spline']   = ''
+        xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+        xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+        xrdgp.attrs['distance']   = ai._dist ## units: m
+        xrdgp.attrs['poni1']      = ai._poni1
+        xrdgp.attrs['poni2']      = ai._poni2
+        xrdgp.attrs['rot1']       = ai._rot1
+        xrdgp.attrs['rot2']       = ai._rot2
+        xrdgp.attrs['rot3']       = ai._rot3
+        xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+        ## E = hf ; E = hc/lambda
+        hc = constants.value(u'Planck constant in eV s') * \
+               constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+        xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
     h5root.flush()
 
@@ -562,7 +563,8 @@ class GSEXRM_MapFile(object):
     XRDCalFile = 'calibration.poni'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, FLAGxrf=None, FLAGxrd=None,
+                 calibration=None, mask=None, bkgd=None,
+                 FLAGxrf=False, FLAGxrd=False,
                  xchannels=5001, xwedge=1):
         self.filename         = filename
         self.folder           = folder
@@ -586,13 +588,12 @@ class GSEXRM_MapFile(object):
         self.xwedge           = xwedge
         
 
-        if calibration is not None:
-            self.calibration = calibration
-        if FLAGxrf is not None:
-            self.flag_xrf = True
-        if FLAGxrd is not None:
-            self.flag_xrd = True
-        self.flag_xrd = True
+        self.calibration = calibration
+        self.xrdmask = mask
+        self.xrdbkgd = bkgd
+        self.flag_xrf = FLAGxrf
+        self.flag_xrd = FLAGxrd
+
         
         
         # initialize from filename or folder
@@ -657,7 +658,8 @@ class GSEXRM_MapFile(object):
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time,
                           FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd, 
-                          xrdcalfile = self.calibration)
+                          xrdcalfile = self.calibration,
+                          mask = self.xrdmask, bkgd = self.xrdbkgd)
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
@@ -752,10 +754,10 @@ class GSEXRM_MapFile(object):
             self.xrmmap.create_group('xrd')
         xrdgp = self.xrmmap['xrd']
 
-        xrdgp.attrs['xrdcalfile'] = '%s' % (xrdcalfile)
+        xrdgp.attrs['calfile'] = '%s' % (xrdcalfile)
             
-        if self.xrmmap['xrd'].attrs['xrdcalfile'].endswith('poni'):
-            ai = pyFAI.load(xrdgp.attrs['xrdcalfile'])
+        if self.xrmmap['xrd'].attrs['calfile'].endswith('poni'):
+            ai = pyFAI.load(xrdgp.attrs['calfile'])
     
             xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
             try:
@@ -960,6 +962,9 @@ class GSEXRM_MapFile(object):
         elif self.flag_xrf:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
             xrdf = ''
+        else:
+            raise IOError('No XRF or XRD flags provided.')
+            return
         reverse = (irow % 2 != 0)
         
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
@@ -1071,6 +1076,9 @@ class GSEXRM_MapFile(object):
                 g = self.xrmmap[gname]
                 if g.attrs.get('type', None) == 'xrd detector' :
                     xrd_dets.append(g)
+                    
+            if self.xrmmap['xrd'].attrs['maskfile'] == '':
+                print 'BLANK'
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             for idet, grp in enumerate(xrd_dets):
@@ -1081,15 +1089,21 @@ class GSEXRM_MapFile(object):
                 ## can add in dark (background) and mask
                 grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
                                         unit='q', steps=grp['data1D'].shape[-1],
-                                        calfile=self.xrmmap['xrd'].attrs['xrdcalfile'],
+                                        mask=self.xrmmap['xrd'].attrs['maskfile'],
+                                        dark=self.xrmmap['xrd'].attrs['bkgdfile'],
+                                        calfile=self.xrmmap['xrd'].attrs['calfile'],
                                         #AI = self.xrmmap['xrd'], 
                                         save=False)
 
 
         t2 = time.time()
         if verbose:
-            pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
-            print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
+            if self.flag_xrd and self.flag_xrf:
+                pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
+                print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
+            #elif self.flag_xrf:
+            #
+            #elif self.flag_xrd:
 
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
@@ -1385,7 +1399,7 @@ class GSEXRM_MapFile(object):
         return name of calibration file
         """
         try:
-            calibration = self.xrmmap['xrd'].attrs['xrdcalfile']
+            calibration = self.xrmmap['xrd'].attrs['calfile']
             if verbose:
                 print pyFAI.load(calibration)
         except:
