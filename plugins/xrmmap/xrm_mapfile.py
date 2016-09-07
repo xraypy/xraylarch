@@ -42,6 +42,7 @@ class GSEXRM_FileStatus:
     wrongfolder  = 'hdf5 exists, but does not match folder name'
     err_notfound = 'file not found'
     empty        = 'file is empty (read from folder)'
+    copy        = 'file is to be copied from existing map'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
 def getFileStatus(filename, root=None, folder=None):
@@ -570,8 +571,8 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=False, FLAGxrd=False,
-                 xchannels=5001, xwedge=1):
+                 FLAGxrf=False, FLAGxrd=False, xchannels=5001, xwedge=1,
+                 copy=False):
         self.filename         = filename
         self.folder           = folder
         self.root             = root
@@ -599,8 +600,6 @@ class GSEXRM_MapFile(object):
         self.xrdbkgd = bkgd
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
-
-        
         
         # initialize from filename or folder
         if self.filename is not None:
@@ -608,8 +607,16 @@ class GSEXRM_MapFile(object):
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
+                print 'in-inside here'
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
+                ftmp.close()
+                os.unlink(self.filename)
+                
+            if copy:
+                self.status = GSEXRM_FileStatus.copy
+                print 'nowwww here'
+                ftmp = open(self.filename, 'r')
                 ftmp.close()
                 os.unlink(self.filename)
 
@@ -671,6 +678,29 @@ class GSEXRM_MapFile(object):
             self.open(self.filename, root=self.root, check_status=False)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
+
+    def copy_hdf5(self, newfile, root=None, check_status=True):
+        """
+        copy current GSEXRM HDF5 File without 2D XRD data
+        
+        this **must** be called for an existing, valid GSEXRM HDF5 File!!
+        """
+        print 'The original file to be copied is: %s' % self.filename
+        
+        if root in ('', None):
+            root = DEFAULT_ROOTNAME
+        if check_status:
+            self.status, self.root, self.version = \
+                         getFileStatus(self.filename, root=root)
+            if self.status not in (GSEXRM_FileStatus.hasdata,
+                                   GSEXRM_FileStatus.created):
+                raise GSEXRM_Exception(
+                    "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
+
+        print 'The copied file is named: %s' % newfile       
+
+        newmap = GSEXRM_MapFile(filename=str(newfile),copy=True)
+        all_ids = newmap.require_group(self.xrmmap.parent.name)
 
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)

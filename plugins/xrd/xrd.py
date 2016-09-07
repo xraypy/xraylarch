@@ -85,4 +85,4 @@ def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
                name=name, **kws)
 
 def registerLarchPlugin():
-    return ('_xrf', {'create_xrd': create_xrd})
+    return ('_xrd', {'create_xrd': create_xrd})

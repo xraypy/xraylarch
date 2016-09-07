@@ -83,6 +83,8 @@ from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
 
 from larch_plugins.xrd import integrate_xrd
 
+#from libtiff import TIFF
+
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
@@ -1232,6 +1234,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         title = '%s: %s' % (fname, aname)
         subtitles = None
 
+        counter = 1
+        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,aname,counter)):
+            counter += 1
+        fname = '%s/%s-%s-%03d.xy' % (pref,fname,aname,counter)
+        print '\tSaving 2D data in file: %s\n' % (fname)
+        print 'NOT YET'
+        #tiff = TIFF.open(fname, mode='w')
+        #tiff.write_image(map)
+        #tiff.close()
+
+
         try:
             x = xrmfile.get_pos(0, mean=True)
         except:
@@ -1759,6 +1772,9 @@ class MapViewerFrame(wx.Frame):
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Update XRD Calibration File to Map File",
                  "Load XRD Calibration File",  self.onReadXRD)
+
+        MenuItem(self, fmenu, "&Save As...  without 2D XRD data",
+                 "Save without 2D XRD data",  self.onReSave)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "Show Larch Buffer",
                   "Show Larch Programming Buffer",
@@ -1898,8 +1914,6 @@ class MapViewerFrame(wx.Frame):
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
 
-## Requires further editing. How to add calibration file to already existing mapfile?
-## mkak 2016.08.23
     def onReadXRD(self, evt=None):
         '''
         Read specified poni file.
@@ -1923,6 +1937,29 @@ class MapViewerFrame(wx.Frame):
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(self.current_file.xrmmap)
+
+    def onReSave(self, evt=None):
+        '''
+        Read specified poni file.
+        mkak 2016.07.21
+        '''
+ 
+        ## Choose XRD data calibration file (*.poni)
+        wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message = 'Save As',
+                            defaultDir=os.getcwd(),
+                            wildcard=wildcards,
+                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            file_path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.current_file.copy_hdf5(file_path)
+            
+        ## perhaps also re run mapfile reader to put this on the list on left panel?
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
@@ -1986,9 +2023,9 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_irow, self.h5convert_nrow = 0, 0
             self.h5convert_t0 = time.time()
             self.htimer.Start(150)
-            self.h5convert_thread = Thread(target=self.filemap[filename].process)
-#            self.h5convert_thread = Thread(target=self.new_mapdata,
-#                                           args=(filename,))
+            ##self.h5convert_thread = Thread(target=self.filemap[filename].process)
+            self.h5convert_thread = Thread(target=self.new_mapdata,
+                                           args=(filename,))
             self.h5convert_thread.start()
 
     def onTimer(self, event):
@@ -2002,8 +2039,7 @@ class MapViewerFrame(wx.Frame):
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
-## Not being replace 'process()' in xrmmap/xrm_mapfile.py
-## Will not update message in xrm_mapfile.py
+## Not being replace 'process()' in xrmmap/xrm_mapfile.py: does not update mapviewer.py window!!
 ## mkak 2016.09.07
     def new_mapdata(self, filename):
 
