@@ -181,12 +181,17 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
     xrmmap.create_group('xrd')
     xrdgp = xrmmap['xrd']
 
-    if xrdcalfile is not None:
+    if xrdcalfile:
         xrdgp.attrs['calfile'] = xrdcalfile
-    if mask is not None:
+
+    if mask:
         xrdgp.attrs['maskfile'] = str(mask)
-    if bkgd is not None:
+    else:
+        xrdgp.attrs['maskfile'] = ''
+    if bkgd:
         xrdgp.attrs['bkgdfile'] = str(bkgd)
+    else:
+        xrdgp.attrs['bkgdfile'] = ''
 
     if hasattr(xrmmap['xrd'],'calfile'):
         try:
@@ -770,7 +775,7 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self, xrdcalfile, root=None):
+    def add_calibration(self, xrdcalfile, mask=None, bkgd=None, root=None):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.08.30
@@ -783,7 +788,6 @@ class GSEXRM_MapFile(object):
             return
 
         path, file = os.path.split(str(xrdcalfile))
-        print '\nCalibration file selected: %s\n' % file
 
         try:
             self.xrmmap['xrd']
@@ -792,7 +796,15 @@ class GSEXRM_MapFile(object):
         xrdgp = self.xrmmap['xrd']
 
         xrdgp.attrs['calfile'] = '%s' % (xrdcalfile)
-            
+
+        if mask:
+            xrdgp.attrs['maskfile'] = str(mask)
+        else:
+            xrdgp.attrs['maskfile'] = ''
+        if bkgd:
+            xrdgp.attrs['bkgdfile'] = str(bkgd)
+        else:
+            xrdgp.attrs['bkgdfile'] = ''
    
         xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
         try:

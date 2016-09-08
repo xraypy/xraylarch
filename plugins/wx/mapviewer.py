@@ -84,6 +84,7 @@ from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
 from larch_plugins.xrd import integrate_xrd
 
 #from libtiff import TIFF
+from PIL import Image
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -682,9 +683,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       ## add rows for XRD Calibration File:
                       'XRD Parameters',  'XRD Detector',     
-                      'XRD Wavelength',  'XRD Energy',       'XRD Detector Distance', 
+                      'XRD Wavelength',  'XRD Detector Distance', 
                       'XRD Pixel Size',  'XRD Beam Center',  'XRD Detector Tilts',
-                      'XRD Spline'):
+                      'XRD Spline',      'XRD Mask',         'XRD Background'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -780,34 +781,62 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        if hasattr(xrmmap['xrd'],'calfile'):
-        #xrmmap['xrd'].attrs['calfile'].endswith('poni'):
-            pref, calfile = os.path.split(xrmmap['xrd'].attrs['calfile'])
-            self.wids['XRD Detector'].SetLabel('%s' % \
-                                                 xrmmap['xrd'].attrs['detector'])
-            self.wids['XRD Wavelength'].SetLabel('% 0.4f A' % \
-                                    (float(xrmmap['xrd'].attrs['wavelength'])*1.e10))
-            self.wids['XRD Energy'].SetLabel('% 0.3f keV' % \
-                                    float(xrmmap['xrd'].attrs['energy']))
-            self.wids['XRD Detector Distance'].SetLabel('%0.3f mm' % \
-                                    (float(xrmmap['xrd'].attrs['distance'])*1.e3))
-            self.wids['XRD Pixel Size'].SetLabel('%0.1f um, %0.1f um ' % ( \
-                                    float(xrmmap['xrd'].attrs['ps1'])*1.e6,
-                                    float(xrmmap['xrd'].attrs['ps2'])*1.e6))
-            self.wids['XRD Beam Center'].SetLabel('%0.4f m, %0.4f m' % ( \
-                                    float(xrmmap['xrd'].attrs['poni1']),
-                                    float(xrmmap['xrd'].attrs['poni2'])))
-            self.wids['XRD Detector Tilts'].SetLabel( \
-                                    '%0.6f rad., %0.6f rad., %0.6f rad.' % ( \
-                                    float(xrmmap['xrd'].attrs['rot1']),
-                                    float(xrmmap['xrd'].attrs['rot2']),
-                                    float(xrmmap['xrd'].attrs['rot3'])))
-            self.wids['XRD Spline'].SetLabel('%s' % \
-                                                 xrmmap['xrd'].attrs['spline'])
+        xrdgp = xrmmap['xrd']
+        if xrdgp.attrs['calfile']:
+            pref, calfile = os.path.split(xrdgp.attrs['calfile'])
             self.wids['XRD Parameters'].SetLabel('%s' % calfile)
+            
+            try:
+                self.wids['XRD Detector'].SetLabel('%s' % xrdgp.attrs['detector'])
+            except:
+                self.wids['XRD Detector'].SetLabel('')
+            try:
+                self.wids['XRD Wavelength'].SetLabel('%0.4f A (%0.3f keV)' % \
+                                    (float(xrdgp.attrs['wavelength'])*1.e10,
+                                     float(xrdgp.attrs['energy'])))
+            except:
+                self.wids['XRD Wavelength'].SetLabel('')
+            try:
+                self.wids['XRD Detector Distance'].SetLabel('%0.3f mm' % \
+                                    (float(xrdgp.attrs['distance'])*1.e3))
+            except:
+                self.wids['XRD Detector Distance'].SetLabel('')
+            try:
+                self.wids['XRD Pixel Size'].SetLabel('%0.1f um, %0.1f um ' % ( \
+                                    float(xrdgp.attrs['ps1'])*1.e6,
+                                    float(xrdgp.attrs['ps2'])*1.e6))
+            except:
+                self.wids['XRD Pixel Size'].SetLabel('')
+            try:
+                self.wids['XRD Beam Center'].SetLabel('%0.4f m, %0.4f m' % ( \
+                                    float(xrdgp.attrs['poni1']),
+                                    float(xrdgp.attrs['poni2'])))
+            except:
+                self.wids['XRD Beam Center'].SetLabel('')
+            try:
+                self.wids['XRD Detector Tilts'].SetLabel( \
+                                    '%0.6f rad., %0.6f rad., %0.6f rad.' % ( \
+                                    float(xrdgp.attrs['rot1']),
+                                    float(xrdgp.attrs['rot2']),
+                                    float(xrdgp.attrs['rot3'])))
+            except:
+                self.wids['XRD Detector Tilts'].SetLabel('')
+            try:
+                self.wids['XRD Spline'].SetLabel('%s' % xrdgp.attrs['spline'])
+            except:
+                self.wids['XRD Spline'].SetLabel('')
+            try:
+                pref, maskfile = os.path.split(xrdgp.attrs['maskfile'])
+                self.wids['XRD Mask'].SetLabel('%s' % maskfile)
+            except:
+                self.wids['XRD Mask'].SetLabel('')
+            try:
+                pref, bkgdfile = os.path.split(xrdgp.attrs['bkgdfile'])
+                self.wids['XRD Background'].SetLabel('%s' % bkgdfile)
+            except:
+                self.wids['XRD Background'].SetLabel('')
         else:
             self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
-
 
     def onClose(self):
         pass
@@ -855,19 +884,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        self.xrd2D     = Button(pane, 
-                          'Show 2D XRD pattern',
-                          size=(135, -1), action=partial(self.onXRD2D, new=True))
-        self.xrd1Dq    = Button(pane,
-                          'Show 1D XRD pattern (q)',
-                          size=(135, -1), action=partial(self.onXRD1D, unit='q'))
-        self.xrd1D2th  = Button(pane,
-                          'Show 1D XRD pattern (2'+u'\N{GREEK CAPITAL LETTER THETA}'+')',
-                           size=(135, -1), action=partial(self.onXRD1D, unit='2th'))
-        self.save2DXRD = Button(pane,
-                          'Save 2D XRD pattern to file',
-                          size=(135, -1), action=self.on2Dsave)
-##      self.save1DXRD = Button(pane, 'Save 1D XRD pattern to file', size=(135, -1), action=self.on1Dsave)
+        ## to be removed
+        ## mkak 2016.09.08
+        #self.xrd2D     = Button(pane, 
+        #                  'Show 2D XRD pattern',
+        #                  size=(135, -1), action=partial(self.onXRD2D, new=True))
+        #self.xrd1Dq    = Button(pane,
+        #                  'Show 1D XRD pattern (q)',
+        #                  size=(135, -1), action=partial(self.onXRD1D, unit='q'))
+        #self.xrd1D2th  = Button(pane,
+        #                  'Show 1D XRD pattern (2'+u'\N{GREEK CAPITAL LETTER THETA}'+')',
+        #                   size=(135, -1), action=partial(self.onXRD1D, unit='2th'))
+        self.xrd_plot  = Button(pane, 'Show XRD pattern',
+                          size=(135, -1), action=partial(self.onXRD,   new=True))
                                 
         def txt(s):
             return SimpleText(pane, s)
@@ -901,15 +930,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## sizer.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
         ## self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
         
-        sizer.Add(self.xrd2D,               (8, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd1Dq,              (8, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd1D2th,            (8, 4), (1, 2), ALL_LEFT, 2)
-
-        sizer.Add(self.save2DXRD,           (9, 0), (1, 2), ALL_LEFT, 2)
-##        sizer.Add(self.save1DXRD,           (9, 2), (1, 1), ALL_LEFT, 2)
-
-
-
+        ## to be removed
+        ## mkak 2016.09.08
+        #sizer.Add(self.xrd2D,               (8, 0), (1, 2), ALL_LEFT, 2)
+        #sizer.Add(self.xrd1Dq,              (8, 2), (1, 2), ALL_LEFT, 2)
+        #sizer.Add(self.xrd1D2th,            (8, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd_plot,             (8, 0), (1, 2), ALL_LEFT, 2)
 
         sizer.Add(legend,                   (10, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
@@ -1201,7 +1227,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
-    def onXRD2D(self, event=None, new=True):
+    def onXRD(self, event=None, new=True):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -1235,15 +1261,34 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         subtitles = None
 
         counter = 1
-        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,aname,counter)):
+        while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
             counter += 1
-        fname = '%s/%s-%s-%03d.xy' % (pref,fname,aname,counter)
-        print '\tSaving 2D data in file: %s\n' % (fname)
-        print 'NOT YET'
-        #tiff = TIFF.open(fname, mode='w')
-        #tiff.write_image(map)
-        #tiff.close()
+        tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
+        print 'Saving 2D data in file: %s\n' % (tifname)
+        im = Image.fromarray(map.astype(np.uint16))
+        im.save(tifname)
+       
+        xrdgp = self.owner.current_file.xrmmap['xrd']
+        #print 'Calibration: %s' % xrdgp.attrs['calfile']
+        try:
+            calibration = xrdgp.attrs['calfile']
+            data1D = integrate_xrd(map, unit='q', steps=5001,
+                                    calfile=calibration,
+                                    #AI = xrmfile.xrmmap['xrd'],
+                                    aname=aname, prefix=fname, path=pref)
+        except:
+            print 'Cannot save 1D data. No calibration information available.'
 
+##         except:
+##             self._xrd.data1D = None
+##             print '1D Error message: Did not work this time.'
+##         
+##         ## Cheating - hard coding to eliminate dimension of this parameter
+##         ## need to change to allow for multiple slices in eta
+##         ## mkak 2016.08.31
+##         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
+##         
+##         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
 
         try:
             x = xrmfile.get_pos(0, mean=True)
@@ -1263,83 +1308,118 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                info=info, x=x, y=y,
                                det=None, xrmfile=xrmfile)
 
-    def onXRD1D(self, event=None, as_2=False, unit='q'):
-
-        aname = self._getarea()
-        xrmfile = self.owner.current_file
-        area  = xrmfile.xrmmap['areas/%s' % aname]
-        label = area.attrs.get('description', aname)
-        self._xrd  = None
-
-        xrmfile = self.owner.current_file
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
-
-        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-        xrd_thread.start()
-        self.owner.show_1DXRDDisplay()
-        xrd_thread.join()
-
-        pref, fname = os.path.split(self.owner.current_file.filename)
-        npix = len(area.value[np.where(area.value)])
-        self._xrd.filename = fname
-        self._xrd.title = label
-        self._xrd.npixels = npix
-        self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
-
-        _larch = self.owner.larch
-        map = self._xrd.data2D
-        try:
-            ## can add in dark (background) and mask
-            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-                                    calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
-                                    #AI = xrmfile.xrmmap['xrd'],
-                                    aname=aname, prefix=fname, path=pref)
-        except:
-            self._xrd.data1D = None
-            print '1D Error message: Did not work this time.'
-        
-        ## Cheating - hard coding to eliminate dimension of this parameter
-        ## need to change to allow for multiple slices in eta
-        ## mkak 2016.08.31
-        self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
-        
-        self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
-
-
-    def on2Dsave(self, event=None):
-        aname = self._getarea()
-        path, fname = os.path.split(self.owner.current_file.filename)
-        deffile = "%s_%s" % (fname, aname)
-        deffile = deffile.replace('.', '_') + '.tiff'
-        outfile = FileSave(self, "Save Area 2D XRD pattern",
-                           default_file=deffile,
-                           wildcard='XRD images (*.tiff)|*.tiff|All files (*.*)|*.*')
-                           #wildcard='XRD images (*.nc)|*.nc|XRD images (*.tiff)|*.tiff|All files (*.*)|*.*')
-
-        if outfile is None:
-            return
-
-        fout = open(outfile, 'w')
-        fout.write("\n".join(buff))
-        fout.close()
-
-    def on1Dsave(self, event=None):
-        aname = self._getarea()
-        path, fname = os.path.split(self.owner.current_file.filename)
-        deffile = "%s_%s" % (fname, aname)
-        deffile = deffile.replace('.', '_') + '.xy'
-        outfile = FileSave(self, "Save Area 1D XRD pattern",
-                           default_file=deffile,
-                           wildcard='XRD pattern (*.xy)|*.xy|All files (*.*)|*.*')
-
-        if outfile is None:
-            return
-
-        fout = open(outfile, 'w')
-        fout.write("\n".join(buff))
-        fout.close()
-        
+#     def onXRD2D(self, event=None, new=True):
+# 
+#         aname = self._getarea()
+#         xrmfile = self.owner.current_file
+#         area  = xrmfile.xrmmap['areas/%s' % aname]
+#         label = area.attrs.get('description', aname)
+#         self._xrd  = None
+# 
+#         xrmfile = self.owner.current_file
+#         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+#         ## AREA MASK : area.value
+# 
+#         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
+#         xrd_thread.start()
+#         #self.owner.show_2DXRDDisplay()
+#         xrd_thread.join()
+# 
+#         pref, fname = os.path.split(self.owner.current_file.filename)
+#         npix = len(area.value[np.where(area.value)])
+#         self._xrd.filename = fname
+#         self._xrd.title = label
+#         self._xrd.npixels = npix
+#         self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % aname)
+# 
+#         ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
+#         #self.owner.xrddisplay.plot2Dxrd(self._xrd)
+#         _larch = self.owner.larch
+# 
+#         map = self._xrd.data2D
+#         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+#         title = '%s: %s' % (fname, aname)
+#         subtitles = None
+# 
+#         counter = 1
+#         while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
+#             counter += 1
+#         tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
+#         print 'Saving 2D data in file: %s\n' % (tifname)
+#         im = Image.fromarray(map.astype(np.uint16))
+#         im.save(tifname)
+#        
+#         xrdgp = self.owner.current_file.xrmmap['xrd']
+#         #print 'Calibration: %s' % xrdgp.attrs['calfile']
+#         try:
+#             calibration = xrdgp.attrs['calfile']
+#             data1D = integrate_xrd(map, unit='q', steps=5001,
+#                                     calfile=calibration,
+#                                     #AI = xrmfile.xrmmap['xrd'],
+#                                     aname=aname, prefix=fname, path=pref)
+#         except:
+#             print 'Cannot save 1D data. No calibration information available.'
+# 
+#         try:
+#             x = xrmfile.get_pos(0, mean=True)
+#         except:
+#             x = None
+#         try:
+#             y = xrmfile.get_pos(1, mean=True)
+#         except:
+#             y = None
+# 
+#         fname = xrmfile.filename
+# 
+#         if len(self.owner.im_displays) == 0 or new:
+#             iframe = self.owner.add_xrd_display(title, det=None)
+# 
+#         self.owner.display_xrd(map, title=title, subtitles=subtitles,
+#                                info=info, x=x, y=y,
+#                                det=None, xrmfile=xrmfile)
+# 
+#     def onXRD1D(self, event=None, as_2=False, unit='q'):
+# 
+#         aname = self._getarea()
+#         xrmfile = self.owner.current_file
+#         area  = xrmfile.xrmmap['areas/%s' % aname]
+#         label = area.attrs.get('description', aname)
+#         self._xrd  = None
+# 
+#         xrmfile = self.owner.current_file
+#         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+#         ## AREA MASK : area.value
+# 
+#         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
+#         xrd_thread.start()
+#         self.owner.show_1DXRDDisplay()
+#         xrd_thread.join()
+# 
+#         pref, fname = os.path.split(self.owner.current_file.filename)
+#         npix = len(area.value[np.where(area.value)])
+#         self._xrd.filename = fname
+#         self._xrd.title = label
+#         self._xrd.npixels = npix
+#         self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
+# 
+#         _larch = self.owner.larch
+#         map = self._xrd.data2D
+#         try:
+#             ## can add in dark (background) and mask
+#             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
+#                                     calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
+#                                     #AI = xrmfile.xrmmap['xrd'],
+#                                     aname=aname, prefix=fname, path=pref)
+#         except:
+#             self._xrd.data1D = None
+#             print '1D Error message: Did not work this time.'
+#         
+#         ## Cheating - hard coding to eliminate dimension of this parameter
+#         ## need to change to allow for multiple slices in eta
+#         ## mkak 2016.08.31
+#         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
+#         
+#         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1767,12 +1847,9 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Change &Working Folder',
                   "Choose working directory",
                   self.onFolderSelect)
-        ## How to add calibration file to already existing mapfile?
-        ## mkak 2016.08.23
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Update XRD Calibration File to Map File",
                  "Load XRD Calibration File",  self.onReadXRD)
-
         MenuItem(self, fmenu, "&Save As...  without 2D XRD data",
                  "Save without 2D XRD data",  self.onReSave)
         fmenu.AppendSeparator()
@@ -1920,23 +1997,63 @@ class MapViewerFrame(wx.Frame):
         mkak 2016.07.21
         '''
  
-        ## Choose XRD data calibration file (*.poni)
-        wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
-        dlg = wx.FileDialog(self, message="Choose XRD calibration file",
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            file_path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
+#         ## Choose XRD data calibration file (*.poni)
+#         wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
+#         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
+#                            defaultDir=os.getcwd(),
+#                            wildcard=wildcards, style=wx.FD_OPEN)
+#         path, read = None, False
+#         if dlg.ShowModal() == wx.ID_OK:
+#             read = True
+#             file_path = dlg.GetPath().replace('\\', '/')
+#         dlg.Destroy()
+# 
+#         if read:
+#             self.current_file.add_calibration(file_path)
+#             
+#         for p in self.nbpanels:
+#             if hasattr(p, 'update_xrmmap'):
+#                 p.update_xrmmap(self.current_file.xrmmap)
 
-        if read:
-            self.current_file.add_calibration(file_path)
+        myDlg = OpenXRDPar()
+
+        path, read = None, False
+        FLAGxrf, FLAGxrd = False, False
+        if myDlg.ShowModal() == wx.ID_OK:
+            if myDlg.CaliPath or myDlg.MaskPath or myDlg.BkgdPath:
+                read = True
+
+            try:
+                xrdcalfile = self.current_file.xrmmap['xrd'].attrs['calfile']
+            except:
+                xrdcalfile = None
+            try:
+                xrdmaskfile = self.current_file.xrmmap['xrd'].attrs['maskfile']
+            except:
+                xrdmaskfile = None
+            try:
+                xrdbkgdfile = self.current_file.xrmmap['xrd'].attrs['bkgdfile']
+            except:
+                xrdbkgdfile = None
             
-        for p in self.nbpanels:
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(self.current_file.xrmmap)
+            if myDlg.CaliPath:
+                xrdcalfile = myDlg.CaliPath
+            if myDlg.MaskPath:
+                xrdmaskfile = myDlg.MaskPath            
+            if myDlg.BkgdPath:
+                xrdbkgdfile = myDlg.BkgdPath
+
+        myDlg.Destroy()
+        
+        if read:
+            self.current_file.add_calibration(xrdcalfile,
+                                              mask=xrdmaskfile,
+                                              bkgd=xrdbkgdfile)
+            for p in self.nbpanels:
+                if hasattr(p, 'update_xrmmap'):
+                    p.update_xrmmap(self.current_file.xrmmap)
+
+
 
     def onReSave(self, evt=None):
         '''
@@ -2281,6 +2398,124 @@ class OpenMapFolder(wx.Dialog):
             self.BkgdFl.Clear()
             self.BkgdFl.SetValue(str(path))
             self.BkgdPath = path
+
+class OpenXRDPar(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        self.CaliPath = None
+        self.MaskPath = None
+        self.BkgdPath = None
+    
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='XRD Parameters',size=(400, 400))
+        
+        panel = wx.Panel(self)
+
+        caliTtl  = wx.StaticText(panel,  label='XRD Calibration File:' )
+        fileBtn1 = wx.Button(panel,      label='Browse...'             )
+        maskTtl  = wx.StaticText(panel,  label='XRD Mask File:'        )
+        fileBtn2 = wx.Button(panel,      label='Browse...'             )
+        bkgdTtl  = wx.StaticText(panel,  label='XRD Background File:'  )
+        fileBtn3 = wx.Button(panel,      label='Browse...'             )
+
+        self.CalFl = wx.TextCtrl(panel, 
+                                 value='Please select calibration file.',
+                                 size=(350, 25))
+        self.MskFl = wx.TextCtrl(panel, 
+                                 value='Please select mask file.',
+                                 size=(350, 25))
+        self.BkgdFl = wx.TextCtrl(panel, 
+                                 value='Please select background file.',
+                                 size=(350, 25))
+
+
+        hlpBtn = wx.Button(panel, wx.ID_HELP   )
+        okBtn  = wx.Button(panel, wx.ID_OK     )
+        canBtn = wx.Button(panel, wx.ID_CANCEL )
+
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,  fileBtn2 )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,  fileBtn3 )
+
+        sizer = wx.GridBagSizer(5, 6)
+
+        sizer.Add(caliTtl,     pos = ( 1,1)               )
+        sizer.Add(self.CalFl,  pos = ( 2,1), span = (1,4) )
+        sizer.Add(fileBtn1,    pos = ( 3,1)               )
+        sizer.Add(maskTtl,     pos = ( 5,1)               )
+        sizer.Add(self.MskFl,  pos = ( 6,1), span = (1,4) )
+        sizer.Add(fileBtn2,    pos = ( 7,1)               )
+        sizer.Add(bkgdTtl,     pos = ( 9,1)               )
+        sizer.Add(self.BkgdFl, pos = (10,1), span = (1,4) )
+        sizer.Add(fileBtn3,    pos = (11,1)               )
+        sizer.Add(hlpBtn,      pos = (13,1)               )
+        sizer.Add(okBtn,       pos = (13,3)               )
+        sizer.Add(canBtn,      pos = (13,2)               )        
+        sizer.AddGrowableCol(2)
+        panel.SetSizer(sizer)       
+
+    def onBROWSE1(self, event): 
+        #print '%s is clicked.' % event.GetEventObject().GetLabel()
+        
+        wildcards = "pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD calibration file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.CalFl.Clear()
+            self.CalFl.SetValue(str(path))
+            #self.CalFl.AppendText(str(path))
+            self.CaliPath = path
+
+    def onBROWSE2(self, event): 
+        #print '%s is clicked.' % event.GetEventObject().GetLabel()
+        
+        wildcards = "pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD mask file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.MskFl.Clear()
+            self.MskFl.SetValue(str(path))
+            self.MaskPath = path
+            
+    def onBROWSE3(self, event): 
+        #print '%s is clicked.' % event.GetEventObject().GetLabel()
+        
+        wildcards = "pyFAI background (*.edf)|*.edf|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Choose XRD background file",
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.BkgdFl.Clear()
+            self.BkgdFl.SetValue(str(path))
+            self.BkgdPath = path
+
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):
