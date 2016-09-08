@@ -173,10 +173,12 @@ class Epics_Xspress3(object):
             self.elapsed_textwidget.SetLabel("  %8.2f" % self.elapsed_real)
 
     def get_deadtime(self, mca=1):
-        """return OCR / ICR"""
-        _icr = self._xsp3.get("C%iSCA4" % (mca))
-        _ocr = self._xsp3.get("C%iSCA5" % (mca))
-        return _ocr/(1.*max(_icr, 1))
+        """return % deadtime"""
+        try:
+            dval = self._xsp3.get("C%i:DeadTime_RBV" % (mca))
+        except:
+            dval = 0.0
+        return dval
 
     def set_dwelltime(self, dtime=1.0, **kws):
         self._xsp3.useInternalTrigger()
@@ -242,10 +244,6 @@ class Epics_Xspress3(object):
             self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
         return out
-
-    def get_deadtime(self, mca=1):
-        """return deadtime info"""
-        return 1
 
     def start(self, erase=True):
         'xspress3 start '
