@@ -111,6 +111,42 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
 
+class XRD_DisplayFrame(ImageFrame):
+    """
+    MatPlotlib Image Display on a wx.Frame, using ImagePanel
+    """
+
+    def __init__(self, parent=None, size=None, mode='intensity',
+                 lasso_callback=None, move_callback=None, save_callback=None,
+                 show_xsections=False, cursor_labels=None, calibration='',
+                 output_title='Image',   **kws):
+
+        # instdb=None,  inst_name=None,
+
+        self.det = None
+        self.xrmfile = None
+        self.calibration = calibration
+        self.map = None
+        self.move_callback = move_callback
+        self.save_callback = save_callback
+
+        ImageFrame.__init__(self, parent=parent, size=size,
+                            lasso_callback=lasso_callback,
+                            cursor_labels=cursor_labels, mode=mode,
+                            output_title=output_title, **kws)
+
+        self.panel.add_cursor_mode('prof', motion = self.prof_motion,
+                                   leftdown = self.prof_leftdown,
+                                   leftup   = self.prof_leftup)
+        self.panel.report_leftdown = self.report_leftdown
+        self.panel.report_motion   = self.report_motion
+
+
+        self.prof_plotter = None
+        self.zoom_ini =  None
+        self.lastpoint = [None, None]
+        self.this_point = None
+        self.rbbox = None
 
 class XRD2D_DisplayFrame(ImageFrame):
     """

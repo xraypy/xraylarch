@@ -782,10 +782,15 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
         xrdgp = xrmmap['xrd']
-        if xrdgp.attrs['calfile']:
+        try:
             pref, calfile = os.path.split(xrdgp.attrs['calfile'])
             self.wids['XRD Parameters'].SetLabel('%s' % calfile)
+            xrd_exists = True
+        except:
+            self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
+            xrd_exists = False
             
+        if xrd_exists:
             try:
                 self.wids['XRD Detector'].SetLabel('%s' % xrdgp.attrs['detector'])
             except:
@@ -835,8 +840,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['XRD Background'].SetLabel('%s' % bkgdfile)
             except:
                 self.wids['XRD Background'].SetLabel('')
-        else:
-            self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
+
 
     def onClose(self):
         pass
@@ -1229,6 +1233,126 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onXRD(self, event=None, new=True):
 
+        ## First, check to make sure there is XRD data
+        ## either use FLAG or look for data structures.
+        
+        ## Then, identify if there is (a) 2D data and/or (b) 1D data
+        ## if not 1D data, check for (c) calibration file
+        
+        ## check also for mask, background, and spline files
+        
+        ## if only 2D: use XRD2D_DisplayFrame()
+        ## if only 1D: use XRD1D_DisplayFrame() 
+        ##      --> need new method for calculating 1D of area
+        ## if both: use XRD_DisplayFrame() (which will include CAKE view)
+        
+        no_xrd = False
+        
+        if no_xrd:
+            return
+
+        try:
+            aname = self._getarea()
+            xrmfile = self.owner.current_file
+            area  = xrmfile.xrmmap['areas/%s' % aname]
+            label = area.attrs.get('description', aname)
+            self._xrd  = None
+        except:
+            print 'No map file and/or areas specified.'
+            return
+
+
+        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+        ## AREA MASK : area.value
+        flag1D,flag2D = self.owner.current_file.check_xrd()
+        
+        if not flag1D and not flag2D:
+            print 'No XRD data in map file: %s' % xrmfile.filename
+            return
+
+        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
+        xrd_thread.start()
+        xrd_thread.join()
+
+        pref, fname = os.path.split(self.owner.current_file.filename)
+        npix = len(area.value[np.where(area.value)])
+        self._xrd.filename = fname
+        self._xrd.title = label
+        self._xrd.npixels = npix
+        self.owner.message('Plotting XRD pattern for area \'%s\'...' % aname)
+
+        ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
+        #self.owner.xrddisplay.plot2Dxrd(self._xrd)
+        _larch = self.owner.larch
+
+        if flag1D and flag2D:
+            ## plot 1D, 2D, and cake
+            self.onXRD2D() ## for now.
+            self.onXRD1D()
+            
+        elif flag2D:
+            ## plot only 2D
+            self.onXRD2D()
+            
+        elif flag1D:
+            ## plot only 1D
+            self.onXRD1D()
+        
+#         map = self._xrd.data2D
+#         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+#         title = '%s: %s' % (fname, aname)
+#         subtitles = None
+# 
+#         counter = 1
+#         while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
+#             counter += 1
+#         tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
+#         print 'Saving 2D data in file: %s\n' % (tifname)
+#         im = Image.fromarray(map.astype(np.uint16))
+#         im.save(tifname)
+#        
+#         xrdgp = self.owner.current_file.xrmmap['xrd']
+#         #print 'Calibration: %s' % xrdgp.attrs['calfile']
+#         try:
+#             calibration = xrdgp.attrs['calfile']
+#             data1D = integrate_xrd(map, unit='q', steps=5001,
+#                                     calfile=calibration,
+#                                     #AI = xrmfile.xrmmap['xrd'],
+#                                     aname=aname, prefix=fname, path=pref)
+#         except:
+#             print 'Cannot save 1D data. No calibration information available.'
+# 
+# ##         except:
+# ##             self._xrd.data1D = None
+# ##             print '1D Error message: Did not work this time.'
+# ##         
+# ##         ## Cheating - hard coding to eliminate dimension of this parameter
+# ##         ## need to change to allow for multiple slices in eta
+# ##         ## mkak 2016.08.31
+# ##         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
+# ##         
+# ##         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
+# 
+#         try:
+#             x = xrmfile.get_pos(0, mean=True)
+#         except:
+#             x = None
+#         try:
+#             y = xrmfile.get_pos(1, mean=True)
+#         except:
+#             y = None
+# 
+#         fname = xrmfile.filename
+# 
+#         if len(self.owner.im_displays) == 0 or new:
+#             iframe = self.owner.add_xrd_display(title, det=None)
+# 
+#         self.owner.display_xrd(map, title=title, subtitles=subtitles,
+#                                info=info, x=x, y=y,
+#                                det=None, xrmfile=xrmfile)
+                               
+    def onXRD2D(self, event=None, new=True):
+
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
@@ -1270,25 +1394,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
        
         xrdgp = self.owner.current_file.xrmmap['xrd']
         #print 'Calibration: %s' % xrdgp.attrs['calfile']
-        try:
-            calibration = xrdgp.attrs['calfile']
-            data1D = integrate_xrd(map, unit='q', steps=5001,
-                                    calfile=calibration,
-                                    #AI = xrmfile.xrmmap['xrd'],
-                                    aname=aname, prefix=fname, path=pref)
-        except:
-            print 'Cannot save 1D data. No calibration information available.'
-
-##         except:
-##             self._xrd.data1D = None
-##             print '1D Error message: Did not work this time.'
-##         
-##         ## Cheating - hard coding to eliminate dimension of this parameter
-##         ## need to change to allow for multiple slices in eta
-##         ## mkak 2016.08.31
-##         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
-##         
-##         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
+        #try:
+        #    calibration = xrdgp.attrs['calfile']
+        #    data1D = integrate_xrd(map, unit='q', steps=5001,
+        #                            calfile=calibration,
+        #                            #AI = xrmfile.xrmmap['xrd'],
+        #                            aname=aname, prefix=fname, path=pref)
+        #except:
+        #    print 'No 1D data (or calibration information) available.'
+        #print
 
         try:
             x = xrmfile.get_pos(0, mean=True)
@@ -1308,118 +1422,48 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                info=info, x=x, y=y,
                                det=None, xrmfile=xrmfile)
 
-#     def onXRD2D(self, event=None, new=True):
-# 
-#         aname = self._getarea()
-#         xrmfile = self.owner.current_file
-#         area  = xrmfile.xrmmap['areas/%s' % aname]
-#         label = area.attrs.get('description', aname)
-#         self._xrd  = None
-# 
-#         xrmfile = self.owner.current_file
-#         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-#         ## AREA MASK : area.value
-# 
-#         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-#         xrd_thread.start()
-#         #self.owner.show_2DXRDDisplay()
-#         xrd_thread.join()
-# 
-#         pref, fname = os.path.split(self.owner.current_file.filename)
-#         npix = len(area.value[np.where(area.value)])
-#         self._xrd.filename = fname
-#         self._xrd.title = label
-#         self._xrd.npixels = npix
-#         self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % aname)
-# 
-#         ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
-#         #self.owner.xrddisplay.plot2Dxrd(self._xrd)
-#         _larch = self.owner.larch
-# 
-#         map = self._xrd.data2D
-#         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
-#         title = '%s: %s' % (fname, aname)
-#         subtitles = None
-# 
-#         counter = 1
-#         while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
-#             counter += 1
-#         tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
-#         print 'Saving 2D data in file: %s\n' % (tifname)
-#         im = Image.fromarray(map.astype(np.uint16))
-#         im.save(tifname)
-#        
-#         xrdgp = self.owner.current_file.xrmmap['xrd']
-#         #print 'Calibration: %s' % xrdgp.attrs['calfile']
-#         try:
-#             calibration = xrdgp.attrs['calfile']
-#             data1D = integrate_xrd(map, unit='q', steps=5001,
-#                                     calfile=calibration,
-#                                     #AI = xrmfile.xrmmap['xrd'],
-#                                     aname=aname, prefix=fname, path=pref)
-#         except:
-#             print 'Cannot save 1D data. No calibration information available.'
-# 
-#         try:
-#             x = xrmfile.get_pos(0, mean=True)
-#         except:
-#             x = None
-#         try:
-#             y = xrmfile.get_pos(1, mean=True)
-#         except:
-#             y = None
-# 
-#         fname = xrmfile.filename
-# 
-#         if len(self.owner.im_displays) == 0 or new:
-#             iframe = self.owner.add_xrd_display(title, det=None)
-# 
-#         self.owner.display_xrd(map, title=title, subtitles=subtitles,
-#                                info=info, x=x, y=y,
-#                                det=None, xrmfile=xrmfile)
-# 
-#     def onXRD1D(self, event=None, as_2=False, unit='q'):
-# 
-#         aname = self._getarea()
-#         xrmfile = self.owner.current_file
-#         area  = xrmfile.xrmmap['areas/%s' % aname]
-#         label = area.attrs.get('description', aname)
-#         self._xrd  = None
-# 
-#         xrmfile = self.owner.current_file
-#         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-#         ## AREA MASK : area.value
-# 
-#         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-#         xrd_thread.start()
-#         self.owner.show_1DXRDDisplay()
-#         xrd_thread.join()
-# 
-#         pref, fname = os.path.split(self.owner.current_file.filename)
-#         npix = len(area.value[np.where(area.value)])
-#         self._xrd.filename = fname
-#         self._xrd.title = label
-#         self._xrd.npixels = npix
-#         self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
-# 
-#         _larch = self.owner.larch
-#         map = self._xrd.data2D
-#         try:
-#             ## can add in dark (background) and mask
-#             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-#                                     calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
-#                                     #AI = xrmfile.xrmmap['xrd'],
-#                                     aname=aname, prefix=fname, path=pref)
-#         except:
-#             self._xrd.data1D = None
-#             print '1D Error message: Did not work this time.'
-#         
-#         ## Cheating - hard coding to eliminate dimension of this parameter
-#         ## need to change to allow for multiple slices in eta
-#         ## mkak 2016.08.31
-#         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
-#         
-#         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
+    def onXRD1D(self, event=None, as_2=False, unit='q'):
+
+        aname = self._getarea()
+        xrmfile = self.owner.current_file
+        area  = xrmfile.xrmmap['areas/%s' % aname]
+        label = area.attrs.get('description', aname)
+        self._xrd  = None
+
+        xrmfile = self.owner.current_file
+        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+        ## AREA MASK : area.value
+
+        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
+        xrd_thread.start()
+        self.owner.show_1DXRDDisplay()
+        xrd_thread.join()
+
+        pref, fname = os.path.split(self.owner.current_file.filename)
+        npix = len(area.value[np.where(area.value)])
+        self._xrd.filename = fname
+        self._xrd.title = label
+        self._xrd.npixels = npix
+        self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
+
+        _larch = self.owner.larch
+        map = self._xrd.data2D
+        try:
+            ## can add in dark (background) and mask??
+            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
+                                    calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
+                                    #AI = xrmfile.xrmmap['xrd'],
+                                    aname=aname, prefix=fname, path=pref)
+        except:
+            print '1D Error message: Did not work this time.'
+            return
+        
+        ## Cheating - hard coding to eliminate dimension of this parameter
+        ## need to change to allow for multiple slices in eta
+        ## mkak 2016.08.31
+        self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
+        
+        self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1437,7 +1481,8 @@ class MapViewerFrame(wx.Frame):
         self.plot_displays = []
         self.larch = _larch
         self.xrfdisplay = None
-        self.xrddisplay = None
+        self.xrddisplay1D = None
+        self.xrddisplay2D = None
         self.larch_buffer = None
         self.watch_files = False
         self.file_timer = wx.Timer(self)
@@ -1606,7 +1651,6 @@ class MapViewerFrame(wx.Frame):
 
         try:
             self.xrddisplay.Show()
-
         except PyDeadObjectError:
             self.xrddisplay = XRD1D_DisplayFrame(_larch=self.larch)
             self.xrddisplay.Show()
@@ -1616,6 +1660,25 @@ class MapViewerFrame(wx.Frame):
         if clear:
             self.xrddisplay.panel.clear()
             self.xrddisplay.panel.reset_config()
+
+    def show_1DXRDDisplay(self, do_raise=True, clear=True, xrmfile=None):
+        "make sure plot frame is enabled, and visible"
+        if xrmfile is None:
+            xrmfile = self.current_file
+        if self.xrddisplay1D is None:
+            self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+
+        try:
+            self.xrddisplay1D.Show()
+        except PyDeadObjectError:
+            self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+            self.xrddisplay1D.Show()
+
+        if do_raise:
+            self.xrddisplay1D.Raise()
+        if clear:
+            self.xrddisplay1D.panel.clear()
+            self.xrddisplay1D.panel.reset_config()
 
     def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:

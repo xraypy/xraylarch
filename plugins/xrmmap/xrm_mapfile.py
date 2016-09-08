@@ -1928,6 +1928,40 @@ class GSEXRM_MapFile(object):
         _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
 
+    def check_xrd(self):
+        """
+        check if any XRD data in mapfile
+
+        Returns
+        -------
+        flag for 1D and 2D XRD data
+
+        """
+
+        try:
+            xrdgp = self.xrmmap['xrd']
+        except:
+            flag1D,flag2D = False,False
+            return flag1D,flag2D
+
+        try:
+            data1D = xrdgp['data1D']
+            if xrdgp['data1D'][0,0,0,0] == xrdgp['data1D'][0,0,0,-1]:
+                flag1D = False
+            else:
+                flag1D = True
+        except:
+            flag1D = False
+
+        try:
+            data1D = xrdgp['data2D']
+            flag2D = True
+        except:
+            flag2D = False           
+            
+        return flag1D,flag2D
+
+
     def get_xrd_area(self, areaname, callback = None):
         """return 2D XRD pattern for a pre-defined area
 
