@@ -111,42 +111,8 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
 
-class XRD_DisplayFrame(ImageFrame):
-    """
-    MatPlotlib Image Display on a wx.Frame, using ImagePanel
-    """
-
-    def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=None, move_callback=None, save_callback=None,
-                 show_xsections=False, cursor_labels=None, calibration='',
-                 output_title='Image',   **kws):
-
-        # instdb=None,  inst_name=None,
-
-        self.det = None
-        self.xrmfile = None
-        self.calibration = calibration
-        self.map = None
-        self.move_callback = move_callback
-        self.save_callback = save_callback
-
-        ImageFrame.__init__(self, parent=parent, size=size,
-                            lasso_callback=lasso_callback,
-                            cursor_labels=cursor_labels, mode=mode,
-                            output_title=output_title, **kws)
-
-        self.panel.add_cursor_mode('prof', motion = self.prof_motion,
-                                   leftdown = self.prof_leftdown,
-                                   leftup   = self.prof_leftup)
-        self.panel.report_leftdown = self.report_leftdown
-        self.panel.report_motion   = self.report_motion
-
-
-        self.prof_plotter = None
-        self.zoom_ini =  None
-        self.lastpoint = [None, None]
-        self.this_point = None
-        self.rbbox = None
+#class XRD_DisplayFrame(ImageFrame):
+# make uniform display frame for both 2D and 1D at same time?
 
 class XRD2D_DisplayFrame(ImageFrame):
     """
@@ -154,8 +120,8 @@ class XRD2D_DisplayFrame(ImageFrame):
     """
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=None, move_callback=None, save_callback=None,
-                 show_xsections=False, cursor_labels=None, calibration='',
+                 move_callback=None, save_callback=None,
+                 show_xsections=False, cursor_labels=None, calibration=None,
                  output_title='Image',   **kws):
 
         # instdb=None,  inst_name=None,
@@ -168,7 +134,6 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.save_callback = save_callback
 
         ImageFrame.__init__(self, parent=parent, size=size,
-                            lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
 
@@ -184,6 +149,12 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.lastpoint = [None, None]
         self.this_point = None
         self.rbbox = None
+
+        if calibration is not None:
+            self.calibration = calibration
+        else:
+            self.calibration = None
+        
 
     def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0, **kws):
         self.xoff = xoff
@@ -351,16 +322,36 @@ class XRD2D_DisplayFrame(ImageFrame):
         if x is None or y is None:
             return
 
-        _point = 0, 0, 0, 0, 0
-        for ix, iy in self.prof_dat[1]:
-            if (int(x) == ix and not self.prof_dat[0] or
-                int(x) == iy and self.prof_dat[0]):
-                _point = (ix, iy,
-                              self.panel.xdata[ix],
-                              self.panel.ydata[iy],
-                              self.panel.conf.data[iy, ix])
-
-        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % _point
+        
+        if self.calibration is None:
+            _point = 0, 0, 0
+            for ix, iy in self.prof_dat[1]:
+                if (int(x) == ix and not self.prof_dat[0] or
+                    int(x) == iy and self.prof_dat[0]):
+                    _point = (ix, iy,
+                                  self.panel.conf.data[iy, ix])
+                msg = "Pixel [%i, %i], Intensity= %g" % _point
+        else:
+            ai = pyFAI.load(self.calibration)
+            xcenter = ai._poni2/ai.detector.pixel2        ## units pixels
+            ycenter = ai._poni1/ai.detector.pixel1        ## units pixels
+            _point = 0, 0, 0, 0, 0
+            for ix, iy in self.prof_dat[1]:
+                if (int(x) == ix and not self.prof_dat[0] or
+                    int(x) == iy and self.prof_dat[0]):
+                    x_pix = ix - xcenter                      ## units pixels
+                    y_pix = iy - ycenter                      ## units pixels
+                    x_m = x_pix * ai.detector.pixel2          ## units m
+                    y_m = y_pix * ai.detector.pixel1          ## units m
+                    twth = np.arctan2(math.sqrt(x_m**2 + y_m**2),ai._dist)  ## radians
+                    twth = np.degrees(twth)                                 ## units degrees
+                    eta  = np.arctan2(y_m,x_m)                              ## units radians
+                    eta  = np.degrees(eta)                                  ## units degrees
+                    _point = (ix, iy,
+                                  twth,
+                                  eta,
+                                  self.panel.conf.data[iy, ix])
+            msg = 'Pixel [%i, %i], 2TH=%.2f, ETA=%.1f, Intensity= %g' % _point
         write(msg,  panel=0)
 
     def onCursorMode(self, event=None, mode='zoom'):
@@ -389,7 +380,6 @@ class XRD2D_DisplayFrame(ImageFrame):
             iy >= 0 and iy < conf.data.shape[0]):
             pos = ''
             pan = self.panel
-            # print( 'has xdata? ', pan.xdata is not None, pan.ydata is not None)
             labs, vals = [], []
             if pan.xdata is not None:
                 labs.append(pan.xlab)
@@ -397,9 +387,6 @@ class XRD2D_DisplayFrame(ImageFrame):
             if pan.ydata is not None:
                 labs.append(pan.ylab)
                 vals.append(pan.ydata[iy])
-            pos = ', '.join(labs)
-            vals =', '.join(['%.4g' % v for v in vals])
-            pos = '%s = [%s]' % (pos, vals)
             dval = conf.data[iy, ix]
             if len(pan.data_shape) == 3:
                 dval = "%.4g, %.4g, %.4g" % tuple(dval)
@@ -408,21 +395,27 @@ class XRD2D_DisplayFrame(ImageFrame):
             if pan.xdata is not None and pan.ydata is not None:
                 self.this_point = (ix, iy)
 
-            msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
+            if self.calibration is None:
+                msg = "Pixel [%i, %i], Intensity=%s " % (ix, iy, dval)
+            else:
+                ai = pyFAI.load(self.calibration)
+                xcenter = ai._poni2/ai.detector.pixel2        ## units pixels
+                ycenter = ai._poni1/ai.detector.pixel1        ## units pixels
+                x_pix = ix - xcenter                          ## units pixels
+                y_pix = iy - ycenter                          ## units pixels
+                x_m = x_pix * ai.detector.pixel2                        ## units m
+                y_m = y_pix * ai.detector.pixel1                        ## units m
+                twth = np.arctan2(math.sqrt(x_m**2 + y_m**2),ai._dist)  ## radians
+                twth = np.degrees(twth)                                 ## units degrees
+                eta  = np.arctan2(y_m,x_m)                              ## units radians
+                eta  = np.degrees(eta)                                  ## units degrees
+
+                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s'  % (ix, 
+                                      iy, twth, eta, dval)
         self.panel.write_message(msg, panel=0)
 
     def report_motion(self, event=None):
         return
-
-    def onLasso(self, data=None, selected=None, mask=None, **kws):
-        if hasattr(self.lasso_callback , '__call__'):
-
-            self.lasso_callback(data=data, selected=selected, mask=mask,
-                                xoff=self.xoff, yoff=self.yoff,
-                                det=self.det, xrmfile=self.xrmfile, **kws)
-
-#        self.zoom_mode.SetSelection(0)
-        self.panel.cursor_mode = 'zoom'
 
     def CustomConfig(self, panel, sizer, irow):
         """config panel for left-hand-side of frame"""
@@ -440,51 +433,8 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
-#        self.xrd1Dq    = Button(panel, 'Show 1D XRD pattern (q)',
-#                          size=(135, -1), action=partial(self.on1Dxrd, unit='q'))
-#        self.xrd1D2th  = Button(panel, 
-#                          'Show 1D XRD pattern (2'+u'\N{GREEK CAPITAL LETTER THETA}'+')',
-#                           size=(135, -1), action=partial(self.on1Dxrd, unit='2th'))
-#        sizer.Add(self.xrd1Dq,    (irow+1,   0), (1, 4), labstyle, 3)
-#        sizer.Add(self.xrd1D2th,  (irow+2, 0), (1, 4), labstyle, 3)
 
-        if self.move_callback is not None:
-            mbutton = Button(panel, 'Move to Position', size=(100, -1),
-                                 action=self.onMoveToPixel)
-            irow  = irow + 2
-            sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
-
-    def onMoveToPixel(self, event=None):
-        if self.this_point is not None and self.move_callback is not None:
-            p1 = float(self.panel.xdata[self.this_point[0]])
-            p2 = float(self.panel.ydata[self.this_point[1]])
-            self.move_callback(p1, p2)
-
-    def onSavePixel(self, event=None):
-        if self.this_point is not None and self.save_callback is not None:
-            name  = str(event.GetString().strip())
-            # name  = str(self.pos_name.GetValue().strip())
-            ix, iy = self.this_point
-            x = float(self.panel.xdata[int(ix)])
-            y = float(self.panel.ydata[int(iy)])
-            self.save_callback(name, ix, iy, x=x, y=y,
-                               title=self.title, datafile=self.xrmfile)
                                
-    def on1Dxrd(self, event=None, unit='q'):
-
-        self.xrddisplay = XRD1D_DisplayFrame(_larch=Interpreter())
-        aname = self.title.split()[-1]
-        xrd = self.xrmfile.get_xrd_area(aname)
-
-        print '\n1D plot from 2D plot: Not yet implemented.\n'
-
-#        xrd.data1D = integrate_xrd(self.map,
-#                                       self.xrmfile.xrmmap['xrd'].attrs['xrdcalfile'],
-#                                       aname,
-#                                       unit=unit, steps=5001)
-#        self.xrddisplay.plot1Dxrd(xrd,unit=unit)
-
-
 class XRD1D_DisplayFrame(wx.Frame):
     _about = """XRD Viewer
   Margaret Koker <koker @ cars.uchicago.edu>

@@ -58,7 +58,6 @@ import h5py
 import numpy as np
 import scipy.stats as stats
 
-import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
 
 from wxmplot import PlotFrame
@@ -76,15 +75,13 @@ from larch_plugins.wx.xrddisplay import XRD1D_DisplayFrame,XRD2D_DisplayFrame
 
 from larch_plugins.wx.mapimageframe import MapImageFrame
 
-from larch_plugins.io import nativepath
+from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
                                   GSEXRM_Exception, GSEXRM_NotOwner)
 
 from larch_plugins.xrd import integrate_xrd
 
-#from libtiff import TIFF
-from PIL import Image
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -96,10 +93,8 @@ ALL_RIGHT =  wx.ALL|RIGHT
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 FILE_WILDCARDS = "X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*"
-# FILE_WILDCARDS = "X-ray Maps (*.0*)|*.0&"
 
 XRF_ICON_FILE = 'gse_xrfmap.ico'
-#XRD_ICON_FILE = '' ## Just in case we need this. mkak
 
 NOT_OWNER_MSG = """The File
    '%s'
@@ -879,67 +874,48 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRF MAP AREAS
-        self.onstats  = Button(pane, 'Calculate Stats', size=( 90, -1), action=self.onShowStats)
-        self.xrf      = Button(pane, 'Show XRF (Fore)', size=(135, -1), action=self.onXRF)
-        self.xrf2     = Button(pane, 'Show XRF (Back)', size=(135, -1), action=partial(self.onXRF, as_mca2=True))
-        self.onreport = Button(pane, 'Save XRF report to file', size=(135, -1), action=self.onReport)
+        self.onstats  = Button(pane, 'Calculate Stats', size=( 90, -1),
+                                                action=self.onShowStats)
+        self.xrf      = Button(pane, 'Show XRF (Fore)', size=(135, -1),
+                                                action=self.onXRF)
+        self.xrf2     = Button(pane, 'Show XRF (Back)', size=(135, -1),
+                                                action=partial(self.onXRF, as_mca2=True))
+        self.onreport = Button(pane, 'Save XRF report to file', size=(135, -1),
+                                                action=self.onReport)
         self.cor = Check(pane, label='Correct Deadtime?')
         legend = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        ## to be removed
-        ## mkak 2016.09.08
-        #self.xrd2D     = Button(pane, 
-        #                  'Show 2D XRD pattern',
-        #                  size=(135, -1), action=partial(self.onXRD2D, new=True))
-        #self.xrd1Dq    = Button(pane,
-        #                  'Show 1D XRD pattern (q)',
-        #                  size=(135, -1), action=partial(self.onXRD1D, unit='q'))
-        #self.xrd1D2th  = Button(pane,
-        #                  'Show 1D XRD pattern (2'+u'\N{GREEK CAPITAL LETTER THETA}'+')',
-        #                   size=(135, -1), action=partial(self.onXRD1D, unit='2th'))
-        self.xrd_plot  = Button(pane, 'Show XRD pattern',
-                          size=(135, -1), action=partial(self.onXRD,   new=True))
-                                
+        self.xrd_plot  = Button(pane, 'Show XRD pattern', size=(135, -1),
+                                                action=partial(self.onXRD,   new=True))
+        ######################################
+
         def txt(s):
             return SimpleText(pane, s)
-        sizer.Add(txt('Map Areas'),         (0, 0), (1, 1), ALL_CEN,  2)
-        sizer.Add(self.info1,               (0, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(self.info2,               (1, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(txt('Area: '),            (2, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              (2, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.delete,              (2, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(txt('New Label: '),       (3, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                (3, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.update,              (3, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onmap,               (4, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.clear,               (4, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onstats,             (4, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('Map Areas'),         ( 0, 0), (1, 1), ALL_CEN,  2)
+        sizer.Add(self.info1,               ( 0, 1), (1, 4), ALL_LEFT, 2)
+        sizer.Add(self.info2,               ( 1, 1), (1, 4), ALL_LEFT, 2)
+        sizer.Add(txt('Area: '),            ( 2, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              ( 2, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.delete,              ( 2, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('New Label: '),       ( 3, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                ( 3, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.update,              ( 3, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               ( 4, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.clear,               ( 4, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onstats,             ( 4, 4), (1, 1), ALL_LEFT, 2)
 
-        sizer.Add(self.bexport,             (5, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.bimport,             (5, 2), (1, 2), ALL_LEFT, 2)
-        
-        ## How to add line?
-        ## sizer.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
-        ## self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
+        sizer.Add(self.bexport,             ( 5, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.bimport,             ( 5, 2), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.xrf,                 (6, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                (6, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.cor,                 (6, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf,                 ( 6, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                ( 6, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.cor,                 ( 6, 4), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.onreport,            (7, 0), (1, 2), ALL_LEFT, 2)
-        
-        ## How to add line?
-        ## sizer.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
-        ## self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
-        
-        ## to be removed
-        ## mkak 2016.09.08
-        #sizer.Add(self.xrd2D,               (8, 0), (1, 2), ALL_LEFT, 2)
-        #sizer.Add(self.xrd1Dq,              (8, 2), (1, 2), ALL_LEFT, 2)
-        #sizer.Add(self.xrd1D2th,            (8, 4), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd_plot,             (8, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            ( 7, 0), (1, 2), ALL_LEFT, 2)
+
+        sizer.Add(self.xrd_plot,            ( 8, 0), (1, 2), ALL_LEFT, 2)
 
         sizer.Add(legend,                   (10, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
@@ -948,9 +924,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         msizer = wx.BoxSizer(wx.VERTICAL)
         msizer.Add(pane, 0, wx.ALIGN_LEFT|wx.ALL, 1)
 
-        msizer.Add(wx.StaticLine(self, size=(375, 2),
-                                 style=wx.LI_HORIZONTAL),
-                   0, wx.EXPAND|wx.ALL, 1)
+        msizer.Add(wx.StaticLine(self, size=(375, 2), style=wx.LI_HORIZONTAL),
+                      0, wx.EXPAND|wx.ALL, 1)
 
         self.report = None
         if HAS_DV:
@@ -1285,72 +1260,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         #self.owner.xrddisplay.plot2Dxrd(self._xrd)
         _larch = self.owner.larch
 
+        ## plot 1D, 2D, and cake
         if flag1D and flag2D:
-            ## plot 1D, 2D, and cake
-            self.onXRD2D() ## for now.
-            self.onXRD1D()
-            
-        elif flag2D:
-            ## plot only 2D
             self.onXRD2D()
-            
-        elif flag1D:
-            ## plot only 1D
             self.onXRD1D()
-        
-#         map = self._xrd.data2D
-#         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
-#         title = '%s: %s' % (fname, aname)
-#         subtitles = None
-# 
-#         counter = 1
-#         while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
-#             counter += 1
-#         tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
-#         print 'Saving 2D data in file: %s\n' % (tifname)
-#         im = Image.fromarray(map.astype(np.uint16))
-#         im.save(tifname)
-#        
-#         xrdgp = self.owner.current_file.xrmmap['xrd']
-#         #print 'Calibration: %s' % xrdgp.attrs['calfile']
-#         try:
-#             calibration = xrdgp.attrs['calfile']
-#             data1D = integrate_xrd(map, unit='q', steps=5001,
-#                                     calfile=calibration,
-#                                     #AI = xrmfile.xrmmap['xrd'],
-#                                     aname=aname, prefix=fname, path=pref)
-#         except:
-#             print 'Cannot save 1D data. No calibration information available.'
-# 
-# ##         except:
-# ##             self._xrd.data1D = None
-# ##             print '1D Error message: Did not work this time.'
-# ##         
-# ##         ## Cheating - hard coding to eliminate dimension of this parameter
-# ##         ## need to change to allow for multiple slices in eta
-# ##         ## mkak 2016.08.31
-# ##         self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
-# ##         
-# ##         self.owner.xrddisplay.plot1Dxrd(self._xrd,unit=unit)
-# 
-#         try:
-#             x = xrmfile.get_pos(0, mean=True)
-#         except:
-#             x = None
-#         try:
-#             y = xrmfile.get_pos(1, mean=True)
-#         except:
-#             y = None
-# 
-#         fname = xrmfile.filename
-# 
-#         if len(self.owner.im_displays) == 0 or new:
-#             iframe = self.owner.add_xrd_display(title, det=None)
-# 
-#         self.owner.display_xrd(map, title=title, subtitles=subtitles,
-#                                info=info, x=x, y=y,
-#                                det=None, xrmfile=xrmfile)
-                               
+        ## plot only 2D            
+        elif flag2D:
+            self.onXRD2D()
+        ## plot only 1D    
+        elif flag1D:
+            self.onXRD1D()
+                              
     def onXRD2D(self, event=None, new=True):
 
         aname = self._getarea()
@@ -1385,24 +1305,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         subtitles = None
 
         counter = 1
-        while os.path.exists('%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)):
+        while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
             counter += 1
-        tifname = '%s/%s-%s-%03d.tif' % (pref,fname,aname,counter)
-        print 'Saving 2D data in file: %s\n' % (tifname)
-        im = Image.fromarray(map.astype(np.uint16))
-        im.save(tifname)
+        tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)
+        print 'Saving 2D data in file: %s\n' % (tiffname)
+        
+        tifffile.imsave(tiffname,map)
        
         xrdgp = self.owner.current_file.xrmmap['xrd']
-        #print 'Calibration: %s' % xrdgp.attrs['calfile']
-        #try:
-        #    calibration = xrdgp.attrs['calfile']
-        #    data1D = integrate_xrd(map, unit='q', steps=5001,
-        #                            calfile=calibration,
-        #                            #AI = xrmfile.xrmmap['xrd'],
-        #                            aname=aname, prefix=fname, path=pref)
-        #except:
-        #    print 'No 1D data (or calibration information) available.'
-        #print
 
         try:
             x = xrmfile.get_pos(0, mean=True)
@@ -1455,14 +1365,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                     #AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
         except:
-            print '1D Error message: Did not work this time.'
             return
-        
-        ## Cheating - hard coding to eliminate dimension of this parameter
-        ## need to change to allow for multiple slices in eta
-        ## mkak 2016.08.31
-        self._xrd.data1D = self._xrd.data1D.reshape(self._xrd.data1D.shape[-2],self._xrd.data1D.shape[-1])
-        
+
         self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
 
 class MapViewerFrame(wx.Frame):
@@ -2060,24 +1964,6 @@ class MapViewerFrame(wx.Frame):
         mkak 2016.07.21
         '''
  
-#         ## Choose XRD data calibration file (*.poni)
-#         wildcards = "pyFAI files (*.poni)|*.poni|All files (*.*)|*.*"
-#         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
-#                            defaultDir=os.getcwd(),
-#                            wildcard=wildcards, style=wx.FD_OPEN)
-#         path, read = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             read = True
-#             file_path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-# 
-#         if read:
-#             self.current_file.add_calibration(file_path)
-#             
-#         for p in self.nbpanels:
-#             if hasattr(p, 'update_xrmmap'):
-#                 p.update_xrmmap(self.current_file.xrmmap)
-
         myDlg = OpenXRDPar()
 
         path, read = None, False
@@ -2109,9 +1995,13 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
         
         if read:
-            self.current_file.add_calibration(xrdcalfile,
-                                              mask=xrdmaskfile,
-                                              bkgd=xrdbkgdfile)
+            xrmfile = self.current_file
+            
+            xrmfile.calibration = xrdcalfile
+            xrmfile.xrdmask     = xrdmaskfile
+            xrmfile.xrdbkgd     = xrdbkgdfile
+            xrmfile.add_calibration()
+            
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
@@ -2120,9 +2010,11 @@ class MapViewerFrame(wx.Frame):
 
     def onReSave(self, evt=None):
         '''
-        Read specified poni file.
-        mkak 2016.07.21
+        Re-save hdf5 without 2D data
+        mkak 2016.09.09
         '''
+ 
+        ## Check to make sure 2D xrd data AND calibration file there.
  
         ## Choose XRD data calibration file (*.poni)
         wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
@@ -2228,7 +2120,6 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = nrows
         self.h5convert_done = False
         if xrm_map.folder_has_newdata():
-            print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             irow = xrm_map.last_row + 1
             self.h5convert_irow = irow
             while irow < nrows:

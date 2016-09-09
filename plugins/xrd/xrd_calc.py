@@ -13,7 +13,7 @@ import pyFAI
 
 import numpy as np
 
-def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, wedges= 1,
+def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, 
                   save=True, aname = 'default', prefix = 'XRD', path = '~/',
                   mask=None, dark=None, verbose=False):
 
@@ -37,24 +37,15 @@ def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, wedges=
 
     t0 = time.time()
     
-    if len(xrd_map.shape) < 3:
-        xrd_map = xrd_map.reshape(1,xrd_map.shape[0],xrd_map.shape[1])
-    
-    qI = np.zeros([xrd_map.shape[0],wedges+1,steps])
-    
     if save:
         counter = 1
         while os.path.exists('%s/%s-%s-%03d.xy' % (path,prefix,aname,counter)):
             counter += 1
         fname = '%s/%s-%s-%03d.xy' % (path,prefix,aname,counter)
         print '\nSaving %s data in file: %s\n' % (unit,fname)
-        for i in range(xrd_map.shape[0]):
-            qI[i,] = ai.integrate1d(xrd_map[i,], steps, unit=iunit,filename=fname,
-                                    mask=mask, dark=dark)
+        qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark,filename=fname)
     else:
-        for i in range(xrd_map.shape[0]):
-            qI[i,] = ai.integrate1d(xrd_map[i], steps, unit=iunit,
-                                    mask=mask, dark=dark)
+        qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark)
     t1 = time.time()
     if verbose:
         print('\ttime to integrate data = %0.3f s' % ((t1-t0)))

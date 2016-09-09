@@ -28,9 +28,7 @@ from pyFAI.calibration import Calibrant
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
-#COMPRESSION_LEVEL = 'gzip'
-#COMPRESSION_LEVEL = 9
-COMPRESSION_LEVEL = 'lzf' ## changed; saves; reopens?; smaller?;mkak 2016.08.19
+COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
 
 class GSEXRM_FileStatus:
@@ -130,9 +128,7 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Process_Machine':'',
            'Process_ID': 0}
 
-def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
-                  FLAGxrf = False, FLAGxrd = False,
-                  xrdcalfile = None, mask = None, bkgd = None):
+def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     """creates a skeleton '/xrmmap' group in an open HDF5 file
 
     This is left as a function, not method of GSEXRM_MapFile below
@@ -153,9 +149,6 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
     xrmmap = h5root.create_group(root)
     
     xrmmap.create_group('flags')
-    flaggp = xrmmap['flags']
-    flaggp.attrs['xrf'] = FLAGxrf
-    flaggp.attrs['xrd'] = FLAGxrd
     
     for key, val in attrs.items():
         xrmmap.attrs[key] = str(val)
@@ -178,53 +171,8 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None,
         conf.create_group(name)
         
     xrmmap.create_group('xrd')
-    xrdgp = xrmmap['xrd']
-
-    if xrdcalfile:
-        xrdgp.attrs['calfile'] = xrdcalfile
-
-    if mask:
-        xrdgp.attrs['maskfile'] = str(mask)
-    else:
-        xrdgp.attrs['maskfile'] = ''
-    if bkgd:
-        xrdgp.attrs['bkgdfile'] = str(bkgd)
-    else:
-        xrdgp.attrs['bkgdfile'] = ''
-
-    if hasattr(xrmmap['xrd'],'calfile'):
-        try:
-            ai = pyFAI.load(xrdgp.attrs['calfile'])
-        except:
-            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                           os.path.split(xrdgp.attrs['calfile'])[-1])
-        
-        ## Could this work to save ai class? 
-        ## mkak 2016.09.05
-        #xrdgp.attrs['ai'] = json.dumps(ai,cls=Calibrant)
-    
-        xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
-        try:
-            xrdgp.attrs['detector'] = ai.detector.name
-        except:
-            xrdgp.attrs['detector'] = ''
-        try:
-            xrdgp.attrs['spline']   = ai.detector.splineFile
-        except:
-            xrdgp.attrs['spline']   = ''
-        xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-        xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-        xrdgp.attrs['distance']   = ai._dist ## units: m
-        xrdgp.attrs['poni1']      = ai._poni1
-        xrdgp.attrs['poni2']      = ai._poni2
-        xrdgp.attrs['rot1']       = ai._rot1
-        xrdgp.attrs['rot2']       = ai._rot2
-        xrdgp.attrs['rot3']       = ai._rot3
-        xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-        ## E = hf ; E = hc/lambda
-        hc = constants.value(u'Planck constant in eV s') * \
-               constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-        xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+    xrmmap['xrd'].attrs['desc'] = 'xrd detector calibration and data'
+    xrmmap['xrd'].attrs['type'] = 'xrd detector'
 
     h5root.flush()
 
@@ -570,8 +518,6 @@ class GSEXRM_MapFile(object):
     EnvFile    = 'Environ.dat'
     ROIFile    = 'ROI.dat'
     MasterFile = 'Master.dat'
-    ## still in progress - mkak 2016.08.30
-    XRDCalFile = 'calibration.poni'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, mask=None, bkgd=None,
@@ -673,10 +619,7 @@ class GSEXRM_MapFile(object):
             print
     
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
-                          folder=self.folder, start_time=self.start_time,
-                          FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd, 
-                          xrdcalfile = self.calibration,
-                          mask = self.xrdmask, bkgd = self.xrdbkgd)
+                          folder=self.folder, start_time=self.start_time)
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
@@ -774,70 +717,62 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self, xrdcalfile, mask=None, bkgd=None, root=None):
+    def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.08.30
+        restructured, self references instead of arguments
+        mkak 2016.09.09
         """
-        try:
-            ai = pyFAI.load(xrdcalfile)
-        except:
-            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                           os.path.split(xrdcalfile)[-1])
-            return
-
-        path, file = os.path.split(str(xrdcalfile))
-
         try:
             self.xrmmap['xrd']
         except:
             self.xrmmap.create_group('xrd')
         xrdgp = self.xrmmap['xrd']
 
-        xrdgp.attrs['calfile'] = '%s' % (xrdcalfile)
+        try:
+            ai = pyFAI.load(self.calibration)
+            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
+            xrdcal = True
+        except:
+            xrdcal = False
+            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
+                                           os.path.split(self.calibration)[-1])
+            return
 
-        if mask:
-            xrdgp.attrs['maskfile'] = str(mask)
-        else:
+        try:
+            xrdgp.attrs['maskfile'] = str(self.xrdmask)
+        except:
             xrdgp.attrs['maskfile'] = ''
-        if bkgd:
-            xrdgp.attrs['bkgdfile'] = str(bkgd)
-        else:
+        
+        try:
+            xrdgp.attrs['bkgdfile'] = str(self.xrdbkgd)
+        except:
             xrdgp.attrs['bkgdfile'] = ''
-   
-        xrdgp.attrs['desc']         = '''xrd detector calibration and data'''
-        try:
-            xrdgp.attrs['detector'] = ai.detector.name
-        except:
-            xrdgp.attrs['detector'] = ''
-        try:
-            xrdgp.attrs['spline']   = ai.detector.splineFile
-        except:
-            xrdgp.attrs['spline']   = ''
-        xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-        xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-        xrdgp.attrs['distance']   = ai._dist ## units: m
-        xrdgp.attrs['poni1']      = ai._poni1
-        xrdgp.attrs['poni2']      = ai._poni2
-        xrdgp.attrs['rot1']       = ai._rot1
-        xrdgp.attrs['rot2']       = ai._rot2
-        xrdgp.attrs['rot3']       = ai._rot3
-        xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-        ## E = hf ; E = hc/lambda
-        hc = constants.value(u'Planck constant in eV s') * \
-               constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-        xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
-            
-#            ## Eventually needs to be put here.
-#            ## mkak 2016.08.31
-#            for i in range(xrdgp['data2D'].shape[0]):
-#                ## can add in dark (background) and mask
-#                xrdgrp['data1D'][i,] = integrate_xrd(xrdgp['data2D'][i,],
-#                                          unit='q', steps=xrdgrp['data1D'].shape[-1],
-#                                          AI = xrdgrp, 
-#                                          save=False)
 
+        if xrdcal:
+			try:
+				xrdgp.attrs['detector'] = ai.detector.name
+			except:
+				xrdgp.attrs['detector'] = ''
+			try:
+				xrdgp.attrs['spline']   = ai.detector.splineFile
+			except:
+				xrdgp.attrs['spline']   = ''
+			xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+			xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+			xrdgp.attrs['distance']   = ai._dist ## units: m
+			xrdgp.attrs['poni1']      = ai._poni1
+			xrdgp.attrs['poni2']      = ai._poni2
+			xrdgp.attrs['rot1']       = ai._rot1
+			xrdgp.attrs['rot2']       = ai._rot2
+			xrdgp.attrs['rot3']       = ai._rot3
+			xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+			## E = hf ; E = hc/lambda
+			hc = constants.value(u'Planck constant in eV s') * \
+				   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+			xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
         self.h5root.flush()
 
@@ -951,7 +886,6 @@ class GSEXRM_MapFile(object):
         if maxrow is not None:
             nrows = min(nrows, maxrow)
         if force or self.folder_has_newdata():
-            print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             irow = self.last_row + 1
             while irow < nrows:
                 # self.dt.add('=>PROCESS %i' % irow)
@@ -1175,15 +1109,16 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
         print 'XRM Map Folder: %s' % self.folder
-        if hasattr(self,'calibration'):
-            print 'XRD Calibration file: %s\n' % self.calibration
+        xrmmap = self.xrmmap
         
-        
+        flaggp = xrmmap['flags']
+        flaggp.attrs['xrf'] = self.flag_xrf
+        flaggp.attrs['xrd'] = self.flag_xrd
+         
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
 
-        xrmmap = self.xrmmap
         conf   = self.xrmmap['config']
 
         if self.flag_xrf:
@@ -1308,57 +1243,58 @@ class GSEXRM_MapFile(object):
                                compression=COMPRESSION_LEVEL,
                                maxshape=(None, npts, npos))
 
-
-        ## This creates a place for 2D XRD data in the hdf5 file      
-        ## mkak 2016.07.28
         if self.flag_xrd:
 
+            self.add_calibration()
+
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            xchan = self.xchan
-            xwedge = self.xwedge
-            
             self.chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
 
             if verbose:
-                prtxt = '--- Build XRD Schema: %i, %i ---- 2D: (%i, %i) 1D: (%i, %i)'
-                print(prtxt % (npts, row.npts, xpixx, xpixy, xchan, xwedge))
+                prtxt = '--- Build XRD Schema: %i, %i ---- 2D:  (%i, %i)'
+                print(prtxt % (npts, row.npts, xpixx, xpixy))
 
-            ## what resolution should be used for q/2th integration?
-            ## how many wedges for 1D integration?
-
-            xrdgp = xrmmap['xrd']
-            
-            xrdgp.attrs['type'] = 'xrd detector'
-            xrdgp.create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.int16,
+            xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
                                    chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-## temp. test:
+## temporary test:
 ## don't calculate 1D until stripping 2D or when plotting
 ## mkak 2016.09.09
-#            xrdgp.create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), np.int16,
-#                                   chunks = self.chunksize_1DXRD,
+#            xchan = self.xchan
+#            xwedge = self.xwedge
+#            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
+#            ## what resolution should be used for q/2th integration?
+#            ## how many wedges for 1D integration?
+#            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), 
+#                                   np.int16, chunks = self.chunksize_1DXRD,
 #                                   compression=COMPRESSION_LEVEL)
 
         print
+        print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')        
         
         self.h5root.flush()
 
     def reset_flags(self):
         '''
         Resets the flags according to hdf5 values or defaults for compatibility with
-        older versions
+        older versions; add in flags to hdf5 files missing them.
         mkak 2016.08.30
         '''
-    
+        xrmmap = self.xrmmap
         try: 
-            self.xrmmap['flags'].attrs['xrf']
+            xrmmap['flags']
         except:
             ## Compatible with older maps (did not have xrd data)
             self.flag_xrf = True
             self.flag_xrd = False
             print 'Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
                                                                         self.flag_xrd)
+            xrmmap.create_group('flags')
+            flaggp = xrmmap['flags']
+            flaggp.attrs['xrf'] = self.flag_xrf
+            flaggp.attrs['xrd'] = self.flag_xrd
+            h5root.flush()
+            
             return
     
         self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
@@ -1935,35 +1871,31 @@ class GSEXRM_MapFile(object):
 
     def check_xrd(self):
         """
-        check if any XRD data in mapfile
-
-        Returns
-        -------
-        flag for 1D and 2D XRD data
-
+        check if any XRD data in mapfile; returns flags for 1D and 2D XRD data
+        mkak 2016.09.07
         """
 
         try:
             xrdgp = self.xrmmap['xrd']
-        except:
-            flag1D,flag2D = False,False
-            return flag1D,flag2D
-
-        try:
-            data1D = xrdgp['data1D']
-            if xrdgp['data1D'][0,0,0,0] == xrdgp['data1D'][0,0,0,-1]:
-                flag1D = False
-            else:
-                flag1D = True
-        except:
-            flag1D = False
-
-        try:
-            data1D = xrdgp['data2D']
+            data2D = xrdgp['data2D']
             flag2D = True
         except:
-            flag2D = False           
-            
+            flag2D = False 
+
+        try:
+            xrdgp = self.xrmmap['xrd']
+            xrdgp['data1D']
+            flag1D = True
+        except:
+            if flag2D:
+                try:
+                    xrdgp.attrs['calfile']
+                    flag1D = True
+                except:
+                    flag1D = False
+            else:
+                flag1D = False
+
         return flag1D,flag2D
 
 
@@ -1984,10 +1916,11 @@ class GSEXRM_MapFile(object):
             area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
+            return
 
         mapdat = self.xrmmap['xrd']
         ix, iy, xpix, ypix = mapdat['data2D'].shape
-
+        
         npix = len(np.where(area)[0])
         if npix < 1:
             return None
@@ -2052,7 +1985,7 @@ class GSEXRM_MapFile(object):
         """
         if mapdat is None:
             mapdat = self.xrmmap['xrd']
-
+            
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
@@ -2068,6 +2001,11 @@ class GSEXRM_MapFile(object):
             frames = frames[area[sy, sx]]
         else:
             frames = frames.sum(axis=0)
+
+        ## returns type int64; because sum of so many frames? need more bytes?
+        ## keep as is for now.
+        ## mkak 2016.09.09
+        #return frames.sum(axis=0).astype('uint16')
         return frames.sum(axis=0)
 
     def _getXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):
@@ -2081,7 +2019,7 @@ class GSEXRM_MapFile(object):
         fmt = "Data from File '%s', detector '%s', area '%s'"
         mapname = map.name.split('/')[-1]
         _2Dxrd.info  =  fmt % (self.filename, mapname, name)
-
+        
         return _2Dxrd
 
     def get_pattern_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
