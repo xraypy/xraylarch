@@ -18,8 +18,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   read_xsp3_hdf5, readASCII,
                                   readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf, make_xrd_map)#,
-                                  #read_xrd_hdf5)
+                                  read_xrd_netcdf) #, read_xrd_hdf5)
                             
 from larch_plugins.xrd import XRD
 from larch_plugins.xrd import integrate_xrd
