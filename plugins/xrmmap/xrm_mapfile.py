@@ -1139,13 +1139,16 @@ class GSEXRM_MapFile(object):
                 
                 t1a = time.time()
                 ### HOW TO DO THIS WITHOUT LOOPING?
-                if hasattr(self.xrmmap['xrd'],'calfile'):    
-                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
-                                        unit='q', steps=grp['data1D'].shape[-1],
-                                        mask=mask, dark=bkgd,
-                                        calfile=self.xrmmap['xrd'].attrs['calfile'],
-                                        #AI = self.xrmmap['xrd'], 
-                                        save=False)
+## temp. test:
+## don't calculate 1D until stripping 2D or when plotting
+## mkak 2016.09.09
+#                if hasattr(self.xrmmap['xrd'],'calfile'):    
+#                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
+#                                        unit='q', steps=grp['data1D'].shape[-1],
+#                                        mask=mask, dark=bkgd,
+#                                       calfile=self.xrmmap['xrd'].attrs['calfile'],
+#                                        #AI = self.xrmmap['xrd'], 
+#                                        save=False)
 
 
         t2 = time.time()
@@ -1331,9 +1334,12 @@ class GSEXRM_MapFile(object):
             xrdgp.create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.int16,
                                    chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-            xrdgp.create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), np.int16,
-                                   chunks = self.chunksize_1DXRD,
-                                   compression=COMPRESSION_LEVEL)
+## temp. test:
+## don't calculate 1D until stripping 2D or when plotting
+## mkak 2016.09.09
+#            xrdgp.create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), np.int16,
+#                                   chunks = self.chunksize_1DXRD,
+#                                   compression=COMPRESSION_LEVEL)
 
         print
         
