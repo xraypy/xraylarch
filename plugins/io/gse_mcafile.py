@@ -160,7 +160,7 @@ class GSEMCA_File(Group):
                     elif item == "right":
                         rois[iroi]['right'] = str2ints(val)
                 else:
-                    pass # print " Warning: " , tag, " is not supported here!"
+                    pass # print(" Warning: " , tag, " is not supported here!")
 
         #
         counts =  np.array(counts)
@@ -221,7 +221,7 @@ class GSEMCA_File(Group):
                 counts=None, sort=True, to_mcas=True):
         """add an ROI to the sum spectra"""
         name = name.strip()
-        # print 'GSEMCA: Add ROI ', name, left, right
+        # print('GSEMCA: Add ROI ', name, left, right)
         roi = ROI(name=name, left=left, right=right,
                   bgr_width=bgr_width, counts=counts)
         rnames = [r.name.lower() for r in self.rois]
@@ -280,7 +280,7 @@ class GSEMCA_File(Group):
 
         # don't assume number of ROIS is same for all elements
         nrois = max([len(r) for r in rois])
-        # print 'NROIS ' , nrois, [len(r) for r in rois]
+        # print('NROIS ' , nrois, [len(r) for r in rois])
         for ir, r in enumerate(rois):
             if len(r) < nrois:
                 for i in range(nrois - len(r)):

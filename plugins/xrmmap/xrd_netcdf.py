@@ -24,7 +24,7 @@ def read_xrd_netcdf(fname,verbose=False): #npixels=self.nrows_expected
     ## Reads a netCDF file created for XRD mapping
     
     if verbose:
-        print ' reading %s' % fname
+        print(' reading %s' % fname)
     
     ## Reads an XRD netCDF file with the netCDF plugin buffers
     xrd_file = netcdf_open(fname,'r')
@@ -35,7 +35,7 @@ def read_xrd_netcdf(fname,verbose=False): #npixels=self.nrows_expected
     ## Forces data into 3D shape
     shape = xrd_data.shape ## (no_images,pixels_x,pixels_y)
     if len(shape) == 2:
-        print 'Reshaping to (%i, %i, %i)' % (1, shape[0], shape[1])
+        print('Reshaping to (%i, %i, %i)' % (1, shape[0], shape[1]))
         xrd_data.shape = (1, shape[0], shape[1])
 
     return xrd_data

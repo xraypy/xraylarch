@@ -557,7 +557,6 @@ class GSEXRM_MapFile(object):
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
-                print 'in-inside here'
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
                 ftmp.close()
@@ -565,7 +564,6 @@ class GSEXRM_MapFile(object):
                 
             if copy:
                 self.status = GSEXRM_FileStatus.copy
-                print 'nowwww here'
                 ftmp = open(self.filename, 'r')
                 ftmp.close()
                 os.unlink(self.filename)
@@ -615,9 +613,8 @@ class GSEXRM_MapFile(object):
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
 
-            print 
-            print
-    
+            print('')
+
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
@@ -632,7 +629,7 @@ class GSEXRM_MapFile(object):
         
         this **must** be called for an existing, valid GSEXRM HDF5 File!!
         """
-        print 'The original file to be copied is: %s' % self.filename
+        print('The original file to be copied is: %s' % self.filename)
         
         if root in ('', None):
             root = DEFAULT_ROOTNAME
@@ -644,7 +641,7 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
 
-        print 'The copied file is named: %s' % newfile       
+        print('The copied file is named: %s' % newfile)
 
         newmap = GSEXRM_MapFile(filename=str(newfile),copy=True)
         all_ids = newmap.require_group(self.xrmmap.parent.name)
@@ -721,7 +718,7 @@ class GSEXRM_MapFile(object):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.08.30
-        restructured, self references instead of arguments
+        restructured
         mkak 2016.09.09
         """
         try:
@@ -737,7 +734,7 @@ class GSEXRM_MapFile(object):
         except:
             xrdcal = False
             raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                           os.path.split(self.calibration)[-1])
+                                           self.calibration)
             return
 
         try:
@@ -909,7 +906,7 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
         if self.pixeltime is None:
             self.calc_pixeltime()
-        print 'End:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') 
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
@@ -968,7 +965,7 @@ class GSEXRM_MapFile(object):
             pform = '%s, xrffile=%s' % (pform,row.xrffile)
         if self.flag_xrd:
             pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
-        print pform
+        print(pform)
 
         t0 = time.time()
         if self.flag_xrf:
@@ -1108,7 +1105,7 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        print 'XRM Map Folder: %s' % self.folder
+        print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
         
         flaggp = xrmmap['flags']
@@ -1245,7 +1242,8 @@ class GSEXRM_MapFile(object):
 
         if self.flag_xrd:
 
-            self.add_calibration()
+            if self.calibration:
+                self.add_calibration()
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             self.chunksize_2DXRD    = (1, 1, xpixx, xpixy)
@@ -1269,8 +1267,7 @@ class GSEXRM_MapFile(object):
 #                                   np.int16, chunks = self.chunksize_1DXRD,
 #                                   compression=COMPRESSION_LEVEL)
 
-        print
-        print 'Start:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')        
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))      
         
         self.h5root.flush()
 
@@ -1287,8 +1284,8 @@ class GSEXRM_MapFile(object):
             ## Compatible with older maps (did not have xrd data)
             self.flag_xrf = True
             self.flag_xrd = False
-            print 'Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
-                                                                        self.flag_xrd)
+            print('Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
+                                                                        self.flag_xrd))
             xrmmap.create_group('flags')
             flaggp = xrmmap['flags']
             flaggp.attrs['xrf'] = self.flag_xrf
@@ -1400,7 +1397,7 @@ class GSEXRM_MapFile(object):
         try:
             calibration = self.xrmmap['xrd'].attrs['calfile']
             if verbose:
-                print pyFAI.load(calibration)
+                print(pyFAI.load(calibration))
         except:
             return None
         return calibration
@@ -2002,10 +1999,6 @@ class GSEXRM_MapFile(object):
         else:
             frames = frames.sum(axis=0)
 
-        ## returns type int64; because sum of so many frames? need more bytes?
-        ## keep as is for now.
-        ## mkak 2016.09.09
-        #return frames.sum(axis=0).astype('uint16')
         return frames.sum(axis=0)
 
     def _getXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):

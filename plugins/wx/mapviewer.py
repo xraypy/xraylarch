@@ -1233,7 +1233,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             label = area.attrs.get('description', aname)
             self._xrd  = None
         except:
-            print 'No map file and/or areas specified.'
+            print('No map file and/or areas specified.')
             return
 
 
@@ -1242,7 +1242,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         flag1D,flag2D = self.owner.current_file.check_xrd()
         
         if not flag1D and not flag2D:
-            print 'No XRD data in map file: %s' % xrmfile.filename
+            print('No XRD data in map file: %s' % xrmfile.filename)
             return
 
         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
@@ -1308,7 +1308,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
             counter += 1
         tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)
-        print 'Saving 2D data in file: %s\n' % (tiffname)
+        print('Saving 2D data in file: %s\n' % (tiffname))
         
         tifffile.imsave(tiffname,map)
        
@@ -2028,8 +2028,9 @@ class MapViewerFrame(wx.Frame):
             file_path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
 
-        if read:
-            self.current_file.copy_hdf5(file_path)
+        print('Not yet implemented. Sorry.')
+        #if read:
+        #    self.current_file.copy_hdf5(file_path)
             
         ## perhaps also re run mapfile reader to put this on the list on left panel?
 
@@ -2111,7 +2112,9 @@ class MapViewerFrame(wx.Frame):
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
-## Not being replace 'process()' in xrmmap/xrm_mapfile.py: does not update mapviewer.py window!!
+## This routine is almost identical to 'process()' in xrmmap/xrm_mapfile.py ,
+## however 'new_mapdata()' updates messages in mapviewer.py window!!
+## For now, keep as is.
 ## mkak 2016.09.07
     def new_mapdata(self, filename):
 
@@ -2143,7 +2146,7 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_done = True
         time.sleep(0.025)
         
-        print 'End:',datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') 
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
@@ -2251,7 +2254,6 @@ class OpenMapFolder(wx.Dialog):
         panel.SetSizer(sizer)       
 
     def onXRFcheck(self, event):
-        #print '%s is clicked %s.' % (event.GetEventObject().GetLabel(),event.GetEventObject().GetValue()) 
         self.FLAGxrf = event.GetEventObject().GetValue()
       
         if self.FLAGxrf or self.FLAGxrd:
@@ -2261,7 +2263,6 @@ class OpenMapFolder(wx.Dialog):
                 self.FindWindowById(wx.ID_OK).Disable()
 
     def onXRDcheck(self, event): 
-        #print '%s is clicked %s.' % (event.GetEventObject().GetLabel(),event.GetEventObject().GetValue()) 
         self.FLAGxrd = event.GetEventObject().GetValue()
         
         if self.FLAGxrf or self.FLAGxrd:
@@ -2271,8 +2272,6 @@ class OpenMapFolder(wx.Dialog):
                 self.FindWindowById(wx.ID_OK).Disable()
 
     def onBROWSE(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-
         dlg = wx.DirDialog(self, message="Read XRF Map Folder",
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
@@ -2296,8 +2295,6 @@ class OpenMapFolder(wx.Dialog):
                 self.FindWindowById(wx.ID_OK).Disable()
 
     def onBROWSE1(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
                            defaultDir=os.getcwd(),
@@ -2316,8 +2313,6 @@ class OpenMapFolder(wx.Dialog):
             self.CaliPath = path
 
     def onBROWSE2(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD mask file",
                            defaultDir=os.getcwd(),
@@ -2335,8 +2330,6 @@ class OpenMapFolder(wx.Dialog):
             self.MaskPath = path
             
     def onBROWSE3(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI background (*.edf)|*.edf|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD background file",
                            defaultDir=os.getcwd(),
@@ -2413,8 +2406,6 @@ class OpenXRDPar(wx.Dialog):
         panel.SetSizer(sizer)       
 
     def onBROWSE1(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
                            defaultDir=os.getcwd(),
@@ -2429,12 +2420,9 @@ class OpenXRDPar(wx.Dialog):
         if read:
             self.CalFl.Clear()
             self.CalFl.SetValue(str(path))
-            #self.CalFl.AppendText(str(path))
             self.CaliPath = path
 
     def onBROWSE2(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD mask file",
                            defaultDir=os.getcwd(),
@@ -2452,8 +2440,6 @@ class OpenXRDPar(wx.Dialog):
             self.MaskPath = path
             
     def onBROWSE3(self, event): 
-        #print '%s is clicked.' % event.GetEventObject().GetLabel()
-        
         wildcards = "pyFAI background (*.edf)|*.edf|All files (*.*)|*.*"
         dlg = wx.FileDialog(self, message="Choose XRD background file",
                            defaultDir=os.getcwd(),

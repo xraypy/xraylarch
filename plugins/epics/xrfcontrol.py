@@ -167,7 +167,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        # print "Scandb ", self.scandb
+        # print("Scandb ", self.scandb)
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')

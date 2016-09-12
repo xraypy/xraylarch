@@ -1109,7 +1109,7 @@ class XRD1D_DisplayFrame(wx.Frame):
 # ## Not ready to incorporate peak fitting, yet...
 # ## mkak 2016.07.25
 #     def onFitPeaks(self, event=None, **kws):
-#         print 'This function is not yet implemented...'
+#         print('This function is not yet implemented...')
 #         #try:
 #         #    self.win_fit.Raise()
 #         #except:

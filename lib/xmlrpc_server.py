@@ -89,7 +89,7 @@ class LarchServer(SimpleXMLRPCServer):
     def help(self):
         if not self.quiet:
             print( 'Serving Larch at port %s' % repr(self.port))
-            # print dir(self)
+            # print(dir(self))
             print('Registered Functions:')
             fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'get_data']
             if self.with_wx:
