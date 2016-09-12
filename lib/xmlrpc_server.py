@@ -81,6 +81,21 @@ class LarchServer(SimpleXMLRPCServer):
                  logRequests=False, allow_none=True,
                  keepalive_time=3*24*3600, **kws):
         self.out_buffer = []
+
+        self.larch = Interpreter(writer=self)
+        self.input = InputText(prompt='', _larch=self.larch)
+        self.larch.run_init_scripts()
+        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
+        self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
+        self.larch('_sys.client.last_event = %i' % time())
+        self.larch("_sys.client.app = ''")
+        self.larch("_sys.client.pid = ''")
+        self.larch("_sys.client.user = ''")
+        self.larch("_sys.client.machine = ''")
+        self.client = self.larch.symtable._sys.client
+        self.activity_thread  = Thread(target=self.check_activity)
+        # self.orig_out  = sys.stdout, sys.stderr
+        # sys.stdout = self
         SimpleXMLRPCServer.__init__(self, (host, port),
                                     logRequests=logRequests,
                                     allow_none=allow_none)
@@ -93,21 +108,6 @@ class LarchServer(SimpleXMLRPCServer):
                         'get_client_info',
                         'get_data', 'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
-
-        self.larch = Interpreter(writer=self)
-        self.input = InputText(prompt='', _larch=self.larch)
-        self.larch.run_init_scripts()
-
-        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
-        self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
-        self.larch('_sys.client.last_event = %i' % time())
-        self.larch("_sys.client.app = ''")
-        self.larch("_sys.client.pid = ''")
-        self.larch("_sys.client.user = ''")
-        self.larch("_sys.client.machine = ''")
-        self.activity_thread  = Thread(target=self.check_activity)
-        self.orig_out  = sys.stdout, sys.stderr
-        sys.stdout = self
 
     def write(self, text, **kws):
         self.out_buffer.append(text)
@@ -183,9 +183,8 @@ class LarchServer(SimpleXMLRPCServer):
         sys.exit()
 
     def check_activity(self):
-        client = self.larch.symtable._sys.client
         while True:
-            if time() > (client.keepalive_time + client.last_event):
+            if time() > (self.client.keepalive_time + self.client.last_event):
                 self.exit()
             else:
                 sleep(POLL_TIME)
@@ -211,10 +210,12 @@ class LarchServer(SimpleXMLRPCServer):
     def run(self):
         """run server until times out"""
         self.activity_thread.start()
-        sleep(2.0*POLL_TIME)
         try:
             self.serve_forever()
         except (KeyboardInterrupt, select_error, socket_error):
+            self.client.last_event = -1
+            self.client.keepalive_time = 0
+            sleep(POLL_TIME)
             sys.exit()
 
 if __name__ == '__main__':
