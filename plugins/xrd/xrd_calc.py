@@ -25,7 +25,7 @@ def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000,
             return
     else:
         ai = calculate_ai(AI)
-
+        
     if unit == 'q':
         iunit = 'q_A^-1'
     elif unit == '2th':
@@ -50,6 +50,10 @@ def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000,
     if verbose:
         print('\ttime to integrate data = %0.3f s' % ((t1-t0)))
 
+    if verbose:
+        print('Parameters for 1D integration:')
+        print(ai)
+
     return qI
 
 def calculate_ai(AI):
@@ -59,7 +63,7 @@ def calculate_ai(AI):
     '''
 
     try:
-        distance = float(AI.attrs['distance']) / 1.e3
+        distance = float(AI.attrs['distance'])
     except:
         distance = 1
      
@@ -97,11 +101,11 @@ def calculate_ai(AI):
         rot_3 = 0
 
     try:
-        pixel_1 = float(AI.attrs['pixel1'])
+        pixel_1 = float(AI.attrs['ps1'])
     except:
         pixel_1 = 0
     try:
-        pixel_2 = float(AI.attrs['pixel2'])
+        pixel_2 = float(AI.attrs['ps2'])
     except:
         pixel_2 = 0
 

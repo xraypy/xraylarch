@@ -1076,8 +1076,8 @@ class GSEXRM_MapFile(object):
 #                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
 #                                        unit='q', steps=grp['data1D'].shape[-1],
 #                                        mask=mask, dark=bkgd,
-#                                       calfile=self.xrmmap['xrd'].attrs['calfile'],
-#                                        #AI = self.xrmmap['xrd'], 
+#                                        #calfile=self.xrmmap['xrd'].attrs['calfile'],
+#                                        AI = self.xrmmap['xrd'], 
 #                                        save=False)
 
 

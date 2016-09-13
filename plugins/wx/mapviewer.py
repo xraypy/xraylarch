@@ -1361,8 +1361,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         try:
             ## can add in dark (background) and mask??
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-                                    calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
-                                    #AI = xrmfile.xrmmap['xrd'],
+                                    #calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
+                                    AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
         except:
             return
