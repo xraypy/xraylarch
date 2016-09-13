@@ -12,6 +12,7 @@ import pyFAI.calibrant
 import pyFAI
 
 import numpy as np
+import math
 
 def integrate_xrd(xrd_map, AI=None, calfile=None, unit='q', steps=10000, 
                   save=True, aname = 'default', prefix = 'XRD', path = '~/',
@@ -135,6 +136,15 @@ def calculate_ai(AI):
                                     splineFile = spline, detector = detname,
                                     wavelength = xraylambda)
                                    
-    
+
+def calc_q_to_d(q):
+    return (2*math.pi)/q
+
+def calc_q_to_2th(q,wavelength,units='degrees'):
+    twth = 2*np.arcsin((q*wavelength)/(4*math.pi))
+    if units == 'radians':
+        return twth
+    else:
+        return np.degrees(twth)
     
     

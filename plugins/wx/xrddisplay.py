@@ -24,6 +24,7 @@ import wx.lib.colourselect  as csel
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
+import math
 import numpy as np
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
@@ -59,10 +60,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.math import index_of
-from larch_plugins.xrd import integrate_xrd
-
-
-XRD1D_FILE_WILDCARDS = "XRD File (*.xy)|*.xy|All files (*.*)|*.*"
+from larch_plugins.xrd import integrate_xrd,calc_q_to_d,calc_q_to_2th
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -100,13 +98,6 @@ class Menu_IDs:
         self.TOGGLE_LEGEND = wx.NewId()
         self.TOGGLE_GRID = wx.NewId()
 
-CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
-                               'Left-Drag to zoom to rectangular box'),
-                     'lasso': ('Select Points for XRF Spectra\tCtrl+N',
-                               'Left-Drag to select points freehand'),
-                     'prof':  ('Select Line Profile\tCtrl+K',
-                               'Left-Drag to select like for profile')}
-
 #class XRD_DisplayFrame(ImageFrame):
 # make uniform display frame for both 2D and 1D at same time?
 
@@ -133,9 +124,8 @@ class XRD2D_DisplayFrame(ImageFrame):
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
 
-        self.panel.add_cursor_mode('prof', motion = self.prof_motion,
-                                   leftdown = self.prof_leftdown,
-                                   leftup   = self.prof_leftup)
+        self.panel.cursor_mode = 'zoom'
+        self.panel.xaxis = 'q'
         self.panel.report_leftdown = self.report_leftdown
         self.panel.report_motion   = self.report_motion
 
@@ -257,6 +247,13 @@ class XRD2D_DisplayFrame(ImageFrame):
                 iy = int(y0 + (ix-int(x0))*(y1-y0)/(x1-x0))
                 outdat.append((ix, iy))
         x, y, z = [], [], []
+        print 'x0',x0
+        print 'x1',x1
+        print 'ix',ix
+        print 'y0',y0
+        print 'y1',y1
+        print 'iy',iy
+
         for ix, iy in outdat:
             x.append(ix)
             y.append(iy)
@@ -298,7 +295,6 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.prof_plotter.Show()
         self.zoom_ini = None
 
-#        self.zoom_mode.SetSelection(0)
         self.panel.cursor_mode = 'zoom'
 
     def prof_report_coords(self, event=None):
@@ -349,15 +345,6 @@ class XRD2D_DisplayFrame(ImageFrame):
                                   self.panel.conf.data[iy, ix])
             msg = 'Pixel [%i, %i], 2TH=%.2f, ETA=%.1f, Intensity= %g' % _point
         write(msg,  panel=0)
-
-    def onCursorMode(self, event=None, mode='zoom'):
-        self.panel.cursor_mode = mode
-        #if event is not None:
-        #    if 1 == event.GetInt():
-        #        self.panel.cursor_mode = 'lasso'
-        #    elif 2 == event.GetInt():
-        #        self.panel.cursor_mode = 'prof'
-
 
     def report_leftdown(self, event=None):
         if event is None:
@@ -422,12 +409,12 @@ class XRD2D_DisplayFrame(ImageFrame):
         
 
 
-        self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
-                                     wx.DefaultPosition, wx.DefaultSize,
-                                     ('Zoom to Rectangle','blank'),
-                                     1, wx.RA_SPECIFY_COLS)
-        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-        sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+#        self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
+#                                     wx.DefaultPosition, wx.DefaultSize,
+#                                     ('Zoom to Rectangle','blank'),
+#                                     1, wx.RA_SPECIFY_COLS)
+#        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+#        sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
 
                                
@@ -444,8 +431,8 @@ class XRD1D_DisplayFrame(wx.Frame):
         if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
-
-        self.marker_color = '#77BB99' 
+                          
+        self.marker_color = '#77BB99'
         self.spectra_color = '#0000AA'
 
         self.subframes = {}
@@ -612,7 +599,6 @@ class XRD1D_DisplayFrame(wx.Frame):
         """xrd plot window"""
         pan = PlotPanel(self, fontsize=7,
                         axisbg='#FEFEFE',
-                        # axissize=[0.01, 0.11, 0.97, 0.87],
                         output_title='test.xrd',
                         messenger=self.write_message)
         pan.conf.grid_color='#E5E5C0'
@@ -646,6 +632,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                       action=self.onLogLinear)
         yaxis  = Check(yscalepanel, ' Show Y Scale ', action=self.onYAxis,
                       default=True)
+
         self.wids['show_yaxis'] = yaxis
         ysizer.Add(ytitle,  0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
         ysizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
@@ -667,18 +654,63 @@ class XRD1D_DisplayFrame(wx.Frame):
         zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
         pack(zoompanel, zsizer)
 
-        #
+        # x scale
+        xscalepanel = wx.Panel(ctrlpanel, name='XScalePanel')
+        xsizer = wx.BoxSizer(wx.HORIZONTAL)
+        xtitle = txt(xscalepanel, ' X Axis:', font=Font10, size=80)
+        xspace = txt(xscalepanel, ' ', font=Font10, size=20)
 
+        self.xaxis = wx.RadioBox(xscalepanel, -1, '',wx.DefaultPosition, wx.DefaultSize,
+                                     ('q','2th','d'),
+                                     1, wx.RA_SPECIFY_ROWS)
+        self.xaxis.Bind(wx.EVT_RADIOBOX, self.onXaxis)
+
+        xsizer.Add(xtitle,     0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        xsizer.Add(xspace,     0, wx.EXPAND|wx.ALL, 0)
+        xsizer.Add(self.xaxis, 0, wx.EXPAND|wx.ALL, 0)
+        pack(xscalepanel, xsizer)
+        
+###########################
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(xscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
-#        sizer.Add(arrowpanel,          0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
+
+    def onXaxis(self, event=None):
+
+        q,I = self.xrd.data1D
+
+        if event is not None:
+            if 0 == event.GetInt():
+                ## q in units 1/A
+                self.xunit = 'q'
+                self.xlabel = 'q (1/A)'
+                x = q
+            elif 1 == event.GetInt():
+                ## d in units A
+                self.xunit = '2th'
+                self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+                x = calc_q_to_2th(q,self.xrd.wavelength*1e10)
+            elif 2 == event.GetInt():
+                ## d in units A
+                self.xunit = 'd'
+                self.xlabel = 'd (A)'
+                x = calc_q_to_d(q)
+        
+        self.plot1d([x,I])
+
+        if self.xrd2 is not None:
+            self.oplot1D([x,I])
 
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
@@ -705,6 +737,7 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.larch = Interpreter()
 
     def _get1Dlims(self):
+
         xmin, xmax = self.panel.axes.get_xlim()
         xrange = xmax-xmin
         xmid   = (xmax+xmin)/2.0
@@ -714,6 +747,18 @@ class XRD1D_DisplayFrame(wx.Frame):
         drange = xrange
         if self.xrd is not None:
             dmin, dmax = self.xrd.data1D[0].min(), self.xrd.data1D[0].max()
+            if self.xunit == '2th':
+                dmin = calc_q_to_2th(dmin,self.xrd.wavelength*1e10)
+                dmax = calc_q_to_2th(dmax,self.xrd.wavelength*1e10)
+            elif self.xunit == 'd':
+                dmax = calc_q_to_d(dmin)
+                dmin = calc_q_to_d(dmax)
+
+                if dmax > 4:
+                    dmax = 4
+            xmid   = (dmax+dmin)/2.0
+            xrange = dmax-dmin
+
         return (xmid, xrange, dmin, dmax)
 
     def _set_xview(self, x1, x2, keep_zoom=False):
@@ -916,6 +961,8 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.xunit = unit        
         if self.xunit == '2th':
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+        elif self.xunit == 'd':
+            self.xlabel = 'd (A)'
         else:
             self.xunit = 'q'
             self.xlabel = 'q (1/A)'
