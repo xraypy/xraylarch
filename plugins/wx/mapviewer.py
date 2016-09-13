@@ -1364,6 +1364,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                     #calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
                                     AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
+            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
         except:
             return
 
