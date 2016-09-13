@@ -58,10 +58,6 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
-from larch_plugins.wx.xrddisplay_utils import (XRDCalibrationFrame,
-                                               ColorsFrame,
-                                               XrayLinesFrame,
-                                               XRDDisplayConfig)
 from larch_plugins.math import index_of
 from larch_plugins.xrd import integrate_xrd
 
@@ -448,7 +444,9 @@ class XRD1D_DisplayFrame(wx.Frame):
         if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
-        self.conf = XRDDisplayConfig()
+
+        self.marker_color = '#77BB99' 
+        self.spectra_color = '#0000AA'
 
         self.subframes = {}
         self.data = None
@@ -594,7 +592,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                 except:
                     pass
             self.cursor_markers[idx] = axes.axvline(x, y1, y2, linewidth=2.0,
-                                                    color=self.conf.marker_color)
+                                                    color=self.marker_color)
 
         if self.xmarker_left is not None:
             ix = self.xmarker_left
@@ -785,10 +783,6 @@ class XRD1D_DisplayFrame(wx.Frame):
                   "Quit program", self.onExit)
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Configure Colors",
-                 "Configure Colors", self.config_colors)
-        #MenuItem(self, omenu, "Configure X-ray Lines",
-        #         "Configure which X-ray Lines are shown", self.config_xraylines)
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
@@ -860,13 +854,6 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.Destroy()
         except:
             pass
-
-    def config_colors(self, event=None):
-        """show configuration frame"""
-        try:
-            self.win_config.Raise()
-        except:
-            self.win_config = ColorsFrame(parent=self)
 
     def onToggleHold(self, event=None):
         if event.IsChecked():
@@ -985,7 +972,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                   'xlabel': self.xlabel,
                   'ylabel': 'intensity (counts)',
                   'axes_style': 'bottom',
-                  'color': self.conf.spectra_color}
+                  'color': self.spectra_color}
         kwargs.update(kws)
 
         panel.plot(xrd_spectra[0], xrd_spectra[1], label='spectra',  **kwargs)
@@ -1098,13 +1085,6 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         if outfile is not None:
             self.xrd.save_xrdfile(outfile)
-
-    def onCalibrateEnergy(self, event=None, **kws):
-        try:
-            self.win_calib.Raise()
-        except:
-            self.win_calib = XRDCalibrationFrame(self, xrd=self.xrd,
-                                              larch=self.larch)
 
 # ## Not ready to incorporate peak fitting, yet...
 # ## mkak 2016.07.25
