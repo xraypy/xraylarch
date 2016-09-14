@@ -1221,22 +1221,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ## First, check to make sure there is XRD data
         ## either use FLAG or look for data structures.
+        flag1D,flag2D = self.owner.current_file.check_xrd()
         
-        ## Then, identify if there is (a) 2D data and/or (b) 1D data
-        ## if not 1D data, check for (c) calibration file
-        
-        ## check also for mask, background, and spline files
-        
-        ## if only 2D: use XRD2D_DisplayFrame()
-        ## if only 1D: use XRD1D_DisplayFrame() 
-        ##      --> need new method for calculating 1D of area
-        ## if both: use XRD_DisplayFrame() (which will include CAKE view)
-        
-        no_xrd = False
-        
-        if no_xrd:
+        if not flag1D and not flag2D:
+            print('No XRD data in map file: %s' % xrmfile.filename)
             return
 
+        ## Calculate area
         try:
             aname = self._getarea()
             xrmfile = self.owner.current_file
@@ -1245,15 +1236,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd  = None
         except:
             print('No map file and/or areas specified.')
-            return
-
-
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
-        flag1D,flag2D = self.owner.current_file.check_xrd()
-        
-        if not flag1D and not flag2D:
-            print('No XRD data in map file: %s' % xrmfile.filename)
             return
 
         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
@@ -1267,22 +1249,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.npixels = npix
         self.owner.message('Plotting XRD pattern for area \'%s\'...' % aname)
 
+        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+        ## AREA MASK : area.value
+
+        if flag2D:
+            self.onXRD2D()
+        if flag1D:
+            self.onXRD1D()
+
+                              
+    def onXRD2D(self, event=None, new=True):
+
         ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
         #self.owner.xrddisplay.plot2Dxrd(self._xrd)
         _larch = self.owner.larch
-
-        ## plot 1D, 2D, and cake
-        if flag1D and flag2D:
-            self.onXRD2D()
-            self.onXRD1D()
-        ## plot only 2D            
-        elif flag2D:
-            self.onXRD2D()
-        ## plot only 1D    
-        elif flag1D:
-            self.onXRD1D()
-                              
-    def onXRD2D(self, event=None, new=True):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -2025,9 +2005,14 @@ class MapViewerFrame(wx.Frame):
         Re-save hdf5 without 2D data
         mkak 2016.09.09
         '''
+        try:
+            print('Copy file: %s' % self.current_file.filename)
+        except:
+            print('No h5 file to copy.')
+            return
  
         ## Check to make sure 2D xrd data AND calibration file there.
- 
+         
         ## Choose XRD data calibration file (*.poni)
         wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message = 'Save As',
@@ -2037,14 +2022,22 @@ class MapViewerFrame(wx.Frame):
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
-            file_path = dlg.GetPath().replace('\\', '/')
+            path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
 
-        print('Not yet implemented. Sorry.')
-        #if read:
-        #    self.current_file.copy_hdf5(file_path)
-            
-        ## perhaps also re run mapfile reader to put this on the list on left panel?
+        if read:
+            if path.split('.')[-1] != 'h5':
+                path = '%s.h5' % path
+            try:
+                self.current_file.copy_hdf5(path)
+                print('seems to have worked. now open?') ## mkak 2016.09.14
+                ## This steps opens file in left panel.
+                parent, fname = os.path.split(path)
+                xrmfile = GSEXRM_MapFile(filename=str(path))
+                self.add_xrmfile(xrmfile)
+                print('opened.') ## mkak 2016.09.14
+            except:
+                print('Copying failed.')
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
