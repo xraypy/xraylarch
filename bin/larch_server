@@ -14,22 +14,24 @@ import os
 import sys
 import time
 import json
-from distutils.spawn import find_executable
 from subprocess import Popen
 from optparse import OptionParser
 from xmlrpclib import ServerProxy
+from larch.xmlrpc_server import (test_server, get_next_port,
+                                 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER)
 
 def start_server(port=4966, host='localhost',
                  local_echo=False, with_wx=False, quiet=False):
     "start server"
-    thispath, thisfile = os.path.split(os.path.abspath(__file__)) 
+    thispath, thisfile = os.path.split(os.path.abspath(__file__))
 
-    args = [find_executable('python'),
+    args = [sys.executable,
             os.path.join(thispath, 'larch'),
             '-r', '-x', '-p %d' % port]
-    if quiet:  
+    if quiet:
         args.append('-q')
-    return Popen(args)
+    proc = Popen(args)
+    return proc
 
 def get_server(port=4966, host='localhost'):
     "returns server at a port"
@@ -38,41 +40,25 @@ def get_server(port=4966, host='localhost'):
 def stop_server(port=4966, host='localhost'):
     "stop server"
     server = get_server(port=port, host=host)
-    server.larch("exit")
+    server.quit()
 
 
-def test_server(port=4966, host='localhost'):
-    "is a valid Larch server running on this port?"
-    server = get_server(port=port, host=host)
-    methods = []
-    try:
-        methods = server.system.listMethods()
-    except:
-        return False
-    if len(methods) < 5 or 'larch' not in methods:
-        return False
-    ret = ''
-    try:
-        server.larch('print(_sys.config.user_larchdir)')
-        ret = server.get_messages()
-    except:
-        return False
-    if len(ret) < 1:
-        return False
-    return True
-
-usage = "usage: %prog [options] [start|stop|restart|status]"
+usage = "usage: %prog [options] [start|stop|restart|next|status]"
 
 parser = OptionParser(usage=usage, prog="larch_server",
                       version="larch rpc server: %s" % __version__)
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for server")
+
+parser.add_option("-t", "--host", dest="host", default='localhost',
+                  metavar='HOST', help="host for server")
+
 parser.add_option("-q", "--quiet", action="store_true", dest="quiet", default=False,
                   help="suppress screen messages from this launcher script")
+
 parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
                   default=True, help="use wx graphics mode, default=True")
-
 
 (options, args) = parser.parse_args()
 
@@ -80,30 +66,47 @@ if len(args) == 0:
     args = ['status']
 
 command = args[0]
+host = options.host
 port = int(options.port)
 
+server_state = test_server(port=port, host=host)
+premsg = 'Larch server on host/port %s/%d:' % (host,port)
+
+def msg(txt):
+    if not options.quiet:
+        print('%s: %s' % (premsg, txt))
+
 if command == 'start':
-    if test_server(port=port):
-        if not options.quiet: print('Yes: Larch server on port %d running' % port)
+    if server_state == CONNECTED:
+        msg('already running')
+    elif server_state == NOT_IN_USE:
+        start_server(port=port, host=host, quiet=options.quiet,
+                     with_wx=(not options.nowx))
     else:
-        start_server(port=port, quiet=options.quiet, with_wx=(not options.nowx))
+        msg('port is in use, cannot start')
 
 elif command == 'stop':
-    #  if test_server(port=port):
-    stop_server(port=port)
-    #else:
-    #    if not options.quiet: print('No: Larch server on port %d not running' % port)
+    if server_state == CONNECTED:
+        stop_server(port=port, host=host)
+
+elif command == 'next':
+    port = get_next_port(port=port, host=host)
+    start_server(port=port, host=hosr)
 
 elif command == 'restart':
-    if test_server(port=port):
-        stop_server(port=port)
+    if server_state == CONNECTED:
+        stop_server(port=port, host=host)
+
     time.sleep(0.5)
-    start_server(port=port, quiet=options.quiet, with_wx=(not options.nowx))
+    start_server(port=port, host=host, quiet=options.quiet,
+                 with_wx=(not options.nowx))
 
 elif command == 'status':
-    if test_server(port=port):
-        if not options.quiet: print('Yes: Larch server on port %d running' % port)
+    if server_state == CONNECTED:
+        msg('running')
         sys.exit(0)
-    else:
-        if not options.quiet: print('No: Larch server on port %d not running' % port)
+    elif server_state == NOT_IN_USE:
+        msg('not running')
         sys.exit(1)
+    else:
+        msg('port is in use by non-larch server')
