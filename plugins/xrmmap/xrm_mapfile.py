@@ -617,27 +617,31 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
-    def copy_hdf5(self, newfile, verbose=False):
+    def copy_hdf5(self, newfile):
         """
         copy current GSEXRM HDF5 File without 2D XRD data
         
         this **must** be called for an existing, valid GSEXRM HDF5 File!!
         """
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
- 
-        if verbose:
-            print('The original file to be copied is: %s' % self.filename)
-            print('The copied file is named: %s' % newfile)        
+      
         newh5root = h5py.File(newfile, 'w')
-        
-        if 'xrd/data2D' in self.h5root['xrmmap']:
-            print '\n\nwill need to remove 2d data.\n\n'
-        
-        #newh5root.copy(self.h5root['xrmmap'],'xrmmap',shallow=True) ## ??
+
         self.h5root.copy('xrmmap', newh5root)
-         
-        if 'xrd/data2D' in newh5root['xrmmap']:
-            newh5root['xrmmap'].__delitem__('xrd/data2D')
+        #newh5root.copy(self.h5root['xrmmap'],'xrmmap',shallow=True) ## ??
+        
+        xrdgrp = newh5root['xrmmap/xrd']
+        if 'data2D' in xrdgrp:
+            print('data2D found.') ## mkak 2016.09.14
+            if 'data1D' not in xrdgrp:
+                print('no data1D found.') ## mkak 2016.09.14
+                xrdgrp.create_dataset('data1D', data=integrate_xrd(xrdgrp['data2D'], 
+                                                    unit='q', AI = xrdgrp, save=False),
+                                                    compression=COMPRESSION_LEVEL)
+            print('deleting data2D.') ## mkak 2016.09.14
+            xrdgrp.__delitem__('data2D')
+            newh5root.flush()
+        print('closing new h5 file.') ## mkak 2016.09.14
         newh5root.close()
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nEnd: %Y-%m-%d %H:%M:%S'))      
