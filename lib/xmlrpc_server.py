@@ -76,9 +76,9 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     return None
 
 class LarchServer(SimpleXMLRPCServer):
-    def __init__(self, host='127.0.0.1', port=4966, with_wx=False,
+    def __init__(self, host='localhost', port=4966, with_wx=False,
                  logRequests=False, allow_none=True,
-                 keepalive_time=3*24*3600, **kws):
+                 keepalive_time=3*24*3600):
         self.out_buffer = []
 
         self.larch = Interpreter(writer=self)
