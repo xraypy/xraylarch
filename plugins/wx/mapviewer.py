@@ -2014,9 +2014,14 @@ class MapViewerFrame(wx.Frame):
         Re-save hdf5 without 2D data
         mkak 2016.09.09
         '''
+        try:
+            self.current_file.filename
+        except:
+            print('No h5 file to copy.')
+            return
  
         ## Check to make sure 2D xrd data AND calibration file there.
- 
+         
         ## Choose XRD data calibration file (*.poni)
         wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message = 'Save As',
@@ -2026,14 +2031,61 @@ class MapViewerFrame(wx.Frame):
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
-            file_path = dlg.GetPath().replace('\\', '/')
+            path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
 
         print('Not yet implemented. Sorry.')
-        #if read:
-        #    self.current_file.copy_hdf5(file_path)
+        print('Trying to copy file: %s' % self.current_file.filename)
+#         with h5py.File(self.current_file.filename,'r') as hf:
+#             print('List of arrays in this file:\n',hf.keys())
+#             for i,n in enumerate(hf.keys()):
+#                 print(i,n)
+#                 for j,m in enumerate(hf[n].keys()):
+#                     print(i,j,m)
+#                     for k,p in enumerate(hf[n][m].keys()):
+#                         print(i,j,k,p)
+
+#             try:
+#                 hf['xrmmap/xrd/data2D']
+#                 flag_xrd2D = True
+#             except:
+#                 print('No 2D xrd data found in file.')
+#                 flag_xrd2D = False
+#                 return
+#             try:
+#                 hf['xrmmap/xrd/data1D']
+#                 flag_xrd1D = True
+#             except:
+#                 print('No 1D xrd data found in file.')
+#                 flag_xrd1D = False
+#                 try:
+#                     hf['xrmmap/xrd'].attrs['calfile']
+#                     print('Calibration data found: %s' % hf['xrmmap/xrd'].attrs['calfile'])
+#                     print('Calculating 1D from 2D and known calibration.')
+#                     flag_xrdcal = True
+#                 except:
+#                     print('No calibration data provided.')
+#                     print('CANNOT calculate 1D without this information.')
+#                     flag_xrdcal = False
+#                     return
             
-        ## perhaps also re run mapfile reader to put this on the list on left panel?
+            #print('2D XRD data was found: %s' % flag_xrd2D) 
+            #print('1D XRD data was found: %s' % flag_xrd1D)
+            #print('XRD calibration known: %s' % flag_xrdcal)
+
+        if read:
+            if path.split('.')[-1] != 'h5':
+                path = '%s.h5' % path
+            #try:
+            self.current_file.copy_hdf5(path)
+        
+                ## This steps opens file in left panel.
+            #    parent, fname = os.path.split(path)
+            #    xrmfile = GSEXRM_MapFile(filename=str(path))
+            #    self.add_xrmfile(xrmfile)
+            #except:
+            #    print('something did not work.')
+
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:

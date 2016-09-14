@@ -39,7 +39,6 @@ class GSEXRM_FileStatus:
     wrongfolder  = 'hdf5 exists, but does not match folder name'
     err_notfound = 'file not found'
     empty        = 'file is empty (read from folder)'
-    copy        = 'file is to be copied from existing map'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
 def getFileStatus(filename, root=None, folder=None):
@@ -521,8 +520,8 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=False, FLAGxrd=False, xchannels=5001, xwedge=1,
-                 copy=False):
+                 FLAGxrf=False, FLAGxrd=False, xchannels=5001, xwedge=1):
+
         self.filename         = filename
         self.folder           = folder
         self.root             = root
@@ -553,18 +552,13 @@ class GSEXRM_MapFile(object):
         
         # initialize from filename or folder
         if self.filename is not None:
+            
             self.status,self.root,self.version = getFileStatus(self.filename, root=root)
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
-                ftmp.close()
-                os.unlink(self.filename)
-                
-            if copy:
-                self.status = GSEXRM_FileStatus.copy
-                ftmp = open(self.filename, 'r')
                 ftmp.close()
                 os.unlink(self.filename)
 
@@ -623,28 +617,30 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
-    def copy_hdf5(self, newfile, root=None, check_status=True):
+    def copy_hdf5(self, newfile, verbose=False):
         """
         copy current GSEXRM HDF5 File without 2D XRD data
         
         this **must** be called for an existing, valid GSEXRM HDF5 File!!
         """
-        print('The original file to be copied is: %s' % self.filename)
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+ 
+        if verbose:
+            print('The original file to be copied is: %s' % self.filename)
+            print('The copied file is named: %s' % newfile)        
+        newh5root = h5py.File(newfile, 'w')
         
-        if root in ('', None):
-            root = DEFAULT_ROOTNAME
-        if check_status:
-            self.status, self.root, self.version = \
-                         getFileStatus(self.filename, root=root)
-            if self.status not in (GSEXRM_FileStatus.hasdata,
-                                   GSEXRM_FileStatus.created):
-                raise GSEXRM_Exception(
-                    "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
+        if 'xrd/data2D' in self.h5root['xrmmap']:
+            print '\n\nwill need to remove 2d data.\n\n'
+        
+        #newh5root.copy(self.h5root['xrmmap'],'xrmmap',shallow=True) ## ??
+        self.h5root.copy('xrmmap', newh5root)
+         
+        if 'xrd/data2D' in newh5root['xrmmap']:
+            newh5root['xrmmap'].__delitem__('xrd/data2D')
+        newh5root.close()
 
-        print('The copied file is named: %s' % newfile)
-
-        newmap = GSEXRM_MapFile(filename=str(newfile),copy=True)
-        all_ids = newmap.require_group(self.xrmmap.parent.name)
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nEnd: %Y-%m-%d %H:%M:%S'))      
 
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)
@@ -749,27 +745,27 @@ class GSEXRM_MapFile(object):
 
 
         if xrdcal:
-			try:
-				xrdgp.attrs['detector'] = ai.detector.name
-			except:
-				xrdgp.attrs['detector'] = ''
-			try:
-				xrdgp.attrs['spline']   = ai.detector.splineFile
-			except:
-				xrdgp.attrs['spline']   = ''
-			xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-			xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-			xrdgp.attrs['distance']   = ai._dist ## units: m
-			xrdgp.attrs['poni1']      = ai._poni1
-			xrdgp.attrs['poni2']      = ai._poni2
-			xrdgp.attrs['rot1']       = ai._rot1
-			xrdgp.attrs['rot2']       = ai._rot2
-			xrdgp.attrs['rot3']       = ai._rot3
-			xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-			## E = hf ; E = hc/lambda
-			hc = constants.value(u'Planck constant in eV s') * \
-				   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-			xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+            try:
+                xrdgp.attrs['detector'] = ai.detector.name
+            except:
+                xrdgp.attrs['detector'] = ''
+            try:
+                xrdgp.attrs['spline']   = ai.detector.splineFile
+            except:
+                xrdgp.attrs['spline']   = ''
+            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgp.attrs['distance']   = ai._dist ## units: m
+            xrdgp.attrs['poni1']      = ai._poni1
+            xrdgp.attrs['poni2']      = ai._poni2
+            xrdgp.attrs['rot1']       = ai._rot1
+            xrdgp.attrs['rot2']       = ai._rot2
+            xrdgp.attrs['rot3']       = ai._rot3
+            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+            ## E = hf ; E = hc/lambda
+            hc = constants.value(u'Planck constant in eV s') * \
+                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
         self.h5root.flush()
 
