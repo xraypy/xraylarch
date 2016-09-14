@@ -20,18 +20,13 @@ from xmlrpclib import ServerProxy
 from larch.xmlrpc_server import (test_server, get_next_port,
                                  NOT_IN_USE, CONNECTED, NOT_LARCHSERVER)
 
-def start_server(port=4966, host='localhost',
-                 local_echo=False, with_wx=False, quiet=False):
+def start_server(port=4966):
     "start server"
     thispath, thisfile = os.path.split(os.path.abspath(__file__))
-
     args = [sys.executable,
             os.path.join(thispath, 'larch'),
             '-r', '-x', '-p %d' % port]
-    if quiet:
-        args.append('-q')
-    proc = Popen(args)
-    return proc
+    return Popen(args)
 
 def get_server(port=4966, host='localhost'):
     "returns server at a port"
@@ -40,8 +35,7 @@ def get_server(port=4966, host='localhost'):
 def stop_server(port=4966, host='localhost'):
     "stop server"
     server = get_server(port=port, host=host)
-    server.quit()
-
+    server.shutdown()
 
 usage = "usage: %prog [options] [start|stop|restart|next|status]"
 
@@ -50,9 +44,6 @@ parser = OptionParser(usage=usage, prog="larch_server",
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for server")
-
-parser.add_option("-t", "--host", dest="host", default='localhost',
-                  metavar='HOST', help="host for server")
 
 parser.add_option("-q", "--quiet", action="store_true", dest="quiet", default=False,
                   help="suppress screen messages from this launcher script")
@@ -66,11 +57,11 @@ if len(args) == 0:
     args = ['status']
 
 command = args[0]
-host = options.host
+host = 'localhost'
 port = int(options.port)
 
-server_state = test_server(port=port, host=host)
-premsg = 'Larch server on host/port %s/%d:' % (host,port)
+server_state = test_server(port=port)
+premsg = 'Larch server on port %d:' % (port)
 
 def msg(txt):
     if not options.quiet:
@@ -80,26 +71,24 @@ if command == 'start':
     if server_state == CONNECTED:
         msg('already running')
     elif server_state == NOT_IN_USE:
-        start_server(port=port, host=host, quiet=options.quiet,
-                     with_wx=(not options.nowx))
+        start_server(port=port)
     else:
         msg('port is in use, cannot start')
 
 elif command == 'stop':
     if server_state == CONNECTED:
-        stop_server(port=port, host=host)
+        stop_server(port=port)
 
 elif command == 'next':
-    port = get_next_port(port=port, host=host)
-    start_server(port=port, host=hosr)
+    port = get_next_port(port=port)
+    start_server(port=port)
 
 elif command == 'restart':
     if server_state == CONNECTED:
-        stop_server(port=port, host=host)
+        stop_server(port=port)
 
     time.sleep(0.5)
-    start_server(port=port, host=host, quiet=options.quiet,
-                 with_wx=(not options.nowx))
+    start_server(port=port)
 
 elif command == 'status':
     if server_state == CONNECTED:

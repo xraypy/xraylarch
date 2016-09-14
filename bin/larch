@@ -40,9 +40,6 @@ parser.add_option("-e", "--exec", dest="noshell", action="store_true",
 parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
                   default=False, help="run in remote server mode")
 
-parser.add_option("-s", "--host", dest="host", default='localhost',
-                  metavar='HOST', help="host for server")
-
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for remote server")
 
@@ -72,7 +69,7 @@ if not options.nowx:
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
-    server = LarchServer(host=options.host, port=int(options.port))
+    server = LarchServer(host='localhost', port=int(options.port))
     server.run()
 
 else:
