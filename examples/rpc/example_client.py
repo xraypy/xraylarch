@@ -7,8 +7,6 @@ from larch.utils.jsonutils import decode4js
 s = xmlrpclib.ServerProxy('http://127.0.0.1:4966')
 
 print 'Avaialable Methods from XML-RPC server: ', s.system.listMethods()
-print s.system.methodHelp('dir')
-
 s.larch('m = 222.3')
 
 s.larch('g = group(x=linspace(0, 10, 11))')
