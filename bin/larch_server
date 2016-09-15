@@ -8,7 +8,7 @@ with options
   -p PORT, --port=PORT  port number for remote server [4966]
 """
 from __future__ import print_function
-__version__ = 'version 1'
+__version__ = 'version 2.0'
 
 import os
 import sys
@@ -37,19 +37,13 @@ def stop_server(port=4966, host='localhost'):
     server = get_server(port=port, host=host)
     server.shutdown()
 
-usage = "usage: %prog [options] [start|stop|restart|next|status]"
+usage = "usage: %prog [options] [start|stop|restart|next|status|report]"
 
 parser = OptionParser(usage=usage, prog="larch_server",
                       version="larch rpc server: %s" % __version__)
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for server")
-
-parser.add_option("-q", "--quiet", action="store_true", dest="quiet", default=False,
-                  help="suppress screen messages from this launcher script")
-
-parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
-                  default=True, help="use wx graphics mode, default=True")
 
 (options, args) = parser.parse_args()
 
@@ -61,11 +55,10 @@ host = 'localhost'
 port = int(options.port)
 
 server_state = test_server(port=port)
-premsg = 'Larch server on port %d:' % (port)
+premsg = 'larch server on port %d:' % (port)
 
 def msg(txt):
-    if not options.quiet:
-        print('%s: %s' % (premsg, txt))
+    print('%s %s' % (premsg, txt))
 
 if command == 'start':
     if server_state == CONNECTED:
@@ -99,3 +92,43 @@ elif command == 'status':
         sys.exit(1)
     else:
         msg('port is in use by non-larch server')
+elif command == 'report':
+    print("larch server report:")
+    if server_state == CONNECTED:
+        s = get_server(port=port)
+        info = s.get_client_info()
+        last_event = info.get('last_event', 0)
+        last_used = time.ctime(last_event)
+        serverid  = info.get('pid_server', 0)
+        procid    = info.get('pid', 0)
+        appname   = info.get('app',     'unknown')
+        machname  = info.get('machine', 'unknown')
+        username  = info.get('user',    'unknown')
+        keepalive_time = info.get('keepalive_time', -1)
+        keepalive_time += (last_event - time.time())
+        keepalive_units = 'seconds'
+        if keepalive_time > 300:
+            keepalive_time = keepalive_time/60.0
+            keepalive_units = 'minutes'
+        if keepalive_time > 300:
+            keepalive_time = keepalive_time/60.0
+            keepalive_units = 'hours'
+
+
+        print(" Client Machine Name = %s" % machname)
+        print(" Client Process ID   = %s" % str(procid))
+        print(" Client Application  = %s" % appname)
+        print(" Client User Name    = %s" % username)
+        print(" Client Last Used    = %s" % last_used)
+        print(" Server Process ID   = %s" % serverid)
+        print(" Server will expire in  %i %s" % (keepalive_time, keepalive_units))
+
+    elif server_state == NOT_IN_USE:
+        msg('not running')
+        sys.exit(1)
+    else:
+        msg('port is in use by non-larch server')
+
+
+else:
+    print("larch_server: unknown command '%s'. Try -h" % command)

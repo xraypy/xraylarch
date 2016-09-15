@@ -88,10 +88,11 @@ class LarchServer(SimpleXMLRPCServer):
         self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
         self.larch('_sys.client.last_event = %i' % time())
-        self.larch("_sys.client.app = ''")
-        self.larch("_sys.client.pid = ''")
-        self.larch("_sys.client.user = ''")
-        self.larch("_sys.client.machine = ''")
+        self.larch("_sys.client.pid_server = %i" % os.getpid())
+        self.larch("_sys.client.app = 'unknown'")
+        self.larch("_sys.client.pid = 0")
+        self.larch("_sys.client.user = 'unknown'")
+        self.larch("_sys.client.machine = 'unknown'")
         self.client = self.larch.symtable._sys.client
 
         SimpleXMLRPCServer.__init__(self, (host, port),
