@@ -623,22 +623,19 @@ class GSEXRM_MapFile(object):
         
         this **must** be called for an existing, valid GSEXRM HDF5 File!!
         """
-        print('shape of data2D: ',xrdgrp['data2D'].shape()) ## mkak 2016.09.15
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
       
         newh5root = h5py.File(newfile, 'w')
 
         self.h5root.copy('xrmmap', newh5root)
-        #newh5root.copy(self.h5root['xrmmap'],'xrmmap',shallow=True) ## ??
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nFinished copying: %Y-%m-%d %H:%M:%S'))
+
         xrdgrp = newh5root['xrmmap/xrd']
         if 'data2D' in xrdgrp:
             if 'data1D' not in xrdgrp:
-                print('shape of data2D: ',xrdgrp['data2D'].shape()) ## mkak 2016.09.15
+                print('shape of data2D: ',xrdgrp['data2D'].shape) ## mkak 2016.09.15
 #                xrdgrp.create_dataset('data1D', data=integrate_xrd(xrdgrp['data2D'], 
 #                                                    unit='q', AI = xrdgrp, save=False),
 #                                                    compression=COMPRESSION_LEVEL)
-            print('deleting data2D.') ## mkak 2016.09.14
             xrdgrp.__delitem__('data2D')
             newh5root.flush()
         newh5root.close()
