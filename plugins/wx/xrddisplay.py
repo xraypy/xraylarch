@@ -149,9 +149,6 @@ class XRD2D_DisplayFrame(ImageFrame):
             self.set_contrast_levels()
         self.ai = ai
         
-        ## Should set the size of x and y data, but not working?
-        ## Where is this happening?
-        ## mkak 2016.09.16
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
 
