@@ -940,10 +940,10 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.xlabel = 'q (1/A)'
 
         if init:
-            self.xview_range = (min(self.xrd.data1D[0,]), max(self.xrd.data1D[0,]))
+            self.xview_range = (min(self.xrd.data1D[0]), max(self.xrd.data1D[0]))
         else:
-            self.xview_range = self.panel.axes.get_axes().get_xlim()
-
+            self.xview_range = self.panel.axes.get_xlim()
+            #self.xview_range = self.panel.axes.get_axes().get_xlim()
 
         atitles = []
         if self.xrd is not None:
