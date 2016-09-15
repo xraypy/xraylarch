@@ -25,7 +25,7 @@ def start_server(port=4966):
     thispath, thisfile = os.path.split(os.path.abspath(__file__))
     args = [sys.executable,
             os.path.join(thispath, 'larch'),
-            '-r', '-x', '-p %d' % port]
+            '-r', '-p %d' % port]
     return Popen(args)
 
 def get_server(port=4966, host='localhost'):
