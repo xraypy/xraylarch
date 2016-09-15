@@ -372,7 +372,15 @@ class XRD2D_DisplayFrame(ImageFrame):
                 twth = np.degrees(twth)                                 ## units degrees
                 eta  = np.arctan2(y_m,x_m)                              ## units radians
                 eta  = np.degrees(eta)                                  ## units degrees
-
+# mkak REMOVE
+#                print 'xcenter',xcenter
+#                print 'ycenter',ycenter
+#                print 'dist',ai._dist
+#                print 'pixel',ai.detector.pixel1
+#                print 'poni1',ai._poni1
+#                print 'poni2',ai._poni2
+#                print 'ix,iy,x_pix,y_pix,x_m,y_m,twth,eta'
+#                print ix,iy,x_pix,y_pix,x_m,y_m,twth,eta
                 msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s'  % (ix, 
                                       iy, twth, eta, dval)
         self.panel.write_message(msg, panel=0)
