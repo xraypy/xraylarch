@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonw
+#!/usr/bin/env python
 """Larch server -- this will make sure a larch server is
 running on the desired port.
 
@@ -99,8 +99,8 @@ elif command == 'report':
         info = s.get_client_info()
         last_event = info.get('last_event', 0)
         last_used = time.ctime(last_event)
-        serverid  = info.get('pid_server', 0)
-        procid    = info.get('pid', 0)
+        serverid  = int(info.get('pid_server', 0))
+        procid    = int(info.get('pid', 0))
         appname   = info.get('app',     'unknown')
         machname  = info.get('machine', 'unknown')
         username  = info.get('user',    'unknown')
