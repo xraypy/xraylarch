@@ -340,9 +340,6 @@ class XRD2D_DisplayFrame(ImageFrame):
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
 
-        print 'checking'
-        print self.panel.xdata
-
         self.this_point = None
         msg = ''
         if (ix >= 0 and ix < conf.data.shape[1] and
