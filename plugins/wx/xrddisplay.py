@@ -62,6 +62,9 @@ from wxutils import (SimpleText, EditableListBox, Font,
 from larch_plugins.math import index_of
 from larch_plugins.xrd import integrate_xrd,calc_q_to_d,calc_q_to_2th
 
+import pyFAI
+from pyFAI.calibration import Calibrant
+
 FILE_ALREADY_READ = """    The File
        '%s'
     has already been read.
@@ -108,14 +111,13 @@ class XRD2D_DisplayFrame(ImageFrame):
 
     def __init__(self, parent=None, size=None, mode='intensity',
                  move_callback=None, save_callback=None,
-                 show_xsections=False, cursor_labels=None, calibration=None,
+                 show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
         # instdb=None,  inst_name=None,
 
         self.det = None
         self.xrmfile = None
-        self.calibration = calibration
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
@@ -136,13 +138,8 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-        if calibration is not None:
-            self.calibration = calibration
-        else:
-            self.calibration = None
-        
-
-    def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0, **kws):
+    def display(self, map, det=None, xrmfile=None, calibration=None,
+                xoff=0, yoff=0, **kws):
         self.xoff = xoff
         self.yoff = yoff
         self.det = det
@@ -158,6 +155,7 @@ class XRD2D_DisplayFrame(ImageFrame):
             self.panel.ydata = kws['y']
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
+        self.calibration = calibration
 
 
     def prof_motion(self, event=None):
@@ -407,17 +405,6 @@ class XRD2D_DisplayFrame(ImageFrame):
         lsizer = sizer
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
         
-
-
-#        self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
-#                                     wx.DefaultPosition, wx.DefaultSize,
-#                                     ('Zoom to Rectangle','blank'),
-#                                     1, wx.RA_SPECIFY_COLS)
-#        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-#        sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-
-
-                               
 class XRD1D_DisplayFrame(wx.Frame):
     _about = """XRD Viewer
   Margaret Koker <koker @ cars.uchicago.edu>
@@ -1148,7 +1135,7 @@ class XRD1D_DisplayFrame(wx.Frame):
 
     def onAbout(self, event=None):
         dlg = wx.MessageDialog(self,
-                               """XRD Spectral Viewer
+                               """XRD Pattern Viewer
                                Margaret Koker <koker @ cars.uchicago.edu>
                                """,
                                "About XRD Viewer",

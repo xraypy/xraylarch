@@ -1257,6 +1257,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         area  = xrmfile.xrmmap['areas/%s' % aname]
         label = area.attrs.get('description', aname)
         self._xrd  = None
+        
+        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
 
         xrmfile = self.owner.current_file
         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
@@ -1702,12 +1704,17 @@ class MapViewerFrame(wx.Frame):
         if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
+        try:
+            calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
+        except:
+            calfile = None
 
         while not displayed:
             try:
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile)
+                            subtitles=subtitles, det=det, xrmfile=xrmfile,
+                            calibration=calfile)
                 #for col, wid in imd.wid_subtitles.items():
                 #    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
                 imd.lasso_callback = lasso_cb
@@ -1720,7 +1727,8 @@ class MapViewerFrame(wx.Frame):
                                     save_callback=self.onSavePixel)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile)
+                            subtitles=subtitles, det=det, xrmfile=xrmfile,
+                            calibration=calfile)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
