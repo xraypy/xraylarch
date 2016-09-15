@@ -60,7 +60,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.math import index_of
-from larch_plugins.xrd import integrate_xrd,calc_q_to_d,calc_q_to_2th
+from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -706,31 +706,38 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.larch = Interpreter()
 
     def _get1Dlims(self):
-
         xmin, xmax = self.panel.axes.get_xlim()
         xrange = xmax-xmin
         xmid   = (xmax+xmin)/2.0
         if self.x_for_zoom is not None:
             xmid = self.x_for_zoom
-        dmin, dmax = xmin, xmax
-        drange = xrange
+        return (xmid, xrange, xmin, xmax)
+        
+    def abs_limits(self):
         if self.xrd is not None:
-            dmin, dmax = self.xrd.data1D[0].min(), self.xrd.data1D[0].max()
+            xmin, xmax = self.xrd.data1D[0].min(), self.xrd.data1D[0].max()
             if self.xunit == '2th':
-                dmin = calc_q_to_2th(dmin,self.xrd.wavelength*1e10)
-                dmax = calc_q_to_2th(dmax,self.xrd.wavelength*1e10)
+                xmin = calc_q_to_2th(xmin,self.xrd.wavelength*1e10)
+                xmax = calc_q_to_2th(xmax,self.xrd.wavelength*1e10)
             elif self.xunit == 'd':
-                dmax = calc_q_to_d(dmin)
-                dmin = calc_q_to_d(dmax)
+                xmax = calc_q_to_d(xmin)
+                xmin = calc_q_to_d(xmax)
+                if xmax > 5:
+                    xmax = 5.0    
+        return xmin,xmax
+    
+    def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
 
-                if dmax > 4:
-                    dmax = 4
-            xmid   = (dmax+dmin)/2.0
-            xrange = dmax-dmin
+        xmin,xmax = self.abs_limits()
+        xrange = x2-x1
+        x1 = max(xmin,x1)
+        x2 = min(xmax,x2)
 
-        return (xmid, xrange, dmin, dmax)
-
-    def _set_xview(self, x1, x2, keep_zoom=False):
+        if pan:
+            if x2 == xmax:
+                x1 = x2-xrange
+            elif x1 == xmin:
+                x2 = x1+xrange
         if not keep_zoom:
             self.x_for_zoom = (x1+x2)/2.0
         self.panel.axes.set_xlim((x1, x2))
@@ -739,28 +746,28 @@ class XRD1D_DisplayFrame(wx.Frame):
 
     def onPanLo(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
-        x1 = max(xmin, xmid-0.9*xrange)
-        x2 = min(xmax, x1 + xrange)
-        self._set_xview(x1, x2)
+        x1 = xmin-0.9*xrange
+        x2 = x1 + xrange
+        self._set_xview(x1, x2, pan=True)
 
     def onPanHi(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
-        x2 = min(xmax, xmid+0.9*xrange)
-        x1 = max(xmin, x2-xrange)
-        self._set_xview(x1, x2)
-
+        x2 = xmax+0.9*xrange
+        x1 = x2 - xrange
+        self._set_xview(x1, x2, pan=True)
+        
     def onZoomIn(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
         x1 = max(xmin, xmid-xrange/3.0)
         x2 = min(xmax, xmid+xrange/3.0)
         self._set_xview(x1, x2, keep_zoom=True)
-
+                
     def onZoomOut(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
-        x1 = max(xmin, xmid-1.25*xrange)
-        x2 = min(xmax, xmid+1.25*xrange)
+        x1 = min(xmin, xmid-1.25*xrange)
+        x2 = max(xmax, xmid+1.25*xrange)
         self._set_xview(x1, x2)
-
+        
     def unzoom_all(self, event=None):
 
         xmid, xrange, xmin, xmax = self._get1Dlims()
