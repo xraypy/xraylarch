@@ -2030,12 +2030,10 @@ class MapViewerFrame(wx.Frame):
                 path = '%s.h5' % path
             try:
                 self.current_file.copy_hdf5(path)
-                print('seems to have worked. now open?') ## mkak 2016.09.14
+                
                 ## This steps opens file in left panel.
-                parent, fname = os.path.split(path)
                 xrmfile = GSEXRM_MapFile(filename=str(path))
                 self.add_xrmfile(xrmfile)
-                print('opened.') ## mkak 2016.09.14
             except:
                 print('Copying failed.')
 
