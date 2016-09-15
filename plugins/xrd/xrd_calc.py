@@ -150,13 +150,20 @@ def calculate_ai(AI):
                                    
 
 def calc_q_to_d(q):
-    return (2*math.pi)/q
+    return (2.*math.pi)/q
 
 def calc_q_to_2th(q,wavelength,units='degrees'):
-    twth = 2*np.arcsin((q*wavelength)/(4*math.pi))
+    twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
     if units == 'radians':
         return twth
     else:
         return np.degrees(twth)
-    
+
+def calc_d_to_q(d):
+    return (2.*math.pi)/d
+
+def calc_2th_to_q(twth,wavelength,units='degrees'):
+    if units == 'degrees':
+        twth = np.radians(twth)
+    return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
     

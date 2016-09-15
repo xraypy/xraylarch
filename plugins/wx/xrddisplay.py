@@ -60,7 +60,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.math import index_of
-from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th
+from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th,calc_d_to_q,calc_2th_to_q
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -470,12 +470,20 @@ class XRD1D_DisplayFrame(wx.Frame):
                 pass
         ix = x
         if self.xrd is not None:
-            ix = index_of(self.xrd.data1D[0], x)
+            if self.xunit == '2th':
+                q = calc_2th_to_q(x,self.xrd.wavelength*1e10)
+            elif self.xunit == 'd':
+                q = calc_d_to_q(x)
+            else:
+                q = x
+            ix = index_of(self.xrd.data1D[0], q)
 
         if side == 'right':
             self.xmarker_right = ix
         elif side == 'left':
             self.xmarker_left = ix
+        self.eventx = x
+        self.eventy = y
 
         if self.xmarker_left is not None and self.xmarker_right is not None:
             ix1, ix2 = self.xmarker_left, self.xmarker_right
@@ -528,7 +536,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.plot1Dxrd(self.xrd)
 
     def update_status(self):
-        fmt = "{:s}:{:}, E={:.3f}, Cts={:,.0f}".format
+        fmt = "{:s}: {:s}={:.3f} {:s}, Cts={:,.0f}".format
         if (self.xmarker_left is None and self.xmarker_right is None):
             return
 
@@ -536,12 +544,12 @@ class XRD1D_DisplayFrame(wx.Frame):
         axes= self.panel.axes
         def draw_ymarker_range(idx, x, y):
             ymin, ymax = self.panel.axes.get_ylim()
-            y1 = (y-ymin)/(ymax-ymin+0.0002)
-            if y < 1.0: y = 1.0
-            if  self.ylog_scale:
-                y1 = (log(y)-log(ymin))/(log(ymax)-log(ymin)+2.e-9)
-                if y1 < 0.0: y1 = 0.0
-            y2 = min(y1+0.25, y1*0.1 + 0.9)
+            y1 = min(1.0,ymin)
+            if self.ylog_scale:
+                y1 = log(y1)
+                y2 = (log(y)-log(ymin))/(log(ymax)-log(ymin)+2.e-9)
+            else:
+                y2 = (y-ymin)/(ymax-ymin+0.0002)
             if self.cursor_markers[idx] is not None:
                 try:
                     self.cursor_markers[idx].remove()
@@ -550,19 +558,43 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.cursor_markers[idx] = axes.axvline(x, y1, y2, linewidth=2.0,
                                                     color=self.marker_color)
 
+        def correct_units(ix):
+            
+            if self.xunit == '2th':
+                 xlbl = self.xunit
+                 xunt = 'deg'
+                 x = calc_q_to_2th(self.xdata[ix],self.xrd.wavelength*1e10)
+            elif self.xunit == 'd':
+                 xlbl = self.xunit
+                 xunt = 'A'
+                 x = calc_q_to_d(self.xdata[ix])
+            else:
+                 xlbl = 'q'
+                 xunt = '1/A'
+                 x = self.xdata[ix]
+            y = self.ydata[ix]
+                 
+            return x,y,xlbl,xunt
+
         if self.xmarker_left is not None:
+
             ix = self.xmarker_left
-            x, y = self.xdata[ix],  self.ydata[ix]
+            x,y,xlbl,xunt = correct_units(ix)
+
             draw_ymarker_range(0, x, y)
-            self.write_message(fmt("L", ix, x, y), panel=1)
+            self.write_message(fmt("L", xlbl, x, xunt, y), panel=1)
+
         if self.xmarker_right is not None:
             ix = self.xmarker_right
-            x, y = self.xdata[ix],  self.ydata[ix]
+            x,y,xlbl,xunt = correct_units(ix)
+
             draw_ymarker_range(1, x, y)
-            self.write_message(fmt("R", ix, x, y), panel=2)
+            self.write_message(fmt("R", xlbl, x, xunt, y), panel=2)
 
         if self.xrd is None:
             return
+
+
 
     def createPlotPanel(self):
         """xrd plot window"""
