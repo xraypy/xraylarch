@@ -32,8 +32,6 @@ requirements:
     - wxpython
     - wxmplot
     - wxutils
-    - fabio
-    - pyFAI
 
 test:
   imports:

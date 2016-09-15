@@ -23,8 +23,12 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
 from larch_plugins.xrd import XRD
 from larch_plugins.xrd import integrate_xrd
 
-import pyFAI
-from pyFAI.calibration import Calibrant
+HAS_pyFAI = False
+try:
+    import pyFAI
+    HAS_pyFAI = True
+except ImportError:
+    pass
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
@@ -723,15 +727,16 @@ class GSEXRM_MapFile(object):
             self.xrmmap.create_group('xrd')
         xrdgp = self.xrmmap['xrd']
 
-        try:
-            ai = pyFAI.load(self.calibration)
-            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-            xrdcal = True
-        except:
-            xrdcal = False
-            raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                           self.calibration)
-            return
+        xrdgp.attrs['calfile'] = '%s' % (self.calibration)
+        xrdcal = False
+        if HAS_pyFAI:
+            try:
+                ai = pyFAI.load(self.calibration)
+                xrdcal = True
+            except:
+                raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
+                                               self.calibration)
+                return
 
         try:
             xrdgp.attrs['maskfile'] = str(self.xrdmask)
@@ -1393,7 +1398,9 @@ class GSEXRM_MapFile(object):
         try:
             calibration = self.xrmmap['xrd'].attrs['calfile']
             if verbose:
-                print(pyFAI.load(calibration))
+                print('Calibration file: %s' % calibration)
+                if HAS_pyFAI:
+                    print(pyFAI.load(calibration))
         except:
             return None
         return calibration

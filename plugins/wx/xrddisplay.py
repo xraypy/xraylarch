@@ -62,9 +62,6 @@ from wxutils import (SimpleText, EditableListBox, Font,
 from larch_plugins.math import index_of
 from larch_plugins.xrd import integrate_xrd,calc_q_to_d,calc_q_to_2th
 
-import pyFAI
-#from pyFAI.calibration import Calibrant
-
 FILE_ALREADY_READ = """    The File
        '%s'
     has already been read.
