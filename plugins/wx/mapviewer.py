@@ -80,7 +80,7 @@ from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
                                   GSEXRM_Exception, GSEXRM_NotOwner)
 
-from larch_plugins.xrd import integrate_xrd
+from larch_plugins.xrd import integrate_xrd,calculate_ai
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -1212,7 +1212,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         flag1D,flag2D = self.owner.current_file.check_xrd()
         
         if not flag1D and not flag2D:
-            print('No XRD data in map file: %s' % xrmfile.filename)
+            print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
         ## Calculate area
@@ -1706,15 +1706,15 @@ class MapViewerFrame(wx.Frame):
                 x = x[1:-1]
         try:
             calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
+            AI = calculate_ai(self.current_file.xrmmap['xrd'])
         except:
-            calfile = None
+            AI = None
 
         while not displayed:
             try:
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile,
-                            calibration=calfile)
+                            subtitles=subtitles, det=det, xrmfile=xrmfile, ai=AI)
                 #for col, wid in imd.wid_subtitles.items():
                 #    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
                 imd.lasso_callback = lasso_cb
@@ -1727,8 +1727,7 @@ class MapViewerFrame(wx.Frame):
                                     save_callback=self.onSavePixel)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile,
-                            calibration=calfile)
+                            subtitles=subtitles, det=det, xrmfile=xrmfile, ai=AI)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False

@@ -63,7 +63,7 @@ from larch_plugins.math import index_of
 from larch_plugins.xrd import integrate_xrd,calc_q_to_d,calc_q_to_2th
 
 import pyFAI
-from pyFAI.calibration import Calibrant
+#from pyFAI.calibration import Calibrant
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -138,8 +138,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, det=None, xrmfile=None, calibration=None,
-                xoff=0, yoff=0, **kws):
+    def display(self, map, det=None, xrmfile=None, ai=None, xoff=0, yoff=0, **kws):
         self.xoff = xoff
         self.yoff = yoff
         self.det = det
@@ -155,7 +154,7 @@ class XRD2D_DisplayFrame(ImageFrame):
             self.panel.ydata = kws['y']
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
-        self.calibration = calibration
+        self.ai = ai
 
 
     def prof_motion(self, event=None):
@@ -245,12 +244,6 @@ class XRD2D_DisplayFrame(ImageFrame):
                 iy = int(y0 + (ix-int(x0))*(y1-y0)/(x1-x0))
                 outdat.append((ix, iy))
         x, y, z = [], [], []
-        print 'x0',x0
-        print 'x1',x1
-        print 'ix',ix
-        print 'y0',y0
-        print 'y1',y1
-        print 'iy',iy
 
         for ix, iy in outdat:
             x.append(ix)
@@ -313,7 +306,7 @@ class XRD2D_DisplayFrame(ImageFrame):
             return
 
         
-        if self.calibration is None:
+        if self.ai is None:
             _point = 0, 0, 0
             for ix, iy in self.prof_dat[1]:
                 if (int(x) == ix and not self.prof_dat[0] or
@@ -322,7 +315,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                                   self.panel.conf.data[iy, ix])
                 msg = "Pixel [%i, %i], Intensity= %g" % _point
         else:
-            ai = pyFAI.load(self.calibration)
+            ai = self.ai
             xcenter = ai._poni2/ai.detector.pixel2        ## units pixels
             ycenter = ai._poni1/ai.detector.pixel1        ## units pixels
             _point = 0, 0, 0, 0, 0
@@ -376,10 +369,10 @@ class XRD2D_DisplayFrame(ImageFrame):
             if pan.xdata is not None and pan.ydata is not None:
                 self.this_point = (ix, iy)
 
-            if self.calibration is None:
+            if self.ai is None:
                 msg = "Pixel [%i, %i], Intensity=%s " % (ix, iy, dval)
             else:
-                ai = pyFAI.load(self.calibration)
+                ai = self.ai
                 xcenter = ai._poni2/ai.detector.pixel2        ## units pixels
                 ycenter = ai._poni1/ai.detector.pixel1        ## units pixels
                 x_pix = ix - xcenter                          ## units pixels
