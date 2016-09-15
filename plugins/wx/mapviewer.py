@@ -82,18 +82,6 @@ from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
 
 from larch_plugins.xrd import integrate_xrd
 
-# import traceback
-# import warnings
-# import sys
-# 
-# def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
-#     traceback.print_stack()
-#     log = file if hasattr(file,'write') else sys.stderr
-#     log.write(warnings.formatwarning(message, category, filename, lineno, line))
-# 
-# warnings.showwarning = warn_with_traceback
-
-
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
