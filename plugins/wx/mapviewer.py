@@ -82,7 +82,6 @@ from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
 
 from larch_plugins.xrd import integrate_xrd
 
-
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
