@@ -116,7 +116,6 @@ class XRD2D_DisplayFrame(ImageFrame):
 
         # instdb=None,  inst_name=None,
 
-        self.det = None
         self.xrmfile = None
         self.map = None
         self.move_callback = move_callback
@@ -138,24 +137,23 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, det=None, xrmfile=None, ai=None, xoff=0, yoff=0, **kws):
-        self.xoff = xoff
-        self.yoff = yoff
-        self.det = det
+    def display(self, map, xrmfile=None, ai=None, **kws):
         self.xrmfile = xrmfile
         self.map = map
         self.title = ''
         if 'title' in kws:
             self.title = kws['title']
         ImageFrame.display(self, map, **kws)
-        if 'x' in kws:
-            self.panel.xdata = kws['x']
-        if 'y' in kws:
-            self.panel.ydata = kws['y']
+
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
         self.ai = ai
-
+        
+        ## Should set the size of x and y data, but not working?
+        ## Where is this happening?
+        ## mkak 2016.09.16
+        self.panel.xdata = np.arange(map.shape[0])
+        self.panel.ydata = np.arange(map.shape[0])
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -330,10 +328,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                     twth = np.degrees(twth)                                 ## units degrees
                     eta  = np.arctan2(y_m,x_m)                              ## units radians
                     eta  = np.degrees(eta)                                  ## units degrees
-                    _point = (ix, iy,
-                                  twth,
-                                  eta,
-                                  self.panel.conf.data[iy, ix])
+                    _point = (ix, iy, twth, eta, self.panel.conf.data[iy, ix])
             msg = 'Pixel [%i, %i], 2TH=%.2f, ETA=%.1f, Intensity= %g' % _point
         write(msg,  panel=0)
 
@@ -347,6 +342,9 @@ class XRD2D_DisplayFrame(ImageFrame):
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
+
+        print 'checking'
+        print self.panel.xdata
 
         self.this_point = None
         msg = ''

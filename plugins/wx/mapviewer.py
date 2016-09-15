@@ -1281,9 +1281,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         _larch = self.owner.larch
 
         map = self._xrd.data2D
-        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+        info  = 'Size: %s; Intensity: [%g, %g]' %(map.shape,map.min(), map.max())
         title = '%s: %s' % (fname, aname)
-        subtitles = None
 
         counter = 1
         while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
@@ -1295,23 +1294,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
        
         xrdgp = self.owner.current_file.xrmmap['xrd']
 
-        try:
-            x = xrmfile.get_pos(0, mean=True)
-        except:
-            x = None
-        try:
-            y = xrmfile.get_pos(1, mean=True)
-        except:
-            y = None
-
         fname = xrmfile.filename
 
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_xrd_display(title, det=None)
 
-        self.owner.display_xrd(map, title=title, subtitles=subtitles,
-                               info=info, x=x, y=y,
-                               det=None, xrmfile=xrmfile)
+        self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
 
     def onXRD1D(self, event=None, as_2=False, unit='q'):
 
@@ -1696,14 +1684,11 @@ class MapViewerFrame(wx.Frame):
 
         self.im_displays.append(imframe)
 
-    def display_xrd(self, map, title='', info='', x=None, y=None,
-                    xoff=0, yoff=0, det=None, subtitles=None, xrmfile=None):
+    def display_2Dxrd(self, map, title='', info='', xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
-        if x is not None:
-            if self.no_hotcols and map.shape[1] != x.shape[0]:
-                x = x[1:-1]
+        lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
+
         try:
             calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
             AI = calculate_ai(self.current_file.xrmmap['xrd'])
@@ -1713,10 +1698,7 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 imd = self.im_displays.pop()
-                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile, ai=AI)
-                #for col, wid in imd.wid_subtitles.items():
-                #    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
+                imd.display(map, title=title, xrmfile=xrmfile, ai=AI)
                 imd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
@@ -1726,8 +1708,7 @@ class MapViewerFrame(wx.Frame):
                                     move_callback=self.move_callback,
                                     save_callback=self.onSavePixel)
 
-                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile, ai=AI)
+                imd.display(map, title=title, xrmfile=xrmfile, ai=AI)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
