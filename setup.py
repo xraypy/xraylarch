@@ -14,7 +14,7 @@ DEBUG = False
 cmdline_args = sys.argv[1:]
 
 
-required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six']
+required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six', 'fabio', 'pyFAI']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
