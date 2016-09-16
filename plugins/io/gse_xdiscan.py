@@ -12,7 +12,7 @@ from larch.utils import OrderedDict
 
 from larch_plugins.io import XDIFile, XDIFileException, iso8601_time
 
-use_plugin_path('xrfmap')
+use_plugin_path('xrmmap')
 from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
 @ValidateLarchPlugin

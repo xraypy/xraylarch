@@ -356,7 +356,7 @@ class MapImageFrame(ImageFrame):
             name  = str(event.GetString().strip())
             # name  = str(self.pos_name.GetValue().strip())
             ix, iy = self.this_point
-            x = float(self.panel.xdata[ix])
-            y = float(self.panel.ydata[iy])
+            x = float(self.panel.xdata[int(ix)])
+            y = float(self.panel.ydata[int(iy)])
             self.save_callback(name, ix, iy, x=x, y=y,
                                title=self.title, datafile=self.xrmfile)

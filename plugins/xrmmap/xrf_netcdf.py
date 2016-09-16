@@ -64,7 +64,7 @@ class xMAPData(object):
 
 CLOCKTICK = 0.320  # xmap clocktick = 320 ns
 
-def read_xmap_netcdf(fname, npixels=None, verbose=False):
+def read_xrf_netcdf(fname, npixels=None, verbose=False):
     # Reads a netCDF file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     if verbose:
@@ -170,4 +170,4 @@ def test_read(fname):
     print(fd.counts.shape)
 
 def registerLarchPlugin():
-    return ('_xrf', {'read_xmap_netcdf': read_xmap_netcdf})
+    return ('_xrf', {'read_xrf_netcdf': read_xrf_netcdf})

@@ -44,7 +44,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
-                              FILE_WILDCARDS, CalibrationFrame)
+                              FILE_WILDCARDS, XRFCalibrationFrame)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 larch.use_plugin_path('epics')
@@ -167,7 +167,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        # print "Scandb ", self.scandb
+        # print("Scandb ", self.scandb)
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')
@@ -592,7 +592,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         try:
             self.win_calib.Raise()
         except:
-            self.win_calib = CalibrationFrame(self, mca=self.mca,
+            self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
                                               larch=self.larch,
                                               callback=self.onSetCalib)
 

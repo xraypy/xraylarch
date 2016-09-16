@@ -75,7 +75,7 @@ class Helper(object):
 #         l = f.readlines()
 #
 #     except IOError:
-#         print "cannot open file: %s." % name
+#         print("cannot open file: %s." % name)
 #         return
 #     finally:
 #         f.close()
