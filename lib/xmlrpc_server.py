@@ -48,8 +48,7 @@ def test_server(host='localhost', port=4966):
         return NOT_LARCHSERVER
     ret = ''
     try:
-        server.larch('print(_sys.config.user_larchdir)')
-        ret = server.get_messages()
+        ret = server.get_rawdata('_sys.config.user_larchdir')
     except:
         return NOT_LARCHSERVER
     if len(ret) < 1:
@@ -76,7 +75,7 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     return None
 
 class LarchServer(SimpleXMLRPCServer):
-    def __init__(self, host='localhost', port=4966, with_wx=False,
+    def __init__(self, host='localhost', port=4966,
                  logRequests=False, allow_none=True,
                  keepalive_time=3*24*3600):
         self.out_buffer = []
@@ -85,14 +84,17 @@ class LarchServer(SimpleXMLRPCServer):
         self.input = InputText(prompt='', _larch=self.larch)
         self.larch.run_init_scripts()
 
-        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
-        self.larch('_sys.client.last_event = %i' % time())
-        self.larch("_sys.client.pid_server = %i" % os.getpid())
-        self.larch("_sys.client.app = 'unknown'")
-        self.larch("_sys.client.pid = 0")
-        self.larch("_sys.client.user = 'unknown'")
-        self.larch("_sys.client.machine = 'unknown'")
+        self.larch('_sys.wx = group(wxapp=None)')
+        _sys = self.larch.symtable._sys
+        _sys.color_exceptions = False
+        _sys.client.last_event = int(time())
+        _sys.client.pid_server = int(os.getpid())
+        _sys.client.app = 'unknown'
+        _sys.client.pid = 0
+        _sys.client.user = 'unknown'
+        _sys.client.machine = 'unknown'
+
         self.client = self.larch.symtable._sys.client
 
         SimpleXMLRPCServer.__init__(self, (host, port),
@@ -105,7 +107,7 @@ class LarchServer(SimpleXMLRPCServer):
                         'set_keepalive_time',
                         'set_client_info',
                         'get_client_info',
-                        'get_data', 'get_messages', 'len_messages'):
+                        'get_data', 'get_rawdata', 'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
 
         # sys.stdout = self
@@ -149,7 +151,11 @@ class LarchServer(SimpleXMLRPCServer):
         """get client info:
         returns json dictionary of client information
         """
-        return self.get_data('group2dict(_sys.client)')
+        out = {}
+        client = self.larch.symtable._sys.client
+        for attr in dir(client):
+            out[attr] = getattr(client, attr)
+        return encode4js(out)
 
     def get_messages(self):
         """get (and clear) all output messages (say, from "print()")
@@ -206,7 +212,7 @@ class LarchServer(SimpleXMLRPCServer):
                 t.start()
                 break
 
-    def larch_exec(self, text, **kws):
+    def larch_exec(self, text):
         "execute larch command"
         text = text.strip()
         if text in ('quit', 'exit', 'EOF'):
@@ -218,6 +224,10 @@ class LarchServer(SimpleXMLRPCServer):
                 self.input.run()
             self.flush()
         return 1
+
+    def get_rawdata(self, expr):
+        "return non-json encoded data for a larch expression"
+        return self.larch.eval(expr)
 
     def get_data(self, expr):
         "return json encoded data for a larch expression"

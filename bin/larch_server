@@ -93,7 +93,6 @@ elif command == 'status':
     else:
         msg('port is in use by non-larch server')
 elif command == 'report':
-    print("larch server report:")
     if server_state == CONNECTED:
         s = get_server(port=port)
         info = s.get_client_info()
@@ -114,14 +113,15 @@ elif command == 'report':
             keepalive_time = keepalive_time/60.0
             keepalive_units = 'hours'
 
-
+        print("larch server report:")
         print(" Client Machine Name = %s" % machname)
         print(" Client Process ID   = %s" % str(procid))
         print(" Client Application  = %s" % appname)
         print(" Client User Name    = %s" % username)
         print(" Client Last Used    = %s" % last_used)
         print(" Server Process ID   = %s" % serverid)
-        print(" Server will expire in  %i %s" % (keepalive_time, keepalive_units))
+        print(" Server will expire in  %i %s if not used." % (keepalive_time, keepalive_units))
+
 
     elif server_state == NOT_IN_USE:
         msg('not running')
