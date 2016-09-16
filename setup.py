@@ -191,6 +191,7 @@ setup(name = 'xraylarch',
       data_files  = data_files)
 
 
+
 def remove_cruft(basedir, filelist):
     """remove files from base directory"""
     def remove_file(base, fname):
@@ -206,6 +207,19 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
 
+
+if (cmdline_args[0] == 'install' and sys.platform == 'darwin' and
+    'Anaconda' in sys.version):
+    for fname in scripts:
+        fh = open(fname, 'r')
+        lines = fh.readlines()
+        fh.close()
+        line0 = lines[0].strip()
+        if line0.startswith('#!/usr/bin/env pythonw'):
+            fh = open(fname, 'w')
+            fh.write('#!/usr/bin/env python\n')
+            fh.write("".join(lines[1:]))
+            fh.close()
 
 def fix_permissions(dirname, stat=None):
     """
