@@ -198,7 +198,8 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 xrf=False, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
-
+    if getattr(_larch.symtable._sys.wx, 'wxapp', None) is None:
+        return None
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
@@ -253,7 +254,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, xrf=True)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     if x is None:
         return
@@ -337,7 +338,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     if new:
         plotter.plot(x, y, side=side, **kws)
@@ -352,7 +353,7 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     """update a plot trace with new data, avoiding complete redraw"""
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     trace -= 1 # wxmplot counts traces from 0
 
@@ -421,7 +422,7 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
 
     plotter.add_text(text, x, y, side=side,
@@ -455,7 +456,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     kwargs = {'length_includes_head': True}
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
@@ -481,7 +482,7 @@ def _plot_marker(x, y, marker='o', size=4, color='black',
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=None, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     kwds = {'label': 'marker'}
     kwds.update(kws)
@@ -503,7 +504,7 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
 
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
@@ -524,7 +525,7 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, size=None,
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
 
     plotter.panel.axes.axvline(x, ymin=ymin, ymax=ymax, **kws)
@@ -582,7 +583,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     plotter.scatterplot(x, y, **kws)
     if force_draw:
@@ -594,7 +595,7 @@ def _hist(x, bins=10, win=1, new=False,
 
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
-        _larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
     if new:
         plotter.panel.axes.clear()
