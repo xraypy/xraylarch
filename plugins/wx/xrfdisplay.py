@@ -43,7 +43,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.wx.periodictable import PeriodicTablePanel
-from larch_plugins.wx.xrfdisplay_utils import (CalibrationFrame,
+from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
                                                ColorsFrame,
                                                XrayLinesFrame,
                                                XRFDisplayConfig)
@@ -1262,7 +1262,7 @@ class XRFDisplayFrame(wx.Frame):
         try:
             self.win_calib.Raise()
         except:
-            self.win_calib = CalibrationFrame(self, mca=self.mca,
+            self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
                                               larch=self.larch)
 
     def onFitPeaks(self, event=None, **kws):

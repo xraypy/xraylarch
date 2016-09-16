@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """Larch server -- this will make sure a larch server is
 running on the desired port.
-
 Usage:  larch_server [OPTIONS] [start|stop|restart|status]
-
 with options
   -p PORT, --port=PORT  port number for remote server [4966]
 """
@@ -128,7 +126,6 @@ elif command == 'report':
         sys.exit(1)
     else:
         msg('port is in use by non-larch server')
-
 
 else:
     print("larch_server: unknown command '%s'. Try -h" % command)

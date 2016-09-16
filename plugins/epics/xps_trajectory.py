@@ -231,7 +231,7 @@ class XPSTrajectory(object):
 
         self.xps.GroupMoveRelative(self.ssid, 'FINE', ramps)
 
-        # print '=====Run Trajectory =  ', traj, axis, ramps, traj_file
+        # print('=====Run Trajectory =  ', traj, axis, ramps, traj_file)
 
         self.gather_outputs = []
         gather_titles = []
@@ -242,12 +242,12 @@ class XPSTrajectory(object):
         self.gather_titles  = "%s\n#%s\n" % (gather_titles,
                                              "  ".join(gather_titles))
 
-        # print '==Gather Titles== ',  self.gather_titles
-        # print '==Gather Outputs==',  self.gather_outputs
+        # print('==Gather Titles== ',  self.gather_titles)
+        # print('==Gather Outputs==',  self.gather_outputs)
 
         ret = self.xps.GatheringReset(self.ssid)
         self.xps.GatheringConfigurationSet(self.ssid, self.gather_outputs)
-        # print " Group Name ", self.group
+        # print(" Group Name ", self.group)
 
         ret = self.xps.MultipleAxesPVTPulseOutputSet(self.ssid, self.group,
                                                      1, 3, dtime)

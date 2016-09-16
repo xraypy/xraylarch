@@ -187,7 +187,7 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
 
     # for a "newly created module" (as on import),
     # the module group is the return value
-    # print 'eval End ', new_module, output
+    # print('eval End ', new_module, output)
     if new_module is not None:
         symtable.restore_frame()
     return

@@ -44,7 +44,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
-                              FILE_WILDCARDS, CalibrationFrame)
+                              FILE_WILDCARDS, XRFCalibrationFrame)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 larch.use_plugin_path('epics')
@@ -167,7 +167,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        # print "Scandb ", self.scandb
+        # print("Scandb ", self.scandb)
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')
@@ -273,7 +273,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
         dtime = self.det.get_deadtime(mca=self.det_fore)
-        self.wids['deadtime'].SetLabel("%.3f" % dtime)
+        self.wids['deadtime'].SetLabel("%.1f" % dtime)
         self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
@@ -393,7 +393,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
         ela_lab = SimpleText(pane, 'Elapsed Time (s):', size=(125, -1))
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
-        dea_lab = SimpleText(pane, 'OCR/ICR:',         size=(100, -1))
+        dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
 
 
         psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
@@ -448,7 +448,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 self.mca = self.det.get_mca(mca=self.det_fore)
 
             dtime = self.det.get_deadtime(mca=self.det_fore)
-            self.wids['deadtime'].SetLabel("%.3f" % dtime)
+
+            self.wids['deadtime'].SetLabel("%.1f" % dtime)
 
             counts = self.det.get_array(mca=self.det_fore)*1.0
             energy = self.det.get_energy(mca=self.det_fore)
@@ -591,7 +592,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         try:
             self.win_calib.Raise()
         except:
-            self.win_calib = CalibrationFrame(self, mca=self.mca,
+            self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
                                               larch=self.larch,
                                               callback=self.onSetCalib)
 

@@ -41,7 +41,7 @@ except ImportError:
     import PIL as Image
         
 
-print 'Found all Imports'
+print('Found all Imports')
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
@@ -117,7 +117,7 @@ contents = 'build/%s-%s.app/Contents' % (appname, appvers)
 contents = contents.replace(' ', '\ ')
 
 def sys(cmd):
-    print ' >> ', cmd
+    print(' >> %s' % cmd)
     os.system(cmd)
 
 sys("cp -pr GSEMap.icns  %s/Resources/." % contents)

@@ -763,7 +763,7 @@ class LarchStepScan(object):
                     mcount += 1
                 # wait for positioners to settle
                 dtimer.add('Pt %i : pos done' % i)
-                # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
+                # print('Move completed in %.5f s, %i' % (time.time()-t0, mcount))
                 time.sleep(self.pos_settle_time) # , 0.25)
                 dtimer.add('Pt %i : pos settled (%.3f)' % (i, self.pos_settle_time))
                 # start triggers, wait for them to finish

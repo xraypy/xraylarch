@@ -92,8 +92,8 @@ setup(app=[APP],
       options={'py2app': OPTIONS},
       data_files = mpl_data_files + plugin_files + dll_files,
     )
-print "============ "
-print "============ HEY, WAKE UP ============ "
-print "need to move libfreetype.6.dylib by hand to APPNAME.app/Contents/Framework/. !!"
-print " from  mpl folder "
+print("============ ")
+print("============ HEY, WAKE UP ============ ")
+print("need to move libfreetype.6.dylib by hand to APPNAME.app/Contents/Framework/. !!")
+print(" from  mpl folder ")
 
