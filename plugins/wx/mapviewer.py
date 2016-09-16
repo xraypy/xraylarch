@@ -678,7 +678,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       ## add rows for XRD Calibration File:
                       'XRD Parameters',  'XRD Detector',     
                       'XRD Wavelength',  'XRD Detector Distance', 
-                      'XRD Pixel Size',  'XRD Beam Center',  'XRD Detector Tilts',
+                      'XRD Pixel Size',  'XRD Beam Center (x,y)',  'XRD Detector Tilts',
                       'XRD Spline',      'XRD Mask',         'XRD Background'):
 
             ir += 1
@@ -807,17 +807,20 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             except:
                 self.wids['XRD Pixel Size'].SetLabel('')
             try:
-                self.wids['XRD Beam Center'].SetLabel('%0.4f m, %0.4f m' % ( \
+                self.wids['XRD Beam Center (x,y)'].SetLabel( \
+                                    '%0.4f m, %0.4f m (%i pix, %i pix)' % ( \
+                                    float(xrdgp.attrs['poni2']),
                                     float(xrdgp.attrs['poni1']),
-                                    float(xrdgp.attrs['poni2'])))
+                                    float(xrdgp.attrs['poni2'])/float(xrdgp.attrs['ps2']),
+                                    float(xrdgp.attrs['poni1'])/float(xrdgp.attrs['ps1'])))
             except:
-                self.wids['XRD Beam Center'].SetLabel('')
+                self.wids['XRD Beam Center (x,y)'].SetLabel('')
             try:
                 self.wids['XRD Detector Tilts'].SetLabel( \
                                     '%0.6f rad., %0.6f rad., %0.6f rad.' % ( \
                                     float(xrdgp.attrs['rot1']),
                                     float(xrdgp.attrs['rot2']),
-                                    float(xrdgp.attrs['rot3'])))
+                                    float(xrgredgp.attrs['rot3'])))
             except:
                 self.wids['XRD Detector Tilts'].SetLabel('')
             try:
@@ -1783,6 +1786,8 @@ class MapViewerFrame(wx.Frame):
                   "Choose working directory",
                   self.onFolderSelect)
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Perform XRD &Calibration",
+                 "Calibrate XRD Detector",  self.onCalXRD)
         MenuItem(self, fmenu, "&Update XRD Calibration File to Map File",
                  "Load XRD Calibration File",  self.onReadXRD)
         MenuItem(self, fmenu, "&Save As...  without 2D XRD data",
@@ -1964,7 +1969,7 @@ class MapViewerFrame(wx.Frame):
         
         if read:
             xrmfile = self.current_file
-            
+
             xrmfile.calibration = xrdcalfile
             xrmfile.xrdmask     = xrdmaskfile
             xrmfile.xrdbkgd     = xrdbkgdfile
@@ -1974,6 +1979,13 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
 
+    def onCalXRD(self, evt=None):
+        '''
+        Perform calibration with pyFAI
+        mkak 2016.09.16
+        '''
+ 
+        print('Not yet implemented.')
 
 
     def onReSave(self, evt=None):

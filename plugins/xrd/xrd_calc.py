@@ -87,7 +87,6 @@ def calculate_ai(AI):
         #     except:
         #         valueattr[f] =  0
     
-    
         try:
             poni_1 = float(AI.attrs['poni1'])
         except:

@@ -732,6 +732,7 @@ class GSEXRM_MapFile(object):
         if HAS_pyFAI:
             try:
                 ai = pyFAI.load(self.calibration)
+                print('New calibration file detected: %s' % self.calibration)
                 xrdcal = True
             except:
                 raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
@@ -750,6 +751,7 @@ class GSEXRM_MapFile(object):
 
 
         if xrdcal:
+            print('Updating calibration parameters...')
             try:
                 xrdgp.attrs['detector'] = ai.detector.name
             except:
