@@ -84,6 +84,10 @@ class wxLarchTimer(wx.MiniFrame):
 # @SafeWxCall
 def gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
+    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
+
     dlg = wx.DirDialog(None, 'Choose Directory',
                        defaultPath = os.getcwd(),
                        style = wx.DD_DEFAULT_STYLE)
@@ -122,8 +126,10 @@ class DataBrowserFrame(wx.Frame):
 
 def databrowser(_larch=None, **kws):
     """show DataBrowser window for exploring Larch Groups and Data"""
-
-    return DataBrowserFrame(parent=None, _larch=_larch)
+    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
+    return DataBrowserFrame(parent=parent, _larch=_larch)
 
 
 # @SafeWxCall
@@ -178,6 +184,8 @@ def fileprompt(mode='open', multi=True, message = None,
 
     #parent.Start()
     parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
     if hasattr(parent, 'GetTopWindow'):
         parent = parent.GetTopWindow()
     timer = wxLarchTimer(parent, _larch)

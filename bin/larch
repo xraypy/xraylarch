@@ -69,44 +69,35 @@ if not options.nowx:
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
-    server = LarchServer(host='localhost', port=int(options.port),
-                         local_echo=options.echo,
-                         quiet=options.quiet, with_wx=False)
-    server.initialize_larch()
-    try:
-        server.serve_forever()
-    except:
-        sys.exit()
+    server = LarchServer(host='localhost', port=int(options.port))
+    server.run()
 
-shell = larch.shell(quiet=options.quiet)
+else:
+    shell = larch.shell(quiet=options.quiet)
 
-def onCtrlC(*args, **kws):
-    return 0
+    def onCtrlC(*args, **kws):
+        return 0
 
-# use inputhook to enable wx
-if HAS_WX:
-    if options.debug:
-        from lib.wxlib import inputhook
-    else:
+    # use inputhook to enable wx
+    if HAS_WX:
         from larch.wxlib import inputhook
-    app = wx.App(redirect=False, clearSigInt=False)
-    # print 'has group _sys.wx? ', shell.larch.symtable.has_group('_sys.wx')
-    shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
-    shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
-    shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-    shell.larch.symtable.set_symbol('_sys.wx.wxapp', app)
-    shell.larch.symtable.set_symbol('_sys.wx.parent',None)
-    inputhook.ON_INTERRUPT = onCtrlC
-    inputhook.WXLARCH_SYM = shell.larch.symtable
+        app = wx.App(redirect=False, clearSigInt=False)
+        shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
+        shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
+        shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+        shell.larch.symtable.set_symbol('_sys.wx.wxapp', app)
+        shell.larch.symtable.set_symbol('_sys.wx.parent',None)
+        inputhook.ON_INTERRUPT = onCtrlC
+        inputhook.WXLARCH_SYM = shell.larch.symtable
 
-# execute scripts listed on command-line
-if len(args)>0:
-    for arg in args:
-        cmd = "run('%s')" % arg
-        if arg.endswith('.py'):
-            cmd = "import %s" %  arg[:-3]
-        shell.default(cmd)
+    # execute scripts listed on command-line
+    if len(args)>0:
+        for arg in args:
+            cmd = "run('%s')" % arg
+            if arg.endswith('.py'):
+                cmd = "import %s" %  arg[:-3]
+            shell.default(cmd)
 
-# if interactive, start command loop
-if not options.noshell:
-    shell.cmdloop()
+    # if interactive, start command loop
+    if not options.noshell:
+        shell.cmdloop()

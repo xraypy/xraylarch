@@ -37,13 +37,6 @@ could do either::
     import larch
     from larch_plugins.xafs import autobk
 
-or::
-
-    from larch import use_plugin_path
-    use_plugin_path('xafs')
-    from autobk import autobk
-
-The first approach is encouraged, the latter kept for backward compatibility.
 
 The second consideration is that many of the functions in the Larch plugins
 will only work if they are passed an instance of the Larch interpreter.
@@ -61,7 +54,7 @@ plugin functions with the ``_larch`` keyword argument::
     from larch_plugins.xafs import autobk
     from larch_plugins.io import read_xdi
 
-    mylarch = Interpreter(with_plugins=False)
+    mylarch = Interpreter()
     dat = read_xdi('../xafsdata/fe3c_rt.xdi', _larch=mylarch)
     dat.mu = dat.mutrans
     autobk(dat, rbkg=1.0, kweight=2, _larch=mylarch)
@@ -77,8 +70,7 @@ reasonable default.  If you want to add some of the plugins for a
 particular interpreter session, you can::
 
     >>> import larch
-    >>> session = larch.Interpreter(with_plugins=False)
-    >>> session.add_plugin('xray')
+    >>> session = larch.Interpreter()
     >>> session.run("cu_ka = xray_line('Cu', 'Ka1')")
     >>> session.symtable.cu_ka
     (8046.3, 0.577108, u'K', u'L3')
@@ -87,8 +79,9 @@ This would be nearly the same as doing::
 
     >>> import larch
     >>> from larch_plugins.xray import xray_line
-    >>> session = larch.Interpreter(with_plugins=False)
+    >>> session = larch.Interpreter()
     >>> xray_line('Cu', 'Ka1', _larch=session)
     (8046.3, 0.577108, u'K', u'L3')
 
-except that the former Larch session retains the value in ``cu_ka``.
+except that in the former, the Larch session retains the value in
+``cu_ka``.

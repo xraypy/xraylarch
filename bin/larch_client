@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # run larch script on remote larch server
+from __future__ import print_function
 
 import sys
 import xmlrpclib
@@ -8,21 +9,19 @@ from optparse import OptionParser
 
 usage = "usage: %prog [options] file(s)"
 
-parser = OptionParser(usage=usage, prog="larch_to_remote",
+parser = OptionParser(usage=usage, prog="larch_client",
                       version="0.1")
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for remote server")
 
 (options, args) = parser.parse_args()
-
 server = xmlrpclib.ServerProxy('http://127.0.0.1:%s' % options.port)
 
 
 for arg in args:
-    print('Send script %s to Larch Server on port %s' % (arg, options.port))
+    print('#Send script %s to Larch Server on port %s' % (arg, options.port))
     with open(arg, 'r') as fh:
         text = fh.read()
         server.larch(text)
-        msgs = server.get_messages()
-        print 'Messages: ',  msgs
+        print(server.get_messages())

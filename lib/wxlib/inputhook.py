@@ -135,12 +135,12 @@ def inputhook_wx():
                 while evtloop.Pending():
                     t = clock()
                     evtloop.Dispatch()
-                
+
                 if callable(getattr(app, 'ProcessIdle', None)):
                     app.ProcessIdle()
                 if callable(getattr(evtloop, 'ProcessIdle', None)):
                     evtloop.ProcessIdle()
-                
+
                 # We need to sleep at this point to keep the idle CPU load
                 # low.  However, if sleep to long, GUI response is poor.
                 used_time = clock() - t
@@ -191,7 +191,10 @@ if sys.platform == 'darwin':
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
 
-capture_CtrlC()
+try:
+    capture_CtrlC()
+except:
+    pass
 cback = CFUNCTYPE(c_int)(inputhook_wx)
 py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 py_inphook.value = cast(cback, c_void_p).value
