@@ -2385,8 +2385,8 @@ class CalXRD(wx.Dialog):
     
         ## Establish lists from pyFAI
         
-        clbrnts = ['Please select.']
-        self.dets = ['Please select.']
+        clbrnts = ['None']
+        self.dets = ['None']
         for key,value in pyFAI.detectors.ALL_DETECTORS.items():
             self.dets.append(key)
         for key,value in pyFAI.calibrant.ALL_CALIBRANTS.items():
@@ -2408,14 +2408,16 @@ class CalXRD(wx.Dialog):
 
         ## Detector selection
         self.slctDorP = wx.Choice(self.panel,choices=['Detector','Pixel size (um)'])
-        self.detslct = wx.Choice(self.panel, choices=self.dets)
-
+        self.detslct  = wx.Choice(self.panel, choices=self.dets)
+        self.pixel    = wx.TextCtrl(self.panel, size=(140, -1))
 
         ## Energy or Wavelength
         self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
         self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
+
         ## Refine label
         RefLbl = wx.StaticText(self.panel, label="To be refined..." ,style=LEFT)
+
         ## Distance
         self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
         DstLbl = wx.StaticText(self.panel, label="Distance (m):" ,style=LEFT)
@@ -2425,10 +2427,10 @@ class CalXRD(wx.Dialog):
         canBtn = wx.Button(self.panel, wx.ID_CANCEL )
 
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
-        self.calslct.Bind(wx.EVT_CHOICE, self.checkOK)
+        self.calslct.Bind(wx.EVT_CHOICE, self.onCheckOK)
         self.slctDorP.Bind(wx.EVT_CHOICE, self.onDetSel)
 
-        self.sizer = wx.GridBagSizer(5, 6)
+        self.sizer = wx.GridBagSizer( 5, 6)
 
         self.sizer.Add(caliImg,       pos = ( 1,1) )
         self.sizer.Add(fileBtn1,      pos = ( 1,2)               )
@@ -2437,58 +2439,53 @@ class CalXRD(wx.Dialog):
         
         self.sizer.Add(self.slctDorP, pos = ( 4,1)               )
         self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,3) )
+        self.sizer.Add(self.pixel,    pos = ( 5,2), span = (1,3) )
+        
+        self.sizer.Add(self.slctEorL, pos = ( 6,1)               )
+        self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,3) )
 
-        self.sizer.Add(self.slctEorL, pos = ( 5,1)               )
-        self.sizer.Add(self.EorL,     pos = ( 5,2), span = (1,3) )
+        self.sizer.Add(RefLbl,        pos = ( 8,1)               )
+        self.sizer.Add(DstLbl,        pos = ( 9,1)               )
+        self.sizer.Add(self.Distance, pos = ( 9,2), span = (1,3) )
 
-        self.sizer.Add(RefLbl,        pos = ( 7,1)               )
-        self.sizer.Add(DstLbl,        pos = ( 8,1)               )
-        self.sizer.Add(self.Distance, pos = ( 8,2), span = (1,3) )
-
-        self.sizer.Add(hlpBtn,    pos = (10,1) )
-        self.sizer.Add(okBtn,     pos = (10,3) )
-        self.sizer.Add(canBtn,    pos = (10,2) )
+        self.sizer.Add(hlpBtn,    pos = (11,1) )
+        self.sizer.Add(okBtn,     pos = (11,3) )
+        self.sizer.Add(canBtn,    pos = (11,2) )
         self.FindWindowById(wx.ID_OK).Disable()
         
         self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
-        
+
+        self.sizer.Hide(self.pixel)
+
+    def onCheckOK(self,event):
+        self.checkOK()
+
     def checkOK(self):
         calibrant = self.calslct.GetString(self.calslct.GetSelection())
         if self.slctDorP.GetSelection() == 0:
             detORpix  = self.detslct.GetString(self.detslct.GetSelection())
         else:
-            detORpix  = self.detslct.GetValue()
+            detORpix  = None
+            #self.detslct.GetValue()
         distance  = self.Distance.GetValue()
         eORl      = self.EorL.GetValue()
 
-        calibrant = self.calslct.GetString(self.calslct.GetSelection())
-        if self.slctDorP.GetSelection() == 0:
-            detORpix  = self.detslct.GetString(self.detslct.GetSelection())
-        else:
-            detORpix  = self.detslct.GetValue()
-        distance  = self.Distance.GetValue()
-        eORl      = self.EorL.GetValue()
-        if calibrant is not 'Please select.':
-            if detORpix is not 'Please select.' or not None:
-                if distance is not None:
-                    if self.CaliPath is not None:
-                        if eORl is not None:
+        if calibrant is not 'None':
+            if detORpix is not 'None' or not None:
+                if distance is not None or not '':
+                    if self.CaliPath is not None or not '':
+                        if eORl is not None or not '':
                             self.FindWindowById(wx.ID_OK).Enable()
 
     def onDetSel(self,event): 
-
-        self.sizer.Hide(self.detslct)
-        self.sizer.Remove(self.detslct)
-
         if self.slctDorP.GetSelection() == 0:
-            self.detslct = wx.Choice(self.panel, choices=self.dets)
+            self.sizer.Hide(self.pixel)
+            self.sizer.Show(self.detslct)
         else:
-            self.detslct = wx.TextCtrl(self.panel, size=(140, -1))
+            self.sizer.Hide(self.detslct)
+            self.sizer.Show(self.pixel)
 
-        self.sizer.Add(self.detslct,  pos = (162, 100), span = (1,3) )
-
-       
         self.checkOK()
 
     def onBROWSE1(self, event): 
