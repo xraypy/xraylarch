@@ -65,6 +65,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
+    from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -1995,7 +1996,7 @@ class MapViewerFrame(wx.Frame):
         '''
         if HAS_pyFAI:
         
-            print('Not yet implemented.')
+            print('Not fully functioning yet...')
 
             myDlg = CalXRD()
             
@@ -2011,15 +2012,47 @@ class MapViewerFrame(wx.Frame):
                 ## E = hf ; E = hc/lambda
                 hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-                ## myDlg.slctEorL.GetString(myDlg.slctEorL.GetSelection())
                 if myDlg.slctEorL.GetSelection() == 1:
                     calL = float(myDlg.EorL.GetValue())*1e-10 ## units: m
                     calE = hc/(calL) ## units: keV
                 else:
                     calE = float(myDlg.EorL.GetValue()) ## units keV
                     calL = hc/(calE) ## units: m
-                print('Incident Energy: %0.2f keV' % calE)
-                print('Incident Wavelength: %0.4f A' % (calL*1e10))
+                
+                ## Adapted from pyFAI-calib
+                ## mkak 2016.09.19
+                
+                det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+                cal  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+                dist = float(myDlg.Distance.GetValue())
+                
+                print
+                pform = 'pyFAI-calib -c %s -D %s -e %0.1f -l %0.3f %s'
+                command = pform % (cal,det,calE,dist,myDlg.CaliPath)
+                print command
+                print
+                print
+                os.system(command)
+                
+                cali = pyFAI.calibrant.ALL_CALIBRANTS[cal]
+                
+#                 c = Calibration(dataFiles=myDlg.CaliPath,
+#                                 #darkFiles=None,
+#                                 #flatFiles=None,
+#                                 #pixelSize=0.0004,
+#                                 #splineFile=None,
+#                                 detector=det,
+#                                 #gaussianWidth=None,
+#                                 wavelength=calL,
+#                                 calibrant=cali)
+                
+                
+                
+                #c.parse()
+#                c.read_pixelsSize()
+#                c.preprocess()
+#                c.gui_peakPicker()
+#                raw_input("Press enter to quit")
 
 
 
@@ -2438,8 +2471,10 @@ class CalXRD(wx.Dialog):
         self.sizer.Add(self.calslct,  pos = ( 3,2), span = (1,3) )
         
         self.sizer.Add(self.slctDorP, pos = ( 4,1)               )
-        self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,3) )
-        self.sizer.Add(self.pixel,    pos = ( 5,2), span = (1,3) )
+        if self.slctDorP.GetSelection() == 0:
+            self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,3) )
+        else:
+            self.sizer.Add(self.pixel,    pos = ( 4,2), span = (1,3) )
         
         self.sizer.Add(self.slctEorL, pos = ( 6,1)               )
         self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,3) )
@@ -2456,7 +2491,7 @@ class CalXRD(wx.Dialog):
         self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
 
-        self.sizer.Hide(self.pixel)
+        #self.sizer.Hide(self.pixel)
 
     def onCheckOK(self,event):
         self.checkOK()
@@ -2466,8 +2501,7 @@ class CalXRD(wx.Dialog):
         if self.slctDorP.GetSelection() == 0:
             detORpix  = self.detslct.GetString(self.detslct.GetSelection())
         else:
-            detORpix  = None
-            #self.detslct.GetValue()
+            detORpix  = self.pixel.GetValue()
         distance  = self.Distance.GetValue()
         eORl      = self.EorL.GetValue()
 
