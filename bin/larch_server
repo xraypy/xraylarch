@@ -40,6 +40,9 @@ usage = "usage: %prog [options] [start|stop|restart|next|status|report]"
 parser = OptionParser(usage=usage, prog="larch_server",
                       version="larch rpc server: %s" % __version__)
 
+parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
+                  default=False, help="set quiet mode, default = False")
+
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for server")
 
