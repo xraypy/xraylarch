@@ -2417,7 +2417,7 @@ class CalXRD(wx.Dialog):
     def __init__(self):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(460, 400))
+        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(460, 440))
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
@@ -2506,6 +2506,8 @@ class CalXRD(wx.Dialog):
         
         #self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
+        self.sizer.Fit(self.panel)
+        self.panel.Layout()
 
     def onCalSel(self,event):
         if self.calslct.GetSelection() == 0:
