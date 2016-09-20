@@ -1995,8 +1995,6 @@ class MapViewerFrame(wx.Frame):
         mkak 2016.09.16
         '''
         if HAS_pyFAI:
-        
-            print('Not fully functioning yet...')
 
             myDlg = CalXRD()
             
@@ -2018,23 +2016,42 @@ class MapViewerFrame(wx.Frame):
                 else:
                     calE = float(myDlg.EorL.GetValue()) ## units keV
                     calL = hc/(calE) ## units: m
+
+                if myDlg.slctDorP.GetSelection() == 1:
+                    pixel = float(myDlg.pixel.GetValue())
+                else:
+                    det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+                cal  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+                dist = float(myDlg.Distance.GetValue())
+
+                verbose = True
+                if verbose:
+                    print('\n=== Calibration input ===')
+                    print('XRD image: %s' % myDlg.CaliPath)
+                    print('Calibrant: %s' % cal)
+                    if myDlg.slctDorP.GetSelection() == 1:
+                        print('Pixel size: %0.5f um' % pixel)
+                    else:
+                        print('Detector: %s' % det)
+                    print('Incident energy: %0.2f keV (%0.4f A)' % (calE,calL*1e10))
+                    print('Starting distance: %0.3f m' % dist)
+                    print('=========================\n')
                 
                 ## Adapted from pyFAI-calib
                 ## mkak 2016.09.19
-                
-                det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
-                cal  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
-                dist = float(myDlg.Distance.GetValue())
-                
-                print
-                pform = 'pyFAI-calib -c %s -D %s -e %0.1f -l %0.3f %s'
-                command = pform % (cal,det,calE,dist,myDlg.CaliPath)
-                print command
-                print
-                print
+                if myDlg.slctDorP.GetSelection() == 1:
+                    pform = 'pyFAI-calib -c %s -p %s -e %0.1f -l %0.3f %s'
+                    command = pform % (cal,pixel,calE,dist,myDlg.CaliPath)
+                else:
+                    pform = 'pyFAI-calib -c %s -D %s -e %0.1f -l %0.3f %s'
+                    command = pform % (cal,det,calE,dist,myDlg.CaliPath)
+
+                print('\nNot functioning yet... but could execute:')
+                print('\t $ %s\n\n' % command)
+
 ##                os.system(command)
                 
-                cali = pyFAI.calibrant.ALL_CALIBRANTS[cal]
+#                cali = pyFAI.calibrant.ALL_CALIBRANTS[cal]
                 
 #                 c = Calibration(dataFiles=myDlg.CaliPath,
 #                                 #darkFiles=None,
@@ -2427,8 +2444,10 @@ class CalXRD(wx.Dialog):
 
         self.FlagCalibrant = False
         self.FlagDetector = False
+        self.pixel.SetValue('0.0004')
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
+
 
     def InitUI(self):        
 
@@ -2460,7 +2479,7 @@ class CalXRD(wx.Dialog):
         ## Energy or Wavelength
         self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
         self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
-        self.EorL.SetValue('10.0')
+        self.EorL.SetValue('19.0')
 
         ## Refine label
         RefLbl = wx.StaticText(self.panel, label="To be refined..." ,style=LEFT)
@@ -2475,9 +2494,10 @@ class CalXRD(wx.Dialog):
         canBtn = wx.Button(self.panel, wx.ID_CANCEL )
 
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
-        self.calslct.Bind(wx.EVT_CHOICE, self.onCalSel)
-        self.detslct.Bind(wx.EVT_CHOICE, self.onDetSel)
+        self.calslct.Bind(wx.EVT_CHOICE,  self.onCalSel)
+        self.detslct.Bind(wx.EVT_CHOICE,  self.onDetSel)
         self.slctDorP.Bind(wx.EVT_CHOICE, self.onDorPSel)
+        self.slctEorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
 
         self.sizer = wx.GridBagSizer( 5, 6)
 
@@ -2504,10 +2524,8 @@ class CalXRD(wx.Dialog):
 
         self.FindWindowById(wx.ID_OK).Disable()
         
-        #self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
-        self.sizer.Fit(self.panel)
-        self.panel.Layout()
+
 
     def onCalSel(self,event):
         if self.calslct.GetSelection() == 0:
@@ -2538,6 +2556,20 @@ class CalXRD(wx.Dialog):
         else:
             self.FindWindowById(wx.ID_OK).Disable()
 
+    def onEorLSel(self,event): 
+        hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+        if self.slctEorL.GetSelection() == 1:
+            energy = float(self.EorL.GetValue()) ## units keV
+            wavelength = hc/(energy)*1e10 ## units: A
+            self.EorL.SetValue(str(wavelength))
+        else:
+            wavelength = float(self.EorL.GetValue())*1e-10 ## units: m
+            energy = hc/(wavelength) ## units: keV
+            self.EorL.SetValue(str(energy))
+            
+        self.checkOK()
+
     def onDorPSel(self,event): 
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
@@ -2545,7 +2577,6 @@ class CalXRD(wx.Dialog):
         else:
             self.sizer.Hide(self.detslct)
             self.sizer.Show(self.pixel)
-            self.pixel.SetValue('0.0004')
 
         self.checkOK()
 
@@ -2565,7 +2596,7 @@ class CalXRD(wx.Dialog):
             self.calFil.Clear()
             self.calFil.SetValue(os.path.split(path)[-1])
             self.CaliPath = path
-        self.checkOK()
+            self.checkOK()
 
 class OpenXRDPar(wx.Dialog):
     """"""
