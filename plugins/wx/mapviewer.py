@@ -2417,7 +2417,8 @@ class CalXRD(wx.Dialog):
     def __init__(self):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(450, 400))
+        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(460, 400))
+        ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
         self.InitUI()
@@ -2503,7 +2504,7 @@ class CalXRD(wx.Dialog):
 
         self.FindWindowById(wx.ID_OK).Disable()
         
-        self.sizer.AddGrowableCol(2)
+        #self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
 
     def onCalSel(self,event):
@@ -2547,7 +2548,7 @@ class CalXRD(wx.Dialog):
         self.checkOK()
 
     def onBROWSE1(self, event): 
-        wildcards = "pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*"
+        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message="Choose XRD calibration file",
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
