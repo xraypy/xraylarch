@@ -2032,7 +2032,7 @@ class MapViewerFrame(wx.Frame):
                 print command
                 print
                 print
-                os.system(command)
+##                os.system(command)
                 
                 cali = pyFAI.calibrant.ALL_CALIBRANTS[cal]
                 
@@ -2262,16 +2262,16 @@ class OpenMapFolder(wx.Dialog):
         fileBtn3 = wx.Button(panel,      label='Browse...'             )
 
         self.Fldr = wx.TextCtrl(panel,
-                                value ='Please select folder.',
+#                                value ='Please select folder.',
                                 size=(350, 25))
         self.CalFl = wx.TextCtrl(panel, 
-                                 value='Please select calibration file.',
+#                                 value='Please select calibration file.',
                                  size=(350, 25))
         self.MskFl = wx.TextCtrl(panel, 
-                                 value='Please select mask file.',
+#                                 value='Please select mask file.',
                                  size=(350, 25))
         self.BkgdFl = wx.TextCtrl(panel, 
-                                 value='Please select background file.',
+#                                 value='Please select background file.',
                                  size=(350, 25))
 
 
@@ -2414,10 +2414,25 @@ class CalXRD(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self, DorP=True):
+    def __init__(self):
     
-        ## Establish lists from pyFAI
-        
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(450, 400))
+        self.panel = wx.Panel(self)
+
+        self.InitUI()
+        self.Centre()
+        self.Show()
+
+        self.FlagCalibrant = False
+        self.FlagDetector = False
+        if self.slctDorP.GetSelection() == 0:
+            self.sizer.Hide(self.pixel)
+
+    def InitUI(self):        
+
+
+        ## Establish lists from pyFAI        
         clbrnts = ['None']
         self.dets = ['None']
         for key,value in pyFAI.detectors.ALL_DETECTORS.items():
@@ -2426,14 +2441,11 @@ class CalXRD(wx.Dialog):
             clbrnts.append(key)    
         self.CaliPath = None
     
-    
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(400, 400))
-        self.panel = wx.Panel(self)
 
         ## Calibration Image selection
-        caliImg  = wx.StaticText(self.panel,  label='Calibration Image:' )
-        fileBtn1 = wx.Button(self.panel,      label='Browse...'             )
+        caliImg     = wx.StaticText(self.panel,  label='Calibration Image:' )
+        self.calFil = wx.TextCtrl(self.panel, size=(190, -1))
+        fileBtn1    = wx.Button(self.panel,      label='Browse...'             )
 
         ## Calibrant selection
         self.calslct = wx.Choice(self.panel,choices=clbrnts)
@@ -2447,12 +2459,14 @@ class CalXRD(wx.Dialog):
         ## Energy or Wavelength
         self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
         self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
+        self.EorL.SetValue('10.0')
 
         ## Refine label
         RefLbl = wx.StaticText(self.panel, label="To be refined..." ,style=LEFT)
 
         ## Distance
         self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
+        self.Distance.SetValue('0.1')
         DstLbl = wx.StaticText(self.panel, label="Distance (m):" ,style=LEFT)
 
         hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
@@ -2460,65 +2474,75 @@ class CalXRD(wx.Dialog):
         canBtn = wx.Button(self.panel, wx.ID_CANCEL )
 
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
-        self.calslct.Bind(wx.EVT_CHOICE, self.onCheckOK)
-        self.slctDorP.Bind(wx.EVT_CHOICE, self.onDetSel)
+        self.calslct.Bind(wx.EVT_CHOICE, self.onCalSel)
+        self.detslct.Bind(wx.EVT_CHOICE, self.onDetSel)
+        self.slctDorP.Bind(wx.EVT_CHOICE, self.onDorPSel)
 
         self.sizer = wx.GridBagSizer( 5, 6)
 
-        self.sizer.Add(caliImg,       pos = ( 1,1) )
-        self.sizer.Add(fileBtn1,      pos = ( 1,2)               )
+        self.sizer.Add(caliImg,       pos = ( 1,1)               )
+        self.sizer.Add(self.calFil,   pos = ( 1,2), span = (1,2) )
+        self.sizer.Add(fileBtn1,      pos = ( 1,4)               )
         self.sizer.Add(CalLbl,        pos = ( 3,1)               )
-        self.sizer.Add(self.calslct,  pos = ( 3,2), span = (1,3) )
+        self.sizer.Add(self.calslct,  pos = ( 3,2), span = (1,2) )
         
         self.sizer.Add(self.slctDorP, pos = ( 4,1)               )
-        if self.slctDorP.GetSelection() == 0:
-            self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,3) )
-        else:
-            self.sizer.Add(self.pixel,    pos = ( 4,2), span = (1,3) )
+        self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,4) )
+        self.sizer.Add(self.pixel,    pos = ( 5,2), span = (1,2) )
         
         self.sizer.Add(self.slctEorL, pos = ( 6,1)               )
-        self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,3) )
+        self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,2) )
 
         self.sizer.Add(RefLbl,        pos = ( 8,1)               )
         self.sizer.Add(DstLbl,        pos = ( 9,1)               )
-        self.sizer.Add(self.Distance, pos = ( 9,2), span = (1,3) )
+        self.sizer.Add(self.Distance, pos = ( 9,2), span = (1,2) )
 
-        self.sizer.Add(hlpBtn,    pos = (11,1) )
-        self.sizer.Add(okBtn,     pos = (11,3) )
-        self.sizer.Add(canBtn,    pos = (11,2) )
+        self.sizer.Add(hlpBtn,        pos = (11,1)               )
+        self.sizer.Add(canBtn,        pos = (11,2)               )
+        self.sizer.Add(okBtn,         pos = (11,3)               )
+
         self.FindWindowById(wx.ID_OK).Disable()
         
         self.sizer.AddGrowableCol(2)
         self.panel.SetSizer(self.sizer)
 
-        #self.sizer.Hide(self.pixel)
+    def onCalSel(self,event):
+        if self.calslct.GetSelection() == 0:
+            self.FlagCalibrant = False
+        else:
+            self.FlagCalibrant = True
+        self.checkOK()
+
+    def onDetSel(self,event):
+        if self.detslct.GetSelection() == 0:
+            self.FlagDetector = False
+        else:
+            self.FlagDetector = True
+        self.checkOK()
 
     def onCheckOK(self,event):
         self.checkOK()
 
     def checkOK(self):
-        calibrant = self.calslct.GetString(self.calslct.GetSelection())
-        if self.slctDorP.GetSelection() == 0:
-            detORpix  = self.detslct.GetString(self.detslct.GetSelection())
+        if self.FlagCalibrant and self.CaliPath is not None:
+            if self.slctDorP.GetSelection() == 1:
+                self.FindWindowById(wx.ID_OK).Enable()
+            else:
+                if self.FlagDetector:
+                    self.FindWindowById(wx.ID_OK).Enable()
+                else:
+                    self.FindWindowById(wx.ID_OK).Disable()
         else:
-            detORpix  = self.pixel.GetValue()
-        distance  = self.Distance.GetValue()
-        eORl      = self.EorL.GetValue()
+            self.FindWindowById(wx.ID_OK).Disable()
 
-        if calibrant is not 'None':
-            if detORpix is not 'None' or not None:
-                if distance is not None or not '':
-                    if self.CaliPath is not None or not '':
-                        if eORl is not None or not '':
-                            self.FindWindowById(wx.ID_OK).Enable()
-
-    def onDetSel(self,event): 
+    def onDorPSel(self,event): 
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
             self.sizer.Show(self.detslct)
         else:
             self.sizer.Hide(self.detslct)
             self.sizer.Show(self.pixel)
+            self.pixel.SetValue('0.0004')
 
         self.checkOK()
 
@@ -2535,8 +2559,8 @@ class CalXRD(wx.Dialog):
         dlg.Destroy()
         
         if read:
-            #self.CalFl.Clear()
-            #self.CalFl.SetValue(str(path))
+            self.calFil.Clear()
+            self.calFil.SetValue(os.path.split(path)[-1])
             self.CaliPath = path
         self.checkOK()
 
@@ -2564,13 +2588,13 @@ class OpenXRDPar(wx.Dialog):
         fileBtn3 = wx.Button(panel,      label='Browse...'             )
 
         self.CalFl = wx.TextCtrl(panel, 
-                                 value='Please select calibration file.',
+#                                 value='Please select calibration file.',
                                  size=(350, 25))
         self.MskFl = wx.TextCtrl(panel, 
-                                 value='Please select mask file.',
+#                                 value='Please select mask file.',
                                  size=(350, 25))
         self.BkgdFl = wx.TextCtrl(panel, 
-                                 value='Please select background file.',
+#                                 value='Please select background file.',
                                  size=(350, 25))
 
 
