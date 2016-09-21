@@ -2006,71 +2006,64 @@ class MapViewerFrame(wx.Frame):
             myDlg.Destroy()
         
             if read:
+            
+                usr_calimg = myDlg.CaliPath
 
                 ## E = hf ; E = hc/lambda
                 hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
                 if myDlg.slctEorL.GetSelection() == 1:
-                    calL = float(myDlg.EorL.GetValue())*1e-10 ## units: m
-                    calE = hc/(calL) ## units: keV
+                    usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
+                    usr_E = hc/(usr_lambda) ## units: keV
                 else:
-                    calE = float(myDlg.EorL.GetValue()) ## units keV
-                    calL = hc/(calE) ## units: m
+                    usr_E = float(myDlg.EorL.GetValue()) ## units keV
+                    usr_lambda = hc/(usr_E) ## units: m
 
                 if myDlg.slctDorP.GetSelection() == 1:
-                    pixel = float(myDlg.pixel.GetValue())
+                    usr_pixel = float(myDlg.pixel.GetValue())
                 else:
-                    det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
-                cal  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
-                dist = float(myDlg.Distance.GetValue())
+                    usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+                usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+                usr_dist = float(myDlg.Distance.GetValue())
 
                 verbose = True
                 if verbose:
                     print('\n=== Calibration input ===')
-                    print('XRD image: %s' % myDlg.CaliPath)
-                    print('Calibrant: %s' % cal)
+                    print('XRD image: %s' % usr_calimg)
+                    print('Calibrant: %s' % usr_clbrnt)
                     if myDlg.slctDorP.GetSelection() == 1:
-                        print('Pixel size: %0.5f um' % pixel)
+                        print('Pixel size: %0.5f um' % usr_pixel)
                     else:
-                        print('Detector: %s' % det)
-                    print('Incident energy: %0.2f keV (%0.4f A)' % (calE,calL*1e10))
-                    print('Starting distance: %0.3f m' % dist)
+                        print('Detector: %s' % usr_det)
+                    print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
+                    print('Starting distance: %0.3f m' % usr_dist)
                     print('=========================\n')
                 
                 ## Adapted from pyFAI-calib
                 ## mkak 2016.09.19
+
+#                usr_calibrate = pyFAI.calibrant.ALL_CALIBRANTS[usr_clbrnt]
+
                 if myDlg.slctDorP.GetSelection() == 1:
                     pform = 'pyFAI-calib -c %s -p %s -e %0.1f -l %0.3f %s'
-                    command = pform % (cal,pixel,calE,dist,myDlg.CaliPath)
+                    command = pform % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
+                
+                
                 else:
                     pform = 'pyFAI-calib -c %s -D %s -e %0.1f -l %0.3f %s'
-                    command = pform % (cal,det,calE,dist,myDlg.CaliPath)
+                    command = pform % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
+                pform2 = 'pyFAI-recalib -i %s -c %s %s'
+                command2 = pform2 % (img.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
+
+
+
 
                 print('\nNot functioning yet... but could execute:')
-                print('\t $ %s\n\n' % command)
-
-##                os.system(command)
+                print('\t $ %s' % command1)
+                print('\t $ %s\n\n' % command2)
                 
-#                cali = pyFAI.calibrant.ALL_CALIBRANTS[cal]
-                
-#                 c = Calibration(dataFiles=myDlg.CaliPath,
-#                                 #darkFiles=None,
-#                                 #flatFiles=None,
-#                                 #pixelSize=0.0004,
-#                                 #splineFile=None,
-#                                 detector=det,
-#                                 #gaussianWidth=None,
-#                                 wavelength=calL,
-#                                 calibrant=cali)
-                
-                
-                
-                #c.parse()
-#                c.read_pixelsSize()
-#                c.preprocess()
-#                c.gui_peakPicker()
-#                raw_input("Press enter to quit")
-
+                #os.system(command1)
+                #os.system(command2)
 
 
 
