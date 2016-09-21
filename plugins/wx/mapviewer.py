@@ -2020,19 +2020,19 @@ class MapViewerFrame(wx.Frame):
                     usr_lambda = hc/(usr_E) ## units: m
 
                 if myDlg.slctDorP.GetSelection() == 1:
-                    usr_pixel = float(myDlg.pixel.GetValue())
+                    usr_pixel = float(myDlg.pixel.GetValue())*1e-6
                 else:
                     usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
                 usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
                 usr_dist = float(myDlg.Distance.GetValue())
 
-                verbose = True
+                verbose = True #False
                 if verbose:
                     print('\n=== Calibration input ===')
                     print('XRD image: %s' % usr_calimg)
                     print('Calibrant: %s' % usr_clbrnt)
                     if myDlg.slctDorP.GetSelection() == 1:
-                        print('Pixel size: %0.5f um' % usr_pixel)
+                        print('Pixel size: %0.1f um' % (usr_pixel*1e6))
                     else:
                         print('Detector: %s' % usr_det)
                     print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
@@ -2040,32 +2040,43 @@ class MapViewerFrame(wx.Frame):
                     print('=========================\n')
                 
                 ## Adapted from pyFAI-calib
+                ## note: -l:units mm; -dist:units m
                 ## mkak 2016.09.19
 
-#                usr_calibrate = pyFAI.calibrant.ALL_CALIBRANTS[usr_clbrnt]
-
                 if myDlg.slctDorP.GetSelection() == 1:
-                    pform = 'pyFAI-calib -c %s -p %s -e %0.1f -l %0.3f %s'
-                    command = pform % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
+                    pform1 = 'pyFAI-calib -c %s -p %s -e %0.1f -dist %0.3f %s'
+                    command1 = pform1 % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
                 
                 
                 else:
-                    pform = 'pyFAI-calib -c %s -D %s -e %0.1f -l %0.3f %s'
-                    command = pform % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
+                    pform1 = 'pyFAI-calib -c %s -D %s -e %0.1f -dist %0.3f %s'
+                    command1 = pform1 % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
                 pform2 = 'pyFAI-recalib -i %s -c %s %s'
-                command2 = pform2 % (img.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
+                command2 = pform2 % (usr_calimg.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
 
-
-
-
-                print('\nNot functioning yet... but could execute:')
-                print('\t $ %s' % command1)
-                print('\t $ %s\n\n' % command2)
-                
+                if verbose:
+                    print('\nNot functioning within code yet... but you could execute:')
+                    print('\t $ %s' % command1)
+                    print('\t $ %s\n\n' % command2)
                 #os.system(command1)
                 #os.system(command2)
-
-
+                
+                ## Try 1: fails to open/find file. Problem with fabio? -> could
+                ##        be that we need 'trying PIL' option, e.g. WARNING:tifimage:Unable
+                ##        to read /Users/mkak/xl_CeO2-19keV.tif with TiffIO due to unpack
+                ##        requires a string argument of length 8, trying PIL
+                #cal = Calibration(dataFiles=usr_calimg,           
+                #                  detector=usr_det,
+                #                  wavelength=usr_lambda,
+                #                  #pixelSize=usr_pixel,
+                #                  calibrant=usr_clbrnt,
+                #                  )
+                
+                ## Try 2: Not providing CeO2 correctly... Hmmm...
+                #usr_detect = pyFAI.detectors.Detector().factory(usr_det)
+                #usr_clb = pyFAI.calibrant.Calibrant(filename=usr_clbrnt,wavelength=usr_lambda)
+                #pyFAI.calibration.calib(usr_calimg,usr_clb,usr_detect,dist=usr_dist)
+                #usr_calibrate = pyFAI.calibrant.ALL_CALIBRANTS[usr_clbrnt]
 
         else:
             print('pyFAI must be available for calibration.')
@@ -2435,19 +2446,28 @@ class CalXRD(wx.Dialog):
         self.Centre()
         self.Show()
 
-        self.FlagCalibrant = False
-        self.FlagDetector = False
-        self.pixel.SetValue('0.0004')
+        ## Sets some typical defaults specific to GSE 13-ID procedure
+        self.pixel.SetValue('400')     ## binned pixels (2x200um)
+        self.EorL.SetValue('19.0')     ## 19.0 keV
+        self.Distance.SetValue('0.5')  ## 0.5 m
+        self.detslct.SetSelection(22)  ## Perkin detector
+        self.calslct.SetSelection(20)  ## CeO2
+        
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
 
+        ## Do not need flags if defaults are set
+        #self.FlagCalibrant = False
+        #self.FlagDetector  = False
+        self.FlagCalibrant = True
+        self.FlagDetector  = True
 
     def InitUI(self):        
 
 
         ## Establish lists from pyFAI        
-        clbrnts = ['None']
-        self.dets = ['None']
+        clbrnts = [] #['None']
+        self.dets = [] #['None']
         for key,value in pyFAI.detectors.ALL_DETECTORS.items():
             self.dets.append(key)
         for key,value in pyFAI.calibrant.ALL_CALIBRANTS.items():
@@ -2472,14 +2492,12 @@ class CalXRD(wx.Dialog):
         ## Energy or Wavelength
         self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
         self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
-        self.EorL.SetValue('19.0')
 
         ## Refine label
         RefLbl = wx.StaticText(self.panel, label="To be refined..." ,style=LEFT)
 
         ## Distance
         self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
-        self.Distance.SetValue('0.1')
         DstLbl = wx.StaticText(self.panel, label="Distance (m):" ,style=LEFT)
 
         hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
@@ -2521,17 +2539,17 @@ class CalXRD(wx.Dialog):
 
 
     def onCalSel(self,event):
-        if self.calslct.GetSelection() == 0:
-            self.FlagCalibrant = False
-        else:
-            self.FlagCalibrant = True
+        #if self.calslct.GetSelection() == 0:
+        #    self.FlagCalibrant = False
+        #else:
+        #    self.FlagCalibrant = True
         self.checkOK()
 
     def onDetSel(self,event):
-        if self.detslct.GetSelection() == 0:
-            self.FlagDetector = False
-        else:
-            self.FlagDetector = True
+        #if self.detslct.GetSelection() == 0:
+        #    self.FlagDetector = False
+        #else:
+        #    self.FlagDetector = True
         self.checkOK()
 
     def onCheckOK(self,event):
