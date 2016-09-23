@@ -77,7 +77,7 @@ def calc_all_F(cry_strc,energy,maxhkl=10,qmax=10,twthmax=None):
                 F_norm.append(np.abs(F))
                 F_norm.append(0)
 
-    if F_norm:  and max(F_norm) > 0:
+    if F_norm and max(F_norm) > 0:
         q = np.array(q)
         F_norm = np.array(F_norm)/max(F_norm)
         return q,F_norm
