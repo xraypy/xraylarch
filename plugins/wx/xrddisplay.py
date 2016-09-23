@@ -623,6 +623,8 @@ class XRD1D_DisplayFrame(wx.Frame):
         Font10 = Font(10)
         Font11 = Font(11)
 
+        plttitle = txt(ctrlpanel, 'Plot Parameters', font=Font10, size=200)
+        
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
         ysizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -672,6 +674,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         
 ###########################
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
@@ -685,6 +688,83 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
+
+    def createSearchPanel(self):
+        ctrlpanel = wx.Panel(self, name='Ctrl Panel')
+
+        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
+        ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
+        txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
+        Font9  = Font(9)
+        Font10 = Font(10)
+        Font11 = Font(11)
+
+        plttitle = txt(ctrlpanel, 'Plot Parameters', font=Font10, size=200)
+        
+        # y scale
+        yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
+        ysizer = wx.BoxSizer(wx.HORIZONTAL)
+        ytitle = txt(yscalepanel, ' Y Axis:', font=Font10, size=80)
+        yspace = txt(yscalepanel, ' ', font=Font10, size=20)
+        ylog   = Choice(yscalepanel, size=(80, 30), choices=['linear', 'log'],
+                      action=self.onLogLinear)
+        yaxis  = Check(yscalepanel, ' Show Y Scale ', action=self.onYAxis,
+                      default=True)
+
+        self.wids['show_yaxis'] = yaxis
+        ysizer.Add(ytitle,  0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        ysizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
+        ysizer.Add(yspace,  0, wx.EXPAND|wx.ALL, 0)
+        ysizer.Add(yaxis,   0, wx.EXPAND|wx.ALL, 0)
+        pack(yscalepanel, ysizer)
+
+        # zoom buttons
+        zoompanel = wx.Panel(ctrlpanel, name='ZoomPanel')
+        zsizer = wx.BoxSizer(wx.HORIZONTAL)
+        z1 = Button(zoompanel, 'Zoom In',   size=(80, 30), action=self.onZoomIn)
+        z2 = Button(zoompanel, 'Zoom Out',  size=(80, 30), action=self.onZoomOut)
+        p1 = Button(zoompanel, 'Pan Lo',    size=(75, 30), action=self.onPanLo)
+        p2 = Button(zoompanel, 'Pan Hi',    size=(75, 30), action=self.onPanHi)
+
+        zsizer.Add(p1,      0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(p2,      0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(z1,      0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
+        pack(zoompanel, zsizer)
+
+        # x scale
+        xscalepanel = wx.Panel(ctrlpanel, name='XScalePanel')
+        xsizer = wx.BoxSizer(wx.HORIZONTAL)
+        xtitle = txt(xscalepanel, ' X Axis:', font=Font10, size=80)
+        xspace = txt(xscalepanel, ' ', font=Font10, size=20)
+
+        self.xaxis = wx.RadioBox(xscalepanel, -1, '',wx.DefaultPosition, wx.DefaultSize,
+                                     ('q','2th','d'),
+                                     1, wx.RA_SPECIFY_ROWS)
+        self.xaxis.Bind(wx.EVT_RADIOBOX, self.onXaxis)
+
+        xsizer.Add(xtitle,     0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        xsizer.Add(xspace,     0, wx.EXPAND|wx.ALL, 0)
+        xsizer.Add(self.xaxis, 0, wx.EXPAND|wx.ALL, 0)
+        pack(xscalepanel, xsizer)
+        
+###########################
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(xscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+
+        pack(ctrlpanel, sizer)
+        return ctrlpanel
+
 
     def onXaxis(self, event=None):
 
@@ -714,18 +794,23 @@ class XRD1D_DisplayFrame(wx.Frame):
 
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
+        searchpanel = self.createSearchPanel()
         plotpanel = self.panel = self.createPlotPanel()
         plotpanel.yformatter = self._formaty
 
         ##tx, ty = self.wids['ptable'].GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
+        sx, sy = searchpanel.GetBestSize()
         px, py = plotpanel.GetBestSize()
 
-        self.SetSize((cx+px, 25+max(cy, py)))
+        self.SetSize((max(cx,sx)+px, 25+max(cy+sy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
+        
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(ctrlpanel, 0, style, 3)
+        
+        sizer.Add(ctrlpanel, 0, wx.ALIGN_LEFT|wx.ALL, 3)
+        sizer.Add(searchpanel, 0, wx.ALIGN_LEFT|wx.ALL, 2)
         sizer.Add(plotpanel, 1, style, 2)
 
         self.SetMinSize((450, 150))
