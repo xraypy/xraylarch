@@ -31,12 +31,12 @@ def struc_from_cif(ciffile,verbose=True):
         ## Open CIF using xu functions
         cif_strc = xu.materials.Crystal.fromCIF(ciffile)
     except:
-        print('xrayutilities error: Could not read %s' % os.path.split(cif)[-1])
+        print('xrayutilities error: Could not read %s' % os.path.split(ciffile)[-1])
         return
         
     return cif_strc 
 
-def calc_all_F(cry_strc,energy,maxhkl=10,qmax=10,twthmax=None):
+def calc_all_F(cry_strc,energy,maxhkl=10,qmax=10,twthmax=None,verbose=True):
     '''
     Calculate F for one energy for range of hkl for one structure
     mkak 2016.09.22
