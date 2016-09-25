@@ -880,9 +880,9 @@ class XRD1D_DisplayFrame(wx.Frame):
                      constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
             energy = hc/(self.xrd.wavelength) ## units: keV
             q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
-            
-            self.oplot1D(self, None, color='red', label=cry_strc.name,
-              xrd=[q,F])
+
+            self.xrd2.data1D = [(q,F)]
+            self.oplot1D(self, None, label=cry_strc.name, xrd=self.xrd2)
         
 
     def createCustomMenus(self):
