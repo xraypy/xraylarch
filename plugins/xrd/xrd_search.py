@@ -97,7 +97,7 @@ class XRDSearchGUI(wx.Dialog):
     def __init__(self):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(460, 440))
+        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(500, 440))
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
@@ -105,63 +105,63 @@ class XRDSearchGUI(wx.Dialog):
         
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
-        self.Mineral = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
         #mineral_list = [] #['None']
         #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
 
         ## Author search
         lbl_Author  = wx.StaticText(self.panel, label='Author:' )
-        self.Author = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.Author = wx.TextCtrl(self.panel,   size=(270, -1))
 
         ## Chemistry search
         lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
-        self.Chemistry = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1))
         self.chmslct  = wx.Button(self.panel,     label='Specify...')
         
         ## Cell parameter symmetry search
         lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
-        self.Symmetry = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
         self.symslct  = wx.Button(self.panel,     label='Specify...')
-#         
-#         ## Diffraction search
-#         mineral_list = [] #['None']
-#         sel_Mineral  = wx.StaticText(self.panel,  label='Mineral:' )
-#         self.Mineral = wx.TextCtrl(self.panel, size=(190, -1))
-#         #self.Mineral = wx.Choice(self.panel, choices=mineral_list)
-#         
-#         ## General search
-#         mineral_list = [] #['None']
-#         sel_Mineral  = wx.StaticText(self.panel,  label='Mineral:' )
-#         self.Mineral = wx.TextCtrl(self.panel, size=(190, -1))
-#         #self.Mineral = wx.Choice(self.panel, choices=mineral_list)
+        
+        ## General search
+        lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
+        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
 
 
-        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
-        okBtn  = wx.Button(self.panel, wx.ID_OK     )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+        ## Define buttons
+        rstBtn = wx.Button(self.panel, label='Reset' )
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
 
-        self.chmslct.Bind(wx.EVT_CHOICE,  self.onChemistry)
-        self.symslct.Bind(wx.EVT_CHOICE,  self.onSymmetry)
+        ## Bind buttons for functionality
+        self.Bind(wx.EVT_CHOICE, self.onReset,     rstBtn       )
+        self.Bind(wx.EVT_CHOICE, self.onChemistry, self.chmslct )
+        self.Bind(wx.EVT_CHOICE, self.onSymmetry,  self.symslct )
 
         self.sizer = wx.GridBagSizer( 5, 6)
 
-        self.sizer.Add(lbl_Mineral,    pos = ( 1,1) )
-        self.sizer.Add(self.Mineral,   pos = ( 1,2) )
+        self.sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
+        self.sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Author,     pos = ( 2,1) )
-        self.sizer.Add(self.Author,    pos = ( 2,2) )
+        self.sizer.Add(lbl_Author,     pos = ( 2,1)               )
+        self.sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1) )
-        self.sizer.Add(self.Chemistry, pos = ( 3,2) )
-        self.sizer.Add(self.chmslct,   pos = ( 3,3) )
+        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
+        self.sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
+        self.sizer.Add(self.chmslct,   pos = ( 3,4)               )
 
-        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1) )
-        self.sizer.Add(self.Symmetry,  pos = ( 4,2) )
-        self.sizer.Add(self.symslct,   pos = ( 4,3) )
+        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
+        self.sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
+        self.sizer.Add(self.symslct,   pos = ( 4,4)               )
 
-        self.sizer.Add(hlpBtn,        pos = (11,1)  )
-        self.sizer.Add(canBtn,        pos = (11,2)  )
-        self.sizer.Add(okBtn,         pos = (11,3)  )
+        self.sizer.Add(lbl_Search,     pos = ( 5,1)               )
+        self.sizer.Add(self.Search,    pos = ( 5,2), span = (1,3) )
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)                )
+        self.sizer.Add(canBtn,        pos = (11,2)                )
+        self.sizer.Add(rstBtn,        pos = (11,3)                )
+        self.sizer.Add(okBtn,         pos = (11,4)                )
         
         self.panel.SetSizer(self.sizer)
 
@@ -173,6 +173,12 @@ class XRDSearchGUI(wx.Dialog):
     def onSymmetry(self,event):
         XRDSymmetrySearch()
 
+    def onReset(self,event):
+        self.Mineral.Clear()
+        self.Author.Clear()
+        self.Chemistry.Clear()
+        self.Symmetry.Clear()
+        self.Search.Clear()
             
 class XRDSymmetrySearch(wx.Dialog):
     """"""
