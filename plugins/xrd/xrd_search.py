@@ -6,9 +6,6 @@ mkak 2016.09.23
 import time
 import os
 
-#import fabio
-#from pyFAI.multi_geometry import MultiGeometry
-
 HAS_XRAYUTIL = False
 try:
     import xrayutilities as xu
@@ -16,11 +13,11 @@ try:
 except ImportError:
     pass
 
-#import matplotlib.pyplot as plt
 import numpy as np
 import glob
 import os
 import math
+import wx
 
 def struc_from_cif(ciffile,verbose=True):
 
@@ -93,3 +90,181 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 
     return E,F
 
+class XRDSearchGUI(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(460, 440))
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Mineral search
+        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
+        self.Mineral = wx.TextCtrl(self.panel,   size=(190, -1))
+        #mineral_list = [] #['None']
+        #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
+
+        ## Author search
+        lbl_Author  = wx.StaticText(self.panel, label='Author:' )
+        self.Author = wx.TextCtrl(self.panel,   size=(190, -1))
+
+        ## Chemistry search
+        lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
+        self.Chemistry = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.chmslct  = wx.Button(self.panel,     label='Specify...')
+        
+        ## Cell parameter symmetry search
+        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
+        self.Symmetry = wx.TextCtrl(self.panel,   size=(190, -1))
+        self.symslct  = wx.Button(self.panel,     label='Specify...')
+#         
+#         ## Diffraction search
+#         mineral_list = [] #['None']
+#         sel_Mineral  = wx.StaticText(self.panel,  label='Mineral:' )
+#         self.Mineral = wx.TextCtrl(self.panel, size=(190, -1))
+#         #self.Mineral = wx.Choice(self.panel, choices=mineral_list)
+#         
+#         ## General search
+#         mineral_list = [] #['None']
+#         sel_Mineral  = wx.StaticText(self.panel,  label='Mineral:' )
+#         self.Mineral = wx.TextCtrl(self.panel, size=(190, -1))
+#         #self.Mineral = wx.Choice(self.panel, choices=mineral_list)
+
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        self.chmslct.Bind(wx.EVT_CHOICE,  self.onChemistry)
+        self.symslct.Bind(wx.EVT_CHOICE,  self.onSymmetry)
+
+        self.sizer = wx.GridBagSizer( 5, 6)
+
+        self.sizer.Add(lbl_Mineral,    pos = ( 1,1) )
+        self.sizer.Add(self.Mineral,   pos = ( 1,2) )
+
+        self.sizer.Add(lbl_Author,     pos = ( 2,1) )
+        self.sizer.Add(self.Author,    pos = ( 2,2) )
+
+        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1) )
+        self.sizer.Add(self.Chemistry, pos = ( 3,2) )
+        self.sizer.Add(self.chmslct,   pos = ( 3,3) )
+
+        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1) )
+        self.sizer.Add(self.Symmetry,  pos = ( 4,2) )
+        self.sizer.Add(self.symslct,   pos = ( 4,3) )
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)  )
+        self.sizer.Add(canBtn,        pos = (11,2)  )
+        self.sizer.Add(okBtn,         pos = (11,3)  )
+        
+        self.panel.SetSizer(self.sizer)
+
+        self.Show()
+
+    def onChemistry(self,event):
+        print('Will eventually show Periodic Table...')
+
+    def onSymmetry(self,event):
+        XRDSymmetrySearch()
+
+            
+class XRDSymmetrySearch(wx.Dialog):
+    """"""
+
+    def __init__(self):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+
+
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Lattice parameters
+        lbl_a = wx.StaticText(self.panel,    label='a (A)' )
+        self.min_a = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_a = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_b = wx.StaticText(self.panel,    label='b (A)' )
+        self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_c = wx.StaticText(self.panel,    label='a (A)' )
+        self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_alpha = wx.StaticText(self.panel,    label='alpha (deg)' )
+        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_beta = wx.StaticText(self.panel,    label='beta (deg)' )
+        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_gamma = wx.StaticText(self.panel,    label='gamma (deg)' )
+        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+
+        SG_list = []
+        sgfile = '/Users/mkak/Desktop/space_groups2.txt'
+        sg = open(sgfile,'r')
+        sgno = 0
+        for line in sg.read():
+            sgno += sgno
+            SG_list.append('%03d - %s' % (sgno,line))
+        sg.close()
+        
+        lbl_SG = wx.StaticText(self.panel, label='Space group:')
+        self.SG = wx.Choice(self.panel,    choices=SG_list)
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        self.sizer = wx.GridBagSizer( 5, 6)
+
+        self.sizer.Add(lbl_a,          pos = ( 1,1) )
+        self.sizer.Add(self.min_a,     pos = ( 1,2) )
+        self.sizer.Add(self.max_a,     pos = ( 1,3) )
+
+        self.sizer.Add(lbl_b,          pos = ( 2,1) )
+        self.sizer.Add(self.min_b,     pos = ( 2,2) )
+        self.sizer.Add(self.max_b,     pos = ( 2,3) )
+
+        self.sizer.Add(lbl_c,          pos = ( 3,1) )
+        self.sizer.Add(self.min_c,     pos = ( 3,2) )
+        self.sizer.Add(self.max_c,     pos = ( 3,3) )
+
+        self.sizer.Add(lbl_alpha,      pos = ( 4,1) )
+        self.sizer.Add(self.min_alpha, pos = ( 4,2) )
+        self.sizer.Add(self.max_alpha, pos = ( 4,3) )
+
+        self.sizer.Add(lbl_beta,       pos = ( 5,1) )
+        self.sizer.Add(self.min_beta,  pos = ( 5,2) )
+        self.sizer.Add(self.max_beta,  pos = ( 5,3) )
+
+        self.sizer.Add(lbl_gamma,      pos = ( 6,1) )
+        self.sizer.Add(self.min_gamma, pos = ( 6,2) )
+        self.sizer.Add(self.max_gamma, pos = ( 6,3) )
+
+        self.sizer.Add(lbl_SG,         pos = ( 7,1) )
+        self.sizer.Add(self.SG,        pos = ( 7,2) )
+
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)  )
+        self.sizer.Add(canBtn,        pos = (11,2)  )
+        self.sizer.Add(okBtn,         pos = (11,3)  )
+
+        self.FindWindowById(wx.ID_OK).Disable()
+        
+        self.panel.SetSizer(self.sizer)
+
+        self.Show()
+        

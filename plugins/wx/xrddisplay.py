@@ -62,7 +62,9 @@ from wxutils import (SimpleText, EditableListBox, Font,
 
 from larch_plugins.math import index_of
 from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th,calc_d_to_q,calc_2th_to_q
-from larch_plugins.xrd import struc_from_cif,calc_all_F
+from larch_plugins.xrd import struc_from_cif,calc_all_F,XRDSearchGUI
+
+import matplotlib as plt
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -709,9 +711,12 @@ class XRD1D_DisplayFrame(wx.Frame):
         # Load buttons
         loadpanel = wx.Panel(searchpanel, name='LoadPanel')
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        l1 = Button(loadpanel, 'Load CIF',   size=(80, 30), action=self.onLoadCIF)
+        
+        l1 = Button(loadpanel, 'Search Database', size=(120, 30), action=self.onSearchDB)
+        l2 = Button(loadpanel, 'Load CIF',  size=(120, 30), action=self.onLoadCIF)
 
         lsizer.Add(l1,      0, wx.EXPAND|wx.ALL, 0)
+        lsizer.Add(l2,      0, wx.EXPAND|wx.ALL, 0)
         pack(loadpanel, lsizer)
 # 
 #         # x scale
@@ -871,19 +876,32 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.panel.toggle_grid()
 
     def onLoadCIF(self, event=None):
-        print('Not yet running...')
-        struc_from_cif
-        cry_strc = struc_from_cif('/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/NaCl.cif')
+       
+        wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose CIF file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
 
-        if cry_strc:
-            hc = constants.value(u'Planck constant in eV s') * \
-                     constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            energy = hc/(self.xrd.wavelength) ## units: keV
-            q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            cry_strc = struc_from_cif(path)
 
-            xrddata = None
-            xrddata.create_dataset(data1D, data=[q,F])
-            self.plot1Dxrd(xrddata, show_xrd2=True)
+            if cry_strc:
+                hc = constants.value(u'Planck constant in eV s') * \
+                         constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+                energy = hc/(self.xrd.wavelength) ## units: keV
+                q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
+
+                #self.plot1Dxrd(xrddata, show_xrd2=True)
+
+    def onSearchDB(self, event=None):
+
+        XRDSearchGUI()
 
     def createCustomMenus(self):
         return
