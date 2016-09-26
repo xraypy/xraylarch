@@ -881,9 +881,9 @@ class XRD1D_DisplayFrame(wx.Frame):
             energy = hc/(self.xrd.wavelength) ## units: keV
             q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
 
-            self.xrd2.data1D = [(q,F)]
-            self.oplot1D(self, None, label=cry_strc.name, xrd=self.xrd2)
-        
+            xrddata = None
+            xrddata.create_dataset(data1D, data=[q,F])
+            self.plot1Dxrd(xrddata, show_xrd2=True)
 
     def createCustomMenus(self):
         return
