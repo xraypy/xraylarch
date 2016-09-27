@@ -1,7 +1,6 @@
 
-from larch import Group, Parameter, isgroup, Minimizer
+from larch import Group, Parameter, isgroup, Minimizer, parse_group_args
 
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import index_of
 from larch_plugins.xray import xray_edge, xray_line, f2_chantler, f1f2
 from larch_plugins.xafs import set_xafsGroup, find_e0
@@ -13,7 +12,7 @@ MAXORDER = 6
 
 def match_f2(p):
     """
-    Objective function for matching mu(E) data to tabulated f"(E) using the MBACK
+    Objective function for matching mu(E) data to tabulated f''(E) using the MBACK
     algorithm and, optionally, the Lee & Xiang extension.
     """
     s      = p.s.value
@@ -36,10 +35,10 @@ def match_f2(p):
 
 
 def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
-          whiteline=None, leexiang=False, tables='cl', fit_erfc=False, return_f1=False,
+          whiteline=None, leexiang=False, tables='chantler', fit_erfc=False, return_f1=False,
           _larch=None):
     """
-    Match mu(E) data for tabulated f"(E) using the MBACK algorithm and,
+    Match mu(E) data for tabulated f''(E) using the MBACK algorithm and,
     optionally, the Lee & Xiang extension
 
     Arguments:
@@ -53,7 +52,7 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
       emax:          ending energy for fit
       whiteline:     exclusion zone around white lines
       leexiang:      flag to use the Lee & Xiang extension
-      tables:        'cl' or 'chantler'
+      tables:        'chantler' (default) or 'cl'
       fit_erfc:      True to float parameters of error function
       return_f1:     True to put the f1 array in the group
 
@@ -77,6 +76,11 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='mback')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
     group = set_xafsGroup(group, _larch=_larch)
 
     if e0 is None:              # need to run find_e0:
@@ -90,8 +94,8 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     ### theta is an array used to exclude the regions <emin, >emax, and
     ### around white lines, theta=0.0 in excluded regions, theta=1.0 elsewhere
     (i1, i2) = (0, len(energy)-1)
-    if emin != None: i1 = index_of(energy, emin)
-    if emax != None: i2 = index_of(energy, emax)
+    if emin is not None: i1 = index_of(energy, emin)
+    if emax is not None: i2 = index_of(energy, emax)
     theta = np.ones(len(energy)) # default: 1 throughout
     theta[0:i1]  = 0
     theta[i2:-1] = 0

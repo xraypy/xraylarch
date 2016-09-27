@@ -7,16 +7,16 @@ import os
 import time
 from threading import Thread
 import socket
-try:
-    from collections import OrderedDict
-except ImportError:
-    from larch.utils.ordereddict import OrderedDict
+
 from functools import partial
 import wx
 try:
     from wx._core import PyDeadObjectError
 except:
     PyDeadObjectError = Exception
+
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
@@ -113,14 +113,17 @@ class MapImageFrame(ImageFrame):
         zdc.SetBrush(wx.TRANSPARENT_BRUSH)
         zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
         zdc.ResetBoundingBox()
-        zdc.BeginDrawing()
+        if not is_wxPhoenix:
+            zdc.BeginDrawing()
+
 
         # erase previous box
         if self.rbbox is not None:
             zdc.DrawLine(*self.rbbox)
         self.rbbox = (xmin, ymin, xmax, ymax)
         zdc.DrawLine(*self.rbbox)
-        zdc.EndDrawing()
+        if not is_wxPhoenix:
+            zdc.EndDrawing()
 
     def prof_leftdown(self, event=None):
         self.report_leftdown(event=event)
@@ -137,9 +140,12 @@ class MapImageFrame(ImageFrame):
             zdc.SetBrush(wx.TRANSPARENT_BRUSH)
             zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
             zdc.ResetBoundingBox()
-            zdc.BeginDrawing()
+            if not is_wxPhoenix:
+                zdc.BeginDrawing()
             zdc.DrawLine(*self.rbbox)
-            zdc.EndDrawing()
+            if not is_wxPhoenix:
+                zdc.EndDrawing()
+
             self.rbbox = None
 
         if self.zoom_ini is None or self.lastpoint[0] is None:
@@ -260,7 +266,7 @@ class MapImageFrame(ImageFrame):
         if event.xdata is None or event.ydata is None:
             return
 
-        ix, iy = round(event.xdata), round(event.ydata)
+        ix, iy = int(round(event.xdata)), int(round(event.ydata))
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
@@ -350,7 +356,7 @@ class MapImageFrame(ImageFrame):
             name  = str(event.GetString().strip())
             # name  = str(self.pos_name.GetValue().strip())
             ix, iy = self.this_point
-            x = float(self.panel.xdata[ix])
-            y = float(self.panel.ydata[iy])
+            x = float(self.panel.xdata[int(ix)])
+            y = float(self.panel.ydata[int(iy)])
             self.save_callback(name, ix, iy, x=x, y=y,
                                title=self.title, datafile=self.xrmfile)

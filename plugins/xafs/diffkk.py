@@ -8,7 +8,7 @@ from larch import (Group, Parameter, isParameter, param_value,
 
 from larch_plugins.std  import show
 from larch_plugins.math import _interp
-from larch_plugins.xray import f1f2, xray_edge, xray_line
+from larch_plugins.xray import xray_edge, xray_line
 from larch_plugins.xafs import mback
 try:
     from larch_plugins.wx   import _newplot, _plot
@@ -265,7 +265,8 @@ class diffKKGroup(Group):
             Exception("absorption edge not provided for diffKK")
 
         mb_kws = dict(order=3, z=self.z, edge=self.edge, e0=None, emin=None, emax=None,
-                      whiteline=False, leexiang=False, tables='cl', fit_erfc=False, return_f1=True)
+                      whiteline=False, leexiang=False, tables='chantler',
+                      fit_erfc=False, return_f1=True)
         if self.mback_kws is not None:
             mb_kws.update(self.mback_kws)
 

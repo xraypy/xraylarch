@@ -3,10 +3,10 @@
 Read/Write XAS Data Interchange Format for Python
 """
 import os
-import ctypes
-import ctypes.util
+from ctypes import c_long, c_double, c_char_p, c_void_p, pointer, Structure
+import six
 
-__version__ = '1.1.0larch'
+__version__ = '1.2.0larch'
 
 from numpy import array, exp, log, sin, arcsin
 
@@ -14,33 +14,60 @@ from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
 from larch_plugins.xray import RAD2DEG, PLANCK_HC
 
-class XDIFileStruct(ctypes.Structure):
+class XDIFileStruct(Structure):
     "emulate XDI File"
-    _fields_ = [('nmetadata',     ctypes.c_long),
-                ('narrays',       ctypes.c_long),
-                ('npts',          ctypes.c_long),
-                ('narray_labels', ctypes.c_long),
-                ('nouter',         ctypes.c_long),
-                ('error_lineno',  ctypes.c_long),
-                ('dspacing',      ctypes.c_double),
-                ('xdi_libversion',ctypes.c_char_p),
-                ('xdi_version',   ctypes.c_char_p),
-                ('extra_version', ctypes.c_char_p),
-                ('filename',      ctypes.c_char_p),
-                ('element',       ctypes.c_char_p),
-                ('edge',          ctypes.c_char_p),
-                ('comments',      ctypes.c_char_p),
-                ('error_line',    ctypes.c_char_p),
-                ('error_message', ctypes.c_char_p),
-                ('array_labels',  ctypes.c_void_p),
-                ('outer_label',   ctypes.c_char_p),
-                ('array_units',   ctypes.c_void_p),
-                ('meta_families', ctypes.c_void_p),
-                ('meta_keywords', ctypes.c_void_p),
-                ('meta_values',   ctypes.c_void_p),
-                ('array',         ctypes.c_void_p),
-                ('outer_array',   ctypes.c_void_p),
-                ('outer_breakpts', ctypes.c_void_p)]
+    _fields_ = [('nmetadata',     c_long),
+                ('narrays',       c_long),
+                ('npts',          c_long),
+                ('narray_labels', c_long),
+                ('nouter',        c_long),
+                ('error_lineno',  c_long),
+                ('dspacing',      c_double),
+                ('xdi_libversion',c_char_p),
+                ('xdi_version',   c_char_p),
+                ('extra_version', c_char_p),
+                ('filename',      c_char_p),
+                ('element',       c_char_p),
+                ('edge',          c_char_p),
+                ('comments',      c_char_p),
+                ('error_line',    c_char_p),
+                ('error_message', c_char_p),
+                ('array_labels',  c_void_p),
+                ('outer_label',   c_char_p),
+                ('array_units',   c_void_p),
+                ('meta_families', c_void_p),
+                ('meta_keywords', c_void_p),
+                ('meta_values',   c_void_p),
+                ('array',         c_void_p),
+                ('outer_array',   c_void_p),
+                ('outer_breakpts', c_void_p)]
+
+string_attrs = ('comments', 'edge', 'element', 'error_line',
+                'error_message', 'extra_version', 'filename',
+                'outer_label', 'xdi_libversion', 'xdi_pyversion',
+                'xdi_version')
+
+def Py2tostr(val):
+    return str(val)
+
+def Py2tostrlist(address, nitems):
+    return [str(i) for i in (nitems*c_char_p).from_address(address)]
+
+def Py3tostr(val):
+    if isinstance(val, str):
+        return val
+    if isinstance(val, bytes):
+        return str(val, 'latin_1')
+    return str(val)
+
+def Py3tostrlist(address, nitems):
+    return [str(i, 'ASCII') for i in (nitems*c_char_p).from_address(address)]
+
+tostr  = Py2tostr
+tostrlist = Py2tostrlist
+if six.PY3:
+    tostr = Py3tostr
+    tostrlist = Py3tostrlist
 
 def add_dot2path():
     """add this folder to begninng of PATH environmental variable"""
@@ -57,7 +84,7 @@ def get_xdilib():
     global XDILIB
     if XDILIB is None:
         XDILIB = get_dll('xdifile')
-        XDILIB.XDI_errorstring.restype   = ctypes.c_char_p
+        XDILIB.XDI_errorstring.restype   = c_char_p
     return XDILIB
 
 class XDIFileException(Exception):
@@ -103,7 +130,8 @@ class XDIFile(object):
         """
         if filename is None and self.filename is not None:
             filename = self.filename
-        pxdi = ctypes.pointer(XDIFileStruct())
+        filename = six.b(filename)
+        pxdi = pointer(XDIFileStruct())
         self.status = out = self.xdilib.XDI_readfile(filename, pxdi)
         if out < 0:
             msg =  self.xdilib.XDI_errorstring(out)
@@ -114,11 +142,10 @@ class XDIFile(object):
         xdi = pxdi.contents
         for attr in dict(xdi._fields_):
             setattr(self, attr, getattr(xdi, attr))
-        pchar = ctypes.c_char_p
-        self.array_labels = (self.narrays*pchar).from_address(xdi.array_labels)[:]
-        arr_units  = (self.narrays*pchar).from_address(xdi.array_units)[:]
-        self.array_units = []
-        self.array_addrs = []
+        self.array_labels = tostrlist(xdi.array_labels, self.narrays)
+        arr_units         = tostrlist(xdi.array_units, self.narrays)
+        self.array_units  = []
+        self.array_addrs  = []
         for unit in arr_units:
             addr = ''
             if '||' in unit:
@@ -126,9 +153,9 @@ class XDIFile(object):
             self.array_units.append(unit)
             self.array_addrs.append(addr)
 
-        mfams = (self.nmetadata*pchar).from_address(xdi.meta_families)[:]
-        mkeys = (self.nmetadata*pchar).from_address(xdi.meta_keywords)[:]
-        mvals = (self.nmetadata*pchar).from_address(xdi.meta_values)[:]
+        mfams = tostrlist(xdi.meta_families, self.nmetadata)
+        mkeys = tostrlist(xdi.meta_keywords, self.nmetadata)
+        mvals = tostrlist(xdi.meta_values,   self.nmetadata)
         self.attrs = {}
         for fam, key, val in zip(mfams, mkeys, mvals):
             fam = fam.lower()
@@ -137,14 +164,14 @@ class XDIFile(object):
                 self.attrs[fam] = {}
             self.attrs[fam][key] = val
 
-        parrays = (xdi.narrays*ctypes.c_void_p).from_address(xdi.array)[:]
-        rawdata = [(xdi.npts*ctypes.c_double).from_address(p)[:] for p in parrays]
+        parrays = (xdi.narrays*c_void_p).from_address(xdi.array)[:]
+        rawdata = [(xdi.npts*c_double).from_address(p)[:] for p in parrays]
 
         nout = xdi.nouter
         outer, breaks = [], []
         if nout > 1:
-            outer  = (nout*ctypes.c_double).from_address(xdi.outer_array)[:]
-            breaks = (nout*ctypes.c_long).from_address(xdi.outer_breakpts)[:]
+            outer  = (nout*c_double).from_address(xdi.outer_array)[:]
+            breaks = (nout*c_long).from_address(xdi.outer_breakpts)[:]
         for attr in ('outer_array', 'outer_breakpts', 'nouter'):
             delattr(self, attr)
         self.outer_array    = array(outer)
@@ -225,10 +252,17 @@ def read_xdi(fname, _larch=None):
     """simple mapping of XDI file to larch groups"""
     x = XDIFile(fname)
     group = _larch.symtable.create_group()
-    group.__name__ ='XDI file %s' % fname
     for key, val in x.__dict__.items():
         if not key.startswith('_'):
+            if six.PY3 and key in string_attrs:
+                val = tostr(val)
             setattr(group, key, val)
+    group.__name__ ='XDI file %s' % fname
+    doc = ['%i arrays, %i npts' % (x.narrays, x.npts)]
+    arr_labels = getattr(x, 'array_labels', None)
+    if arr_labels is not None:
+        doc.append("Array Labels: %s" % repr(arr_labels))
+    group.__doc__ = '\n'.join(doc)
     return group
 
 def registerLarchPlugin():

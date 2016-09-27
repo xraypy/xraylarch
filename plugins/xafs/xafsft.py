@@ -9,9 +9,9 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
 from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
-from larch import Group, ValidateLarchPlugin
-from Call_args import DefCallArgs
-from larch_plugins.std import parse_group_args
+from larch import (Group, ValidateLarchPlugin, Make_CallArgs,
+                   parse_group_args)
+
 from larch_plugins.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
@@ -118,7 +118,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     return fwin
 
 @ValidateLarchPlugin
-@DefCallArgs("xftr_details",["r", "chir"])
+@Make_CallArgs(["r", "chir"])
 def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -196,11 +196,11 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
     group.chiq_im  =  out.imag[:nkpts]
     if with_phase:
         group.chiq_pha =  complex_phase(out[:nkpts])
-    
+
 
 
 @ValidateLarchPlugin
-@DefCallArgs("xftf_details",["k", "chi"])
+@Make_CallArgs(["k", "chi"])
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
          nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -270,10 +270,10 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     group.chir_im  =  out.imag[:irmax]
     if with_phase:
         group.chir_pha =  complex_phase(out[:irmax])
-        
 
 
-    
+
+
 
 @ValidateLarchPlugin
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
@@ -316,7 +316,7 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return (kstep / sqrt(pi)) * fft(cchi)[:nfft/2]
+    return (kstep / sqrt(pi)) * fft(cchi)[:int(nfft/2)]
 
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -341,7 +341,7 @@ def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chir)] = chir
-    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:nfft/2]
+    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:int(nfft/2)]
 
 
 def registerLarchPlugin():

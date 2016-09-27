@@ -23,9 +23,8 @@
 # 2014-Apr M Newville : translated to Python for Larch
 
 import numpy as np
-from larch import ValidateLarchPlugin
+from larch import ValidateLarchPlugin, parse_group_args
 
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
@@ -75,7 +74,7 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
         chi = chi * k**kweight
 
     # extend EXAFS to 1024 data points...
-    NFT = nfft/2
+    NFT = int(nfft/2)
     if len(k) < NFT:
         knew = np.arange(NFT) * kstep
         xnew = np.zeros(NFT) * kstep

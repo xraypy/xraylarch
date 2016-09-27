@@ -15,7 +15,6 @@ except ImportError:
 try:
     import epicsscan
     from epicsscan.scandb import ScanDB, InstrumentDB
-    print 
     HAS_EPICSSCAN = True
 except ImportError:
     HAS_EPICSSCAN = False

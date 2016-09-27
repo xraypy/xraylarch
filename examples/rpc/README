@@ -6,11 +6,23 @@ This has severl important possible use cases:
  3. A client can exit, but the underlying larch process
     can be persistant, and so re-joined later.
 
-To start a larch RPC server, use 
+To start a larch RPC server, you can use either
     larch -r
+or
+    larch_server -r start
 
 You can specify a port with 
     larch -r -p 4966
+or
+    larch_server -p 4966 start
+
+The larch_server program also takes commands of 
+  stop     to stop a server
+  restart  to stop and restart a server (on the same port)
+  status   to tell whether a server is running
+  report   to give a brief report about a runnint server
+  next     to start a server on the next unused port 
+
 
 The examples here shows a simple client that simply runs some larch
 commands and retrieves some data (which is transferred with json).

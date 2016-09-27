@@ -23,7 +23,7 @@ import larch
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
 
-class CalibrationFrame(wx.Frame):
+class XRFCalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):
         self.mca = mca
         self.larch = larch
@@ -70,7 +70,7 @@ class CalibrationFrame(wx.Frame):
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
-            w_use  = Check(panel, size=(40, -1), default=fwhm<0.50)
+            w_use  = Check(panel, label='use?', size=(40, -1), default=fwhm<0.50)
 
             panel.Add(w_name, style=LEFT, newrow=True)
             panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
@@ -200,6 +200,7 @@ class ColorsFrame(wx.Frame):
         scolor(' Major X-ray Lines:',   'major_elinecolor', newrow=True)
         scolor(' Minor X-ray Lines:',   'minor_elinecolor')
         scolor(' Selected X-ray Line:', 'emph_elinecolor', newrow=True)
+        scolor(' Held  X-ray Lines:',   'hold_elinecolor')
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
@@ -230,6 +231,10 @@ class ColorsFrame(wx.Frame):
         elif item == 'minor_elinecolor':
             for l in self.parent.minor_markers:
                 l.set_color(color)
+        elif item == 'hold_elinecolor':
+            for l in self.parent.hold_markers:
+                l.set_color(color)
+
         self.parent.panel.canvas.draw()
         self.parent.panel.Refresh()
 
@@ -360,6 +365,7 @@ class XRFDisplayConfig:
     emph_elinecolor  = '#444444'
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#F4DAC0'
+    hold_elinecolor  = '#CAC8DA'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'

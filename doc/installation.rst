@@ -2,27 +2,31 @@
 Downloading and Installation
 ====================================
 
-.. _Larch Repository (github.com):               http://github.com/xraypy/xraylarch
-.. _Anaconda Python:                             http://www.continuum.io/
-.. _Anaconda Downloads:                          http://www.continuum.io/downloads
-.. _Larch Downloads (cars.uchicago.edu):         http://cars.uchicago.edu/xraylarch/downloads
-.. _Larch Docs and Examples (cars.uchicago.edu): http://cars.uchicago.edu/xraylarch/downloads/docs
-.. _Larch Releases (github.com):                 https://github.com/xraypy/xraylarch/releases
+.. _Larch Repository (github.com): http://github.com/xraypy/xraylarch
+.. _Anaconda Python:               http://www.continuum.io/
+.. _Anaconda Downloads:            http://www.continuum.io/downloads
+.. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 
 
-The latest version of Larch is 0.9.27 (December 2015).  Larch is in
-active development, so there may be bugs and unintended features, and
-there are definitely some missing desired features.  Still, most of
+The latest release version of Larch is |release|.  Larch is in active and
+continuing development, and the intention is to tag a new release version
+every six months or so.  Of course, there may be bugs and unintended
+features, and some missing or incomplete desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.
-
 
 There are several ways to download and install Larch.  Starting with Larch
 0.9.27, the **recommended** way to install and run Larch on Windows and Mac
-OS X is with `Anaconda Python`_ (version 2.7).  Note that Larch does not yet
-work with Python 3. series).  For Windows, a binary installer may be
-available soon, though this is not updated as often as the source code or
-Anaconda package.  In addition, Larch can be installed from its source
-code, which works easily on most modern Linux systems.
+OS X is with `Anaconda Python`_ (version 2.7).  In addition, Larch can be
+installed from its source code, which works easily on most modern Linux and
+Mac OS X systems, but the Anaconda package is certainly easier to use.
+
+Starting With version 0.9.30, Larch is starting to work with Python 3,
+including GUIs using the unreleased Phoenix version of wxPython.  Thorough
+testing with Python 3 is still in progress, and some bugs may still be
+present when using Python 3, but most of the code is working, and all unit
+tests of functionality pass.  Still, for the time being, Larch with Python
+3 should be considered experimental.
+
 
 
 Using Anaconda Python
@@ -38,7 +42,8 @@ you are ready.
 
 So, begin by installing the latest version of Anaconda Python 2.7 from
 their `Anaconda Downloads`_ site.  Once that is installed, you can open a
-Terminal (Linux or Mac OSX) or the Anaconda prompt (Windows) and type ::
+Terminal (on Linux or Mac OSX) or the Anaconda prompt (on Windows) and
+type::
 
     conda install -yc newville xraylarch
 
@@ -61,17 +66,6 @@ An advantage of using Anaconda is that updates can be installed with::
     conda update -yc newville xraylarch
 
 
-Windows Binary Installation
-================================
-
-The binary installer for Windows provides working executables for the Larch
-programs.   These are likely to be slightly out-of-date from the source
-code and the Anaconda package.
-
-Downloads are available at the `Larch Downloads (cars.uchicago.edu)`_
-or at `Larch releases (github.com)`_.
-
-
 Source Installation
 =========================
 
@@ -89,30 +83,41 @@ Prerequisites
 ----------------------
 
 Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work, and numpy, and scipy, h5py,
-and matplotlib have all been ported to Python 3.X.  But the testing for
-Python 3.X has been minimal, and the graphical interfaces, based on
-wxWidgets, has not yet been ported to Python 3.X.
+good, but requires the not-yet-supported Phoenix branch of wxPython, and
+should be considered experimental.
 
 The following Python packages are all required for Larch: numpy, scipy,
-matplotlib, h5py, sqlalchemy, and wxpython.  These are easily installed as
+matplotlib, h5py, sqlalchemy, and wxPython.  Except for wxPython, these all
+come as part of the core Anaconda package, and all are easily installed as
 standard packages on almost all platforms.
 
-Installation
----------------------
+Installation from Source
+----------------------------
 
-After unpacking the source distribution kit, installation from source on any platform is::
+If installing from source, first unpack the source distribution kit, move
+into the created xraylarch-VERSION directory, and type::
 
-   python setup.py install
+    python setup.py install
 
 
 Documentation and Examples
 ================================
 
-A zip file of the latest documentation and examples is available at `Larch
-Docs and Examples (cars.uchicago.edu)`_
+The source kit includes sources for documentation in the `docs` folder and
+several examples (including all those shown in this documentation) in the
+`examples` folder.
 
-The source kit includes sources for documentation and examples.
+
+Funding and Support
+=======================
+
+Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
+Radiation Sources at the University of Chicago has been supported by the US
+National Science Foundation - Earth Sciences (EAR-1128799), and Department
+of Energy GeoSciences (DE-FG02-94ER14466).  In addition, funding
+specifically for Larch was granted by the National Science Foundation -
+Advanced CyberInfrastructure (ACI-1450468).
+
 
 
 Acknowledgements
@@ -171,4 +176,4 @@ documentation, and all material associated with Larch are distributed under
 the BSD License:
 
 
-.. literalinclude:: ../../LICENSE
+.. literalinclude:: ../LICENSE

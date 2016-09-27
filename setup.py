@@ -13,8 +13,11 @@ from glob import glob
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
-required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy']
+
+required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six']
+
 recommended_modules = {'basic analysis': required_modules,
+                       'xrd modules' : ('fabio','pyFAI'),
                        'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
                        'color-enhanced error messages': ('termcolor', ),
                        'using the EPICS control system': ('epics', ),
@@ -157,8 +160,24 @@ for pdir in pluginpaths:
     data_files.append((os.path.join(larchdir, pdir), pfiles))
 
 
+if (cmdline_args[0] == 'install' and
+    sys.platform == 'darwin' and
+    'Anaconda' in sys.version):
+    for fname in scripts:
+        fh = open(fname, 'r')
+        lines = fh.readlines()
+        fh.close()
+        line0 = lines[0].strip()
+        if not line0.startswith('#!/usr/bin/env pythonw'):
+            fh = open(fname, 'w')
+            fh.write('#!/usr/bin/env pythonw\n')
+            fh.write("".join(lines[1:]))
+            fh.close()
+            print("Rewrote ", fname)
+
+
 # now we have all the data files, so we can run setup
-setup(name = 'larch',
+setup(name = 'xraylarch',
       version = version.__version__,
       author = 'Matthew Newville',
       author_email = 'newville@cars.uchicago.edu',
@@ -172,19 +191,6 @@ setup(name = 'larch',
                   'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
 
-if cmdline_args[0] == 'install' and sys.platform == 'darwin':
-    dest = os.path.join(larchdir, 'apps')
-    try:
-        os.mkdir(apps)
-    except:
-        pass
-    for app in mac_apps:
-        _, aname = os.path.split(app)
-        adest = os.path.join(dest, aname)
-        if os.path.exists(adest):
-            shutil.rmtree(adest)
-
-        shutil.copytree(app, adest)
 
 
 def remove_cruft(basedir, filelist):
@@ -202,6 +208,19 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
 
+
+if (cmdline_args[0] == 'install' and sys.platform == 'darwin' and
+    'Anaconda' in sys.version):
+    for fname in scripts:
+        fh = open(fname, 'r')
+        lines = fh.readlines()
+        fh.close()
+        line0 = lines[0].strip()
+        if line0.startswith('#!/usr/bin/env pythonw'):
+            fh = open(fname, 'w')
+            fh.write('#!/usr/bin/env python\n')
+            fh.write("".join(lines[1:]))
+            fh.close()
 
 def fix_permissions(dirname, stat=None):
     """

@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 import sys
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
+
 import time
 import os
 
@@ -86,6 +84,10 @@ class wxLarchTimer(wx.MiniFrame):
 # @SafeWxCall
 def gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
+    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
+
     dlg = wx.DirDialog(None, 'Choose Directory',
                        defaultPath = os.getcwd(),
                        style = wx.DD_DEFAULT_STYLE)
@@ -124,8 +126,10 @@ class DataBrowserFrame(wx.Frame):
 
 def databrowser(_larch=None, **kws):
     """show DataBrowser window for exploring Larch Groups and Data"""
-    
-    return DataBrowserFrame(parent=None, _larch=_larch)
+    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
+    return DataBrowserFrame(parent=parent, _larch=_larch)
 
 
 # @SafeWxCall
@@ -168,18 +172,20 @@ def fileprompt(mode='open', multi=True, message = None,
     wildcard = '|'.join(wildcard)
 
     if mode == 'open':
-        style = wx.OPEN|wx.CHANGE_DIR
+        style = wx.FD_OPEN|wx.FD_CHANGE_DIR
         if multi:
-            style = style|wx.MULTIPLE
+            style = style|wx.FD_MULTIPLE
         if message is None:
             message = 'Open File '
     else:
-        style = wx.SAVE|wx.CHANGE_DIR
+        style = wx.FD_SAVE|wx.FD_CHANGE_DIR
         if message is None:
             message = 'Save As '
 
     #parent.Start()
     parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if parent is None:
+        _larch.raise_exception(None, msg='wx not supported')
     if hasattr(parent, 'GetTopWindow'):
         parent = parent.GetTopWindow()
     timer = wxLarchTimer(parent, _larch)

@@ -1,4 +1,4 @@
-print """
+print("""
 This example shows that a larch function has a
 'local scope' that store symbol names inside the function.
 
@@ -30,13 +30,13 @@ Also note that while inside f1, the module value of 'y' is
 retrieved but that the output of f1() is then assigned to the
 symbol, so that the module-level value of 'y is different
 after running f1().
-"""
+""")
 
 x = 1000.0
 y = sqrt(x)
 
 def f1(a, b, c=1):
-    print  ' inside f1 a,b,c = ', a, b,c 
+    print  ' inside f1 a,b,c = ', a, b,c
     if c < 0:  c = -c
     x = sqrt(a*b*c)
     print ' inside f1 x = ', x
@@ -51,5 +51,3 @@ print '  == call f1 =='
 y = f1(7, 99, c=0.2)
 
 print ' after f1  x , y = ', x, y
-
-

@@ -84,7 +84,7 @@ class DTCorrectFrame(wx.Frame):
                         message='Select Files',
                         defaultDir=os.getcwd(),
                         wildcard =FILE_WILDCARDS,
-                        style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
+                        style=wx.FD_OPEN|wx.FD_MULTIPLE|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()

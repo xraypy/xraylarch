@@ -149,10 +149,10 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         self.Nat2=AtNumDen2
         self.txt=''
         text1='substrate1:%6.3e %s/cm^3' % (AtNumDen1, composition1)
-        #print text1
+        #print(text1)
         text2='substrate2:%6.3e %s/cm^3' % (AtNumDen2, composition2)
         self.txt=text1+'  '+text2
-        print( self.txt)
+        print(self.txt)
         # atom.conc is normalized to the number density of substrate1 molecule
         for (ii, item) in enumerate(self.ElemList1):
             # MN replace:
@@ -344,9 +344,9 @@ def Assemble_Collimator(eV1, xHe=1, xAl=0,xKapton=0, WD=6.0, xsw=0):
     net=air.trans*HeGas.trans
     net=net*kapton.trans*AlFoil.trans*kaptonCollimator.trans
     if print2screen:
-            print( '%.3f eV: air.trans=%.3e, HeGas.trans=%.3e, kapton.trans=%.3e, AlFoil.trans=%.3e, kaptonCollimator.trans=%.3e, net=%.3e' %  \
+            print('%.3f eV: air.trans=%.3e, HeGas.trans=%.3e, kapton.trans=%.3e, AlFoil.trans=%.3e, kaptonCollimator.trans=%.3e, net=%.3e' %  \
             (eV1, air.trans, HeGas.trans, kapton.trans, AlFoil.trans,kaptonCollimator.trans, net))
-    #print '%.3f eV: air.la=%.3e, HeGas.la=%.3e, kapton.la=%.3e' % (eV1, air.la, HeGas.la, kapton.la)
+    #print('%.3f eV: air.la=%.3e, HeGas.la=%.3e, kapton.la=%.3e' % (eV1, air.la, HeGas.la, kapton.la))
     return net
 
 
@@ -423,7 +423,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
             else:
                 if xsect_resonant!=0.0:         # use input value near edge
                     xsect=xsect_resonant	# for cross-section near absoprtion edge
-                #print xsect,fy,emit_prob
+                #print(xsect,fy,emit_prob)
                 net_yield=xsect*fy*emit_prob    # net_yield --> cross-section, yield, emission_probability
                 # net transmission --> transmission from surface through detector
 ## ------------------   [self-absorption]     ------------------------------
@@ -449,7 +449,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
                 fo.write(out1)
             if print2screen:
                 print('%s %s %6.1f net_yield=%.3e net_trans=%.3e net=%.3e\t' % (atom.AtSym+'_'+edge, emit, emit_eV, net_yield, net_trans, net))
-            #print out1+'  %s, depth-dependent factor= %6.4f' % (atom.tag, trans_SelfAbsorp)
+            #print(out1+'  %s, depth-dependent factor= %6.4f' % (atom.tag, trans_SelfAbsorp))
             if emit=='Kb' and fy!=0:        # if above K edge, don't bother trying L edges
                 break
     return textOut
@@ -620,9 +620,9 @@ if __name__=='__main__':
         #eV1=6400.
         #mat0=Material('SiO2', 2.2, 0.001)
         #mat0.getLa(8000)
-        #print mat0.la, mat0.trans
-        #print Assemble_QuadVortex(eV1)
-        #print Assemble_Collimator(eV1, xHe=1, xAl=0,xKapton=0, WD=6.0, xsw=0)
+        #print(mat0.la, mat0.trans)
+        #print(Assemble_QuadVortex(eV1))
+        #print(Assemble_Collimator(eV1, xHe=1, xAl=0,xKapton=0, WD=6.0, xsw=0))
         # MN replace:
         matrix=SampleMatrix2('CaCO3', f1f2.nominal_density('CaCO3'), 0.001,'Fe2O3', f1f2.nominal_density('Fe2O3'), 0.001, 45.,  'all')
         eV0=7500.

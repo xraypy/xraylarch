@@ -219,12 +219,12 @@ setup(name = "Larch",
  
 for fname in extra_files:
     path, name = os.path.split(fname)
-    print fname, name
+    print(fname, name)
     try:
         shutil.copy(fname, os.path.join('dist', name))
     except:
         pass
 
 if __name__ == '__main__':
-    print 'usage:  python py2exe_build.py py2exe'
+    print('usage:  python py2exe_build.py py2exe')
 

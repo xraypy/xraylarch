@@ -4,9 +4,8 @@
 
 import numpy as np
 from scipy.signal import deconvolve
-from larch import ValidateLarchPlugin
+from larch import ValidateLarchPlugin, parse_group_args
 
-from larch_plugins.std  import parse_group_args
 from larch_plugins.math import (gaussian, lorentzian, _interp,
                                 index_of, index_nearest, remove_dups)
 from larch_plugins.xafs import set_xafsGroup

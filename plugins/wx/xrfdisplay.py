@@ -43,8 +43,8 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.wx.periodictable import PeriodicTablePanel
-from larch_plugins.wx.xrfdisplay_utils import (CalibrationFrame,
-                                               ColorsFrame, ROI_Averager,
+from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
+                                               ColorsFrame,
                                                XrayLinesFrame,
                                                XRFDisplayConfig)
 
@@ -102,14 +102,10 @@ class XRFDisplayFrame(wx.Frame):
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
 
-
-        # kws["style"] = wx.DEFAULT_FRAME_STYLE|wx
+        if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
-                          title=title, size=size,
-                          **kws)
+                          title=title, size=size,  **kws)
         self.conf = XRFDisplayConfig()
-        # 1 ROI Averager per status line
-        self.roi_aves = [ROI_Averager(nsamples=11) for i in range(4)]
 
         self.subframes = {}
         self.data = None
@@ -134,6 +130,10 @@ class XRFDisplayFrame(wx.Frame):
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
+        self.hold_markers = []
+
+        self.hold_lines = None
+        self.saved_lines = None
         self.energy_for_zoom = None
         self.xview_range = None
         self.show_yaxis = False
@@ -151,7 +151,7 @@ class XRFDisplayFrame(wx.Frame):
         self.createMenus()
         self.SetFont(Font(9, serif=True))
         self.statusbar = self.CreateStatusBar(4)
-        self.statusbar.SetStatusWidths([-1, -1, -1, -1])
+        self.statusbar.SetStatusWidths([-5, -3, -3, -4])
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
@@ -160,7 +160,6 @@ class XRFDisplayFrame(wx.Frame):
             self._mcagroup.mca1 = self.mca
             self._mcagroup.mca2 = None
             self.plotmca(self.mca, show_mca2=False)
-
 
     def ignoreEvent(self, event=None):
         pass
@@ -195,7 +194,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def clear_lines(self, evt=None):
         "remove all Line Markers"
-        for m in self.major_markers + self.minor_markers:
+        for m in self.major_markers + self.minor_markers + self.hold_markers:
             try:
                 m.remove()
             except:
@@ -209,6 +208,7 @@ class XRFDisplayFrame(wx.Frame):
         self.highlight_xrayline = None
         self.major_markers = []
         self.minor_markers = []
+        self.hold_markers = []
         self.draw()
 
     def draw(self):
@@ -233,7 +233,7 @@ class XRFDisplayFrame(wx.Frame):
         self.plotmca(self.mca)
 
     def update_status(self):
-        fmt = "{:s}: Chan={:} En={:.3f}  Counts={:,.0f}".format
+        fmt = "{:s}:{:}, E={:.3f}, Cts={:,.0f}".format
         if (self.xmarker_left is None and
             self.xmarker_right is None and
             self.selected_roi is None):
@@ -325,7 +325,7 @@ class XRFDisplayFrame(wx.Frame):
                              ('downarrow', 'down')):
             self.wids[wname] = wx.BitmapButton(arrowpanel, -1,
                                                get_icon(wname),
-                                               size=(40, 40),
+                                               size=(25, 25),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
                                  partial(ptable.onKey, name=dname))
@@ -335,8 +335,11 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['kseries'] = Check(arrowpanel, ' K ', action=self.onKLM)
         self.wids['lseries'] = Check(arrowpanel, ' L ', action=self.onKLM)
         self.wids['mseries'] = Check(arrowpanel, ' M ', action=self.onKLM)
+        self.wids['holdbtn'] = wx.ToggleButton(arrowpanel, -1, 'Hold   ', size=(65, 25))
+        self.wids['holdbtn'].Bind(wx.EVT_TOGGLEBUTTON, self.onToggleHold)
 
         ssizer.Add(txt(arrowpanel, '  '),   0, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['holdbtn'],    0, wx.EXPAND|wx.ALL, 2)
         ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
@@ -507,7 +510,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def _set_xview(self, e1, e2, keep_zoom=False):
         if not keep_zoom:
-            self.energy_for_zoom = None
+            self.energy_for_zoom = (e1+e2)/2.0
         self.panel.axes.set_xlim((e1, e2))
         self.xview_range = [e1, e2]
         self.draw()
@@ -647,19 +650,20 @@ class XRFDisplayFrame(wx.Frame):
             return
         sum = self.ydata[left:right].sum()
         dt = self.mca.real_time
-        self.roi_aves[panel].update(sum)
-
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
             nmsg = " %s" % name
-        cmsg = " Counts={:10,.0f}".format(sum)
+        cmsg = " Cts={:10,.0f}".format(sum)
         if dt is not None and dt > 1.e-9:
             rmsg = " CPS={:10,.1f}".format(sum/dt)
-
         self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
 
-
     def ShowROIPatch(self, left, right):
+        """show colored XRF Patch:
+        Note: ROIs larger than half the energy are not colored"""
+        # xnpts = 1.0/len(self.mca.energy)
+        # if xnpts*(right - left) > 0.5:
+        #    return
         try:
             self.roi_patch.remove()
         except:
@@ -672,7 +676,7 @@ class XRFDisplayFrame(wx.Frame):
         e[0]  = e[1]
         e[-1] = e[-2]
         self.roi_patch = self.panel.axes.fill_between(e, r, zorder=-20,
-                                          color=self.conf.roi_fillcolor)
+                                           color=self.conf.roi_fillcolor)
 
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
@@ -693,8 +697,6 @@ class XRFDisplayFrame(wx.Frame):
                     break
         if name is None or right == -1:
             return
-
-        [rave.clear() for rave in self.roi_aves]
 
         self.ShowROIStatus(left, right, name=name)
         self.ShowROIPatch(left, right)
@@ -856,12 +858,27 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem = self.selected_elem)
 
+    def onToggleHold(self, event=None):
+        if event.IsChecked():
+            self.wids['holdbtn'].SetLabel("Hide %s" % self.selected_elem)
+            self.hold_lines = self.saved_lines[:]
+        else:
+            self.wids['holdbtn'].SetLabel("Hold %s" % self.selected_elem)
+            self.hold_lines = None
+            for m in self.hold_markers:
+                try:
+                    m.remove()
+                except:
+                    pass
+            self.hold_markers = []
+            self.draw()
+
     def onSelectXrayLine(self, evt=None):
         if self.wids['xray_lines'] is None:
             return
         if not self.wids['xray_lines'].HasSelection():
             return
-        item = self.wids['xray_lines'].GetSelection().GetID()
+        item = self.wids['xray_lines'].GetSelectedRow()
         en = self.wids['xray_linesdata'][item]
 
         if self.highlight_xrayline is not None:
@@ -887,7 +904,7 @@ class XRFDisplayFrame(wx.Frame):
         xlines = self.wids['xray_lines']
         if xlines is not None:
             xlines.DeleteAllItems()
-        self.wids['xray_linesdata'] = [0]
+        self.wids['xray_linesdata'] = []
         minors, majors = [], []
         conf = self.conf
         line_data = {}
@@ -907,6 +924,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.wids['mseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.M_major])
 
+        self.saved_lines = majors[:] + minors[:]
         erange = [max(conf.e_min, self.xdata.min()),
                   min(conf.e_max, self.xdata.max())]
 
@@ -922,8 +940,6 @@ class XRFDisplayFrame(wx.Frame):
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
-                # dat = (label, "%.4f" % e, "%.4f" % frac,
-                #      "%s->%s" % (ilevel, flevel))
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
@@ -949,6 +965,17 @@ class XRFDisplayFrame(wx.Frame):
                 if xlines is not None:
                     xlines.AppendItem(dat)
                 self.minor_markers.append(l)
+
+        if not self.wids['holdbtn'].GetValue():
+            self.wids['holdbtn'].SetLabel("Hold %s" % elem)
+        elif self.hold_lines is not None:
+            for label, eev, frac, ilevel, flevel in self.hold_lines:
+                e = float(eev) * 0.001
+                if (e >= erange[0] and e <= erange[1]):
+                    l = vline(e, color = self.conf.hold_elinecolor,
+                              linewidth=1.5, zorder=-20, dashes=(5, 5))
+                    l.set_label(label)
+                    self.hold_markers.append(l)
 
         if xlines is not None:
             xlines.Refresh()
@@ -1079,11 +1106,14 @@ class XRFDisplayFrame(wx.Frame):
             kwargs['xmax'] = self.xview_range[1]
 
         if mca is not None:
+            xnpts = 1.0/len(self.mca.energy)
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
             yroi = -1*np.ones(len(y))
             for r in mca.rois:
                 if (r.left, r.right) in ((0, 0), (-1, -1)):
+                    continue
+                if xnpts*(r.right - r.left) > 0.5: # suppress very large ROIs
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
                 ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
@@ -1118,10 +1148,13 @@ class XRFDisplayFrame(wx.Frame):
         mca.counts = counts[:]
         if energy is not None:
             mca.energy = energy[:]
+        xnpts = 1.0/len(energy)
         nrois = len(mca.rois)
         if not is_mca2 and with_rois and nrois > 0:
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
+                if xnpts*(r.right - r.left) > 0.5:
+                    continue
                 yroi[r.left:r.right] = counts[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
             self.panel.update_line(1, mca.energy, yroi, draw=False,
@@ -1142,7 +1175,8 @@ class XRFDisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
-    def oplot(self, x, y, color='darkgreen', mca=None, zorder=-2, **kws):
+    def oplot(self, x, y, color='darkgreen', label='spectra2',
+              mca=None, zorder=-2, **kws):
         if mca is not None:
             self.mca2 = mca
 
@@ -1153,7 +1187,7 @@ class XRFDisplayFrame(wx.Frame):
         else:
             ymax = max(y)*1.25
 
-        kws.update({'zorder': zorder, 'label': 'spectra2',
+        kws.update({'zorder': zorder, 'label': label,
                     'ymax' : ymax, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale})
         self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
@@ -1174,7 +1208,7 @@ class XRFDisplayFrame(wx.Frame):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style = wx.OPEN|wx.CHANGE_DIR)
+                            style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
         fnew= None
         if dlg.ShowModal() == wx.ID_OK:
@@ -1228,7 +1262,7 @@ class XRFDisplayFrame(wx.Frame):
         try:
             self.win_calib.Raise()
         except:
-            self.win_calib = CalibrationFrame(self, mca=self.mca,
+            self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
                                               larch=self.larch)
 
     def onFitPeaks(self, event=None, **kws):
@@ -1258,7 +1292,7 @@ class XRFDisplayFrame(wx.Frame):
         dlg = wx.FileDialog(self, message="Read MCA File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style=wx.OPEN)
+                            style=wx.FD_OPEN)
         path, re1ad = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True

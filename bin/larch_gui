@@ -3,12 +3,19 @@
 import sys
 import wx
 import larch
-    
 from larch.wxlib import larchframe
+from wxutils import MenuItem
 
-app = wx.App()
-frame = larchframe.LarchFrame(exit_on_close=True)
-frame.Show()
-app.MainLoop()
+class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
+        wx.App.__init__(self, **kws)
 
+    def OnInit(self):
+        self.Init()
+        frame = larchframe.LarchFrame(exit_on_close=True, with_inspection=True)
+        frame.Show()
+        frame.Bind
+        self.SetTopWindow(frame)
+        return True
 
+LarchApp().MainLoop()

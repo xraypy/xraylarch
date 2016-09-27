@@ -92,7 +92,7 @@ setup(name = appname,
 # contents = contents.replace(' ', '\ ')
 # 
 # def sys(cmd):
-#     print ' >> ', cmd
+#     print(' >> %s' % cmd)
 #     os.system(cmd)
 # 
 # sys("cp -pr GSEMap.icns  %s/Resources/." % contents)

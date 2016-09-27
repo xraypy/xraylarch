@@ -82,7 +82,7 @@ if sys.platform == 'win32':
     def ignore_CtrlC():
         pass
 elif sys.platform == 'darwin':
-    from allow_idle_macosx import allow_idle
+    from .allow_idle_macosx import allow_idle
 
 
 class EventLoopRunner(object):
@@ -135,7 +135,12 @@ def inputhook_wx():
                 while evtloop.Pending():
                     t = clock()
                     evtloop.Dispatch()
-                app.ProcessIdle()
+
+                if callable(getattr(app, 'ProcessIdle', None)):
+                    app.ProcessIdle()
+                if callable(getattr(evtloop, 'ProcessIdle', None)):
+                    evtloop.ProcessIdle()
+
                 # We need to sleep at this point to keep the idle CPU load
                 # low.  However, if sleep to long, GUI response is poor.
                 used_time = clock() - t
@@ -147,7 +152,7 @@ def inputhook_wx():
             del ea
             clear_update_request()
     except KeyboardInterrupt:
-        if hasattr(ON_INTERRUPT, '__call__'):
+        if callable(ON_INTERRUPT):
             ON_INTERRUPT()
     return 0
 
@@ -176,7 +181,7 @@ def inputhook_darwin():
             eloop.run(poll_time=ptime)
     except KeyboardInterrupt:
         print(" See KeyboardInterrupt from darwin hook")
-        if hasattr(ON_INTERRUPT, '__call__'):
+        if callable(ON_INTERRUPT):
             ON_INTERRUPT()
     return 0
 
@@ -186,7 +191,10 @@ if sys.platform == 'darwin':
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
 
-capture_CtrlC()
+try:
+    capture_CtrlC()
+except:
+    pass
 cback = CFUNCTYPE(c_int)(inputhook_wx)
 py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 py_inphook.value = cast(cback, c_void_p).value

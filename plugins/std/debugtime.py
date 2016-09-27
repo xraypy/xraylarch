@@ -18,7 +18,7 @@ class DebugTimer(object):
         self.add('started timer')
         
     def add(self,msg=''):
-        # print msg
+        # print(msg)
         self.times.append((msg,time.time()))
 
     def get_report(self, ):

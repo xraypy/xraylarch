@@ -1,0 +1,57 @@
+##
+## torture test of sorts for feffit,
+## mixing all combinations of
+##     epsilon_k:       unspecified, float, array
+##     k-weights:       2, 0, (3, 2, 1)
+##     fitting space:  'k', 'r', 'q'
+
+cu = read_ascii('../xafsdata/cu_metal_rt.xdi')
+autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
+
+
+test_epsk     = (None, 0.0006, arange(len(cu.k)) * 0.00001)
+test_kweights = (2, 0,  (3, 2, 1))
+test_fitspace = ('k', 'r', 'q')
+
+
+fitparams = group(amp=guess(1.0),
+                  de0=guess(0.1),
+                  ss2=guess(0.002),
+                  delr=guess(0.))
+
+path1 = feffpath('feffcu01.dat', s02 = 'amp', e0 = 'de0',
+                 sigma2 = 'ss2', deltar = 'delr')
+
+trans_args = dict(kmin=3, kmax=17, dk=3, window='hanning',
+                  rmin=1.4, rmax=3.0)
+
+out = []
+for eps_k in test_epsk:
+    cu.epsilon_k = eps_k
+    eps_type = 'float'
+    if eps_k is None:
+        eps_type = 'None'
+    elif isinstance(eps_k, ndarray):
+        eps_type = 'array'
+    #endif
+    for kw in test_kweights:
+        for fitspace in test_fitspace:
+            trans   = feffit_transform(kw=kw, fitspace=fitspace, **trans_args)
+            dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
+            result  = feffit(fitparams, dataset)
+            out.append((fitspace, kw, eps_type,
+                        fitparams.fit_details.nfev,
+                        fitparams.chi_reduced,
+                        fitparams.amp.value, fitparams.amp.stderr,
+                        fitparams.delr.value, fitparams.delr.stderr,
+                        fitparams.ss2.value, fitparams.ss2.stderr,
+                        fitparams.de0.value, fitparams.de0.stderr))
+        #endfor
+    #endfor
+
+#endfor
+
+
+#
+# for i in out: print(i)
+#

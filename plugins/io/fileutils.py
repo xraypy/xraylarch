@@ -2,67 +2,17 @@
 """
 general purpose file utilities
 """
+MODDOC = '''
+Functions for Input/Output, especially reading specific types
+of scientific data files.
+'''
 
 import time
 import os
 import sys
 from random import seed, randrange
 from string import printable
-
-BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
-GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
-
-MODDOC = '''
-Functions for Input/Output, especially reading specific types
-of scientific data files.
-'''
-
-if sys.version[0] == '2':
-    from string import maketrans
-    BAD_FILETABLE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
-    def fix_filename(s):
-        """fix string to be a 'good' filename.
-        This may be a more restrictive than the OS, but
-        avoids nasty cases."""
-        t = str(s).translate(BAD_FILETABLE)
-        if t.count('.') > 1:
-            for i in range(t.count('.') - 1):
-                idot = t.find('.')
-                t = "%s_%s" % (t[:idot], t[idot+1:])
-        return t
-    def fix_varname(s):
-        """fix string to be a 'good' variable name."""
-        t = str(s).translate(BAD_FILETABLE)
-        while t.endswith('_'): t = t[:-1]
-        return t
-
-elif sys.version[0] == '3':
-    def fix_filename(s):
-        """fix string to be a 'good' filename.
-        This may be a more restrictive than the OS, but
-        avoids nasty cases."""
-        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
-        if t.count('.') > 1:
-            for i in range(t.count('.') - 1):
-                idot = t.find('.')
-                t = "%s_%s" % (t[:idot], t[idot+1:])
-        return t
-    def fix_varname(s):
-        """fix string to be a 'good' variable name."""
-        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
-        while t.endswith('_'): t = t[:-1]
-        return t
-
-def strip_quotes(t):
-    d3, s3, d1, s1 = '"""', "'''", '"', "'"
-    if hasattr(t, 'startswith'):
-        if ((t.startswith(d3) and t.endswith(d3)) or
-            (t.startswith(s3) and t.endswith(s3))):
-            t = t[3:-3]
-        elif ((t.startswith(d1) and t.endswith(d1)) or
-              (t.startswith(s1) and t.endswith(s1))):
-            t = t[1:-1]
-    return t
+from larch.utils.strutils import fix_filename, fix_varname, strip_quotes
 
 def asciikeys(adict):
     """ensure a dictionary has ASCII keys (and so can be an **kwargs)"""
@@ -308,7 +258,6 @@ def test_incrementfilename():
         else:
             npass = npass + 1
     print('Passed %i of %i tests' % (npass, npass+nfail))
-
 
 
 

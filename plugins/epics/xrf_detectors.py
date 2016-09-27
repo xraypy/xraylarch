@@ -14,6 +14,14 @@ except (NameError, ImportError):
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
 
+if HAS_EPICS:
+    Xspress310 = Xspress3
+    try:
+        from epics.devices.xspress3 import Xspress310
+    except:
+        pass
+
+
 from larch_plugins.xrf import MCA, ROI, Environment
 
 def save_gsemcafile(filename, mcas, rois, environ=None):
@@ -23,21 +31,21 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
     realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
     nelem = len(self._xsp3.mcas)
     mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
-    
+
     npts = len(mcas[0].counts)
     nrois = len(rois[0])
     nelem = len(mcas)
-    """    
+    """
     nelem = len(mcas)
     npts  = len(mcas[0].counts)
     nrois = len(rois[0])
-    
+
     s_rtime = " ".join(["%.4f" % m.real_time for m in mcas])
     s_off   = " ".join(["%.6f" % m.offset    for m in mcas])
     s_quad  = " ".join(["%.6f" % m.quad      for m in mcas])
     s_slope = " ".join(["%.6f" % m.slope     for m in mcas])
     s_rois  = " ".join(["%i"   % nrois       for m in mcas])
-    
+
     buff = []
     buff.append('VERSION:    3.1')
     buff.append('ELEMENTS:   %i' % nelem)
@@ -84,16 +92,21 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
     fp.write("\n".join(buff))
     fp.close()
 
-
 class Epics_Xspress3(object):
-    """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
     """
-    MIN_FRAMETIME = 0.20
-    MAX_FRAMES    = 10000
+    multi-element MCA detector using Quantum Xspress3 electronics
+    and Epics IOC based on AreaDetector2 IOC (3.2?)
+    """
+    MIN_FRAMETIME = 0.25
+    MAX_FRAMES    = 16384
+    def __init__(self, prefix=None, nmca=4, version=2, **kws):
 
-    def __init__(self, prefix=None, nmca=4, **kws):
         self.nmca = nmca
         self.prefix = prefix
+        self.version = version
+        self.mca_array_name = 'MCASUM%i:ArrayData'
+        if version < 2:
+            self.mca_array_name = 'ARRSUM%i:ArrayData'
         self.environ = []
         self.mcas = []
         self.npts  = 4096
@@ -101,32 +114,42 @@ class Epics_Xspress3(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
-
         self.needs_refresh = False
         self._xsp3 = None
         if self.prefix is not None:
             self.connect()
 
-        # determine max frames 
+        self.nframes = 1
+        self.frametime = 1.0
+
+        # determine max frames
         self.frametime = self.MIN_FRAMETIME
-        rbv = 0
+        self._xsp3.NumImages = self.MAX_FRAMES
+        epics.poll(0.010, 1.0)
+        rbv = self._xsp3.NumImages_RBV
+
         while rbv != self.MAX_FRAMES:
-            self.MAX_FRAMES -= 50
+            self.MAX_FRAMES = int(0.96*self.MAX_FRAMES)
             self._xsp3.NumImages = self.MAX_FRAMES
             rbv = self._xsp3.NumImages_RBV
-            if self.MAX_FRAMES < 1000:
+            if self.MAX_FRAMES < 100:
                 break
 
     # @EpicsFunction
     def connect(self):
-        self._xsp3 = Xspress3(self.prefix)
+        Creator = Xspress3
+        if self.version < 2:
+            Creator = Xspress310
+        self._xsp3 = Creator(self.prefix)
+
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
         counterpv.clear_callbacks()
         counterpv.add_callback(self.onRealTime)
         for imca in range(1, self.nmca+1):
-            self._xsp3.PV('ARRSUM%i:ArrayData' % imca)
+            self._xsp3.PV(self.mca_array_name % imca)
         time.sleep(0.001)
         self.connected = True
+        self.mcas = self._xsp3.mcas
 
     @EpicsFunction
     def connect_displays(self, status=None, elapsed=None, deadtime=None):
@@ -149,6 +172,14 @@ class Epics_Xspress3(object):
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel("  %8.2f" % self.elapsed_real)
 
+    def get_deadtime(self, mca=1):
+        """return % deadtime"""
+        try:
+            dval = self._xsp3.get("C%i:DeadTime_RBV" % (mca))
+        except:
+            dval = 0.0
+        return dval
+
     def set_dwelltime(self, dtime=1.0, **kws):
         self._xsp3.useInternalTrigger()
         self._xsp3.FileCaptureOff()
@@ -162,8 +193,13 @@ class Epics_Xspress3(object):
             frametime = 1.0*dtime/nframes
         else:
             nframes   = int((dtime+frametime*0.1)/frametime)
-        self._xsp3.NumImages = nframes
+        self._xsp3.NumImages   = self.nframes   = nframes
         self._xsp3.AcquireTime = self.frametime = frametime
+
+    def get_frametime(self):
+        self.nframes = self._xsp3.NumImages
+        self.frametime = self._xsp3.AcquireTime
+        return self.frametime, self.nframes
 
     def get_mca(self, mca=1, with_rois=True):
         if self._xsp3 is None:
@@ -173,6 +209,7 @@ class Epics_Xspress3(object):
         emca = self._xsp3.mcas[mca-1]
         if with_rois:
             emca.get_rois()
+
         counts = self.get_array(mca=mca)
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
@@ -181,12 +218,12 @@ class Epics_Xspress3(object):
         thismca = MCA(counts=counts, offset=0.0, slope=0.01)
         thismca.energy = self.get_energy()
         thismca.counts = counts
-        thismca.quad   = 0.0        
+        thismca.quad   = 0.0
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
-                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
-                                        left=eroi.LO, right=eroi.HI))
+                thismca.rois.append(ROI(name=eroi.name, address=eroi._prefix,
+                                        left=eroi.left, right=eroi.right))
         return thismca
 
     def get_energy(self, mca=1):
@@ -194,20 +231,28 @@ class Epics_Xspress3(object):
 
     def get_array(self, mca=1):
         try:
-            out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+            out = 1.0*self._xsp3.get(self.mca_array_name % mca)
         except TypeError:
             out = np.arange(self.npts)*0.91
 
-        if len(out) != self.npts:
+        if len(out) < 1:
+            out = np.ones(self.npts)*1.7 + np.sin(np.arange(self.npts)/177.0)*0.8
+
+
+
+        if len(out) != self.npts and len(out)>0:
             self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
         return out
 
-    def start(self):
+    def start(self, erase=True):
         'xspress3 start '
         self.stop()
-        self._xsp3.start(capture=False)
-        time.sleep(0.01)
+        if erase:
+            self._xsp3.ERASE = 1
+            time.sleep(0.01)
+
+        return self._xsp3.start(capture=False)
 
     def stop(self, timeout=0.5):
         self._xsp3.stop()
@@ -232,15 +277,11 @@ class Epics_Xspress3(object):
 
     @EpicsFunction
     def rename_roi(self, i, newname):
-        roi = self._xsp3.mcas[0].rois[i]
-        roi.NM = newname
-        rootname = roi._prefix
-        for imca in range(1, len(self._xmap.mcas)):
-            pvname = rootname.replace('mca1', 'mca%i'  % (1+imca))
-            epics.caput(pvname+'NM', newname)
+        for mca in self._xsp3.mcas:
+            roi = mca.rois[i]
+            roi.Name = newname
 
     def restore_rois(self, roifile):
-
         self._xsp3.restore_rois(roifile)
         self.rois = self._xsp3.mcas[0].get_rois()
 
@@ -294,6 +335,7 @@ class Epics_Xspress3(object):
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
 
+
 class Epics_MultiXMAP(object):
     """multi-element MCA detector using XIA xMAP electronics
     and epics dxp 3.x series of software
@@ -319,7 +361,7 @@ class Epics_MultiXMAP(object):
         self.energies = []
         self.connected = False
         self.elapsed_real = None
-        self.elapsed_textwidget = None        
+        self.elapsed_textwidget = None
         self.needs_refresh = False
         if self.prefix is not None:
             self.connect()
@@ -355,6 +397,10 @@ class Epics_MultiXMAP(object):
         self.needs_refresh = True
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    def get_deadtime(self, mca=1):
+        """return deadtime info"""
+        return self._xmap.get("Deadtime")
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:
@@ -454,3 +500,11 @@ class Epics_MultiXMAP(object):
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
 
+
+def epics_xspress3(prefix='13XQX4:', nmca=4):
+    " return Epics Xspress3"
+    return Epics_Xspress3(prefix=prefix, nmca=nmca)
+
+
+def registerLarchPlugin():
+    return ('_epics', {'epics_xspress3': epics_xspress3})

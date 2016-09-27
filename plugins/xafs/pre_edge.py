@@ -5,13 +5,12 @@
 
 import numpy as np
 from scipy import polyfit
-from Call_args import DefCallArgs
-
 from larch import (Group, Parameter, ValidateLarchPlugin,
-                   Minimizer, isgroup)
+                   Make_CallArgs, Minimizer, isgroup,
+                   parse_group_args)
 
 # now we can reliably import other std and xafs modules...
-from larch_plugins.std import parse_group_args
+
 from larch_plugins.math import (index_of, index_nearest,
                                 remove_dups, remove_nans2)
 from larch_plugins.xafs import set_xafsGroup
@@ -44,6 +43,11 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
+
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
 
     energy = remove_dups(energy)
     dmu = np.gradient(mu)/np.gradient(energy)
@@ -125,7 +129,7 @@ def preedge(energy, mu, e0=None, step=None,
                 idmu_max, dmu_max = i, dmu[i]
 
         e0 = energy[idmu_max]
-    nnorm = max(min(nnorm, MAX_NNORM), 1)
+    nnorm = max(min(nnorm, MAX_NNORM), 0)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
@@ -154,6 +158,7 @@ def preedge(energy, mu, e0=None, step=None,
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
+
     coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
     norm_coefs = []
@@ -173,9 +178,8 @@ def preedge(energy, mu, e0=None, step=None,
 
     return out
 
-
 @ValidateLarchPlugin
-@DefCallArgs("pre_edge_details",["energy","mu"])
+@Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, make_flat=True, _larch=None):
@@ -232,23 +236,27 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
     """
-    
 
-    
+
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
-    
-    
+
+
     group = set_xafsGroup(group, _larch=_larch)
 
     e0    = pre_dat['e0']
     norm  = pre_dat['norm']
     norm1 = pre_dat['norm1']
-    norm2 = pre_dat['norm2'] 
+    norm2 = pre_dat['norm2']
     # generate flattened spectra, by fitting a quadratic to .norm
     # and removing that.
     flat = norm
@@ -283,15 +291,16 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.edge_step  = pre_dat['edge_step']
     group.pre_edge   = pre_dat['pre_edge']
     group.post_edge  = pre_dat['post_edge']
-    
+
     group.pre_edge_details = Group()
     group.pre_edge_details.pre1   = pre_dat['pre1']
-    group.pre_edge_details.pre2   = pre_dat['pre2']    
+    group.pre_edge_details.pre2   = pre_dat['pre2']
+    group.pre_edge_details.nnorm  = pre_dat['nnorm']
     group.pre_edge_details.norm1  = pre_dat['norm1']
     group.pre_edge_details.norm2  = pre_dat['norm2']
     group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
-    
+
     for i in range(MAX_NNORM):
         if hasattr(group, 'norm_c%i' % i):
             delattr(group, 'norm_c%i' % i)

@@ -324,7 +324,7 @@ if __name__ == '__main__':
     (params,msg) = fit_deadtime(mon,ocr_meas)
     tau = params[0]
     a   = params[1]
-    #print msg
+    #print(msg)
     print( 'a_fit= ',a,' tau_fit=', tau)
 
     ocr = 0.3 * 1/tau

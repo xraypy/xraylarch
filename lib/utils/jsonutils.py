@@ -2,7 +2,7 @@
 """
  json utilities for larch objects
 """
-
+import six
 import larch
 from larch import isParameter, Parameter, isgroup, Group
 
@@ -25,7 +25,7 @@ def encode4js(obj):
         return out
     elif isinstance(obj, (np.float, np.int)):
         return float(obj)
-    elif isinstance(obj, (np.str, np.unicode)):
+    elif isinstance(obj, six.string_types):
         return str(obj)
     elif isinstance(obj, np.complex):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}

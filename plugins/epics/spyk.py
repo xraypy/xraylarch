@@ -23,15 +23,22 @@ yet to be implemented:
     -- save/read configuration
 """
 import os
+import sys
 import time
 import numpy as np
-from ConfigParser import  ConfigParser
-from cStringIO import StringIO
+from collections import OrderedDict
+
+if sys.version_info[0] > 2: # Python2 only, for now
+    from io import StringIO
+    from configparser import ConfigParser
+
+else:
+    from ConfigParser import  ConfigParser
+    from cStringIO import StringIO
 
 
 from larch import use_plugin_path, Group
 
-from larch.utils.ordereddict import OrderedDict
 use_plugin_path('io')
 from fileutils import get_homedir, get_timestamp
 
@@ -119,7 +126,7 @@ class SpykConfig(object):
             fname = self.get_default_configfile()
             path, fn = os.path.split(fname)
             if not os.path.exists(path):
-                os.makedirs(path, mode=0755)
+                os.makedirs(path, mode=755)
 
         out = ['###Spyke Configuration: %s'  % (get_timestamp())]
         for sect, ordered in self.__sects.items():

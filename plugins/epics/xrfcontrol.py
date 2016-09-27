@@ -44,7 +44,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
-                              FILE_WILDCARDS, CalibrationFrame)
+                              FILE_WILDCARDS, XRFCalibrationFrame)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 larch.use_plugin_path('epics')
@@ -61,11 +61,12 @@ class DetectorSelectDialog(wx.Dialog):
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
     det_types = ('ME-4', 'other')
+    ioc_types = ('Xspress3', 'Xspress3(old)', 'xmap')
     def_prefix = '13QX4:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
-                 is_xsp3=False, nmca=4,
+                 ioc_type='Xspress3', nmca=4,
                  title='Select Epics MCA Detector'):
         if prefix is None: prefix = self.def_prefix
         if det_type not in self.det_types:
@@ -78,7 +79,8 @@ class DetectorSelectDialog(wx.Dialog):
         if parent is not None:
             self.SetFont(parent.GetFont())
 
-        self.is_xsp3 = Check(self, size=(120, -1), default=False)
+        self.ioctype = Choice(self,size=(120, -1), choices=self.ioc_types)
+        self.ioctype.SetStringSelection(ioc_type)
 
         self.dettype = Choice(self,size=(120, -1), choices=self.det_types)
         self.dettype.SetStringSelection(det_type)
@@ -113,7 +115,7 @@ class DetectorSelectDialog(wx.Dialog):
         sizer.Add(txt('  Epics Prefix'),  (2, 0), (1, 1), sty, 2)
         sizer.Add(txt('  # Elements'),    (3, 0), (1, 1), sty, 2)
         sizer.Add(self.dettype,         (0, 1), (1, 1), sty, 2)
-        sizer.Add(self.is_xsp3,         (1, 1), (1, 1), sty, 2)
+        sizer.Add(self.ioctype,         (1, 1), (1, 1), sty, 2)
         sizer.Add(self.prefix,          (2, 1), (1, 1), sty, 2)
         sizer.Add(self.nelem,           (3, 1), (1, 1), sty, 2)
 
@@ -130,13 +132,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
     main_title = 'Epics XRF Control'
     def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4',  is_xsp3=False,
+                 det_type='ME-4',  ioc_type='Xspress3',
                  nmca=4, size=(725, 580),  scandb_conn=None,
                  title='Epics XRF Display',
                  output_title='XRF', **kws):
 
         self.det_type = det_type
-        self.is_xsp3 = is_xsp3
+        self.ioc_type = ioc_type
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
@@ -152,20 +154,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
-                                            is_xsp3=self.is_xsp3,
+                                            ioc_type=self.ioc_type,
                                             nmca=self.nmca)
-            self.prefix, self.det_type, self.is_xsp3, self.nmca = res
+            self.prefix, self.det_type, self.ioc_type, self.nmca = res
         else:
             self.prefix = prefix
         self.det_fore = 1
         self.det_back = 0
         self.clear_mcas()
-        self.connect_to_detector(prefix=self.prefix, is_xsp3=self.is_xsp3,
+        self.connect_to_detector(prefix=self.prefix, ioc_type=self.ioc_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        # print "Scandb ", self.scandb
+        # print("Scandb ", self.scandb)
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')
@@ -218,22 +220,26 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
         pass
 
-    def prompt_for_detector(self, prefix=None, is_xsp3=False,  nmca=4):
-        dlg = DetectorSelectDialog(prefix=prefix, is_xsp3=is_xsp3, nmca=nmca)
+    def prompt_for_detector(self, prefix=None, ioc_type='Xspress3',  nmca=4):
+        dlg = DetectorSelectDialog(prefix=prefix, ioc_type=ioc_type, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
             dpref = dlg.prefix.GetValue()
-            atype = dlg.is_xsp3.IsChecked()
+            atype = dlg.ioctype.GetStringSelection()
             dtype = dlg.dettype.GetStringSelection()
             nmca = dlg.nelem.GetValue()
             dlg.Destroy()
         return dpref, dtype, atype, nmca
 
-    def connect_to_detector(self, prefix=None, is_xsp3=False,
+    def connect_to_detector(self, prefix=None, ioc_type='Xspress3',
                             det_type=None, nmca=4):
         self.det = None
-        if is_xsp3:
-            self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
+        ioc_type = ioc_type.lower()
+        if ioc_type.startswith('xspress3'):
+            version = 2
+            if 'old' in ioc_type:
+                version = 1
+            self.det = Epics_Xspress3(prefix=prefix, nmca=nmca, version=version)
             self.det.connect()
             time.sleep(0.5)
             self.det.get_mca(mca=1)
@@ -266,7 +272,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             i = self.wids['roilist'].GetStrings().index(roiname)
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
-
+        dtime = self.det.get_deadtime(mca=self.det_fore)
+        self.wids['deadtime'].SetLabel("%.1f" % dtime)
         self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
@@ -274,7 +281,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         dlg = wx.FileDialog(self, message="Save ROI File",
                             defaultDir=os.getcwd(),
                             wildcard=ROI_WILDCARD,
-                            style = wx.SAVE|wx.CHANGE_DIR)
+                            style = wx.FD_SAVE|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
             roifile = dlg.GetPath()
@@ -285,7 +292,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         dlg = wx.FileDialog(self, message="Read ROI File",
                             defaultDir=os.getcwd(),
                             wildcard=ROI_WILDCARD,
-                            style = wx.OPEN|wx.CHANGE_DIR)
+                            style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
             roifile = dlg.GetPath()
@@ -380,7 +387,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
         b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart,
-                                                                      dtime=0))
+                                                                       dtime=0))
 
         bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
         pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
@@ -408,8 +415,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
         self.det.connect_displays(status=self.wids['det_status'],
-                                  elapsed=self.wids['elapsed'],
-                                  deadtime=self.wids['deadtime'])
+                                  elapsed=self.wids['elapsed'])
 
         wx.CallAfter(self.onSelectDet, index=1, init=True)
         self.timer_counter = 0
@@ -417,9 +423,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.Bind(wx.EVT_TIMER, self.UpdateData, self.mca_timer)
         self.mca_timer.Start(100)
         return pane
-
-    # def update_mca(self, counts, **kws):
-    #    self.det.needs_refresh = False
 
     def UpdateData(self, event=None, force=False):
         self.timer_counter += 1
@@ -444,6 +447,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             if self.mca is None:
                 self.mca = self.det.get_mca(mca=self.det_fore)
 
+            dtime = self.det.get_deadtime(mca=self.det_fore)
+
+            self.wids['deadtime'].SetLabel("%.1f" % dtime)
+
             counts = self.det.get_array(mca=self.det_fore)*1.0
             energy = self.det.get_energy(mca=self.det_fore)
             if max(counts) < 1.0:
@@ -455,17 +462,27 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if left > right:
             return
         sum = self.ydata[left:right].sum()
-        dt = self.mca.real_time
-        roi_ave = self.roi_aves[panel]
-        roi_ave.update(sum)
-        cps = roi_ave.get_cps()
-        nmsg, cmsg, rmsg = '', '', ''
-        if len(name) > 0:
-            nmsg = " %s" % name
-        cmsg = " Counts={:10,.0f}".format(sum)
-        if cps is not None and cps > 0:
-            rmsg = " CPS={:10,.1f}".format(cps)
-        self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
+
+        try:
+            ftime, nframes = self.det.get_frametime()
+        except:
+            ftime   = self.det.frametime
+            nframes = self.det.nframes
+        self.det.elapsed_real = nframes * ftime
+
+        mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
+        cps =  mca_counts[left:right].sum() / ftime
+        if name in (None, ''):
+            name = 'Selected'
+        else:
+            for roi in self.det.mcas[self.det_fore-1].rois:
+                if name.lower() == roi.name.lower():
+                    _counts = roi.sum
+                    cps = _counts/ftime
+
+        if cps < 0: cps = 0
+        fmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
+        self.write_message(fmt.format(name, sum, cps), panel=panel)
 
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
@@ -512,7 +529,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det.set_dwelltime(dtime=dtime)
         else:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
-        [rave.clear() for rave in self.roi_aves]
         self.det.start()
 
     def onStop(self, event=None, **kws):
@@ -528,12 +544,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onDelROI(self, event=None):
         roiname = self.get_roiname()
         errmsg = None
+        t0 = time.time()
         if self.roilist_sel is None:
             errmsg = 'No ROI selected to delete.'
         if errmsg is not None:
             return Popup(self, errmsg, 'Cannot Delete ROI')
+
         self.det.del_roi(roiname)
         XRFDisplayFrame.onDelROI(self)
+
 
     def onNewROI(self, event=None):
         roiname = self.get_roiname()
@@ -573,7 +592,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         try:
             self.win_calib.Raise()
         except:
-            self.win_calib = CalibrationFrame(self, mca=self.mca,
+            self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
                                               larch=self.larch,
                                               callback=self.onSetCalib)
 

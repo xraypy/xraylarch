@@ -1,0 +1,39 @@
+Start with a fresh 
+
+   ~> python setup.py install
+
+which installs to C:\Users\Newville\larch   
+with folders
+
+   bin, dlls, icons, matplotlib, modules, plugins
+
+and files
+   
+   history.lar, init.lar
+
+1. build exes: in win32, run python py2exe_build.py py2exe
+
+2. build docs: in docs, run make
+
+3. move C:\Users\Newville\larch\bin to C:\Users\Newville\larch\scrips
+
+4. move or copy all of docs/_build/html to C:\Users\Newville\larch\docs
+
+5. move or copy all of win32/dist to C:\Users\Newville\larch\bin
+
+6. make a C:\Users\Newville\larch\inno folder, copy bin\inno_setup.iss there
+
+7. copy  C:\Users\Newville\larch\ to C:\Users\Newville\AppData\Local\larch
+8. copy COPYING and README.txt    to C:\Users\Newville\AppData\Local\larch
+
+Tricks (things to fix):
+
+ a)  make COPYING / README.txt DOS file-endings
+ b)  check that GSE_MapViewer points to correct icon file
+
+
+
+
+
+
+

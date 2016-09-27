@@ -6,6 +6,7 @@ import os
 import sys
 import types
 import numpy
+import six
 from larch import Group, ValidateLarchPlugin
 
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
@@ -20,14 +21,14 @@ def get(sym=None, _larch=None, **kws):
 
     """
     if sym is None:
-        sym = '_main'
+        sym = _larch.symtable
     group = None
     symtable = _larch.symtable
     if symtable.isgroup(sym):
         group = sym
     elif isinstance(sym, types.ModuleType):
         group = sym
-    elif isinstance(sym, (str, unicode)):
+    elif isinstance(sym, six.string_types):
         group = symtable._lookup(sym, create=False)
     return group
 
@@ -82,7 +83,7 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
 
     """
     if sym is None:
-        sym = '_main'
+        sym = _larch.symtable
     group = None
     symtable = _larch.symtable
     display  = symtable._sys.display

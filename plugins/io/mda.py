@@ -575,8 +575,8 @@ def writeMDA(dim, fname):
     m.scan.data = packScanData(dim[1], [])
     m.scan.bufLen = m.scan.bufLen + len(m.scan.data)
     prevScan = m.scan
-    #print "\n m.scan=", m.scan
-    #print "\n type(m.scan.pLowerScans)=", type(m.scan.pLowerScans)
+    #print("\n m.scan=", m.scan)
+    #print("\n type(m.scan.pLowerScans)=", type(m.scan.pLowerScans))
 
     if (rank > 1):
         for i in range(m.scan.npts):
