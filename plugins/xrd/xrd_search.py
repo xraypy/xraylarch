@@ -129,15 +129,15 @@ class XRDSearchGUI(wx.Dialog):
 
 
         ## Define buttons
-        rstBtn = wx.Button(self.panel, label='Reset' )
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
         hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
         okBtn  = wx.Button(self.panel, wx.ID_OK      )
         canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
 
         ## Bind buttons for functionality
-        self.Bind(wx.EVT_CHOICE, self.onReset,     rstBtn       )
-        self.Bind(wx.EVT_CHOICE, self.onChemistry, self.chmslct )
-        self.Bind(wx.EVT_CHOICE, self.onSymmetry,  self.symslct )
+        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
+        self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
+        self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
         self.sizer = wx.GridBagSizer( 5, 6)
 
@@ -160,7 +160,7 @@ class XRDSearchGUI(wx.Dialog):
 
         self.sizer.Add(hlpBtn,        pos = (11,1)                )
         self.sizer.Add(canBtn,        pos = (11,2)                )
-        self.sizer.Add(rstBtn,        pos = (11,3)                )
+        self.sizer.Add(self.rstBtn,   pos = (11,3)                )
         self.sizer.Add(okBtn,         pos = (11,4)                )
         
         self.panel.SetSizer(self.sizer)
@@ -218,21 +218,34 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
         self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
 
-        SG_list = []
-        sgfile = '/Users/mkak/Desktop/space_groups2.txt'
+        SG_list = ['']
+        sgfile = 'space_groups.txt'
+        if not os.path.exists(sgfile):
+            parent, child = os.path.split(__file__)
+            sgfile = os.path.join(parent, sgfile)
+            if not os.path.exists(sgfile):
+                raise IOError("Space group file '%s' not found!" % sgfile)
         sg = open(sgfile,'r')
-        sgno = 0
-        for line in sg.read():
-            sgno += sgno
-            SG_list.append('%03d - %s' % (sgno,line))
-        sg.close()
+        for sgno,line in enumerate(sg):
+            try:
+                sgno = sgno+1
+                SG_list.append('%3d  %s' % (sgno,line))
+            except:
+                sg.close()
+                break
+
         
         lbl_SG = wx.StaticText(self.panel, label='Space group:')
         self.SG = wx.Choice(self.panel,    choices=SG_list)
 
+        ## Define buttons
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
         hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
         okBtn  = wx.Button(self.panel, wx.ID_OK     )
         canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        ## Bind buttons for functionality
+        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
 
         self.sizer = wx.GridBagSizer( 5, 6)
 
@@ -266,11 +279,24 @@ class XRDSymmetrySearch(wx.Dialog):
 
         self.sizer.Add(hlpBtn,        pos = (11,1)  )
         self.sizer.Add(canBtn,        pos = (11,2)  )
-        self.sizer.Add(okBtn,         pos = (11,3)  )
+        self.sizer.Add(self.rstBtn,   pos = (11,3)  )
+        self.sizer.Add(okBtn,         pos = (11,4)  )
 
-        self.FindWindowById(wx.ID_OK).Disable()
-        
         self.panel.SetSizer(self.sizer)
 
         self.Show()
-        
+
+    def onReset(self,event):
+        self.min_a.Clear()
+        self.max_a.Clear()
+        self.min_b.Clear()
+        self.max_b.Clear()
+        self.min_c.Clear()
+        self.max_c.Clear()
+        self.min_alpha.Clear()
+        self.max_alpha.Clear()
+        self.min_beta.Clear()
+        self.max_beta.Clear()
+        self.min_gamma.Clear()
+        self.max_gamma.Clear()
+        self.SG.SetSelection(0)
