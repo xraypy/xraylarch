@@ -1,7 +1,0 @@
-for x in range(10):
-    print 'a1'
-    if x > 2: print 'a2'
-    #endif
-    print 'b'
-#endfor
-

@@ -1,8 +1,0 @@
-def um():
-  for x in range(7):
-     print 'a 1   x = ', x
-       if x > 2: print 'a2'
-        print 'b'
-  #endfor
-#enddef
-
