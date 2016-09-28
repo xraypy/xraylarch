@@ -102,26 +102,25 @@ class Menu_IDs:
         self.TOGGLE_LEGEND = wx.NewId()
         self.TOGGLE_GRID = wx.NewId()
 
-#class XRD_DisplayFrame(ImageFrame):
-# make uniform display frame for both 2D and 1D at same time?
-
 class XRD2D_DisplayFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=None, mode='intensity',
+    def __init__(self, _larch=None, parent=None, size=None, mode='intensity',
                  move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
-
-        # instdb=None,  inst_name=None,
 
         self.xrmfile = None
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
 
+        self.larch = _larch
+        if self.larch is None:
+            self.init_larch()
+            
         ImageFrame.__init__(self, parent=parent, size=size,
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
@@ -152,6 +151,10 @@ class XRD2D_DisplayFrame(ImageFrame):
         
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
+
+    def init_larch(self):
+        if self.larch is None:
+            self.larch = Interpreter()
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -1081,7 +1084,7 @@ class XRD1D_DisplayFrame(wx.Frame):
             if hasattr(self.xrd, 'filename'):
                 atitles.append(" File={:s}".format(self.xrd.filename))
             if hasattr(self.xrd, 'npixels'):
-                atitles.append(" {:.0f} Pixels".format(self.xrd.npixels))
+                atitles.append(" ({:.0f} Pixels)".format(self.xrd.npixels))
             if hasattr(self.xrd, 'real_time'):
                 try:
                     rtime_str = " RealTime={:.2f} sec".format(self.xrd.real_time)
@@ -1125,6 +1128,14 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         panel.plot(xrd_spectra[0], xrd_spectra[1], label='spectra',  **kwargs)
 
+        ## Working on background calculation
+        ## mkak 2016.09.28
+        #pfit = np.polyfit(xrd_spectra[0],xrd_spectra[1],1)
+        #yfit = np.polyval(pfit,xrd_spectra[0])
+        #panel.plot(xrd_spectra[0], xrd_spectra[1]-yfit, label='no bkg')
+        #panel.plot(xrd_spectra[0], yfit, color='blue', label='bkg')
+        ### calculation works, but plotting here wipes previous plots - only shows last
+
         self.unzoom_all()
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
@@ -1158,6 +1169,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
+    ## Not using this routine. mkak 2016.09.28
     def oplot1D(self, xrd_spectra, color='darkgreen', label='spectra2',
               xrd=None, zorder=-2, **kws):
         if xrd is not None:

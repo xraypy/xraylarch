@@ -1254,32 +1254,24 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## AREA MASK : area.value
 
         if flag2D:
-            self.onXRD2D()
+            self.onXRD2D(save=True)
         if flag1D:
-            self.onXRD1D()
-
+            self.onXRD1D(save=True)
                               
-    def onXRD2D(self, event=None, new=True):
-
-        ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
-        #self.owner.xrddisplay.plot2Dxrd(self._xrd)
-        _larch = self.owner.larch
+    def onXRD2D(self, event=None, new=True, save=True):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
         label = area.attrs.get('description', aname)
         self._xrd  = None
-        
-        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
 
-        xrmfile = self.owner.current_file
+        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
         ## AREA MASK : area.value
 
         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
         xrd_thread.start()
-        #self.owner.show_2DXRDDisplay()
         xrd_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
@@ -1289,32 +1281,23 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.npixels = npix
         self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % aname)
 
-        ## Rewrite this text into subroutine: wx/xrddisplay.py -> plot2Dxrd
-        #self.owner.xrddisplay.plot2Dxrd(self._xrd)
-        _larch = self.owner.larch
-
         map = self._xrd.data2D
         info  = 'Size: %s; Intensity: [%g, %g]' %(map.shape,map.min(), map.max())
         title = '%s: %s' % (fname, aname)
 
-        counter = 1
-        while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
-            counter += 1
-        tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)
-        print('Saving 2D data in file: %s\n' % (tiffname))
+        if save:
+            counter = 1
+            while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
+                counter += 1
+            tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)
+            print('Saving 2D data in file: %s\n' % (tiffname))
+            tifffile.imsave(tiffname,map)
         
-        tifffile.imsave(tiffname,map)
-       
-        xrdgp = self.owner.current_file.xrmmap['xrd']
-
-        fname = xrmfile.filename
-
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_xrd_display(title, det=None)
-
         self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
 
-    def onXRD1D(self, event=None, as_2=False, unit='q'):
+    def onXRD1D(self, event=None, as_2=False, unit='q', save=True):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -1322,8 +1305,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         label = area.attrs.get('description', aname)
         self._xrd  = None
 
-        xrmfile = self.owner.current_file
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+        ## DATA      : xrmfile.xrmmap['xrd/data1D'][i,j,] !!!!!!
         ## AREA MASK : area.value
 
         xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
@@ -1338,12 +1320,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.npixels = npix
         self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
 
-        _larch = self.owner.larch
+        #_larch = self.owner.larch
         map = self._xrd.data2D
         try:
             ## can add in dark (background) and mask??
-            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001,
-                                    #calfile=xrmfile.xrmmap['xrd'].attrs['calfile'],
+            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001, save=save,
                                     AI = xrmfile.xrmmap['xrd'],
                                     aname=aname, prefix=fname, path=pref)
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
@@ -1490,7 +1471,6 @@ class MapViewerFrame(wx.Frame):
         mca_thread = Thread(target=self.get_mca_area,
                             args=(det,mask), kwargs=kwargs)
         mca_thread.start()
-
         self.show_XRFDisplay()
         mca_thread.join()
 
@@ -1510,7 +1490,7 @@ class MapViewerFrame(wx.Frame):
                     p.update_xrmmap(self.current_file.xrmmap)
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
-        'make sure plot frame is enabled, and visible'
+        'make sure XRF plot frame is enabled and visible'
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrfdisplay is None:
@@ -1530,26 +1510,7 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.reset_config()
 
     def show_1DXRDDisplay(self, do_raise=True, clear=True, xrmfile=None):
-        'make sure plot frame is enabled, and visible'
-        if xrmfile is None:
-            xrmfile = self.current_file
-        if self.xrddisplay is None:
-            self.xrddisplay = XRD1D_DisplayFrame(_larch=self.larch)
-
-        try:
-            self.xrddisplay.Show()
-        except PyDeadObjectError:
-            self.xrddisplay = XRD1D_DisplayFrame(_larch=self.larch)
-            self.xrddisplay.Show()
-
-        if do_raise:
-            self.xrddisplay.Raise()
-        if clear:
-            self.xrddisplay.panel.clear()
-            self.xrddisplay.panel.reset_config()
-
-    def show_1DXRDDisplay(self, do_raise=True, clear=True, xrmfile=None):
-        'make sure plot frame is enabled, and visible'
+        'make sure 1D XRD frame is enabled and visible'
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrddisplay1D is None:
@@ -1866,6 +1827,7 @@ class MapViewerFrame(wx.Frame):
         for xrmfile in self.filemap.values():
             xrmfile.close()
 
+        ## Closes maps, 2D XRD image
         for disp in self.im_displays + self.plot_displays:
             try:
                 disp.Destroy()
@@ -1876,6 +1838,12 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.Destroy()
         except:
             pass
+        
+        try:
+            self.xrddisplay1D.Destroy()
+        except:
+            pass
+        
         if self.larch_buffer is not None:
             try:
                 self.larch_buffer.onClose()
