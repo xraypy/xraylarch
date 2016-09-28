@@ -714,12 +714,32 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
+    def readXRDfile(self,name='mask',keyword='maskfile'):
+    
+        edffile = self.xrmmap['xrd'].attrs[keyword]
+        print('Reading %s file: %s' % (name,edffile))
+
+        try:
+            import fabio
+            rawdata = fabio.open(edffile).data
+        except:
+            print('File must be .edf format; user must have fabio installed.')
+        print('\t Shape: %s' % str(np.shape(rawdata)))
+        
+        try:
+            del self.xrmmap['xrd'][name]
+        except:
+            pass
+        self.xrmmap['xrd'].create_dataset(name, data=np.array(rawdata))
+
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.08.30
         restructured
         mkak 2016.09.09
+        adding new options
+        mkak 2016.09.28
         """
         try:
             self.xrmmap['xrd']
@@ -727,53 +747,68 @@ class GSEXRM_MapFile(object):
             self.xrmmap.create_group('xrd')
         xrdgp = self.xrmmap['xrd']
 
-        xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-        xrdcal = False
+        try:
+            if xrdgp.attrs['calfile'] != self.calibration:
+                print('New calibration file detected: %s' % self.calibration)
+                xrdgp.attrs['calfile'] = '%s' % (self.calibration)
+            xrdcal = True
+        except:
+            xrdcal = False
+
+
         if HAS_pyFAI:
             try:
-                ai = pyFAI.load(self.calibration)
-                print('New calibration file detected: %s' % self.calibration)
-                xrdcal = True
+                ai = pyFAI.load(xrdgp.attrs['calfile'])
             except:
                 raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
                                                self.calibration)
-                return
+                xrdcal = False
+                
+            if xrdcal:
+                try:
+                    xrdgp.attrs['detector'] = ai.detector.name
+                except:
+                    xrdgp.attrs['detector'] = ''
+                try:
+                    xrdgp.attrs['spline']   = ai.detector.splineFile
+                except:
+                    xrdgp.attrs['spline']   = ''
+                xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+                xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+                xrdgp.attrs['distance']   = ai._dist ## units: m
+                xrdgp.attrs['poni1']      = ai._poni1
+                xrdgp.attrs['poni2']      = ai._poni2
+                xrdgp.attrs['rot1']       = ai._rot1
+                xrdgp.attrs['rot2']       = ai._rot2
+                xrdgp.attrs['rot3']       = ai._rot3
+                xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+                ## E = hf ; E = hc/lambda
+                hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+                xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+
 
         try:
-            xrdgp.attrs['maskfile'] = str(self.xrdmask)
+            if self.xrdmask and os.path.exists(self.xrdmask):
+                if xrdgp.attrs['maskfile'] != str(self.xrdmask):
+                    print('New mask file detected: %s' % str(self.xrdmask))
+                    xrdgp.attrs['maskfile'] = '%s' % (self.xrdmask)
+                    self.readXRDfile(name='mask',keyword='maskfile')
         except:
-            xrdgp.attrs['maskfile'] = ''
-        
+            print('Mask not loaded correctly.')
+            pass
+
         try:
-            xrdgp.attrs['bkgdfile'] = str(self.xrdbkgd)
+            if self.xrdbkgd and os.path.exists(self.xrdbkgd):
+                if xrdgp.attrs['bkgdfile'] != str(self.xrdbkgd):
+                    print('New background file detected: %s' % str(self.xrdbkgd))
+                    xrdgp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
+                    self.readXRDfile(name='bkgd',keyword='bkgdfile')
         except:
-            xrdgp.attrs['bkgdfile'] = ''
+            print('Background not loaded correctly.')
+            pass
 
-
-        if xrdcal:
-            print('Updating calibration parameters...')
-            try:
-                xrdgp.attrs['detector'] = ai.detector.name
-            except:
-                xrdgp.attrs['detector'] = ''
-            try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
-            except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-
+        print('')
         self.h5root.flush()
 
 

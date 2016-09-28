@@ -137,7 +137,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, xrmfile=None, ai=None, **kws):
+    def display(self, map, xrmfile=None, ai=None, mask=None, **kws):
         self.xrmfile = xrmfile
         self.map = map
         self.title = ''
@@ -148,6 +148,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
         self.ai = ai
+        self.mask = mask
         
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
@@ -379,7 +380,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                 twth = np.degrees(twth)                                 ## units degrees
                 eta  = np.arctan2(y_m,x_m)                              ## units radians
                 eta  = np.degrees(eta)                                  ## units degrees
-                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s'  % (ix, 
+                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s' % (ix, 
                                       iy, twth, eta, dval)
         self.panel.write_message(msg, panel=0)
 
@@ -392,7 +393,35 @@ class XRD2D_DisplayFrame(ImageFrame):
         lpanel = panel
         lsizer = sizer
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+
+        self.MskCkBx = wx.CheckBox(panel, label='Apply mask?')
+        self.MskCkBx.Bind(wx.EVT_CHECKBOX, self.onApplyMask)
+        sizer.Add(self.MskCkBx, (irow+1,0), (1,4), labstyle, 3)
+
+
+
+
+    def onApplyMask(self, event):
+        print 'event',event.GetEventObject().GetValue()
         
+
+        if event.GetEventObject().GetValue():
+            print('checked.')        
+            if self.mask is None or os.path.isfile(self.mask):
+                print('Mask file not defined.')
+                ## Make pop-up
+                ## i. Do you want to define a Mask File?
+                ## ii. Select mask file.
+                ## iii. read into array; add to hdf5
+                ## iv. only uncheck if answer to i. is NO
+                self.MskCkBx.SetValue(False)
+            else:
+                print('This means file defined and exists.')
+        else:
+            print('unchecked.')
+        
+       
+
 class XRD1D_DisplayFrame(wx.Frame):
     _about = """XRD Viewer
   Margaret Koker <koker @ cars.uchicago.edu>

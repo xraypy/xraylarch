@@ -1672,7 +1672,11 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 imd = self.im_displays.pop()
-                imd.display(map, title=title, xrmfile=xrmfile, ai=AI)
+                try:
+                    maskfile = self.current_file.xrmmap['xrd'].attrs['maskfile']
+                except:
+                    maskfile = None
+                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskfile)
                 imd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
@@ -2240,19 +2244,19 @@ class OpenMapFolder(wx.Dialog):
         
         panel = wx.Panel(self)
 
-        fldrTtl  = wx.StaticText(panel,  label='XRM Map Folder:'       )
+        fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'       )
         fldrBtn  = wx.Button(panel,      label='Browse...'             )
-        chTtl    = wx.StaticText(panel,  label='Include data for...'   )
+        chTtl    = SimpleText(panel,  label='Include data for...'   )
         xrfCkBx  = wx.CheckBox(panel,    label='XRF'                   )
         xrdCkBx  = wx.CheckBox(panel,    label='XRD'                   )
         optTtl   = wx.StaticBox(panel,   label='XRD Options'           )
-        caliTtl  = wx.StaticText(panel,  label='XRD Calibration File:' )
+        caliTtl  = SimpleText(panel,  label='XRD Calibration File:' )
         fileBtn1 = wx.Button(panel,      label='Browse...'             )
-        blnkTtl1 = wx.StaticText(panel,  label=''                      )
-        maskTtl  = wx.StaticText(panel,  label='XRD Mask File:'        )
+        blnkTtl1 = SimpleText(panel,  label=''                      )
+        maskTtl  = SimpleText(panel,  label='XRD Mask File:'        )
         fileBtn2 = wx.Button(panel,      label='Browse...'             )
-        blnkTtl2 = wx.StaticText(panel,  label=''                      )
-        bkgdTtl  = wx.StaticText(panel,  label='XRD Background File:'  )
+        blnkTtl2 = SimpleText(panel,  label=''                      )
+        bkgdTtl  = SimpleText(panel,  label='XRD Background File:'  )
         fileBtn3 = wx.Button(panel,      label='Browse...'             )
 
         self.Fldr = wx.TextCtrl(panel,
