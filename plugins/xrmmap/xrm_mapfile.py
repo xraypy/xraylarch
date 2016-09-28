@@ -866,7 +866,7 @@ class GSEXRM_MapFile(object):
         self.add_map_config(self.mapconf)
         row = self.read_rowdata(0)
         self.build_schema(row,verbose=True)
-
+        
         self.add_rowdata(row)
         
         self.status = GSEXRM_FileStatus.hasdata
