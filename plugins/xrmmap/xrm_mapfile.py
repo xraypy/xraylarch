@@ -179,6 +179,19 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
 
     h5root.flush()
 
+def checkFORattrs(attrib,group):
+    try:
+        group.attrs[attrib]
+    except:
+        group.attrs[attrib] = ''
+
+def checkFORsubgroup(subgroup,group):
+    try:
+        group[subgroup]
+    except:
+         group.create_group(subgroup)
+
+
 class GSEXRM_Exception(Exception):
     """GSEXRM Exception: General Errors"""
     def __init__(self, msg):
@@ -732,60 +745,67 @@ class GSEXRM_MapFile(object):
             pass
         self.xrmmap['xrd'].create_dataset(name, data=np.array(rawdata))
 
+    def checkFORattrs(self,attrib,group=None):
+        if group == None:
+            group = self.xrmmap
+        try:
+            group.attrs[attrib]
+        except:
+            group.attrs[attrib] = ''        
+
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.08.30
         restructured
         mkak 2016.09.09
-        adding new options
+        adding new options; clean up
         mkak 2016.09.28
         """
-        try:
-            self.xrmmap['xrd']
-        except:
-            self.xrmmap.create_group('xrd')
+
+        checkFORsubgroup('xrd',self.xrmmap)
         xrdgp = self.xrmmap['xrd']
+                
+        checkFORattrs('calfile',xrdgp)
+        checkFORattrs('maskfile',xrdgp)
+        checkFORattrs('bkgdfile',xrdgp)
 
-        try:
-            if xrdgp.attrs['calfile'] != self.calibration:
-                print('New calibration file detected: %s' % self.calibration)
-                xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-            xrdcal = True
-        except:
-            xrdcal = False
+        xrdcal = False        
+        if self.calibration and xrdgp.attrs['calfile'] != self.calibration:
+            print('New calibration file detected: %s' % self.calibration)
+            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
+            if os.path.exists(xrdgp.attrs['calfile']):
+                xrdcal = True
+           
 
-
-        if HAS_pyFAI:
+        if HAS_pyFAI and xrdcal:
             try:
                 ai = pyFAI.load(xrdgp.attrs['calfile'])
             except:
-                raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                               self.calibration)
-                xrdcal = False
-                
-            if xrdcal:
-                try:
-                    xrdgp.attrs['detector'] = ai.detector.name
-                except:
-                    xrdgp.attrs['detector'] = ''
-                try:
-                    xrdgp.attrs['spline']   = ai.detector.splineFile
-                except:
-                    xrdgp.attrs['spline']   = ''
-                xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-                xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-                xrdgp.attrs['distance']   = ai._dist ## units: m
-                xrdgp.attrs['poni1']      = ai._poni1
-                xrdgp.attrs['poni2']      = ai._poni2
-                xrdgp.attrs['rot1']       = ai._rot1
-                xrdgp.attrs['rot2']       = ai._rot2
-                xrdgp.attrs['rot3']       = ai._rot3
-                xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-                ## E = hf ; E = hc/lambda
-                hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-                xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+                print('Not recognized as a pyFAI calibration file: %s' % self.calibration)
+                pass
+
+            try:
+                xrdgp.attrs['detector'] = ai.detector.name
+            except:
+                xrdgp.attrs['detector'] = ''
+            try:
+                xrdgp.attrs['spline']   = ai.detector.splineFile
+            except:
+                xrdgp.attrs['spline']   = ''
+            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgp.attrs['distance']   = ai._dist ## units: m
+            xrdgp.attrs['poni1']      = ai._poni1
+            xrdgp.attrs['poni2']      = ai._poni2
+            xrdgp.attrs['rot1']       = ai._rot1
+            xrdgp.attrs['rot2']       = ai._rot2
+            xrdgp.attrs['rot3']       = ai._rot3
+            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+            ## E = hf ; E = hc/lambda
+            hc = constants.value(u'Planck constant in eV s') * \
+                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
 
         try:

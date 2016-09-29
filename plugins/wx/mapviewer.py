@@ -1669,14 +1669,15 @@ class MapViewerFrame(wx.Frame):
         except:
             AI = None
 
+        try:
+            maskdata = self.current_file.xrmmap['xrd/mask']
+        except:
+            maskdata = None
+
         while not displayed:
             try:
                 imd = self.im_displays.pop()
-                try:
-                    maskfile = self.current_file.xrmmap['xrd'].attrs['maskfile']
-                except:
-                    maskfile = None
-                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskfile)
+                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
                 imd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
@@ -1686,7 +1687,7 @@ class MapViewerFrame(wx.Frame):
                                     move_callback=self.move_callback,
                                     save_callback=self.onSavePixel)
 
-                imd.display(map, title=title, xrmfile=xrmfile, ai=AI)
+                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
