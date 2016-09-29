@@ -727,7 +727,7 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def readXRDfile(self,name='mask',keyword='maskfile'):
+    def readEDFfile(self,name='mask',keyword='maskfile'):
     
         edffile = self.xrmmap['xrd'].attrs[keyword]
         print('Reading %s file: %s' % (name,edffile))
@@ -813,7 +813,7 @@ class GSEXRM_MapFile(object):
                 if xrdgp.attrs['maskfile'] != str(self.xrdmask):
                     print('New mask file detected: %s' % str(self.xrdmask))
                     xrdgp.attrs['maskfile'] = '%s' % (self.xrdmask)
-                    self.readXRDfile(name='mask',keyword='maskfile')
+                    self.readEDFfile(name='mask',keyword='maskfile')
         except:
             print('Mask not loaded correctly.')
             pass
@@ -823,7 +823,7 @@ class GSEXRM_MapFile(object):
                 if xrdgp.attrs['bkgdfile'] != str(self.xrdbkgd):
                     print('New background file detected: %s' % str(self.xrdbkgd))
                     xrdgp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
-                    self.readXRDfile(name='bkgd',keyword='bkgdfile')
+                    self.readEDFfile(name='bkgd',keyword='bkgdfile')
         except:
             print('Background not loaded correctly.')
             pass

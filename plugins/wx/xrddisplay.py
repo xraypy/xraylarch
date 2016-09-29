@@ -400,8 +400,13 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.MskCkBx.Bind(wx.EVT_CHECKBOX, self.onApplyMask)
         sizer.Add(self.MskCkBx, (irow+1,0), (1,4), labstyle, 3)
 
+        self.LoadBtn = wx.Button(panel, label='Load New Mask')
+        self.LoadBtn.Bind(wx.EVT_BUTTON, self.onLoadMask)
+        sizer.Add(self.LoadBtn, (irow+2,0), (1,4), labstyle, 3)
 
-
+        self.ReCalc1D = wx.Button(panel, label='Replot 1DXRD')
+        self.ReCalc1D.Bind(wx.EVT_BUTTON, self.onReplot1DXRD)
+        sizer.Add(self.ReCalc1D, (irow+3,0), (1,4), labstyle, 3)
 
     def onApplyMask(self, event):
         '''
@@ -411,11 +416,16 @@ class XRD2D_DisplayFrame(ImageFrame):
         if event.GetEventObject().GetValue():
             if self.masked_map is None:
                 print('Mask file not defined.')
-                ## Make pop-up
-                ## i. Do you want to define a Mask File?
-                ## ii. Select mask file.
-                ## iii. read into array; add to hdf5
-                ## iv. only uncheck if answer to i. is NO
+                
+                question = 'No mask found in map file. Would you like to load a new file now?'
+                caption = 'Load mask file?'
+                dlg = wx.MessageDialog(self, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+                print 'answer:', dlg.ShowModal() # == wx.ID_YES
+                read = dlg.ShowModal()
+                dlg.Destroy()
+                if read == wx.ID_YES:
+                    self.onLoadMask()
+
                 self.MskCkBx.SetValue(False)
             else:
                 ImageFrame.display(self, self.masked_map)
@@ -423,6 +433,40 @@ class XRD2D_DisplayFrame(ImageFrame):
         else:
             ImageFrame.display(self, self.map)        
        
+    def onLoadMask(self, evt=None):
+
+        wildcards = 'pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose XRD mask file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        edffile, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            edffile = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+
+            print('Reading mask file: %s' % edffile)
+            try:
+                import fabio
+                self.mask = fabio.open(edffile).data
+                self.masked_map = self.map * (np.ones(np.shape(self.mask))-self.mask)
+                self.MskCkBx.SetValue(True)
+                ImageFrame.display(self, self.masked_map)
+            except:
+                print('File must be .edf format; user must have fabio installed.')
+            
+            ## Can this be called here?
+            #readEDFfile(self,name='mask',keyword='maskfile')
+            #add_calibration()
+
+    def onReplot1DXRD(self, evt=None):
+
+        print('How do I do this?')
+
+
 
 class XRD1D_DisplayFrame(wx.Frame):
     _about = """XRD Viewer
