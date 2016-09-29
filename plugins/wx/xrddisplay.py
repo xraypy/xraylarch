@@ -149,6 +149,8 @@ class XRD2D_DisplayFrame(ImageFrame):
             self.set_contrast_levels()
         self.ai = ai
         self.mask = mask
+        if np.shape(self.mask) == np.shape(map):
+            self.masked_map = map * (np.ones(np.shape(self.mask))-mask.value)
         
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
@@ -402,12 +404,12 @@ class XRD2D_DisplayFrame(ImageFrame):
 
 
     def onApplyMask(self, event):
-        print 'event',event.GetEventObject().GetValue()
-        
-
+        '''
+        Applies mask to 2DXRD map
+        mkak 2016.09.29
+        '''
         if event.GetEventObject().GetValue():
-            print('checked.')        
-            if self.mask is None or os.path.isfile(self.mask):
+            if self.masked_map is None:
                 print('Mask file not defined.')
                 ## Make pop-up
                 ## i. Do you want to define a Mask File?
@@ -416,10 +418,10 @@ class XRD2D_DisplayFrame(ImageFrame):
                 ## iv. only uncheck if answer to i. is NO
                 self.MskCkBx.SetValue(False)
             else:
-                print('This means file defined and exists.')
+                ImageFrame.display(self, self.masked_map)
+
         else:
-            print('unchecked.')
-        
+            ImageFrame.display(self, self.map)        
        
 
 class XRD1D_DisplayFrame(wx.Frame):
