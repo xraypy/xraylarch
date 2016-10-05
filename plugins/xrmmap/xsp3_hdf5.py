@@ -94,7 +94,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     for i in range(ndet):
         chan = "CHAN%i" %(i+1)
         clock_ticks = ndattr['%sSCA0' % chan].value
-        reset_ticks = ndatrr["%sSCA1" % chan].value
+        reset_ticks = ndattr["%sSCA1" % chan].value
         all_events  = ndattr["%sSCA3" % chan].value
         if "%sEventWidth" in ndattr:
             event_width = 1.0 + ndattr['%sEventWidth' % chan].value
