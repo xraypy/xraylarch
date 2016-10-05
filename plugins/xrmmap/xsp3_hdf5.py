@@ -42,11 +42,11 @@ class XSP3Data(object):
         # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
 def read_xsp3_hdf5(fname, npixels=None, verbose=False,
-                   estimate_dtc=True, _larch=None):
+                   estimate_dtc=False, _larch=None):
     # Reads a HDF5 file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     npixels = None
-    clocktick = 12.5e-3
+    clockrate = 12.5e-3   # microseconds per clock tick: 80MHz clock
     t0 = time.time()
     h5file = h5py.File(fname, 'r')
 
@@ -56,13 +56,13 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     # support bother newer and earlier location of NDAttributes
     ndattr = None
     try:
-        ndattr = root['detector/NDAttributes']
+        ndattr = root['NDAttributes']
     except KeyError:
         pass
 
     if 'CHAN1SCA0' not in ndattr:
         try:
-            ndattr = root['NDAttributes']
+            ndattr = root['detector/NDAttributes']
         except KeyError:
             pass
     if 'CHAN1SCA0' not in ndattr:
@@ -92,19 +92,30 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
             dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     for i in range(ndet):
-        rtime = clocktick * ndattr['CHAN%iSCA0' % (i+1)].value
-        rtime[np.where(rtime<0.1)] = 0.1
+        chan = "CHAN%i" %(i+1)
+        clock_ticks = ndattr['%sSCA0' % chan].value
+        reset_ticks = ndatrr["%sSCA1" % chan].value
+        all_events  = ndattr["%sSCA3" % chan].value
+        if "%sEventWidth" in ndattr:
+            event_width = 1.0 + ndattr['%sEventWidth' % chan].value
+        else:
+            event_width = 6.0
+
+        clock_ticks[np.where(clock_ticks<10)] = 10.0
+        rtime = clockrate * clock_ticks
         out.realTime[:, i] = rtime
         out.liveTime[:, i] = rtime
         ocounts = out.counts[:, i, 1:-1].sum(axis=1)
         ocounts[np.where(ocounts<0.1)] = 0.1
         out.outputCounts[:, i] = ocounts
+
+        dtfactor = clock_ticks/(clock_ticks - (all_events*event_width + reset_ticks))
+        out.inputCounts[:, i] = dtfactor * ocounts
+
         if estimate_dtc:
             ocr = ocounts/(rtime*1.e-6)
             icr = estimate_icr(ocr, dtc_taus[i], niter=3)
-            out.inputCounts[:, i]  = icr * (rtime*1.e-6)
-        else:
-            out.inputCounts[:, i]  = ocounts
+            out.inputCounts[:, i] = icr * (rtime*1.e-6)
 
     h5file.close()
     t2 = time.time()
