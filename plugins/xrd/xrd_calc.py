@@ -166,3 +166,23 @@ def calc_2th_to_q(twth,wavelength,units='degrees'):
         twth = np.radians(twth)
     return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
     
+def fit_background(q,I):
+    
+    ## Working on background calculation
+    ## mkak 2016.09.28
+    
+    x = q
+    y = I
+    pfit = np.polyfit(x,y,4)
+    yfit = np.polyval(pfit,x)
+    #panel.plot(xrd_spectra[0], xrd_spectra[1]-yfit, label='no bkg')
+    #panel.plot(xrd_spectra[0], yfit, color='blue', label='bkg')
+    
+    ### calculation works, but plotting here wipes previous plots - only shows last
+    import matplotlib as plt
+    plt.figure()
+    plt.plot(x,y,label='raw data')
+    plt.plot(x,yfit,label='background')
+    plt.plot(x,y-yfit,label='background subtracted')
+    plt.legend()
+    plt.show()

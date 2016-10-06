@@ -63,6 +63,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
 from larch_plugins.math import index_of
 from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th,calc_d_to_q,calc_2th_to_q
 from larch_plugins.xrd import struc_from_cif,calc_all_F,XRDSearchGUI
+from larch_plugins.xrd import fit_background
 
 import matplotlib as plt
 
@@ -1203,13 +1204,7 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         panel.plot(xrd_spectra[0], xrd_spectra[1], label='spectra',  **kwargs)
 
-        ## Working on background calculation
-        ## mkak 2016.09.28
-        #pfit = np.polyfit(xrd_spectra[0],xrd_spectra[1],1)
-        #yfit = np.polyval(pfit,xrd_spectra[0])
-        #panel.plot(xrd_spectra[0], xrd_spectra[1]-yfit, label='no bkg')
-        #panel.plot(xrd_spectra[0], yfit, color='blue', label='bkg')
-        ### calculation works, but plotting here wipes previous plots - only shows last
+        #fit_background(xrd_spectra[0], xrd_spectra[1])
 
         self.unzoom_all()
 
