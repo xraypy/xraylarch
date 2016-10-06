@@ -172,6 +172,7 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
         _larch.error.append(err)
         symtable._sys.last_error = err
 
+    thismod = None
     if new_module is not None:
         # save current module group
         #  create new group, set as moduleGroup and localGroup
@@ -184,15 +185,13 @@ def _eval(text=None, filename=None, _larch=None, new_module=None):
         inp.clear()
 
     complete = inp.run()
-
     # for a "newly created module" (as on import),
     # the module group is the return value
     # print('eval End ', new_module, output)
     if new_module is not None:
         symtable.restore_frame()
-    return
 
-
+    return thismod
 
 def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
@@ -216,7 +215,6 @@ def _run(filename=None, new_module=None, _larch=None):
     else:
         _larch.writer.write("file not found '%s'\n" % filename)
         return
-
     return  _eval(text=text, filename=filename, _larch=_larch,
                   new_module=new_module)
 

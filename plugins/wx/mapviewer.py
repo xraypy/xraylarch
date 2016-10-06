@@ -785,8 +785,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        xrdgp = xrmmap['xrd']
+        xrdgp = None
         try:
+            xrdgp = xrmmap['xrd']
             pref, calfile = os.path.split(xrdgp.attrs['calfile'])
             self.wids['XRD Parameters'].SetLabel('%s' % calfile)
             xrd_exists = True
