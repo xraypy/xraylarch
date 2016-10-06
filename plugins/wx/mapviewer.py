@@ -1772,7 +1772,7 @@ class MapViewerFrame(wx.Frame):
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Perform XRD &Calibration',
                  'Calibrate XRD Detector',  self.onCalXRD)
-        MenuItem(self, fmenu, '&Update XRD Calibration File to Map File',
+        MenuItem(self, fmenu, '&Load XRD parameters/files',
                  'Load XRD Calibration File',  self.onReadXRD)
         MenuItem(self, fmenu, '&Save As...  without 2D XRD data',
                  'Save without 2D XRD data',  self.onReSave)
