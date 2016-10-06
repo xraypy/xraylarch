@@ -1764,6 +1764,8 @@ class MapViewerFrame(wx.Frame):
                  'Read XRM Map File',  self.onReadFile)
         MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F',
                  'Read XRM Map Folder',  self.onReadFolder)
+        MenuItem(self, fmenu, '&Add to existing XRM Map File\tCtrl+F',
+                 'Read XRM Map Folder',  self.onAddToFile)
         MenuItem(self, fmenu, 'Change &Working Folder',
                   'Choose working directory',
                   self.onFolderSelect)
@@ -1872,6 +1874,29 @@ class MapViewerFrame(wx.Frame):
             del obj
         self.Destroy()
 
+    def onReadFile(self, evt=None):
+        if not self.h5convert_done:
+            print('cannot open file while processing a map folder')
+            return
+
+        dlg = wx.FileDialog(self, message='Read XRM Map File',
+                            defaultDir=os.getcwd(),
+                            wildcard=FILE_WILDCARDS,
+                            style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+            if path in self.filemap:
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
+                                           'Re-read file?', style=wx.YES_NO))
+
+        dlg.Destroy()
+
+        if read:
+            xrmfile = GSEXRM_MapFile(filename=str(path))
+            self.add_xrmfile(xrmfile)
+
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
@@ -1919,6 +1944,41 @@ class MapViewerFrame(wx.Frame):
         if parent is not None and len(parent) > 0:
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
+
+    def onAddToFile(self, evt=None):
+        if not self.h5convert_done:
+            print( 'cannot open file while processing a map folder')
+            return
+            
+        myDlg = AddToMapFolder()
+
+        filepath, fldrpath, read = None, None, False
+        FLAGxrf, FLAGxrd = False, False
+        if myDlg.ShowModal() == wx.ID_OK:
+            read        = True
+            fldrpath    = myDlg.FldrPath
+            filepath    = myDlg.FilePath
+            FLAGxrf     = myDlg.FLAGxrf
+            FLAGxrd     = myDlg.FLAGxrd
+
+        myDlg.Destroy()
+        
+        ## Still working on this....
+        ## mkak 2016.10.06
+        if read:
+            print('Not yet implemented.')
+#             xrmfile = GSEXRM_MapFile(filename=str(filepath))#,folder=str(fldrpath))
+#             self.add_xrmfile(xrmfile)
+#             xrmfile.check_flags()
+#             
+#             if xrmfile.flag_xrf and FLAGxrf:
+#                print('This file already has XRF data. None will be added.')
+#             if xrmfile.flag_xrd and FLAGxrd:
+#                print('This file already has XRD data. None will be added.')
+
+            #xrmfile.add.....
+
+
 
     def onReadXRD(self, evt=None):
         """
@@ -2097,30 +2157,6 @@ class MapViewerFrame(wx.Frame):
                 self.add_xrmfile(xrmfile)
             except:
                 print('Copying failed.')
-
-    def onReadFile(self, evt=None):
-        if not self.h5convert_done:
-            print('cannot open file while processing a map folder')
-            return
-
-        dlg = wx.FileDialog(self, message='Read Map File',
-                            defaultDir=os.getcwd(),
-                            wildcard=FILE_WILDCARDS,
-                            style=wx.FD_OPEN)
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-            if path in self.filemap:
-                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
-                                           'Re-read file?', style=wx.YES_NO))
-
-        dlg.Destroy()
-
-        if read:
-            parent, fname = os.path.split(path)
-            xrmfile = GSEXRM_MapFile(filename=str(path))
-            self.add_xrmfile(xrmfile)
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
@@ -2341,7 +2377,7 @@ class OpenMapFolder(wx.Dialog):
                 self.FindWindowById(wx.ID_OK).Disable()
 
     def onBROWSE(self, event): 
-        dlg = wx.DirDialog(self, message='Read XRF Map Folder',
+        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
 
@@ -2414,6 +2450,120 @@ class OpenMapFolder(wx.Dialog):
             self.BkgdFl.Clear()
             self.BkgdFl.SetValue(str(path))
             self.BkgdPath = path
+
+class AddToMapFolder(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        self.FLAGxrf  = False
+        self.FLAGxrd  = False
+        self.FldrPath = None
+        self.CaliPath = None
+        self.MaskPath = None
+        self.BkgdPath = None
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 450))
+        
+        panel = wx.Panel(self)
+
+        fileTtl  = SimpleText(panel,   label='Existing Map File:'    )
+        fileBtn  = wx.Button(panel,    label='Browse...'             )
+        chTtl    = SimpleText(panel,   label='Add data for...'       )
+        xrfCkBx  = wx.CheckBox(panel,  label='XRF'                   )
+        xrdCkBx  = wx.CheckBox(panel,  label='XRD'                   )
+        fldrTtl  = SimpleText(panel,   label='XRM Map Folder:'       )
+        fldrBtn  = wx.Button(panel,    label='Browse...'             )
+
+        self.File   = wx.TextCtrl(panel, size=(350, 25))
+        self.Fldr   = wx.TextCtrl(panel, size=(350, 25))
+
+        hlpBtn = wx.Button(panel, wx.ID_HELP   )
+        okBtn  = wx.Button(panel, wx.ID_OK     )
+        canBtn = wx.Button(panel, wx.ID_CANCEL )
+        self.FindWindowById(wx.ID_OK).Disable()
+
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSEfile, fileBtn  )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSEfldr, fldrBtn  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck,   xrdCkBx  )
+
+        sizer = wx.GridBagSizer(5, 6)
+
+        sizer.Add(fileTtl,   pos = ( 1,1) )
+        sizer.Add(self.File, pos = ( 2,1), span = (1,4) )
+        sizer.Add(fileBtn,   pos = ( 3,1), )
+        sizer.Add(chTtl,     pos = ( 5,1) )
+        sizer.Add(xrfCkBx,   pos = ( 6,1) )
+        sizer.Add(xrdCkBx,   pos = ( 7,1) )
+        sizer.Add(fldrTtl,   pos = ( 9,1) )
+        sizer.Add(self.Fldr, pos = (10,1), span = (1,4) )
+        sizer.Add(fldrBtn,   pos = (11,1) )
+        
+        sizer.Add(hlpBtn,    pos = (13,1) )
+        sizer.Add(okBtn,     pos = (13,3) )
+        sizer.Add(canBtn,    pos = (13,2) )
+        
+        sizer.AddGrowableCol(2)
+        panel.SetSizer(sizer)       
+
+    def onXRFcheck(self, event):
+        self.FLAGxrf = event.GetEventObject().GetValue()
+        self.checkOK()
+
+    def onXRDcheck(self, event): 
+        self.FLAGxrd = event.GetEventObject().GetValue()
+        self.checkOK()
+
+    def onBROWSEfldr(self, event): 
+        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
+                           defaultPath=os.getcwd(),
+                           style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.Fldr.Clear()
+            self.Fldr.SetValue(str(path))
+            self.FldrPath = path
+        
+        self.checkOK()
+
+    def onBROWSEfile(self, event): 
+        wildcards = 'XRM map file (*.h5)|*.h5|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Read XRM Map File',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.File.Clear()
+            self.File.SetValue(str(path))
+            #self.CalFl.AppendText(str(path))
+            self.FilePath = path
+            
+        self.checkOK()
+
+        
+    def checkOK(self):
+        
+        if self.FLAGxrf or self.FLAGxrd:
+            if self.FldrPath and self.FilePath:
+                self.FindWindowById(wx.ID_OK).Enable()
+        else:
+            self.FindWindowById(wx.ID_OK).Disable()
+
         
 class CalXRD(wx.Dialog):
     """"""

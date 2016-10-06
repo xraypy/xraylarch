@@ -1329,28 +1329,52 @@ class GSEXRM_MapFile(object):
         
         self.h5root.flush()
 
+    def check_flags(self):
+        '''
+        check if any XRD OR XRF data in mapfile
+        mkak 2016.10.06
+        '''
+        xrmmap = self.xrmmap
+        try: 
+            xrmmap['flags']
+        except:
+            xrmmap.create_group('flags')
+            self.h5root.flush()
+        
+        try:
+            self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
+        except:
+            self.flag_xrf = False
+        
+        try:
+            self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
+        except:
+            self.flag_xrd = False
+
+        if self.flag_xrd is False:
+            xrd1d, xrd2d = self.check_xrd()
+            if xrd1d or xrd2d:
+                self.flag_xrd = True
+
+        if self.flag_xrf is False:
+            if self.check_xrf():
+                self.flag_xrf = True
+        
+        self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
+        self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
+        self.h5root.flush()
+        
+
     def reset_flags(self):
         '''
-        Resets the flags according to hdf5 values or defaults for compatibility with
-        older versions; add in flags to hdf5 files missing them.
+        Resets the flags according to hdf5; add in flags to hdf5 files missing them.
         mkak 2016.08.30
         '''
         xrmmap = self.xrmmap
         try: 
             xrmmap['flags']
         except:
-            ## Compatible with older maps (did not have xrd data)
-            self.flag_xrf = True
-            self.flag_xrd = False
-            print('Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
-                                                                        self.flag_xrd))
-            xrmmap.create_group('flags')
-            flaggp = xrmmap['flags']
-            flaggp.attrs['xrf'] = self.flag_xrf
-            flaggp.attrs['xrd'] = self.flag_xrd
-            h5root.flush()
-            
-            return
+            check_flags(self)
     
         self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
         self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
@@ -1925,6 +1949,19 @@ class GSEXRM_MapFile(object):
         mapname = map.name.split('/')[-1]
         _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
+
+    def check_xrf(self):
+        """
+        check if any XRF data in mapfile; returns flags 
+        mkak 2016.10.06
+        """
+
+        try:
+            xrfgp = self.xrmmap['xrf']
+            data = xrfgp['det1']
+        except:
+            return False 
+        return True
 
     def check_xrd(self):
         """
