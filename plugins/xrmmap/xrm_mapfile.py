@@ -1147,9 +1147,9 @@ class GSEXRM_MapFile(object):
             elif self.flag_xrd and self.flag_xrf:
                 pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
                 print(pform % (t1-t0,t2-t1,t2-t0))
-            elif self.flag_xrf: 
-                pform = '\tTime: %0.2f s'
-                print(pform % (t2-t0))
+            #elif self.flag_xrf: 
+            #    pform = '\tTime: %0.2f s'
+            #    print(pform % (t2-t0))
             elif self.flag_xrd: 
                 pform = '\t2D XRD: %0.2f s; 1D XRD %0.2f s; Total: %0.2f s'
                 print(pform % (t1a-t0,t2-t1a,t2-t0))
