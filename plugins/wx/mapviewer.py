@@ -1321,12 +1321,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.npixels = npix
         self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
 
-        #_larch = self.owner.larch
+
         map = self._xrd.data2D
         try:
-            ## can add in dark (background) and mask??
+            import fabio
+            mask = fabio.open(xrmfile.xrmmap['xrd'].attrs['maskfile']).data
+        except:
+            mask = None
+        
+        try:
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001, save=save,
-                                    AI = xrmfile.xrmmap['xrd'],
+                                    AI = xrmfile.xrmmap['xrd'], mask=mask,
                                     aname=aname, prefix=fname, path=pref)
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
         except:

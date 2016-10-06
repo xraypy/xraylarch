@@ -78,6 +78,7 @@ def calc_all_F(cry_strc,energy,maxhkl=10,qmax=10,twthmax=None,verbose=True):
         q = np.array(q)
         F_norm = np.array(F_norm)/max(F_norm)
         return q,F_norm
+    return
 
 
 def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):

@@ -465,7 +465,7 @@ class XRD2D_DisplayFrame(ImageFrame):
 
     def onReplot1DXRD(self, evt=None):
 
-        print('How do I do this?')
+        print('Not yet implemented.')
 
 
 
@@ -977,10 +977,12 @@ class XRD1D_DisplayFrame(wx.Frame):
                 q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
 
                 #self.plot1Dxrd(xrddata, show_xrd2=True)
+                print('Values are calculated; plotting not yet implemented.')
 
     def onSearchDB(self, event=None):
 
         XRDSearchGUI()
+        print('This function is not yet implemented.')
 
     def createCustomMenus(self):
         return

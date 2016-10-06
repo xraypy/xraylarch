@@ -261,20 +261,20 @@ class XRDBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-def xrd_background(energy, counts=None, group=None, width=4,
+def xrd_background(xdata, ydata, group=None, width=4,
                    compress=2, exponent=2, slope=None,
                    _larch=None):
     """fit background for XRF spectra.  Arguments:
 
-    xrd_background(energy, counts=None, group=None, width=4,
+    xrd_background(xdata, ydata, group=None, width=4,
                    compress=2, exponent=2, slope=None)
 
     Arguments
     ---------
-    energy     array of energies OR an MCA group.  If an MCA group,
-               it will be used to give ``counts`` and ``mca`` arguments
-    counts     array of XRF counts (or MCA.counts)
-    group      group for outputs
+    xdata     array of q values (or 2th, d?)
+    ydata     associated array of I values
+    
+    group     group for outputs
 
     width      full width (in keV) of the concave down polynomials
                for when its full width is 100 counts. default = 4
@@ -290,14 +290,11 @@ def xrd_background(energy, counts=None, group=None, width=4,
     bgr       background array
     bgr_info  dictionary of parameters used to calculate background
     """
-    if isLarchMCAGroup(energy):
-        group  = energy
-        counts = group.counts
-        energy = group.energy
-    if slope is None:
-        slope = (energy[-1] - energy[0])/len(energy)
 
-    xbgr = XRDBackground(counts, width=width, compress=compress,
+    if slope is None:
+        slope = (xdata[-1] - xdata[0])/len(xdata)
+
+    xbgr = XRDBackground(ydata, width=width, compress=compress,
                          exponent=exponent, slope=slope)
 
     if group is not None:
