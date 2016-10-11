@@ -57,7 +57,7 @@ def getFileStatus(filename, root=None, folder=None):
         return status, top, vers
 
     # see if file is empty/too small(signifies "read from folder")
-    if os.stat(filename).st_size < 512:
+    if os.stat(filename).st_size < 1024:
         return GSEXRM_FileStatus.empty, top, vers
 
     # see if file is an H5 file
@@ -537,7 +537,7 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=False, FLAGxrd=False, xchannels=5001, xwedge=1):
+                 FLAGxrf=True, FLAGxrd=False, xchannels=5001, xwedge=1):
 
         self.filename         = filename
         self.folder           = folder
@@ -576,6 +576,8 @@ class GSEXRM_MapFile(object):
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
+                if '/' in self.folder:
+                    self.folder = self.folder.split('/')[-1]
                 ftmp.close()
                 os.unlink(self.filename)
 
