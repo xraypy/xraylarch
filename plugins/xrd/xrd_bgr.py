@@ -103,7 +103,7 @@ Inputs to calc
 
 import numpy as np
 #from larch import ValidateLarchPlugin
-from larch_plugins.xrf import isLarchMCAGroup
+#from larch_plugins.xrf import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -295,11 +295,11 @@ def xrd_background(xdata, ydata, group=None, width=4,
         slope = (xdata[-1] - xdata[0])/len(xdata)
 
     xbgr = XRDBackground(ydata, width=width, compress=compress,
-                         exponent=exponent, slope=slope)
+                         exponent=exponent, slope=slope, tangent=True)
 
     if group is not None:
         group.bgr = xbgr.bgr
         group.bgr_info = xbgr.parinfo
 
 def registerLarchPlugin():
-    return ('_xrf', {'xrd_background': xrd_background})
+    return ('_xrd', {'xrd_background': xrd_background})

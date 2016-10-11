@@ -699,6 +699,7 @@ class XRD1D_DisplayFrame(wx.Frame):
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
 
+        bkgpanel    = self.createBkgdPanel()
         searchpanel = self.createSearchPanel()
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
@@ -770,10 +771,38 @@ class XRD1D_DisplayFrame(wx.Frame):
         sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(bkgpanel,            0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(searchpanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
+
+    def createBkgdPanel(self):
+
+        bkgdpanel = wx.Panel(self, name='Background Panel')
+
+        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
+        ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
+        txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
+        Font9  = Font(9)
+        Font10 = Font(10)
+        Font11 = Font(11)
+
+        plttitle = txt(bkgdpanel, 'Background Options', font=Font11, size=200)
+
+        l1 = Check(bkgdpanel, 'Show background', action=self.onShowBkgd)
+        l2 = Button(bkgdpanel, 'Subtract background',  size=(90, 30), action=self.onSubBkgd)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+        sizer.Add(l1,      0, wx.EXPAND|wx.ALL, 0)
+        sizer.Add(l2,      0, wx.EXPAND|wx.ALL, 0)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+
+        pack(bkgdpanel, sizer)
+        return bkgdpanel
 
     def createSearchPanel(self):
         searchpanel = wx.Panel(self, name='Search Panel')
@@ -787,7 +816,6 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         plttitle = txt(searchpanel, 'XRD Reference Data', font=Font11, size=200)
 
-        # Load buttons
         loadpanel = wx.Panel(searchpanel, name='LoadPanel')
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
         
@@ -797,30 +825,10 @@ class XRD1D_DisplayFrame(wx.Frame):
         lsizer.Add(l1,      0, wx.EXPAND|wx.ALL, 0)
         lsizer.Add(l2,      0, wx.EXPAND|wx.ALL, 0)
         pack(loadpanel, lsizer)
-# 
-#         # x scale
-#         xscalepanel = wx.Panel(searchpanel, name='XScalePanel')
-#         xsizer = wx.BoxSizer(wx.HORIZONTAL)
-#         xtitle = txt(xscalepanel, ' X Axis:', font=Font10, size=80)
-#         xspace = txt(xscalepanel, ' ', font=Font10, size=20)
-# 
-#         self.xaxis = wx.RadioBox(xscalepanel, -1, '',wx.DefaultPosition, wx.DefaultSize,
-#                                      ('q','2th','d'),
-#                                      1, wx.RA_SPECIFY_ROWS)
-#         self.xaxis.Bind(wx.EVT_RADIOBOX, self.onXaxis)
-# 
-#         xsizer.Add(xtitle,     0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
-#         xsizer.Add(xspace,     0, wx.EXPAND|wx.ALL, 0)
-#         xsizer.Add(self.xaxis, 0, wx.EXPAND|wx.ALL, 0)
-#         pack(xscalepanel, xsizer)
-        
-###########################
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(searchpanel, 195), 0, labstyle)
-#         sizer.Add(xscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
-#         sizer.Add(lin(searchpanel, 195), 0, labstyle)
-#         sizer.Add(lin(searchpanel, 195), 0, labstyle)
         sizer.Add(loadpanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(searchpanel, 195), 0, labstyle)
         sizer.Add(lin(searchpanel, 195), 0, labstyle)
@@ -854,6 +862,15 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         if self.xrd2 is not None:
             self.oplot1D([x,I])
+
+    def onShowBkgd(self, event=None):
+
+        print ' show background!'
+
+    def onSubBkgd(self, event=None):
+
+        print ' subtract background!'
+
 
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
