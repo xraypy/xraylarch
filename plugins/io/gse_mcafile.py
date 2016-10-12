@@ -304,6 +304,57 @@ class GSEMCA_File(Group):
             fp.write(" %s\n" % d)
         fp.close()
 
+    def save_ascii(self, filename):
+        """
+        write multi-element MCA file to XDI-style ASCII file
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        nchans = len(self.counts)
+        ndet   = len(self.mcas)
+
+
+        mca0 = self.mcas[0]
+        buff = ['# XDI/1.0  GSE/1.0',
+                '# Collection.date: %s' % mca0.start_time,
+                '# Collection.n_detectors: %i' % ndet,
+                '# Collection.n_channels: %i' % nchans,
+                '# Collection.real_time: %i' % mca0.real_time,
+                '# Collection.live_time: %s' % mca0.live_time,
+                '# Calibration.offset: %s' % mca0.offset,
+                '# Calibration.slope: %s' % mca0.slope,
+                '# Calibration.quad: %s' % mca0.quad,
+                '# Column.1: energy keV']
+
+        label = '#   energy  '
+        for i in range(ndet):
+            buff.append('# Column.%i: MCA%i counts' % (i+2, i+1))
+            label = '%s    MCA%i '  % (label, i+1)
+
+        froi = '# ROI.%i: %s [%i:%i]'
+        fenv = '# ENV.%s:  %s [%s]'
+        for i, roi in enumerate(mca0.rois):
+            buff.append(froi % (i, roi.name, roi.left, roi.right))
+
+
+        for e in self.environ:
+            desc = e.desc.replace(' ', '_')
+            buff.append(fenv % (desc, e.val, e.addr))
+        buff.append('#--------------------')
+        buff.append(label)
+
+        # data
+        for i in range(nchans):
+            d = ['%9.3f' % self.energy[i]]
+            d.extend(['%11i' % m.counts[i] for m in self.mcas])
+            buff.append(' %s' % ' '.join(d))
+        buff.append('')
+
+        fp = open(filename, 'w')
+        fp.write('\n'.join(buff))
+        fp.close()
+
 
 def gsemca_group(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
