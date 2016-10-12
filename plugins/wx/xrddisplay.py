@@ -790,7 +790,7 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         plttitle = txt(bkgdpanel, 'Background Options', font=Font11, size=200)
 
-        l1 = Check(bkgdpanel, 'Show background', action=self.onShowBkgd)
+        l1 = Check(bkgdpanel, 'Show background', action=self.onShowBkgd, default=False)
         l2 = Button(bkgdpanel, 'Subtract background',  size=(90, 30), action=self.onSubBkgd)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
