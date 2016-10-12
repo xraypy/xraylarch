@@ -1772,8 +1772,8 @@ class MapViewerFrame(wx.Frame):
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Perform XRD &Calibration',
                  'Calibrate XRD Detector',  self.onCalXRD)
-        MenuItem(self, fmenu, '&Load XRD parameters/files',
-                 'Load XRD Calibration File',  self.onReadXRD)
+        MenuItem(self, fmenu, '&Provide XRD Parameters to Map File',
+                 'Load XRD Parameters',  self.onReadXRD)
         MenuItem(self, fmenu, '&Save As...  without 2D XRD data',
                  'Save without 2D XRD data',  self.onReSave)
         fmenu.AppendSeparator()
@@ -1903,15 +1903,16 @@ class MapViewerFrame(wx.Frame):
             return
             
         myDlg = OpenMapFolder()
+        #myDlg = OpenMapFolderOLD()
 
         path, read = None, False
         FLAGxrf, FLAGxrd = False, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
             path        = myDlg.FldrPath
-            xrdcalfile  = myDlg.CaliPath
-            xrdmaskfile = myDlg.MaskPath
-            xrdbkgdfile = myDlg.BkgdPath
+            #xrdcalfile  = myDlg.CaliPath
+            #xrdmaskfile = myDlg.MaskPath
+            #xrdbkgdfile = myDlg.BkgdPath
             FLAGxrf     = myDlg.FLAGxrf
             FLAGxrd     = myDlg.FLAGxrd
 
@@ -1919,8 +1920,8 @@ class MapViewerFrame(wx.Frame):
         
         if read:
             xrmfile = GSEXRM_MapFile(folder=str(path),
-                                     calibration=xrdcalfile,
-                                     mask=xrdmaskfile, bkgd=xrdbkgdfile,
+                                     #calibration=xrdcalfile,
+                                     #mask=xrdmaskfile, bkgd=xrdbkgdfile,
                                      FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
             self.add_xrmfile(xrmfile)
 
@@ -2277,6 +2278,95 @@ class OpenMapFolder(wx.Dialog):
         self.FLAGxrf  = False
         self.FLAGxrd  = False
         self.FldrPath = None
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 300))
+        ## remember: size=(width,height)
+        panel = wx.Panel(self)
+
+        fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'      )
+        fldrBtn  = wx.Button(panel,   label='Browse...'            )
+        chTtl    = SimpleText(panel,  label='Include data for...'  )
+        xrfCkBx  = wx.CheckBox(panel, label='XRF'   )
+        xrdCkBx  = wx.CheckBox(panel, label='XRD'                 )
+        
+        self.Fldr = wx.TextCtrl(panel, size=(350, 25))
+
+        hlpBtn = wx.Button(panel, wx.ID_HELP   )
+        okBtn  = wx.Button(panel, wx.ID_OK     )
+        canBtn = wx.Button(panel, wx.ID_CANCEL )
+        self.FindWindowById(wx.ID_OK).Disable()
+
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,   fldrBtn  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck, xrfCkBx  )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck, xrdCkBx  )
+
+        sizer = wx.GridBagSizer(5, 6)
+
+        sizer.Add(fldrTtl,   pos = (1,1) )
+        sizer.Add(self.Fldr, pos = (2,1), span = (1,4) )
+        sizer.Add(fldrBtn,   pos = (3,1) )
+        sizer.Add(chTtl,     pos = (5,1) )
+        sizer.Add(xrfCkBx,   pos = (6,1) )
+        sizer.Add(xrdCkBx,   pos = (7,1) )
+        sizer.Add(hlpBtn,    pos = (9,1) )
+        sizer.Add(okBtn,     pos = (9,3) )
+        sizer.Add(canBtn,    pos = (9,2) )
+        
+        sizer.AddGrowableCol(2)
+        panel.SetSizer(sizer) 
+        
+        ## Set defaults
+        xrfCkBx.SetValue(True)
+        self.FLAGxrf = True
+        self.FLAGxrd = False
+
+    def checkOK(self):
+
+        if self.FLAGxrf or self.FLAGxrd:
+            if self.FldrPath:
+                self.FindWindowById(wx.ID_OK).Enable()
+        else:
+                self.FindWindowById(wx.ID_OK).Disable()        
+
+    def onXRFcheck(self, event):
+        self.FLAGxrf = event.GetEventObject().GetValue()
+      
+        self.checkOK()
+
+    def onXRDcheck(self, event): 
+        self.FLAGxrd = event.GetEventObject().GetValue()
+        
+        self.checkOK()
+
+    def onBROWSE(self, event): 
+        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
+                           defaultPath=os.getcwd(),
+                           style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.Fldr.Clear()
+            self.Fldr.SetValue(str(path))
+            #self.Fldr.AppendText(str(path))
+            self.FldrPath = path
+        
+        self.checkOK()
+
+class OpenMapFolderOLD(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        self.FLAGxrf  = False
+        self.FLAGxrd  = False
+        self.FldrPath = None
         self.CaliPath = None
         self.MaskPath = None
         self.BkgdPath = None
@@ -2284,7 +2374,7 @@ class OpenMapFolder(wx.Dialog):
     
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 550))
-        
+        ## remember: size=(width,height)
         panel = wx.Panel(self)
 
         fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'       )
@@ -2450,6 +2540,7 @@ class OpenMapFolder(wx.Dialog):
             self.BkgdFl.Clear()
             self.BkgdFl.SetValue(str(path))
             self.BkgdPath = path
+
 
 class AddToMapFolder(wx.Dialog):
     """"""
