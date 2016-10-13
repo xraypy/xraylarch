@@ -26,6 +26,7 @@ is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 import math
 import numpy as np
+from scipy import constants
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 from matplotlib.figure import Figure
@@ -61,6 +62,10 @@ from wxutils import (SimpleText, EditableListBox, Font,
 
 from larch_plugins.math import index_of
 from larch_plugins.xrd import calc_q_to_d,calc_q_to_2th,calc_d_to_q,calc_2th_to_q
+from larch_plugins.xrd import struc_from_cif,calc_all_F,XRDSearchGUI
+from larch_plugins.xrd import fit_background
+
+import matplotlib as plt
 
 FILE_ALREADY_READ = """    The File
        '%s'
@@ -98,26 +103,25 @@ class Menu_IDs:
         self.TOGGLE_LEGEND = wx.NewId()
         self.TOGGLE_GRID = wx.NewId()
 
-#class XRD_DisplayFrame(ImageFrame):
-# make uniform display frame for both 2D and 1D at same time?
-
 class XRD2D_DisplayFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=None, mode='intensity',
+    def __init__(self, _larch=None, parent=None, size=None, mode='intensity',
                  move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
-
-        # instdb=None,  inst_name=None,
 
         self.xrmfile = None
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
 
+        self.larch = _larch
+        if self.larch is None:
+            self.init_larch()
+            
         ImageFrame.__init__(self, parent=parent, size=size,
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
@@ -134,7 +138,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, xrmfile=None, ai=None, **kws):
+    def display(self, map, xrmfile=None, ai=None, mask=None, **kws):
         self.xrmfile = xrmfile
         self.map = map
         self.title = ''
@@ -145,9 +149,16 @@ class XRD2D_DisplayFrame(ImageFrame):
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
         self.ai = ai
+        self.mask = mask
+        if np.shape(self.mask) == np.shape(map):
+            self.masked_map = map * (np.ones(np.shape(self.mask))-mask.value)
         
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
+
+    def init_larch(self):
+        if self.larch is None:
+            self.larch = Interpreter()
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -372,7 +383,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                 twth = np.degrees(twth)                                 ## units degrees
                 eta  = np.arctan2(y_m,x_m)                              ## units radians
                 eta  = np.degrees(eta)                                  ## units degrees
-                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s'  % (ix, 
+                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s' % (ix, 
                                       iy, twth, eta, dval)
         self.panel.write_message(msg, panel=0)
 
@@ -385,7 +396,79 @@ class XRD2D_DisplayFrame(ImageFrame):
         lpanel = panel
         lsizer = sizer
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+
+        self.MskCkBx = wx.CheckBox(panel, label='Apply mask?')
+        self.MskCkBx.Bind(wx.EVT_CHECKBOX, self.onApplyMask)
+        sizer.Add(self.MskCkBx, (irow+1,0), (1,4), labstyle, 3)
+
+        self.LoadBtn = wx.Button(panel, label='Load New Mask')
+        self.LoadBtn.Bind(wx.EVT_BUTTON, self.onLoadMask)
+        sizer.Add(self.LoadBtn, (irow+2,0), (1,4), labstyle, 3)
+
+        self.ReCalc1D = wx.Button(panel, label='Replot 1DXRD')
+        self.ReCalc1D.Bind(wx.EVT_BUTTON, self.onReplot1DXRD)
+        sizer.Add(self.ReCalc1D, (irow+3,0), (1,4), labstyle, 3)
+
+    def onApplyMask(self, event):
+        '''
+        Applies mask to 2DXRD map
+        mkak 2016.09.29
+        '''
+        if event.GetEventObject().GetValue():
+            if self.masked_map is None:
+                print('Mask file not defined.')
+                
+                question = 'No mask found in map file. Would you like to load a new file now?'
+                caption = 'Load mask file?'
+                dlg = wx.MessageDialog(self, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+                print 'answer:', dlg.ShowModal() # == wx.ID_YES
+                read = dlg.ShowModal()
+                dlg.Destroy()
+                if read == wx.ID_YES:
+                    self.onLoadMask()
+
+                self.MskCkBx.SetValue(False)
+            else:
+                ImageFrame.display(self, self.masked_map)
+
+        else:
+            ImageFrame.display(self, self.map)        
+       
+    def onLoadMask(self, evt=None):
+
+        wildcards = 'pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose XRD mask file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        edffile, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            edffile = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
         
+        if read:
+
+            print('Reading mask file: %s' % edffile)
+            try:
+                import fabio
+                self.mask = fabio.open(edffile).data
+                self.masked_map = self.map * (np.ones(np.shape(self.mask))-self.mask)
+                self.MskCkBx.SetValue(True)
+                ImageFrame.display(self, self.masked_map)
+            except:
+                print('File must be .edf format; user must have fabio installed.')
+            
+            ## Can this be called here?
+            #readEDFfile(self,name='mask',keyword='maskfile')
+            #add_calibration()
+
+    def onReplot1DXRD(self, evt=None):
+
+        print('Not yet implemented.')
+
+
+
 class XRD1D_DisplayFrame(wx.Frame):
     _about = """XRD Viewer
   Margaret Koker <koker @ cars.uchicago.edu>
@@ -616,6 +699,9 @@ class XRD1D_DisplayFrame(wx.Frame):
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
 
+        bkgpanel    = self.createBkgdPanel()
+        searchpanel = self.createSearchPanel()
+
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
@@ -623,6 +709,8 @@ class XRD1D_DisplayFrame(wx.Frame):
         Font10 = Font(10)
         Font11 = Font(11)
 
+        plttitle = txt(ctrlpanel, 'Plot Parameters', font=Font10, size=200)
+        
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
         ysizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -672,6 +760,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         
 ###########################
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
@@ -682,9 +771,71 @@ class XRD1D_DisplayFrame(wx.Frame):
         sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(bkgpanel,            0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(searchpanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
+
+    def createBkgdPanel(self):
+
+        bkgdpanel = wx.Panel(self, name='Background Panel')
+
+        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
+        ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
+        txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
+        Font9  = Font(9)
+        Font10 = Font(10)
+        Font11 = Font(11)
+
+        plttitle = txt(bkgdpanel, 'Background Options', font=Font11, size=200)
+
+        l1 = Check(bkgdpanel, 'Show background', action=self.onShowBkgd, default=False)
+        l2 = Button(bkgdpanel, 'Subtract background',  size=(90, 30), action=self.onSubBkgd)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+        sizer.Add(l1,      0, wx.EXPAND|wx.ALL, 0)
+        sizer.Add(l2,      0, wx.EXPAND|wx.ALL, 0)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+        sizer.Add(lin(bkgdpanel, 195), 0, labstyle)
+
+        pack(bkgdpanel, sizer)
+        return bkgdpanel
+
+    def createSearchPanel(self):
+        searchpanel = wx.Panel(self, name='Search Panel')
+
+        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
+        ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
+        txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
+        Font9  = Font(9)
+        Font10 = Font(10)
+        Font11 = Font(11)
+
+        plttitle = txt(searchpanel, 'XRD Reference Data', font=Font11, size=200)
+
+        loadpanel = wx.Panel(searchpanel, name='LoadPanel')
+        lsizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        l1 = Button(loadpanel, 'Search Database', size=(120, 30), action=self.onSearchDB)
+        l2 = Button(loadpanel, 'Load CIF',  size=(120, 30), action=self.onLoadCIF)
+
+        lsizer.Add(l1,      0, wx.EXPAND|wx.ALL, 0)
+        lsizer.Add(l2,      0, wx.EXPAND|wx.ALL, 0)
+        pack(loadpanel, lsizer)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(searchpanel, 195), 0, labstyle)
+        sizer.Add(loadpanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(searchpanel, 195), 0, labstyle)
+        sizer.Add(lin(searchpanel, 195), 0, labstyle)
+
+        pack(searchpanel, sizer)
+        return searchpanel
+
 
     def onXaxis(self, event=None):
 
@@ -712,6 +863,15 @@ class XRD1D_DisplayFrame(wx.Frame):
         if self.xrd2 is not None:
             self.oplot1D([x,I])
 
+    def onShowBkgd(self, event=None):
+
+        print ' show background!'
+
+    def onSubBkgd(self, event=None):
+
+        print ' subtract background!'
+
+
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
         plotpanel = self.panel = self.createPlotPanel()
@@ -724,9 +884,11 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.SetSize((cx+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
+        
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(ctrlpanel, 0, style, 3)
-        sizer.Add(plotpanel, 1, style, 2)
+       
+        sizer.Add(ctrlpanel,   0, style, 3)
+        sizer.Add(plotpanel,   1, style, 2)
 
         self.SetMinSize((450, 150))
         pack(self, sizer)
@@ -808,6 +970,36 @@ class XRD1D_DisplayFrame(wx.Frame):
 
     def toggle_grid(self, event=None):
         self.panel.toggle_grid()
+
+    def onLoadCIF(self, event=None):
+       
+        wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose CIF file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            cry_strc = struc_from_cif(path)
+
+            if cry_strc:
+                hc = constants.value(u'Planck constant in eV s') * \
+                         constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+                energy = hc/(self.xrd.wavelength) ## units: keV
+                q,F = calc_all_F(cry_strc,energy,maxhkl=10,qmax=5)
+
+                #self.plot1Dxrd(xrddata, show_xrd2=True)
+                print('Values are calculated; plotting not yet implemented.')
+
+    def onSearchDB(self, event=None):
+
+        XRDSearchGUI()
+        print('This function is not yet implemented.')
 
     def createCustomMenus(self):
         return
@@ -987,7 +1179,7 @@ class XRD1D_DisplayFrame(wx.Frame):
             if hasattr(self.xrd, 'filename'):
                 atitles.append(" File={:s}".format(self.xrd.filename))
             if hasattr(self.xrd, 'npixels'):
-                atitles.append(" {:.0f} Pixels".format(self.xrd.npixels))
+                atitles.append(" ({:.0f} Pixels)".format(self.xrd.npixels))
             if hasattr(self.xrd, 'real_time'):
                 try:
                     rtime_str = " RealTime={:.2f} sec".format(self.xrd.real_time)
@@ -1031,6 +1223,8 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         panel.plot(xrd_spectra[0], xrd_spectra[1], label='spectra',  **kwargs)
 
+        #fit_background(xrd_spectra[0], xrd_spectra[1])
+
         self.unzoom_all()
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
@@ -1064,6 +1258,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
+    ## Not using this routine. mkak 2016.09.28
     def oplot1D(self, xrd_spectra, color='darkgreen', label='spectra2',
               xrd=None, zorder=-2, **kws):
         if xrd is not None:
