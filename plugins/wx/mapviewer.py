@@ -1774,8 +1774,6 @@ class MapViewerFrame(wx.Frame):
                  'Calibrate XRD Detector',  self.onCalXRD)
         MenuItem(self, fmenu, '&Provide XRD Parameters to Map File',
                  'Load XRD Parameters',  self.onReadXRD)
-        MenuItem(self, fmenu, '&Save As...  without 2D XRD data',
-                 'Save without 2D XRD data',  self.onReSave)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Show Larch Buffer',
                   'Show Larch Programming Buffer',
@@ -1903,26 +1901,23 @@ class MapViewerFrame(wx.Frame):
             return
             
         myDlg = OpenMapFolder()
-        #myDlg = OpenMapFolderOLD()
 
         path, read = None, False
-        FLAGxrf, FLAGxrd = False, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
             path        = myDlg.FldrPath
-            #xrdcalfile  = myDlg.CaliPath
-            #xrdmaskfile = myDlg.MaskPath
-            #xrdbkgdfile = myDlg.BkgdPath
             FLAGxrf     = myDlg.FLAGxrf
             FLAGxrd     = myDlg.FLAGxrd
 
         myDlg.Destroy()
         
         if read:
-            xrmfile = GSEXRM_MapFile(folder=str(path),
-                                     #calibration=xrdcalfile,
-                                     #mask=xrdmaskfile, bkgd=xrdbkgdfile,
-                                     FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
+            print 'selected flags - FLAGxrf, FLAGxrd: ',FLAGxrf, FLAGxrd
+            xrmfile = GSEXRM_MapFile(folder=str(path))
+            print 'selected flags - FLAGxrf, FLAGxrd: ',xrmfile.flag_xrf,xrmfile.flag_xrd
+            xrmfile.flag_xrf = FLAGxrf
+            xrmfile.flag_xrd = FLAGxrd
+            print 'selected flags - FLAGxrf, FLAGxrd: ',xrmfile.flag_xrf,xrmfile.flag_xrd
             self.add_xrmfile(xrmfile)
 
     def add_xrmfile(self, xrmfile):
@@ -1990,7 +1985,6 @@ class MapViewerFrame(wx.Frame):
         myDlg = OpenXRDPar()
 
         path, read = None, False
-        FLAGxrf, FLAGxrd = False, False
         if myDlg.ShowModal() == wx.ID_OK:
             if myDlg.CaliPath or myDlg.MaskPath or myDlg.BkgdPath:
                 read = True
@@ -2039,7 +2033,6 @@ class MapViewerFrame(wx.Frame):
             myDlg = CalXRD()
             
             path, read = None, False
-            FLAGxrf, FLAGxrd = False, False
             if myDlg.ShowModal() == wx.ID_OK:
                 read = True
 
@@ -2120,44 +2113,6 @@ class MapViewerFrame(wx.Frame):
 
         else:
             print('pyFAI must be available for calibration.')
-
-
-    def onReSave(self, evt=None):
-        """
-        Re-save hdf5 without 2D data
-        mkak 2016.09.09
-        """
-        try:
-            print('Copy file: %s' % self.current_file.filename)
-        except:
-            print('No h5 file to copy.')
-            return
- 
-        ## Check to make sure 2D xrd data AND calibration file there.
-         
-        ## Choose XRD data calibration file (*.poni)
-        wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message = 'Save As',
-                            defaultDir=os.getcwd(),
-                            wildcard=wildcards,
-                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            if path.split('.')[-1] != 'h5':
-                path = '%s.h5' % path
-            try:
-                self.current_file.copy_hdf5(path)
-                
-                ## This steps opens file in left panel.
-                xrmfile = GSEXRM_MapFile(filename=str(path))
-                self.add_xrmfile(xrmfile)
-            except:
-                print('Copying failed.')
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
@@ -2357,190 +2312,6 @@ class OpenMapFolder(wx.Dialog):
             self.FldrPath = path
         
         self.checkOK()
-
-class OpenMapFolderOLD(wx.Dialog):
-    """"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-    
-        self.FLAGxrf  = False
-        self.FLAGxrd  = False
-        self.FldrPath = None
-        self.CaliPath = None
-        self.MaskPath = None
-        self.BkgdPath = None
-    
-    
-        """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 550))
-        ## remember: size=(width,height)
-        panel = wx.Panel(self)
-
-        fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'       )
-        fldrBtn  = wx.Button(panel,      label='Browse...'             )
-        chTtl    = SimpleText(panel,  label='Include data for...'   )
-        xrfCkBx  = wx.CheckBox(panel,    label='XRF'                   )
-        xrdCkBx  = wx.CheckBox(panel,    label='XRD'                   )
-        optTtl   = wx.StaticBox(panel,   label='XRD Options'           )
-        caliTtl  = SimpleText(panel,  label='XRD Calibration File:' )
-        fileBtn1 = wx.Button(panel,      label='Browse...'             )
-        blnkTtl1 = SimpleText(panel,  label=''                      )
-        maskTtl  = SimpleText(panel,  label='XRD Mask File:'        )
-        fileBtn2 = wx.Button(panel,      label='Browse...'             )
-        blnkTtl2 = SimpleText(panel,  label=''                      )
-        bkgdTtl  = SimpleText(panel,  label='XRD Background File:'  )
-        fileBtn3 = wx.Button(panel,      label='Browse...'             )
-
-        self.Fldr = wx.TextCtrl(panel,
-#                                value ='Please select folder.',
-                                size=(350, 25))
-        self.CalFl = wx.TextCtrl(panel, 
-#                                 value='Please select calibration file.',
-                                 size=(350, 25))
-        self.MskFl = wx.TextCtrl(panel, 
-#                                 value='Please select mask file.',
-                                 size=(350, 25))
-        self.BkgdFl = wx.TextCtrl(panel, 
-#                                 value='Please select background file.',
-                                 size=(350, 25))
-
-
-        hlpBtn = wx.Button(panel, wx.ID_HELP   )
-        okBtn  = wx.Button(panel, wx.ID_OK     )
-        canBtn = wx.Button(panel, wx.ID_CANCEL )
-        self.FindWindowById(wx.ID_OK).Disable()
-
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,   fldrBtn  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck, xrfCkBx  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck, xrdCkBx  )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,  fileBtn2 )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,  fileBtn3 )
-
-        boxsizer = wx.StaticBoxSizer(optTtl, wx.VERTICAL)
-
-        boxsizer.Add(caliTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(self.CalFl,  flag=wx.TOP|wx.EXPAND         )
-        boxsizer.Add(fileBtn1,    flag=wx.TOP|wx.RIGHT          )
-        boxsizer.Add(blnkTtl1,    flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(maskTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(self.MskFl,  flag=wx.TOP|wx.EXPAND         )
-        boxsizer.Add(fileBtn2,    flag=wx.TOP|wx.RIGHT          )
-        boxsizer.Add(blnkTtl2,    flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(bkgdTtl,     flag=wx.TOP|wx.LEFT|wx.BOTTOM )
-        boxsizer.Add(self.BkgdFl, flag=wx.TOP|wx.EXPAND         )
-        boxsizer.Add(fileBtn3,    flag=wx.TOP|wx.RIGHT          )
-
-        sizer = wx.GridBagSizer(5, 6)
-
-        sizer.Add(fldrTtl,   pos = (1,1) )
-        sizer.Add(self.Fldr, pos = (2,1), span = (1,4) )
-        sizer.Add(fldrBtn,   pos = (3,1) )
-        sizer.Add(chTtl,     pos = (5,1) )
-        sizer.Add(xrfCkBx,   pos = (6,1) )
-        sizer.Add(xrdCkBx,   pos = (7,1) )
-        sizer.Add(boxsizer,  pos = (9,1), span = (1,4)  )       
-        sizer.Add(hlpBtn,    pos = (10,1) )
-        sizer.Add(okBtn,     pos = (10,3) )
-        sizer.Add(canBtn,    pos = (10,2) )
-        
-        sizer.AddGrowableCol(2)
-        panel.SetSizer(sizer)       
-
-    def onXRFcheck(self, event):
-        self.FLAGxrf = event.GetEventObject().GetValue()
-      
-        if self.FLAGxrf or self.FLAGxrd:
-            if self.FldrPath:
-                self.FindWindowById(wx.ID_OK).Enable()
-        else:
-                self.FindWindowById(wx.ID_OK).Disable()
-
-    def onXRDcheck(self, event): 
-        self.FLAGxrd = event.GetEventObject().GetValue()
-        
-        if self.FLAGxrf or self.FLAGxrd:
-            if self.FldrPath:
-                self.FindWindowById(wx.ID_OK).Enable()
-        else:
-                self.FindWindowById(wx.ID_OK).Disable()
-
-    def onBROWSE(self, event): 
-        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=os.getcwd(),
-                           style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            self.Fldr.Clear()
-            self.Fldr.SetValue(str(path))
-            #self.Fldr.AppendText(str(path))
-            self.FldrPath = path
-        
-        if self.FLAGxrf or self.FLAGxrd:
-            if self.FldrPath:
-                self.FindWindowById(wx.ID_OK).Enable()
-        else:
-                self.FindWindowById(wx.ID_OK).Disable()
-
-    def onBROWSE1(self, event): 
-        wildcards = 'pyFAI calibration (*.poni)|*.poni|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRD calibration file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            self.CalFl.Clear()
-            self.CalFl.SetValue(str(path))
-            #self.CalFl.AppendText(str(path))
-            self.CaliPath = path
-
-    def onBROWSE2(self, event): 
-        wildcards = 'pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRD mask file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            self.MskFl.Clear()
-            self.MskFl.SetValue(str(path))
-            self.MaskPath = path
-            
-    def onBROWSE3(self, event): 
-        wildcards = 'pyFAI background (*.edf)|*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRD background file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            self.BkgdFl.Clear()
-            self.BkgdFl.SetValue(str(path))
-            self.BkgdPath = path
-
 
 class AddToMapFolder(wx.Dialog):
     """"""
