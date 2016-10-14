@@ -151,6 +151,8 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)
     
+    xrmmap.create_group('flags')
+    
     for key, val in attrs.items():
         xrmmap.attrs[key] = str(val)
 
@@ -180,14 +182,12 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
 def checkFORattrs(attrib,group):
     try:
         group.attrs[attrib]
-        print 'Already had attribute!'
     except:
         group.attrs[attrib] = ''
 
 def checkFORsubgroup(subgroup,group):
     try:
         group[subgroup]
-        print 'Already had subgroup!'
     except:
          group.create_group(subgroup)
 
@@ -214,7 +214,11 @@ class GSEXRM_MapRow:
     """
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=False, ixaddr=0, dimension=2,
-                 npts=None,  irow=None, dtime=None, nrows_expected=None):
+                 npts=None,  irow=None, dtime=None, nrows_expected=None,
+                 FLAGxrf = True, FLAGxrd = False):
+
+        if not FLAGxrf and not FLAGxrd:
+            return
 
         self.read_ok = False
         self.nrows_expected = nrows_expected
@@ -224,33 +228,23 @@ class GSEXRM_MapRow:
         self.npts = npts
         self.irow = irow
         self.yvalue = yvalue
-
+        self.xrffile = xrffile
         self.xpsfile = xpsfile
         self.sisfile = sisfile
-        self.xrffile = xrffile
         self.xrdfile = xrdfile
 
-        xmfile = os.path.join(folder, xrffile)
-        xdfile = os.path.join(folder, xrdfile)
-
-        if os.path.exists(xmfile):
-            xrfdat, FLAGxrf = None, True
+        if FLAGxrf:
             xrf_reader = read_xsp3_hdf5
             if not xrffile.startswith('xsp'):
                 xrf_reader = read_xmap_netcdf
-        else:
-            FLAGxrf = False
-
-        if os.path.exists(xdfile):
-            xrfdat, FLAGxrd = None, True
+        
+        if FLAGxrd:
             xrd_reader = read_xrd_netcdf
             ## not yet implemented for hdf5 files
             ## mkak 2016.07.27
             #if not xrdfile.endswith('nc'):
             #    xrd_reader = read_xrd_hdf5
-        else:
-            FLAGxrd = False
-            
+
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
         t0 = time.time()
@@ -282,6 +276,11 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
         atime = -1
+
+        xrfdat = None
+        xmfile = os.path.join(folder, xrffile)
+        xrddat = None
+        xdfile = os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
@@ -537,7 +536,8 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, mask=None, bkgd=None ):
+                 calibration=None, mask=None, bkgd=None,
+                 FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -557,6 +557,12 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
+
+        self.calibration = calibration
+        self.xrdmask = mask
+        self.xrdbkgd = bkgd
+        self.flag_xrf = FLAGxrf
+        self.flag_xrd = FLAGxrd
         
         # initialize from filename or folder
         if self.filename is not None:
@@ -624,9 +630,6 @@ class GSEXRM_MapFile(object):
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
-
-            self.flag_xrf = False
-            self.flag_xrd = False
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -724,61 +727,58 @@ class GSEXRM_MapFile(object):
         mkak 2016.09.09
         adding new options; clean up
         mkak 2016.09.28
-        needs to be rewritten to simplify and put adding file names into loop?
-        also, don't really need name: need data arrays (readEDFfile, e.g.)
-        mkak 2016.10.13
         """
 
         checkFORsubgroup('xrd',self.xrmmap)
-        xrdgp = self.xrmmap['xrd']
-
-        checkFORattrs('calfile',xrdgp)
-        checkFORattrs('maskfile',xrdgp)
-        checkFORattrs('bkgdfile',xrdgp)
+        xrdgrp = self.xrmmap['xrd']
+                
+        checkFORattrs('calfile',xrdgrp)
+        checkFORattrs('maskfile',xrdgrp)
+        checkFORattrs('bkgdfile',xrdgrp)
 
         xrdcal = False        
-        if self.calibration and xrdgp.attrs['calfile'] != self.calibration:
+        if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
             print('New calibration file detected: %s' % self.calibration)
-            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-            if os.path.exists(xrdgp.attrs['calfile']):
+            xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
+            if os.path.exists(xrdgrp.attrs['calfile']):
                 xrdcal = True
            
 
         if HAS_pyFAI and xrdcal:
             try:
-                ai = pyFAI.load(xrdgp.attrs['calfile'])
+                ai = pyFAI.load(xrdgrp.attrs['calfile'])
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % self.calibration)
                 pass
 
             try:
-                xrdgp.attrs['detector'] = ai.detector.name
+                xrdgrp.attrs['detector'] = ai.detector.name
             except:
-                xrdgp.attrs['detector'] = ''
+                xrdgrp.attrs['detector'] = ''
             try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
+                xrdgrp.attrs['spline']   = ai.detector.splineFile
             except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+                xrdgrp.attrs['spline']   = ''
+            xrdgrp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgrp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgrp.attrs['distance']   = ai._dist ## units: m
+            xrdgrp.attrs['poni1']      = ai._poni1
+            xrdgrp.attrs['poni2']      = ai._poni2
+            xrdgrp.attrs['rot1']       = ai._rot1
+            xrdgrp.attrs['rot2']       = ai._rot2
+            xrdgrp.attrs['rot3']       = ai._rot3
+            xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+            xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
 
         try:
             if self.xrdmask and os.path.exists(self.xrdmask):
-                if xrdgp.attrs['maskfile'] != str(self.xrdmask):
+                if xrdgrp.attrs['maskfile'] != str(self.xrdmask):
                     print('New mask file detected: %s' % str(self.xrdmask))
-                    xrdgp.attrs['maskfile'] = '%s' % (self.xrdmask)
+                    xrdgrp.attrs['maskfile'] = '%s' % (self.xrdmask)
                     self.readEDFfile(name='mask',keyword='maskfile')
         except:
             print('Mask not loaded correctly.')
@@ -786,9 +786,9 @@ class GSEXRM_MapFile(object):
 
         try:
             if self.xrdbkgd and os.path.exists(self.xrdbkgd):
-                if xrdgp.attrs['bkgdfile'] != str(self.xrdbkgd):
+                if xrdgrp.attrs['bkgdfile'] != str(self.xrdbkgd):
                     print('New background file detected: %s' % str(self.xrdbkgd))
-                    xrdgp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
+                    xrdgrp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
                     self.readEDFfile(name='bkgd',keyword='bkgdfile')
         except:
             print('Background not loaded correctly.')
@@ -946,9 +946,11 @@ class GSEXRM_MapFile(object):
         """read a row's worth of raw data from the Map Folder
         returns arrays of data
         """
-        self.check_flags()
-        print 'self.flag_xrf, self.flag_xrd'
-        print self.flag_xrf, self.flag_xrd
+        try:
+            self.flag_xrf
+        except:
+            self.reset_flags()
+        
         
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
@@ -969,7 +971,8 @@ class GSEXRM_MapFile(object):
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse)
+                             npts=self.npts, reverse=reverse,
+                             FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
 
        
     def add_rowdata(self, row, verbose=True):
@@ -1066,6 +1069,8 @@ class GSEXRM_MapFile(object):
         t1 = time.time()
         
         if self.flag_xrd:
+            ## Unneccessary at this point BUT convenient if two xrd detectors are used
+            ## mkak 2016.08.03
             xrdgrp = self.xrmmap['xrd']
                     
             xrdpts, xpixx, xpixy = row.xrd2d.shape
@@ -1088,7 +1093,10 @@ class GSEXRM_MapFile(object):
 
         t2 = time.time()
         if verbose:
-            if self.flag_xrd and self.flag_xrf:
+            if self.flag_xrd and self.flag_xrf and hasattr(self.xrmmap['xrd'],'calfile'):
+                pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
+                print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
+            elif self.flag_xrd and self.flag_xrf:
                 pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
                 print(pform % (t1-t0,t2-t1,t2-t0))
             #elif self.flag_xrf: 
@@ -1265,7 +1273,7 @@ class GSEXRM_MapFile(object):
     def check_flags(self):
         '''
         check if any XRD OR XRF data in mapfile
-        mkak 2016.10.06
+        mkak 2016.10.13
         '''
         print 'running: self.check_flags()'
         
@@ -1280,7 +1288,25 @@ class GSEXRM_MapFile(object):
             xrfdata = xrdgp['det1']
             self.flag_xrf = True
         except:
-            self.flag_xrf = False 
+            self.flag_xrf = False
+
+        self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
+        self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
+        self.h5root.flush()
+        
+    def reset_flags(self):
+        '''
+        Resets the flags according to hdf5; add in flags to hdf5 files missing them.
+        mkak 2016.08.30
+        '''
+        xrmmap = self.xrmmap
+        try: 
+            xrmmap['flags']
+        except:
+            check_flags(self)
+    
+        self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
+        self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -1505,8 +1531,6 @@ class GSEXRM_MapFile(object):
         except IOError:
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
-
-        self.check_flags()
 
         self.master_header = header
         self.rowdata = rows
@@ -1854,6 +1878,49 @@ class GSEXRM_MapFile(object):
         mapname = map.name.split('/')[-1]
         _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
+
+    def check_xrf(self):
+        """
+        check if any XRF data in mapfile; returns flags 
+        mkak 2016.10.06
+        """
+
+        try:
+            xrfgp = self.xrmmap['xrf']
+            data = xrfgp['det1']
+        except:
+            return False 
+        return True
+
+    def check_xrd(self):
+        """
+        check if any XRD data in mapfile; returns flags for 1D and 2D XRD data
+        mkak 2016.09.07
+        """
+
+        try:
+            xrdgrp = self.xrmmap['xrd']
+            data2D = xrdgrp['data2D']
+            flag2D = True
+        except:
+            flag2D = False 
+
+        try:
+            xrdgrp = self.xrmmap['xrd']
+            xrdgrp['data1D']
+            flag1D = True
+        except:
+            if flag2D:
+                try:
+                    xrdgrp.attrs['calfile']
+                    flag1D = True
+                except:
+                    flag1D = False
+            else:
+                flag1D = False
+
+        return flag1D,flag2D
+
 
     def get_xrd_area(self, areaname, callback = None):
         """return 2D XRD pattern for a pre-defined area
@@ -2218,4 +2285,3 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-
