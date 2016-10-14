@@ -1066,28 +1066,25 @@ class GSEXRM_MapFile(object):
         t1 = time.time()
         
         if self.flag_xrd:
-            ## Unneccessary at this point BUT convenient if two xrd detectors are used
-            ## mkak 2016.08.03
-            xrd_dets = []
-            map_items = sorted(self.xrmmap.keys())
-            for gname in map_items:
-                g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'xrd detector' :
-                    print 'THIS IS WHAT WE NEED: ',g
-                    xrd_dets.append(g)
+            xrdgrp = self.xrmmap['xrd']
                     
+            xrdpts, xpixx, xpixy = row.xrd2d.shape
+            
+            ## hard-code for now: detector at 13IDE images need vertical flip
+            vertflip = True
+            if vertflip:
+                xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
+            else:
+                xrdgrp['data2D'][thisrow,] = row.xrd2d
+                
             if hasattr(self.xrmmap['xrd'],'maskfile'):
-                mask = self.xrmmap['xrd'].attrs['maskfile']
+                mask = xrdgrp.attrs['maskfile']
             else:
                 mask = None
-            if hasattr(self.xrmmap['xrd'],'bkgdfile'):
-                bkgd = self.xrmmap['xrd'].attrs['bkgdfile']
+            if hasattr(xrdgrp,'bkgdfile'):
+                bkgd = xrdgrp.attrs['bkgdfile']
             else:
                 bkgd = None
-
-            xrdpts, xpixx, xpixy = row.xrd2d.shape
-            for idet, grp in enumerate(xrd_dets):
-                grp['data2D'][thisrow,] = row.xrd2d
 
         t2 = time.time()
         if verbose:
