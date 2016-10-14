@@ -766,55 +766,55 @@ class GSEXRM_MapFile(object):
         """
 
         checkFORsubgroup('xrd',self.xrmmap)
-        xrdgp = self.xrmmap['xrd']
+        xrdgrp = self.xrmmap['xrd']
                 
-        checkFORattrs('calfile',xrdgp)
-        checkFORattrs('maskfile',xrdgp)
-        checkFORattrs('bkgdfile',xrdgp)
+        checkFORattrs('calfile',xrdgrp)
+        checkFORattrs('maskfile',xrdgrp)
+        checkFORattrs('bkgdfile',xrdgrp)
 
         xrdcal = False        
-        if self.calibration and xrdgp.attrs['calfile'] != self.calibration:
+        if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
             print('New calibration file detected: %s' % self.calibration)
-            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-            if os.path.exists(xrdgp.attrs['calfile']):
+            xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
+            if os.path.exists(xrdgrp.attrs['calfile']):
                 xrdcal = True
            
 
         if HAS_pyFAI and xrdcal:
             try:
-                ai = pyFAI.load(xrdgp.attrs['calfile'])
+                ai = pyFAI.load(xrdgrp.attrs['calfile'])
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % self.calibration)
                 pass
 
             try:
-                xrdgp.attrs['detector'] = ai.detector.name
+                xrdgrp.attrs['detector'] = ai.detector.name
             except:
-                xrdgp.attrs['detector'] = ''
+                xrdgrp.attrs['detector'] = ''
             try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
+                xrdgrp.attrs['spline']   = ai.detector.splineFile
             except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+                xrdgrp.attrs['spline']   = ''
+            xrdgrp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgrp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgrp.attrs['distance']   = ai._dist ## units: m
+            xrdgrp.attrs['poni1']      = ai._poni1
+            xrdgrp.attrs['poni2']      = ai._poni2
+            xrdgrp.attrs['rot1']       = ai._rot1
+            xrdgrp.attrs['rot2']       = ai._rot2
+            xrdgrp.attrs['rot3']       = ai._rot3
+            xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+            xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
 
         try:
             if self.xrdmask and os.path.exists(self.xrdmask):
-                if xrdgp.attrs['maskfile'] != str(self.xrdmask):
+                if xrdgrp.attrs['maskfile'] != str(self.xrdmask):
                     print('New mask file detected: %s' % str(self.xrdmask))
-                    xrdgp.attrs['maskfile'] = '%s' % (self.xrdmask)
+                    xrdgrp.attrs['maskfile'] = '%s' % (self.xrdmask)
                     self.readEDFfile(name='mask',keyword='maskfile')
         except:
             print('Mask not loaded correctly.')
@@ -822,9 +822,9 @@ class GSEXRM_MapFile(object):
 
         try:
             if self.xrdbkgd and os.path.exists(self.xrdbkgd):
-                if xrdgp.attrs['bkgdfile'] != str(self.xrdbkgd):
+                if xrdgrp.attrs['bkgdfile'] != str(self.xrdbkgd):
                     print('New background file detected: %s' % str(self.xrdbkgd))
-                    xrdgp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
+                    xrdgrp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
                     self.readEDFfile(name='bkgd',keyword='bkgdfile')
         except:
             print('Background not loaded correctly.')
@@ -1107,39 +1107,25 @@ class GSEXRM_MapFile(object):
         if self.flag_xrd:
             ## Unneccessary at this point BUT convenient if two xrd detectors are used
             ## mkak 2016.08.03
-            xrd_dets = []
-            map_items = sorted(self.xrmmap.keys())
-            for gname in map_items:
-                g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'xrd detector' :
-                    xrd_dets.append(g)
+            xrdgrp = self.xrmmap['xrd']
                     
+            xrdpts, xpixx, xpixy = row.xrd2d.shape
+            
+            ## hard-code for now: detector at 13IDE images need vertical flip
+            vertflip = True
+            if vertflip:
+                xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
+            else:
+                xrdgrp['data2D'][thisrow,] = row.xrd2d
+                
             if hasattr(self.xrmmap['xrd'],'maskfile'):
-                mask = self.xrmmap['xrd'].attrs['maskfile']
+                mask = xrdgrp.attrs['maskfile']
             else:
                 mask = None
-            if hasattr(self.xrmmap['xrd'],'bkgdfile'):
-                bkgd = self.xrmmap['xrd'].attrs['bkgdfile']
+            if hasattr(xrdgrp,'bkgdfile'):
+                bkgd = xrdgrp.attrs['bkgdfile']
             else:
                 bkgd = None
-
-            xrdpts, xpixx, xpixy = row.xrd2d.shape
-            for idet, grp in enumerate(xrd_dets):
-                grp['data2D'][thisrow,] = row.xrd2d
-                
-                t1a = time.time()
-                ### HOW TO DO THIS WITHOUT LOOPING?
-## temp. test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#                if hasattr(self.xrmmap['xrd'],'calfile'):    
-#                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
-#                                        unit='q', steps=grp['data1D'].shape[-1],
-#                                        mask=mask, dark=bkgd,
-#                                        #calfile=self.xrmmap['xrd'].attrs['calfile'],
-#                                        AI = self.xrmmap['xrd'], 
-#                                        save=False)
-
 
         t2 = time.time()
         if verbose:
@@ -1972,20 +1958,20 @@ class GSEXRM_MapFile(object):
         """
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            data2D = xrdgp['data2D']
+            xrdgrp = self.xrmmap['xrd']
+            data2D = xrdgrp['data2D']
             flag2D = True
         except:
             flag2D = False 
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            xrdgp['data1D']
+            xrdgrp = self.xrmmap['xrd']
+            xrdgrp['data1D']
             flag1D = True
         except:
             if flag2D:
                 try:
-                    xrdgp.attrs['calfile']
+                    xrdgrp.attrs['calfile']
                     flag1D = True
                 except:
                     flag1D = False
