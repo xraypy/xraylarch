@@ -537,7 +537,7 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=True, FLAGxrd=False, xchannels=5001, xwedge=1):
+                 FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -557,9 +557,6 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
-        self.xchan            = xchannels
-        self.xwedge           = xwedge
-        
 
         self.calibration = calibration
         self.xrdmask = mask
@@ -635,31 +632,6 @@ class GSEXRM_MapFile(object):
             self.open(self.filename, root=self.root, check_status=False)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-
-    def copy_hdf5(self, newfile):
-        """
-        copy current GSEXRM HDF5 File without 2D XRD data
-        
-        this **must** be called for an existing, valid GSEXRM HDF5 File!!
-        """
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-      
-        newh5root = h5py.File(newfile, 'w')
-
-        self.h5root.copy('xrmmap', newh5root)
-
-        xrdgrp = newh5root['xrmmap/xrd']
-        if 'data2D' in xrdgrp:
-            if 'data1D' not in xrdgrp:
-                print('shape of data2D: ',xrdgrp['data2D'].shape) ## mkak 2016.09.15
-#                xrdgrp.create_dataset('data1D', data=integrate_xrd(xrdgrp['data2D'], 
-#                                                    unit='q', AI = xrdgrp, save=False),
-#                                                    compression=COMPRESSION_LEVEL)
-            xrdgrp.__delitem__('data2D')
-            newh5root.flush()
-        newh5root.close()
-
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nEnd: %Y-%m-%d %H:%M:%S'))      
 
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)
@@ -746,14 +718,6 @@ class GSEXRM_MapFile(object):
         except:
             pass
         self.xrmmap['xrd'].create_dataset(name, data=np.array(rawdata))
-
-    def checkFORattrs(self,attrib,group=None):
-        if group == None:
-            group = self.xrmmap
-        try:
-            group.attrs[attrib]
-        except:
-            group.attrs[attrib] = ''        
 
     def add_calibration(self):
         """
@@ -1301,17 +1265,6 @@ class GSEXRM_MapFile(object):
             xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
                                    chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-## temporary test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#            xchan = self.xchan
-#            xwedge = self.xwedge
-#            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
-#            ## what resolution should be used for q/2th integration?
-#            ## how many wedges for 1D integration?
-#            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), 
-#                                   np.int16, chunks = self.chunksize_1DXRD,
-#                                   compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))      
         
