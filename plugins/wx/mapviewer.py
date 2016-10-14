@@ -1774,8 +1774,6 @@ class MapViewerFrame(wx.Frame):
                  'Calibrate XRD Detector',  self.onCalXRD)
         MenuItem(self, fmenu, '&Provide XRD Parameters to Map File',
                  'Load XRD Parameters',  self.onReadXRD)
-        MenuItem(self, fmenu, '&Save As...  without 2D XRD data',
-                 'Save without 2D XRD data',  self.onReSave)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Show Larch Buffer',
                   'Show Larch Programming Buffer',
@@ -2109,44 +2107,6 @@ class MapViewerFrame(wx.Frame):
 
         else:
             print('pyFAI must be available for calibration.')
-
-
-    def onReSave(self, evt=None):
-        """
-        Re-save hdf5 without 2D data
-        mkak 2016.09.09
-        """
-        try:
-            print('Copy file: %s' % self.current_file.filename)
-        except:
-            print('No h5 file to copy.')
-            return
- 
-        ## Check to make sure 2D xrd data AND calibration file there.
-         
-        ## Choose XRD data calibration file (*.poni)
-        wildcards = 'pyFAI files (*.h5)|*.h5|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message = 'Save As',
-                            defaultDir=os.getcwd(),
-                            wildcard=wildcards,
-                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            if path.split('.')[-1] != 'h5':
-                path = '%s.h5' % path
-            try:
-                self.current_file.copy_hdf5(path)
-                
-                ## This steps opens file in left panel.
-                xrmfile = GSEXRM_MapFile(filename=str(path))
-                self.add_xrmfile(xrmfile)
-            except:
-                print('Copying failed.')
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
