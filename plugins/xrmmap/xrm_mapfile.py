@@ -1073,6 +1073,7 @@ class GSEXRM_MapFile(object):
             for gname in map_items:
                 g = self.xrmmap[gname]
                 if g.attrs.get('type', None) == 'xrd detector' :
+                    print 'THIS IS WHAT WE NEED: ',g
                     xrd_dets.append(g)
                     
             if hasattr(self.xrmmap['xrd'],'maskfile'):
@@ -1087,27 +1088,10 @@ class GSEXRM_MapFile(object):
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             for idet, grp in enumerate(xrd_dets):
                 grp['data2D'][thisrow,] = row.xrd2d
-                
-                t1a = time.time()
-                ### HOW TO DO THIS WITHOUT LOOPING?
-## temp. test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#                if hasattr(self.xrmmap['xrd'],'calfile'):    
-#                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
-#                                        unit='q', steps=grp['data1D'].shape[-1],
-#                                        mask=mask, dark=bkgd,
-#                                        #calfile=self.xrmmap['xrd'].attrs['calfile'],
-#                                        AI = self.xrmmap['xrd'], 
-#                                        save=False)
-
 
         t2 = time.time()
         if verbose:
-            if self.flag_xrd and self.flag_xrf and hasattr(self.xrmmap['xrd'],'calfile'):
-                pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
-                print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
-            elif self.flag_xrd and self.flag_xrf:
+            if self.flag_xrd and self.flag_xrf:
                 pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
                 print(pform % (t1-t0,t2-t1,t2-t0))
             #elif self.flag_xrf: 
