@@ -1912,12 +1912,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
         
         if read:
-            print 'selected flags - FLAGxrf, FLAGxrd: ',FLAGxrf, FLAGxrd
-            xrmfile = GSEXRM_MapFile(folder=str(path))
-            print 'selected flags - FLAGxrf, FLAGxrd: ',xrmfile.flag_xrf,xrmfile.flag_xrd
-            xrmfile.flag_xrf = FLAGxrf
-            xrmfile.flag_xrd = FLAGxrd
-            print 'selected flags - FLAGxrf, FLAGxrd: ',xrmfile.flag_xrf,xrmfile.flag_xrd
+            xrmfile = GSEXRM_MapFile(folder=str(path),FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
             self.add_xrmfile(xrmfile)
 
     def add_xrmfile(self, xrmfile):
@@ -1963,8 +1958,12 @@ class MapViewerFrame(wx.Frame):
         ## mkak 2016.10.06
         if read:
             print('Not yet implemented.')
-#             xrmfile = GSEXRM_MapFile(filename=str(filepath))#,folder=str(fldrpath))
-#             self.add_xrmfile(xrmfile)
+            ## 1. Open file if not open.
+            ## 2. Once open, check to see which data it contains.
+            ## 3. Check if new data is being asked to be added (compare flags).
+            ## 4. If new data, now add data.
+            xrmfile = GSEXRM_MapFile(filename=str(filepath))
+            self.add_xrmfile(xrmfile)
 #             xrmfile.check_flags()
 #             
 #             if xrmfile.flag_xrf and FLAGxrf:

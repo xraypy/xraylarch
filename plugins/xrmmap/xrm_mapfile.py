@@ -536,7 +536,6 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, mask=None, bkgd=None,
                  FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
@@ -558,9 +557,9 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.calibration = calibration
-        self.xrdmask = mask
-        self.xrdbkgd = bkgd
+        self.calibration = None
+        self.xrdmask = None
+        self.xrdbkgd = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
         
