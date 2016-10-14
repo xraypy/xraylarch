@@ -1273,34 +1273,23 @@ class GSEXRM_MapFile(object):
     def check_flags(self):
         '''
         check if any XRD OR XRF data in mapfile
-        mkak 2016.10.06
+        mkak 2016.10.13
         '''
-        xrmmap = self.xrmmap
-        try: 
-            xrmmap['flags']
-        except:
-            xrmmap.create_group('flags')
-            self.h5root.flush()
+        print 'running: self.check_flags()'
         
-        try:
-            self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
+        try: 
+            xrdgp = self.xrmmap['xrd']
+            xrddata = xrdgp['data2D']
+            self.flag_xrd = True
+        except:
+            self.flag_xrd = False        
+        try: 
+            xrfgp = self.xrmmap['xrf']
+            xrfdata = xrdgp['det1']
+            self.flag_xrf = True
         except:
             self.flag_xrf = False
-        
-        try:
-            self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
-        except:
-            self.flag_xrd = False
 
-        if self.flag_xrd is False:
-            xrd1d, xrd2d = self.check_xrd()
-            if xrd1d or xrd2d:
-                self.flag_xrd = True
-
-        if self.flag_xrf is False:
-            if self.check_xrf():
-                self.flag_xrf = True
-        
         self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
         self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
         self.h5root.flush()
