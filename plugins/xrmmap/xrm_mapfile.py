@@ -2285,3 +2285,4 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
+    
