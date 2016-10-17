@@ -2234,8 +2234,8 @@ class OpenMapFolder(wx.Dialog):
         self.FldrPath = None
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 300))
-        ## remember: size=(width,height)
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder')
+        
         panel = wx.Panel(self)
 
         fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'      )
@@ -2244,7 +2244,7 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx  = wx.CheckBox(panel, label='XRF'   )
         xrdCkBx  = wx.CheckBox(panel, label='XRD'                 )
         
-        self.Fldr = wx.TextCtrl(panel, size=(350, 25))
+        self.Fldr = wx.TextCtrl(panel, size=(300, 25))
 
         hlpBtn = wx.Button(panel, wx.ID_HELP   )
         okBtn  = wx.Button(panel, wx.ID_OK     )
@@ -2255,19 +2255,25 @@ class OpenMapFolder(wx.Dialog):
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck, xrfCkBx  )
         self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck, xrdCkBx  )
 
-        sizer = wx.GridBagSizer(5, 6)
 
-        sizer.Add(fldrTtl,   pos = (1,1) )
-        sizer.Add(self.Fldr, pos = (2,1), span = (1,4) )
-        sizer.Add(fldrBtn,   pos = (3,1) )
-        sizer.Add(chTtl,     pos = (5,1) )
-        sizer.Add(xrfCkBx,   pos = (6,1) )
-        sizer.Add(xrdCkBx,   pos = (7,1) )
-        sizer.Add(hlpBtn,    pos = (9,1) )
-        sizer.Add(okBtn,     pos = (9,3) )
-        sizer.Add(canBtn,    pos = (9,2) )
-        
-        sizer.AddGrowableCol(2)
+        minisizer = wx.BoxSizer(wx.HORIZONTAL)
+        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add((-1, 10))
+        sizer.Add(fldrTtl,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(self.Fldr, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
+        sizer.Add(fldrBtn,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(xrfCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(xrdCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT,                    border=5)
+
         panel.SetSizer(sizer) 
         
         ## Set defaults
