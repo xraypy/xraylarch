@@ -536,7 +536,6 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, mask=None, bkgd=None,
                  FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
@@ -558,9 +557,9 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.calibration = calibration
-        self.xrdmask = mask
-        self.xrdbkgd = bkgd
+        self.calibration = None
+        self.xrdmask = None
+        self.xrdbkgd = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
         
@@ -1294,7 +1293,6 @@ class GSEXRM_MapFile(object):
         self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
         self.h5root.flush()
         
-
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
@@ -2286,4 +2284,4 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-
+    

@@ -1957,8 +1957,12 @@ class MapViewerFrame(wx.Frame):
         ## mkak 2016.10.06
         if read:
             print('Not yet implemented.')
-#             xrmfile = GSEXRM_MapFile(filename=str(filepath))#,folder=str(fldrpath))
-#             self.add_xrmfile(xrmfile)
+            ## 1. Open file if not open.
+            ## 2. Once open, check to see which data it contains.
+            ## 3. Check if new data is being asked to be added (compare flags).
+            ## 4. If new data, now add data.
+            xrmfile = GSEXRM_MapFile(filename=str(filepath))
+            self.add_xrmfile(xrmfile)
 #             xrmfile.check_flags()
 #             
 #             if xrmfile.flag_xrf and FLAGxrf:
