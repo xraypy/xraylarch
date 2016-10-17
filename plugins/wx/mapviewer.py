@@ -2621,7 +2621,7 @@ class OpenXRDPar(wx.Dialog):
     
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRD Parameters',size=(400, 400))
+        dialog = wx.Dialog.__init__(self, None, title='XRD Parameters',  size=(350, 850))
         
         panel = wx.Panel(self)
 
@@ -2632,15 +2632,9 @@ class OpenXRDPar(wx.Dialog):
         bkgdTtl  = wx.StaticText(panel,  label='XRD Background File:'  )
         fileBtn3 = wx.Button(panel,      label='Browse...'             )
 
-        self.CalFl = wx.TextCtrl(panel, 
-#                                 value='Please select calibration file.',
-                                 size=(350, 25))
-        self.MskFl = wx.TextCtrl(panel, 
-#                                 value='Please select mask file.',
-                                 size=(350, 25))
-        self.BkgdFl = wx.TextCtrl(panel, 
-#                                 value='Please select background file.',
-                                 size=(350, 25))
+        self.CalFl = wx.TextCtrl(panel,  size=(350, 25))
+        self.MskFl = wx.TextCtrl(panel,  size=(350, 25))
+        self.BkgdFl = wx.TextCtrl(panel, size=(350, 25))
 
 
         hlpBtn = wx.Button(panel, wx.ID_HELP   )
@@ -2651,21 +2645,28 @@ class OpenXRDPar(wx.Dialog):
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE2,  fileBtn2 )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE3,  fileBtn3 )
 
-        sizer = wx.GridBagSizer(5, 6)
+        minisizer = wx.BoxSizer(wx.HORIZONTAL)
+        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
 
-        sizer.Add(caliTtl,     pos = ( 1,1)               )
-        sizer.Add(self.CalFl,  pos = ( 2,1), span = (1,4) )
-        sizer.Add(fileBtn1,    pos = ( 3,1)               )
-        sizer.Add(maskTtl,     pos = ( 5,1)               )
-        sizer.Add(self.MskFl,  pos = ( 6,1), span = (1,4) )
-        sizer.Add(fileBtn2,    pos = ( 7,1)               )
-        sizer.Add(bkgdTtl,     pos = ( 9,1)               )
-        sizer.Add(self.BkgdFl, pos = (10,1), span = (1,4) )
-        sizer.Add(fileBtn3,    pos = (11,1)               )
-        sizer.Add(hlpBtn,      pos = (13,1)               )
-        sizer.Add(okBtn,       pos = (13,3)               )
-        sizer.Add(canBtn,      pos = (13,2)               )        
-        sizer.AddGrowableCol(2)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add((-1, 10))
+        sizer.Add(caliTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(self.CalFl,  flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
+        sizer.Add(fileBtn1,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(maskTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(self.MskFl,  flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
+        sizer.Add(fileBtn2,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(bkgdTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(self.BkgdFl, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
+        sizer.Add(fileBtn3,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(minisizer,   flag=wx.ALIGN_RIGHT|wx.TOP,             border=5)
+
         panel.SetSizer(sizer)       
 
     def onBROWSE1(self, event): 
