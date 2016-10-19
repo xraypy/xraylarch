@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
-
+from scipy.special import erf
 from larch import (Group, Parameter, Minimizer, Make_CallArgs,
                    ValidateLarchPlugin, parse_group_args, isgroup)
 
@@ -53,7 +53,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
-           calc_uncertainties=True, _larch=None, **kws):
+           calc_uncertainties=True, err_sigma=1, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
 
     Parameters:
@@ -81,6 +81,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       clamp_hi:  weight of high-energy clamp [1]
       calc_uncertaintites:  Flag to calculate uncertainties in
                             mu_0(E) and chi(k) [True]
+      err_sigma: sigma level for uncertainties in mu_0(E) and chi(k) [1]
 
     Output arrays are written to the provided group.
 
@@ -212,46 +213,54 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     params.kmax = kmax
     group.autobk_details = params
 
-    # uncertainties in mu0 and chi:  fairly slow!!
-    if HAS_UNCERTAIN and calc_uncertainties:
-        nvarys = nspl
-        ndata = len(chi)
-        nkx = iemax-ie0 + 1
-
+    # uncertainties in mu0 and chi: can be fairly slow.
+    if calc_uncertainties:
+        nchi = len(chi)
+        nmue = iemax-ie0 + 1
         redchi = params.chi_reduced
         covar = params.covar / redchi
-        fjac_chi = np.zeros(ndata*nvarys).reshape((nvarys, ndata))
-        fjac_bkg = np.zeros(nkx*nvarys).reshape((nvarys, nkx))
-        df2_chi = np.zeros(ndata)
-        df2_bkg = np.zeros(nkx)
-        coefs = np.array([getattr(params, FMT_COEF % i).value for i in range(len(coefs))])
+        jac_chi = np.zeros(nchi*nspl).reshape((nspl, nchi))
+        jac_bkg = np.zeros(nmue*nspl).reshape((nspl, nmue))
 
-        # find derivative by hand!
-        for i in range(nvarys):
-            pname = FMT_COEF % i
-            par = getattr(params, pname)
-            val0 = coefs[i]
-            dval = par.stderr/3.0
+        cvals, cerrs = [], []
+        for i in range(len(coefs)):
+             par = getattr(params, FMT_COEF % i)
+             cvals.append(getattr(par, 'value', 0.0))
+             cdel = getattr(par, 'stderr', 0.0)
+             if cdel is None:
+                 cdel = 0.0
+             cerrs.append(cdel/2.0)
+        cvals = np.array(cvals)
+        cerrs = np.array(cerrs)
 
-            coefs[i] = val0 + dval
-            bkg1, chi1 = spline_eval(kraw[:nkx], mu[ie0:iemax+1], knots, coefs, order, kout)
+        # find derivatives by hand!
+        _k = kraw[:nmue]
+        _m = mu[ie0:iemax+1]
+        for i in range(nspl):
+            cval0 = cvals[i]
+            cvals[i] = cval0 + cerrs[i]
+            bkg1, chi1 = spline_eval(_k, _m, knots, cvals, order, kout)
 
-            coefs[i] = val0 - dval
-            bkg2, chi2 = spline_eval(kraw[:nkx], mu[ie0:iemax+1], knots, coefs, order, kout)
+            cvals[i] = cval0 - cerrs[i]
+            bkg2, chi2 = spline_eval(_k, _m, knots, cvals, order, kout)
 
-            coefs[i] = val0
-            fjac_chi[i] = (chi1 - chi2) / (2*dval)
-            fjac_bkg[i] = (bkg1 - bkg2) / (2*dval)
+            cvals[i] = cval0
+            jac_chi[i] = (chi1 - chi2) / (2*cerrs[i])
+            jac_bkg[i] = (bkg1 - bkg2) / (2*cerrs[i])
 
-        for i in range(nvarys):
-            for j in range(nvarys):
-                df2_chi += fjac_chi[i]*fjac_chi[j]*covar[i,j]
-                df2_bkg += fjac_bkg[i]*fjac_bkg[j]*covar[i,j]
+        dfchi = np.zeros(nchi)
+        dfbkg = np.zeros(nmue)
+        for i in range(nspl):
+            for j in range(nspl):
+                dfchi += jac_chi[i]*jac_chi[j]*covar[i,j]
+                dfbkg += jac_bkg[i]*jac_bkg[j]*covar[i,j]
 
-        prob = (1 + 0.682689492137)/2.0
-        group.delta_chi = np.sqrt(df2_chi*redchi) * t.ppf(prob, ndata-nvarys)
-        dbkg = np.sqrt(df2_bkg*redchi) * t.ppf(prob, nkx-nvarys)
-        group.delta_bkg = np.zeros(len(mu))
+        prob = 0.5*(1.0 + erf(err_sigma/np.sqrt(2.0)))
+        dchi = t.ppf(prob, nchi-nspl) * np.sqrt(dfchi*redchi)
+        dbkg = t.ppf(prob, nmue-nspl) * np.sqrt(dfbkg*redchi)
+
+        group.delta_chi = dchi
+        group.delta_bkg = 0.0*mu
         group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
 
 
