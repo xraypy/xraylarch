@@ -49,7 +49,7 @@ fi fi
 """
 
 mac_script_gui = """
-$PYBIN/$PYEXE $PYBIN/$APP
+"$PYBIN/$PYEXE" "$PYBIN/$APP"
 """
 
 mac_script_terminal = """
