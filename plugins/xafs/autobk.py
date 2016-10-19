@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
+from scipy.stats import t
 
 from larch import (Group, Parameter, Minimizer, Make_CallArgs,
                    ValidateLarchPlugin, parse_group_args, isgroup)
@@ -52,7 +53,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
-           calc_uncertainties=False, _larch=None, **kws):
+           calc_uncertainties=True, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
 
     Parameters:
@@ -79,7 +80,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       clamp_lo:  weight of low-energy clamp [1]
       clamp_hi:  weight of high-energy clamp [1]
       calc_uncertaintites:  Flag to calculate uncertainties in
-                            mu_0(E) and chi(k) [False]
+                            mu_0(E) and chi(k) [True]
 
     Output arrays are written to the provided group.
 
@@ -213,37 +214,46 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
     # uncertainties in mu0 and chi:  fairly slow!!
     if HAS_UNCERTAIN and calc_uncertainties:
-        vbest, vstd = [], []
-        for n in fit.var_names:
-            par = getattr(params, n)
-            vbest.append(par.value)
-            vstd.append(par.stderr)
-        uvars = uncertainties.correlated_values(vbest, params.covar)
-        # uncertainty in bkg (aka mu0)
-        # note that much of this is working around
-        # limitations in the uncertainty package that make it
-        #  1. take an argument list (not array)
-        #  2. work on returned scalars (but not arrays)
-        #  3. not handle kw args and *args well (so use
-        #     of global "index" is important here)
+        nvarys = nspl
+        ndata = len(chi)
         nkx = iemax-ie0 + 1
-        def my_dsplev(*args):
-            coefs = np.array(args)
-            return splev(kraw[:nkx], [knots, coefs, order])[index]
-        fdbkg = uncertainties.wrap(my_dsplev)
-        dmu0  = [fdbkg(*uvars).std_dev() for index in range(len(bkg))]
-        group.delta_bkg = np.zeros(len(mu))
-        group.delta_bkg[ie0:ie0+len(bkg)] = np.array(dmu0)
 
-        # uncertainty in chi (see notes above)
-        def my_dchi(*args):
-            coefs = np.array(args)
-            b,chi = spline_eval(kraw[:nkx], mu[ie0:iemax+1],
-                                knots, coefs, order, kout)
-            return chi[index]
-        fdchi = uncertainties.wrap(my_dchi)
-        dchi  = [fdchi(*uvars).std_dev() for index in range(len(kout))]
-        group.delta_chi = np.array(dchi)/edge_step
+        redchi = params.chi_reduced
+        covar = params.covar / redchi
+        fjac_chi = np.zeros(ndata*nvarys).reshape((nvarys, ndata))
+        fjac_bkg = np.zeros(nkx*nvarys).reshape((nvarys, nkx))
+        df2_chi = np.zeros(ndata)
+        df2_bkg = np.zeros(nkx)
+        coefs = np.array([getattr(params, FMT_COEF % i).value for i in range(len(coefs))])
+
+        # find derivative by hand!
+        for i in range(nvarys):
+            pname = FMT_COEF % i
+            par = getattr(params, pname)
+            val0 = coefs[i]
+            dval = par.stderr/3.0
+
+            coefs[i] = val0 + dval
+            bkg1, chi1 = spline_eval(kraw[:nkx], mu[ie0:iemax+1], knots, coefs, order, kout)
+
+            coefs[i] = val0 - dval
+            bkg2, chi2 = spline_eval(kraw[:nkx], mu[ie0:iemax+1], knots, coefs, order, kout)
+
+            coefs[i] = val0
+            fjac_chi[i] = (chi1 - chi2) / (2*dval)
+            fjac_bkg[i] = (bkg1 - bkg2) / (2*dval)
+
+        for i in range(nvarys):
+            for j in range(nvarys):
+                df2_chi += fjac_chi[i]*fjac_chi[j]*covar[i,j]
+                df2_bkg += fjac_bkg[i]*fjac_bkg[j]*covar[i,j]
+
+        prob = (1 + 0.682689492137)/2.0
+        group.delta_chi = np.sqrt(df2_chi*redchi) * t.ppf(prob, ndata-nvarys)
+        dbkg = np.sqrt(df2_bkg*redchi) * t.ppf(prob, nkx-nvarys)
+        group.delta_bkg = np.zeros(len(mu))
+        group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
+
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})
