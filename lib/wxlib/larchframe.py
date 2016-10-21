@@ -3,7 +3,7 @@
 from __future__ import print_function
 import sys
 import os
-
+from functools import partial
 import wx
 import numpy
 import scipy
@@ -152,6 +152,8 @@ class LarchFrame(wx.Frame):
                                        prompt = self.prompt,
                                        output = self.output,
                                        input  = self.input)
+        self.BuildMenus()
+        
         self.objtree.SetRootObject(self.larchshell.symtable)
         if exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
@@ -203,7 +205,6 @@ class LarchFrame(wx.Frame):
         self.SetStatusWidths([-2,-1])
         self.SetStatusText("Larch initializing...", 0)
 
-        self.BuildMenus()
         self.splitter = splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(150)
 
@@ -251,18 +252,18 @@ class LarchFrame(wx.Frame):
         MenuItem(self, fmenu, 'Close Display', 'Close display', self.onClose)
         MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
 
-        # fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
-        # fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
-        # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
 
-        vmenu = wx.Menu()
-        MenuItem(self, vmenu, 'Map Viewer', 'GSECARS Map Viewer',
-                 self.onMapviewer)
-        MenuItem(self, vmenu, 'Scan Viewer', 'GSECARS Scan Viewer',
-                 self.onScanviewer)
-
-        MenuItem(self, vmenu, 'XRF Spectra Viewer', 'XRF Spectra Viewer',
-                 self.onXRFviewer)
+        appmenu = wx.Menu()
+        _sys = self.larchshell.symtable._sys
+        if hasattr(_sys, 'gui_apps'):
+            x_apps = _sys.gui_apps.keys()
+            x_apps.sort()
+            for appname in x_apps:
+                label, creator = _sys.gui_apps[appname]
+                
+                MenuItem(self, appmenu, label, label,
+                         partial(self.show_subframe, 
+                                 name=appname, creator=creator))
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, '&About',
@@ -270,19 +271,13 @@ class LarchFrame(wx.Frame):
 
         menuBar = wx.MenuBar()
         menuBar.Append(fmenu, '&File')
-        menuBar.Append(vmenu, 'Applications')
+        menuBar.Append(appmenu, 'Applications')
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
 
 
     def onWxInspect(self, event=None):
         wx.GetApp().ShowInspectionTool()
-
-    def onMapviewer(self, event=None):
-        self.larchshell.execute("mapviewer()")
-
-    def onScanviewer(self, event=None):
-        self.larchshell.execute("scanviewer()")
 
     def onXRFviewer(self, event=None):
         self.larchshell.execute("xrf_plot()")
@@ -293,7 +288,9 @@ class LarchFrame(wx.Frame):
     def onClearInput(self, event=None):
         self.larchshell.clear_input()
 
-    def show_subframe(self, name, frameclass, **opts):
+    def show_subframe(self, event=None, name=None, creator=None, **opts):
+        if name is None or creator is None:
+            return
         shown = False
         if name in self.subframes:
             try:
@@ -302,8 +299,10 @@ class LarchFrame(wx.Frame):
             except:
                 del self.subframes[name]
         if not shown:
-            self.subframes[name] = frameclass(self, **opts)
-
+            self.subframes[name] = creator(parent=self,
+                                           _larch=self.larchshell.larch,
+                                           **opts)
+            self.subframes[name].Show()
 
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
@@ -340,7 +339,10 @@ class LarchFrame(wx.Frame):
             dgroup._groupname = groupname
         dlg.Destroy()
         if dgroup is not None:
-            self.show_subframe('coledit', EditColumnFrame, group=dgroup,
+
+            self.show_subframe(name='coledit', event=None,
+                               creator=EditColumnFrame,
+                               group=dgroup,
                                last_array_sel=self.last_array_sel,
                                read_ok_cb=self.onReadScan_Success)
 
