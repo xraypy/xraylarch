@@ -183,12 +183,16 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         out.ifluor_raw  = getattr(xdi, arrname_raw)
 
     out.mufluor = out.ifluor / out.i0
-    if hasattr(out, 'i1'):
-        out.mutrans = -np.log(out.i1 / out.i0)
-
+    if hasattr(out, 'i1') or hasattr(out, 'itrans'):
+        i1 = getattr(out, 'i1', None)
+        if i1 is None:
+            i1 = getattr(out, 'itrans', None)
+        if i1 is not None:
+            i1 = i1 / out.i0
+            i1[np.where(i1<2.0e-20)] = 2.0e-20
+            out.mutrans = -np.log(i1)
 
     npts   = len(out.energy)
-
     buff =  ['# XDI/1.0  GSE/1.0']
 
     header = OrderedDict()
