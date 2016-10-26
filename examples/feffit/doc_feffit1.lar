@@ -1,7 +1,9 @@
 ## examples/feffit/doc_feffit1.lar
 
 # read data
-cu_data = read_ascii('../xafsdata/cu.chi', labels='k, chi')
+cu_data  = read_ascii('../xafsdata/cu_metal_rt.xdi')
+autobk(cu_data.energy, cu_data.mutrans, group=cu_data, rbkg=1.0, kw=1)
+
 
 # define fitting parameter group
 pars = group(amp    = param(1, vary=True),
@@ -19,8 +21,13 @@ path1 = feffpath('feffcu01.dat',
 # set tranform / fit ranges
 trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=4, window='kaiser', rmin=1.4, rmax=3.0)
 
+# set uncertainty in chi(k) to that from background subtraction
+nkmin = index_of(cu_data.k, trans.kmin)
+nkmax = index_of(cu_data.k, trans.kmax)
+cu_data.epsilon_k = cu_data.delta_chi[nkmin: nkmax].mean()
+
 # define dataset to include data, pathlist, transform
-dset  = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
+dset = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
 
 # perform fit!
 out = feffit(pars, dset)
