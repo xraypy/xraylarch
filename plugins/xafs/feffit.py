@@ -188,7 +188,7 @@ class FeffitDataSet(Group):
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
-        # print(" Prepare fit " , hasattr(self.data, 'epsilon_k'))
+        # print(" Prepare fit " , getattr(self.data, 'epsilon_k', None))
         if getattr(self.data, 'epsilon_k', None) is not None:
             eps_k = self.data.epsilon_k
             if isinstance(eps_k, np.ndarray):
@@ -198,6 +198,11 @@ class FeffitDataSet(Group):
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
             # uncertainty in chi(k) from autobk or other source
             if hasattr(self.data, 'delta_chi'):
+                if isinstance(self.epsilon_k, (list, tuple)):
+                    eps_ave = 0.
+                    for eps in self.epsilon_k:
+                        eps_ave += eps
+                    self.epsilon_k = eps_ave/len(self.epsilon_k)
                 _dchi = interp(self.model.k, self.data.k, self.data.delta_chi)
                 eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
                 self.set_epsilon_k(eps_k)
