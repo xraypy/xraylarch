@@ -628,7 +628,7 @@ class ScanViewerFrame(wx.Frame):
             plot_yarrays = dgroup.plot_yarrays
         else:
             plot_yarrays = [(dgroup._ydat, {}, None)]
-        print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
+        # print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
 
         popts = {}
         path, fname = os.path.split(dgroup.filename)
@@ -822,7 +822,7 @@ class ScanViewerFrame(wx.Frame):
                     filename = ftest
                     break
 
-        if filename in self.file_groups:
+        if filename not in self.file_groups:
             self.filelist.Append(filename)
             self.file_groups[filename] = groupname
 
