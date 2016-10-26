@@ -140,9 +140,8 @@ class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, _larch=None, **kws):
-
-        wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
+    def __init__(self, parent=None, size=(850, 650), _larch=None, **kws):
+        wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
         self.file_groups = {}
         self.last_array_sel = {}
         title = "Column Data File Viewer"
@@ -152,7 +151,7 @@ class ScanViewerFrame(wx.Frame):
         self.plotframe = None
         self.groupname = None
         self.SetTitle(title)
-        self.SetSize((850, 650))
+        self.SetSize(size)
         self.SetFont(Font(10))
 
         self.config = {'chdir_on_fileopen': True}
@@ -816,9 +815,15 @@ class ScanViewerFrame(wx.Frame):
         groupname= datagroup._groupname
         # print("   storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
-        if groupname not in self.file_groups:
-            self.filelist.Append(filename)
+        if filenmae in self.file_groups:
+            for i in range(1, 101):
+                ftest = "%s (%i)"  % (filename, i)
+                if ftest not in self.groups:
+                    filename = ftest
+                    break
 
+        if filename in self.file_groups:
+            self.filelist.Append(filename)
             self.file_groups[filename] = groupname
 
         setattr(self.larch.symtable, groupname, datagroup)
@@ -855,6 +860,17 @@ class DebugViewer(ScanViewer, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         self.ShowInspectionTool()
         return True
+
+def initializeLarchPlugin(_larch=None):
+    """add ScanFrameViewer to _sys.gui_apps """
+    if _larch is not None:
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['scanviewer'] = ('Scan Viewer', ScanViewerFrame)
+
+def registerLarchPlugin():
+    return ('_wx', {})
 
 if __name__ == "__main__":
     ScanViewer().run()

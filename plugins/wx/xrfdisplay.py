@@ -1320,5 +1320,17 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
         return True
 
+
+def initializeLarchPlugin(_larch=None):
+    """add ScanFrameViewer to _sys.gui_apps """
+    if _larch is not None:
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
+
+def registerLarchPlugin():
+    return ('_wx', {})
+
 if __name__ == "__main__":
     XRFApp().MainLoop()
