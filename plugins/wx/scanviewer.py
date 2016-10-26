@@ -815,7 +815,7 @@ class ScanViewerFrame(wx.Frame):
         groupname= datagroup._groupname
         # print("   storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
-        if filenmae in self.file_groups:
+        if filename in self.file_groups:
             for i in range(1, 101):
                 ftest = "%s (%i)"  % (filename, i)
                 if ftest not in self.groups:
