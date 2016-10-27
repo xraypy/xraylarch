@@ -418,6 +418,9 @@ class diFFit_XRDcal(wx.App):
         self.createApp()
         return True
 
+def registerLarchPlugin():
+    return ('_diFFit', {})
+
 class DebugViewer(diFFit_XRDcal):
     def __init__(self, **kws):
         diFFit_XRDcal.__init__(self, **kws)

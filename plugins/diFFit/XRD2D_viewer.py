@@ -654,6 +654,9 @@ class diFFit2D(wx.App):
         self.createApp()
         return True
 
+def registerLarchPlugin():
+    return ('_diFFit', {})
+
 class DebugViewer(diFFit2D): #, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         diFFit2D.__init__(self, **kws)
