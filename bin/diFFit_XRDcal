@@ -7,10 +7,8 @@ import os
 try:
     import larch
     os.chdir(larch.site_config.home_dir)
-    from larch_plugins.diFFit.XRD2D_viewer import diFFit2D
+    from larch_plugins.diFFit.XRDCalibrationFrame import diFFit_XRDcal
 except:
     pass
 
-
-
-diFFit2D().run()
+diFFit_XRDcal().run()

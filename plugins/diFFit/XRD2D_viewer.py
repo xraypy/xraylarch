@@ -39,7 +39,7 @@ import matplotlib.cm as colormap
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
-
+SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
 #IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
 
@@ -60,13 +60,19 @@ class Viewer2DXRD(wx.Frame):
         self.plot_img = np.zeros((1024,1024))
         self.mask = np.ones((1024,1024))
         self.bkgd = np.zeros((1024,1024))
-        self.bkgd_scale = 0
+        self.bkgd_scale = 1
+        self.bkgdMAX = 5
         
         self.img_pxls = int(self.raw_img.shape[0]*self.raw_img.shape[1])
         self.msk_pxls   = self.img_pxls - int(sum(sum(self.mask)))
         self.bkgd_pxls = int(sum(sum(self.bkgd)))
+        
         self.use_mask = False
         self.use_bkgd = False
+        if self.msk_pxls > 0:
+            self.use_mask = True
+        if self.bkgd_pxls > 0:
+            self.use_bkgd = True
         
         self.color = 'bone'
         self.flip = 'vertical'
@@ -273,17 +279,25 @@ class Viewer2DXRD(wx.Frame):
         hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
         self.txt_bkgd = wx.StaticText(self.panel, label='BACKGROUND')
         self.sldr_bkgd = wx.Slider(self.panel)
+        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
         self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
 
-        self.sldr_bkgd.SetRange(0,5000)
-        self.sldr_bkgd.SetValue(self.bkgd_scale)
-        if self.bkgd_pxls == 0:
-            self.sldr_bkgd.Disable()
 
         hbox_bkgd.Add(self.txt_bkgd, flag=wx.RIGHT, border=8)
         hbox_bkgd.Add(self.sldr_bkgd, flag=wx.EXPAND, border=8)
+        hbox_bkgd.Add(self.entr_scale, flag=wx.RIGHT, border=8)
         vbox.Add(hbox_bkgd, flag=wx.ALL, border=10)
+
+        self.btn_scale = wx.Button(self.panel,label='set range')
+        self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
+        vbox.Add(self.btn_scale, flag=wx.ALIGN_RIGHT|wx.BOTTOM, border=10)
+
+        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+        if self.bkgd_pxls == 0:
+            self.sldr_bkgd.Disable()
+            self.entr_scale.Disable()
+            self.btn_scale.Disable()
 
         ###########################
         ## Set defaults  
@@ -292,13 +306,11 @@ class Viewer2DXRD(wx.Frame):
         if self.msk_pxls == 0:
             self.ch_msk.Disable()
         
-
-    
         return vbox    
 
     def onBkgdScale(self,event):
         
-        self.bkgd_scale = self.sldr_bkgd.GetValue()/1000.
+        self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
         
         bkgd_msg = 'Scale bkgd: %.3f' % self.bkgd_scale
         self.write_message(bkgd_msg)
@@ -308,6 +320,15 @@ class Viewer2DXRD(wx.Frame):
         self.setColor()
         self.checkFLIPS()
         self.plot2D.redraw()      
+
+    def onChangeBkgdScale(self,event):
+
+        self.bkgdMAX = float(self.entr_scale.GetValue())
+        self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
+        
+        self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
+        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)        
+
 
     def onApply(self,event):
     
@@ -397,7 +418,6 @@ class Viewer2DXRD(wx.Frame):
 
     def checkFLIPS(self):
 
-        print self.ch_flp.GetString(self.ch_flp.GetSelection())
         if self.flip == 'vertical': # Vertical
             self.plot2D.conf.flip_ud = True
             self.plot2D.conf.flip_lr = False
@@ -416,9 +436,11 @@ class Viewer2DXRD(wx.Frame):
             self.plot2D.conf.log_scale = True
         else:  ## linear
             self.plot2D.conf.log_scale = False
+        self.plot2D.redraw()
     
     def onColor(self,event):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
+            self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
             self.setColor()
     
     def setColor(self):
@@ -487,34 +509,42 @@ class Viewer2DXRD(wx.Frame):
         self.calcIMAGE()
             
     def checkIMAGE(self):
-    
-        if self.mask.shape is not self.raw_img.shape:
-            self.mask = np.ones(self.raw_img.shape)
 
-        if self.bkgd.shape is not self.raw_img.shape:
+        ## Reshapes/replaces mask and/or background if shape doesn't match that of image    
+        if self.mask.shape != self.raw_img.shape:
+            self.mask = np.ones(self.raw_img.shape)
+        if self.bkgd.shape != self.raw_img.shape:
             self.bkgd = np.zeros(self.raw_img.shape)
 
-        ## Remove once working
-        ## mkak 2016.10.26
-        self.mask[5:500,3:500] = 0
-        self.bkgd = np.ones(self.raw_img.shape)
-
+        ## Calculates the number of pixels in image, masked pixels, and background pixels
         self.img_pxls = int(self.raw_img.shape[0]*self.raw_img.shape[1])
         self.msk_pxls   = self.img_pxls - int(sum(sum(self.mask)))
         self.bkgd_pxls = int(sum(sum(self.bkgd)))
 
+        ## Enables mask checkbox.
         if self.msk_pxls == 0:
             self.ch_msk.Disable()
         else:
             self.ch_msk.Enable()
         
+        ## Enables background slider and sets range.
         if self.bkgd_pxls == 0:
+            self.entr_scale.SetLabel('')
+            
             self.sldr_bkgd.Disable()
+            self.entr_scale.Disable()
+            self.btn_scale.Disable()
+            
             self.use_bkgd = False
         else:
+            self.btn_scale.Enable()
+            self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
-            self.sldr_bkgd.SetRange(0,5000)
-            self.sldr_bkgd.SetValue(0)
+
+            self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
+            self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+            self.entr_scale.SetLabel(str(self.bkgdMAX))
+
             self.use_bkgd = True
 
 
