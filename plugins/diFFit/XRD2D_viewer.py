@@ -37,9 +37,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-#from ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
-#from XRDCalibrationFrame import CalibrationPopup
 
 
 IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
@@ -663,7 +661,7 @@ class diFFit2D(wx.App):
 def registerLarchPlugin():
     return ('_diFFit', {})
 
-class DebugViewer(diFFit2D): #, wx.lib.mixins.inspection.InspectionMixin):
+class DebugViewer(diFFit2D):
     def __init__(self, **kws):
         diFFit2D.__init__(self, **kws)
 
