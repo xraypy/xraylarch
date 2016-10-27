@@ -9,8 +9,6 @@ import matplotlib.cm as colormap
 
 import numpy as np
 
-import fabio
-
 class ImageToolboxFrame(wx.Frame):
 
     def __init__(self,imageframe,image): #,mask=False,bkgd=False):
@@ -315,8 +313,6 @@ def SetContrast(parent):
 ################    IN PROGRESS - START   ###################
 #############################################################
 
-## not yet working properly?
-
 # class ImageToolboxPanel(wx.Panel):
 # 
 #     def __init__(self,parent):#,imageframe,image,mask=False,bkgd=False):
@@ -337,6 +333,15 @@ def SetContrast(parent):
 #         
 #         self.Init()
 #     
+#     def Init(self):
+#         
+#         self.panel = wx.Panel(self)
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+# 
+# 
+# #############################################################
+# ################     IN PROGRESS - END    ###################
+# #############################################################
 
 def registerLarchPlugin():
     return ('_diFFit', {})

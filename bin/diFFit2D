@@ -4,7 +4,11 @@ Viewer App 2D XRD data
 """
 import os
 #from 2DXRD_viewer import diFFit2D
+<<<<<<< HEAD
 from larch_plugins.diFFit import diFFit2DXRD
+=======
+from larch_plugins.diFFit.XRD2D_viewer import diFFit2D
+>>>>>>> xrd_updates
 
 try:
     import larch

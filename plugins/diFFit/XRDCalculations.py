@@ -26,7 +26,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pylab as plb
 
-import xrayutilities as xu
+HAS_XRAYUTIL = False
+try:
+    import xrayutilities as xu
+    HAS_XRAYUTIL = True
+except ImportError:
+    pass
 
 from scipy import optimize
 from scipy import signal
@@ -993,3 +998,4 @@ def fit_with_minimization():
 
 def registerLarchPlugin():
     return ('_diFFit', {})
+

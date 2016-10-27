@@ -15,28 +15,33 @@ import wx
 # import h5py
 import numpy as np
 
-# HAS_pyFAI = False
-# try:
-#     import pyFAI
-#     import pyFAI.calibrant
-#     from pyFAI.calibration import Calibration
-#     HAS_pyFAI = True
-# except ImportError:
-#     pass
+HAS_pyFAI = False
+try:
+    import pyFAI
+    import pyFAI.calibrant
+    from pyFAI.calibration import Calibration
+    HAS_pyFAI = True
+except ImportError:
+    pass
+    
+HAS_fabio = False
+try:
+    import fabio
+    HAS_fabio = True
+except ImportError:
+    pass
 
 from wxmplot.imagepanel import ImagePanel
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 
-from larch_plugins.diFFit import ImageToolboxFrame
-from larch_plugins.diFFit import CalibrationPopup
-#from ImageControlsFrame import ImageToolboxFrame
-#from XRDCalibrationFrame import CalibrationPopup
 
+from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
-#IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+#IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
 
 class Viewer2DXRD(wx.Frame):
     '''
@@ -473,7 +478,6 @@ class Viewer2DXRD(wx.Frame):
     def openIMAGE(self):
 
         try:
-            import fabio
             self.raw_img = fabio.open(IMAGE_AND_PATH).data
         except:
             print 'Either fabio is missiong or it could not import image.'
@@ -653,8 +657,10 @@ class diFFit2DXRD(wx.App):
     def OnInit(self):
         self.createApp()
         return True
+def registerLarchPlugin():
+    return ('_diFFit', {})
 
-class DebugViewer(diFFit2DXRD): #, wx.lib.mixins.inspection.InspectionMixin):
+class DebugViewer(diFFit2D): #, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         diFFit2DXRD.__init__(self, **kws)
 
