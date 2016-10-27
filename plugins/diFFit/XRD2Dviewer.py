@@ -54,6 +54,7 @@ class Viewer2DXRD(wx.Frame):
 
         ## Default image information
         self.raw_img  = np.zeros((1024,1024))
+        self.flp_img = self.raw_img
         self.plt_img = np.zeros((1024,1024))
         self.mask = np.ones((1024,1024))
         self.bkgd = np.zeros((1024,1024))
@@ -367,14 +368,15 @@ class Viewer2DXRD(wx.Frame):
 
         if self.use_mask is True:
             if self.use_bkgd is True:
-                self.plt_img = self.raw_img * self.mask - self.bkgd * self.bkgd_scale
+                self.plt_img = self.flp_img * self.mask - self.bkgd * self.bkgd_scale
             else:
-                self.plt_img = self.raw_img * self.mask
+                self.plt_img = self.flp_img * self.mask
         else:
             if self.use_bkgd is True:
-                self.plt_img = self.raw_img - self.bkgd * self.bkgd_scale
+                self.plt_img = self.flp_img - self.bkgd * self.bkgd_scale
             else:
-                self.plt_img = self.raw_img
+                self.plt_img = self.flp_img
+        self.plot2D.display(self.plt_img)
 
         ## Update image control panel if there.
         try:
@@ -479,28 +481,35 @@ class Viewer2DXRD(wx.Frame):
         Eventually, should just set self.raw_img or self.fli_img - better than this
         mkak 2016.10.20
         '''
-        
-        if self.ch_flp.GetString(self.ch_flp.GetSelection()) != self.flip:
-            self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
+ 
+        self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
+        self.checkFLIPS()
+        self.calcIMAGE()
 
-            self.checkFLIPS()
-        
-            self.plot2D.redraw()
 
     def checkFLIPS(self):
 
         if self.flip == 'vertical': # Vertical
-            self.plot2D.conf.flip_ud = True
-            self.plot2D.conf.flip_lr = False
+            self.flp_img = self.raw_img[::-1,:]
         elif self.flip == 'horizontal': # Horizontal
-            self.plot2D.conf.flip_ud = False
-            self.plot2D.conf.flip_lr = True
+            self.flp_img = self.raw_img[:,::-1]
         elif self.flip == 'both': # both
-            self.plot2D.conf.flip_ud = True
-            self.plot2D.conf.flip_lr = True
+            self.flp_img = self.raw_img[::-1,::-1]
         else: # None
-            self.plot2D.conf.flip_ud = False
-            self.plot2D.conf.flip_lr = False
+            self.flp_img = self.raw_img
+
+#         if self.flip == 'vertical': # Vertical
+#             self.plot2D.conf.flip_ud = True
+#             self.plot2D.conf.flip_lr = False
+#         elif self.flip == 'horizontal': # Horizontal
+#             self.plot2D.conf.flip_ud = False
+#             self.plot2D.conf.flip_lr = True
+#         elif self.flip == 'both': # both
+#             self.plot2D.conf.flip_ud = True
+#             self.plot2D.conf.flip_lr = True
+#         else: # None
+#             self.plot2D.conf.flip_ud = False
+#             self.plot2D.conf.flip_lr = False
                 
     def onScale(self,event):
         if self.ch_scl.GetSelection() == 1: ## log
@@ -543,6 +552,7 @@ class Viewer2DXRD(wx.Frame):
 
     def openIMAGE(self,path):
         self.raw_img = fabioOPEN(path)
+        self.flp_img = self.raw_img
         self.checkIMAGE()
         self.calcIMAGE()
 
