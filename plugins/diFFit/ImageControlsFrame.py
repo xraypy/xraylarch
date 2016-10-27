@@ -9,8 +9,6 @@ import matplotlib.cm as colormap
 
 import numpy as np
 
-import fabio
-
 class ImageToolboxFrame(wx.Frame):
 
     def __init__(self,imageframe,image): #,mask=False,bkgd=False):

@@ -13,14 +13,25 @@ from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 import numpy as np
-import fabio
 
-import pyFAI
-import pyFAI.calibrant
-from pyFAI.calibration import Calibration
+HAS_pyFAI = False
+try:
+    import pyFAI
+    import pyFAI.calibrant
+    from pyFAI.calibration import Calibration
+    HAS_pyFAI = True
+except ImportError:
+    pass
+    
+HAS_fabio = False
+try:
+    import fabio
+    HAS_fabio = True
+except ImportError:
+    pass
 
-#IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+#IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
 
 
 class CalibrationPopup(wx.Frame):

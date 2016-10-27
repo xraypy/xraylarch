@@ -15,14 +15,21 @@ import wx
 # import h5py
 import numpy as np
 
-# HAS_pyFAI = False
-# try:
-#     import pyFAI
-#     import pyFAI.calibrant
-#     from pyFAI.calibration import Calibration
-#     HAS_pyFAI = True
-# except ImportError:
-#     pass
+HAS_pyFAI = False
+try:
+    import pyFAI
+    import pyFAI.calibrant
+    from pyFAI.calibration import Calibration
+    HAS_pyFAI = True
+except ImportError:
+    pass
+    
+HAS_fabio = False
+try:
+    import fabio
+    HAS_fabio = True
+except ImportError:
+    pass
 
 from wxmplot.imagepanel import ImagePanel
 
@@ -35,8 +42,8 @@ from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 #from XRDCalibrationFrame import CalibrationPopup
 
 
-#IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+#IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
 
 class Viewer2DXRD(wx.Frame):
     '''
@@ -473,7 +480,6 @@ class Viewer2DXRD(wx.Frame):
     def openIMAGE(self):
 
         try:
-            import fabio
             self.raw_img = fabio.open(IMAGE_AND_PATH).data
         except:
             print 'Either fabio is missiong or it could not import image.'
