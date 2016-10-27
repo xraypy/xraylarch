@@ -32,6 +32,13 @@ try:
     HAS_XRAYUTIL = True
 except ImportError:
     pass
+    
+HAS_fabio = False
+try:
+    import fabio
+    HAS_fabio = True
+except ImportError:
+    pass
 
 from scipy import optimize
 from scipy import signal
@@ -39,6 +46,19 @@ from scipy import signal
 from lmfit import minimize, Parameters, Parameter, report_fit
 
 ##########################################################################
+
+def fabioOPEN(path):
+
+    if HAS_fabio:
+        try:
+            image = fabio.open(path).data
+            return image
+        except:
+            print 'fabio could not import the image: %s' % path
+    else:
+        print 'fabio not available for opening images.'
+        
+    return np.zeros((1024,1024))
 
 def xy_file_reader(xyfile,char=None):
     '''

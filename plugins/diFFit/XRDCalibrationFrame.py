@@ -425,6 +425,66 @@ class CalibrationPopup(wx.Frame):
                     
         self.followdir.SetLabel(dirsteps[self.stepno])
 
+class CalibrationChoice(wx.Dialog):
+
+    def __init__(self,parent):
+    
+        dialog = wx.Dialog.__init__(self, parent, title='XRD Calibration',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)#,
+                                    #size=(400,350)) ## width x height
+        
+        self.panel = wx.Panel(self)
+        self.parent = parent
+        
+#         self.Init()
+# 
+#     def Init(self):
+# 
+#         ###########################
+#         ## Define buttons
+#         btn_load = wx.Button(self.panel,label='Load calibration file')
+#         btn_load.Bind(wx.EVT_BUTTON,self.onLoadCalibration)
+#         
+#         btn_new = wx.Button(self.panel,label='Perform new calibration')
+#         btn_new.Bind(wx.EVT_BUTTON,self.onNewCalibration)
+# 
+#         btn_cancel = wx.Button(self.panel, wx.ID_CANCEL )
+# 
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+#         vbox.Add(btn_load, flag=wx.ALL, border=8)        
+#         vbox.Add(btn_new, flag=wx.ALL, border=8)
+#         vbox.Add(btn_cancel, flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
+# 
+#         ###########################
+#         ## Pack all together in self.panel
+#         self.panel.SetSizer(vbox) 
+# 
+# 
+#     def onLoadCalibration(self, event): 
+#         
+# 
+#         wildcards = 'pyFAI calibration file (*.edf)|*.edf|All files (*.*)|*.*'
+#         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
+#                            defaultDir=os.getcwd(),
+#                            wildcard=wildcards, style=wx.FD_OPEN)
+# 
+#         path, read = None, False
+#         if dlg.ShowModal() == wx.ID_OK:
+#             read = True
+#             path = dlg.GetPath().replace('\\', '/')
+#         dlg.Destroy()
+#         
+#         if read:
+#             self.parent.calipath = path
+#         #self.Destroy()
+# 
+#     def onNewCalibration(self,event):
+#         
+#         CalibrationPopup(self.parent)
+#         #self.Destory()
+    
+
+
 class diFFit_XRDcal(wx.App):
     def __init__(self):
         wx.App.__init__(self)
