@@ -3,12 +3,15 @@
 Viewer App 2D XRD data
 """
 import os
-from larch_plugins.diFFit.XRD2D_viewer import diFFit2D
 
 try:
     import larch
     os.chdir(larch.site_config.home_dir)
+
+    from larch_plugins.diFFit.XRD2D_viewer import diFFit2D
 except:
     pass
+
+
 
 diFFit2D().run()
