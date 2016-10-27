@@ -188,7 +188,7 @@ class FeffitDataSet(Group):
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
-        # print(" Prepare fit " , hasattr(self.data, 'epsilon_k'))
+        # print(" Prepare fit " , getattr(self.data, 'epsilon_k', None))
         if getattr(self.data, 'epsilon_k', None) is not None:
             eps_k = self.data.epsilon_k
             if isinstance(eps_k, np.ndarray):
@@ -196,6 +196,16 @@ class FeffitDataSet(Group):
             self.set_epsilon_k(eps_k)
         else:
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
+            # uncertainty in chi(k) from autobk or other source
+            if hasattr(self.data, 'delta_chi'):
+                if isinstance(self.epsilon_k, (list, tuple)):
+                    eps_ave = 0.
+                    for eps in self.epsilon_k:
+                        eps_ave += eps
+                    self.epsilon_k = eps_ave/len(self.epsilon_k)
+                _dchi = interp(self.model.k, self.data.k, self.data.delta_chi)
+                eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
+                self.set_epsilon_k(eps_k)
         self.__prepared = True
         # print('Prepare fit done', self.epsilon_k, self.epsilon_r)
 
@@ -553,14 +563,18 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
             out.append(' dataset %i:' % (i+1))
         if isinstance(tr.kweight, Iterable):
             if isinstance(ds.epsilon_k[0], np.ndarray):
-                eps_k = ', '.join([repr(eps) for eps in ds.epsilon_k])
+                msg = []
+                for eps in ds.epsilon_k:
+                    msg.append('Array(mean=%.6f, std=%.6f)' % (eps.mean(), eps.std()))
+                eps_k = ', '.join(msg)
             else:
                 eps_k = ', '.join(['%.6f' % eps for eps in ds.epsilon_k])
             eps_r = ', '.join(['%.6f' % eps for eps in ds.epsilon_r])
             kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
         else:
             if isinstance(ds.epsilon_k, np.ndarray):
-                eps_k = repr(ds.epsilon_k)
+                eps_k = 'Array(mean=%.6f, std=%.6f)' % (ds.epsilon_k.mean(),
+                                                        ds.epsilon_k.std())
             else:
                 eps_k = '%.6f' % ds.epsilon_k
             eps_r = '%.6f' % ds.epsilon_r

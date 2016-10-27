@@ -1343,10 +1343,11 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, conffile=None,  use_scandb=False, _larch=None, **kwds):
+    def __init__(self, parent=None,  size=(700, 450), 
+                 use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, None, -1, size=(700, 450),  **kwds)
+        wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
 
         self.data = None
         self.use_scandb = use_scandb
@@ -2747,6 +2748,17 @@ class DebugViewer(MapViewer, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         self.ShowInspectionTool()
         return True
+
+def initializeLarchPlugin(_larch=None):
+    """add MapFrameViewer to _sys.gui_apps """
+    if _larch is not None:
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['mapviewer'] = ('XRF Map Viewer', MapViewerFrame)
+
+def registerLarchPlugin():
+    return ('_wx', {})
 
 if __name__ == '__main__':
     DebugViewer().run()
