@@ -1,0 +1,583 @@
+#!/usr/bin/env python
+'''
+popup frame for 2D XRD image control
+
+'''
+import wx
+import matplotlib.pyplot as plt
+import matplotlib.cm as colormap
+
+import numpy as np
+
+import fabio
+
+class ImageToolboxFrame(wx.Frame):
+
+    def __init__(self,imageframe,image): #,mask=False,bkgd=False):
+        '''
+        Frame for visual toolbox
+        '''
+        label = 'Image Toolbox'
+        wx.Frame.__init__(self, None, -1,title=label, size=(330, 300))
+        
+        #self.SetMinSize((700,500))
+        
+        ## Set inputs 
+        self.plot2Dframe = imageframe
+        #self.raw_img = image
+        self.plt_img = image
+        
+        ## Set defaults
+        self.bkgd_scale = 0
+        
+        self.color = 'bone'
+        self.flip = 'vertical'
+
+
+        self.Init()
+        self.Centre()
+        self.Show(True)
+    
+    def Init(self):
+        
+        self.panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        ###########################
+        ## Color
+        hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_clr = wx.StaticText(self.panel, label='COLOR')
+        colors = []
+        for key in plt.cm.datad:
+            if not key.endswith('_r'):
+                colors.append(key)
+        self.ch_clr = wx.Choice(self.panel,choices=colors)
+
+        self.ch_clr.Bind(wx.EVT_CHOICE,self.onColor)
+    
+        hbox_clr.Add(self.txt_clr, flag=wx.RIGHT, border=8)
+        hbox_clr.Add(self.ch_clr, flag=wx.EXPAND, border=8)
+        vbox.Add(hbox_clr, flag=wx.ALL, border=10)
+    
+        ###########################
+        ## Contrast
+        vbox_ct = wx.BoxSizer(wx.VERTICAL)
+    
+        hbox_ct1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_ct1 = wx.StaticText(self.panel, label='CONTRAST')
+        self.txt_ct2 = wx.StaticText(self.panel, label='')
+        
+        hbox_ct1.Add(self.txt_ct1, flag=wx.EXPAND|wx.RIGHT, border=8)
+        hbox_ct1.Add(self.txt_ct2, flag=wx.ALIGN_RIGHT, border=8)
+        vbox_ct.Add(hbox_ct1, flag=wx.BOTTOM, border=8)
+    
+        hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.ttl_min = wx.StaticText(self.panel, label='min')
+        self.sldr_min = wx.Slider(self.panel)
+        self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+            
+        hbox_ct2.Add(self.ttl_min, flag=wx.RIGHT, border=8)
+        hbox_ct2.Add(self.sldr_min, flag=wx.EXPAND, border=8)
+        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT, border=8)
+        vbox_ct.Add(hbox_ct2, flag=wx.BOTTOM, border=8)        
+    
+        hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
+        self.ttl_max = wx.StaticText(self.panel, label='max')
+        self.sldr_max = wx.Slider(self.panel)
+        self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+        
+        hbox_ct3.Add(self.ttl_max, flag=wx.RIGHT, border=8)
+        hbox_ct3.Add(self.sldr_max, flag=wx.EXPAND, border=8)
+        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT, border=8)
+        vbox_ct.Add(hbox_ct3, flag=wx.BOTTOM, border=8)
+
+        hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_ct1 = wx.Button(self.panel,label='reset range')
+        self.btn_ct2 = wx.Button(self.panel,label='set range')
+
+        self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
+        self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
+
+        hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT, border=8)
+        hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT, border=8)
+        vbox_ct.Add(hbox_ct4, flag=wx.ALIGN_RIGHT|wx.BOTTOM,border=8)
+        vbox.Add(vbox_ct, flag=wx.ALL, border=10)
+
+ 
+
+        ###########################
+        ## Flip
+        hbox_flp = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_flp = wx.StaticText(self.panel, label='IMAGE FLIP')
+        flips = ['none','vertical','horizontal','both']
+        self.ch_flp = wx.Choice(self.panel,choices=flips)
+
+        self.ch_flp.Bind(wx.EVT_CHOICE,self.onFlip)
+    
+        hbox_flp.Add(self.txt_flp, flag=wx.RIGHT, border=8)
+        hbox_flp.Add(self.ch_flp, flag=wx.EXPAND, border=8)
+        vbox.Add(hbox_flp, flag=wx.ALL, border=10)
+    
+        ###########################
+        ## Scale
+        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_scl = wx.StaticText(self.panel, label='SCALE')
+        scales = ['linear','log']
+        self.ch_scl = wx.Choice(self.panel,choices=scales)
+    
+        self.ch_scl.Bind(wx.EVT_CHOICE,self.onScale)
+    
+        hbox_scl.Add(self.txt_scl, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.ch_scl, flag=wx.EXPAND, border=8)
+        vbox.Add(hbox_scl, flag=wx.ALL, border=10)
+
+
+        ###########################
+        ## Set defaults  
+        self.ch_clr.SetStringSelection(self.color)
+        self.ch_flp.SetStringSelection(self.flip)
+        self.setSlider()
+    
+        self.panel.SetSizer(vbox)
+
+    def autoContrast(self,event):
+
+        self.minINT = int(np.min(self.plt_img))
+        self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
+        if self.maxINT == self.minINT:
+            self.minINT = self.minINT-50
+            self.maxINT = self.minINT+100
+        try:
+            self.sldr_min.SetRange(self.minINT,self.maxINT)
+            self.sldr_max.SetRange(self.minINT,self.maxINT)
+        except:
+            pass
+        self.minCURRENT = self.minINT
+        self.maxCURRENT = self.maxINT
+        if self.maxCURRENT > self.maxINT:
+            self.maxCURRENT = self.maxINT
+        self.setContrast()    
+
+    def onContrastRange(self,event):
+    
+        newMIN = int(self.entr_min.GetValue())
+        newMAX = int(self.entr_max.GetValue())
+        
+        self.minCURRENT = newMIN
+        self.maxCURRENT = newMAX
+
+        self.sldr_min.SetRange(newMIN,newMAX)
+        self.sldr_max.SetRange(newMIN,newMAX)
+        
+        self.setContrast()
+            
+    def setSlider(self):
+    
+        self.minCURRENT = self.plot2Dframe.conf.int_lo['int']
+        self.maxCURRENT = self.plot2Dframe.conf.int_hi['int']
+        
+        self.entr_min.SetLabel(str(self.minCURRENT))
+        self.entr_max.SetLabel(str(self.maxCURRENT))
+
+        self.minINT = int(np.min(self.plt_img))
+        self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
+        if self.maxINT == self.minINT:
+            self.minINT = self.minINT-50
+            self.maxINT = self.minINT+100
+        try:
+            self.sldr_min.SetRange(self.minINT,self.maxINT)
+            self.sldr_max.SetRange(self.minINT,self.maxINT)
+        except:
+            pass
+            
+        self.sldr_min.SetValue(self.minCURRENT)
+        self.sldr_max.SetValue(self.maxCURRENT)
+
+    def onSlider(self,event):
+
+        self.minCURRENT = self.sldr_min.GetValue()
+        self.maxCURRENT = self.sldr_max.GetValue()
+
+        ## Create safety to keep min. below max.
+        ## mkak 2016.10.20
+
+        self.setContrast()
+
+    def setContrast(self):
+        
+        self.sldr_min.SetValue(self.minCURRENT)
+        self.sldr_max.SetValue(self.maxCURRENT)
+
+        self.plot2Dframe.conf.auto_intensity = False        
+        self.plot2Dframe.conf.int_lo['int'] = self.minCURRENT
+        self.plot2Dframe.conf.int_hi['int'] = self.maxCURRENT
+        
+        self.plot2Dframe.redraw()
+            
+        self.entr_min.SetLabel(str(self.minCURRENT))
+        self.entr_max.SetLabel(str(self.maxCURRENT))
+
+    def onFlip(self,event):
+        '''
+        Eventually, should just set self.raw_img or self.fli_img - better than this
+        mkak 2016.10.20
+        '''
+        
+        if self.ch_flp.GetString(self.ch_flp.GetSelection()) != self.flip:
+            self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
+
+            self.checkFLIPS()
+        
+            self.plot2Dframe.redraw()
+
+    def checkFLIPS(self):
+
+        if self.flip == 'vertical': # Vertical
+            self.plot2Dframe.conf.flip_ud = True
+            self.plot2Dframe.conf.flip_lr = False
+        elif self.flip == 'horizontal': # Horizontal
+            self.plot2Dframe.conf.flip_ud = False
+            self.plot2Dframe.conf.flip_lr = True
+        elif self.flip == 'both': # both
+            self.plot2Dframe.conf.flip_ud = True
+            self.plot2Dframe.conf.flip_lr = True
+        else: # None
+            self.plot2Dframe.conf.flip_ud = False
+            self.plot2Dframe.conf.flip_lr = False
+                
+    def onScale(self,event):
+        if self.ch_scl.GetSelection() == 1: ## log
+            self.plot2Dframe.conf.log_scale = True
+        else:  ## linear
+            self.plot2Dframe.conf.log_scale = False
+    
+    def onColor(self,event):
+        if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
+            self.setColor()
+    
+    def setColor(self):
+        self.plot2Dframe.conf.cmap['int'] = getattr(colormap, self.color)
+        self.plot2Dframe.display(self.plt_img)        
+        
+
+    def RightSidePanel(self,panel):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot2DframeXRD(panel)
+        btnbox = self.QuickButtons(panel)
+        vbox.Add(self.plot2Dframe,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        return vbox
+
+    def QuickButtons(self,panel):
+        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_calib = wx.Button(panel,label='CALIBRATE')
+        self.btn_mask = wx.Button(panel,label='MASK')
+        self.btn_integ = wx.Button(panel,label='INTEGRATE (1D)')
+        
+        self.btn_mask.Bind(wx.EVT_BUTTON,self.onMask)
+        self.btn_calib.Bind(wx.EVT_BUTTON,self.onCalibration)
+        self.btn_integ.Bind(wx.EVT_BUTTON,self.on1DXRD)
+        
+        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_mask, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
+
+        return buttonbox
+
+
+    def SetContrast(self):
+    
+        self.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
+                  (np.min(self.plt_img),np.max(self.plt_img)))
+        
+        self.autoContrast(None)
+        self.checkFLIPS()
+
+        self.plot2Dframe.redraw()
+
+def SetContrast(parent):
+    
+    parent.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
+              (np.min(parent.plt_img),np.max(parent.plt_img)))
+    
+    parent.autoContrast(None)
+    parent.checkFLIPS()
+
+    parent.plot2Dframe.redraw()
+
+        
+
+#############################################################
+################    IN PROGRESS - START   ###################
+#############################################################
+
+## not yet working properly?
+
+# class ImageToolboxPanel(wx.Panel):
+# 
+#     def __init__(self,parent):#,imageframe,image,mask=False,bkgd=False):
+#         '''
+#         Panel for visual toolbox
+#         '''
+#         label = 'Image Toolbox'
+#         wx.Panel.__init__(self, parent, -1)
+#         #wx.Panel.__init__(self, None, -1)
+#         #wx.Panel.__init__(self, parent, -1, **kws)
+#         
+#         #self.SetMinSize((700,500))
+#         
+#         self.plot2Dframe = None
+#         self.raw_img = None
+#         self.mask = False
+#         self.bkgd = False
+#         
+#         self.Init()
+#     
+#     def Init(self):
+#         
+#         self.panel = wx.Panel(self)
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ###########################
+#         ## Color
+#         hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
+#         self.txt_clr = wx.StaticText(self.panel, label='COLOR')
+#         colors = []
+#         for key in plt.cm.datad:
+#             if not key.endswith('_r'):
+#                 colors.append(key)
+#         self.ch_clr = wx.Choice(self.panel,choices=colors)
+#         self.ch_clr.SetStringSelection('bone')
+# 
+#         self.ch_clr.Bind(wx.EVT_CHOICE,self.onColor)
+#     
+#         hbox_clr.Add(self.txt_clr, flag=wx.RIGHT, border=8)
+#         hbox_clr.Add(self.ch_clr, flag=wx.EXPAND, border=8)
+#         vbox.Add(hbox_clr, flag=wx.ALL, border=10)
+#     
+#         ###########################
+#         ## Contrast
+#         vbox_ct = wx.BoxSizer(wx.VERTICAL)
+#     
+#         hbox_ct1 = wx.BoxSizer(wx.HORIZONTAL)
+#         self.txt_ct1 = wx.StaticText(self.panel, label='CONTRAST')
+#         self.txt_ct2 = wx.StaticText(self.panel, label='')
+#         
+#         hbox_ct1.Add(self.txt_ct1, flag=wx.EXPAND|wx.RIGHT, border=8)
+#         hbox_ct1.Add(self.txt_ct2, flag=wx.ALIGN_RIGHT, border=8)
+#         vbox_ct.Add(hbox_ct1, flag=wx.BOTTOM, border=8)
+#     
+#         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
+#         self.ttl_min = wx.StaticText(self.panel, label='min')
+#         self.sldr_min = wx.Slider(self.panel)
+#         self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+# 
+#         self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+#         #self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange) ## why not working on Mac?
+#             
+#         hbox_ct2.Add(self.ttl_min, flag=wx.RIGHT, border=8)
+#         hbox_ct2.Add(self.sldr_min, flag=wx.EXPAND, border=8)
+#         hbox_ct2.Add(self.entr_min, flag=wx.RIGHT, border=8)
+#         vbox_ct.Add(hbox_ct2, flag=wx.BOTTOM, border=8)        
+#     
+#         hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
+#         self.ttl_max = wx.StaticText(self.panel, label='max')
+#         self.sldr_max = wx.Slider(self.panel)
+#         self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+# 
+#         self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+#         #self.entr_max.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange) ## why not working on Mac?
+#         
+#         hbox_ct3.Add(self.ttl_max, flag=wx.RIGHT, border=8)
+#         hbox_ct3.Add(self.sldr_max, flag=wx.EXPAND, border=8)
+#         hbox_ct3.Add(self.entr_max, flag=wx.RIGHT, border=8)
+#         vbox_ct.Add(hbox_ct3, flag=wx.BOTTOM, border=8)
+# 
+#         hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
+#         self.btn_ct1 = wx.Button(self.panel,label='reset range')
+#         self.btn_ct2 = wx.Button(self.panel,label='set range')
+# 
+#         self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
+#         self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
+# 
+#         hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT, border=8)
+#         hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT, border=8)
+#         vbox_ct.Add(hbox_ct4, flag=wx.ALIGN_RIGHT|wx.BOTTOM,border=8)
+# 
+#         vbox.Add(vbox_ct, flag=wx.ALL, border=10)
+# 
+#         ###########################
+#         ## Flip
+#         hbox_flp = wx.BoxSizer(wx.HORIZONTAL)
+#         self.txt_flp = wx.StaticText(self.panel, label='IMAGE FLIP')
+#         flips = ['none','vertical','horizonal','both']
+#         self.ch_flp = wx.Choice(self.panel,choices=flips)
+# 
+#         self.ch_flp.Bind(wx.EVT_CHOICE,self.onFlip)
+#     
+#         hbox_flp.Add(self.txt_flp, flag=wx.RIGHT, border=8)
+#         hbox_flp.Add(self.ch_flp, flag=wx.EXPAND, border=8)
+#         vbox.Add(hbox_flp, flag=wx.ALL, border=10)
+#     
+#         ###########################
+#         ## Scale
+#         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+#         self.txt_scl = wx.StaticText(self.panel, label='SCALE')
+#         scales = ['linear','log']
+#         self.ch_scl = wx.Choice(self.panel,choices=scales)
+#     
+#         self.ch_scl.Bind(wx.EVT_CHOICE,self.onScale)
+#     
+#         hbox_scl.Add(self.txt_scl, flag=wx.RIGHT, border=8)
+#         hbox_scl.Add(self.ch_scl, flag=wx.EXPAND, border=8)
+#         vbox.Add(hbox_scl, flag=wx.ALL, border=10)
+# 
+# 
+#         ###########################
+#         ## Mask
+#         if self.use_mask:
+#             hbox_msk = wx.BoxSizer(wx.HORIZONTAL)
+#             self.txt_msk = wx.StaticText(self.panel, label='MASK')
+#             self.ch_msk = wx.CheckBox(self.panel,label='Apply?')
+#     
+#             hbox_msk.Add(self.txt_msk, flag=wx.RIGHT, border=8)
+#             hbox_msk.Add(self.ch_msk, flag=wx.EXPAND, border=8)
+# 
+#             self.ch_msk.Disable()
+#             vbox.Add(hbox_msk, flag=wx.ALL, border=10)
+#     
+#         ###########################
+#         ## Background
+#         if self.use_bkgd:
+#             hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
+#             self.txt_bkgd = wx.StaticText(self.panel, label='BACKGROUND')
+#             self.sldr_bkgd = wx.Slider(self.panel)
+# 
+#     
+#             hbox_bkgd.Add(self.txt_bkgd, flag=wx.RIGHT, border=8)
+#             hbox_bkgd.Add(self.sldr_bkgd, flag=wx.EXPAND, border=8)
+# 
+#             ## Eventually, don't hard code
+#             ## Should be locked at 0 unless background is defined - or should we
+#             ##     have a matrix of 1s that can be subtracted??
+#             ## mkak 2016.10.19
+#             self.sldr_bkgd.SetRange(0,200)
+#             self.sldr_bkgd.SetValue(0)
+#             self.sldr_bkgd.Disable()
+# 
+#             vbox.Add(hbox_bkgd, flag=wx.ALL, border=10)
+#     
+#         self.panel.SetSizer(vbox)
+# 
+#     def autoContrast(self,event):
+# 
+#         self.minINT = int(np.min(self.raw_img))
+#         print self.minINT
+#         self.maxINT = int(np.max(self.raw_img)/15) # /15 scales image to viewable 
+#         if self.maxINT == self.minINT:
+#             self.minINT = self.minINT-50
+#             self.maxINT = self.minINT+100
+#         try:
+#             self.sldr_min.SetRange(self.minINT,self.maxINT)
+#             self.sldr_max.SetRange(self.minINT,self.maxINT)
+#         except:
+#             pass
+#         self.minCURRENT = self.minINT
+#         self.maxCURRENT = self.maxINT
+#         if self.maxCURRENT > self.maxINT:
+#             self.maxCURRENT = self.maxINT
+#         self.setContrast()    
+# 
+#     def onContrastRange(self,event):
+#     
+#         newMIN = int(self.entr_min.GetValue())
+#         newMAX = int(self.entr_max.GetValue())
+#         
+#         self.minCURRENT = newMIN
+#         self.maxCURRENT = newMAX
+# 
+#         self.sldr_min.SetRange(newMIN,newMAX)
+#         self.sldr_max.SetRange(newMIN,newMAX)
+#         
+#         self.setContrast()
+#             
+# 
+#     def onSlider(self,event):
+# 
+#         self.minCURRENT = self.sldr_min.GetValue()
+#         self.maxCURRENT = self.sldr_max.GetValue()
+# 
+#         ## Create safety to keep min. below max.
+#         ## mkak 2016.10.20
+# 
+#         self.setContrast()
+# 
+#     def setContrast(self):
+#         
+#         self.sldr_min.SetValue(self.minCURRENT)
+#         self.sldr_max.SetValue(self.maxCURRENT)
+# 
+#         self.plot2Dframe.conf.auto_intensity = False        
+#         self.plot2Dframe.conf.int_lo['int'] = self.minCURRENT
+#         self.plot2Dframe.conf.int_hi['int'] = self.maxCURRENT
+#         
+#         self.plot2Dframe.redraw()
+#             
+#         self.entr_min.SetLabel(str(self.minCURRENT))
+#         self.entr_max.SetLabel(str(self.maxCURRENT))
+# 
+#     def onFlip(self,event):
+#         '''
+#         Eventually, should just set self.raw_img or self.fli_img - better than this
+#         mkak 2016.10.20
+#         '''
+# 
+#         if self.ch_flp.GetSelection() == 1: # Vertical
+#             self.plot2Dframe.conf.flip_ud = True
+#             self.plot2Dframe.conf.flip_lr = False
+#         elif self.ch_flp.GetSelection() == 2: # Horizontal
+#             self.plot2Dframe.conf.flip_ud = False
+#             self.plot2Dframe.conf.flip_lr = True
+#         elif self.ch_flp.GetSelection() == 3: # both
+#             self.plot2Dframe.conf.flip_ud = True
+#             self.plot2Dframe.conf.flip_lr = True
+#         else: # None
+#             self.plot2Dframe.conf.flip_ud = False
+#             self.plot2Dframe.conf.flip_lr = False
+# 
+#         self.plot2Dframe.redraw()    
+#         
+#     def onScale(self,event):
+#     
+#         if self.ch_scl.GetSelection() == 1: ## log
+#             self.plot2Dframe.conf.log_scale = True
+#         else:  ## linear
+#             self.plot2Dframe.conf.log_scale = False
+#         self.plot2Dframe.redraw()
+#     
+#     def onColor(self,event):
+#         
+#         try:
+#             clr = self.ch_clr.GetString(self.ch_clr.GetSelection())
+#         except:
+#             clr = 'bone'
+#         self.plot2Dframe.conf.cmap['int'] = getattr(colormap, clr)
+#         self.plot2Dframe.display(self.raw_img)
+#         
+#         ## Eventually, should just set self.raw_img or self.fli_img - better than this
+#         ## mkak 2016.10.20
+#         self.onFlip(None)
+#         self.plot2Dframe.redraw()
+#         
+#         
+# 
+# 
+# 
+# 
+# #############################################################
+# ################     IN PROGRESS - END    ###################
+# #############################################################
