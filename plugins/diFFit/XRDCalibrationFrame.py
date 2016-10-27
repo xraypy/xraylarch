@@ -10,6 +10,8 @@ from wxmplot.imagepanel import ImagePanel
 
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
+from scipy import constants
+
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 import numpy as np
@@ -30,10 +32,6 @@ try:
 except ImportError:
     pass
 
-IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-#IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-
-
 class CalibrationPopup(wx.Frame):
 
     def __init__(self,parent):
@@ -44,6 +42,15 @@ class CalibrationPopup(wx.Frame):
         
                 
         self.statusbar = self.CreateStatusBar(2,wx.CAPTION )
+        self.default_cal = 0
+        self.default_det = 0
+        
+        try:
+            self.raw_img = parent.raw_img
+            self.AutoContrast()
+        except:
+            self.raw_img = np.zeros((1024,1024))
+        
         
         self.Init()
         self.Show()
@@ -51,23 +58,11 @@ class CalibrationPopup(wx.Frame):
 #        wx.Window.GetEffectiveMinSize
 #        wx.GetBestSize(self)
 
-        ## Sets some typical defaults specific to GSE 13-ID procedure
-        self.pixel.SetValue('400')     ## binned pixels (2x200um)
-        self.EorL.SetValue('19.0')     ## 19.0 keV
-        self.Distance.SetValue('0.5')  ## 0.5 m
-        self.detslct.SetSelection(22)  ## Perkin detector
-        self.calslct.SetSelection(19)  ## CeO2
         
-        if self.slctDorP.GetSelection() == 0:
-            self.parbox.Hide(self.pixel)
-
-        ## Do not need flags if defaults are set
-        #self.FlagCalibrant = False
-        #self.FlagDetector  = False
-        self.FlagCalibrant = True
-        self.FlagDetector  = True
         
-        self.AutoContrast()
+        self.setDefaults()
+        
+        
         
     def Init(self):    
 
@@ -94,6 +89,24 @@ class CalibrationPopup(wx.Frame):
         self.stepno = 0
         self.checkRANGE()
         self.showDirection()
+
+    def setDefaults(self):
+    
+        ## Sets some typical defaults specific to GSE 13-ID procedure
+        self.pixel.SetValue('400')     ## binned pixels (2x200um)
+        self.EorL.SetValue('19.0')     ## 19.0 keV
+        self.Distance.SetValue('0.5')  ## 0.5 m
+        self.detslct.SetSelection(self.default_det)  ## Perkin detector
+        self.calslct.SetSelection(self.default_cal)  ## CeO2
+        
+        if self.slctDorP.GetSelection() == 0:
+            self.parbox.Hide(self.pixel)
+
+        ## Do not need flags if defaults are set
+        #self.FlagCalibrant = False
+        #self.FlagDetector  = False
+        self.FlagCalibrant = True
+        self.FlagDetector  = True
 
     def DirectionsSizer(self):
 
@@ -144,23 +157,25 @@ class CalibrationPopup(wx.Frame):
         This is where the parameters will be.
         '''
         
-        self.parbox = wx.BoxSizer(wx.VERTICAL)
+        #self.parbox = wx.BoxSizer(wx.VERTICAL)
+        prbx = wx.StaticBox(self.panel,label='PARAMETERS', size=(50, 100))
+        self.parbox = wx.StaticBoxSizer(prbx,wx.VERTICAL)
         
         ###########################
-        ## Calibration starting values
-
-
-        ###################################
-        ###################################        
-        ###################################
         ## Establish lists from pyFAI        
         clbrnts = [] #['None']
         self.dets = [] #['None']
         for key,value in pyFAI.detectors.ALL_DETECTORS.items():
             self.dets.append(key)
+            if key == 'perkin':
+                self.default_det = len(self.dets)-1
         for key,value in pyFAI.calibrant.ALL_CALIBRANTS.items():
             clbrnts.append(key)    
+            if key == 'CeO2':
+                self.default_cal = len(clbrnts)-1
         self.CaliPath = None
+        
+
 
         #####
         ## Calibration Image selection        
@@ -215,18 +230,14 @@ class CalibrationPopup(wx.Frame):
         hbox_cal4.Add(self.EorL,     flag=wx.RIGHT,  border=8)
         self.parbox.Add(hbox_cal4,   flag=wx.BOTTOM, border=8) 
 
-        ## Refine label
-        RefLbl = wx.StaticText(self.panel, label='To be refined...')# ,style=LEFT)
-
-        self.parbox.Add(RefLbl, flag=wx.BOTTOM, border=8) 
-
         ## Distance
         hbox_cal6 = wx.BoxSizer(wx.HORIZONTAL)
+        DstLbl = wx.StaticText(self.panel, label='Estimated detector distance (m):')# ,style=LEFT)
         self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
-        DstLbl = wx.StaticText(self.panel, label='Distance (m):')# ,style=LEFT)
         
+        hbox_cal6.Add(DstLbl,        flag=wx.RIGHT,  border=8)        
         hbox_cal6.Add(self.Distance, flag=wx.RIGHT,  border=8)
-        hbox_cal6.Add(DstLbl,        flag=wx.RIGHT,  border=8)
+        
         self.parbox.Add(hbox_cal6,   flag=wx.BOTTOM, border=8) 
 
 
@@ -297,10 +308,18 @@ class CalibrationPopup(wx.Frame):
         dlg.Destroy()
         
         if read:
+            try:
+                self.raw_img = fabio.open(path).data
+            except:
+                print 'This is not an image openable by fabio.'
+                pass
+            self.plot2Dimg.display(self.raw_img)       
+            self.plot2Dimg.redraw()
+            self.AutoContrast()
+            
             self.calFil.Clear()
             self.calFil.SetValue(os.path.split(path)[-1])
             self.CaliPath = path
-            self.checkOK()
 
     def ImageSizer(self):
         '''
@@ -340,13 +359,6 @@ class CalibrationPopup(wx.Frame):
     
         self.plot2Dimg = ImagePanel(self.panel,size=(300, 300))
         self.plot2Dimg.messenger = self.write_message
-        
-        ## Image opening eventually needs to be its own function
-        ## mkak 2016.10.20
-        if self.parent == None:
-            self.raw_img = fabio.open(IMAGE_AND_PATH).data
-        else:
-            self.raw_img = self.parent.raw_img
 
         self.plot2Dimg.display(self.raw_img)       
 

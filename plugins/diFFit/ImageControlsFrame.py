@@ -31,7 +31,6 @@ class ImageToolboxFrame(wx.Frame):
         self.color = 'bone'
         self.flip = 'vertical'
 
-
         self.Init()
         self.Centre()
         self.Show(True)
@@ -147,7 +146,7 @@ class ImageToolboxFrame(wx.Frame):
         self.minINT = int(np.min(self.plt_img))
         self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
         if self.maxINT == self.minINT:
-            self.minINT = self.minINT-50
+            self.minINT = self.minINT
             self.maxINT = self.minINT+100
         try:
             self.sldr_min.SetRange(self.minINT,self.maxINT)
@@ -252,40 +251,19 @@ class ImageToolboxFrame(wx.Frame):
             self.plot2Dframe.conf.log_scale = True
         else:  ## linear
             self.plot2Dframe.conf.log_scale = False
-    
+        self.plot2Dframe.redraw()
+
     def onColor(self,event):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
+            self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
             self.setColor()
     
     def setColor(self):
         self.plot2Dframe.conf.cmap['int'] = getattr(colormap, self.color)
-        self.plot2Dframe.display(self.plt_img)        
+        self.plot2Dframe.display(self.plt_img)  
+        self.checkFLIPS()
+        self.plot2Dframe.redraw()
         
-
-    def RightSidePanel(self,panel):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot2DframeXRD(panel)
-        btnbox = self.QuickButtons(panel)
-        vbox.Add(self.plot2Dframe,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
-        return vbox
-
-    def QuickButtons(self,panel):
-        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_calib = wx.Button(panel,label='CALIBRATE')
-        self.btn_mask = wx.Button(panel,label='MASK')
-        self.btn_integ = wx.Button(panel,label='INTEGRATE (1D)')
-        
-        self.btn_mask.Bind(wx.EVT_BUTTON,self.onMask)
-        self.btn_calib.Bind(wx.EVT_BUTTON,self.onCalibration)
-        self.btn_integ.Bind(wx.EVT_BUTTON,self.on1DXRD)
-        
-        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_mask, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
-
-        return buttonbox
-
 
     def SetContrast(self):
     
@@ -296,18 +274,6 @@ class ImageToolboxFrame(wx.Frame):
         self.checkFLIPS()
 
         self.plot2Dframe.redraw()
-
-def SetContrast(parent):
-    
-    parent.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
-              (np.min(parent.plt_img),np.max(parent.plt_img)))
-    
-    parent.autoContrast(None)
-    parent.checkFLIPS()
-
-    parent.plot2Dframe.redraw()
-
-        
 
 #############################################################
 ################    IN PROGRESS - START   ###################

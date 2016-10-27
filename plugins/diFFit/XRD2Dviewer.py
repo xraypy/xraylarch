@@ -57,7 +57,7 @@ class Viewer2DXRD(wx.Frame):
 
         ## Default image information
         self.raw_img  = np.zeros((1024,1024))
-        self.plot_img = np.zeros((1024,1024))
+        self.plt_img = np.zeros((1024,1024))
         self.mask = np.ones((1024,1024))
         self.bkgd = np.zeros((1024,1024))
         self.bkgd_scale = 1
@@ -316,7 +316,7 @@ class Viewer2DXRD(wx.Frame):
         self.write_message(bkgd_msg)
         
         self.calcIMAGE()
-        #self.plot2D.display(self.plot_img)
+        #self.plot2D.display(self.plt_img)
         self.setColor()
         self.checkFLIPS()
         self.plot2D.redraw()      
@@ -342,17 +342,17 @@ class Viewer2DXRD(wx.Frame):
             self.use_mask = False
 
         self.calcIMAGE()
-        #self.plot2D.display(self.plot_img)
+        #self.plot2D.display(self.plt_img)
         self.setColor()
         self.checkFLIPS()
         self.plot2D.redraw()
 
     def autoContrast(self,event):
 
-        self.minINT = int(np.min(self.plot_img))
-        self.maxINT = int(np.max(self.plot_img)/15) # /15 scales image to viewable 
+        self.minINT = int(np.min(self.plt_img))
+        self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
         if self.maxINT == self.minINT:
-            self.minINT = self.minINT-50
+            self.minINT = self.minINT
             self.maxINT = self.minINT+100
         try:
             self.sldr_min.SetRange(self.minINT,self.maxINT)
@@ -445,7 +445,7 @@ class Viewer2DXRD(wx.Frame):
     
     def setColor(self):
         self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
-        self.plot2D.display(self.plot_img)        
+        self.plot2D.display(self.plt_img)        
         
 
     def RightSidePanel(self,panel):
@@ -458,18 +458,21 @@ class Viewer2DXRD(wx.Frame):
 
     def QuickButtons(self,panel):
         buttonbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_img = wx.Button(panel,label='LOAD IMAGE')
         self.btn_calib = wx.Button(panel,label='CALIBRATE')
         self.btn_mask = wx.Button(panel,label='MASK')
         self.btn_integ = wx.Button(panel,label='INTEGRATE (1D)')
         
+        self.btn_img.Bind(wx.EVT_BUTTON,self.onLoadImage)
         self.btn_mask.Bind(wx.EVT_BUTTON,self.onMask)
         self.btn_calib.Bind(wx.EVT_BUTTON,self.onCalibration)
         self.btn_integ.Bind(wx.EVT_BUTTON,self.on1DXRD)
         
+        buttonbox.Add(self.btn_img, flag=wx.ALL, border=8)
         buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
         buttonbox.Add(self.btn_mask, flag=wx.ALL, border=8)
         buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
-
+        
         return buttonbox
 
     def on1DXRD(self,event):
@@ -481,19 +484,19 @@ class Viewer2DXRD(wx.Frame):
 
         if self.use_mask is True:
             if self.use_bkgd is True:
-                self.plot_img = self.raw_img * self.mask - self.bkgd * self.bkgd_scale
+                self.plt_img = self.raw_img * self.mask - self.bkgd * self.bkgd_scale
             else:
-                self.plot_img = self.raw_img * self.mask
+                self.plt_img = self.raw_img * self.mask
         else:
             if self.use_bkgd is True:
-                self.plot_img = self.raw_img - self.bkgd * self.bkgd_scale
+                self.plt_img = self.raw_img - self.bkgd * self.bkgd_scale
             else:
-                self.plot_img = self.raw_img
+                self.plt_img = self.raw_img
         
         ## Update image control panel if there.
         try:
             self.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
-                         (np.min(self.plot_img),np.max(self.plot_img))) 
+                         (np.min(self.plt_img),np.max(self.plt_img))) 
         except:
             pass
 
@@ -554,9 +557,9 @@ class Viewer2DXRD(wx.Frame):
         self.plot2D.messenger = self.write_message
 
         ## eventually, don't need this
-        self.openIMAGE()           
+        #self.openIMAGE()           
 
-        self.plot2D.display(self.plot_img)
+        self.plot2D.display(self.plt_img)
         self.plot2Ddefaults()
         
         
