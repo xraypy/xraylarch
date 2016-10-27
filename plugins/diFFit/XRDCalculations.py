@@ -990,3 +990,6 @@ def fit_with_minimization():
     PKshift  = result.params['pk_shift'].value
         
     return
+
+def registerLarchPlugin():
+    return ('_diFFit', {})

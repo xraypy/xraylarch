@@ -7,7 +7,10 @@ import os
 
 import wx
 from wxmplot.imagepanel import ImagePanel
-from ImageControlsFrame import ImageToolboxFrame,SetContrast
+
+from larch_plugins.diFFit import ImageToolboxFrame
+#from ImageControlsFrame import ImageToolboxFrame,SetContrast
+
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
@@ -426,6 +429,9 @@ class DebugViewer(diFFit_XRDcal):
         self.createApp()
         #self.ShowInspectionTool()
         return True
+
+def registerLarchPlugin():
+    return ('_diFFit', {})
 
 if __name__ == '__main__':
     diFFit_XRDcal().run()

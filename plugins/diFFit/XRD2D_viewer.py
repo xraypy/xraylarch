@@ -29,10 +29,10 @@ from wxmplot.imagepanel import ImagePanel
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 
-from ImageControlsFrame import ImageToolboxFrame
-from XRDCalibrationFrame import CalibrationPopup
-
-
+from larch_plugins.diFFit import ImageToolboxFrame
+from larch_plugins.diFFit import CalibrationPopup
+#from ImageControlsFrame import ImageToolboxFrame
+#from XRDCalibrationFrame import CalibrationPopup
 
 
 #IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
@@ -80,7 +80,7 @@ class Viewer2DXRD(wx.Frame):
 
         menubar = wx.MenuBar()
         
-        ## diFFit2D
+        ## diFFit2DXRD
         diFFitMenu = wx.Menu()
         
         dm_open = wx.MenuItem(diFFitMenu, -1, '&Open diffration image')
@@ -96,7 +96,7 @@ class Viewer2DXRD(wx.Frame):
         diFFitMenu.AppendItem(dm_lset)
         diFFitMenu.AppendItem(dm_aana)
         
-        menubar.Append(diFFitMenu, '&diFFit2D')
+        menubar.Append(diFFitMenu, '&diFFit2DXRD')
 
         ## Process
         ProcessMenu = wx.Menu()
@@ -638,7 +638,7 @@ class MaskToolsPopup(wx.Dialog):
         print 'This will trigger the saving of a mask.'
 
       
-class diFFit2D(wx.App):
+class diFFit2DXRD(wx.App):
     def __init__(self):
         wx.App.__init__(self)
 
@@ -654,9 +654,9 @@ class diFFit2D(wx.App):
         self.createApp()
         return True
 
-class DebugViewer(diFFit2D): #, wx.lib.mixins.inspection.InspectionMixin):
+class DebugViewer(diFFit2DXRD): #, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
-        diFFit2D.__init__(self, **kws)
+        diFFit2DXRD.__init__(self, **kws)
 
     def OnInit(self):
         #self.Init()
@@ -664,5 +664,16 @@ class DebugViewer(diFFit2D): #, wx.lib.mixins.inspection.InspectionMixin):
         #self.ShowInspectionTool()
         return True
 
+def initializeLarchPlugin(_larch=None):
+    """add diFFit2D to _sys.gui_apps """
+    if _larch is not None:
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['XRD2D_viewer'] = ('2D XRD Viewer', diFFit2DXRD)
+
+def registerLarchPlugin():
+    return ('_diFFit', {})
+
 if __name__ == '__main__':
-    diFFit2D().run()
+    diFFit2DXRD().run()
