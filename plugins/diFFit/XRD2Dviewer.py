@@ -31,7 +31,8 @@ except ImportError:
 from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN
+from larch_plugins.io import tifffile
+from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup,CalibrationChoice
 
@@ -80,7 +81,7 @@ class Viewer2DXRD(wx.Frame):
         self.Show(True)
 
     def write_message(self, s, panel=0):
-        """write a message to the Status Bar"""
+        '''write a message to the Status Bar'''
         self.SetStatusText(s, panel)
 
 
@@ -95,7 +96,7 @@ class Viewer2DXRD(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-        MenuItem(self, diFFitMenu, 'Sa&ve image to file', '', None)
+        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
         MenuItem(self, diFFitMenu, '&Save settings', '', None)
         MenuItem(self, diFFitMenu, '&Load settings', '', None)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
@@ -545,10 +546,38 @@ class Viewer2DXRD(wx.Frame):
         self.checkIMAGE()
         self.calcIMAGE()
 
+    def saveIMAGE(self,event):
+        wildcards = 'XRD image (*.tiff)|*.tiff|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, 'Save image as...',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+
+        path, save = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            save = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if save:
+            
+            tifffile.imsave(path,self.plt_img)
+
     def on1DXRD(self,event):
-        print 'Not yet functioning.... will eventually integrate.'
-        print '\t Needs calibration and mask and background checks...'
-        print
+        wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, 'Save file as...',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+
+        path, save = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            save = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if save:
+            self.data1D = integrate_xrd(self.plt_img,steps=5001,ai = self.ai,file=path,verbose=True)
 
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -572,6 +601,7 @@ class Viewer2DXRD(wx.Frame):
 
             try:
                 self.ai = pyFAI.load(path)
+                print 'Loading calibration file: %s' % path
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
                 pass
