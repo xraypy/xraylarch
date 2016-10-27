@@ -29,10 +29,10 @@ from wxmplot.imagepanel import ImagePanel
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 
-from ImageControlsFrame import ImageToolboxFrame
-from XRDCalibrationFrame import CalibrationPopup
-
-
+from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+#from ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
+#from XRDCalibrationFrame import CalibrationPopup
 
 
 #IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'

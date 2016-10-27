@@ -7,7 +7,8 @@ import os
 
 import wx
 from wxmplot.imagepanel import ImagePanel
-from ImageControlsFrame import ImageToolboxFrame,SetContrast
+#from ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
