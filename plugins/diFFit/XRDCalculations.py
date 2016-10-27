@@ -998,4 +998,3 @@ def fit_with_minimization():
 
 def registerLarchPlugin():
     return ('_diFFit', {})
-

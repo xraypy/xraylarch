@@ -442,8 +442,5 @@ class DebugViewer(diFFit_XRDcal):
         #self.ShowInspectionTool()
         return True
 
-def registerLarchPlugin():
-    return ('_diFFit', {})
-
 if __name__ == '__main__':
     diFFit_XRDcal().run()
