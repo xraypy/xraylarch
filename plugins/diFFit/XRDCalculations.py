@@ -24,8 +24,13 @@ import yaml
 import time
 
 import numpy as np
+from scipy import optimize
+from scipy import signal
+
 import matplotlib.pyplot as plt
 import pylab as plb
+
+from lmfit import minimize, Parameters, Parameter, report_fit
 
 HAS_XRAYUTIL = False
 try:
@@ -33,7 +38,7 @@ try:
     HAS_XRAYUTIL = True
 except ImportError:
     pass
-    
+
 HAS_fabio = False
 try:
     import fabio
@@ -50,10 +55,6 @@ try:
 except ImportError:
     pass
 
-from scipy import optimize
-from scipy import signal
-
-from lmfit import minimize, Parameters, Parameter, report_fit
 
 ##########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 

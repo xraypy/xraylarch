@@ -4,17 +4,14 @@ popup for 2D XRD calibration
 
 '''
 import os
+import numpy as np
+from scipy import constants
 
 import wx
+
 from wxmplot.imagepanel import ImagePanel
 
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-
-from scipy import constants
-
-import matplotlib.pyplot as plt
-import matplotlib.cm as colormap
-import numpy as np
 
 HAS_pyFAI = False
 try:
@@ -31,6 +28,8 @@ try:
     HAS_fabio = True
 except ImportError:
     pass
+
+###################################
 
 class CalibrationPopup(wx.Frame):
 

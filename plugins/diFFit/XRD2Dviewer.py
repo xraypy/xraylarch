@@ -4,20 +4,22 @@ GUI for displaying 2D XRD images
 
 '''
 
-VERSION = '0 (18-October-2016)'
-
-# Use the wxPython backend of matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.cm as colormap
-import matplotlib       
-matplotlib.use('WXAgg')
-
 import os
-import wx
-
-# import h5py
 import numpy as np
 from scipy import constants
+
+#import h5py
+import matplotlib.cm as colormap
+
+import wx
+
+from wxmplot.imagepanel import ImagePanel
+from wxutils import MenuItem
+
+from larch_plugins.io import tifffile
+from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
+from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup,CalibrationChoice
 
 HAS_pyFAI = False
 try:
@@ -27,18 +29,14 @@ try:
     HAS_pyFAI = True
 except ImportError:
     pass
-    
-from wxmplot.imagepanel import ImagePanel
-from wxutils import MenuItem
 
-from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup,CalibrationChoice
 
+###################################
+
+VERSION = '0 (18-October-2016)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
-IMAGE_AND_PATH = '/Users/koker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
-#IMAGE_AND_PATH = '/Users/margaretkoker/Data/XRMMappingCode/Search_and_Match/exampleDIFF.tif'
+
+###################################
 
 class Viewer2DXRD(wx.Frame):
     '''
@@ -160,7 +158,7 @@ class Viewer2DXRD(wx.Frame):
         hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
         self.txt_clr = wx.StaticText(self.panel, label='COLOR')
         colors = []
-        for key in plt.cm.datad:
+        for key in colormap.datad:
             if not key.endswith('_r'):
                 colors.append(key)
         self.ch_clr = wx.Choice(self.panel,choices=colors)

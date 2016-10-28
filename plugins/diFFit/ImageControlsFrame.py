@@ -3,11 +3,11 @@
 popup frame for 2D XRD image control
 
 '''
-import wx
-import matplotlib.pyplot as plt
-import matplotlib.cm as colormap
-
 import numpy as np
+import matplotlib.cm as colormap
+import wx
+
+###################################
 
 class ImageToolboxFrame(wx.Frame):
 
@@ -45,7 +45,7 @@ class ImageToolboxFrame(wx.Frame):
         hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
         self.txt_clr = wx.StaticText(self.panel, label='COLOR')
         colors = []
-        for key in plt.cm.datad:
+        for key in colormap.datad:
             if not key.endswith('_r'):
                 colors.append(key)
         self.ch_clr = wx.Choice(self.panel,choices=colors)
@@ -191,8 +191,11 @@ class ImageToolboxFrame(wx.Frame):
         except:
             pass
             
-        self.sldr_min.SetValue(self.minCURRENT)
-        self.sldr_max.SetValue(self.maxCURRENT)
+        try:
+            self.sldr_min.SetValue(self.minCURRENT)
+            self.sldr_max.SetValue(self.maxCURRENT)
+        except:
+            pass
 
     def onSlider(self,event):
 
