@@ -1,4 +1,4 @@
 from .XRD2Dviewer import diFFit2D
 from .ImageControlsFrame import ImageToolboxFrame
 from .XRDCalculations import fabioOPEN,integrate_xrd
-from .XRDCalibrationFrame import CalibrationPopup,CalibrationChoice
+from .XRDCalibrationFrame import CalibrationPopup

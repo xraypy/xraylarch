@@ -1,6 +1,6 @@
 #!/usr/bin/env pythonw
 '''
-GUI for displaying 2D XRD images
+GUI for displaying 1D XRD images
 
 '''
 
@@ -38,12 +38,12 @@ SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
 
-class Viewer2DXRD(wx.Frame):
+class Viewer1DXRD(wx.Frame):
     '''
-    Frame for housing all 2D XRD viewer widgets
+    Frame for housing all 1D XRD viewer widgets
     '''
     def __init__(self, *args, **kw):
-        label = 'diFFit.py : 2D XRD Viewer'
+        label = 'diFFit.py : 1D XRD Viewer'
         wx.Frame.__init__(self, None, -1,title=label, size=(800, 600))
         
         self.SetMinSize((700,500))
@@ -73,8 +73,8 @@ class Viewer2DXRD(wx.Frame):
         
         self.ai = None
         
-        self.XRD2DMenuBar()
-        self.Panel2DViewer()
+        self.XRD1DMenuBar()
+        self.Panel1DViewer()
         
         self.Centre()
         self.Show(True)
@@ -86,12 +86,12 @@ class Viewer2DXRD(wx.Frame):
 
 ##############################################
 #### PANEL DEFINITIONS
-    def XRD2DMenuBar(self):
+    def XRD1DMenuBar(self):
 
         menubar = wx.MenuBar()
         
         ###########################
-        ## diFFit2D
+        ## diFFit1D
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
@@ -100,7 +100,7 @@ class Viewer2DXRD(wx.Frame):
         MenuItem(self, diFFitMenu, '&Load settings', '', None)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
        
-        menubar.Append(diFFitMenu, '&diFFit2D')
+        menubar.Append(diFFitMenu, '&diFFit1D')
 
         ###########################
         ## Process
@@ -130,20 +130,20 @@ class Viewer2DXRD(wx.Frame):
         ## Create Menu Bar
         self.SetMenuBar(menubar)
 
-    def Panel2DViewer(self):
+    def Panel1DViewer(self):
         '''
-        Frame for housing all 2D XRD viewer widgets
+        Frame for housing all 1D XRD viewer widgets
         '''
         self.panel = wx.Panel(self)
 
         vistools = self.VisualToolbox(self.panel)
         rightside = self.RightSidePanel(self.panel)        
 
-        panel2D = wx.BoxSizer(wx.HORIZONTAL)
-        panel2D.Add(vistools,flag=wx.ALL,border=10)
-        panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(vistools,flag=wx.ALL,border=10)
+        panel1D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
 
-        self.panel.SetSizer(panel2D)
+        self.panel.SetSizer(panel1D)
     
     def VisualToolbox(self,panel):
         '''
@@ -297,9 +297,9 @@ class Viewer2DXRD(wx.Frame):
 
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot2DXRD(panel)
+        self.plot1DXRD(panel)
         btnbox = self.QuickButtons(panel)
-        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
 
@@ -337,9 +337,8 @@ class Viewer2DXRD(wx.Frame):
         self.countPIXELS()
 
         ## Enables mask checkbox.
-        if self.msk_pxls == 0 or self.msk_pxls == self.img_pxls:
+        if self.msk_pxls == 0:
             self.ch_msk.Disable()
-            self.mask = np.ones(self.raw_img.shape)
         else:
             self.ch_msk.Enable()
         
@@ -375,7 +374,7 @@ class Viewer2DXRD(wx.Frame):
                 self.plt_img = self.flp_img - self.bkgd * self.bkgd_scale
             else:
                 self.plt_img = self.flp_img
-        self.plot2D.display(self.plt_img)
+        self.plot1D.display(self.plt_img)
 
         ## Update image control panel if there.
         try:
@@ -384,17 +383,21 @@ class Viewer2DXRD(wx.Frame):
         except:
             pass
 
-    def plot2DXRD(self,panel):
+    def plot1DXRD(self,panel):
     
-        self.plot2D = ImagePanel(panel,size=(500, 500))
-        self.plot2D.messenger = self.write_message
-        self.plot2D.display(self.plt_img)
+        self.plot1D = ImagePanel(panel,size=(500, 500))
+        self.plot1D.messenger = self.write_message
+
+        ## eventually, don't need this
+        #self.openIMAGE()           
+
+        self.plot1D.display(self.plt_img)
 
         self.setColor()
         self.autoContrast(None)
         self.checkFLIPS()
 
-        self.plot2D.redraw()
+        self.plot1D.redraw()
 
     def onBkgdScale(self,event):
         
@@ -402,9 +405,10 @@ class Viewer2DXRD(wx.Frame):
         self.entr_scale.SetValue(str(self.bkgd_scale))
         
         self.calcIMAGE()
+        #self.plot1D.display(self.plt_img)
         self.setColor()
         self.checkFLIPS()
-        self.plot2D.redraw()      
+        self.plot1D.redraw()      
 
     def onChangeBkgdScale(self,event):
 
@@ -447,6 +451,7 @@ class Viewer2DXRD(wx.Frame):
             
 
     def onSlider(self,event):
+
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
@@ -456,14 +461,15 @@ class Viewer2DXRD(wx.Frame):
         self.setContrast()
 
     def setContrast(self):
+        
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
 
-        self.plot2D.conf.auto_intensity = False        
-        self.plot2D.conf.int_lo['int'] = self.minCURRENT
-        self.plot2D.conf.int_hi['int'] = self.maxCURRENT
+        self.plot1D.conf.auto_intensity = False        
+        self.plot1D.conf.int_lo['int'] = self.minCURRENT
+        self.plot1D.conf.int_hi['int'] = self.maxCURRENT
         
-        self.plot2D.redraw()
+        self.plot1D.redraw()
             
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
@@ -473,6 +479,7 @@ class Viewer2DXRD(wx.Frame):
         Eventually, should just set self.raw_img or self.fli_img - better than this
         mkak 2016.10.20
         '''
+ 
         self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
         self.checkFLIPS()
         self.calcIMAGE()
@@ -488,13 +495,26 @@ class Viewer2DXRD(wx.Frame):
             self.flp_img = self.raw_img[::-1,::-1]
         else: # None
             self.flp_img = self.raw_img
+
+#         if self.flip == 'vertical': # Vertical
+#             self.plot1D.conf.flip_ud = True
+#             self.plot1D.conf.flip_lr = False
+#         elif self.flip == 'horizontal': # Horizontal
+#             self.plot1D.conf.flip_ud = False
+#             self.plot1D.conf.flip_lr = True
+#         elif self.flip == 'both': # both
+#             self.plot1D.conf.flip_ud = True
+#             self.plot1D.conf.flip_lr = True
+#         else: # None
+#             self.plot1D.conf.flip_ud = False
+#             self.plot1D.conf.flip_lr = False
                 
     def onScale(self,event):
         if self.ch_scl.GetSelection() == 1: ## log
-            self.plot2D.conf.log_scale = True
+            self.plot1D.conf.log_scale = True
         else:  ## linear
-            self.plot2D.conf.log_scale = False
-        self.plot2D.redraw()
+            self.plot1D.conf.log_scale = False
+        self.plot1D.redraw()
     
     def onColor(self,event):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
@@ -502,15 +522,15 @@ class Viewer2DXRD(wx.Frame):
             self.setColor()
     
     def setColor(self):
-        self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
-        self.plot2D.display(self.plt_img)
+        self.plot1D.conf.cmap['int'] = getattr(colormap, self.color)
+        self.plot1D.display(self.plt_img)
 
 ##############################################
 #### XRD MANIPULATION FUNTIONS 
     def loadIMAGE(self,event):
     
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose 2D XRD image',
+        dlg = wx.FileDialog(self, message='Choose 1D XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
@@ -522,7 +542,7 @@ class Viewer2DXRD(wx.Frame):
         
         if read:
             self.openIMAGE(path)
-            self.plot2D.display(self.plt_img)       
+            self.plot1D.display(self.plt_img)       
             self.autoContrast(None)
 
             str_msg = 'Displaying image: %s' % os.path.split(path)[-1]
@@ -570,7 +590,6 @@ class Viewer2DXRD(wx.Frame):
 ##############################################
 #### CALIBRATION FUNCTIONS
     def Calibrate(self,event):
-
         CalibrationPopup(self)
 
     def openPONI(self,event):
@@ -692,7 +711,7 @@ class Viewer2DXRD(wx.Frame):
 
         self.setColor()
         self.checkFLIPS()
-        self.plot2D.redraw()
+        self.plot1D.redraw()
 
 
 
@@ -791,7 +810,7 @@ class MaskToolsPopup(wx.Dialog):
 
 
       
-class diFFit2D(wx.App):
+class diFFit1D(wx.App):
     def __init__(self):
         wx.App.__init__(self)
 
@@ -799,7 +818,7 @@ class diFFit2D(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = Viewer2DXRD()
+        frame = Viewer1DXRD()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -810,9 +829,9 @@ class diFFit2D(wx.App):
 def registerLarchPlugin():
     return ('_diFFit', {})
 
-class DebugViewer(diFFit2D):
+class DebugViewer(diFFit1D):
     def __init__(self, **kws):
-        diFFit2D.__init__(self, **kws)
+        diFFit1D.__init__(self, **kws)
 
     def OnInit(self):
         #self.Init()
@@ -821,4 +840,4 @@ class DebugViewer(diFFit2D):
         return True
 
 if __name__ == '__main__':
-    diFFit2D().run()
+    diFFit1D().run()
