@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Viewer App 2D XRD data
+GUI to calibrate 2D XRD image
 """
 import os
 

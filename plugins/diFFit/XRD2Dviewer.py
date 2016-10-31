@@ -110,6 +110,7 @@ class Viewer2DXRD(wx.Frame):
         MenuItem(self, ProcessMenu, '&Load mask file', '', self.openMask)
         MenuItem(self, ProcessMenu, '&Remove current mask', '', self.clearMask)
         MenuItem(self, ProcessMenu, '&Create mask', '', self.createMask)
+        ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
         MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
         
