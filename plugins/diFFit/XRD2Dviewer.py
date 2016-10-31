@@ -20,6 +20,7 @@ from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
+from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 
 HAS_pyFAI = False
 try:
@@ -107,7 +108,7 @@ class Viewer2DXRD(wx.Frame):
         ProcessMenu = wx.Menu()
         
         MenuItem(self, ProcessMenu, '&Load mask file', '', self.openMask)
-        MenuItem(self, ProcessMenu, '&Remove current mask', '', None)
+        MenuItem(self, ProcessMenu, '&Remove current mask', '', self.clearMask)
         MenuItem(self, ProcessMenu, '&Create mask', '', self.createMask)
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
         MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
@@ -672,7 +673,9 @@ class Viewer2DXRD(wx.Frame):
             self.checkIMAGE()
 
     def createMask(self,event):
-        MaskToolsPopup(self)        
+        
+        MaskToolsPopup(self)
+        print 'Popup to create mask!'
 
     def clearMask(self,event):
         self.mask = np.zeros(self.raw_img.shape)
@@ -694,103 +697,7 @@ class Viewer2DXRD(wx.Frame):
         self.checkFLIPS()
         self.plot2D.redraw()
 
-
-
-class MaskToolsPopup(wx.Dialog):
-
-    def __init__(self,parent):
-    
-        dialog = wx.Dialog.__init__(self, parent, title='Mask Tools',
-                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-                                    size=(400,350)) ## width x height
-        
-        self.panel = wx.Panel(self)
-        self.parent = parent
-        
-        self.Init()
-        
-
-    def Init(self):
-
-        self.DrawNewPanel()
-        self.OKpanel()
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        vbox.Add(self.newbox, flag=wx.ALL|wx.EXPAND, border=8)
-        vbox.Add(self.OKsizer, flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
-
-        ###########################
-        ## Pack all together in self.panel
-        self.panel.SetSizer(vbox) 
-
-
-    def DrawNewPanel(self):
-    
-        ###########################
-        ## Directions
-        nwbx = wx.StaticBox(self.panel,label='CREATE NEW MASK', size=(100, 50))
-        self.newbox = wx.StaticBoxSizer(nwbx,wx.VERTICAL)
-
-        ###########################
-        ## Drawing tools
-        hbox_shp = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_shp = wx.StaticText(self.panel, label='DRAWING SHAPE')
-        shapes = ['square','circle','pixel','polygon']
-
-        self.ch_shp = wx.Choice(self.panel,choices=shapes)
-        self.ch_shp.SetStringSelection(self.parent.color)
-
-        self.ch_shp.Bind(wx.EVT_CHOICE,self.onShape)
-    
-        hbox_shp.Add(self.txt_shp, flag=wx.RIGHT, border=8)
-        hbox_shp.Add(self.ch_shp, flag=wx.EXPAND, border=8)
-        self.newbox.Add(hbox_shp, flag=wx.ALL|wx.EXPAND, border=10)
-    
-        ###########################
-        ## Mask Buttons
-        vbox_msk = wx.BoxSizer(wx.VERTICAL)
-        
-        self.btn_msk1 = wx.Button(self.panel,label='CLEAR MASK')
-        self.btn_msk2 = wx.Button(self.panel,label='SAVE MASK')
-
-        self.btn_msk1.Bind(wx.EVT_BUTTON,self.onClearMask)
-        self.btn_msk2.Bind(wx.EVT_BUTTON,self.onSaveMask)
-
-        vbox_msk.Add(self.btn_msk1, flag=wx.ALL|wx.EXPAND, border=8)
-        vbox_msk.Add(self.btn_msk2, flag=wx.ALL|wx.EXPAND, border=8)
-
-        self.newbox.Add(vbox_msk, flag=wx.ALL|wx.EXPAND, border=10)
-
-    def OKpanel(self):
-        
-        ###########################
-        ## OK - CANCEL
-        self.OKsizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        okBtn  = wx.Button(self.panel, wx.ID_OK     )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
-
-        self.OKsizer.Add(canBtn,  flag=wx.RIGHT, border=5)
-        self.OKsizer.Add(okBtn,   flag=wx.RIGHT, border=5)
-        
-
-    def onShape(self, event):
-    
-        print 'The shape you chose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection())
-    
-    def ClearMask(self, event):
-        
-        print 'Clearing the mask...'
-
-    def onSaveMask(self, event):
-
-        print 'This will trigger the saving of a mask.'
-
-
-
-
-      
+     
 class diFFit2D(wx.App):
     def __init__(self):
         wx.App.__init__(self)
