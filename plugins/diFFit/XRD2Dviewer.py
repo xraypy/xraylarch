@@ -569,12 +569,19 @@ class Viewer2DXRD(wx.Frame):
 #         
 #         if save:
 #             self.data1D = integrate_xrd(self.plt_img,steps=5001,ai = self.ai,file=path,verbose=True)
-        print 'testing dialog!'
-        myDlg = Calc1DPopup(self.plt_img)
-        if myDlg.ShowModal() == wx.ID_OK:
-            read        = True
+        
+        if self.ai is None:
+            print 'Cannot calculate 1D XRD without calibration file.'
+        else:
+            if self.msk_pxls == 0:
+                mask= None
+            else:
+                mask=self.mask
+            myDlg = Calc1DPopup(self.plt_img,self.ai,mask=mask)
+            if myDlg.ShowModal() == wx.ID_OK:
+                read = True
 
-        myDlg.Destroy()
+            myDlg.Destroy()
 
 ##############################################
 #### CALIBRATION FUNCTIONS

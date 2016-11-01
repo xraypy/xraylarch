@@ -787,11 +787,11 @@ class MaskToolsPopup(wx.Dialog):
         ## OK - CANCEL
         self.OKsizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        okBtn  = wx.Button(self.panel, wx.ID_OK     )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+        btn_ok  = wx.Button(self.panel, wx.ID_OK     )
+        btn_cncl = wx.Button(self.panel, wx.ID_CANCEL )
 
-        self.OKsizer.Add(canBtn,  flag=wx.RIGHT, border=5)
-        self.OKsizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+        self.OKsizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
+        self.OKsizer.Add(btn_ok,   flag=wx.RIGHT, border=5)
         
 
     def onShape(self, event):
@@ -809,72 +809,68 @@ class MaskToolsPopup(wx.Dialog):
 class Calc1DPopup(wx.Dialog):
     ### NOT YET WRITTEN _ THIS IS JUST A STAND IN
     ## mkak 2016.11.01
-    def __init__(self,xrd2Ddata):
+    def __init__(self,xrd2Ddata,ai,mask=None):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Title')
+        dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options')
         
-        panel = wx.Panel(self)
-
-        fldrTtl  = wx.StaticText(panel,  label='XRM Map Folder:'      )
-        fldrBtn  = wx.Button(panel,   label='Browse...'            )
-        chTtl    = wx.StaticText(panel,  label='Include data for...'  )
-        xrfCkBx  = wx.CheckBox(panel, label='XRF'   )
-        xrdCkBx  = wx.CheckBox(panel, label='XRD'                 )
+       
+        self.mask = mask
+        self.steps = 5001
+        self.data2D = xrd2Ddata
+        self.ai = ai
         
-        self.Fldr = wx.TextCtrl(panel, size=(300, 25))
 
-        hlpBtn = wx.Button(panel, wx.ID_HELP   )
-        okBtn  = wx.Button(panel, wx.ID_OK     )
-        canBtn = wx.Button(panel, wx.ID_CANCEL )
-        self.FindWindowById(wx.ID_OK).Disable()
+        self.Init()
+        
 
-        fldrBtn.Bind(wx.EVT_BUTTON, self.onBROWSE)
-        xrfCkBx.Bind(wx.EVT_CHECKBOX, None)
-        xrdCkBx.Bind(wx.EVT_CHECKBOX, None)
+    def Init(self):
+    
+        self.panel = wx.Panel(self)
 
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.ch_mask = wx.CheckBox(self.panel, label='APPLY CURRENT MASK?')
+        self.ch_mask.Bind(wx.EVT_CHECKBOX,None)
+        mainsizer.Add(self.ch_mask,flag=wx.ALL,border=8)
+        if self.mask == None:
+            self.ch_mask.Disable()
+
+
+        btn_hlp = wx.Button(self.panel, wx.ID_HELP   )
+        btn_ok  = wx.Button(self.panel, wx.ID_OK     )
+        btn_cncl = wx.Button(self.panel, wx.ID_CANCEL )
+        
+        #self.FindWindowById(wx.ID_OK).Disable()
+        btn_ok.Bind(wx.EVT_BUTTON,self.onOKAY)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
-        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
-        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
-        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        sizer.Add((-1, 10))
-        sizer.Add(fldrTtl,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(self.Fldr, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
-        sizer.Add(fldrBtn,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add((-1, 15))
-        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrfCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrdCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add((-1, 15))
-        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT,                    border=5)
-
-        panel.SetSizer(sizer) 
+        minisizer.Add(btn_hlp,  flag=wx.RIGHT, border=5)
+        minisizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
+        minisizer.Add(btn_ok,   flag=wx.RIGHT, border=5)
         
-        ## Set defaults
-        xrfCkBx.SetValue(True)
+        mainsizer.Add(minisizer, flag=wx.ALL, border=8)
+        
+        self.panel.SetSizer(mainsizer)
 
-    def onBROWSE(self, event): 
-        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=os.getcwd(),
-                           style=wx.FD_OPEN)
+    def onOKAY(self,event):
+        wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, 'Save file as...',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
-        path, read = None, False
+        path, save = None, False
         if dlg.ShowModal() == wx.ID_OK:
-            read = True
+            save = True
             path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
         
-        if read:
-            self.Fldr.Clear()
-            self.Fldr.SetValue(str(path))
-            #self.Fldr.AppendText(str(path))
-            self.FldrPath = path
-
+        if save:
+            self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,file=path,verbose=True)
         
+#        self.Destroy()
+
 
 
       
