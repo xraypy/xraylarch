@@ -183,7 +183,7 @@ class ImageToolboxFrame(wx.Frame):
         self.minINT = int(np.min(self.plt_img))
         self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
         if self.maxINT == self.minINT:
-            self.minINT = self.minINT-50
+            self.minINT = self.minINT
             self.maxINT = self.minINT+100
         try:
             self.sldr_min.SetRange(self.minINT,self.maxINT)

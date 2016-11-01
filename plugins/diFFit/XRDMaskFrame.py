@@ -36,16 +36,17 @@ class MaskToolsPopup(wx.Frame):
 
     def __init__(self,parent):
     
-        self.frame = wx.Frame.__init__(self, parent, title='Create mask')#,size=(900,700))
+        self.frame = wx.Frame.__init__(self, parent, title='Create mask',size=(800,600))
         
         self.parent = parent
         self.statusbar = self.CreateStatusBar(2,wx.CAPTION )
 
         try:
             self.raw_img = parent.plt_img ## raw_img or flp_img or plt_img mkak 2016.10.28
-            self.img_fname = 'Image from diFFit2D viewer.'
         except:
-            self.raw_img = np.zeros((1024,1024))
+            self.loadIMAGE(None)
+        
+        self.area_list = []
         
         self.Init()
         self.Show()
@@ -74,7 +75,10 @@ class MaskToolsPopup(wx.Frame):
     def setDefaults(self):
     
         ## Sets some typical defaults specific to GSE 13-ID procedure
-        print 'this is defaults getting set.'
+        for i in range(10):
+            self.area_list.append('area %i' % i)
+        #self.area_list = ['area 1','area 2','area 3','area 4','area 5','area 6','area 7','area 8']
+        self.slct_area.Set(self.area_list)
 
 
     def MainSizer(self):
@@ -89,53 +93,71 @@ class MaskToolsPopup(wx.Frame):
         self.DrawNewSizer()
 
         self.hmain.Add(self.imagebox,proportion=1,flag=wx.ALL|wx.EXPAND, border=10)
-        self.hmain.Add(self.drawbox, flag=wx.ALL, border=10)
-        
-        self.btn_save = wx.Button(self.panel,label='SAVE MASK')
-        self.btn_save.Bind(wx.EVT_BUTTON,self.saveMask)
-        self.hmain.Add(self.btn_save, flag=wx.ALL, border=10)
-        
+        self.hmain.Add(self.toolbox, flag=wx.ALL, border=10)
         
         self.mainbox.Add(self.hmain, flag=wx.ALL|wx.EXPAND, border=10)
 
+
     def DrawNewSizer(self):
     
+        self.toolbox = wx.BoxSizer(wx.VERTICAL)
+        
         ###########################
         ## Directions
         nwbx = wx.StaticBox(self.panel,label='Drawing Tools', size=(100, 50))
-        self.drawbox = wx.StaticBoxSizer(nwbx,wx.VERTICAL)
+        drawbox = wx.StaticBoxSizer(nwbx,wx.VERTICAL)
 
         ###########################
         ## Drawing tools
         hbox_shp = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_shp = wx.StaticText(self.panel, label='SELECTED SHAPE')
-        shapes = ['square','circle','pixel','polygon']
+        self.txt_shp = wx.StaticText(self.panel, label='DRAWING SHAPE')
+        shapes = ['circle','pixel','polygon','square']
 
         self.ch_shp = wx.Choice(self.panel,choices=shapes)
-        self.ch_shp.SetStringSelection(self.parent.color)
 
         self.ch_shp.Bind(wx.EVT_CHOICE,self.ShapeChoice)
     
         hbox_shp.Add(self.txt_shp, flag=wx.RIGHT, border=8)
         hbox_shp.Add(self.ch_shp, flag=wx.EXPAND, border=8)
-        self.drawbox.Add(hbox_shp, flag=wx.ALL|wx.EXPAND, border=10)
-    
+
+        drawbox.Add(hbox_shp, flag=wx.ALL|wx.EXPAND, border=10)
+
         ###########################
-        ## Mask Buttons
-        vbox_msk = wx.BoxSizer(wx.VERTICAL)
+        ## Drawn Areas
+        vbox_areas = wx.BoxSizer(wx.VERTICAL)
+        hbox_areas = wx.BoxSizer(wx.HORIZONTAL)
+        
+        self.slct_area = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130), self.area_list, wx.LB_SINGLE)
+        
+        self.btn_SHWarea = wx.Button(self.panel,label='SHOW')                
+        self.btn_DELarea = wx.Button(self.panel,label='DELETE')
 
-        self.btn_msk1 = wx.Button(self.panel,label='DELETE SELECTED AREA')        
-        self.btn_msk2 = wx.Button(self.panel,label='CLEAR MASK (ALL SHAPES)')
+        self.btn_SHWarea.Bind(wx.EVT_BUTTON,self.showAREA)
+        self.btn_DELarea.Bind(wx.EVT_BUTTON,self.deleteAREA)
+        
+        hbox_areas.Add(self.btn_SHWarea, flag=wx.BOTTOM, border=10)
+        hbox_areas.Add(self.btn_DELarea, flag=wx.BOTTOM, border=10)
 
-        self.btn_msk2.Bind(wx.EVT_BUTTON,self.clearMask)
+        self.btn_clear = wx.Button(self.panel,label='CLEAR ALL')
+       
+        self.btn_clear.Bind(wx.EVT_BUTTON,self.clearMask)
+        
+        vbox_areas.Add(self.slct_area, flag=wx.ALL|wx.EXPAND, border=10)        
+        vbox_areas.Add(hbox_areas, flag=wx.ALL|wx.EXPAND, border=10)        
+        vbox_areas.Add(self.btn_clear, flag=wx.ALL|wx.EXPAND, border=10)        
+        drawbox.Add(vbox_areas, flag=wx.ALL|wx.EXPAND, border=10)
+    
+        self.toolbox.Add(drawbox, flag=wx.ALL, border=10)
+    
+        self.btn_save = wx.Button(self.panel,label='SAVE MASK')
+        self.btn_save.Bind(wx.EVT_BUTTON,self.saveMask)
+        self.toolbox.Add(self.btn_save, flag=wx.ALL, border=10)
 
+    def startIMAGE(self):
+    
+        self.loadIMAGE()
 
-        vbox_msk.Add(self.btn_msk1, flag=wx.ALL|wx.EXPAND, border=8)
-        vbox_msk.Add(self.btn_msk2, flag=wx.ALL|wx.EXPAND, border=8)
-
-        self.drawbox.Add(vbox_msk, flag=wx.ALL|wx.EXPAND, border=10)
-
-    def loadIMAGE(self, event): 
+    def loadIMAGE(self,event): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=os.getcwd(),
@@ -152,14 +174,10 @@ class MaskToolsPopup(wx.Frame):
                 self.raw_img = fabio.open(path).data
             except:
                 print 'This is not an image openable by fabio.'
-                pass
-            self.plot2Dimg.display(self.raw_img)       
-            self.plot2Dimg.redraw()
-            self.AutoContrast()
-
-            self.entr_calimg.Clear()
-            self.entr_calimg.SetValue(path) #os.path.split(path)[-1]
- 
+                self.raw_img = np.zeros((1024,1024))
+        else:
+            print 'No image selected.'
+            self.raw_img = np.zeros((1024,1024))            
 
     def ImageSizer(self):
         '''
@@ -169,12 +187,20 @@ class MaskToolsPopup(wx.Frame):
         
         self.plot2Dimage()
         
+        imagetools = wx.BoxSizer(wx.HORIZONTAL)
+        
         self.btn_image = wx.Button(self.panel,label='IMAGE TOOLS')
+        self.btn_load = wx.Button(self.panel,label='LOAD IMAGE')
 
         self.btn_image.Bind(wx.EVT_BUTTON,self.onImageTools)
+        self.btn_load.Bind(wx.EVT_BUTTON,self.loadIMAGE)
+
+        imagetools.Add(self.btn_load, flag=wx.ALL, border=10) 
+        imagetools.Add(self.btn_image, flag=wx.ALL, border=10) 
+
 
         self.imagebox.Add(self.plot2Dimg,proportion=1,flag=wx.ALL|wx.EXPAND, border=10)
-        self.imagebox.Add(self.btn_image, flag=wx.ALL, border=10) 
+        self.imagebox.Add(imagetools, flag=wx.ALL, border=10) 
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
@@ -228,6 +254,34 @@ class MaskToolsPopup(wx.Frame):
     def saveMask(self, event):
 
         print 'This will trigger the saving of a mask.'
+        
+    def addAREA(self,event):
+
+        ## Needs to be called when area is drawn.
+        ## mkak 2016.10.31
+
+        print 'updates the list with new areas'
+        #self.area_list.append('area %i' % len(self.area_list))
+        #self.slct_area.Set(self.area_list)
+
+    def showAREA(self,event):
+
+        if self.slct_area.GetSelection() > 0:
+            area_str = self.slct_area.GetString(self.slct_area.GetSelection())
+            str_msg = 'Displaying: %s' % area_str
+            self.write_message(str_msg,panel=0)
+            
+            ## show area on map, image
+
+    def deleteAREA(self,event):
+    
+        if self.slct_area.GetSelection() > 0:
+            area_str = self.slct_area.GetString(self.slct_area.GetSelection())
+            str_msg = 'Deleting: %s' % area_str
+            self.write_message(str_msg,panel=0)
+            
+            self.area_list.remove(self.slct_area.GetString(self.slct_area.GetSelection()))
+            self.slct_area.Set(self.area_list)
 
 class diFFit_XRDmask(wx.App):
     def __init__(self):
