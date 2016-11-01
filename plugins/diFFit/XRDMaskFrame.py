@@ -155,7 +155,7 @@ class MaskToolsPopup(wx.Frame):
 
     def startIMAGE(self):
     
-        self.loadIMAGE()
+        self.loadIMAGE() 
 
     def loadIMAGE(self,event): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
