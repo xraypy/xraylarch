@@ -21,6 +21,7 @@ from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
+from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup
 
 HAS_pyFAI = False
 try:
@@ -554,20 +555,26 @@ class Viewer2DXRD(wx.Frame):
             tifffile.imsave(path,self.plt_img)
 
     def on1DXRD(self,event):
-        wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, 'Save file as...',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards,
-                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+#         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+#         dlg = wx.FileDialog(self, 'Save file as...',
+#                            defaultDir=os.getcwd(),
+#                            wildcard=wildcards,
+#                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
+# 
+#         path, save = None, False
+#         if dlg.ShowModal() == wx.ID_OK:
+#             save = True
+#             path = dlg.GetPath().replace('\\', '/')
+#         dlg.Destroy()
+#         
+#         if save:
+#             self.data1D = integrate_xrd(self.plt_img,steps=5001,ai = self.ai,file=path,verbose=True)
+        print 'testing dialog!'
+        myDlg = Calc1DPopup(self.plt_img)
+        if myDlg.ShowModal() == wx.ID_OK:
+            read        = True
 
-        path, save = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            save = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if save:
-            self.data1D = integrate_xrd(self.plt_img,steps=5001,ai = self.ai,file=path,verbose=True)
+        myDlg.Destroy()
 
 ##############################################
 #### CALIBRATION FUNCTIONS

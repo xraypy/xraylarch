@@ -806,7 +806,75 @@ class MaskToolsPopup(wx.Dialog):
 
         print 'This will trigger the saving of a mask.'
 
+class Calc1DPopup(wx.Dialog):
+    ### NOT YET WRITTEN _ THIS IS JUST A STAND IN
+    ## mkak 2016.11.01
+    def __init__(self,xrd2Ddata):
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='Title')
+        
+        panel = wx.Panel(self)
 
+        fldrTtl  = wx.StaticText(panel,  label='XRM Map Folder:'      )
+        fldrBtn  = wx.Button(panel,   label='Browse...'            )
+        chTtl    = wx.StaticText(panel,  label='Include data for...'  )
+        xrfCkBx  = wx.CheckBox(panel, label='XRF'   )
+        xrdCkBx  = wx.CheckBox(panel, label='XRD'                 )
+        
+        self.Fldr = wx.TextCtrl(panel, size=(300, 25))
+
+        hlpBtn = wx.Button(panel, wx.ID_HELP   )
+        okBtn  = wx.Button(panel, wx.ID_OK     )
+        canBtn = wx.Button(panel, wx.ID_CANCEL )
+        self.FindWindowById(wx.ID_OK).Disable()
+
+        fldrBtn.Bind(wx.EVT_BUTTON, self.onBROWSE)
+        xrfCkBx.Bind(wx.EVT_CHECKBOX, None)
+        xrdCkBx.Bind(wx.EVT_CHECKBOX, None)
+
+
+        minisizer = wx.BoxSizer(wx.HORIZONTAL)
+        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add((-1, 10))
+        sizer.Add(fldrTtl,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(self.Fldr, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
+        sizer.Add(fldrBtn,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(xrfCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(xrdCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT,                    border=5)
+
+        panel.SetSizer(sizer) 
+        
+        ## Set defaults
+        xrfCkBx.SetValue(True)
+
+    def onBROWSE(self, event): 
+        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
+                           defaultPath=os.getcwd(),
+                           style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.Fldr.Clear()
+            self.Fldr.SetValue(str(path))
+            #self.Fldr.AppendText(str(path))
+            self.FldrPath = path
+
+        
 
 
       
