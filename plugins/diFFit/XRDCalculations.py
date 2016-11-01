@@ -457,7 +457,7 @@ def calculate_peaks(ciffile):
     #qmax = ((4*math.pi)/wvlgth)*np.sin(np.radians(twthmax/2))
     twthmax = 2*np.degrees(np.arcsin((wvlgth*qmax)/(4*math.pi)))
 
-    ##print('%s:' % os.path.split(ciffile)[-1])
+
     try:
         ## Open CIF using xu functions
         cif_strc = xu.materials.Crystal.fromCIF(ciffile)
