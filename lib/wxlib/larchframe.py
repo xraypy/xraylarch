@@ -143,6 +143,7 @@ class LarchFrame(wx.Frame):
                  histfile='history_larchgui.lar',
                  with_inspection=False, exit_on_close=False, **kwds):
         self.with_inspection = with_inspection
+        self.parent = parent
         self.histfile = histfile
         self.subframes = {}
         self.last_array_sel = {}
@@ -155,10 +156,11 @@ class LarchFrame(wx.Frame):
         self.BuildMenus()
         
         self.objtree.SetRootObject(self.larchshell.symtable)
-        if exit_on_close:
+        if parent is None and exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
             self.Bind(wx.EVT_CLOSE,  self.onClose)
+
         # self.timer.Start(200)
         larchdir = larch.site_config.larchdir
         fico = os.path.join(larchdir, 'icons', ICON_FILE)
@@ -167,9 +169,7 @@ class LarchFrame(wx.Frame):
 
         self.larchshell.write(larch.make_banner(), color='blue', bold=True)
         root = self.objtree.tree.GetRootItem()
-
         self.objtree.tree.Expand(root)
-
 
     def InputPanel(self, parent):
         panel = wx.Panel(parent, -1)
@@ -250,8 +250,8 @@ class LarchFrame(wx.Frame):
                      'Debug wxPython App', self.onWxInspect)
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Close Display', 'Close display', self.onClose)
-        MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
-
+        if self.parent is None:
+            MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
 
         appmenu = wx.Menu()
         _sys = self.larchshell.symtable._sys
@@ -411,7 +411,8 @@ class LarchFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,event=None):
+    def onClose(self, event=None):
+        # sys.stderr.write(" LarchFrame onClose\n")
         try:
             self.Hide()
             self.input.SaveHistory()
@@ -420,6 +421,7 @@ class LarchFrame(wx.Frame):
             pass
 
     def onExit(self, event=None):
+        # sys.stderr.write(" LarchFrame onExit\n")
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         ret = dlg.ShowModal()
