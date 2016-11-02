@@ -84,6 +84,32 @@ def BitmapButton(parent, bmp, action=None, tooltip=None):
             b.SetToolTipString(tooltip)
     return b
 
+
+class FitReportFrame(wx.Frame):
+    def __init__(self, parent=None, text=None, size=(550, 550), **kws):
+        wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE)
+        panel = wx.Panel(self)
+        self.report = RichTextCtrl(panel,
+                                       size=(500, 500),
+                                       style=wx.VSCROLL)
+
+        self.report.SetEditable(False)
+        self.report.SetFont(Font(9))
+        self.report.SetMinSize((500, 500))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.report, 1, wx.ALL|wx.GROW, 2)
+        pack(self, sizer)
+        if text is not None:
+            self.set_text(text)
+        self.Show()
+        self.Raise()
+        
+    def set_text(self, text):
+        self.report.SetEditable(True)
+        self.report.SetValue(text)
+        self.report.SetEditable(False)
+    
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
         self.parent = parent
@@ -115,17 +141,17 @@ class FitPanel(wx.Panel):
 
         pack(tpan, tsizer)
 
-        self.fit_report = RichTextCtrl(self,
-                                       size=(250, 250),
-                                       style=wx.VSCROLL) # |wx.NO_BORDER)
+        # self.fit_report = RichTextCtrl(self,
+        #                               size=(250, 250),
+        #                               style=wx.VSCROLL) # |wx.NO_BORDER)
 
-        self.fit_report.SetEditable(False)
-        self.fit_report.SetFont(Font(9))
+        # self.fit_report.SetEditable(False)
+        # self.fit_report.SetFont(Font(9))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
-        sizer.Add(HLine(self, size=(200, 3)), 0, wx.GROW|wx.ALL, 2)
-        sizer.Add(self.fit_report, 1, LCEN|wx.GROW, 2)
+        # sizer.Add(HLine(self, size=(200, 3)), 0, wx.GROW|wx.ALL, 2)
+        # sizer.Add(self.fit_report, 1, LCEN|wx.GROW, 2)
         pack(self, sizer)
 
     def onFitPeak(self, event=None):
@@ -164,10 +190,10 @@ class FitPanel(wx.Panel):
         dtext = '\n'.join(dtext)
         dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
                                                 _larch=self.larch))
-        self.fit_report.SetEditable(True)
-        self.fit_report.SetValue(dtext)
-        self.fit_report.SetEditable(False)
 
+
+        self.main.show_subframe('fitreport', FitReportFrame, text=dtext)
+        
         lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
         if bkg is None:
             lgroup._fit = pgroup.fit[:]
