@@ -3,6 +3,7 @@
 Scan Data File Viewer
 """
 import os
+import sys
 import time
 import numpy as np
 np.seterr(all='ignore')
@@ -49,6 +50,7 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=-5,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=-5,
                   side='right',  marker='None', markersize=4)
 
+ICON_FILE = 'larch.ico'
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -168,6 +170,8 @@ class ScanViewerFrame(wx.Frame):
         self.xas_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onXASProcessTimer, self.xas_timer)
         self.xas_timer.Start(500)
+        if parent is not None:
+            self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -553,6 +557,15 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.title.SetLabel('')
 
+        if True:
+            
+            larchdir = self.larch.symtable._sys.config.larchdir
+            fico = os.path.join(larchdir, 'icons', ICON_FILE)
+            if os.path.exists(fico):
+                self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        else: 
+            pass
+
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
@@ -664,7 +677,8 @@ class ScanViewerFrame(wx.Frame):
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
-            self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
+            self.larch_buffer = larchframe.LarchFrame(parent=self,
+                                                      _larch=self.larch)
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
@@ -718,9 +732,9 @@ class ScanViewerFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,evt):
+    def onClose(self, evt):
+        sys.stderr.write('Close: save scanviewer.dat\n')
         save_workdir('scanviewer.dat')
-
 
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
@@ -728,11 +742,9 @@ class ScanViewerFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
-
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             del obj
-
 
         if self.larch_buffer is not None:
             try:
@@ -741,7 +753,6 @@ class ScanViewerFrame(wx.Frame):
                 pass
         for w in self.GetChildren():
             w.Destroy()
-
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -797,23 +808,22 @@ class ScanViewerFrame(wx.Frame):
             dgroup = reader(str(path), _larch=self.larch)
             if reader == gsescan_group:
                 assign_gsescan_groups(dgroup)
-            dgroup._path = path
-            dgroup._filename = filename
-            dgroup._groupname = groupname
-
-            self.show_subframe('coledit', EditColumnFrame, group=dgroup,
+            dgroup.path = path
+            dgroup.filename = filename
+            dgroup.groupname = groupname
+            # print("Read -> Column Edit ", dgroup, path, filename, groupname)
+            self.show_subframe('coledit', EditColumnFrame,
+                               group=dgroup,
                                last_array_sel=self.last_array_sel,
                                read_ok_cb=self.onReadScan_Success)
-
         dlg.Destroy()
-
 
     def onReadScan_Success(self, datagroup, array_sel):
         """ called when column data has been selected and is ready to be used"""
         self.last_array_sel = array_sel
-        filename = datagroup._filename
-        groupname= datagroup._groupname
-        # print("   storing datagroup ", datagroup, groupname, filename)
+        filename = datagroup.filename
+        groupname= datagroup.groupname
+        # print("READ SCAN  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
         if filename in self.file_groups:
             for i in range(1, 101):
@@ -836,14 +846,13 @@ class ScanViewerFrame(wx.Frame):
 
 class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, _larch=None, **kws):
-        self._larch = _larch
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = ScanViewerFrame(_larch=self._larch)
+        frame = ScanViewerFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -851,7 +860,7 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-class DebugViewer(ScanViewer, wx.lib.mixins.inspection.InspectionMixin):
+class DebugScanViewer(ScanViewer, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         ScanViewer.__init__(self, **kws)
 
