@@ -14,6 +14,8 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
+import larch
+from larch import Group
 from larch_plugins.io import fix_varname
 
 CEN |=  wx.ALL
@@ -41,12 +43,16 @@ class EditColumnFrame(wx.Frame) :
     def __init__(self, parent, group=None, last_array_sel=None,
                  read_ok_cb=None, edit_groupname=True):
         self.parent = parent
-        self.dgroup = group
-        if not hasattr(self.dgroup, 'is_xas'):
+        self.rawgroup = group
+        self.outgroup  = Group(raw=group)
+        for attr in ('path', 'filename', 'groupname', 'is_xas'):
+            setattr(self.outgroup, attr, getattr(group, attr, None))
+
+        if self.outgroup.is_xas is None:
             try:
-                self.dgroup.is_xas = 'energ' in self.dgroup.array_labels[0].lower()
+                self.outgroup.is_xas = 'energ' in self.rawgroup.array_labels[0].lower()
             except:
-                self.dgroup.is_xas = False
+                self.outgroup.is_xas = False
         self.read_ok_cb = read_ok_cb
 
         self.array_sel = {'xpop': '', 'xarr': None,
@@ -56,16 +62,17 @@ class EditColumnFrame(wx.Frame) :
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
-        if self.array_sel['yarr2'] is None and 'i0' in self.dgroup.array_labels:
+        if self.array_sel['yarr2'] is None and 'i0' in self.rawgroup.array_labels:
             self.array_sel['yarr2'] = 'i0'
 
         if self.array_sel['yarr1'] is None:
-            if 'itrans' in self.dgroup.array_labels:
+            if 'itrans' in self.rawgroup.array_labels:
                 self.array_sel['yarr1'] = 'itrans'
-            elif 'i1' in self.dgroup.array_labels:
+            elif 'i1' in self.rawgroup.array_labels:
                 self.array_sel['yarr1'] = 'i1'
-        message = "Build Arrys from Data Columns for %s" % self.dgroup.filename
-        wx.Frame.__init__(self, None, -1, 'Build Arrays from Data Columns for %s' % self.dgroup.filename,
+        message = "Build Arrys from Data Columns for %s" % self.rawgroup.filename
+        wx.Frame.__init__(self, None, -1,
+                          'Build Arrays from Data Columns for %s' % self.rawgroup.filename,
                           style=FRAMESTYLE)
 
         self.SetFont(Font(10))
@@ -80,7 +87,7 @@ class EditColumnFrame(wx.Frame) :
 
         opts = dict(action=self.onColumnChoice, size=(120, -1))
 
-        arr_labels = self.dgroup.array_labels
+        arr_labels = self.rawgroup.array_labels
         yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = arr_labels + ['<index>']
 
@@ -122,7 +129,7 @@ class EditColumnFrame(wx.Frame) :
                                default=self.array_sel['use_deriv'], **opts)
 
         self.is_xas = Check(panel, label='use as XAS data',
-                               default=self.dgroup.is_xas, **opts)
+                               default=self.outgroup.is_xas, **opts)
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -156,7 +163,7 @@ class EditColumnFrame(wx.Frame) :
         self.wid_groupname = None
         if edit_groupname:
             wid_grouplab = SimpleText(panel, 'Use Group Name: ')
-            self.wid_groupname = wx.TextCtrl(panel, value=self.dgroup._groupname,
+            self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
                                              size=(100, -1))
             ir += 1
             sizer.Add(wid_grouplab,     (ir, 0), (1, 2), LCEN, 3)
@@ -171,11 +178,11 @@ class EditColumnFrame(wx.Frame) :
         ftext = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                size=(-1, 150))
         try:
-            m = open(self.dgroup.filename, 'r')
+            m = open(self.rawgroup.filename, 'r')
             text = m.read()
             m.close()
         except:
-            text = "The file '%s'\n was not found" % self.dgroup.filename
+            text = "The file '%s'\n was not found" % self.rawgroup.filename
         ftext.SetValue(text)
         ftext.SetFont(Font(9))
 
@@ -190,22 +197,22 @@ class EditColumnFrame(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
 
-        if not hasattr(self.dgroup, '_xdat'):
+        if not hasattr(self.outgroup, '_xdat'):
             self.onColumnChoice()
 
         if self.wid_groupname is not None:
-            self.dgroup._groupname = fix_varname(self.wid_groupname.GetValue())
+            self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
         if self.plotframe is not None:
             try:
                 self.plotframe.Destroy()
             except:
                 pass
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.dgroup, self.array_sel)
+            self.read_ok_cb(self.outgroup, self.array_sel)
         self.Destroy()
 
     def onCancel(self, event=None):
-        self.dgroup.import_ok = False
+        self.outgroup.import_ok = False
         if self.plotframe is not None:
             self.plotframe.Destroy()
         self.Destroy()
@@ -215,17 +222,18 @@ class EditColumnFrame(wx.Frame) :
         # dtcorr = self.dtcorr.IsChecked()
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
-        dgroup = self.dgroup
-
+        rawgroup = self.rawgroup
+        outgroup = self.outgroup
+        
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
         if xname == '<index>':
-            xname = self.dgroup.array_labels[0]
-            dgroup._index = 1.0*np.arange(len(getattr(dgroup, xname)))
+            xname = self.rawgroup.array_labels[0]
+            outgroup._index = 1.0*np.arange(len(getattr(rawgroup, xname)))
             xname = '_index'
 
-        dgroup.is_xas = self.is_xas.IsChecked()
-        dgroup._xdat = getattr(dgroup, xname)
+        outgroup.is_xas = self.is_xas.IsChecked()
+        outgroup._xdat = getattr(rawgroup, xname)
 
         def do_preop(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
@@ -238,20 +246,20 @@ class EditColumnFrame(wx.Frame) :
                     arr = -np.log(arr)
             return suf, opstr, arr
 
-        xsuf, xpop, dgroup._xdat = do_preop(self.xpop, dgroup._xdat)
+        xsuf, xpop, outgroup._xdat = do_preop(self.xpop, outgroup._xdat)
         self.xsuf.SetLabel(xsuf)
 
         try:
-            xunits = dgroup.array_units[ix].strip()
+            xunits = rawgroup.array_units[ix].strip()
             xlabel = '%s (%s)' % (xname, xunits)
         except:
             xlabel = xname
 
 
-        def get_data(group, arrayname, correct=False):
-            if hasattr(group, 'get_data'):
-                return group.get_data(arrayname, correct=correct)
-            return getattr(group, arrayname, None)
+        def get_data(grp, arrayname, correct=False):
+            if hasattr(grp, 'get_data'):
+                return grp.get_data(arrayname, correct=correct)
+            return getattr(grp, arrayname, None)
 
         yname1  = self.yarr1.GetStringSelection().strip()
         yname2  = self.yarr2.GetStringSelection().strip()
@@ -263,31 +271,32 @@ class EditColumnFrame(wx.Frame) :
         else:
             ylabel = "%s%s%s" % (ylabel, yop, yname2)
 
-        yarr1 = get_data(dgroup, yname1, correct=dtcorr)
+        yarr1 = get_data(rawgroup, yname1, correct=dtcorr)
 
         if yname2 in ('0.0', '1.0'):
             yarr2 = float(yname2)
             if yop == '/': yarr2 = 1.0
         else:
-            yarr2 = get_data(dgroup, yname2, correct=dtcorr)
+            yarr2 = get_data(rawgroup, yname2, correct=dtcorr)
 
-        dgroup._ydat = yarr1
+        outgroup._ydat = yarr1
         if yop == '+':
-            dgroup._ydat = yarr1.__add__(yarr2)
+            outgroup._ydat = yarr1.__add__(yarr2)
         elif yop == '-':
-            dgroup._ydat = yarr1.__sub__(yarr2)
+            outgroup._ydat = yarr1.__sub__(yarr2)
         elif yop == '*':
-            dgroup._ydat = yarr1.__mul__(yarr2)
+            outgroup._ydat = yarr1.__mul__(yarr2)
         elif yop == '/':
-            dgroup._ydat = yarr1.__truediv__(yarr2)
+            outgroup._ydat = yarr1.__truediv__(yarr2)
 
 
-        ysuf, ypop, dgroup._ydat = do_preop(self.ypop, dgroup._ydat)
+        ysuf, ypop, outgroup._ydat = do_preop(self.ypop, outgroup._ydat)
         self.ysuf.SetLabel(ysuf)
 
         if use_deriv:
             try:
-                dgroup._ydat = np.gradient(dgroup._ydat)/np.gradient(dgroup._xdat)
+                outgroup._ydat = (np.gradient(outgroup._ydat) /
+                                  np.gradient(outgroup._xdat))
             except:
                 pass
 
@@ -298,33 +307,34 @@ class EditColumnFrame(wx.Frame) :
 
 
         try:
-            npts = min(len(dgroup._xdat), len(dgroup._ydat))
+            npts = min(len(outgroup._xdat), len(outgroup._ydat))
         except AttributeError:
             print( 'Error calculating arrays (npts not correct)')
             return
-
-        dgroup._npts       = npts
-        dgroup.plot_xlabel = xlabel
-        dgroup.plot_ylabel = ylabel
-        dgroup._xdat       = np.array( dgroup._xdat[:npts])
-        dgroup._ydat       = np.array( dgroup._ydat[:npts])
-        if dgroup.is_xas:
-            dgroup.energy = dgroup._xdat
-            dgroup.mu     = dgroup._ydat
+        
+        outgroup.filename    = rawgroup.filename
+        outgroup._npts       = npts
+        outgroup.plot_xlabel = xlabel
+        outgroup.plot_ylabel = ylabel
+        outgroup._xdat       = np.array(outgroup._xdat[:npts])
+        outgroup._ydat       = np.array(outgroup._ydat[:npts])
+        if outgroup.is_xas:
+            outgroup.energy = outgroup._xdat
+            outgroup.mu     = outgroup._ydat
 
         self.raise_plotframe()
 
         ppanel = self.plotframe.panel
 
         popts = {}
-        path, fname = os.path.split(dgroup.filename)
+        path, fname = os.path.split(outgroup.filename)
 
-        popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
+        popts['label'] = "%s: %s" % (fname, outgroup.plot_ylabel)
         popts['title']  = fname
-        popts['ylabel'] = dgroup.plot_ylabel
-        popts['xlabel'] = dgroup.plot_xlabel
+        popts['ylabel'] = outgroup.plot_ylabel
+        popts['xlabel'] = outgroup.plot_xlabel
 
-        ppanel.plot(dgroup._xdat, dgroup._ydat, **popts)
+        ppanel.plot(outgroup._xdat, outgroup._ydat, **popts)
 
     def raise_plotframe(self):
         if self.plotframe is not None:
