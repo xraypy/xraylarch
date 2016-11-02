@@ -36,7 +36,7 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
 
 from larch_plugins.xafs import pre_edge
 
-from wxutils import (SimpleText, FloatCtrl, pack, Button,
+from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
@@ -83,6 +83,102 @@ def BitmapButton(parent, bmp, action=None, tooltip=None):
         else:
             b.SetToolTipString(tooltip)
     return b
+
+class FitPanel(wx.Panel):
+    def __init__(self, parent=None, main=None, **kws):
+        self.parent = parent
+        self.main  = main
+        wx.Panel.__init__(self, parent, **kws)
+        tpan = wx.Panel(self)
+        self.fit_model = Choice(tpan, size=(100, -1),
+                                choices=('Gaussian', 'Lorentzian',
+                                         'Voigt', 'Linear', 'Quadratic',
+                                         'Step', 'Rectangle',
+                                         'Exponential'))
+        self.fit_bkg = Choice(tpan, size=(100, -1),
+                              choices=('None', 'constant', 'linear', 'quadratic'))
+        self.fit_step = Choice(tpan, size=(100, -1),
+                               choices=('linear', 'error function', 'arctan'))
+
+        tsizer = wx.GridBagSizer(10, 4)
+        tsizer.Add(SimpleText(tpan, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
+        tsizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
+
+        tsizer.Add(SimpleText(tpan, 'Background: '),    (0, 2), (1, 1), LCEN)
+        tsizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
+
+        tsizer.Add(Button(tpan, 'Show Fit', size=(100, -1),
+                         action=self.onFitPeak),       (1, 1), (1, 1), LCEN)
+
+        tsizer.Add(SimpleText(tpan, 'Step Form: '),     (1, 2), (1, 1), LCEN)
+        tsizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
+
+        pack(tpan, tsizer)
+
+        self.fit_report = RichTextCtrl(self,
+                                       size=(250, 250),
+                                       style=wx.VSCROLL) # |wx.NO_BORDER)
+
+        self.fit_report.SetEditable(False)
+        self.fit_report.SetFont(Font(9))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
+        sizer.Add(HLine(self, size=(200, 3)), 0, wx.GROW|wx.ALL, 2)
+        sizer.Add(self.fit_report, 1, LCEN|wx.GROW, 2)
+        pack(self, sizer)
+
+    def onFitPeak(self, event=None):
+        gname = self.main.groupname
+
+        dtext = []
+        model = self.fit_model.GetStringSelection().lower()
+        dtext.append('Fit Model: %s' % model)
+        bkg =  self.fit_bkg.GetStringSelection()
+        if bkg == 'None':
+            bkg = None
+        if bkg is None:
+            dtext.append('No Background')
+        else:
+            dtext.append('Background: %s' % bkg)
+
+        step = self.fit_step.GetStringSelection().lower()
+        if model in ('step', 'rectangle'):
+            dtext.append('Step form: %s' % step)
+
+        try:
+            lgroup =  getattr(self.main.larch.symtable, gname)
+            x = lgroup._xdat
+            y = lgroup._ydat
+        except AttributeError:
+            self.main.write_message('need data to fit!')
+            return
+        if step.startswith('error'):
+            step = 'erf'
+        elif step.startswith('arctan'):
+            step = 'atan'
+
+        pgroup = fit_peak(x, y, model, background=bkg, step=step,
+                          _larch=self.larch)
+
+        dtext = '\n'.join(dtext)
+        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
+                                                _larch=self.larch))
+        self.fit_report.SetEditable(True)
+        self.fit_report.SetValue(dtext)
+        self.fit_report.SetEditable(False)
+
+        lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
+        if bkg is None:
+            lgroup._fit = pgroup.fit[:]
+            lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
+        else:
+            lgroup._fit     = pgroup.fit[:]
+            lgroup._fit_bgr = pgroup.bkg[:]
+            lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
+        self.main.plot_group(gname, new=True)
+        
 
 class EditableCheckListBox(wx.CheckListBox):
     """
@@ -232,8 +328,8 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
-        self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
-        self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
+        self.xas_panel = self.CreateXASPanel(self.nb)
+        self.fit_panel = FitPanel(parent=self.nb, main=self)
 
         self.nb.AddPage(self.fit_panel, ' General Curve Fitting ', True)
         self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
@@ -245,46 +341,6 @@ class ScanViewerFrame(wx.Frame):
 
         return mainpanel
 
-    def CreateFitPanel(self, parent):
-        panel = wx.Panel(parent)
-        tpan = wx.Panel(panel)
-        self.fit_model = Choice(tpan, size=(100, -1),
-                                choices=('Gaussian', 'Lorentzian',
-                                         'Voigt', 'Linear', 'Quadratic',
-                                         'Step', 'Rectangle',
-                                         'Exponential'))
-        self.fit_bkg = Choice(tpan, size=(100, -1),
-                              choices=('None', 'constant', 'linear', 'quadratic'))
-        self.fit_step = Choice(tpan, size=(100, -1),
-                               choices=('linear', 'error function', 'arctan'))
-
-        tsizer = wx.GridBagSizer(10, 4)
-        tsizer.Add(SimpleText(tpan, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
-        tsizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
-
-        tsizer.Add(SimpleText(tpan, 'Background: '),    (0, 2), (1, 1), LCEN)
-        tsizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
-
-        tsizer.Add(Button(tpan, 'Show Fit', size=(100, -1),
-                         action=self.onFitPeak),       (1, 1), (1, 1), LCEN)
-
-        tsizer.Add(SimpleText(tpan, 'Step Form: '),     (1, 2), (1, 1), LCEN)
-        tsizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
-
-        pack(tpan, tsizer)
-
-        self.fit_report = RichTextCtrl(panel,  size=(525, 250),
-                                     style=wx.VSCROLL|wx.NO_BORDER)
-
-        self.fit_report.SetEditable(False)
-        self.fit_report.SetFont(Font(9))
-
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
-        sizer.Add(self.fit_report, 1, LCEN|wx.GROW,  2)
-        pack(panel, sizer)
-        return panel
 
     def InitializeXASPanel(self, dgroup):
         predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
@@ -380,6 +436,8 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(p, 'PolyOrder:'), (4, 6), (1, 1), LCEN)
         sizer.Add(self.xas_nnor,               (4, 7), (1, 1), LCEN)
 
+        
+
         pack(panel, sizer)
         return panel
 
@@ -409,57 +467,6 @@ class ScanViewerFrame(wx.Frame):
     def onCustomColumns(self, evt=None):
         pass
 
-    def onFitPeak(self, evt=None):
-        gname = self.groupname
-
-        dtext = []
-        model = self.fit_model.GetStringSelection().lower()
-        dtext.append('Fit Model: %s' % model)
-        bkg =  self.fit_bkg.GetStringSelection()
-        if bkg == 'None':
-            bkg = None
-        if bkg is None:
-            dtext.append('No Background')
-        else:
-            dtext.append('Background: %s' % bkg)
-
-        step = self.fit_step.GetStringSelection().lower()
-        if model in ('step', 'rectangle'):
-            dtext.append('Step form: %s' % step)
-
-        try:
-            lgroup =  getattr(self.larch.symtable, gname)
-            x = lgroup._xdat
-            y = lgroup._ydat
-        except AttributeError:
-            self.write_message('need data to fit!')
-            return
-        if step.startswith('error'):
-            step = 'erf'
-        elif step.startswith('arctan'):
-            step = 'atan'
-
-        pgroup = fit_peak(x, y, model, background=bkg, step=step,
-                          _larch=self.larch)
-
-        dtext = '\n'.join(dtext)
-        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
-                                                _larch=self.larch))
-
-        self.fit_report.SetEditable(True)
-        self.fit_report.SetValue(dtext)
-        self.fit_report.SetEditable(False)
-
-        lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
-        if bkg is None:
-            lgroup._fit = pgroup.fit[:]
-            lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
-        else:
-            lgroup._fit     = pgroup.fit[:]
-            lgroup._fit_bgr = pgroup.bkg[:]
-            lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
-            lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
-        self.plot_group(gname, new=True)
 
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
@@ -557,8 +564,8 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.title.SetLabel('')
 
+        self.fit_panel.larch = self.larch
         if True:
-            
             larchdir = self.larch.symtable._sys.config.larchdir
             fico = os.path.join(larchdir, 'icons', ICON_FILE)
             if os.path.exists(fico):
@@ -611,14 +618,14 @@ class ScanViewerFrame(wx.Frame):
                     self.xas_process(groupname)
 
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
-                                        '%s norm' % dgroup._filename)]
+                                        '%s norm' % dgroup.filename)]
                 dgroup.plot_ylabel = 'normalized $\mu$'
                 dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
                 dgroup.plot_ymarkers = []
 
             else:
                 dgroup.plot_yarrays = [(dgroup._ydat, PLOTOPTS_1,
-                                        dgroup._filename)]
+                                        dgroup.filename)]
 
             self.plot_group(groupname, title='', new=newplot)
             newplot=False
