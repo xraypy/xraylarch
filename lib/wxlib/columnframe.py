@@ -271,7 +271,7 @@ class EditColumnFrame(wx.Frame) :
 
         ylabel = yname1
         if len(yname2) == 0:
-            yname2, yop = '1.0', '*'
+            yname2 = '1.0'
         else:
             ylabel = "%s%s%s" % (ylabel, yop, yname2)
 
