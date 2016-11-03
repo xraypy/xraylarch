@@ -209,6 +209,16 @@ class FitPanel(wx.Panel):
         self.main.plot_group(gname, new=True)
 
 
+class FileDropTarget(wx.FileDropTarget):
+    def __init__(self, main):
+        wx.FileDropTarget.__init__(self)
+        self.main = main
+
+    def OnDropFiles(self, x, y, filenames):
+        for file in filenames:
+            if hasattr(self.main, 'onRead'):
+                self.main.onRead(file)
+
 class EditableCheckListBox(wx.CheckListBox):
     """
     A ListBox with pop-up menu to arrange order of
@@ -216,8 +226,10 @@ class EditableCheckListBox(wx.CheckListBox):
     supply select_action for EVT_LISTBOX selection action
     """
     def __init__(self, parent, select_action=None, right_click=True,
-                 remove_action=None, **kws):
+                 remove_action=None, main=None, **kws):
         wx.CheckListBox.__init__(self, parent, **kws)
+        
+        self.SetDropTarget(FileDropTarget(main))
 
         self.SetBackgroundColour(wx.Colour(248, 248, 235))
         if select_action is not None:
@@ -302,7 +314,7 @@ class ScanViewerFrame(wx.Frame):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.filelist  = EditableCheckListBox(splitter)
+        self.filelist  = EditableCheckListBox(splitter, main=self)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
 
@@ -358,10 +370,11 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.xas_panel = self.CreateXASPanel(self.nb)
+
         self.fit_panel = FitPanel(parent=self.nb, main=self)
 
-        self.nb.AddPage(self.xas_panel, 'Data Processing',   True)
-        self.nb.AddPage(self.fit_panel, 'Curve Fitting',  True)
+        self.nb.AddPage(self.xas_panel, ' Data Processing ',   True)
+        self.nb.AddPage(self.fit_panel, ' Curve Fitting ',  True)
 
 
         mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
@@ -731,7 +744,7 @@ class ScanViewerFrame(wx.Frame):
         #
         fmenu = wx.Menu()
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
-                 "Read Scan File",  self.onReadScan)
+                 "Read Scan File",  self.onReadDialog)
 
         MenuItem(self, fmenu, "Show Larch Buffer\tCtrl+L",
                   "Show Larch Programming Buffer",
@@ -797,59 +810,61 @@ class ScanViewerFrame(wx.Frame):
                            group=self.dgroup.raw,
                            last_array_sel=self.last_array_sel,
                            _larch=self.larch,
-                           read_ok_cb=partial(self.onReadScan_Success,
+                           read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
-        
-    def onReadScan(self, evt=None):
+
+    def onReadDialog(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS, style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             path = path.replace('\\', '/')
-            if path in self.file_groups:
-                if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
-                                      'Re-read file?'):
-                    return
 
-            filedir, filename = os.path.split(path)
-            pref = fix_varname((filename + '____')[:7]).replace('.', '_')
-            count, maxcount = 1, 9999
-            groupname = "%s%3.3i" % (pref, count)
-            while hasattr(self.larch.symtable, groupname) and count < maxcount:
-                count += 1
-                groupname = '%s%3.3i' % (pref, count)
-
-            if self.config['chdir_on_fileopen']:
-                os.chdir(filedir)
-
-            fh = open(path, 'r')
-            line1 = fh.readline().lower()
-            fh.close()
-            reader = read_ascii
-            if 'epics stepscan file' in line1:
-                reader = read_gsexdi
-            elif 'epics scan' in line1:
-                reader = gsescan_group
-            elif 'xdi' in line1:
-                reader = read_xdi
-
-            dgroup = reader(str(path), _larch=self.larch)
-            if reader == gsescan_group:
-                assign_gsescan_groups(dgroup)
-            dgroup.path = path
-            dgroup.filename = filename
-            dgroup.groupname = groupname
-            self.show_subframe('coledit',
-                               EditColumnFrame,
-                               group=dgroup,
-                               last_array_sel=self.last_array_sel,
-                               _larch=self.larch,
-                               read_ok_cb=partial(self.onReadScan_Success,
-                                                  overwrite=False))
+            self.onRead(path)
         dlg.Destroy()
+        
+    def onRead(self, path):
+        if path in self.file_groups:
+            if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
+                                  'Re-read file?'):
+                return
+        filedir, filename = os.path.split(path)
+        pref = fix_varname((filename + '____')[:7]).replace('.', '_')
+        count, maxcount = 1, 9999
+        groupname = "%s%3.3i" % (pref, count)
+        while hasattr(self.larch.symtable, groupname) and count < maxcount:
+            count += 1
+            groupname = '%s%3.3i' % (pref, count)
 
-    def onReadScan_Success(self, datagroup, array_sel, overwrite=False):
+        if self.config['chdir_on_fileopen']:
+            os.chdir(filedir)
+
+        fh = open(path, 'r')
+        line1 = fh.readline().lower()
+        fh.close()
+
+        reader = read_ascii
+        if 'epics stepscan file' in line1:
+            reader = read_gsexdi
+        elif 'epics scan' in line1:
+            reader = gsescan_group
+        elif 'xdi' in line1:
+            reader = read_xdi
+
+        dgroup = reader(str(path), _larch=self.larch)
+        if reader == gsescan_group:
+            assign_gsescan_groups(dgroup)
+        dgroup.path = path
+        dgroup.filename = filename
+        dgroup.groupname = groupname
+        self.show_subframe('coledit', EditColumnFrame, group=dgroup,
+                           last_array_sel=self.last_array_sel,
+                           _larch=self.larch,
+                           read_ok_cb=partial(self.onRead_OK,
+                                              overwrite=False))
+
+    def onRead_OK(self, datagroup, array_sel, overwrite=False):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when editing a datagroup
         
