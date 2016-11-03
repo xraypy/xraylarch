@@ -19,6 +19,10 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
+from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
+                     Choice,  Check, MenuItem, GUIColors,
+                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+
 from lmfit.models import (ConstantModel, LinearModel, QuadraticModel,
                           PolynomialModel, GaussianModel, LorentzianModel,
                           VoigtModel, PseudoVoigtModel, MoffatModel,
@@ -30,10 +34,10 @@ from lmfit.models import (ConstantModel, LinearModel, QuadraticModel,
 
 from larch import Interpreter, isParameter
 from larch.larchlib import read_workdir, save_workdir
-from larch.wxlib import larchframe, EditColumnFrame
+from larch.wxlib import (larchframe, EditColumnFrame, ReportFrame,
+                         BitmapButton, FileCheckList)
 
 from larch.fitting import fit_report
-from larch.utils import debugtime
 
 from larch_plugins.std import group2dict
 from larch_plugins.math import fit_peak, index_of
@@ -44,10 +48,6 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname)
 
 from larch_plugins.xafs import pre_edge
-
-from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
-                     Choice,  Check, MenuItem, GUIColors,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
@@ -82,75 +82,38 @@ def assign_gsescan_groups(group):
     group.array_labels = labels
 
 
-def BitmapButton(parent, bmp, action=None, tooltip=None):
-    b = wx.BitmapButton(parent, -1, bmp)
-    if action is not None:
-        parent.Bind(wx.EVT_BUTTON, action, b)
-    if tooltip is not None:
-        if is_wxPhoenix:
-            b.SetToolTip(tooltip)
-        else:
-            b.SetToolTipString(tooltip)
-    return b
-
-
-class ReportFrame(wx.Frame):
-    def __init__(self, parent=None, text=None, size=(550, 550), **kws):
-        wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE)
-        self.report = RichTextCtrl(self,size=(500, 500),
-                                   style=wx.VSCROLL)
-
-        self.report.SetEditable(False)
-        self.report.SetFont(Font(11))
-        self.report.SetMinSize((500, 500))
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.report, 1, wx.ALL|wx.GROW, 2)
-        pack(self, sizer)
-        if text is not None:
-            self.set_text(text)
-        self.Show()
-        self.Raise()
-
-    def set_text(self, text):
-        self.report.SetEditable(True)
-        self.report.SetValue(text)
-        self.report.SetEditable(False)
 
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
         self.parent = parent
         self.main  = main
         wx.Panel.__init__(self, parent, **kws)
-        tpan = wx.Panel(self)
-        self.fit_model = Choice(tpan, size=(100, -1),
+        panel = self
+        sizer = wx.GridBagSizer(10, 4)
+
+        self.fit_model = Choice(panel, size=(100, -1),
                                 choices=('Gaussian', 'Lorentzian',
                                          'Voigt', 'Linear', 'Quadratic',
                                          'Step', 'Rectangle',
                                          'Exponential'))
-        self.fit_bkg = Choice(tpan, size=(100, -1),
+        self.fit_bkg = Choice(panel, size=(100, -1),
                               choices=('None', 'constant', 'linear', 'quadratic'))
-        self.fit_step = Choice(tpan, size=(100, -1),
+        self.fit_step = Choice(panel, size=(100, -1),
                                choices=('linear', 'error function', 'arctan'))
 
-        tsizer = wx.GridBagSizer(10, 4)
-        tsizer.Add(SimpleText(tpan, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
-        tsizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(panel, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
 
-        tsizer.Add(SimpleText(tpan, 'Background: '),    (0, 2), (1, 1), LCEN)
-        tsizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(panel, 'Background: '),    (0, 2), (1, 1), LCEN)
+        sizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
 
-        tsizer.Add(Button(tpan, 'Show Fit', size=(100, -1),
+        sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
                          action=self.onFitPeak),       (1, 1), (1, 1), LCEN)
 
-        tsizer.Add(SimpleText(tpan, 'Step Form: '),     (1, 2), (1, 1), LCEN)
-        tsizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(panel, 'Step Form: '),     (1, 2), (1, 1), LCEN)
+        sizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
 
-        pack(tpan, tsizer)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
-        pack(self, sizer)
+        pack(panel, sizer)
 
     def onFitPeak(self, event=None):
         gname = self.main.groupname
@@ -209,72 +172,6 @@ class FitPanel(wx.Panel):
         self.main.plot_group(gname, new=True)
 
 
-class FileDropTarget(wx.FileDropTarget):
-    def __init__(self, main):
-        wx.FileDropTarget.__init__(self)
-        self.main = main
-
-    def OnDropFiles(self, x, y, filenames):
-        for file in filenames:
-            if hasattr(self.main, 'onRead'):
-                self.main.onRead(file)
-
-class EditableCheckListBox(wx.CheckListBox):
-    """
-    A ListBox with pop-up menu to arrange order of
-    items and remove items from list
-    supply select_action for EVT_LISTBOX selection action
-    """
-    def __init__(self, parent, select_action=None, right_click=True,
-                 remove_action=None, main=None, **kws):
-        wx.CheckListBox.__init__(self, parent, **kws)
-        
-        self.SetDropTarget(FileDropTarget(main))
-
-        self.SetBackgroundColour(wx.Colour(248, 248, 235))
-        if select_action is not None:
-            self.Bind(wx.EVT_LISTBOX,  select_action)
-        self.remove_action = remove_action
-        if right_click:
-            self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
-            for item in ('popup_up1', 'popup_dn1',
-                         'popup_upall', 'popup_dnall', 'popup_remove'):
-                setattr(self, item,  wx.NewId())
-                self.Bind(wx.EVT_MENU, self.onRightEvent,
-                          id=getattr(self, item))
-
-    def onRightClick(self, evt=None):
-        menu = wx.Menu()
-        menu.Append(self.popup_up1,    "Move up")
-        menu.Append(self.popup_dn1,    "Move down")
-        menu.Append(self.popup_upall,  "Move to top")
-        menu.Append(self.popup_dnall,  "Move to bottom")
-        menu.Append(self.popup_remove, "Remove from list")
-        self.PopupMenu(menu)
-        menu.Destroy()
-
-    def onRightEvent(self, event=None):
-        idx = self.GetSelection()
-        if idx < 0: # no item selected
-            return
-        wid   = event.GetId()
-        names = self.GetItems()
-        this  = names.pop(idx)
-        if wid == self.popup_up1 and idx > 0:
-            names.insert(idx-1, this)
-        elif wid == self.popup_dn1 and idx < len(names):
-            names.insert(idx+1, this)
-        elif wid == self.popup_upall:
-            names.insert(0, this)
-        elif wid == self.popup_dnall:
-            names.append(this)
-        elif wid == self.popup_remove and self.remove_action is not None:
-            self.remove_action(this)
-
-        self.Clear()
-        for name in names:
-            self.Append(name)
-
 class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
   Matt Newville <newville @ cars.uchicago.edu>
@@ -314,7 +211,7 @@ class ScanViewerFrame(wx.Frame):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.filelist  = EditableCheckListBox(splitter, main=self)
+        self.filelist = FileCheckList(splitter, main=self)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
 
