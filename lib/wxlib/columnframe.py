@@ -41,8 +41,9 @@ def okcancel(panel, onOK=None, onCancel=None):
 class EditColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
     def __init__(self, parent, group=None, last_array_sel=None,
-                 read_ok_cb=None, edit_groupname=True):
+                 read_ok_cb=None, edit_groupname=True, _larch=None):
         self.parent = parent
+        self.larch = _larch
         self.rawgroup = group
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'is_xas'):
@@ -129,7 +130,7 @@ class EditColumnFrame(wx.Frame) :
                                default=self.array_sel['use_deriv'], **opts)
 
         self.is_xas = Check(panel, label='use as XAS data',
-                               default=self.outgroup.is_xas, **opts)
+                            default=self.outgroup.is_xas, **opts)
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -197,7 +198,7 @@ class EditColumnFrame(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
 
-        if not hasattr(self.outgroup, '_xdat'):
+        if not hasattr(self.outgroup, 'xdat'):
             self.onColumnChoice()
 
         if self.wid_groupname is not None:
@@ -218,7 +219,7 @@ class EditColumnFrame(wx.Frame) :
         self.Destroy()
 
     def onColumnChoice(self, evt=None):
-        """column selections changed calc _xdat and _ydat"""
+        """column selections changed calc xdat and ydat"""
         # dtcorr = self.dtcorr.IsChecked()
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
@@ -233,9 +234,9 @@ class EditColumnFrame(wx.Frame) :
             xname = '_index'
 
         outgroup.is_xas = self.is_xas.IsChecked()
-        outgroup._xdat = getattr(rawgroup, xname)
-
-        def do_preop(opwid, arr):
+        outgroup.xdat = getattr(rawgroup, xname)
+        
+        def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
             suf = ''
             if opstr in ('-log(', 'log('):
@@ -246,7 +247,7 @@ class EditColumnFrame(wx.Frame) :
                     arr = -np.log(arr)
             return suf, opstr, arr
 
-        xsuf, xpop, outgroup._xdat = do_preop(self.xpop, outgroup._xdat)
+        xsuf, xpop, outgroup.xdat = pre_op(self.xpop, outgroup.xdat)
         self.xsuf.SetLabel(xsuf)
 
         try:
@@ -279,24 +280,24 @@ class EditColumnFrame(wx.Frame) :
         else:
             yarr2 = get_data(rawgroup, yname2, correct=dtcorr)
 
-        outgroup._ydat = yarr1
+        outgroup.ydat = yarr1
         if yop == '+':
-            outgroup._ydat = yarr1.__add__(yarr2)
+            outgroup.ydat = yarr1.__add__(yarr2)
         elif yop == '-':
-            outgroup._ydat = yarr1.__sub__(yarr2)
+            outgroup.ydat = yarr1.__sub__(yarr2)
         elif yop == '*':
-            outgroup._ydat = yarr1.__mul__(yarr2)
+            outgroup.ydat = yarr1.__mul__(yarr2)
         elif yop == '/':
-            outgroup._ydat = yarr1.__truediv__(yarr2)
+            outgroup.ydat = yarr1.__truediv__(yarr2)
 
 
-        ysuf, ypop, outgroup._ydat = do_preop(self.ypop, outgroup._ydat)
+        ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
         self.ysuf.SetLabel(ysuf)
 
         if use_deriv:
             try:
-                outgroup._ydat = (np.gradient(outgroup._ydat) /
-                                  np.gradient(outgroup._xdat))
+                outgroup.ydat = (np.gradient(outgroup.ydat) /
+                                 np.gradient(outgroup.xdat))
             except:
                 pass
 
@@ -307,34 +308,38 @@ class EditColumnFrame(wx.Frame) :
 
 
         try:
-            npts = min(len(outgroup._xdat), len(outgroup._ydat))
+            npts = min(len(outgroup.xdat), len(outgroup.ydat))
         except AttributeError:
             print( 'Error calculating arrays (npts not correct)')
             return
         
         outgroup.filename    = rawgroup.filename
-        outgroup._npts       = npts
+        outgroup.npts        = npts
         outgroup.plot_xlabel = xlabel
         outgroup.plot_ylabel = ylabel
-        outgroup._xdat       = np.array(outgroup._xdat[:npts])
-        outgroup._ydat       = np.array(outgroup._ydat[:npts])
+        outgroup.xdat        = np.array(outgroup.xdat[:npts])
+        outgroup.ydat        = np.array(outgroup.ydat[:npts])
         if outgroup.is_xas:
-            outgroup.energy = outgroup._xdat
-            outgroup.mu     = outgroup._ydat
-
-        self.raise_plotframe()
-
-        ppanel = self.plotframe.panel
+            outgroup.energy = outgroup.xdat
+            outgroup.mu     = outgroup.ydat
 
         popts = {}
         path, fname = os.path.split(outgroup.filename)
-
         popts['label'] = "%s: %s" % (fname, outgroup.plot_ylabel)
         popts['title']  = fname
         popts['ylabel'] = outgroup.plot_ylabel
         popts['xlabel'] = outgroup.plot_xlabel
 
-        ppanel.plot(outgroup._xdat, outgroup._ydat, **popts)
+        if self.larch is None:
+            self.raise_plotframe()
+            plot = self.plotframe.panel.plot
+        else:
+            plot = self.larch.symtable._plotter.plot
+            popts['win'] = 3
+            popts['new'] = True
+            popts['wintitle'] = 'Plot Display for Edit Column Labels'
+        plot(outgroup.xdat, outgroup.ydat, **popts)
+            
 
     def raise_plotframe(self):
         if self.plotframe is not None:
