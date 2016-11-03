@@ -577,7 +577,7 @@ class ScanViewerFrame(wx.Frame):
         if self.xas_showe0.IsChecked():
             ie0 = index_of(dgroup.xdat, dgroup.e0)
             dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
-        return
+
 
     def init_larch(self):
         t0 = time.time()
@@ -603,9 +603,7 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText(s, panel)
 
     def onXASProcessTimer(self, evt=None):
-        if self.groupname is None:
-            return
-        if self.need_xas_update:
+        if self.groupname is not None and self.need_xas_update:
             self.xas_process(self.groupname)
             self.plot_group(self.groupname, new=True)
             self.need_xas_update = False
@@ -683,12 +681,11 @@ class ScanViewerFrame(wx.Frame):
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
-
         if plotcmd == newplot and title is None:
             title = fname
 
         popts['title'] = title
-
+        popts['wintitle'] = 'DataViewer Plot Window'
         for yarr in plot_yarrays:
             popts.update(yarr[1])
             if yarr[2] is not None:

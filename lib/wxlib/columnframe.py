@@ -340,7 +340,7 @@ class EditColumnFrame(wx.Frame) :
             plot = self.larch.symtable._plotter.plot
             popts['win'] = 3
             popts['new'] = True
-            popts['wintitle'] = 'Plot Display for Edit Column Labels'
+            popts['wintitle'] = 'Edit Column Labels Plot Window'            
         plot(outgroup.xdat, outgroup.ydat, **popts)
             
 
