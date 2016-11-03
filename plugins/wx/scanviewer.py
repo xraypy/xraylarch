@@ -19,6 +19,15 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
+from lmfit.models import (ConstantModel, LinearModel, QuadraticModel,
+                          PolynomialModel, GaussianModel, LorentzianModel,
+                          VoigtModel, PseudoVoigtModel, MoffatModel,
+                          Pearson7Model, StudentsTModel, BreitWignerModel,
+                          LognormalModel, DampedOscillatorModel,
+                          ExponentialGaussianModel, SkewedGaussianModel,
+                          DonaichModel, PowerLawModel, ExponentialModel,
+                          StepModel, RectangleModel, ExpressionModel)
+
 from larch import Interpreter, isParameter
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe, EditColumnFrame
@@ -85,16 +94,14 @@ def BitmapButton(parent, bmp, action=None, tooltip=None):
     return b
 
 
-class FitReportFrame(wx.Frame):
+class ReportFrame(wx.Frame):
     def __init__(self, parent=None, text=None, size=(550, 550), **kws):
         wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE)
-        panel = wx.Panel(self)
-        self.report = RichTextCtrl(panel,
-                                       size=(500, 500),
-                                       style=wx.VSCROLL)
+        self.report = RichTextCtrl(self,size=(500, 500),
+                                   style=wx.VSCROLL)
 
         self.report.SetEditable(False)
-        self.report.SetFont(Font(9))
+        self.report.SetFont(Font(11))
         self.report.SetMinSize((500, 500))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -104,12 +111,12 @@ class FitReportFrame(wx.Frame):
             self.set_text(text)
         self.Show()
         self.Raise()
-        
+
     def set_text(self, text):
         self.report.SetEditable(True)
         self.report.SetValue(text)
         self.report.SetEditable(False)
-    
+
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
         self.parent = parent
@@ -141,17 +148,8 @@ class FitPanel(wx.Panel):
 
         pack(tpan, tsizer)
 
-        # self.fit_report = RichTextCtrl(self,
-        #                               size=(250, 250),
-        #                               style=wx.VSCROLL) # |wx.NO_BORDER)
-
-        # self.fit_report.SetEditable(False)
-        # self.fit_report.SetFont(Font(9))
-
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
-        # sizer.Add(HLine(self, size=(200, 3)), 0, wx.GROW|wx.ALL, 2)
-        # sizer.Add(self.fit_report, 1, LCEN|wx.GROW, 2)
         pack(self, sizer)
 
     def onFitPeak(self, event=None):
@@ -191,9 +189,14 @@ class FitPanel(wx.Panel):
         dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
                                                 _larch=self.larch))
 
+        self.main.show_subframe('fitreport', ReportFrame)
+        self.main.subframes['fitreport'].set_text(dtext)
 
-        self.main.show_subframe('fitreport', FitReportFrame, text=dtext)
-        
+        if not hasattr(lgroup, 'fits'):
+            lgroup.fits = []
+
+        lgroup.fits.append((model, bkg, step, dtext))
+
         lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
         if bkg is None:
             lgroup._fit = pgroup.fit[:]
@@ -204,7 +207,7 @@ class FitPanel(wx.Panel):
             lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
             lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
         self.main.plot_group(gname, new=True)
-        
+
 
 class EditableCheckListBox(wx.CheckListBox):
     """
@@ -462,7 +465,7 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(p, 'PolyOrder:'), (4, 6), (1, 1), LCEN)
         sizer.Add(self.xas_nnor,               (4, 7), (1, 1), LCEN)
 
-        
+
 
         pack(panel, sizer)
         return panel
@@ -596,7 +599,7 @@ class ScanViewerFrame(wx.Frame):
             fico = os.path.join(larchdir, 'icons', ICON_FILE)
             if os.path.exists(fico):
                 self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        else: 
+        else:
             pass
 
     def write_message(self, s, panel=0):
