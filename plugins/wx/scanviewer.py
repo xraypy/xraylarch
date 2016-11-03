@@ -23,14 +23,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
-from lmfit.models import (ConstantModel, LinearModel, QuadraticModel,
-                          PolynomialModel, GaussianModel, LorentzianModel,
-                          VoigtModel, PseudoVoigtModel, MoffatModel,
-                          Pearson7Model, StudentsTModel, BreitWignerModel,
-                          LognormalModel, DampedOscillatorModel,
-                          ExponentialGaussianModel, SkewedGaussianModel,
-                          DonaichModel, PowerLawModel, ExponentialModel,
-                          StepModel, RectangleModel, ExpressionModel)
+import lmfit.models as lm_models
 
 from larch import Interpreter, isParameter
 from larch.larchlib import read_workdir, save_workdir
@@ -61,6 +54,7 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=-5,
 
 ICON_FILE = 'larch.ico'
 
+
 def assign_gsescan_groups(group):
     labels = group.array_labels
     labels = []
@@ -82,40 +76,119 @@ def assign_gsescan_groups(group):
     group.array_labels = labels
 
 
+MODELS = ['Constant', 'Linear', 'Quadratic', 'Polynomial',
+          'Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Moffat',
+          'Pearson7', 'StudentsT', 'BreitWigner', 'Lognormal',
+          'DampedOscillator', 'ExponentialGaussian', 'SkewedGaussian',
+          'Donaich', 'PowerLaw', 'Exponential', 'Step', 'Rectangle']
+
+StepChoices = ('Linear', 'Arctan', 'ErrorFunction', 'Logistic')
+
+ModelChoices = ('Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Pearson7',
+               'StudentsT', 'SkewedGaussian', 'Constant', 'Linear',
+               'Quadratic', 'Exponential', 'PowerLaw', 'Rectangle',
+               'DampedOscillator', 'LogNormal', 'BreitWigner', 'Donaich')
 
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
+
+        wx.Panel.__init__(self, parent, **kws)
+
         self.parent = parent
         self.main  = main
-        wx.Panel.__init__(self, parent, **kws)
-        panel = self
-        sizer = wx.GridBagSizer(10, 4)
+        self.fit_components = ['Gaussian', 'Linear']
+        self.sizer = wx.GridBagSizer(10, 6)
+        self.build_display()
 
-        self.fit_model = Choice(panel, size=(100, -1),
-                                choices=('Gaussian', 'Lorentzian',
-                                         'Voigt', 'Linear', 'Quadratic',
-                                         'Step', 'Rectangle',
-                                         'Exponential'))
-        self.fit_bkg = Choice(panel, size=(100, -1),
-                              choices=('None', 'constant', 'linear', 'quadratic'))
-        self.fit_step = Choice(panel, size=(100, -1),
-                               choices=('linear', 'error function', 'arctan'))
+    def build_display(self):
 
-        sizer.Add(SimpleText(panel, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
+        def Label(t): return SimpleText(self, t)
 
-        sizer.Add(SimpleText(panel, 'Background: '),    (0, 2), (1, 1), LCEN)
-        sizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
+        sizer = self.sizer
+        models = Choice(self, size=(150, -1), choices=ModelChoices,
+                        action=self.addModel)
+        
+        steps = Choice(self, size=(150, -1), choices=StepChoices,
+                       action=partial(self.addModel, is_step=True))
 
-        sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
-                         action=self.onFitPeak),       (1, 1), (1, 1), LCEN)
+        fit_btn  = Button(self, 'Do Fit', size=(100, -1), action=self.onRunFit)
+        save_btn = Button(self, 'Save Fit', size=(100, -1), action=self.onSaveFit)
 
-        sizer.Add(SimpleText(panel, 'Step Form: '),     (1, 2), (1, 1), LCEN)
-        sizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
+        self.xmin_sel = BitmapButton(self, get_icon('plus'), 
+                                     action=partial(self.on_selpoint, opt='xmin'),
+                                     tooltip='use last point selected from plot')
+        self.xmax_sel = BitmapButton(self, get_icon('plus'), 
+                                     action=partial(self.on_selpoint, opt='xmax'),
+                                     tooltip='use last point selected from plot')
+        opts = {'size': (90, -1), 'precision': 3}
+        self.xmin = FloatCtrl(self, value=0, **opts)
+        self.xmax = FloatCtrl(self, value=0, **opts)
 
-        pack(panel, sizer)
+        rpan = wx.Panel(self)
+        rsiz = wx.BoxSizer(wx.HORIZONTAL)
 
-    def onFitPeak(self, event=None):
+        rsiz.Add(Label('F it Range: [ '), 0, LCEN, 3)
+        rsiz.Add(self.xmin_sel, 0, LCEN, 3)
+        rsiz.Add(self.xmin,     0, LCEN, 3)
+        rsiz.Add(Label(' : '),  0, LCEN, 3)
+        rsiz.Add(self.xmax_sel, 0, LCEN, 3)
+        rsiz.Add(self.xmax,     0, LCEN, 3)
+        rsiz.Add(Label(' ]  '), 0, LCEN, 3)
+        rsiz.Add(fit_btn,       0, LCEN, 3)
+        rsiz.Add(save_btn,      0, LCEN, 3)
+
+        pack(rpan, rsiz)        
+
+        ir = 0
+        sizer.Add(rsiz, (ir, 0), (1, 6), LCEN)
+        
+        ir += 1
+        sizer.Add(Label(' Add Model: '),      (ir, 0), (1, 1), LCEN)
+        sizer.Add(models,                    (ir, 1), (1, 2), LCEN)
+        sizer.Add(Label(' Add Step Model: '), (ir, 3), (1, 1), LCEN)
+        sizer.Add(steps,                     (ir, 4), (1, 2), LCEN)
+        
+        ir += 1
+        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 6), LCEN)
+
+        self.irow = ir+1
+
+        for comp in self.fit_components:
+            self.addModel(model=comp)
+            
+        pack(self, sizer)
+    
+    def addModel(self, event=None, model=None, is_step=False):
+        if model is None and event is not None:
+            model = event.GetString()
+        if model is None:
+            return
+
+        def Label(t): return SimpleText(self, t)
+        
+        
+        print("Add Model ", model, is_step)
+        ir = self.irow
+        self.sizer.Add(Label(model),  (ir, 0), (1, 3), LCEN)
+        self.Refresh()
+        self.irow += 1
+
+    def onSaveFit(self, event=None):
+        pass
+    
+    def on_selpoint(self, evt=None, opt='xmin'):
+        xval = None
+        try:
+            xval = self.larch.symtable._plotter.plot1_x
+        except:
+            xval = None
+        if xval is not None:
+            if opt == 'xmin':
+                self.xmin.SetValue(xval)
+            elif opt == 'xmax':
+                self.xmax.SetValue(xval)
+
+    def onRunFit(self, event=None):
         gname = self.main.groupname
 
         dtext = []
@@ -635,6 +708,11 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb.SetSelection(0)
 
+    def showInspectionTool(self, event=None):
+        app = wx.GetApp()
+        app.ShowInspectionTool()
+
+        
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -649,6 +727,7 @@ class ScanViewerFrame(wx.Frame):
 
         fmenu.AppendSeparator()
 
+        MenuItem(self, fmenu, "debug wx", "debug", self.showInspectionTool)
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
