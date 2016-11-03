@@ -172,8 +172,8 @@ class FitPanel(wx.Panel):
 
         try:
             lgroup =  getattr(self.main.larch.symtable, gname)
-            x = lgroup._xdat
-            y = lgroup._ydat
+            x = lgroup.xdat
+            y = lgroup.ydat
         except AttributeError:
             self.main.write_message('need data to fit!')
             return
@@ -197,7 +197,7 @@ class FitPanel(wx.Panel):
 
         lgroup.fits.append((model, bkg, step, dtext))
 
-        lgroup.plot_yarrays = [(lgroup._ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
+        lgroup.plot_yarrays = [(lgroup.ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
         if bkg is None:
             lgroup._fit = pgroup.fit[:]
             lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
@@ -360,8 +360,8 @@ class ScanViewerFrame(wx.Frame):
         self.xas_panel = self.CreateXASPanel(self.nb)
         self.fit_panel = FitPanel(parent=self.nb, main=self)
 
-        self.nb.AddPage(self.fit_panel, ' General Curve Fitting ', True)
-        self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
+        self.nb.AddPage(self.xas_panel, 'Data Processing',   True)
+        self.nb.AddPage(self.fit_panel, 'Curve Fitting',  True)
 
 
         mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
@@ -493,10 +493,6 @@ class ScanViewerFrame(wx.Frame):
             self.xas_nor2.SetValue(xval-e0)
 
 
-    def onCustomColumns(self, evt=None):
-        pass
-
-
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
@@ -504,9 +500,9 @@ class ScanViewerFrame(wx.Frame):
         dgroup = getattr(self.larch.symtable, gname)
 
         if not hasattr(dgroup, 'energy'):
-            dgroup.energy = dgroup._xdat
+            dgroup.energy = dgroup.xdat
         if not hasattr(dgroup, 'mu'):
-            dgroup.mu = dgroup._ydat
+            dgroup.mu = dgroup.ydat
 
         e0 = None
         if not self.xas_autoe0.IsChecked():
@@ -579,7 +575,7 @@ class ScanViewerFrame(wx.Frame):
 
         dgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
-            ie0 = index_of(dgroup._xdat, dgroup.e0)
+            ie0 = index_of(dgroup.xdat, dgroup.e0)
             dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
         return
 
@@ -653,7 +649,7 @@ class ScanViewerFrame(wx.Frame):
                 dgroup.plot_ymarkers = []
 
             else:
-                dgroup.plot_yarrays = [(dgroup._ydat, PLOTOPTS_1,
+                dgroup.plot_yarrays = [(dgroup.ydat, PLOTOPTS_1,
                                         dgroup.filename)]
 
             self.plot_group(groupname, title='', new=newplot)
@@ -670,13 +666,13 @@ class ScanViewerFrame(wx.Frame):
             plotcmd = newplot
 
         dgroup = getattr(self.larch.symtable, groupname, None)
-        if not hasattr(dgroup, '_xdat'):
+        if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)
 
         if hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
         else:
-            plot_yarrays = [(dgroup._ydat, {}, None)]
+            plot_yarrays = [(dgroup.ydat, {}, None)]
         # print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
 
         popts = {}
@@ -697,7 +693,7 @@ class ScanViewerFrame(wx.Frame):
             popts.update(yarr[1])
             if yarr[2] is not None:
                 popts['label'] = yarr[2]
-            plotcmd(dgroup._xdat, yarr[0], **popts)
+            plotcmd(dgroup.xdat, yarr[0], **popts)
             plotcmd = oplot # self.plotpanel.oplot
 
         ppanel = getdisplay(_larch=self.larch).panel
@@ -730,10 +726,7 @@ class ScanViewerFrame(wx.Frame):
         self.groupname = groupname
         self.dgroup = getattr(self.larch.symtable, groupname, None)
 
-        if self.dgroup.is_xas:
-            self.nb.SetSelection(1)
-        else:
-            self.nb.SetSelection(0)
+        self.nb.SetSelection(0)
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -803,10 +796,13 @@ class ScanViewerFrame(wx.Frame):
             self.subframes[name] = frameclass(self, **opts)
 
     def onEditColumnLabels(self, evt=None):
-        self.show_subframe('coledit', EditColumnFrame, group=self.dgroup,
+        self.show_subframe('coledit', EditColumnFrame,
+                           group=self.dgroup.raw,
                            last_array_sel=self.last_array_sel,
-                           read_ok_cb=self.onReadScan_Success)
-
+                           _larch=self.larch,
+                           read_ok_cb=partial(self.onReadScan_Success,
+                                              overwrite=True))
+        
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
@@ -847,24 +843,29 @@ class ScanViewerFrame(wx.Frame):
             dgroup.path = path
             dgroup.filename = filename
             dgroup.groupname = groupname
-            # print("Read -> Column Edit ", dgroup, path, filename, groupname)
-            self.show_subframe('coledit', EditColumnFrame,
+            self.show_subframe('coledit',
+                               EditColumnFrame,
                                group=dgroup,
                                last_array_sel=self.last_array_sel,
-                               read_ok_cb=self.onReadScan_Success)
+                               _larch=self.larch,
+                               read_ok_cb=partial(self.onReadScan_Success,
+                                                  overwrite=False))
         dlg.Destroy()
 
-    def onReadScan_Success(self, datagroup, array_sel):
-        """ called when column data has been selected and is ready to be used"""
+    def onReadScan_Success(self, datagroup, array_sel, overwrite=False):
+        """ called when column data has been selected and is ready to be used
+        overwrite: whether to overwrite the current datagroup, as when editing a datagroup
+        
+        """
         self.last_array_sel = array_sel
         filename = datagroup.filename
         groupname= datagroup.groupname
         # print("READ SCAN  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
-        if filename in self.file_groups:
+        if filename in self.file_groups and not overwrite:
             for i in range(1, 101):
                 ftest = "%s (%i)"  % (filename, i)
-                if ftest not in self.groups:
+                if ftest not in self.file_groups:
                     filename = ftest
                     break
 
@@ -874,10 +875,8 @@ class ScanViewerFrame(wx.Frame):
 
         setattr(self.larch.symtable, groupname, datagroup)
         if datagroup.is_xas:
-            self.nb.SetSelection(1)
             self.InitializeXASPanel(datagroup)
-        else:
-            self.nb.SetSelection(0)
+        self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
 class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
