@@ -67,6 +67,7 @@ xrf_plot         browsable display for XRF spectra
 '''
 
 MAX_WINDOWS = 20
+MAX_CURSHIST = 25
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
@@ -120,11 +121,15 @@ class PlotDisplay(PlotFrame):
         self.window = int(window)
         self._larch = _larch
         self._xylims = {}
+        self.cursor_hist = []
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
+            if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
+                symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
 
@@ -144,8 +149,13 @@ class PlotDisplay(PlotFrame):
         symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
+        hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
+        self.cursor_hist.insert(0, (x, y))
+        if len(self.cursor_hist) > hmax:
+            self.cursor_hist = self.cursor_hist[:hmax]
+        symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -222,11 +232,11 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display = _larch.symtable.get_symbol(symname, create=True)
     if display is None:
         display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
-    _larch.symtable.set_symbol(symname, display)
-    if display is not None:
         if wintitle is not None:
             title = wintitle
         display.SetTitle(title)
+
+    _larch.symtable.set_symbol(symname, display)
     return display
 
 @larch.ValidateLarchPlugin
@@ -339,8 +349,8 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
 
     See Also: oplot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, wintitle=wintitle,
-                          _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          wintitle=wintitle,  _larch=_larch)
     if plotter is None:
         _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
