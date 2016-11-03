@@ -19,11 +19,14 @@ before_install:
 install:
     - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib pandas nose sphinx
     - source activate test_env
+    - conda config --add channels conda-forge
+    - conda config --add channels newville
     - conda install wxpython
     - conda install sqlalchemy
-    - pip install termcolor
-    - pip install wxmplot
-    - pip install wxutils
+    - conda install lmfit
+    - conda install termcolor
+    - conda install wxmplot
+    - conda install wxutils
     - python setup.py install
 
 script:
