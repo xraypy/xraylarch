@@ -2,8 +2,9 @@ import wx
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-def BitmapButton(parent, bmp, action=None, tooltip=None):
-    b = wx.BitmapButton(parent, -1, bmp)
+def BitmapButton(parent, bmp, action=None, tooltip=None,
+                 size=(20, 20), **kws):
+    b = wx.BitmapButton(parent, -1, bmp, size=size, **kws)
     if action is not None:
         parent.Bind(wx.EVT_BUTTON, action, b)
     if tooltip is not None:
