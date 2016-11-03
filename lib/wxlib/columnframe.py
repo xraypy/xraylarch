@@ -24,6 +24,7 @@ CEN |=  wx.ALL
 XPRE_OPS = ('', 'log(', '-log(')
 YPRE_OPS = ('', 'log(', '-log(')
 ARR_OPS = ('+', '-', '*', '/')
+DATATYPES = ('raw', 'xas')
 
 def okcancel(panel, onOK=None, onCancel=None):
     btnsizer = wx.StdDialogButtonSizer()
@@ -46,14 +47,15 @@ class EditColumnFrame(wx.Frame) :
         self.larch = _larch
         self.rawgroup = group
         self.outgroup  = Group(raw=group)
-        for attr in ('path', 'filename', 'groupname', 'is_xas'):
+        for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
-        if self.outgroup.is_xas is None:
-            try:
-                self.outgroup.is_xas = 'energ' in self.rawgroup.array_labels[0].lower()
-            except:
-                self.outgroup.is_xas = False
+        if self.outgroup.datatype is None:
+            self.outgroup.datatype = 'raw'
+            if ('energ' in self.rawgroup.array_labels[0].lower() or
+                'energ' in self.rawgroup.array_labels[1].lower()):
+                self.outgroup.datatype = 'xas'
+
         self.read_ok_cb = read_ok_cb
 
         self.array_sel = {'xpop': '', 'xarr': None,
@@ -96,6 +98,9 @@ class EditColumnFrame(wx.Frame) :
         self.yarr1  = Choice(panel, choices= arr_labels, **opts)
         self.yarr2  = Choice(panel, choices=yarr_labels, **opts)
 
+        self.datatype = Choice(panel, choices=DATATYPES, **opts)
+        self.datatype.SetStringSelection(self.outgroup.datatype)
+
         opts['size'] = (90, -1)
 
         self.xpop = Choice(panel, choices=XPRE_OPS, **opts)
@@ -129,8 +134,6 @@ class EditColumnFrame(wx.Frame) :
         self.use_deriv = Check(panel, label='use derivative',
                                default=self.array_sel['use_deriv'], **opts)
 
-        self.is_xas = Check(panel, label='use as XAS data',
-                            default=self.outgroup.is_xas, **opts)
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -159,7 +162,7 @@ class EditColumnFrame(wx.Frame) :
         ir += 1
         sizer.Add(self.use_deriv, (ir, 0), (1, 3), LCEN, 0)
         ir += 1
-        sizer.Add(self.is_xas, (ir, 0), (1, 3), LCEN, 0)
+        sizer.Add(self.datatype, (ir, 0), (1, 3), LCEN, 0)
 
         self.wid_groupname = None
         if edit_groupname:
@@ -233,7 +236,7 @@ class EditColumnFrame(wx.Frame) :
             outgroup._index = 1.0*np.arange(len(getattr(rawgroup, xname)))
             xname = '_index'
 
-        outgroup.is_xas = self.is_xas.IsChecked()
+        outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
         outgroup.xdat = getattr(rawgroup, xname)
         
         def pre_op(opwid, arr):
@@ -319,7 +322,7 @@ class EditColumnFrame(wx.Frame) :
         outgroup.plot_ylabel = ylabel
         outgroup.xdat        = np.array(outgroup.xdat[:npts])
         outgroup.ydat        = np.array(outgroup.ydat[:npts])
-        if outgroup.is_xas:
+        if outgroup.datatype == 'xas':
             outgroup.energy = outgroup.xdat
             outgroup.mu     = outgroup.ydat
 

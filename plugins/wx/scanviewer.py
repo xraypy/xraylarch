@@ -621,7 +621,7 @@ class ScanViewerFrame(wx.Frame):
         if dgroup is None:
             return
         self.groupname = groupname
-        if (dgroup.is_xas and
+        if (dgroup.datatype == 'xas' and
             (getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
@@ -636,7 +636,7 @@ class ScanViewerFrame(wx.Frame):
             dgroup = getattr(self.larch.symtable, groupname, None)
             if dgroup is None:
                 continue
-            if dgroup.is_xas:
+            if dgroup.datatype == 'xas':
                 if ((getattr(dgroup, 'plot_yarrays', None) is None or
                      getattr(dgroup, 'energy', None) is None or
                      getattr(dgroup, 'mu', None) is None)):
@@ -874,7 +874,7 @@ class ScanViewerFrame(wx.Frame):
             self.file_groups[filename] = groupname
 
         setattr(self.larch.symtable, groupname, datagroup)
-        if datagroup.is_xas:
+        if datagroup.datatype == 'xas':
             self.InitializeXASPanel(datagroup)
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
