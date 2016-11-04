@@ -44,7 +44,7 @@ from larch_plugins.xafs import pre_edge
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS|flat_nb.FNB_TABS_BORDER_SIMPLE
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=-5,
@@ -107,17 +107,17 @@ class FitPanel(wx.Panel):
         sizer = self.sizer
         models = Choice(self, size=(150, -1), choices=ModelChoices,
                         action=self.addModel)
-        
+
         steps = Choice(self, size=(150, -1), choices=StepChoices,
                        action=partial(self.addModel, is_step=True))
 
         fit_btn  = Button(self, 'Do Fit', size=(100, -1), action=self.onRunFit)
         save_btn = Button(self, 'Save Fit', size=(100, -1), action=self.onSaveFit)
 
-        self.xmin_sel = BitmapButton(self, get_icon('plus'), 
+        self.xmin_sel = BitmapButton(self, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmin'),
                                      tooltip='use last point selected from plot')
-        self.xmax_sel = BitmapButton(self, get_icon('plus'), 
+        self.xmax_sel = BitmapButton(self, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmax'),
                                      tooltip='use last point selected from plot')
         opts = {'size': (90, -1), 'precision': 3}
@@ -137,17 +137,17 @@ class FitPanel(wx.Panel):
         rsiz.Add(fit_btn,       0, LCEN, 3)
         rsiz.Add(save_btn,      0, LCEN, 3)
 
-        pack(rpan, rsiz)        
+        pack(rpan, rsiz)
 
         ir = 0
         sizer.Add(rsiz, (ir, 0), (1, 6), LCEN)
-        
+
         ir += 1
         sizer.Add(Label(' Add Model: '),      (ir, 0), (1, 1), LCEN)
         sizer.Add(models,                    (ir, 1), (1, 2), LCEN)
         sizer.Add(Label(' Add Step Model: '), (ir, 3), (1, 1), LCEN)
         sizer.Add(steps,                     (ir, 4), (1, 2), LCEN)
-        
+
         ir += 1
         sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 6), LCEN)
 
@@ -155,9 +155,9 @@ class FitPanel(wx.Panel):
 
         for comp in self.fit_components:
             self.addModel(model=comp)
-            
+
         pack(self, sizer)
-    
+
     def addModel(self, event=None, model=None, is_step=False):
         if model is None and event is not None:
             model = event.GetString()
@@ -165,17 +165,27 @@ class FitPanel(wx.Panel):
             return
 
         def Label(t): return SimpleText(self, t)
-        
-        
-        print("Add Model ", model, is_step)
+
+
+        if is_step:
+            form = model.lower()
+            if form.startswith('err'): form = 'erf'
+            mclass = lm_models.StepModel
+            minst = mclass(form=form)
+        else:
+            mclass = getattr(lm_models, model+'Model')
+            minst = mclass()
+
+        print("Add Model ", model, mclass, minst.param_names)
         ir = self.irow
         self.sizer.Add(Label(model),  (ir, 0), (1, 3), LCEN)
-        self.Refresh()
         self.irow += 1
+        pack(self, self.sizer)
+
 
     def onSaveFit(self, event=None):
         pass
-    
+
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
         try:
@@ -712,7 +722,7 @@ class ScanViewerFrame(wx.Frame):
         app = wx.GetApp()
         app.ShowInspectionTool()
 
-        
+
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -799,7 +809,7 @@ class ScanViewerFrame(wx.Frame):
 
             self.onRead(path)
         dlg.Destroy()
-        
+
     def onRead(self, path):
         if path in self.file_groups:
             if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
@@ -843,7 +853,7 @@ class ScanViewerFrame(wx.Frame):
     def onRead_OK(self, datagroup, array_sel, overwrite=False):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when editing a datagroup
-        
+
         """
         self.last_array_sel = array_sel
         filename = datagroup.filename
