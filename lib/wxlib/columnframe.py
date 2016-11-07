@@ -8,8 +8,8 @@ np.seterr(all='ignore')
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-
-from wxmplot import PlotFrame
+import wx.lib.agw.flatnotebook as flat_nb
+from wxmplot import PlotPanel
 from wxutils import (SimpleText, FloatCtrl, pack, Button,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
@@ -19,24 +19,13 @@ from larch import Group
 from larch_plugins.io import fix_varname
 
 CEN |=  wx.ALL
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
 XPRE_OPS = ('', 'log(', '-log(')
 YPRE_OPS = ('', 'log(', '-log(')
 ARR_OPS = ('+', '-', '*', '/')
 DATATYPES = ('raw', 'xas')
-
-def okcancel(panel, onOK=None, onCancel=None):
-    btnsizer = wx.StdDialogButtonSizer()
-    _ok = wx.Button(panel, wx.ID_OK)
-    _no = wx.Button(panel, wx.ID_CANCEL)
-    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
-    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
-    _ok.SetDefault()
-    btnsizer.AddButton(_ok)
-    btnsizer.AddButton(_no)
-    btnsizer.Realize()
-    return btnsizer
 
 
 class EditColumnFrame(wx.Frame) :
@@ -79,10 +68,9 @@ class EditColumnFrame(wx.Frame) :
                           style=FRAMESTYLE)
 
         self.SetFont(Font(10))
-        panel = scrolled.ScrolledPanel(self)
+        panel     = wx.Panel(self)
         self.SetMinSize((600, 600))
         self.colors = GUIColors()
-        self.plotframe = None
 
         # title row
         title = SimpleText(panel, message, font=Font(13),
@@ -137,7 +125,7 @@ class EditColumnFrame(wx.Frame) :
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bsizer.Add(Button(bpanel, 'Preview', action=self.onColumnChoice), 4)
+        # bsizer.Add(Button(bpanel, 'Preview', action=self.onColumnChoice), 4)
         bsizer.Add(Button(bpanel, 'OK', action=self.onOK), 4)
         bsizer.Add(Button(bpanel, 'Cancel', action=self.onCancel), 4)
         pack(bpanel, bsizer)
@@ -178,25 +166,47 @@ class EditColumnFrame(wx.Frame) :
 
         pack(panel, sizer)
 
+        self.nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
+        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
-        ftext = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY,
-                               size=(-1, 150))
+        self.plotpanel = PlotPanel(self, messenger=self.plot_messages)
+        textpanel = wx.Panel(self)
+        ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,
+                               size=(400, 250))
         try:
             m = open(self.rawgroup.filename, 'r')
             text = m.read()
             m.close()
         except:
-            text = "The file '%s'\n was not found" % self.rawgroup.filename
+            text = "The file '%s'\n could not be read" % self.rawgroup.filename
         ftext.SetValue(text)
-        ftext.SetFont(Font(9))
+        ftext.SetFont(Font(11))
+
+        textsizer = wx.BoxSizer(wx.VERTICAL)
+        textsizer.Add(ftext, 1, LCEN|wx.GROW, 1)
+        pack(textpanel, textsizer)
+
+        self.nb.AddPage(textpanel, ' Text of Data File ', True)
+        self.nb.AddPage(self.plotpanel, ' Plot of Selected Arrays ', True)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
-        mainsizer.Add(ftext, 1, LCEN|wx.GROW,   2)
+        mainsizer.Add(self.nb, 1, LCEN|wx.GROW,   2)
         pack(self, mainsizer)
+
+        self.statusbar = self.CreateStatusBar(2, 0)
+        self.statusbar.SetStatusWidths([-1, -1])
+        statusbar_fields = [self.rawgroup.filename, ""]
+        for i in range(len(statusbar_fields)):
+            self.statusbar.SetStatusText(statusbar_fields[i], i)
+
 
         self.Show()
         self.Raise()
+        self.onColumnChoice(self)
 
     def onOK(self, event=None):
         """ build arrays according to selection """
@@ -206,19 +216,13 @@ class EditColumnFrame(wx.Frame) :
 
         if self.wid_groupname is not None:
             self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
-        if self.plotframe is not None:
-            try:
-                self.plotframe.Destroy()
-            except:
-                pass
+
         if self.read_ok_cb is not None:
             self.read_ok_cb(self.outgroup, self.array_sel)
         self.Destroy()
 
     def onCancel(self, event=None):
         self.outgroup.import_ok = False
-        if self.plotframe is not None:
-            self.plotframe.Destroy()
         self.Destroy()
 
     def onColumnChoice(self, evt=None):
@@ -228,7 +232,7 @@ class EditColumnFrame(wx.Frame) :
         use_deriv = self.use_deriv.IsChecked()
         rawgroup = self.rawgroup
         outgroup = self.outgroup
-        
+
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
         if xname == '<index>':
@@ -238,7 +242,7 @@ class EditColumnFrame(wx.Frame) :
 
         outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
         outgroup.xdat = getattr(rawgroup, xname)
-        
+
         def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
             suf = ''
@@ -309,13 +313,11 @@ class EditColumnFrame(wx.Frame) :
                      'yarr1': yname1, 'yarr2': yname2,
                      'use_deriv': use_deriv}
 
-
         try:
             npts = min(len(outgroup.xdat), len(outgroup.ydat))
         except AttributeError:
-            print( 'Error calculating arrays (npts not correct)')
             return
-        
+
         outgroup.filename    = rawgroup.filename
         outgroup.npts        = npts
         outgroup.plot_xlabel = xlabel
@@ -333,23 +335,11 @@ class EditColumnFrame(wx.Frame) :
         popts['ylabel'] = outgroup.plot_ylabel
         popts['xlabel'] = outgroup.plot_xlabel
 
-        if self.larch is None:
-            self.raise_plotframe()
-            plot = self.plotframe.panel.plot
-        else:
-            plot = self.larch.symtable._plotter.plot
-            popts['win'] = 3
-            popts['new'] = True
-            popts['wintitle'] = 'Edit Column Labels Plot Window'            
-        plot(outgroup.xdat, outgroup.ydat, **popts)
-            
+        self.plotpanel.plot(outgroup.xdat, outgroup.ydat, **popts)
 
-    def raise_plotframe(self):
-        if self.plotframe is not None:
-            try:
-                self.plotframe.Show()
-            except:
-                self.plotframe = None
-        if self.plotframe is None:
-            self.plotframe = PlotFrame(None, size=(650, 400))
-            self.plotframe.Show()
+        for i in range(self.nb.GetPageCount()):
+            if 'plot' in self.nb.GetPageText(i).lower():
+                self.nb.SetSelection(i)
+
+    def plot_messages(self, msg, panel=1):
+        self.SetStatusText(msg, panel)
