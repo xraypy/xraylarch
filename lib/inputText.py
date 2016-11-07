@@ -58,7 +58,11 @@ def is_complete(text):
         elif c in CLOSES and len(delims) > 0 and c == delims[-1]:
             delims.pop()
         elif c == COMMENT and eos == '': # comment char outside string
-            itok = len(text)
+            jtok = itok
+            if '\n' in text[itok:]:
+                itok = itok + text[itok:].index('\n')
+            else:
+                itok = len(text)
         itok += 1
     return eos=='' and len(delims)==0 and not text.rstrip().endswith(BSLASH)
 
