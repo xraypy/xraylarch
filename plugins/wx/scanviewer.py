@@ -25,7 +25,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
 
 import lmfit.models as lm_models
 
-from larch import Interpreter, isParameter
+from larch import Interpreter, isParameter, Group
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (larchframe, EditColumnFrame, ReportFrame,
                          BitmapButton, FileCheckList)
@@ -294,9 +294,9 @@ class ScanViewerFrame(wx.Frame):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.filelist = FileCheckList(splitter, main=self)
+        self.filelist = FileCheckList(splitter, main=self,
+                                      select_action=self.ShowFile)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
-        self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
 
         self.detailspanel = self.createDetailsPanel(splitter)
 
@@ -364,13 +364,13 @@ class ScanViewerFrame(wx.Frame):
         return mainpanel
 
 
-    def InitializeXASPanel(self, dgroup):
+    def fill_xas_panel(self, dgroup):
         predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
                        edge_step=0, norm2=-10, nnorm=3, nvict=2,
                        auto_step=True, auto_e0=True, show_e0=True)
 
-        if hasattr(dgroup, 'pre_edge_details'):
-            predefs.update(group2dict(dgroup.pre_edge_details))
+        if hasattr(dgroup, 'proc_opts'):
+            predefs.update(group2dict(dgroup.proc_opts))
 
         self.xas_e0.SetValue(predefs['e0'])
         self.xas_step.SetValue(predefs['edge_step'])
@@ -491,6 +491,12 @@ class ScanViewerFrame(wx.Frame):
         larch group '_y1_' attribute to be plotted
         """
         dgroup = getattr(self.larch.symtable, gname)
+        if not hasattr(dgroup, 'proc_opts'):
+            dgroup.proc_opts = Group(datatype='xas')
+        if not hasattr(dgroup, 'plot_opts'):
+            dgroup.plot_opts = Group(datatype='xas')
+        proc_opts = dgroup.proc_opts
+        plot_opts = dgroup.plot_opts
 
         if not hasattr(dgroup, 'energy'):
             dgroup.energy = dgroup.xdat
@@ -516,22 +522,27 @@ class ScanViewerFrame(wx.Frame):
         preopts['_larch'] = self.larch
 
         pre_edge(dgroup, **preopts)
-        dgroup.pre_edge_details.e0 = dgroup.e0
-        dgroup.pre_edge_details.edge_step = dgroup.edge_step
-        dgroup.pre_edge_details.auto_e0 = self.xas_autoe0.IsChecked()
-        dgroup.pre_edge_details.show_e0 = self.xas_showe0.IsChecked()
-        dgroup.pre_edge_details.auto_step = self.xas_autostep.IsChecked()
+
+        for attr in  ('e0', 'edge_step'):
+            setattr(proc_opts, attr, getattr(dgroup, attr))
+        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
+            setattr(proc_opts, attr, getattr(dgroup.pre_edge_details, attr))
+
+        proc_opts.auto_e0 = self.xas_autoe0.IsChecked()
+        proc_opts.show_e0 = self.xas_showe0.IsChecked()
+        proc_opts.auto_step = self.xas_autostep.IsChecked()
+        proc_opts.nnorm = int(self.xas_nnor.GetSelection())
+        proc_opts.nvict = int(self.xas_vict.GetSelection())
 
         if self.xas_autoe0.IsChecked():
             self.xas_e0.SetValue(dgroup.e0)
         if self.xas_autostep.IsChecked():
             self.xas_step.SetValue(dgroup.edge_step)
 
-        details_group = dgroup.pre_edge_details
-        self.xas_pre1.SetValue(details_group.pre1)
-        self.xas_pre2.SetValue(details_group.pre2)
-        self.xas_nor1.SetValue(details_group.norm1)
-        self.xas_nor2.SetValue(details_group.norm2)
+        self.xas_pre1.SetValue(proc_opts.pre1)
+        self.xas_pre2.SetValue(proc_opts.pre2)
+        self.xas_nor1.SetValue(proc_opts.norm1)
+        self.xas_nor2.SetValue(proc_opts.norm2)
 
         dgroup.orig_ylabel = dgroup.plot_ylabel
         dgroup.plot_ylabel = '$\mu$'
@@ -717,6 +728,9 @@ class ScanViewerFrame(wx.Frame):
         self.dgroup = getattr(self.larch.symtable, groupname, None)
 
         self.nb.SetSelection(0)
+        if self.dgroup.datatype == 'xas':
+            self.fill_xas_panel(self.dgroup)
+
 
     def showInspectionTool(self, event=None):
         app = wx.GetApp()
@@ -873,7 +887,7 @@ class ScanViewerFrame(wx.Frame):
 
         setattr(self.larch.symtable, groupname, datagroup)
         if datagroup.datatype == 'xas':
-            self.InitializeXASPanel(datagroup)
+            self.fill_xas_panel(datagroup)
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
