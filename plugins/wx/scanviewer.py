@@ -90,6 +90,250 @@ ModelChoices = ('Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Pearson7',
                'Quadratic', 'Exponential', 'PowerLaw', 'Rectangle',
                'DampedOscillator', 'LogNormal', 'BreitWigner', 'Donaich')
 
+
+
+class ProcessPanel(wx.Panel):
+    def __init__(self, parent=None, main=None, **kws):
+        wx.Panel.__init__(self, parent, **kws)
+
+        self.parent = parent
+        self.main  = main
+        self.needs_update = False
+
+        self.needs_update = False
+        self.proc_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
+        self.proc_timer.Start(500)
+
+        self.build_display()
+
+
+    def fill(self, dgroup):
+        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
+                       edge_step=0, norm2=-10, nnorm=3, nvict=2,
+                       auto_step=True, auto_e0=True, show_e0=True)
+
+        if hasattr(dgroup, 'proc_opts'):
+            predefs.update(group2dict(dgroup.proc_opts))
+
+        self.xas_e0.SetValue(predefs['e0'])
+        self.xas_step.SetValue(predefs['edge_step'])
+        self.xas_pre1.SetValue(predefs['pre1'])
+        self.xas_pre2.SetValue(predefs['pre2'])
+        self.xas_nor1.SetValue(predefs['norm1'])
+        self.xas_nor2.SetValue(predefs['norm2'])
+        self.xas_vict.SetSelection(predefs['nvict'])
+        self.xas_nnor.SetSelection(predefs['nnorm'])
+
+        self.xas_showe0.SetValue(predefs['show_e0'])
+        self.xas_autoe0.SetValue(predefs['auto_e0'])
+        self.xas_autostep.SetValue(predefs['auto_step'])
+
+    def build_display(self):
+
+        opchoices=('Raw Data', 'Normalized', 'Derivative',
+                   'Normalized + Derivative',
+                   'Pre-edge subtracted',
+                   'Raw Data + Pre-edge/Post-edge')
+
+        opts = {'action': self.UpdatePlot}
+        self.xas_autoe0   = Check(self, default=True, label='auto?', **opts)
+        self.xas_showe0   = Check(self, default=True, label='show?', **opts)
+        self.xas_autostep = Check(self, default=True, label='auto?', **opts)
+        self.xas_op       = Choice(self, size=(300, -1),
+                                   choices=opchoices,  **opts)
+
+        self.btns = {}
+        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+            bb = BitmapButton(self, get_icon('plus'),
+                              action=partial(self.on_selpoint, opt=name),
+                              tooltip='use last point selected from plot')
+            self.btns[name] = bb
+
+        opts = {'size': (85, -1), 'precision': 3,
+                'action': self.UpdatePlot}
+        self.xwids = {}
+        self.xas_e0   = FloatCtrl(self, value  = 0, **opts)
+        self.xas_step = FloatCtrl(self, value  = 0, **opts)
+        opts['precision'] = 1
+        self.xas_pre1 = FloatCtrl(self, value=-200, **opts)
+        self.xas_pre2 = FloatCtrl(self, value= -30, **opts)
+        self.xas_nor1 = FloatCtrl(self, value=  50, **opts)
+        self.xas_nor2 = FloatCtrl(self, value= -50, **opts)
+
+        opts = {'size': (50, -1),
+                'choices': ('0', '1', '2', '3'),
+                'action': self.UpdatePlot}
+        self.xas_vict = Choice(self, **opts)
+        self.xas_nnor = Choice(self, **opts)
+        self.xas_vict.SetSelection(1)
+        self.xas_nnor.SetSelection(2)
+        sizer = wx.GridBagSizer(10, 7)
+
+        sizer.Add(SimpleText(self, 'Plot XAS as: '),         (0, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'E0 : '),                 (1, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'Edge Step: '),           (2, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'Normalization range: '), (4, 0), (1, 1), LCEN)
+
+        sizer.Add(self.xas_op,                 (0, 1), (1, 6), LCEN)
+        sizer.Add(self.btns['e0'],             (1, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_e0,                 (1, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_autoe0,             (1, 3), (1, 3), LCEN)
+        sizer.Add(self.xas_showe0,             (1, 6), (1, 2), LCEN)
+
+        sizer.Add(self.xas_step,               (2, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_autostep,           (2, 3), (1, 3), LCEN)
+
+        sizer.Add(self.btns['pre1'],           (3, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre1,               (3, 2), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, ':'),          (3, 3), (1, 1), LCEN)
+        sizer.Add(self.btns['pre2'],           (3, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_pre2,               (3, 5), (1, 1), LCEN)
+        sizer.Add(self.btns['nor1'],           (4, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_nor1,               (4, 2), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, ':'),          (4, 3), (1, 1), LCEN)
+        sizer.Add(self.btns['nor2'],           (4, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_nor2,               (4, 5), (1, 1), LCEN)
+
+
+        sizer.Add(SimpleText(self, 'Victoreen:'), (3, 6), (1, 1), LCEN)
+        sizer.Add(self.xas_vict,               (3, 7), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'PolyOrder:'), (4, 6), (1, 1), LCEN)
+        sizer.Add(self.xas_nnor,               (4, 7), (1, 1), LCEN)
+
+        pack(self, sizer)
+
+    def onProcessTimer(self, evt=None):
+        if self.main.groupname is not None and self.needs_update:
+            self.process_data(self.main.groupname)
+            self.main.plot_group(self.main.groupname, new=True)
+            self.needs_update = False
+
+    def UpdatePlot(self, evt=None, **kws):
+        self.needs_update = True
+
+
+    def on_selpoint(self, evt=None, opt='e0'):
+        xval = None
+        try:
+            xval = self.larch.symtable._plotter.plot1_x
+        except:
+            pass
+        if xval is None:
+            return
+
+        e0 = self.xas_e0.GetValue()
+        if opt == 'e0':
+            self.xas_e0.SetValue(xval)
+            self.xas_autoe0.SetValue(0)
+        elif opt == 'pre1':
+            self.xas_pre1.SetValue(xval-e0)
+        elif opt == 'pre2':
+            self.xas_pre2.SetValue(xval-e0)
+        elif opt == 'nor1':
+            self.xas_nor1.SetValue(xval-e0)
+        elif opt == 'nor2':
+            self.xas_nor2.SetValue(xval-e0)
+
+
+    def process(self, gname, new_mu=False, **kws):
+        """ process (pre-edge/normalize) XAS data from XAS form, overwriting
+        larch group '_y1_' attribute to be plotted
+        """
+        dgroup = getattr(self.larch.symtable, gname)
+        if not hasattr(dgroup, 'proc_opts'):
+            dgroup.proc_opts = Group(datatype='xas')
+        if not hasattr(dgroup, 'plot_opts'):
+            dgroup.plot_opts = Group(datatype='xas')
+        proc_opts = dgroup.proc_opts
+        plot_opts = dgroup.plot_opts
+
+        if not hasattr(dgroup, 'energy'):
+            dgroup.energy = dgroup.xdat
+        if not hasattr(dgroup, 'mu'):
+            dgroup.mu = dgroup.ydat
+
+        e0 = None
+        if not self.xas_autoe0.IsChecked():
+            _e0 = self.xas_e0.GetValue()
+            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
+                e0 = float(_e0)
+
+        preopts = {'e0': e0}
+        if not self.xas_autostep.IsChecked():
+            preopts['step'] = self.xas_step.GetValue()
+        preopts['pre1']  = self.xas_pre1.GetValue()
+        preopts['pre2']  = self.xas_pre2.GetValue()
+        preopts['norm1'] = self.xas_nor1.GetValue()
+        preopts['norm2'] = self.xas_nor2.GetValue()
+        preopts['nvict'] = self.xas_vict.GetSelection()
+        preopts['nnorm'] = self.xas_nnor.GetSelection()
+        preopts['make_flat'] = False
+        preopts['_larch'] = self.larch
+
+        pre_edge(dgroup, **preopts)
+
+        for attr in  ('e0', 'edge_step'):
+            setattr(proc_opts, attr, getattr(dgroup, attr))
+        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
+            setattr(proc_opts, attr, getattr(dgroup.pre_edge_details, attr))
+
+        proc_opts.auto_e0 = self.xas_autoe0.IsChecked()
+        proc_opts.show_e0 = self.xas_showe0.IsChecked()
+        proc_opts.auto_step = self.xas_autostep.IsChecked()
+        proc_opts.nnorm = int(self.xas_nnor.GetSelection())
+        proc_opts.nvict = int(self.xas_vict.GetSelection())
+
+        if self.xas_autoe0.IsChecked():
+            self.xas_e0.SetValue(dgroup.e0)
+        if self.xas_autostep.IsChecked():
+            self.xas_step.SetValue(dgroup.edge_step)
+
+        self.xas_pre1.SetValue(proc_opts.pre1)
+        self.xas_pre2.SetValue(proc_opts.pre2)
+        self.xas_nor1.SetValue(proc_opts.norm1)
+        self.xas_nor2.SetValue(proc_opts.norm2)
+
+        dgroup.orig_ylabel = dgroup.plot_ylabel
+        dgroup.plot_ylabel = '$\mu$'
+        dgroup.plot_y2label = None
+        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'
+        dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
+        y4e0 = dgroup.mu
+
+        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
+        if out.startswith('raw data + pre'):
+            dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
+                                   (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
+                                   (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
+        elif out.startswith('pre'):
+            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
+            dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
+                                    'pre-edge subtracted $\mu$')]
+            y4e0 = dgroup.pre_edge_sub
+            dgroup.plot_ylabel = 'pre-edge subtracted $\mu$'
+        elif 'norm' in out and 'deriv' in out:
+            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
+                                   (dgroup.dmude, PLOTOPTS_D, '$d\mu/dE$')]
+            y4e0 = dgroup.norm
+            dgroup.plot_ylabel = 'normalized $\mu$'
+            dgroup.plot_y2label = '$d\mu/dE$'
+        elif out.startswith('norm'):
+            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$')]
+            y4e0 = dgroup.norm
+            dgroup.plot_ylabel = 'normalized $\mu$'
+        elif out.startswith('deriv'):
+            dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
+            y4e0 = dgroup.dmude
+            dgroup.plot_ylabel = '$d\mu/dE$'
+
+        dgroup.plot_ymarkers = []
+        if self.xas_showe0.IsChecked():
+            ie0 = index_of(dgroup.xdat, dgroup.e0)
+            dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
+
+
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
 
@@ -284,10 +528,6 @@ class ScanViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         read_workdir('scanviewer.dat')
-        self.need_xas_update = False
-        self.xas_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onXASProcessTimer, self.xas_timer)
-        self.xas_timer.Start(500)
         if parent is not None:
             self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -340,7 +580,7 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        self.proc_panel = self.Process_Panel(self.nb)
+        self.proc_panel = ProcessPanel(parent=self.nb, main=self)
 
         self.fit_panel = FitPanel(parent=self.nb, main=self)
 
@@ -354,225 +594,6 @@ class ScanViewerFrame(wx.Frame):
 
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
-
-
-    def fill_proc_panel(self, dgroup):
-        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
-                       edge_step=0, norm2=-10, nnorm=3, nvict=2,
-                       auto_step=True, auto_e0=True, show_e0=True)
-
-        if hasattr(dgroup, 'proc_opts'):
-            predefs.update(group2dict(dgroup.proc_opts))
-
-        self.xas_e0.SetValue(predefs['e0'])
-        self.xas_step.SetValue(predefs['edge_step'])
-        self.xas_pre1.SetValue(predefs['pre1'])
-        self.xas_pre2.SetValue(predefs['pre2'])
-        self.xas_nor1.SetValue(predefs['norm1'])
-        self.xas_nor2.SetValue(predefs['norm2'])
-        self.xas_vict.SetSelection(predefs['nvict'])
-        self.xas_nnor.SetSelection(predefs['nnorm'])
-
-        self.xas_showe0.SetValue(predefs['show_e0'])
-        self.xas_autoe0.SetValue(predefs['auto_e0'])
-        self.xas_autostep.SetValue(predefs['auto_step'])
-
-    def Process_Panel(self, parent):
-        opchoices=('Raw Data', 'Normalized', 'Derivative',
-                   'Normalized + Derivative',
-                   'Pre-edge subtracted',
-                   'Raw Data + Pre-edge/Post-edge')
-        p = panel = wx.Panel(parent)
-        opts = {'action': self.UpdateXASPlot}
-        self.xas_autoe0   = Check(panel, default=True, label='auto?', **opts)
-        self.xas_showe0   = Check(panel, default=True, label='show?', **opts)
-        self.xas_autostep = Check(panel, default=True, label='auto?', **opts)
-        self.xas_op       = Choice(panel, size=(300, -1),
-                                   choices=opchoices,  **opts)
-
-
-        self.btns = {}
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
-            bb = BitmapButton(panel, get_icon('plus'),
-                              action=partial(self.onXAS_selpoint, opt=name),
-                              tooltip='use last point selected from plot')
-            self.btns[name] = bb
-
-        opts = {'size': (85, -1), 'precision': 3,
-                'action': self.UpdateXASPlot}
-        self.xwids = {}
-        self.xas_e0   = FloatCtrl(panel, value  = 0, **opts)
-        self.xas_step = FloatCtrl(panel, value  = 0, **opts)
-        opts['precision'] = 1
-        self.xas_pre1 = FloatCtrl(panel, value=-200, **opts)
-        self.xas_pre2 = FloatCtrl(panel, value= -30, **opts)
-        self.xas_nor1 = FloatCtrl(panel, value=  50, **opts)
-        self.xas_nor2 = FloatCtrl(panel, value= -50, **opts)
-
-        opts = {'size': (50, -1),
-                'choices': ('0', '1', '2', '3'),
-                'action': self.UpdateXASPlot}
-        self.xas_vict = Choice(panel, **opts)
-        self.xas_nnor = Choice(panel, **opts)
-        self.xas_vict.SetSelection(1)
-        self.xas_nnor.SetSelection(2)
-        sizer = wx.GridBagSizer(10, 7)
-
-        sizer.Add(SimpleText(p, 'Plot XAS as: '),         (0, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'E0 : '),                 (1, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Edge Step: '),           (2, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Normalization range: '), (4, 0), (1, 1), LCEN)
-
-        sizer.Add(self.xas_op,                 (0, 1), (1, 6), LCEN)
-        sizer.Add(self.btns['e0'],             (1, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_e0,                 (1, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autoe0,             (1, 3), (1, 3), LCEN)
-        sizer.Add(self.xas_showe0,             (1, 6), (1, 2), LCEN)
-
-        sizer.Add(self.xas_step,               (2, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autostep,           (2, 3), (1, 3), LCEN)
-
-        sizer.Add(self.btns['pre1'],           (3, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_pre1,               (3, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, ':'),          (3, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['pre2'],           (3, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_pre2,               (3, 5), (1, 1), LCEN)
-        sizer.Add(self.btns['nor1'],           (4, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_nor1,               (4, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, ':'),          (4, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['nor2'],           (4, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_nor2,               (4, 5), (1, 1), LCEN)
-
-
-        sizer.Add(SimpleText(p, 'Victoreen:'), (3, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_vict,               (3, 7), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'PolyOrder:'), (4, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_nnor,               (4, 7), (1, 1), LCEN)
-
-
-
-        pack(panel, sizer)
-        return panel
-
-    def onXAS_selpoint(self, evt=None, opt='e0'):
-        xval = None
-        try:
-            xval = self.larch.symtable._plotter.plot1_x
-        except:
-            pass
-        if xval is None:
-            return
-
-        e0 = self.xas_e0.GetValue()
-        if opt == 'e0':
-            self.xas_e0.SetValue(xval)
-            self.xas_autoe0.SetValue(0)
-        elif opt == 'pre1':
-            self.xas_pre1.SetValue(xval-e0)
-        elif opt == 'pre2':
-            self.xas_pre2.SetValue(xval-e0)
-        elif opt == 'nor1':
-            self.xas_nor1.SetValue(xval-e0)
-        elif opt == 'nor2':
-            self.xas_nor2.SetValue(xval-e0)
-
-
-    def xas_process(self, gname, new_mu=False, **kws):
-        """ process (pre-edge/normalize) XAS data from XAS form, overwriting
-        larch group '_y1_' attribute to be plotted
-        """
-        dgroup = getattr(self.larch.symtable, gname)
-        if not hasattr(dgroup, 'proc_opts'):
-            dgroup.proc_opts = Group(datatype='xas')
-        if not hasattr(dgroup, 'plot_opts'):
-            dgroup.plot_opts = Group(datatype='xas')
-        proc_opts = dgroup.proc_opts
-        plot_opts = dgroup.plot_opts
-
-        if not hasattr(dgroup, 'energy'):
-            dgroup.energy = dgroup.xdat
-        if not hasattr(dgroup, 'mu'):
-            dgroup.mu = dgroup.ydat
-
-        e0 = None
-        if not self.xas_autoe0.IsChecked():
-            _e0 = self.xas_e0.GetValue()
-            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                e0 = float(_e0)
-
-        preopts = {'e0': e0}
-        if not self.xas_autostep.IsChecked():
-            preopts['step'] = self.xas_step.GetValue()
-        preopts['pre1']  = self.xas_pre1.GetValue()
-        preopts['pre2']  = self.xas_pre2.GetValue()
-        preopts['norm1'] = self.xas_nor1.GetValue()
-        preopts['norm2'] = self.xas_nor2.GetValue()
-        preopts['nvict'] = self.xas_vict.GetSelection()
-        preopts['nnorm'] = self.xas_nnor.GetSelection()
-        preopts['make_flat'] = False
-        preopts['_larch'] = self.larch
-
-        pre_edge(dgroup, **preopts)
-
-        for attr in  ('e0', 'edge_step'):
-            setattr(proc_opts, attr, getattr(dgroup, attr))
-        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-            setattr(proc_opts, attr, getattr(dgroup.pre_edge_details, attr))
-
-        proc_opts.auto_e0 = self.xas_autoe0.IsChecked()
-        proc_opts.show_e0 = self.xas_showe0.IsChecked()
-        proc_opts.auto_step = self.xas_autostep.IsChecked()
-        proc_opts.nnorm = int(self.xas_nnor.GetSelection())
-        proc_opts.nvict = int(self.xas_vict.GetSelection())
-
-        if self.xas_autoe0.IsChecked():
-            self.xas_e0.SetValue(dgroup.e0)
-        if self.xas_autostep.IsChecked():
-            self.xas_step.SetValue(dgroup.edge_step)
-
-        self.xas_pre1.SetValue(proc_opts.pre1)
-        self.xas_pre2.SetValue(proc_opts.pre2)
-        self.xas_nor1.SetValue(proc_opts.norm1)
-        self.xas_nor2.SetValue(proc_opts.norm2)
-
-        dgroup.orig_ylabel = dgroup.plot_ylabel
-        dgroup.plot_ylabel = '$\mu$'
-        dgroup.plot_y2label = None
-        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'
-        dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
-        y4e0 = dgroup.mu
-
-        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-        if out.startswith('raw data + pre'):
-            dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
-                                   (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
-                                   (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
-        elif out.startswith('pre'):
-            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
-            dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
-                                    'pre-edge subtracted $\mu$')]
-            y4e0 = dgroup.pre_edge_sub
-            dgroup.plot_ylabel = 'pre-edge subtracted $\mu$'
-        elif 'norm' in out and 'deriv' in out:
-            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
-                                   (dgroup.dmude, PLOTOPTS_D, '$d\mu/dE$')]
-            y4e0 = dgroup.norm
-            dgroup.plot_ylabel = 'normalized $\mu$'
-            dgroup.plot_y2label = '$d\mu/dE$'
-        elif out.startswith('norm'):
-            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$')]
-            y4e0 = dgroup.norm
-            dgroup.plot_ylabel = 'normalized $\mu$'
-        elif out.startswith('deriv'):
-            dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
-            y4e0 = dgroup.dmude
-            dgroup.plot_ylabel = '$d\mu/dE$'
-
-        dgroup.plot_ymarkers = []
-        if self.xas_showe0.IsChecked():
-            ie0 = index_of(dgroup.xdat, dgroup.e0)
-            dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
 
     def init_larch(self):
@@ -598,14 +619,6 @@ class ScanViewerFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onXASProcessTimer(self, evt=None):
-        if self.groupname is not None and self.need_xas_update:
-            self.xas_process(self.groupname)
-            self.plot_group(self.groupname, new=True)
-            self.need_xas_update = False
-
-    def UpdateXASPlot(self, evt=None, **kws):
-        self.need_xas_update = True
 
     def onPlotOne(self, evt=None, groupname=None):
         if groupname is None:
@@ -619,7 +632,7 @@ class ScanViewerFrame(wx.Frame):
             (getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
-            self.xas_process(groupname)
+            self.proc_panel.process(groupname)
         self.plot_group(groupname, new=True)
 
     def onPlotSel(self, evt=None):
@@ -634,7 +647,7 @@ class ScanViewerFrame(wx.Frame):
                 if ((getattr(dgroup, 'plot_yarrays', None) is None or
                      getattr(dgroup, 'energy', None) is None or
                      getattr(dgroup, 'mu', None) is None)):
-                    self.xas_process(groupname)
+                    self.proc_panel.process(groupname)
 
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
                                         '%s norm' % dgroup.filename)]
@@ -721,7 +734,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb.SetSelection(0)
         if self.dgroup.datatype == 'xas':
-            self.fill_proc_panel(self.dgroup)
+            self.proc_panel.fill(self.dgroup)
 
         self.title.SetLabel(str(evt.GetString()))
 
@@ -766,26 +779,28 @@ class ScanViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, evt):
-        sys.stderr.write('Close: save scanviewer.dat\n')
+        # sys.stderr.write('Close: save scanviewer.dat\n')
         save_workdir('scanviewer.dat')
+        self.proc_panel.proc_timer.Stop()
 
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
-            try:
-                obj.Destroy()
-            except:
-                pass
-        for nam in dir(self.larch.symtable._sys.wx):
-            obj = getattr(self.larch.symtable._sys.wx, nam)
-            del obj
-
-        if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.onClose()
-            except:
-                pass
-        for w in self.GetChildren():
-            w.Destroy()
+#
+#         for nam in dir(self.larch.symtable._plotter):
+#             obj = getattr(self.larch.symtable._plotter, nam)
+#             try:
+#                 obj.Destroy()
+#             except:
+#                 pass
+#
+#         if self.larch_buffer is not None:
+#             try:
+#                 self.larch_buffer.onClose()
+#             except:
+#                 pass
+#         try:
+#            for w in self.GetChildren():
+#                w.Destroy()
+#        except:
+#            pass
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -883,7 +898,7 @@ class ScanViewerFrame(wx.Frame):
 
         setattr(self.larch.symtable, groupname, datagroup)
         if datagroup.datatype == 'xas':
-            self.fill_proc_panel(datagroup)
+            self.proc_panel.fill(datagroup)
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
