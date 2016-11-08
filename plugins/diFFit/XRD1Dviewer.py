@@ -807,12 +807,11 @@ class MaskToolsPopup(wx.Dialog):
         print 'This will trigger the saving of a mask.'
 
 class Calc1DPopup(wx.Dialog):
-    ### NOT YET WRITTEN _ THIS IS JUST A STAND IN
-    ## mkak 2016.11.01
     def __init__(self,xrd2Ddata,ai,mask=None):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options')
+        dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
         
        
         self.mask = mask
@@ -833,30 +832,71 @@ class Calc1DPopup(wx.Dialog):
         ## Mask 
         self.ch_mask = wx.CheckBox(self.panel, label='APPLY CURRENT MASK?')
         self.ch_mask.Bind(wx.EVT_CHECKBOX,None)
+        
         mainsizer.Add(self.ch_mask,flag=wx.ALL,border=8)
         if self.mask == None:
             self.ch_mask.Disable()
         
         ## Azimutal wedges 
+        wedgesizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_wedges = wx.StaticText(self.panel, label='AZIMUTHAL WEDGES')
+        
+        wsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         self.wedge_arrow = wx.SpinButton(self.panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        wsizer.Add(self.wedges,flag=wx.RIGHT,border=8)
+        wsizer.Add(self.wedge_arrow,flag=wx.RIGHT,border=8)
         
-        mainsizer.Add(self.wedges,flag=wx.ALL,border=8)
-        mainsizer.Add(self.wedge_arrow,flag=wx.ALL,border=8)
+        wedgesizer.Add(ttl_wedges,flag=wx.BOTTOM,border=8)
+        wedgesizer.Add(wsizer,flag=wx.BOTTOM,border=8)
+
+        mainsizer.Add(wedgesizer,flag=wx.ALL,border=8)
 
         ## Y-Range
         ysizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ttl_yrange = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
+                
         yminsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_ymin = wx.StaticText(self.panel, label='MINIMUM')
+        self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        yminsizer.Add(ttl_ymin,  flag=wx.RIGHT, border=5)        
+        yminsizer.Add(self.txt_ymin,  flag=wx.RIGHT, border=5)        
+        
         ymaxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_ymax = wx.StaticText(self.panel, label='MAXIMUM')
+        self.txt_ymax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        ymaxsizer.Add(ttl_ymax,  flag=wx.RIGHT, border=5)        
+        ymaxsizer.Add(self.txt_ymax,  flag=wx.RIGHT, border=5)
 
-        self.ttl_range = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
-        
-        self.ttl_range = wx.StaticText(self.panel, label='MINIMUM')
-        self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        
-        self.ttl_range = wx.StaticText(self.panel, label='MAXIMUM)
-        self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        ysizer.Add(ttl_yrange,  flag=wx.BOTTOM, border=5)        
+        ysizer.Add(yminsizer,  flag=wx.BOTTOM, border=5)
+        ysizer.Add(ymaxsizer,  flag=wx.BOTTOM, border=5)
+        mainsizer.Add(ysizer,  flag=wx.ALL, border=5)
 
+
+        ## X-Range
+        xsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
+                
+        xminsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_xmin = wx.StaticText(self.panel, label='MINIMUM')
+        self.txt_xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)        
+        xminsizer.Add(self.txt_xmin,  flag=wx.RIGHT, border=5)        
+        
+        xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_xmax = wx.StaticText(self.panel, label='MAXIMUM')
+        self.txt_xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)        
+        xmaxsizer.Add(self.txt_xmax,  flag=wx.RIGHT, border=5)
+
+        xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)        
+        xsizer.Add(xminsizer,  flag=wx.BOTTOM, border=5)
+        xsizer.Add(xmaxsizer,  flag=wx.BOTTOM, border=5)
+        mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
 
         ## Okay Buttons
         btn_hlp = wx.Button(self.panel, wx.ID_HELP   )
