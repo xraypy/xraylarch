@@ -301,7 +301,7 @@ class ScanViewerFrame(wx.Frame):
         plot_one = Button(ltop, 'Plot One',
                           size=(100, 40),
                           action=self.onPlotOne)
-        plot_sel = Button(ltop, 'Plot Checked',
+        plot_sel = Button(ltop, 'Plot Selected',
                           size=(100, 40),
                           action=self.onPlotSel)
         plot_one.SetFont(Font(12))
@@ -322,13 +322,8 @@ class ScanViewerFrame(wx.Frame):
 
         pack(leftpanel, sizer)
 
-        self.detailspanel = self.createDetailsPanel(splitter)
-
-        splitter.SplitVertically(leftpanel, self.detailspanel, 1)
-        wx.CallAfter(self.init_larch)
-
-    def createDetailsPanel(self, parent):
-        panel = wx.Panel(parent)
+        # right hand side
+        panel = wx.Panel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, 'initializing...')
@@ -339,27 +334,29 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb = flat_nb.FlatNotebook(panel, -1, agwStyle=FNB_STYLE)
 
-        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetTabAreaColour(wx.Colour(250,250,250))
         self.nb.SetActiveTabColour(wx.Colour(254,254,195))
 
-        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+        self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
+        self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        self.proc_panel = self.CreateXASPanel(self.nb)
+        self.proc_panel = self.Process_Panel(self.nb)
 
         self.fit_panel = FitPanel(parent=self.nb, main=self)
 
         self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
-        self.nb.AddPage(self.fit_panel, ' Curve Fitting ',  True)
-
+        self.nb.AddPage(self.fit_panel,  ' Curve Fitting ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+        self.nb.SetSelection(0)
 
         pack(panel, sizer)
-        return panel
+
+        splitter.SplitVertically(leftpanel, panel, 1)
+        wx.CallAfter(self.init_larch)
 
 
-    def fill_xas_panel(self, dgroup):
+    def fill_proc_panel(self, dgroup):
         predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
                        edge_step=0, norm2=-10, nnorm=3, nvict=2,
                        auto_step=True, auto_e0=True, show_e0=True)
@@ -380,7 +377,7 @@ class ScanViewerFrame(wx.Frame):
         self.xas_autoe0.SetValue(predefs['auto_e0'])
         self.xas_autostep.SetValue(predefs['auto_step'])
 
-    def CreateXASPanel(self, parent):
+    def Process_Panel(self, parent):
         opchoices=('Raw Data', 'Normalized', 'Derivative',
                    'Normalized + Derivative',
                    'Pre-edge subtracted',
@@ -724,7 +721,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb.SetSelection(0)
         if self.dgroup.datatype == 'xas':
-            self.fill_xas_panel(self.dgroup)
+            self.fill_proc_panel(self.dgroup)
 
         self.title.SetLabel(str(evt.GetString()))
 
@@ -745,17 +742,18 @@ class ScanViewerFrame(wx.Frame):
                   "Show Larch Programming Buffer",
                   self.onShowLarchBuffer)
 
-        fmenu.AppendSeparator()
 
-        MenuItem(self, fmenu, "debug wx", "debug", self.showInspectionTool)
+        MenuItem(self, fmenu, "Re-select Data Columns\tCtrl+R",
+                 "Change which data columns used for this file",
+                 self.onEditColumns)
+
+        fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
 
         self.menubar.Append(fmenu, "&File")
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Edit Column Labels\tCtrl+E",
-                 "Edit Column Labels", self.onEditColumnLabels)
-
         self.menubar.Append(omenu, "Options")
 
         self.SetMenuBar(self.menubar)
@@ -801,7 +799,7 @@ class ScanViewerFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
-    def onEditColumnLabels(self, evt=None):
+    def onEditColumns(self, evt=None):
         self.show_subframe('coledit', EditColumnFrame,
                            group=self.dgroup.raw,
                            last_array_sel=self.last_array_sel,
@@ -826,12 +824,14 @@ class ScanViewerFrame(wx.Frame):
                                   'Re-read file?'):
                 return
         filedir, filename = os.path.split(path)
-        pref = fix_varname((filename + '____')[:7]).replace('.', '_')
-        count, maxcount = 1, 9999
-        groupname = "%s%3.3i" % (pref, count)
+        pref= fix_varname(filename.replace('.', '_'))
+        if len(pref) > 15:
+            pref = pref[:15]
+        groupname = pref
+        count, maxcount = 0, 999
         while hasattr(self.larch.symtable, groupname) and count < maxcount:
             count += 1
-            groupname = '%s%3.3i' % (pref, count)
+            groupname = '%s_%2.2i' % (pref, count)
 
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
@@ -883,7 +883,7 @@ class ScanViewerFrame(wx.Frame):
 
         setattr(self.larch.symtable, groupname, datagroup)
         if datagroup.datatype == 'xas':
-            self.fill_xas_panel(datagroup)
+            self.fill_proc_panel(datagroup)
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
