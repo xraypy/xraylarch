@@ -859,13 +859,13 @@ class Calc1DPopup(wx.Dialog):
         ttl_yrange = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
                 
         yminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymin = wx.StaticText(self.panel, label='MINIMUM')
+        ttl_ymin = wx.StaticText(self.panel, label='minimum')
         self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         yminsizer.Add(ttl_ymin,  flag=wx.RIGHT, border=5)        
         yminsizer.Add(self.txt_ymin,  flag=wx.RIGHT, border=5)        
         
         ymaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymax = wx.StaticText(self.panel, label='MAXIMUM')
+        ttl_ymax = wx.StaticText(self.panel, label='maximum')
         self.txt_ymax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         ymaxsizer.Add(ttl_ymax,  flag=wx.RIGHT, border=5)        
         ymaxsizer.Add(self.txt_ymax,  flag=wx.RIGHT, border=5)
@@ -880,20 +880,29 @@ class Calc1DPopup(wx.Dialog):
         xsizer = wx.BoxSizer(wx.VERTICAL)
         
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
-                
+        
+        xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
+        xunits = ['q (A^-1)',u'2\u03B8','d (A)'] ## \u212B
+        ttl_xunit = wx.StaticText(self.panel, label='units')
+        self.ch_xunit = wx.Choice(self.panel,choices=xunits)
+        
+        xunitsizer.Add(ttl_xunit, flag=wx.RIGHT, border=5)
+        xunitsizer.Add(self.ch_xunit, flag=wx.RIGHT, border=5)
+                        
         xminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmin = wx.StaticText(self.panel, label='MINIMUM')
+        ttl_xmin = wx.StaticText(self.panel, label='minimum')
         self.txt_xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)        
-        xminsizer.Add(self.txt_xmin,  flag=wx.RIGHT, border=5)        
+        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)
+        xminsizer.Add(self.txt_xmin,  flag=wx.RIGHT, border=5)
         
         xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmax = wx.StaticText(self.panel, label='MAXIMUM')
+        ttl_xmax = wx.StaticText(self.panel, label='maximum')
         self.txt_xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)        
         xmaxsizer.Add(self.txt_xmax,  flag=wx.RIGHT, border=5)
 
-        xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)        
+        xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
+        xsizer.Add(xunitsizer, flag=wx.ALL, border=5)
         xsizer.Add(xminsizer,  flag=wx.BOTTOM, border=5)
         xsizer.Add(xmaxsizer,  flag=wx.BOTTOM, border=5)
         mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
