@@ -829,14 +829,36 @@ class Calc1DPopup(wx.Dialog):
         self.panel = wx.Panel(self)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-
+        
+        ## Mask 
         self.ch_mask = wx.CheckBox(self.panel, label='APPLY CURRENT MASK?')
         self.ch_mask.Bind(wx.EVT_CHECKBOX,None)
         mainsizer.Add(self.ch_mask,flag=wx.ALL,border=8)
         if self.mask == None:
             self.ch_mask.Disable()
+        
+        ## Azimutal wedges 
+        self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.wedge_arrow = wx.SpinButton(self.panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        
+        mainsizer.Add(self.wedges,flag=wx.ALL,border=8)
+        mainsizer.Add(self.wedge_arrow,flag=wx.ALL,border=8)
+
+        ## Y-Range
+        ysizer = wx.BoxSizer(wx.VERTICAL)
+        yminsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ymaxsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.ttl_range = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
+        
+        self.ttl_range = wx.StaticText(self.panel, label='MINIMUM')
+        self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        
+        self.ttl_range = wx.StaticText(self.panel, label='MAXIMUM)
+        self.txt_ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
 
+        ## Okay Buttons
         btn_hlp = wx.Button(self.panel, wx.ID_HELP   )
         btn_ok  = wx.Button(self.panel, wx.ID_OK     )
         btn_cncl = wx.Button(self.panel, wx.ID_CANCEL )
