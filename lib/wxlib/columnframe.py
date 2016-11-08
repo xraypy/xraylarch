@@ -69,7 +69,7 @@ class EditColumnFrame(wx.Frame) :
                 self.array_sel['yarr1'] = 'itrans'
             elif 'i1' in self.rawgroup.array_labels:
                 self.array_sel['yarr1'] = 'i1'
-        message = "Build Arrys from Data Columns for %s" % self.rawgroup.filename
+        message = "Data Columns for %s" % self.rawgroup.filename
         wx.Frame.__init__(self, None, -1,
                           'Build Arrays from Data Columns for %s' % self.rawgroup.filename,
                           style=FRAMESTYLE)
@@ -220,6 +220,9 @@ class EditColumnFrame(wx.Frame) :
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
                                          size=(100, -1))
+        if not edit_groupname:
+            self.wid_groupname.Disable()
+
         sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
         sizer.Add(self.wid_groupname,               (ir, 1), (1, 1), LCEN, 0)
 
