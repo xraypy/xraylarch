@@ -44,7 +44,8 @@ from larch_plugins.xafs import pre_edge
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS|flat_nb.FNB_TABS_BORDER_SIMPLE
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NODRAG|flat_nb.FNB_NO_NAV_BUTTONS
+
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=-5,
@@ -294,54 +295,49 @@ class ScanViewerFrame(wx.Frame):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.filelist = FileCheckList(splitter, main=self,
+        leftpanel = wx.Panel(splitter)
+        ltop = wx.Panel(leftpanel)
+
+        plot_one = Button(ltop, 'Plot One',
+                          size=(100, 40),
+                          action=self.onPlotOne)
+        plot_sel = Button(ltop, 'Plot Checked',
+                          size=(100, 40),
+                          action=self.onPlotSel)
+        plot_one.SetFont(Font(12))
+        plot_sel.SetFont(Font(12))
+        self.filelist = FileCheckList(leftpanel, main=self,
                                       select_action=self.ShowFile)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
+        tsizer = wx.GridBagSizer(10, 2)
+        tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
+        tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
+
+        pack(ltop, tsizer)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(ltop, 0, LCEN|wx.GROW, 1)
+        sizer.Add(self.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
+
+        pack(leftpanel, sizer)
+
         self.detailspanel = self.createDetailsPanel(splitter)
 
-        splitter.SplitVertically(self.filelist, self.detailspanel, 1)
+        splitter.SplitVertically(leftpanel, self.detailspanel, 1)
         wx.CallAfter(self.init_larch)
 
     def createDetailsPanel(self, parent):
-        mainpanel = wx.Panel(parent)
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        panel = wx.Panel(mainpanel)
-        sizer = wx.GridBagSizer(8, 7)
+        panel = wx.Panel(parent)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, 'initializing...')
+        self.title.SetFont(Font(10))
+
         ir = 0
-        sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
-        # x-axis
+        sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
 
-        self.plot_one = Button(panel, 'Plot', size=(200, 30),
-                               action=self.onPlotOne)
-        self.plot_sel = Button(panel, 'Plot Selected', size=(200, 30),
-                               action=self.onPlotSel)
-
-        ir += 1
-        sizer.Add(self.plot_one, (ir, 0), (1, 2), LCEN, 0)
-        sizer.Add(self.plot_sel, (ir, 2), (1, 2), LCEN, 0)
-        pack(panel, sizer)
-
-        mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
-
-        o = """
-        btnbox   = wx.Panel(mainpanel)
-        btnsizer = wx.BoxSizer(wx.HORIZONTAL)
-        for ttl, opt in (('New Plot',   'new'),
-                         ('Over Plot (left)',  'left'),
-                         ('Over Plot (right)', 'right')):
-
-            btnsizer.Add(Button(btnbox, ttl, size=(135, -1),
-                                action=partial(self.onPlot, opt=opt)),
-                         LCEN, 1)
-
-        pack(btnbox, btnsizer)
-        mainsizer.Add(btnbox, 0, LCEN, 2)
-        """
-
-        self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
+        self.nb = flat_nb.FlatNotebook(panel, -1, agwStyle=FNB_STYLE)
 
         self.nb.SetTabAreaColour(wx.Colour(248,248,240))
         self.nb.SetActiveTabColour(wx.Colour(254,254,195))
@@ -349,19 +345,18 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
-        self.xas_panel = self.CreateXASPanel(self.nb)
+        self.proc_panel = self.CreateXASPanel(self.nb)
 
         self.fit_panel = FitPanel(parent=self.nb, main=self)
 
-        self.nb.AddPage(self.xas_panel, ' Data Processing ',   True)
+        self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel, ' Curve Fitting ',  True)
 
 
-        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+        sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
 
-        pack(mainpanel, mainsizer)
-
-        return mainpanel
+        pack(panel, sizer)
+        return panel
 
 
     def fill_xas_panel(self, dgroup):
@@ -731,6 +726,7 @@ class ScanViewerFrame(wx.Frame):
         if self.dgroup.datatype == 'xas':
             self.fill_xas_panel(self.dgroup)
 
+        self.title.SetLabel(str(evt.GetString()))
 
     def showInspectionTool(self, event=None):
         app = wx.GetApp()
