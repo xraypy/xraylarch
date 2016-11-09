@@ -618,22 +618,38 @@ class FitPanel(wx.Panel):
             mclass = getattr(lm_models, model+'Model')
             minst = mclass()
 
-        prefix = "p%i" % (len(self.fit_components) + 1)
+        imod = len(self.fit_components) + 1
+
+        prefix = "p%i" % imod
 
         print("Add Model ", model, mclass, minst.param_names)
 
         mpanel = self.modelpanel
 
-        modbox = wx.StaticBox(mpanel, -1, "%s: prefix=%s" % (title, prefix))
+        modbox = wx.StaticBox(mpanel, -1, "Component %i: %s" % (imod, title))
 
         sizer = wx.GridBagSizer(3, 3)
-        t1 = SimpleText(modbox, "%s" % repr(mclass))
+
+        mname  = wx.TextCtrl(modbox, -1, prefix, size=(80, -1))
+        usebox = Check(modbox, default=True, label='Use in Model', size=(100, -1))
+        delbtn = Button(modbox, 'Delete', size=(80, -1),
+                        action=partial(self.onDeleteComponent, comp=imod))
+
+        pick3btn = Button(modbox, 'Pick 3 Points', size=(80, -1),
+                          action=partial(self.onPick3Points, comp=imod))
+        pick3msg = SimpleText(modbox, "    ", size=(100, -1))
+
+        sizer.Add(SimpleText(modbox, "Name"), (0, 0), (1, 1), LCEN, 2)
+        sizer.Add(mname,     (0, 1), (1, 1), LCEN, 2)
+        sizer.Add(usebox,    (0, 2), (1, 1), LCEN, 2)
+        sizer.Add(pick3btn,  (0, 3), (1, 1), LCEN, 2)
+        sizer.Add(pick3msg,  (0, 4), (1, 1), LCEN, 2)
+        sizer.Add(delbtn,    (0, 5), (1, 1), LCEN, 2)
+
         t2 = SimpleText(modbox, "%s" % repr(minst.param_names))
+        sizer.Add(t2,        (1, 1), (1, 3), LCEN|wx.GROW, 2)
 
-        use   = Check(modbox, default=True, label='Use Model', **opts)
-
-        sizer.Add(t1, (0, 0), (1, 1), LCEN|wx.GROW, 2)
-        sizer.Add(t2, (0, 1), (1, 1), LCEN|wx.GROW, 2)
+        self.fit_components.append((imod, modbox, mpanel, mname, usebox, delbtn, pick3btn, pick3msg))
 
         pack(modbox, sizer)
 
@@ -641,6 +657,12 @@ class FitPanel(wx.Panel):
         self.modelsizer.Add(modbox, 0, LCEN|wx.GROW, 2)
         pack(self.modelpanel, self.modelsizer)
 
+
+    def onDeleteComponent(self, evt=None, comp=-1):
+        pass
+
+    def onPick3Points(self, evt=None, comp=-1):
+        pass
 
     def onSaveFit(self, event=None):
         pass
