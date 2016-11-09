@@ -34,6 +34,8 @@ from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
 from larch_plugins.math import fit_peak, index_of
+from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
+
 from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
 from larch_plugins.wx.icons import get_icon
 
@@ -80,20 +82,19 @@ def assign_gsescan_groups(group):
     group.array_labels = labels
 
 
-MODELS = ['Constant', 'Linear', 'Quadratic', 'Polynomial',
-          'Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Moffat',
-          'Pearson7', 'StudentsT', 'BreitWigner', 'Lognormal',
-          'DampedOscillator', 'ExponentialGaussian', 'SkewedGaussian',
-          'Donaich', 'PowerLaw', 'Exponential', 'Step', 'Rectangle']
 
 StepChoices = ('Linear', 'Arctan', 'ErrorFunction', 'Logistic')
 
 ModelChoices = ('Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Pearson7',
                'StudentsT', 'SkewedGaussian', 'Constant', 'Linear',
                'Quadratic', 'Exponential', 'PowerLaw', 'Rectangle',
-               'DampedOscillator', 'LogNormal', 'BreitWigner', 'Donaich')
+               'DampedOscillator', 'Lognormal', 'BreitWigner', 'Donaich')
 
 
+XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
+              'Normalized + Derivative',
+              'Pre-edge subtracted',
+              'Raw Data + Pre-edge/Post-edge')
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
@@ -120,6 +121,18 @@ class ProcessPanel(wx.Panel):
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(group2dict(dgroup.proc_opts))
 
+        self.xshift.SetVale(predefs['xshift'])
+        self.yshift.SetVale(predefs['yshift'])
+        self.xscale.SetVale(predefs['xscale'])
+        self.yscale.SetVale(predefs['yscale'])
+
+        self.smooth_op.SetStringSelection(predefs['smooth_op'])
+        self.smooth_conv.SetStringSelection(predefs['smooth_conv'])
+        self.smooth_c0.SetValue(predefs['smooth_c0'])
+        self.smooth_c1.SetValue(predefs['smooth_c1'])
+        self.smooth_sig.SetValue(predefs['smooth_sig'])
+
+
         if dgroup.datatype == 'xas':
             self.xas_op.SetSelection(predefs['xas_op'])
             self.xas_e0.SetValue(predefs['e0'])
@@ -137,37 +150,46 @@ class ProcessPanel(wx.Panel):
 
     def build_display(self):
 
-        xasop_choices=('Raw Data', 'Normalized', 'Derivative',
-                   'Normalized + Derivative',
-                   'Pre-edge subtracted',
-                   'Raw Data + Pre-edge/Post-edge')
+        self.SetFont(Font(11))
 
-        opts = {'action': self.UpdatePlot}
-        self.xas_autoe0   = Check(self, default=True, label='auto?', **opts)
-        self.xas_showe0   = Check(self, default=True, label='show?', **opts)
-        self.xas_autostep = Check(self, default=True, label='auto?', **opts)
-        opts['size'] = (300, -1)
-        self.xas_op  = Choice(self, choices=xasop_choices,  **opts)
+        titleopts = dict(font=Font(12), colour='#AA0000')
 
+        xas = self.xaspanel = wx.Panel(self)
+        gen = self.genpanel = wx.Panel(self)
+        self.btns = {}
+        #gen
+        opts  = dict(action=self.UpdatePlot, size=(100, -1))
 
-        opts  = dict(action=self.onSmoothChoice, size=(120, -1))
-        sm_row1 = wx.Panel(self)
-        sm_row2 = wx.Panel(self)
+        self.xshift = FloatCtrl(gen, value=0.0, precision=4, **opts)
+        self.xscale = FloatCtrl(gen, value=1.0, precision=4, **opts)
+
+        self.yshift = FloatCtrl(gen, value=0.0, precision=4, **opts)
+        self.yscale = FloatCtrl(gen, value=1.0, precision=4, **opts)
+
+        self.btns['xshift'] = BitmapButton(gen, get_icon('plus'),
+                                           action=partial(self.on_selpoint, opt='xshift'),
+                                           tooltip='use last point selected from plot')
+        self.btns['yshift'] = BitmapButton(gen, get_icon('plus'),
+                                           action=partial(self.on_selpoint, opt='yshift'),
+                                           tooltip='use last point selected from plot')
+
+        opts  = dict(action=self.onSmoothChoice, size=(30, -1))
+        sm_row1 = wx.Panel(gen)
+        sm_row2 = wx.Panel(gen)
         sm_siz1= wx.BoxSizer(wx.HORIZONTAL)
         sm_siz2= wx.BoxSizer(wx.HORIZONTAL)
 
+        self.smooth_c0 = FloatCtrl(sm_row1, value=2, precision=0, **opts)
+        self.smooth_c1 = FloatCtrl(sm_row1, value=1, precision=0, **opts)
+        opts['size'] =  (75, -1)
+        self.smooth_sig = FloatCtrl(sm_row2, value=1, precision=4, **opts)
+
+        opts['size'] =  (120, -1)
         self.smooth_op = Choice(sm_row1, choices=SMOOTH_OPS, **opts)
         self.smooth_op.SetSelection(0)
 
-        opts  = dict(action=self.UpdatePlot, size=(100, -1))
-
         self.smooth_conv = Choice(sm_row2, choices=CONV_OPS, **opts)
-        opts['size'] =  (30, -1)
-        self.smooth_c0 = FloatCtrl(sm_row1, value=3, precision=0, **opts)
-        self.smooth_c1 = FloatCtrl(sm_row1, value=1, precision=0, **opts)
-        opts['size'] =  (75, -1)
 
-        self.smooth_sig = FloatCtrl(sm_row2, value=1, precision=4, **opts)
         self.smooth_c0.Disable()
         self.smooth_c1.Disable()
         self.smooth_sig.Disable()
@@ -187,69 +209,79 @@ class ProcessPanel(wx.Panel):
         pack(sm_row1, sm_siz1)
         pack(sm_row2, sm_siz2)
 
-        self.xshift     = FloatCtrl(self, value=0, precision=4, **opts)
+        sizer = wx.GridBagSizer(5, 5)
 
-        self.btns = {}
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2', 'xshift'):
-            bb = BitmapButton(self, get_icon('plus'),
+        ir = 0
+        sizer.Add(SimpleText(gen, ' General Data Processing', **titleopts),
+                  (ir, 0), (1, 8), LCEN, 5)
+
+        ir += 1
+        sizer.Add(SimpleText(gen, ' X shift:'),  (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(self.btns['xshift'],           (ir, 1), (1, 1), LCEN, 0)
+        sizer.Add(self.xshift,                   (ir, 2), (1, 2), LCEN, 0)
+        sizer.Add(SimpleText(gen, ' X scale:'),  (ir, 4), (1, 1), LCEN, 0)
+        sizer.Add(self.xscale,                   (ir, 5), (1, 2), LCEN, 0)
+
+        ir += 1
+        sizer.Add(SimpleText(gen, ' Y shift:'),  (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(self.btns['yshift'],           (ir, 1), (1, 1), LCEN, 0)
+        sizer.Add(self.yshift,                   (ir, 2), (1, 2), LCEN, 0)
+        sizer.Add(SimpleText(gen, ' Y scale:'),  (ir, 4), (1, 1), LCEN, 0)
+        sizer.Add(self.yscale,                   (ir, 5), (1, 2), LCEN, 0)
+
+
+        ir += 1
+        sizer.Add(SimpleText(gen, ' Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(sm_row1, (ir,   1), (1, 7), LCEN)
+        sizer.Add(sm_row2, (ir+1, 1), (1, 7), LCEN)
+
+        pack(gen, sizer)
+
+        #xas
+        opts = {'action': self.UpdatePlot}
+        self.xas_autoe0   = Check(xas, default=True, label='auto?', **opts)
+        self.xas_showe0   = Check(xas, default=True, label='show?', **opts)
+        self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
+        opts['size'] = (300, -1)
+        self.xas_op  = Choice(xas, choices=XASOPChoices,  **opts)
+
+        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+            bb = BitmapButton(xas, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
         opts = {'size': (85, -1), 'precision': 3,
                 'action': self.UpdatePlot}
-        self.xwids = {}
-        self.xas_e0   = FloatCtrl(self, value  = 0, **opts)
-        self.xas_step = FloatCtrl(self, value  = 0, **opts)
+
+        self.xas_e0   = FloatCtrl(xas, value  = 0, **opts)
+        self.xas_step = FloatCtrl(xas, value  = 0, **opts)
         opts['precision'] = 1
-        self.xas_pre1 = FloatCtrl(self, value=-200, **opts)
-        self.xas_pre2 = FloatCtrl(self, value= -30, **opts)
-        self.xas_nor1 = FloatCtrl(self, value=  50, **opts)
-        self.xas_nor2 = FloatCtrl(self, value= -50, **opts)
+        self.xas_pre1 = FloatCtrl(xas, value=-200, **opts)
+        self.xas_pre2 = FloatCtrl(xas, value= -30, **opts)
+        self.xas_nor1 = FloatCtrl(xas, value=  50, **opts)
+        self.xas_nor2 = FloatCtrl(xas, value= -50, **opts)
 
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
                 'action': self.UpdatePlot}
-        self.xas_vict = Choice(self, **opts)
-        self.xas_nnor = Choice(self, **opts)
+        self.xas_vict = Choice(xas, **opts)
+        self.xas_nnor = Choice(xas, **opts)
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(2)
-        sizer = wx.GridBagSizer(10, 7)
+        sizer = wx.GridBagSizer(5, 5)
+
 
         ir = 0
-        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
+        sizer.Add(SimpleText(xas, ' XAS Data Processing', **titleopts),
+                  (ir, 0), (1, 7), LCEN, 0)
 
         ir += 1
-        sizer.Add(SimpleText(self, ' General Data Processing '), (ir, 0), (1, 5), LCEN)
-
-        ir += 1
-        sizer.Add(SimpleText(self, ' X shift:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.btns['xshift'],           (ir, 1), (1, 1), LCEN)
-        sizer.Add(self.xshift  ,                 (ir, 2), (1, 2), LCEN, 0)
-
-
-        ir += 1
-        sizer.Add(SimpleText(self, ' Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(sm_row1, (ir, 1), (1, 7), LCEN)
-
-        ir += 1
-        sizer.Add(sm_row2, (ir, 1), (1, 7), LCEN)
-
-
-
-
-        ir += 1
-        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
-
-        ir += 1
-        sizer.Add(SimpleText(self, ' XAS Data Processing '), (ir, 0), (1, 5), LCEN)
-
-        ir += 1
-        sizer.Add(SimpleText(self, 'Arrays to Plot: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'Arrays to Plot: '),  (ir, 0), (1, 1), LCEN)
         sizer.Add(self.xas_op,                           (ir, 1), (1, 7), LCEN)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'E0 : '),   (ir, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'E0 : '),   (ir, 0), (1, 1), LCEN)
         sizer.Add(self.btns['e0'],             (ir, 1), (1, 1), LCEN)
         sizer.Add(self.xas_e0,                 (ir, 2), (1, 1), LCEN)
         sizer.Add(self.xas_autoe0,             (ir, 3), (1, 2), LCEN)
@@ -257,61 +289,72 @@ class ProcessPanel(wx.Panel):
 
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Edge Step: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'Edge Step: '),  (ir, 0), (1, 1), LCEN)
         sizer.Add(self.xas_step,               (ir, 2), (1, 1), LCEN)
         sizer.Add(self.xas_autostep,           (ir, 3), (1, 3), LCEN)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Pre-edge range: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'Pre-edge range: '),  (ir, 0), (1, 1), LCEN)
         sizer.Add(self.btns['pre1'],           (ir, 1), (1, 1), LCEN)
         sizer.Add(self.xas_pre1,               (ir, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, ':'),       (ir, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, ':'),       (ir, 3), (1, 1), LCEN)
         sizer.Add(self.btns['pre2'],           (ir, 4), (1, 1), LCEN)
         sizer.Add(self.xas_pre2,               (ir, 5), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'Victoreen:'), (ir, 6), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'Victoreen:'), (ir, 6), (1, 1), LCEN)
         sizer.Add(self.xas_vict,               (ir, 7), (1, 1), LCEN)
 
-
         ir += 1
-        sizer.Add(SimpleText(self, 'Normalization range: '), (ir, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'Normalization range: '), (ir, 0), (1, 1), LCEN)
         sizer.Add(self.btns['nor1'],           (ir, 1), (1, 1), LCEN)
         sizer.Add(self.xas_nor1,               (ir, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, ':'),          (ir, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, ':'),          (ir, 3), (1, 1), LCEN)
         sizer.Add(self.btns['nor2'],           (ir, 4), (1, 1), LCEN)
         sizer.Add(self.xas_nor2,               (ir, 5), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'PolyOrder:'), (ir, 6), (1, 1), LCEN)
+        sizer.Add(SimpleText(xas, 'PolyOrder:'), (ir, 6), (1, 1), LCEN)
         sizer.Add(self.xas_nnor,               (ir, 7), (1, 1), LCEN)
+        ir +=1
 
-        ir += 1
-        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
+        pack(xas, sizer)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.AddMany([((10,10), 0, LCEN, 0),
+                       (gen,  0, LCEN, 10),
+                       ((10,10), 0, LCEN, 0),
+                       (HLine(self, size=(550, 2)), 0, LCEN, 10),
+                       ((10,10), 0, LCEN, 0),
+                       (xas,  1, LCEN|wx.GROW, 10)])
+
+        xas.Disable()
 
         pack(self, sizer)
 
+    def onSmoothChoice(self, evt=None, value=1):
+        try:
+            choice = self.smooth_op.GetStringSelection().lower()
+            conv  = self.smooth_conv.GetStringSelection()
+            self.smooth_c0.Disable()
+            self.smooth_c1.Disable()
+            self.smooth_conv.Disable()
+            self.smooth_sig.Disable()
 
-    def onSmoothChoice(self, evt=None):
-        choice = self.smooth_op.GetStringSelection().lower()
-        conv  = self.smooth_conv.GetStringSelection()
-        self.smooth_c0.Disable()
-        self.smooth_c1.Disable()
-        self.smooth_conv.Disable()
-        self.smooth_sig.Disable()
-
-        if choice.startswith('box'):
-            self.smooth_c0.Enable()
-        elif choice.startswith('savi'):
-            self.smooth_c0.Enable()
-            self.smooth_c1.Enable()
-        elif choice.startswith('conv'):
-            self.smooth_conv.Enable()
-            self.smooth_sig.Enable()
-        self.needs_update = True
+            if choice.startswith('box'):
+                self.smooth_c0.Enable()
+            elif choice.startswith('savi'):
+                self.smooth_c0.Enable()
+                self.smooth_c1.Enable()
+            elif choice.startswith('conv'):
+                self.smooth_conv.Enable()
+                self.smooth_sig.Enable()
+            self.needs_update = True
+        except AttributeError:
+            pass
 
 
     def onProcessTimer(self, evt=None):
         if self.main.groupname is not None and self.needs_update:
+            self.process(self.main.groupname)
+            self.main.plot_group(self.main.groupname, new=True)
             self.needs_update = False
-            # self.process(self.main.groupname)
-            # self.main.plot_group(self.main.groupname, new=True)
 
     def UpdatePlot(self, evt=None, **kws):
         self.needs_update = True
@@ -322,6 +365,7 @@ class ProcessPanel(wx.Panel):
             self.larch = self.main.larch
         try:
             xval = self.larch.symtable._plotter.plot1_x
+            yval = self.larch.symtable._plotter.plot1_y
         except:
             pass
         if xval is None:
@@ -341,6 +385,8 @@ class ProcessPanel(wx.Panel):
             self.xas_nor2.SetValue(xval-e0)
         elif opt == 'xshift':
             self.xshift.SetValue(xval)
+        elif opt == 'yshift':
+            self.yshift.SetValue(yval)
 
 
     def process(self, gname, new_mu=False, **kws):
@@ -357,90 +403,120 @@ class ProcessPanel(wx.Panel):
         proc_opts = dgroup.proc_opts
         plot_opts = dgroup.plot_opts
 
-        if not hasattr(dgroup, 'energy'):
-            dgroup.energy = dgroup.xdat
-        if not hasattr(dgroup, 'mu'):
-            dgroup.mu = dgroup.ydat
+        proc_opts.xshift = self.xshift.GetValue()
+        proc_opts.yshift = self.yshift.GetValue()
+        proc_opts.xscale = self.xscale.GetValue()
+        proc_opts.yscale = self.yscale.GetValue()
 
-        e0 = None
-        if not self.xas_autoe0.IsChecked():
-            _e0 = self.xas_e0.GetValue()
-            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                e0 = float(_e0)
+        dgroup.x = proc_opts.xscale*(dgroup.xdat - proc_opts.xshift)
+        dgroup.y = proc_opts.yscale*(dgroup.ydat - proc_opts.yshift)
 
-        preopts = {'e0': e0}
-        if not self.xas_autostep.IsChecked():
-            preopts['step'] = self.xas_step.GetValue()
-        preopts['pre1']  = self.xas_pre1.GetValue()
-        preopts['pre2']  = self.xas_pre2.GetValue()
-        preopts['norm1'] = self.xas_nor1.GetValue()
-        preopts['norm2'] = self.xas_nor2.GetValue()
-        preopts['nvict'] = self.xas_vict.GetSelection()
-        preopts['nnorm'] = self.xas_nnor.GetSelection()
-        preopts['make_flat'] = False
-        preopts['_larch'] = self.larch
+        # apply smoothhing here
+        proc_opts.smooth_op = self.smooth_op.GetStringSelection()
+        proc_opts.smooth_c0 = int(self.smooth_c0.GetValue())
+        proc_opts.smooth_c1 = int(self.smooth_c1.GetValue())
+        proc_opts.smooth_sig = float(self.smooth_sig.GetValue())
+        proc_opts.smooth_conv = self.smooth_conv.GetStringSelection()
 
-        pre_edge(dgroup, **preopts)
+        smop = proc_opts.smooth_op.lower()
+        cform = str(proc_opts.smooth_conv.lower())
+        if smop.startswith('box'):
+            dgroup.y = boxcar(dgroup.y, proc_opts.smooth_c0)
+        elif smop.startswith('savit'):
+            winsize = 2*proc_opts.smooth_c0 + 1
+            dgroup.y = savitzky_golay(dgroup.y, winsize, proc_opts.smooth_c1)
+        elif smop.startswith('conv'):
+            dgroup.y = smooth(dgroup.x, dgroup.y,
+                              sigma=proc_opts.smooth_sig, form=cvform)
 
-        for attr in  ('e0', 'edge_step'):
-            setattr(proc_opts, attr, getattr(dgroup, attr))
-        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-            setattr(proc_opts, attr, getattr(dgroup.pre_edge_details, attr))
+        if dgroup.datatype.startswith('xas'):
+            dgroup.energy = dgroup.x
+            dgroup.mu = dgroup.y
 
-        proc_opts.auto_e0 = self.xas_autoe0.IsChecked()
-        proc_opts.show_e0 = self.xas_showe0.IsChecked()
-        proc_opts.auto_step = self.xas_autostep.IsChecked()
-        proc_opts.nnorm = int(self.xas_nnor.GetSelection())
-        proc_opts.nvict = int(self.xas_vict.GetSelection())
-        proc_opts.xas_opt = self.xas_op.GetSelection()
+            e0 = None
+            if not self.xas_autoe0.IsChecked():
+                _e0 = self.xas_e0.GetValue()
+                if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
+                    e0 = float(_e0)
 
-        if self.xas_autoe0.IsChecked():
-            self.xas_e0.SetValue(dgroup.e0)
-        if self.xas_autostep.IsChecked():
-            self.xas_step.SetValue(dgroup.edge_step)
+            preopts = {'e0': e0}
+            if not self.xas_autostep.IsChecked():
+                preopts['step'] = self.xas_step.GetValue()
+            preopts['pre1']  = self.xas_pre1.GetValue()
+            preopts['pre2']  = self.xas_pre2.GetValue()
+            preopts['norm1'] = self.xas_nor1.GetValue()
+            preopts['norm2'] = self.xas_nor2.GetValue()
+            preopts['nvict'] = self.xas_vict.GetSelection()
+            preopts['nnorm'] = self.xas_nnor.GetSelection()
+            preopts['make_flat'] = False
+            preopts['_larch'] = self.larch
 
-        self.xas_pre1.SetValue(proc_opts.pre1)
-        self.xas_pre2.SetValue(proc_opts.pre2)
-        self.xas_nor1.SetValue(proc_opts.norm1)
-        self.xas_nor2.SetValue(proc_opts.norm2)
+            pre_edge(dgroup, **preopts)
 
-        dgroup.orig_ylabel = dgroup.plot_ylabel
-        dgroup.plot_ylabel = '$\mu$'
-        dgroup.plot_y2label = None
-        dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'
-        dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
-        y4e0 = dgroup.mu
+            for attr in  ('e0', 'edge_step'):
+                setattr(proc_opts, attr, getattr(dgroup, attr))
+            for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
+                setattr(proc_opts, attr, getattr(dgroup.pre_edge_details, attr))
 
-        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-        if out.startswith('raw data + pre'):
-            dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
-                                   (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
-                                   (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
-        elif out.startswith('pre'):
-            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
-            dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
-                                    'pre-edge subtracted $\mu$')]
-            y4e0 = dgroup.pre_edge_sub
-            dgroup.plot_ylabel = 'pre-edge subtracted $\mu$'
-        elif 'norm' in out and 'deriv' in out:
-            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
-                                   (dgroup.dmude, PLOTOPTS_D, '$d\mu/dE$')]
-            y4e0 = dgroup.norm
-            dgroup.plot_ylabel = 'normalized $\mu$'
-            dgroup.plot_y2label = '$d\mu/dE$'
-        elif out.startswith('norm'):
-            dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$')]
-            y4e0 = dgroup.norm
-            dgroup.plot_ylabel = 'normalized $\mu$'
-        elif out.startswith('deriv'):
-            dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
-            y4e0 = dgroup.dmude
-            dgroup.plot_ylabel = '$d\mu/dE$'
+            proc_opts.auto_e0 = self.xas_autoe0.IsChecked()
+            proc_opts.show_e0 = self.xas_showe0.IsChecked()
+            proc_opts.auto_step = self.xas_autostep.IsChecked()
+            proc_opts.nnorm = int(self.xas_nnor.GetSelection())
+            proc_opts.nvict = int(self.xas_vict.GetSelection())
+            proc_opts.xas_opt = self.xas_op.GetSelection()
 
-        dgroup.plot_ymarkers = []
-        if self.xas_showe0.IsChecked():
-            ie0 = index_of(dgroup.xdat, dgroup.e0)
-            dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
+            if self.xas_autoe0.IsChecked():
+                self.xas_e0.SetValue(dgroup.e0)
+            if self.xas_autostep.IsChecked():
+                self.xas_step.SetValue(dgroup.edge_step)
+
+            self.xas_pre1.SetValue(proc_opts.pre1)
+            self.xas_pre2.SetValue(proc_opts.pre2)
+            self.xas_nor1.SetValue(proc_opts.norm1)
+            self.xas_nor2.SetValue(proc_opts.norm2)
+
+            dgroup.orig_ylabel = dgroup.plot_ylabel
+            dgroup.plot_ylabel = '$\mu$'
+            dgroup.plot_y2label = None
+            dgroup.plot_xlabel = '$E \,\mathrm{(eV)}$'
+            dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
+            y4e0 = dgroup.mu
+
+            out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
+            if out.startswith('raw data + pre'):
+                dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
+                                       (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
+                                       (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
+            elif out.startswith('pre'):
+                dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
+                dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
+                                        'pre-edge subtracted $\mu$')]
+                y4e0 = dgroup.pre_edge_sub
+                dgroup.plot_ylabel = 'pre-edge subtracted $\mu$'
+            elif 'norm' in out and 'deriv' in out:
+                dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
+                                       (dgroup.dmude, PLOTOPTS_D, '$d\mu/dE$')]
+                y4e0 = dgroup.norm
+                dgroup.plot_ylabel = 'normalized $\mu$'
+                dgroup.plot_y2label = '$d\mu/dE$'
+                dgroup.y = dgroup.norm
+
+            elif out.startswith('norm'):
+                dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$')]
+                y4e0 = dgroup.norm
+                dgroup.plot_ylabel = 'normalized $\mu$'
+                dgroup.y = dgroup.norm
+
+            elif out.startswith('deriv'):
+                dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
+                y4e0 = dgroup.dmude
+                dgroup.plot_ylabel = '$d\mu/dE$'
+                dgroup.y = dgroup.dmude
+
+            dgroup.plot_ymarkers = []
+            if self.xas_showe0.IsChecked():
+                ie0 = index_of(dgroup.xdat, dgroup.e0)
+                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
 
 class FitPanel(wx.Panel):
@@ -450,69 +526,76 @@ class FitPanel(wx.Panel):
 
         self.parent = parent
         self.main  = main
-        self.fit_components = ['Gaussian', 'Linear']
+        self.fit_components = []
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
 
     def build_display(self):
 
-        def Label(t): return SimpleText(self, t)
+        self.modelpanel = scrolled.ScrolledPanel(self, style=wx.GROW|wx.TAB_TRAVERSAL)
+        self.modelsizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer = self.sizer
-        models = Choice(self, size=(150, -1), choices=ModelChoices,
+        pack(self.modelpanel, self.modelsizer)
+        self.modelpanel.SetupScrolling()
+
+        top = wx.Panel(self)
+
+        models = Choice(top, size=(150, -1), choices=ModelChoices,
                         action=self.addModel)
-        steps = Choice(self, size=(150, -1), choices=StepChoices,
+        steps = Choice(top, size=(150, -1), choices=StepChoices,
                        action=partial(self.addModel, is_step=True))
 
-        row1   = wx.Panel(self)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        row   = wx.Panel(top)
+        rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        fit_btn  = Button(row1, 'Do Fit', size=(100, -1), action=self.onRunFit)
-        save_btn = Button(row1, 'Save Fit', size=(100, -1), action=self.onSaveFit)
+        fit_btn  = Button(row, 'Do Fit', size=(100, -1), action=self.onRunFit)
+        save_btn = Button(row, 'Save Fit', size=(100, -1), action=self.onSaveFit)
 
-        self.xmin_sel = BitmapButton(row1, get_icon('plus'),
+        self.xmin_sel = BitmapButton(row, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmin'),
                                      tooltip='use last point selected from plot')
-        self.xmax_sel = BitmapButton(row1, get_icon('plus'),
+        self.xmax_sel = BitmapButton(row, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmax'),
                                      tooltip='use last point selected from plot')
 
         opts = {'size': (90, -1), 'precision': 3}
-        self.xmin = FloatCtrl(row1, value=0, **opts)
-        self.xmax = FloatCtrl(row1, value=0, **opts)
+        self.xmin = FloatCtrl(row, value=0, **opts)
+        self.xmax = FloatCtrl(row, value=0, **opts)
 
+        rsizer.Add(SimpleText(row, 'Fit Range: [ '), 0, LCEN, 3)
+        rsizer.Add(self.xmin_sel, 0, LCEN, 3)
+        rsizer.Add(self.xmin,     0, LCEN, 3)
+        rsizer.Add(SimpleText(row, ' : '),  0, LCEN, 3)
+        rsizer.Add(self.xmax_sel, 0, LCEN, 3)
+        rsizer.Add(self.xmax,     0, LCEN, 3)
+        rsizer.Add(SimpleText(row, ' ]  '), 0, LCEN, 3)
+        rsizer.Add(fit_btn,       0, LCEN, 3)
+        rsizer.Add(save_btn,      0, LCEN, 3)
 
-        sizer1.Add(SimpleText(row1, 'Fit Range: [ '), 0, LCEN, 3)
-        sizer1.Add(self.xmin_sel, 0, LCEN, 3)
-        sizer1.Add(self.xmin,     0, LCEN, 3)
-        sizer1.Add(SimpleText(row1, ' : '),  0, LCEN, 3)
-        sizer1.Add(self.xmax_sel, 0, LCEN, 3)
-        sizer1.Add(self.xmax,     0, LCEN, 3)
-        sizer1.Add(SimpleText(row1, ' ]  '), 0, LCEN, 3)
-        sizer1.Add(fit_btn,       0, LCEN, 3)
-        sizer1.Add(save_btn,      0, LCEN, 3)
+        pack(row, rsizer)
 
-        pack(row1, sizer1)
-
+        sizer = wx.GridBagSizer(5, 5)
         ir = 0
-        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 6), LCEN)
+        sizer.Add(HLine(self, size=(550, 2)), (ir, 0), (1, 8), LCEN)
 
         ir += 1
-        sizer.Add(row1, (ir, 0), (1, 6), LCEN)
+        sizer.Add(row, (ir, 0), (1, 6), LCEN)
 
         ir += 1
-        sizer.Add(Label(' Add Model: '),      (ir, 0), (1, 1), LCEN)
-        sizer.Add(models,                    (ir, 1), (1, 2), LCEN)
-        sizer.Add(Label(' Add Step Model: '), (ir, 3), (1, 1), LCEN)
-        sizer.Add(steps,                     (ir, 4), (1, 2), LCEN)
+        sizer.Add(SimpleText(top, ' Add Model: '),      (ir, 0), (1, 1), LCEN)
+        sizer.Add(models,                     (ir, 1), (1, 2), LCEN)
+        sizer.Add(SimpleText(top, ' Add Step Model: '), (ir, 3), (1, 1), LCEN)
+        sizer.Add(steps,                      (ir, 4), (1, 2), LCEN)
 
-        ir += 1
-        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 6), LCEN)
+        pack(top, sizer)
 
-        self.irow = ir+1
-
-        for comp in self.fit_components:
-            self.addModel(model=comp)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.AddMany([((10,10), 0, LCEN, 0),
+                       (top,  0, LCEN, 10),
+                       ((10,10), 0, LCEN, 0),
+                       (HLine(self, size=(550, 2)), 0, LCEN, 10),
+                       ((10,10), 0, LCEN, 0),
+                       (self.modelpanel,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
 
@@ -522,10 +605,11 @@ class FitPanel(wx.Panel):
         if model is None:
             return
 
-        def Label(t): return SimpleText(self, t)
+        def Label(t): return SimpleText(self.modelpanel, t)
 
-
+        title = model
         if is_step:
+            title = "Step(%s)" % model
             form = model.lower()
             if form.startswith('err'): form = 'erf'
             mclass = lm_models.StepModel
@@ -534,11 +618,28 @@ class FitPanel(wx.Panel):
             mclass = getattr(lm_models, model+'Model')
             minst = mclass()
 
+        prefix = "p%i" % (len(self.fit_components) + 1)
+
         print("Add Model ", model, mclass, minst.param_names)
-        ir = self.irow
-        self.sizer.Add(Label(model),  (ir, 0), (1, 3), LCEN)
-        self.irow += 1
-        pack(self, self.sizer)
+
+        mpanel = self.modelpanel
+
+        modbox = wx.StaticBox(mpanel, -1, "%s: prefix=%s" % (title, prefix))
+
+        sizer = wx.GridBagSizer(3, 3)
+        t1 = SimpleText(modbox, "%s" % repr(mclass))
+        t2 = SimpleText(modbox, "%s" % repr(minst.param_names))
+
+        use   = Check(modbox, default=True, label='Use Model', **opts)
+
+        sizer.Add(t1, (0, 0), (1, 1), LCEN|wx.GROW, 2)
+        sizer.Add(t2, (0, 1), (1, 1), LCEN|wx.GROW, 2)
+
+        pack(modbox, sizer)
+
+
+        self.modelsizer.Add(modbox, 0, LCEN|wx.GROW, 2)
+        pack(self.modelpanel, self.modelsizer)
 
 
     def onSaveFit(self, event=None):
@@ -547,7 +648,7 @@ class FitPanel(wx.Panel):
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
         try:
-            xval = self.larch.symtable._plotter.plot1_x
+            xval = self.main.larch.symtable._plotter.plot1_x
         except:
             xval = None
         if xval is not None:
@@ -601,7 +702,7 @@ class FitPanel(wx.Panel):
 
         lgroup.fits.append((model, bkg, step, dtext))
 
-        lgroup.plot_yarrays = [(lgroup.ydat, PLOTOPTS_1, lgroup.plot_ylabel)]
+        lgroup.plot_yarrays = [(lgroup.y, PLOTOPTS_1, lgroup.plot_ylabel)]
         if bkg is None:
             lgroup._fit = pgroup.fit[:]
             lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
@@ -661,7 +762,7 @@ class ScanViewerFrame(wx.Frame):
                                       select_action=self.ShowFile)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        tsizer = wx.GridBagSizer(10, 2)
+        tsizer = wx.GridBagSizer(5, 5)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
         tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
 
@@ -746,6 +847,7 @@ class ScanViewerFrame(wx.Frame):
             (getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
+            self.proc_panel.xaspanel.Enable()
             self.proc_panel.process(groupname)
         self.plot_group(groupname, new=True)
 
@@ -757,27 +859,23 @@ class ScanViewerFrame(wx.Frame):
             dgroup = getattr(self.larch.symtable, groupname, None)
             if dgroup is None:
                 continue
+            dgroup.plot_yarrays = [(dgroup.y, PLOTOPTS_1,
+                                    dgroup.filename)]
+
             if dgroup.datatype == 'xas':
                 if ((getattr(dgroup, 'plot_yarrays', None) is None or
                      getattr(dgroup, 'energy', None) is None or
                      getattr(dgroup, 'mu', None) is None)):
                     self.proc_panel.process(groupname)
 
-                dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
-                                        '%s norm' % dgroup.filename)]
                 dgroup.plot_ylabel = 'normalized $\mu$'
                 dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
                 dgroup.plot_ymarkers = []
-
-            else:
-                dgroup.plot_yarrays = [(dgroup.ydat, PLOTOPTS_1,
-                                        dgroup.filename)]
 
             self.plot_group(groupname, title='', new=newplot)
             newplot=False
 
     def plot_group(self, groupname, title=None, new=True):
-
         oplot = self.larch.symtable._plotter.plot
         newplot = self.larch.symtable._plotter.newplot
         getdisplay = self.larch.symtable._plotter.get_display
@@ -786,16 +884,20 @@ class ScanViewerFrame(wx.Frame):
         if new:
             plotcmd = newplot
 
-
         dgroup = getattr(self.larch.symtable, groupname, None)
         if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)
+
+        if not hasattr(dgroup, 'x'):
+            dgroup.x = dgroup.xdat[:]
+        if not hasattr(dgroup, 'y'):
+            dgroup.y = dgroup.ydat[:]
 
 
         if hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
         else:
-            plot_yarrays = [(dgroup.ydat, {}, None)]
+            plot_yarrays = [(dgroup.y, {}, None)]
         # print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
 
         popts = {}
@@ -815,7 +917,7 @@ class ScanViewerFrame(wx.Frame):
             popts.update(yarr[1])
             if yarr[2] is not None:
                 popts['label'] = yarr[2]
-            plotcmd(dgroup.xdat, yarr[0], **popts)
+            plotcmd(dgroup.x, yarr[0], **popts)
             plotcmd = oplot # self.plotpanel.oplot
 
         ppanel = getdisplay(_larch=self.larch).panel
@@ -852,7 +954,10 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb.SetSelection(0)
         if self.dgroup.datatype == 'xas':
+            self.proc_panel.xaspanel.Enable()
             self.proc_panel.fill(self.dgroup)
+        else:
+            self.proc_panel.xaspanel.Disable()
 
         self.title.SetLabel(str(evt.GetString()))
 
@@ -875,6 +980,7 @@ class ScanViewerFrame(wx.Frame):
                  self.onEditColumns)
 
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "debug wx", "debug", self.showInspectionTool)
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
@@ -886,6 +992,10 @@ class ScanViewerFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
+    def showInspectionTool(self, event=None):
+        app = wx.GetApp()
+        app.ShowInspectionTool()
+
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About ScanViewer",
                                wx.OK | wx.ICON_INFORMATION)
@@ -894,6 +1004,7 @@ class ScanViewerFrame(wx.Frame):
 
     def onClose(self, evt):
         save_workdir('scanviewer.dat')
+        sys.stderr.write("SAVED scanviewer.dat\n")
         self.proc_panel.proc_timer.Stop()
 
         if self.larch_buffer is not None:
@@ -1013,7 +1124,7 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
-class ScanViewer(wx.App): # , wx.lib.mixins.inspection.InspectionMixin):
+class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
