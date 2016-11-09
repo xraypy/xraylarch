@@ -25,6 +25,149 @@ from datetime import datetime
 
 import time
 
+# import os
+# import time
+# import json
+# import six
+# import numpy as np
+# from scipy.interpolate import interp1d, splrep, splev, UnivariateSpline
+# from sqlalchemy import MetaData, create_engine
+# from sqlalchemy.orm import sessionmaker, mapper, clear_mappers
+# from sqlalchemy.pool import SingletonThreadPool
+# 
+# # needed for py2exe?
+# import sqlalchemy.dialects.sqlite
+# import larch
+# from larch_plugins.math import as_ndarray
+
+
+def make_engine(dbname):
+    return create_engine('sqlite:///%s' % (dbname),
+                         poolclass=SingletonThreadPool)
+
+def iscifDB(dbname):
+    '''
+    test if a file is a valid scan database:
+    must be a sqlite db file, with tables named according to _tables
+    '''
+    _tables = ('cif', 'elements', 'minerals', 'spacegroup', 'allsymmetries',
+               'allauthors', 'qrange', 'symmetry', 'composition', 'author', 'qpeaks')
+    result = False
+    try:
+        engine = make_engine(dbname)
+        meta = MetaData(engine)
+        meta.reflect()
+        result = all([t in meta.tables for t in _tables])
+    except:
+        pass
+    return result
+
+def json_encode(val):
+    "simple wrapper around json.dumps"
+    if val is None or isinstance(val, six.string_types):
+        return val
+    return  json.dumps(val)
+
+class _BaseTable(object):
+    "generic class to encapsulate SQLAlchemy table"
+    def __repr__(self):
+        el = getattr(self, 'element', '??')
+        return "<%s(%s)>" % (self.__class__.__name__, el)
+
+class CIFTable(_BaseTable):
+    (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
+
+class ElementTable(_BaseTable):
+    (atomic_no, name, symbol) = [None]*3
+
+class MineralTable(_BaseTable):
+    (id,name) = [None]*2
+
+class SpaceGroupTable(_BaseTable):
+    (iuc_id, hm_notation) = [None]*2
+
+class SymmetryCategoryTable(_BaseTable):
+    (id, name) = [None]*2
+
+class AllAuthorsTable(_BaseTable):
+    (id,name) = [None]*2
+
+class QRangeTable(_BaseTable):
+    (id, q) = [None]*2
+
+class SymmetryTable(_BaseTable):
+    (iuc_id,symmetry_id) = [None]*2
+    
+class CompositionTable(_BaseTable):
+    (atomic_no,amcsd_id) = [None]*2
+
+class AuthorTable(_BaseTable):
+    (author_id,amcsd_id) = [None]*2
+
+class QPeaksTable(_BaseTable):
+    (q_id,amcsd_id) = [None]*2
+
+
+class cifDB(object):
+    '''
+    interface to the American Mineralogist Crystal Structure Database
+    '''
+    def __init__(self, dbname='amscd00.db', read_only=True):
+
+        ## This needs to be modified for creating new if does not exist.
+        if not os.path.exists(dbname):
+            parent, child = os.path.split(__file__)
+            dbname = os.path.join(parent, dbname)
+            if not os.path.exists(dbname):
+                raise IOError("Database '%s' not found!" % dbname)
+
+        if not iscifDB(dbname):
+            raise ValueError("'%s' is not a valid cif database file!" % dbname)
+
+        self.dbname = dbname
+        self.engine = make_engine(dbname)
+        self.conn = self.engine.connect()
+        kwargs = {}
+        if read_only:
+            kwargs = {'autoflush': True, 'autocommit':False}
+            def readonly_flush(*args, **kwargs):
+                return
+            self.session = sessionmaker(bind=self.engine, **kwargs)()
+            self.session.flush = readonly_flush
+        else:
+            self.session = sessionmaker(bind=self.engine, **kwargs)()
+
+        self.metadata =  MetaData(self.engine)
+        self.metadata.reflect()
+        tables = self.tables = self.metadata.tables
+
+        mapper(CIFTable,                 tables['cif'])
+        mapper(ElementTable,             tables['elements'])
+        mapper(MineralTable,             tables['minerals'])
+        mapper(SpaceGroupTable,          tables['spacegroup'])
+        mapper(AllSymmetriesTable,       tables['allsymmetries'])
+        mapper(AllAuthorsTable,          tables['allauthors'])
+        mapper(QRangeTable,              tables['qrange'])
+        mapper(SymmetryTable,            tables['symmetry'])
+        mapper(CompositionTable,         tables['composition'])
+        mapper(AuthorTable,              tables['author'])
+        mapper(QPeaksTable,              tables['qpeaks'])
+
+    def close(self):
+        "close session"
+        self.session.flush()
+        self.session.close()
+
+    def query(self, *args, **kws):
+        "generic query"
+        return self.session.query(*args, **kws)
+
+
+
+
+
+
+
 
 QMIN = 0.3
 QMAX = 8.0
@@ -52,7 +195,7 @@ def build_new_database(name=None):
 
     ###################################################
     ## Look up tables
-    mineral_table = sqal.Table('mineral', metadata,
+    cif_table = sqal.Table('cif data', metadata,
             sqal.Column('amcsd_id', sqal.Integer, primary_key=True),
             sqal.Column('mineral_id', sqal.Integer),
             sqal.Column('iuc_id', sqal.Integer),
@@ -65,7 +208,7 @@ def build_new_database(name=None):
             sqal.Column('element_name', sqal.String(40), unique=True, nullable=True),
             sqal.Column('element_symbol', sqal.String(2), unique=True, nullable=False)
             )
-    minerallist_table = sqal.Table('minerallist', metadata,
+    mineral_table = sqal.Table('minerals', metadata,
             sqal.Column('mineral_id', sqal.Integer, primary_key=True),
             sqal.Column('mineral_name', sqal.String(30), unique=True, nullable=True)
             )
@@ -128,11 +271,11 @@ def build_new_database(name=None):
 
     correlate_geometry = geometry_table.insert()
 
-    new_mineral  = minerallist_table.insert()
+    new_mineral  = mineral_table.insert()
     new_author   = authorlist_table.insert()
     # new_category = categorylist_table.insert()
 
-    new_cif = mineral_table.insert()
+    new_cif = cif_table.insert()
 
     cif_composition = composition_table.insert()
     cif_author      = author_table.insert()
@@ -217,9 +360,9 @@ def load_database(metadata):
 
     ###################################################
     ## Look up tables
-    mineral_table = sqal.Table('mineral', metadata)
+    cif_table = sqal.Table('cif data', metadata)
     element_table = sqal.Table('element', metadata)
-    minerallist_table = sqal.Table('minerallist', metadata)
+    mineral_table = sqal.Table('minerals', metadata)
     spacegroup_table = sqal.Table('spacegroup', metadata)
     symmetry_table = sqal.Table('symmetry', metadata)
     authorlist_table = sqal.Table('authorlist', metadata)
@@ -239,10 +382,10 @@ def add_cif_to_db(cifile,metadata,verbose=True):
 # ## Adds cifile into database
 # '''
 # When reading in new CIF:
-# -->  put entire cif into json - write 'cif' to 'mineral'
-# -->  read _database_code_amcsd - write 'amcsd_id' to 'mineral'
-# -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'mineral'
-# -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'mineral'
+# -->  put entire cif into json - write 'cif' to 'cif data'
+# -->  read _database_code_amcsd - write 'amcsd_id' to 'cif data'
+# -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'cif data'
+# -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'cif data'
 # 
 # -->  read author name(s) - find/add in 'authorlist' - write 'author_id','amcsd_id' to 'author'
 # 
@@ -332,13 +475,13 @@ def add_cif_to_db(cifile,metadata,verbose=True):
     
     ## Find mineral_name
     match = False
-    search_mineral = minerallist_table.select(minerallist_table.c.mineral_name == mineral_name)
+    search_mineral = mineral_table.select(mineral_table.c.mineral_name == mineral_name)
     for row in search_mineral.execute():
         mineral_id = row.mineral_id
         match = True
     if match is False:
         new_mineral.execute(mineral_name=mineral_name)
-        search_mineral = minerallist_table.select(minerallist_table.c.mineral_name == mineral_name)
+        search_mineral = mineral_table.select(mineral_table.c.mineral_name == mineral_name)
         for row in search_mineral.execute():
             mineral_id = row.mineral_id
             match = True
@@ -414,12 +557,12 @@ def add_cif_to_db(cifile,metadata,verbose=True):
 
 def find_by_amcsd(amcsd_id,metadata):
 
-    search_mineral = mineral_table.select(mineral_table.c.amcsd_id == amcsd_id)
+    search_mineral = cif_table.select(cif_table.c.amcsd_id == amcsd_id)
     for row in search_mineral.execute():
         cifile = row.cif
         mineral_id = row.mineral_id
         iuc_id = row.iuc_id
-    search_mineralname = minerallist_table.select(minerallist_table.c.mineral_id == mineral_id)
+    search_mineralname = mineral_table.select(mineral_table.c.mineral_id == mineral_id)
     for row in search_mineralname.execute():
         mineral_name = row.mineral_name
     search_composition = composition_table.select(composition_table.c.amcsd_id == amcsd_id)
