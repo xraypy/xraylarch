@@ -38,10 +38,12 @@ DATATYPES = ('raw', 'xas')
 class EditColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
     def __init__(self, parent, group=None, last_array_sel=None,
-                 read_ok_cb=None, edit_groupname=True, _larch=None):
+                 read_ok_cb=None, edit_groupname=True, with_smooth=False,
+                 _larch=None):
         self.parent = parent
         self.larch = _larch
         self.rawgroup = group
+        self.with_smooth = with_smooth
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
@@ -117,26 +119,27 @@ class EditColumnFrame(wx.Frame) :
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
 
-        opts['action'] = self.onSmoothChoice
-        self.smooth_op = Choice(panel, choices=SMOOTH_OPS, **opts)
-        self.smooth_op.SetSelection(0)
+        if with_smooth:
+            opts['action'] = self.onSmoothChoice
+            self.smooth_op = Choice(panel, choices=SMOOTH_OPS, **opts)
+            self.smooth_op.SetSelection(0)
 
-        opts['size'] = (100, -1)
+            opts['size'] = (100, -1)
 
-        opts['action'] = self.onUpdate
-        smooth_panel = wx.Panel(panel)
-        smooth_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.smooth_conv = Choice(smooth_panel, choices=CONV_OPS, **opts)
-        opts['size'] =  (30, -1)
-        self.smooth_c0 = FloatCtrl(smooth_panel, value=3, precision=0, **opts)
-        self.smooth_c1 = FloatCtrl(smooth_panel, value=1, precision=0, **opts)
-        opts['size'] =  (75, -1)
-        self.smooth_sig = FloatCtrl(smooth_panel, value=1, precision=4, **opts)
-        self.smooth_c0.Disable()
-        self.smooth_c1.Disable()
-        self.smooth_sig.Disable()
-        self.smooth_conv.SetSelection(0)
-        self.smooth_conv.Disable()
+            opts['action'] = self.onUpdate
+            smooth_panel = wx.Panel(panel)
+            smooth_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.smooth_conv = Choice(smooth_panel, choices=CONV_OPS, **opts)
+            opts['size'] =  (30, -1)
+            self.smooth_c0 = FloatCtrl(smooth_panel, value=3, precision=0, **opts)
+            self.smooth_c1 = FloatCtrl(smooth_panel, value=1, precision=0, **opts)
+            opts['size'] =  (75, -1)
+            self.smooth_sig = FloatCtrl(smooth_panel, value=1, precision=4, **opts)
+            self.smooth_c0.Disable()
+            self.smooth_c1.Disable()
+            self.smooth_sig.Disable()
+            self.smooth_conv.SetSelection(0)
+            self.smooth_conv.Disable()
 
 
         ylab = SimpleText(panel, 'Y = ')
@@ -194,24 +197,22 @@ class EditColumnFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
 
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.smooth_op,  (ir, 1), (1, 1), CEN, 0)
+        if with_smooth:
+            ir += 1
+            sizer.Add(SimpleText(panel, 'Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
+            sizer.Add(self.smooth_op,  (ir, 1), (1, 1), CEN, 0)
 
+            smooth_sizer.Add(SimpleText(smooth_panel, ' n='), 0, LCEN, 1)
+            smooth_sizer.Add(self.smooth_c0,  0, LCEN, 1)
+            smooth_sizer.Add(SimpleText(smooth_panel, ' order='), 0, LCEN, 1)
+            smooth_sizer.Add(self.smooth_c1,  0, LCEN, 1)
+            smooth_sizer.Add(SimpleText(smooth_panel, ' form='), 0, LCEN, 1)
+            smooth_sizer.Add(self.smooth_conv,  0, LCEN, 1)
+            smooth_sizer.Add(SimpleText(smooth_panel, ' sigma='), 0, LCEN, 1)
+            smooth_sizer.Add(self.smooth_sig,  0, LCEN, 1)
+            pack(smooth_panel, smooth_sizer)
 
-        smooth_sizer.Add(SimpleText(smooth_panel, ' n='), 0, LCEN, 1)
-        smooth_sizer.Add(self.smooth_c0,  0, LCEN, 1)
-        smooth_sizer.Add(SimpleText(smooth_panel, ' order='), 0, LCEN, 1)
-        smooth_sizer.Add(self.smooth_c1,  0, LCEN, 1)
-        smooth_sizer.Add(SimpleText(smooth_panel, ' form='), 0, LCEN, 1)
-        smooth_sizer.Add(self.smooth_conv,  0, LCEN, 1)
-        smooth_sizer.Add(SimpleText(smooth_panel, ' sigma='), 0, LCEN, 1)
-        smooth_sizer.Add(self.smooth_sig,  0, LCEN, 1)
-        pack(smooth_panel, smooth_sizer)
-
-
-        sizer.Add(smooth_panel,  (ir, 2), (1, 5), LCEN, 1)
-
+            sizer.Add(smooth_panel,  (ir, 2), (1, 5), LCEN, 1)
 
         ir += 1
         sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LCEN, 0)
@@ -414,20 +415,21 @@ class EditColumnFrame(wx.Frame) :
                 pass
 
         # apply smooththing here
-        smoother = self.smooth_op.GetStringSelection().lower()
-        if smoother.startswith('box'):
-            n = int(self.smooth_c0.GetValue())
-            outgroup.ydat = boxcar(outgroup.ydat, n)
-        elif smoother.startswith('savit'):
-            n = int(self.smooth_c0.GetValue())
-            win_size = 2*n + 1
-            order = int(self.smooth_c1.GetValue())
-            outgroup.ydat = savitzky_golay(outgroup.ydat, win_size, order)
-        elif smoother.startswith('conv'):
-            sigma = float(self.smooth_sig.GetValue())
-            form  = str(self.smooth_conv.GetStringSelection()).lower()
-            outgroup.ydat = smooth(outgroup.xdat, outgroup.ydat,
-                                 sigma=sigma, form=form)
+        if self.with_smooth:
+            smoother = self.smooth_op.GetStringSelection().lower()
+            if smoother.startswith('box'):
+                n = int(self.smooth_c0.GetValue())
+                outgroup.ydat = boxcar(outgroup.ydat, n)
+            elif smoother.startswith('savit'):
+                n = int(self.smooth_c0.GetValue())
+                win_size = 2*n + 1
+                order = int(self.smooth_c1.GetValue())
+                outgroup.ydat = savitzky_golay(outgroup.ydat, win_size, order)
+            elif smoother.startswith('conv'):
+                sigma = float(self.smooth_sig.GetValue())
+                form  = str(self.smooth_conv.GetStringSelection()).lower()
+                outgroup.ydat = smooth(outgroup.xdat, outgroup.ydat,
+                                       sigma=sigma, form=form)
 
         self.array_sel = {'xpop': xpop, 'xarr': xname,
                      'ypop': ypop, 'yop': yop,
