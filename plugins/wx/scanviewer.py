@@ -55,6 +55,9 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=-5,
 
 ICON_FILE = 'larch.ico'
 
+SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
+CONV_OPS  = ('Lorenztian', 'Gaussian')
+
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -94,44 +97,47 @@ ModelChoices = ('Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Pearson7',
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
-        wx.Panel.__init__(self, parent, **kws)
+        wx.Panel.__init__(self, parent, -1, **kws)
 
         self.parent = parent
         self.main  = main
+        self.larch = None
+
         self.needs_update = False
 
         self.needs_update = False
         self.proc_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
         self.proc_timer.Start(500)
-
         self.build_display()
 
-
     def fill(self, dgroup):
-        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50,
-                       edge_step=0, norm2=-10, nnorm=3, nvict=2,
-                       auto_step=True, auto_e0=True, show_e0=True)
+
+        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50, edge_step=0,
+                       norm2=-10, nnorm=3, nvict=2, auto_step=True,
+                       auto_e0=True, show_e0=True, xas_op=0)
 
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(group2dict(dgroup.proc_opts))
 
-        self.xas_e0.SetValue(predefs['e0'])
-        self.xas_step.SetValue(predefs['edge_step'])
-        self.xas_pre1.SetValue(predefs['pre1'])
-        self.xas_pre2.SetValue(predefs['pre2'])
-        self.xas_nor1.SetValue(predefs['norm1'])
-        self.xas_nor2.SetValue(predefs['norm2'])
-        self.xas_vict.SetSelection(predefs['nvict'])
-        self.xas_nnor.SetSelection(predefs['nnorm'])
+        if dgroup.datatype == 'xas':
+            self.xas_op.SetSelection(predefs['xas_op'])
+            self.xas_e0.SetValue(predefs['e0'])
+            self.xas_step.SetValue(predefs['edge_step'])
+            self.xas_pre1.SetValue(predefs['pre1'])
+            self.xas_pre2.SetValue(predefs['pre2'])
+            self.xas_nor1.SetValue(predefs['norm1'])
+            self.xas_nor2.SetValue(predefs['norm2'])
+            self.xas_vict.SetSelection(predefs['nvict'])
+            self.xas_nnor.SetSelection(predefs['nnorm'])
 
-        self.xas_showe0.SetValue(predefs['show_e0'])
-        self.xas_autoe0.SetValue(predefs['auto_e0'])
-        self.xas_autostep.SetValue(predefs['auto_step'])
+            self.xas_showe0.SetValue(predefs['show_e0'])
+            self.xas_autoe0.SetValue(predefs['auto_e0'])
+            self.xas_autostep.SetValue(predefs['auto_step'])
 
     def build_display(self):
 
-        opchoices=('Raw Data', 'Normalized', 'Derivative',
+        xasop_choices=('Raw Data', 'Normalized', 'Derivative',
                    'Normalized + Derivative',
                    'Pre-edge subtracted',
                    'Raw Data + Pre-edge/Post-edge')
@@ -140,11 +146,51 @@ class ProcessPanel(wx.Panel):
         self.xas_autoe0   = Check(self, default=True, label='auto?', **opts)
         self.xas_showe0   = Check(self, default=True, label='show?', **opts)
         self.xas_autostep = Check(self, default=True, label='auto?', **opts)
-        self.xas_op       = Choice(self, size=(300, -1),
-                                   choices=opchoices,  **opts)
+        opts['size'] = (300, -1)
+        self.xas_op  = Choice(self, choices=xasop_choices,  **opts)
+
+
+        opts  = dict(action=self.onSmoothChoice, size=(120, -1))
+        sm_row1 = wx.Panel(self)
+        sm_row2 = wx.Panel(self)
+        sm_siz1= wx.BoxSizer(wx.HORIZONTAL)
+        sm_siz2= wx.BoxSizer(wx.HORIZONTAL)
+
+        self.smooth_op = Choice(sm_row1, choices=SMOOTH_OPS, **opts)
+        self.smooth_op.SetSelection(0)
+
+        opts  = dict(action=self.UpdatePlot, size=(100, -1))
+
+        self.smooth_conv = Choice(sm_row2, choices=CONV_OPS, **opts)
+        opts['size'] =  (30, -1)
+        self.smooth_c0 = FloatCtrl(sm_row1, value=3, precision=0, **opts)
+        self.smooth_c1 = FloatCtrl(sm_row1, value=1, precision=0, **opts)
+        opts['size'] =  (75, -1)
+
+        self.smooth_sig = FloatCtrl(sm_row2, value=1, precision=4, **opts)
+        self.smooth_c0.Disable()
+        self.smooth_c1.Disable()
+        self.smooth_sig.Disable()
+        self.smooth_conv.SetSelection(0)
+        self.smooth_conv.Disable()
+
+        sm_siz1.Add(self.smooth_op,  0, LCEN, 1)
+        sm_siz1.Add(SimpleText(sm_row1, ' n ='), 0, LCEN, 1)
+        sm_siz1.Add(self.smooth_c0,  0, LCEN, 1)
+        sm_siz1.Add(SimpleText(sm_row1, ' order ='), 0, LCEN, 1)
+        sm_siz1.Add(self.smooth_c1,  0, LCEN, 1)
+
+        sm_siz2.Add(SimpleText(sm_row2, ' form ='), 0, LCEN, 1)
+        sm_siz2.Add(self.smooth_conv,  0, LCEN, 1)
+        sm_siz2.Add(SimpleText(sm_row2, ' sigma ='), 0, LCEN, 1)
+        sm_siz2.Add(self.smooth_sig,  0, LCEN, 1)
+        pack(sm_row1, sm_siz1)
+        pack(sm_row2, sm_siz2)
+
+        self.xshift     = FloatCtrl(self, value=0, precision=4, **opts)
 
         self.btns = {}
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2', 'xshift'):
             bb = BitmapButton(self, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
                               tooltip='use last point selected from plot')
@@ -170,52 +216,110 @@ class ProcessPanel(wx.Panel):
         self.xas_nnor.SetSelection(2)
         sizer = wx.GridBagSizer(10, 7)
 
-        sizer.Add(SimpleText(self, 'Plot XAS as: '),         (0, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'E0 : '),                 (1, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'Edge Step: '),           (2, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'Normalization range: '), (4, 0), (1, 1), LCEN)
+        ir = 0
+        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
 
-        sizer.Add(self.xas_op,                 (0, 1), (1, 6), LCEN)
-        sizer.Add(self.btns['e0'],             (1, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_e0,                 (1, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autoe0,             (1, 3), (1, 3), LCEN)
-        sizer.Add(self.xas_showe0,             (1, 6), (1, 2), LCEN)
+        ir += 1
+        sizer.Add(SimpleText(self, ' General Data Processing '), (ir, 0), (1, 5), LCEN)
 
-        sizer.Add(self.xas_step,               (2, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autostep,           (2, 3), (1, 3), LCEN)
-
-        sizer.Add(self.btns['pre1'],           (3, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_pre1,               (3, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, ':'),          (3, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['pre2'],           (3, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_pre2,               (3, 5), (1, 1), LCEN)
-        sizer.Add(self.btns['nor1'],           (4, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_nor1,               (4, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, ':'),          (4, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['nor2'],           (4, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_nor2,               (4, 5), (1, 1), LCEN)
+        ir += 1
+        sizer.Add(SimpleText(self, ' X shift:'), (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(self.btns['xshift'],           (ir, 1), (1, 1), LCEN)
+        sizer.Add(self.xshift  ,                 (ir, 2), (1, 2), LCEN, 0)
 
 
-        sizer.Add(SimpleText(self, 'Victoreen:'), (3, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_vict,               (3, 7), (1, 1), LCEN)
-        sizer.Add(SimpleText(self, 'PolyOrder:'), (4, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_nnor,               (4, 7), (1, 1), LCEN)
+        ir += 1
+        sizer.Add(SimpleText(self, ' Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(sm_row1, (ir, 1), (1, 7), LCEN)
+
+        ir += 1
+        sizer.Add(sm_row2, (ir, 1), (1, 7), LCEN)
+
+
+
+
+        ir += 1
+        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
+
+        ir += 1
+        sizer.Add(SimpleText(self, ' XAS Data Processing '), (ir, 0), (1, 5), LCEN)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Arrays to Plot: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(self.xas_op,                           (ir, 1), (1, 7), LCEN)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'E0 : '),   (ir, 0), (1, 1), LCEN)
+        sizer.Add(self.btns['e0'],             (ir, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_e0,                 (ir, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_autoe0,             (ir, 3), (1, 2), LCEN)
+        sizer.Add(self.xas_showe0,             (ir, 5), (1, 2), LCEN)
+
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Edge Step: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(self.xas_step,               (ir, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_autostep,           (ir, 3), (1, 3), LCEN)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Pre-edge range: '),  (ir, 0), (1, 1), LCEN)
+        sizer.Add(self.btns['pre1'],           (ir, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre1,               (ir, 2), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, ':'),       (ir, 3), (1, 1), LCEN)
+        sizer.Add(self.btns['pre2'],           (ir, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_pre2,               (ir, 5), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'Victoreen:'), (ir, 6), (1, 1), LCEN)
+        sizer.Add(self.xas_vict,               (ir, 7), (1, 1), LCEN)
+
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Normalization range: '), (ir, 0), (1, 1), LCEN)
+        sizer.Add(self.btns['nor1'],           (ir, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_nor1,               (ir, 2), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, ':'),          (ir, 3), (1, 1), LCEN)
+        sizer.Add(self.btns['nor2'],           (ir, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_nor2,               (ir, 5), (1, 1), LCEN)
+        sizer.Add(SimpleText(self, 'PolyOrder:'), (ir, 6), (1, 1), LCEN)
+        sizer.Add(self.xas_nnor,               (ir, 7), (1, 1), LCEN)
+
+        ir += 1
+        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 8), LCEN)
 
         pack(self, sizer)
 
+
+    def onSmoothChoice(self, evt=None):
+        choice = self.smooth_op.GetStringSelection().lower()
+        conv  = self.smooth_conv.GetStringSelection()
+        self.smooth_c0.Disable()
+        self.smooth_c1.Disable()
+        self.smooth_conv.Disable()
+        self.smooth_sig.Disable()
+
+        if choice.startswith('box'):
+            self.smooth_c0.Enable()
+        elif choice.startswith('savi'):
+            self.smooth_c0.Enable()
+            self.smooth_c1.Enable()
+        elif choice.startswith('conv'):
+            self.smooth_conv.Enable()
+            self.smooth_sig.Enable()
+        self.needs_update = True
+
+
     def onProcessTimer(self, evt=None):
         if self.main.groupname is not None and self.needs_update:
-            self.process_data(self.main.groupname)
-            self.main.plot_group(self.main.groupname, new=True)
             self.needs_update = False
+            # self.process(self.main.groupname)
+            # self.main.plot_group(self.main.groupname, new=True)
 
     def UpdatePlot(self, evt=None, **kws):
         self.needs_update = True
 
-
     def on_selpoint(self, evt=None, opt='e0'):
         xval = None
+        if self.larch is None:
+            self.larch = self.main.larch
         try:
             xval = self.larch.symtable._plotter.plot1_x
         except:
@@ -235,12 +339,16 @@ class ProcessPanel(wx.Panel):
             self.xas_nor1.SetValue(xval-e0)
         elif opt == 'nor2':
             self.xas_nor2.SetValue(xval-e0)
+        elif opt == 'xshift':
+            self.xshift.SetValue(xval)
 
 
     def process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
+        if self.larch is None:
+            self.larch = self.main.larch
         dgroup = getattr(self.larch.symtable, gname)
         if not hasattr(dgroup, 'proc_opts'):
             dgroup.proc_opts = Group(datatype='xas')
@@ -284,6 +392,7 @@ class ProcessPanel(wx.Panel):
         proc_opts.auto_step = self.xas_autostep.IsChecked()
         proc_opts.nnorm = int(self.xas_nnor.GetSelection())
         proc_opts.nvict = int(self.xas_vict.GetSelection())
+        proc_opts.xas_opt = self.xas_op.GetSelection()
 
         if self.xas_autoe0.IsChecked():
             self.xas_e0.SetValue(dgroup.e0)
@@ -337,7 +446,7 @@ class ProcessPanel(wx.Panel):
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
 
-        wx.Panel.__init__(self, parent, **kws)
+        wx.Panel.__init__(self, parent, -1, **kws)
 
         self.parent = parent
         self.main  = main
@@ -352,40 +461,44 @@ class FitPanel(wx.Panel):
         sizer = self.sizer
         models = Choice(self, size=(150, -1), choices=ModelChoices,
                         action=self.addModel)
-
         steps = Choice(self, size=(150, -1), choices=StepChoices,
                        action=partial(self.addModel, is_step=True))
 
-        fit_btn  = Button(self, 'Do Fit', size=(100, -1), action=self.onRunFit)
-        save_btn = Button(self, 'Save Fit', size=(100, -1), action=self.onSaveFit)
+        row1   = wx.Panel(self)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.xmin_sel = BitmapButton(self, get_icon('plus'),
+        fit_btn  = Button(row1, 'Do Fit', size=(100, -1), action=self.onRunFit)
+        save_btn = Button(row1, 'Save Fit', size=(100, -1), action=self.onSaveFit)
+
+        self.xmin_sel = BitmapButton(row1, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmin'),
                                      tooltip='use last point selected from plot')
-        self.xmax_sel = BitmapButton(self, get_icon('plus'),
+        self.xmax_sel = BitmapButton(row1, get_icon('plus'),
                                      action=partial(self.on_selpoint, opt='xmax'),
                                      tooltip='use last point selected from plot')
+
         opts = {'size': (90, -1), 'precision': 3}
-        self.xmin = FloatCtrl(self, value=0, **opts)
-        self.xmax = FloatCtrl(self, value=0, **opts)
+        self.xmin = FloatCtrl(row1, value=0, **opts)
+        self.xmax = FloatCtrl(row1, value=0, **opts)
 
-        rpan = wx.Panel(self)
-        rsiz = wx.BoxSizer(wx.HORIZONTAL)
 
-        rsiz.Add(Label('F it Range: [ '), 0, LCEN, 3)
-        rsiz.Add(self.xmin_sel, 0, LCEN, 3)
-        rsiz.Add(self.xmin,     0, LCEN, 3)
-        rsiz.Add(Label(' : '),  0, LCEN, 3)
-        rsiz.Add(self.xmax_sel, 0, LCEN, 3)
-        rsiz.Add(self.xmax,     0, LCEN, 3)
-        rsiz.Add(Label(' ]  '), 0, LCEN, 3)
-        rsiz.Add(fit_btn,       0, LCEN, 3)
-        rsiz.Add(save_btn,      0, LCEN, 3)
+        sizer1.Add(SimpleText(row1, 'Fit Range: [ '), 0, LCEN, 3)
+        sizer1.Add(self.xmin_sel, 0, LCEN, 3)
+        sizer1.Add(self.xmin,     0, LCEN, 3)
+        sizer1.Add(SimpleText(row1, ' : '),  0, LCEN, 3)
+        sizer1.Add(self.xmax_sel, 0, LCEN, 3)
+        sizer1.Add(self.xmax,     0, LCEN, 3)
+        sizer1.Add(SimpleText(row1, ' ]  '), 0, LCEN, 3)
+        sizer1.Add(fit_btn,       0, LCEN, 3)
+        sizer1.Add(save_btn,      0, LCEN, 3)
 
-        pack(rpan, rsiz)
+        pack(row1, sizer1)
 
         ir = 0
-        sizer.Add(rsiz, (ir, 0), (1, 6), LCEN)
+        sizer.Add(HLine(self, size=(500, 2)), (ir, 0), (1, 6), LCEN)
+
+        ir += 1
+        sizer.Add(row1, (ir, 0), (1, 6), LCEN)
 
         ir += 1
         sizer.Add(Label(' Add Model: '),      (ir, 0), (1, 1), LCEN)
@@ -527,9 +640,7 @@ class ScanViewerFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        read_workdir('scanviewer.dat')
-        if parent is not None:
-            self.Bind(wx.EVT_CLOSE,  self.onClose)
+        # read_workdir('scanviewer.dat')
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -581,8 +692,7 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
         self.proc_panel = ProcessPanel(parent=self.nb, main=self)
-
-        self.fit_panel = FitPanel(parent=self.nb, main=self)
+        self.fit_panel =  FitPanel(parent=self.nb, main=self)
 
         self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,  ' Curve Fitting ',  True)
@@ -606,14 +716,18 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.title.SetLabel('')
 
-        self.fit_panel.larch = self.larch
-        if True:
-            larchdir = self.larch.symtable._sys.config.larchdir
-            fico = os.path.join(larchdir, 'icons', ICON_FILE)
-            if os.path.exists(fico):
-                self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        else:
-            pass
+        # self.fit_panel.larch = self.larch
+        larchdir = self.larch.symtable._sys.config.larchdir
+        fico = os.path.join(larchdir, 'icons', ICON_FILE)
+        if os.path.exists(fico):
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+
+        plotframe = self.larch.symtable._plotter.get_display(
+            wintitle='DataViewer Plot Window')
+        xpos, ypos = self.GetPosition()
+        xsiz, ysiz = self.GetSize()
+        plotframe.SetPosition((xpos+xsiz, ypos))
+        self.Raise()
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
@@ -672,9 +786,11 @@ class ScanViewerFrame(wx.Frame):
         if new:
             plotcmd = newplot
 
+
         dgroup = getattr(self.larch.symtable, groupname, None)
         if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)
+
 
         if hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
@@ -712,6 +828,8 @@ class ScanViewerFrame(wx.Frame):
                 popts.update(opts)
                 axes.plot([x], [y], **popts)
         ppanel.canvas.draw()
+        self.Raise()
+
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
@@ -737,10 +855,6 @@ class ScanViewerFrame(wx.Frame):
             self.proc_panel.fill(self.dgroup)
 
         self.title.SetLabel(str(evt.GetString()))
-
-    def showInspectionTool(self, event=None):
-        app = wx.GetApp()
-        app.ShowInspectionTool()
 
 
     def createMenus(self):
@@ -779,28 +893,25 @@ class ScanViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, evt):
-        # sys.stderr.write('Close: save scanviewer.dat\n')
         save_workdir('scanviewer.dat')
         self.proc_panel.proc_timer.Stop()
 
-#
-#         for nam in dir(self.larch.symtable._plotter):
-#             obj = getattr(self.larch.symtable._plotter, nam)
-#             try:
-#                 obj.Destroy()
-#             except:
-#                 pass
-#
-#         if self.larch_buffer is not None:
-#             try:
-#                 self.larch_buffer.onClose()
-#             except:
-#                 pass
-#         try:
-#            for w in self.GetChildren():
-#                w.Destroy()
-#        except:
-#            pass
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.onClose()
+            except:
+                pass
+
+        for nam in dir(self.larch.symtable._plotter):
+            obj = getattr(self.larch.symtable._plotter, nam)
+            try:
+                obj.Destroy()
+            except:
+                pass
+        for nam in dir(self.larch.symtable._sys.wx):
+            obj = getattr(self.larch.symtable._sys.wx, nam)
+            del obj
+
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -902,8 +1013,8 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetSelection(0)
         self.onPlotOne(groupname=groupname)
 
-class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, _larch=None, **kws):
+class ScanViewer(wx.App): # , wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
     def run(self):
