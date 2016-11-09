@@ -414,7 +414,7 @@ class EditColumnFrame(wx.Frame) :
             except:
                 pass
 
-        # apply smooththing here
+        # apply smoothhing here
         if self.with_smooth:
             smoother = self.smooth_op.GetStringSelection().lower()
             if smoother.startswith('box'):
