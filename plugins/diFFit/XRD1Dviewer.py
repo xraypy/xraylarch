@@ -13,7 +13,7 @@ import matplotlib.cm as colormap
 
 import wx
 
-from wxmplot.imagepanel import PlotPanel
+from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
@@ -385,7 +385,7 @@ class Viewer1DXRD(wx.Frame):
 
     def plot1DXRD(self,panel):
     
-        self.plot1D = PlotPanel(panel,size=(500, 500))
+        self.plot1D = ImagePanel(panel,size=(500, 500))
         self.plot1D.messenger = self.write_message
 
         ## eventually, don't need this
