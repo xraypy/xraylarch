@@ -46,7 +46,7 @@ class Viewer2DXRD(wx.Frame):
     '''
     def __init__(self, *args, **kw):
         label = 'diFFit.py : 2D XRD Viewer'
-        wx.Frame.__init__(self, None, -1,title=label, size=(800, 600))
+        wx.Frame.__init__(self, None, -1,title=label, size=(1000, 600))
         
         self.SetMinSize((700,500))
         
@@ -264,24 +264,27 @@ class Viewer2DXRD(wx.Frame):
     
         ###########################
         ## Background
-        hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
-#        self.txt_bkgd = wx.StaticText(self.panel, label='BACKGROUND')
+        hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
         self.sldr_bkgd = wx.Slider(self.panel)
-        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
         self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
         self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
 
-#        hbox_bkgd.Add(self.txt_bkgd, flag=wx.RIGHT, border=8)
-        hbox_bkgd.Add(self.btn_bkgd, flag=wx.RIGHT, border=8)
-        hbox_bkgd.Add(self.sldr_bkgd, flag=wx.RIGHT, border=8)
-        hbox_bkgd.Add(self.entr_scale, flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_bkgd, flag=wx.ALL, border=10)
+        hbox_bkgd1.Add(self.btn_bkgd, flag=wx.RIGHT, border=8)
+        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.RIGHT, border=8)
+        vbox.Add(hbox_bkgd1, flag=wx.TOP, border=10)
 
+
+        hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_scale = wx.Button(self.panel,label='set range')
+        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        
         self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
-        vbox.Add(self.btn_scale, flag=wx.ALIGN_RIGHT|wx.BOTTOM, border=10)
+        
+        hbox_bkgd2.Add(self.btn_scale, flag=wx.RIGHT, border=10)
+        hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT, border=8)
+        vbox.Add(hbox_bkgd2, flag=wx.ALL, border=10)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         if self.bkgd_pxls == 0:
@@ -555,20 +558,6 @@ class Viewer2DXRD(wx.Frame):
             tifffile.imsave(path,self.plt_img)
 
     def on1DXRD(self,event):
-#         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
-#         dlg = wx.FileDialog(self, 'Save file as...',
-#                            defaultDir=os.getcwd(),
-#                            wildcard=wildcards,
-#                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
-# 
-#         path, save = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             save = True
-#             path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-#         
-#         if save:
-#             self.data1D = integrate_xrd(self.plt_img,steps=5001,ai = self.ai,file=path,verbose=True)
         
         if self.ai is None:
             print 'Cannot calculate 1D XRD without calibration file.'

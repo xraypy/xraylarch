@@ -43,17 +43,16 @@ class Viewer1DXRD(wx.Frame):
     '''
     Frame for housing all 1D XRD viewer widgets
     '''
-    def __init__(self, parent):
+    def __init__(self, data):
         
         label = 'diFFit.py : 1D XRD Viewer'
-        wx.Frame.__init__(self, parent, -1,title=label, size=(1500, 600))
+        wx.Frame.__init__(self, None, -1,title=label, size=(1500, 600))
         
         self.SetMinSize((700,500))
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION )
 
         ## Default information
-        self.parent = parent
         self.data_name    = []
         self.xy_data      = []
         self.xy_plot      = []
@@ -66,7 +65,7 @@ class Viewer1DXRD(wx.Frame):
         self.Show(True)
 
         try:
-            self.add1Ddata(*self.parent.xy_data)
+            self.add1Ddata(*data)
         except:
             pass
 
@@ -203,14 +202,14 @@ class Viewer1DXRD(wx.Frame):
         ###########################
         ## Scale
         hbox_scl1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_scl = wx.StaticText(self.panel, label='SCALE')
+        self.ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
         self.sldr_scl = wx.Slider(self.panel)
         self.sldr_scl.Bind(wx.EVT_SLIDER,   None)                
 
         hbox_scl1.Add(self.ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl1.Add(self.sldr_scl, flag=wx.RIGHT, border=8)
 
-        vbox.Add(hbox_scl1, flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_scl1, flag=wx.BOTTOM|wx.TOP, border=8)
 
         hbox_scl2 = wx.BoxSizer(wx.HORIZONTAL)
         self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
@@ -279,13 +278,15 @@ class Viewer1DXRD(wx.Frame):
         
     def add1Ddata(self,x,y,name=None):
         
+        plt_no = (len(self.xy_data)/2)
         if name is None:
-            name = 'dataset %i' % (len(self.xy_data)/2)
+            name = 'dataset %i' % plt_no
 
         self.data_name.append(name)
         self.xy_data.extend([x,y])
         self.xy_plot.extend([x,y])
-        self.plotted_data.append(self.plot1D.oplot(x,y))
+        self.plotted_data.append(self.plot1D.oplot(x,y,label=name))
+        
         
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
@@ -353,7 +354,8 @@ class Calc1DPopup(wx.Dialog):
     
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options',
-                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
+                                    size = (210,410))
         
        
         self.mask = mask
@@ -363,6 +365,9 @@ class Calc1DPopup(wx.Dialog):
         
 
         self.Init()
+        
+        ## Set defaults
+        self.wedges.SetValue('1')
         
 
     def Init(self):
@@ -450,23 +455,25 @@ class Calc1DPopup(wx.Dialog):
         mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
 
         ## Okay Buttons
-        btn_hlp = wx.Button(self.panel, wx.ID_HELP   )
-        btn_ok  = wx.Button(self.panel, wx.ID_OK     )
-        btn_cncl = wx.Button(self.panel, wx.ID_CANCEL )
-        
-        #self.FindWindowById(wx.ID_OK).Disable()
-        btn_ok.Bind(wx.EVT_BUTTON,self.onOKAY)
+        btn_cncl = wx.Button(self.panel, wx.CANCEL)
+        btn_save = wx.Button(self.panel, label = 'Save 1D')
+        btn_plot  = wx.Button(self.panel, label = 'Plot 1D')
+
+        btn_save.Bind(wx.EVT_BUTTON,self.onSAVE)
+        btn_plot.Bind(wx.EVT_BUTTON,self.onPLOT)
+        btn_cncl.SetLabel('Close')
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
-        minisizer.Add(btn_hlp,  flag=wx.RIGHT, border=5)
-        minisizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
-        minisizer.Add(btn_ok,   flag=wx.RIGHT, border=5)
+#         minisizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
+        minisizer.Add(btn_save,  flag=wx.RIGHT, border=5)
+        minisizer.Add(btn_plot,  flag=wx.RIGHT, border=5)
         
         mainsizer.Add(minisizer, flag=wx.ALL, border=8)
-        
+        mainsizer.Add(btn_cncl, flag=wx.ALL, border=8)
+
         self.panel.SetSizer(mainsizer)
 
-    def onOKAY(self,event):
+    def onSAVE(self,event):
         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save file as...',
                            defaultDir=os.getcwd(),
@@ -481,9 +488,11 @@ class Calc1DPopup(wx.Dialog):
         
         if save:
             self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,file=path,verbose=True)
-        
-#        self.Destroy()
 
+    def onPLOT(self,event):
+        
+        self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False,verbose=True)
+        Viewer1DXRD(self.data1D)
 
 
       
