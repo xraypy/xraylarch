@@ -22,6 +22,8 @@ from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,xy_file
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
+import matplotlib.pyplot as plt
+
 HAS_pyFAI = False
 try:
     import pyFAI
@@ -68,6 +70,13 @@ class Viewer1DXRD(wx.Frame):
             self.add1Ddata(*data)
         except:
             pass
+            
+     
+        ## Set defaults for plotting        
+        self.plot1D.cursor_mode = 'zoom'
+#         self.plot1D.xlabel = self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
+#         print self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
+#         self.plot1D.conf.yaxis = 'Intensity (a.u.)'
 
 
     def write_message(self, s, panel=0):
@@ -151,7 +160,7 @@ class Viewer1DXRD(wx.Frame):
         xunits = ['q (A^-1)',u'2\u03B8','d (A)'] ## \u212B
         self.ch_xaxis = wx.Choice(self.panel,choices=xunits)
 
-        self.ch_xaxis.Bind(wx.EVT_CHOICE,   None)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.onCHANGEx)
     
         hbox_xaxis.Add(self.ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
@@ -185,9 +194,12 @@ class Viewer1DXRD(wx.Frame):
         ## DATA CHOICE
 
         self.ch_data = wx.Choice(self.panel,choices=self.data_name)
-        self.ch_data.Bind(wx.EVT_CHOICE,   None)
+        self.ch_data.Bind(wx.EVT_CHOICE,   self.onSELECT)
         vbox.Add(self.ch_data, flag=wx.EXPAND|wx.ALL, border=8)
     
+        self.ttl_data = wx.StaticText(self.panel, label='')
+        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+
         ###########################
 
         self.ck_bkgd = wx.CheckBox(self.panel,label='BACKGROUND')
@@ -274,6 +286,10 @@ class Viewer1DXRD(wx.Frame):
     
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.write_message
+  
+         ## trying to get this functionality into our gui
+        ## mkak 2016.11.10      
+#         interactive_legend().show()
 
         
     def add1Ddata(self,x,y,name=None):
@@ -285,13 +301,17 @@ class Viewer1DXRD(wx.Frame):
         self.data_name.append(name)
         self.xy_data.extend([x,y])
         self.xy_plot.extend([x,y])
-        self.plotted_data.append(self.plot1D.oplot(x,y,label=name))
-        
-        
+        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
+        self.onSELECT(None)
 
     def remove1Ddata(self,event):
+        
+        ## Needs pop up warning: "Do you really want to delete this data set from plotter?
+        ## Current settings will not be saved."
+        ## mkak 2016.11.10
         
         plt_no = self.ch_data.GetSelection()        
         print 'trying to DELETE plot number: %i' % plt_no
@@ -299,8 +319,8 @@ class Viewer1DXRD(wx.Frame):
 
         ## removing name from list works... do not activate till rest is working
         ## mkak 2016.11.10
-        self.data_name.remove(self.data_name[plt_no])
-        self.ch_data.Set(self.data_name)
+#         self.data_name.remove(self.data_name[plt_no])
+#         self.ch_data.Set(self.data_name)
 
     def hide1Ddata(self,event):
 
@@ -308,6 +328,38 @@ class Viewer1DXRD(wx.Frame):
         print 'trying to hide plot number: %i' % plt_no
         print '\t',self.data_name[plt_no]
 
+    def onSELECT(self,event):
+    
+        data_str = self.ch_data.GetString(self.ch_data.GetSelection())
+        self.ttl_data.SetLabel('SELECTED: %s' % data_str)
+
+    def onCHANGEx(self, event):
+        
+        print 'changed x-axis...'
+
+#         q,I = self.xrd.data1D
+# 
+#         if event is not None:
+#             if 0 == event.GetInt():
+#                 ## q in units 1/A
+#                 self.xunit = 'q'
+#                 self.xlabel = 'q (1/A)'
+#                 x = q
+#             elif 1 == event.GetInt():
+#                 ## d in units A
+#                 self.xunit = '2th'
+#                 self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+#                 x = calc_q_to_2th(q,self.xrd.wavelength*1e10)
+#             elif 2 == event.GetInt():
+#                 ## d in units A
+#                 self.xunit = 'd'
+#                 self.xlabel = 'd (A)'
+#                 x = calc_q_to_d(q)
+#         
+#         self.plot1d([x,I])
+# 
+#         if self.xrd2 is not None:
+#             self.oplot1D([x,I])
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
@@ -349,6 +401,85 @@ class Viewer1DXRD(wx.Frame):
             
             print 'need to write something to save data - like pyFAI does?'
 
+
+def interactive_legend(ax=None):
+    if ax is None:
+        ax = plt.gca()
+    if ax.legend_ is None:
+        ax.legend()
+
+    return InteractiveLegend(ax.legend_)
+
+class InteractiveLegend(object):
+    def __init__(self, legend):
+        self.legend = legend
+        self.fig = legend.axes.figure
+
+        self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
+        self._setup_connections()
+
+        self.update()
+
+    def _setup_connections(self):
+        for artist in self.legend.texts + self.legend.legendHandles:
+            artist.set_picker(10) # 10 points tolerance
+
+        self.fig.canvas.mpl_connect('pick_event', self.on_pick)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+
+    def _build_lookups(self, legend):
+        labels = [t.get_text() for t in legend.texts]
+        handles = legend.legendHandles
+        label2handle = dict(zip(labels, handles))
+        handle2text = dict(zip(handles, legend.texts))
+
+        lookup_artist = {}
+        lookup_handle = {}
+        for artist in legend.axes.get_children():
+            if artist.get_label() in labels:
+                handle = label2handle[artist.get_label()]
+                lookup_handle[artist] = handle
+                lookup_artist[handle] = artist
+                lookup_artist[handle2text[handle]] = artist
+
+        lookup_handle.update(zip(handles, handles))
+        lookup_handle.update(zip(legend.texts, handles))
+
+        return lookup_artist, lookup_handle
+
+    def on_pick(self, event):
+        handle = event.artist
+        if handle in self.lookup_artist:
+            artist = self.lookup_artist[handle]
+            artist.set_visible(not artist.get_visible())
+            self.update()
+
+    def on_click(self, event):
+        if event.button == 3:
+            visible = False
+        elif event.button == 2:
+            visible = True
+        else:
+            return
+
+        for artist in self.lookup_artist.values():
+            artist.set_visible(visible)
+        self.update()
+
+    def update(self):
+        for artist in self.lookup_artist.values():
+            handle = self.lookup_handle[artist]
+            if artist.get_visible():
+                handle.set_visible(True)
+            else:
+                handle.set_visible(False)
+        self.fig.canvas.draw()
+
+    def show(self):
+        plt.show()
+
+
+##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
     def __init__(self,xrd2Ddata,ai,mask=None):
     
@@ -455,13 +586,13 @@ class Calc1DPopup(wx.Dialog):
         mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
 
         ## Okay Buttons
-        btn_cncl = wx.Button(self.panel, wx.CANCEL)
+#         btn_cncl = wx.Button(self.panel, wx.CANCEL)
         btn_save = wx.Button(self.panel, label = 'Save 1D')
         btn_plot  = wx.Button(self.panel, label = 'Plot 1D')
 
         btn_save.Bind(wx.EVT_BUTTON,self.onSAVE)
         btn_plot.Bind(wx.EVT_BUTTON,self.onPLOT)
-        btn_cncl.SetLabel('Close')
+#         btn_cncl.SetLabel('Close')
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
 #         minisizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
@@ -469,7 +600,7 @@ class Calc1DPopup(wx.Dialog):
         minisizer.Add(btn_plot,  flag=wx.RIGHT, border=5)
         
         mainsizer.Add(minisizer, flag=wx.ALL, border=8)
-        mainsizer.Add(btn_cncl, flag=wx.ALL, border=8)
+#         mainsizer.Add(btn_cncl, flag=wx.ALL, border=8)
 
         self.panel.SetSizer(mainsizer)
 
