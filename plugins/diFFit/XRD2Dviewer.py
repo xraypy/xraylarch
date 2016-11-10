@@ -139,7 +139,7 @@ class Viewer2DXRD(wx.Frame):
         '''
         self.panel = wx.Panel(self)
 
-        vistools = self.VisualToolbox(self.panel)
+        vistools = self.Toolbox(self.panel)
         rightside = self.RightSidePanel(self.panel)        
 
         panel2D = wx.BoxSizer(wx.HORIZONTAL)
@@ -148,12 +148,12 @@ class Viewer2DXRD(wx.Frame):
 
         self.panel.SetSizer(panel2D)
     
-    def VisualToolbox(self,panel):
+    def Toolbox(self,panel):
         '''
         Frame for visual toolbox
         '''
         
-        tlbx = wx.StaticBox(self.panel,label='VISUAL TOOLBOX')#, size=(200, 200))
+        tlbx = wx.StaticBox(self.panel,label='TOOLBOX')#, size=(200, 200))
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
         ###########################
