@@ -24,6 +24,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 import lmfit.models as lm_models
+from lmfit import Parameter
 
 from larch import Interpreter, isParameter, Group
 from larch.larchlib import read_workdir, save_workdir
@@ -38,6 +39,7 @@ from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
 
 from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
 from larch_plugins.wx.icons import get_icon
+from larch_plugins.wx.parameter import ParameterDialog, ParameterPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname)
@@ -427,7 +429,7 @@ class ProcessPanel(wx.Panel):
             dgroup.y = savitzky_golay(dgroup.y, winsize, proc_opts.smooth_c1)
         elif smop.startswith('conv'):
             dgroup.y = smooth(dgroup.x, dgroup.y,
-                              sigma=proc_opts.smooth_sig, form=cvform)
+                              sigma=proc_opts.smooth_sig, form=cform)
 
         if dgroup.datatype.startswith('xas'):
             dgroup.energy = dgroup.x
@@ -605,8 +607,6 @@ class FitPanel(wx.Panel):
         if model is None:
             return
 
-        def Label(t): return SimpleText(self.modelpanel, t)
-
         title = model
         if is_step:
             title = "Step(%s)" % model
@@ -618,39 +618,55 @@ class FitPanel(wx.Panel):
             mclass = getattr(lm_models, model+'Model')
             minst = mclass()
 
-        imod = len(self.fit_components) + 1
+        icomp = len(self.fit_components)
 
-        prefix = "p%i" % imod
-
-        print("Add Model ", model, mclass, minst.param_names)
+        prefix = "p%i" % (icomp + 1)
 
         mpanel = self.modelpanel
 
-        modbox = wx.StaticBox(mpanel, -1, "Component %i: %s" % (imod, title))
+        modbox = wx.StaticBox(mpanel, -1, title)
 
         sizer = wx.GridBagSizer(3, 3)
+
+        def SLabel(s):
+            return SimpleText(modbox, s, minsize=(80, -1), style=LCEN)
 
         mname  = wx.TextCtrl(modbox, -1, prefix, size=(80, -1))
         usebox = Check(modbox, default=True, label='Use in Model', size=(100, -1))
         delbtn = Button(modbox, 'Delete', size=(80, -1),
-                        action=partial(self.onDeleteComponent, comp=imod))
+                        action=partial(self.onDeleteComponent, comp=icomp))
 
         pick3btn = Button(modbox, 'Pick 3 Points', size=(80, -1),
-                          action=partial(self.onPick3Points, comp=imod))
+                          action=partial(self.onPick3Points, comp=icomp))
         pick3msg = SimpleText(modbox, "    ", size=(100, -1))
 
-        sizer.Add(SimpleText(modbox, "Name"), (0, 0), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("Component"),  (0, 0), (1, 1), LCEN, 2)
         sizer.Add(mname,     (0, 1), (1, 1), LCEN, 2)
         sizer.Add(usebox,    (0, 2), (1, 1), LCEN, 2)
         sizer.Add(pick3btn,  (0, 3), (1, 1), LCEN, 2)
-        sizer.Add(pick3msg,  (0, 4), (1, 1), LCEN, 2)
-        sizer.Add(delbtn,    (0, 5), (1, 1), LCEN, 2)
+        sizer.Add(pick3msg,  (0, 4), (1, 2), LCEN, 2)
+        sizer.Add(delbtn,    (0, 6), (1, 1), LCEN, 2)
 
-        t2 = SimpleText(modbox, "%s" % repr(minst.param_names))
-        sizer.Add(t2,        (1, 1), (1, 3), LCEN|wx.GROW, 2)
+        sizer.Add(SLabel("Param Name"),  (1, 0), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("Value"),       (1, 1), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("Type"),        (1, 2), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("Min"),         (1, 3), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("Max"),         (1, 4), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("StdErr"),      (1, 5), (1, 1), LCEN, 2)
+        sizer.Add(SLabel("More..."),     (1, 6), (1, 1), LCEN, 2)
 
-        self.fit_components.append((imod, modbox, mpanel, mname, usebox, delbtn, pick3btn, pick3msg))
 
+        ir = 1
+        parpanels = []
+        for pname in sorted(minst.param_names):
+            par = Parameter(name=pname, value=0, vary=True)
+            ppan = ParameterPanel(modbox, par, show_name=False, show_bounds=True)
+            ir += 1
+            sizer.Add(SLabel(pname), (ir, 0), (1, 1), LCEN, 2)
+            sizer.Add(ppan,          (ir, 1), (1, 5), LCEN|wx.GROW, 2)
+            parpanels.append(ppan)
+
+        self.fit_components.append((icomp, modbox, mname, usebox, delbtn, pick3btn, pick3msg))
         pack(modbox, sizer)
 
 
@@ -659,7 +675,16 @@ class FitPanel(wx.Panel):
 
 
     def onDeleteComponent(self, evt=None, comp=-1):
-        pass
+        if comp > -1:
+            this = self.fit_components[comp]
+            icomp, box = this[0], this[1]
+            self.fit_components[comp] = [None, None, None]
+            if icomp == comp and box is not None:
+                box.Destroy()
+
+        sx,sy = self.GetSize()
+        self.SetSize((sx, sy+1))
+        self.SetSize((sx, sy))
 
     def onPick3Points(self, evt=None, comp=-1):
         pass
