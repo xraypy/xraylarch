@@ -122,7 +122,10 @@ class ProcessPanel(wx.Panel):
 
         predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50, edge_step=0,
                        norm2=-10, nnorm=3, nvict=2, auto_step=True,
-                       auto_e0=True, show_e0=True, xas_op=0)
+                       auto_e0=True, show_e0=True, xas_op=0,
+                       xshift=0, xscale=1, yshift=0, yscale=1,
+                       smooth_op='None', smooth_conv='Lorentzian',
+                       smooth_c0=2, smooth_c1=1, smooth_sig=1)
 
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(group2dict(dgroup.proc_opts))
@@ -251,8 +254,8 @@ class ProcessPanel(wx.Panel):
         opts = {'size': (85, -1), 'gformat': True,
                 'action': self.UpdatePlot}
 
-        self.xas_e0   = FloatCtrl(xas, value  = 0, **opts)
-        self.xas_step = FloatCtrl(xas, value  = 0, **opts)
+        self.xas_e0   = FloatCtrl(xas, value=0, **opts)
+        self.xas_step = FloatCtrl(xas, value=0, **opts)
         opts['precision'] = 1
         self.xas_pre1 = FloatCtrl(xas, value=-200, **opts)
         self.xas_pre2 = FloatCtrl(xas, value= -30, **opts)
@@ -512,9 +515,9 @@ class ParameterWidgets(object):
     """
     def __init__(self, parent, param,  name_size=None,
                  expr_size=120, stderr_size=120, float_size=80,
-                 widgets=('name', 'value',  'minval', 
+                 widgets=('name', 'value',  'minval',
                           'maxval', 'vary', 'expr', 'stderr')):
-        
+
         self.parent = parent
         self.param = param
 
@@ -525,7 +528,7 @@ class ParameterWidgets(object):
         self.maxval = None
         self.expr = None
         self.stderr = None
-        
+
         if 'name' in widgets:
             name = param.name
             if name in (None, 'None', ''):
@@ -538,7 +541,7 @@ class ParameterWidgets(object):
         if 'value' in widgets:
             self.value = FloatCtrl(parent, value=param.value,
                                    minval=param.min, maxval=param.max,
-                                   gformat=True,                                   
+                                   gformat=True,
                                    size=(float_size, -1))
             self.value.__digits = '0123456789.-e'
 
@@ -546,7 +549,7 @@ class ParameterWidgets(object):
             minval = param.min
             if minval in (None, 'None', -np.inf):
                 minval = -np.inf
-            
+
             self.minval = FloatCtrl(parent, value=minval,
                                     gformat=True,
                                     size=(float_size, -1),
@@ -562,7 +565,7 @@ class ParameterWidgets(object):
                                     size=(float_size, -1),
                                     action=self.onMaxval)
             self.maxval.__digits = '0123456789.-e'
-            
+
         if 'vary' in widgets:
             self.vary = Choice(parent,
                                choices=('vary', 'fix', 'constrain'),
@@ -590,7 +593,7 @@ class ParameterWidgets(object):
 
     def onMinval(self, evt=None, value=None):
         if value in (None, 'None', ''):
-            value = -np.inf        
+            value = -np.inf
         if self.value is not None:
             v = self.value.GetValue()
             self.value.SetMin(value)
@@ -619,7 +622,7 @@ class ParameterWidgets(object):
         elif vary.startswith('var'):
             value, minval, maxval = True, True, True
             self.param.vary = True
-            
+
         if self.value is not None:   self.value.Enable(value)
         if self.expr is not None:    self.expr.Enable(expr)
         if self.minval is not None:  self.minval.Enable(minval)
@@ -635,12 +638,12 @@ class FitPanel(wx.Panel):
         self.fit_components = []
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
-        self.pick3_timer = wx.Timer(self)
-        self.pick3_group = None
-        self.Bind(wx.EVT_TIMER, self.onPick3Timer, self.pick3_timer)
-        self.pick3_t0 = 0.
-        self.pick3_timeout = 15.
-        
+        self.pick2_timer = wx.Timer(self)
+        self.pick2_group = None
+        self.Bind(wx.EVT_TIMER, self.onPick2Timer, self.pick2_timer)
+        self.pick2_t0 = 0.
+        self.pick2_timeout = 15.
+
     def build_display(self):
 
         self.modelpanel = scrolled.ScrolledPanel(self, style=wx.GROW|wx.TAB_TRAVERSAL)
@@ -652,64 +655,65 @@ class FitPanel(wx.Panel):
 
         top = wx.Panel(self)
 
-        models = Choice(top, size=(150, -1), choices=ModelChoices,
-                        action=self.addModel)
-        steps = Choice(top, size=(150, -1), choices=StepChoices,
-                       action=partial(self.addModel, is_step=True))
 
-        row   = wx.Panel(top)
+        panel = GridPanel(self, ncols=1, nrows=1, pad=2, itemstyle=LCEN)
+
+        row = wx.Panel(panel)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        fit_btn  = Button(row, 'Do Fit', size=(100, -1), action=self.onRunFit)
-        save_btn = Button(row, 'Save Fit', size=(100, -1), action=self.onSaveFit)
+        xmin_sel = BitmapButton(row, get_icon('plus'),
+                                action=partial(self.on_selpoint, opt='xmin'),
+                                tooltip='use last point selected from plot')
+        xmax_sel = BitmapButton(row, get_icon('plus'),
+                                action=partial(self.on_selpoint, opt='xmax'),
+                                tooltip='use last point selected from plot')
 
-        self.xmin_sel = BitmapButton(row, get_icon('plus'),
-                                     action=partial(self.on_selpoint, opt='xmin'),
-                                     tooltip='use last point selected from plot')
-        self.xmax_sel = BitmapButton(row, get_icon('plus'),
-                                     action=partial(self.on_selpoint, opt='xmax'),
-                                     tooltip='use last point selected from plot')
-
-        opts = {'size': (90, -1), 'gformat': True}
+        opts = {'size': (70, -1), 'gformat': True}
         self.xmin = FloatCtrl(row, value=0, **opts)
         self.xmax = FloatCtrl(row, value=0, **opts)
 
         rsizer.Add(SimpleText(row, 'Fit Range: [ '), 0, LCEN, 3)
-        rsizer.Add(self.xmin_sel, 0, LCEN, 3)
-        rsizer.Add(self.xmin,     0, LCEN, 3)
-        rsizer.Add(SimpleText(row, ' : '),  0, LCEN, 3)
-        rsizer.Add(self.xmax_sel, 0, LCEN, 3)
-        rsizer.Add(self.xmax,     0, LCEN, 3)
+        rsizer.Add(xmin_sel, 0, LCEN, 3)
+        rsizer.Add(self.xmin, 0, LCEN, 3)
+        rsizer.Add(SimpleText(row, ' : '), 0, LCEN, 3)
+        rsizer.Add(xmax_sel, 0, LCEN, 3)
+        rsizer.Add(self.xmax, 0, LCEN, 3)
         rsizer.Add(SimpleText(row, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(fit_btn,       0, LCEN, 3)
-        rsizer.Add(save_btn,      0, LCEN, 3)
+        rsizer.Add(Button(row, 'Use Full Range', size=(100, -1),
+                          action=self.onResetRange), 0, LCEN, 3)
 
         pack(row, rsizer)
 
-        sizer = wx.GridBagSizer(5, 5)
-        ir = 0
-        sizer.Add(HLine(self, size=(550, 2)), (ir, 0), (1, 8), LCEN)
+        panel.Add(HLine(self, size=(550, 2)), dcol=5)
+        panel.Add(row, dcol=5, newrow=True)
 
-        ir += 1
-        sizer.Add(row, (ir, 0), (1, 6), LCEN)
+        panel.Add(Button(panel, 'Show Model',
+                         size=(100, -1), action=self.onShowModel), newrow=True)
+        panel.Add(Button(panel, 'Show Components',
+                         size=(100, -1), action=self.onShowComponents))
+        panel.Add(Button(panel, 'Save Fit Script',
+                         size=(100, -1), action=self.onSaveFit))
+        panel.Add(Button(panel, 'Run Fit',
+                         size=(100, -1), action=self.onRunFit))
 
-        ir += 1
-        sizer.Add(SimpleText(top, ' Add Model: '),      (ir, 0), (1, 1), LCEN)
-        sizer.Add(models,                     (ir, 1), (1, 2), LCEN)
-        sizer.Add(SimpleText(top, ' Add Step Model: '), (ir, 3), (1, 1), LCEN)
-        sizer.Add(steps,                      (ir, 4), (1, 2), LCEN)
+        panel.Add(SimpleText(panel, ' Add Model: '), newrow=True)
+        panel.Add(Choice(panel, size=(150, -1), choices=ModelChoices,
+                         action=self.addModel))
+        panel.Add(SimpleText(panel, ' Add Step Model: '))
+        panel.Add(Choice(panel, size=(150, -1), choices=StepChoices,
+                         action=partial(self.addModel, is_step=True)))
 
-        pack(top, sizer)
+        panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([((10,10), 0, LCEN, 0),
-                       (top,  0, LCEN, 10),
+        sizer.AddMany([(panel,  0, LCEN, 10),
                        ((10,10), 0, LCEN, 0),
                        (HLine(self, size=(550, 2)), 0, LCEN, 10),
                        ((10,10), 0, LCEN, 0),
                        (self.modelpanel,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
+
 
     def addModel(self, event=None, model=None, is_step=False):
         if model is None and event is not None:
@@ -738,7 +742,7 @@ class FitPanel(wx.Panel):
 
         panel = GridPanel(self.modelpanel, ncols=1, nrows=1,
                           pad=1, itemstyle=LCEN)
-        
+
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
@@ -746,16 +750,16 @@ class FitPanel(wx.Panel):
         mname.SetToolTip(wx.ToolTip('Label for the model component'))
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
         usebox.SetToolTip(wx.ToolTip('Use this component in fit?'))
-        
+
         delbtn = Button(panel, 'Delete', size=(75, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
         delbtn.SetToolTip(wx.ToolTip('Delete this model component'))
 
-        pick3msg = SimpleText(panel, "    ", size=(90, -1))
-        pick3btn = Button(panel, 'Pick 3 Pts', size=(80, -1),
-                          action=partial(self.onPick3Points, comp=icomp))
-        pick3btn.SetToolTip(wx.ToolTip(
-            'Select 3 Points on Plot to Guess Initial Values'))
+        pick2msg = SimpleText(panel, "    ", size=(90, -1))
+        pick2btn = Button(panel, 'Pick 2 Pts', size=(80, -1),
+                          action=partial(self.onPick2Points, comp=icomp))
+        pick2btn.SetToolTip(wx.ToolTip(
+            'Select X range on Plot to Guess Initial Values'))
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
         panel.Add(SLabel(" %sprefix='%s')" % (title, prefix), size=(250, -1),
@@ -764,10 +768,10 @@ class FitPanel(wx.Panel):
         panel.Add(SLabel("Label:"),  newrow=True)
         panel.Add(mname)
         panel.Add(usebox)
-        panel.Add(pick3btn)
-        panel.Add(pick3msg)
+        panel.Add(pick2btn)
+        panel.Add(pick2msg)
         panel.Add(delbtn)
-        
+
         panel.Add(SLabel("Parameter"),   newrow=True)
         panel.Add(SLabel("Value"))
         panel.Add(SLabel("Type"))
@@ -779,7 +783,7 @@ class FitPanel(wx.Panel):
             par = Parameter(name=pname, value=0, vary=True)
             pwids = ParameterWidgets(panel, par, name_size=90,
                                      float_size=75,
-                                     widgets=('name', 'value',  'minval', 
+                                     widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
             panel.Add(pwids.name, newrow=True)
             panel.Add(pwids.value)
@@ -791,14 +795,14 @@ class FitPanel(wx.Panel):
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER, newrow=True)
         panel.Add(HLine(panel, size=(360, 3)), dcol=4, style=wx.ALIGN_CENTER)
-        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)        
+        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
         fgroup.usebox = usebox
         fgroup.panel = panel
         fgroup.parwids = parwids
-        fgroup.pick3_msg = pick3msg
+        fgroup.pick2_msg = pick2msg
         self.fit_components.append(fgroup)
         panel.pack()
-        
+
         self.modelsizer.Add(panel, 0, LCEN|wx.GROW, 2)
         pack(self.modelpanel, self.modelsizer)
         sx,sy = self.GetSize()
@@ -817,26 +821,26 @@ class FitPanel(wx.Panel):
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
-    def onPick3Timer(self, evt=None):
+    def onPick2Timer(self, evt=None):
         try:
             curhist = self.main.larch.symtable._plotter.plot1.cursor_hist[:]
         except:
             return
-        if (time.time() - self.pick3_t0) > self.pick3_timeout:
-            msg = self.pick3_group.pick3_msg.SetLabel("time out")
+        if (time.time() - self.pick2_t0) > self.pick2_timeout:
+            msg = self.pick2_group.pick2_msg.SetLabel("time out")
             self.main.larch.symtable._plotter.plot1.cursor_hist = []
-            self.pick3_timer.Stop()
+            self.pick2_timer.Stop()
             return
 
-        if len(curhist) < 3:
-            self.pick3_group.pick3_msg.SetLabel("%i/3" % (len(curhist)))
+        if len(curhist) < 2:
+            self.pick2_group.pick2_msg.SetLabel("%i/2" % (len(curhist)))
             return
-        
-        self.pick3_group.pick3_msg.SetLabel("done.")
-        self.pick3_timer.Stop()
+
+        self.pick2_group.pick2_msg.SetLabel("done.")
+        self.pick2_timer.Stop()
 
         # guess param values
-        xcur = (curhist[0][0], curhist[1][0], curhist[2][0])
+        xcur = (curhist[0][0], curhist[1][0])
         xmin, xmax = min(xcur), max(xcur)
 
         dgroup = getattr(self.main.larch.symtable, self.main.groupname)
@@ -845,8 +849,8 @@ class FitPanel(wx.Panel):
         i1 = index_of(dgroup.x, xmax)
         x, y = dgroup.x[i0:i1+1], dgroup.y[i0:i1+1]
 
-        mod = self.pick3_group.mclass()
-        parwids = self.pick3_group.parwids
+        mod = self.pick2_group.mclass()
+        parwids = self.pick2_group.parwids
         try:
             guesses = mod.guess(y, x=x)
         except:
@@ -858,24 +862,28 @@ class FitPanel(wx.Panel):
         dgroup.yfit0 = mod.eval(guesses, x=dgroup.x)
         self.main.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup.yfit0)
         self.main.larch.symtable._plotter.plot1.cursor_hist = []
-            
-    def onPick3Points(self, evt=None, comp=-1):
+
+    def onPick2Points(self, evt=None, comp=-1):
         if comp > -1:
             fgroup = self.fit_components[comp]
             if fgroup.icomp != comp or fgroup.panel is None:
                 return
         self.main.larch.symtable._plotter.plot1.cursor_hist = []
         fgroup.npts = len(self.main.larch.symtable._plotter.plot1.cursor_hist)
-        self.pick3_group = fgroup
+        self.pick2_group = fgroup
 
-        if fgroup.pick3_msg is not None:
-            fgroup.pick3_msg.SetLabel("0/3")
+        if fgroup.pick2_msg is not None:
+            fgroup.pick2_msg.SetLabel("0/2")
 
-        self.pick3_t0 = time.time()
-        self.pick3_timer.Start(250)
-        
+        self.pick2_t0 = time.time()
+        self.pick2_timer.Start(250)
+
     def onSaveFit(self, event=None):
-        pass
+        print "Save Fit"
+
+    def onResetRange(self, event=None):
+        print("  reset range")
+
 
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
@@ -889,11 +897,19 @@ class FitPanel(wx.Panel):
             elif opt == 'xmax':
                 self.xmax.SetValue(xval)
 
+    def onShowModel(self, event=None):
+        print "Show model"
+
+    def onShowComponents(self, event=None):
+        print "Show model components"
+
     def onRunFit(self, event=None):
         gname = self.main.groupname
 
         dtext = []
-        model = self.fit_model.GetStringSelection().lower()
+        print("Do Fit ", self.fit_components)
+
+        x = """
         dtext.append('Fit Model: %s' % model)
         bkg =  self.fit_bkg.GetStringSelection()
         if bkg == 'None':
@@ -944,7 +960,7 @@ class FitPanel(wx.Panel):
             lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
             lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
         self.main.plot_group(gname, new=True)
-
+        """
 
 class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
