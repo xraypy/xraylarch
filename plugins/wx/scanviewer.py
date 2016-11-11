@@ -19,11 +19,9 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
+from wxutils import (SimpleText, pack, Button, HLine,
                      Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
-
-LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
 import lmfit.models as lm_models
 from lmfit import Parameter
@@ -31,7 +29,8 @@ from lmfit import Parameter
 from larch import Interpreter, isParameter, Group
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (larchframe, EditColumnFrame, ReportFrame,
-                         BitmapButton, FileCheckList)
+                         BitmapButton, FileCheckList, ParameterWidgets,
+                         FloatCtrl, SetTip)
 
 from larch.fitting import fit_report
 
@@ -48,7 +47,9 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
 
 from larch_plugins.xafs import pre_edge
 
+from parameter import ParameterWidgets
 
+LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NODRAG|flat_nb.FNB_NO_NAV_BUTTONS
@@ -507,127 +508,6 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
 
-class ParameterWidgets(object):
-    """a set of related widgets for a lmfit Parameter
-
-    param = Parameter(value=11.22, vary=True, min=0, name='x1')
-    wid   = ParameterPanel(parent_wid, param)
-    """
-    def __init__(self, parent, param,  name_size=None,
-                 expr_size=120, stderr_size=120, float_size=80,
-                 widgets=('name', 'value',  'minval',
-                          'maxval', 'vary', 'expr', 'stderr')):
-
-        self.parent = parent
-        self.param = param
-
-        self.value = None
-        self.name = None
-        self.vary = None
-        self.minval = None
-        self.maxval = None
-        self.expr = None
-        self.stderr = None
-
-        if 'name' in widgets:
-            name = param.name
-            if name in (None, 'None', ''):
-                name = ''
-            if name_size is None:
-                name_size = min(50, len(param.name)*10)
-            self.name = wx.StaticText(parent, label=name,
-                                      size=(name_size, -1))
-
-        if 'value' in widgets:
-            self.value = FloatCtrl(parent, value=param.value,
-                                   minval=param.min, maxval=param.max,
-                                   gformat=True,
-                                   size=(float_size, -1))
-            self.value.__digits = '0123456789.-e'
-
-        if 'minval' in widgets:
-            minval = param.min
-            if minval in (None, 'None', -np.inf):
-                minval = -np.inf
-
-            self.minval = FloatCtrl(parent, value=minval,
-                                    gformat=True,
-                                    size=(float_size, -1),
-                                    action=self.onMinval)
-            self.minval.__digits = '0123456789.-e'
-
-        if 'maxval' in widgets:
-            maxval = param.max
-            if maxval in (None, 'None', np.inf):
-                maxval = np.inf
-            self.maxval = FloatCtrl(parent, value=maxval,
-                                    gformat=True,
-                                    size=(float_size, -1),
-                                    action=self.onMaxval)
-            self.maxval.__digits = '0123456789.-e'
-
-        if 'vary' in widgets:
-            self.vary = Choice(parent,
-                               choices=('vary', 'fix', 'constrain'),
-                               action=self.onVaryChoice, size=(90, -1))
-            vary_choice = 0
-            if param.expr is not None:
-                vary_choice = 2
-            elif not param.vary:
-                vary_choice = 1
-            self.vary.SetSelection(vary_choice)
-
-        if 'expr' in widgets:
-            expr = param.expr
-            if expr in (None, 'None', ''):
-                expr = ''
-            self.expr = wx.TextCtrl(parent, -1, value=expr,
-                                      size=(expr_size, -1))
-
-        if 'stderr' in widgets:
-            stderr = param.stderr
-            if stderr in (None, 'None', ''):
-                stderr = ''
-            self.stderr = wx.StaticText(parent, label=stderr,
-                                        size=(stderr_size, -1))
-
-    def onMinval(self, evt=None, value=None):
-        if value in (None, 'None', ''):
-            value = -np.inf
-        if self.value is not None:
-            v = self.value.GetValue()
-            self.value.SetMin(value)
-            self.value.SetValue(v)
-
-    def onMaxval(self, evt=None, value=None):
-        # print "onMaxval " , value, self.value, self.value
-        if value in (None, 'None', ''):
-            value = np.inf
-        if self.value is not None:
-            v = self.value.GetValue()
-            self.value.SetMax( value)
-            self.value.SetValue(v)
-
-    def onVaryChoice(self, evt=None):
-        if self.vary is None:
-            return
-        vary = evt.GetString().lower()
-
-        self.param.vary = False
-        expr, minval, maxval, value = False, False, False, False
-        if vary.startswith('con'):
-            expr = True
-        elif vary.startswith('fix'):
-            value = True
-        elif vary.startswith('var'):
-            value, minval, maxval = True, True, True
-            self.param.vary = True
-
-        if self.value is not None:   self.value.Enable(value)
-        if self.expr is not None:    self.expr.Enable(expr)
-        if self.minval is not None:  self.minval.Enable(minval)
-        if self.maxval is not None:  self.maxval.Enable(maxval)
-
 
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
@@ -669,8 +549,8 @@ class FitPanel(wx.Panel):
                                 tooltip='use last point selected from plot')
 
         opts = {'size': (70, -1), 'gformat': True}
-        self.xmin = FloatCtrl(row, value=0, **opts)
-        self.xmax = FloatCtrl(row, value=0, **opts)
+        self.xmin = FloatCtrl(row, value=-np.inf, **opts)
+        self.xmax = FloatCtrl(row, value=np.inf, **opts)
 
         rsizer.Add(SimpleText(row, 'Fit Range: [ '), 0, LCEN, 3)
         rsizer.Add(xmin_sel, 0, LCEN, 3)
@@ -747,19 +627,17 @@ class FitPanel(wx.Panel):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
-        mname.SetToolTip(wx.ToolTip('Label for the model component'))
+        SetTip(mname, 'Label for the model component')
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
-        usebox.SetToolTip(wx.ToolTip('Use this component in fit?'))
+        SetTip(usebox, 'Use this component in fit?')
 
         delbtn = Button(panel, 'Delete', size=(75, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
-        delbtn.SetToolTip(wx.ToolTip('Delete this model component'))
-
+        SetTip(selbtn,'Delete this model component')
         pick2msg = SimpleText(panel, "    ", size=(90, -1))
-        pick2btn = Button(panel, 'Pick 2 Pts', size=(80, -1),
+        pick2btn = Button(panel, 'Pick Range', size=(80, -1),
                           action=partial(self.onPick2Points, comp=icomp))
-        pick2btn.SetToolTip(wx.ToolTip(
-            'Select X range on Plot to Guess Initial Values'))
+        SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
         panel.Add(SLabel(" %sprefix='%s')" % (title, prefix), size=(250, -1),
@@ -899,9 +777,14 @@ class FitPanel(wx.Panel):
 
     def onShowModel(self, event=None):
         print "Show model"
+        for g in self.fit_components:
+            print g
+            print(dir(g))
 
     def onShowComponents(self, event=None):
         print "Show model components"
+        for g in self.fit_components:
+            print g
 
     def onRunFit(self, event=None):
         gname = self.main.groupname
