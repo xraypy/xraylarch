@@ -91,13 +91,6 @@ class Viewer1DXRD(wx.Frame):
             pass
             
      
-        ## Set defaults for plotting        
-        self.plot1D.cursor_mode = 'zoom'
-#         self.plot1D.xlabel = self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
-#         print self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
-#         self.plot1D.conf.yaxis = 'Intensity (a.u.)'
-
-
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
         self.SetStatusText(s, panel)
@@ -169,7 +162,7 @@ class Viewer1DXRD(wx.Frame):
         Frame for visual toolbox
         '''
         
-        tlbx = wx.StaticBox(self.panel,label='PLOT TOOLBOX')#, size=(200, 200))
+        tlbx = wx.StaticBox(self.panel,label='PLOT TOOLBOX')
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
         ###########################
@@ -202,10 +195,10 @@ class Viewer1DXRD(wx.Frame):
 
     def DataBox(self,panel):
         '''
-        Frame for visual toolbox
+        Frame for data toolbox
         '''
         
-        tlbx = wx.StaticBox(self.panel,label='DATA TOOLBOX')#, size=(200, 200))
+        tlbx = wx.StaticBox(self.panel,label='DATA TOOLBOX')
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
 
@@ -233,15 +226,15 @@ class Viewer1DXRD(wx.Frame):
         ###########################
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
+        ttl_scl = wx.StaticText(self.panel, label='SCALE Y TO:')
         self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        self.btn_scale = wx.Button(self.panel,label='set scale')
+        btn_scale = wx.Button(self.panel,label='set')
 
-        self.btn_scale.Bind(wx.EVT_BUTTON,   None)
-
+        btn_scale.Bind(wx.EVT_BUTTON, self.normalize1Ddata)
+        
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.entr_scale, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.btn_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
@@ -249,26 +242,26 @@ class Viewer1DXRD(wx.Frame):
         ## Hide/show and reset
         hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.btn_hide  = wx.Button(self.panel,label='hide')
-        self.btn_reset = wx.Button(self.panel,label='reset')
-        self.btn_rmv   = wx.Button(self.panel,label='remove')
+        btn_hide  = wx.Button(self.panel,label='hide')
+        btn_reset = wx.Button(self.panel,label='reset')
+        btn_rmv   = wx.Button(self.panel,label='remove')
         
-        self.btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-        self.btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
-        self.btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
+        btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
+        btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
+        btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
         
-        hbox_btns.Add(self.btn_hide,  flag=wx.ALL, border=10)
-        hbox_btns.Add(self.btn_reset, flag=wx.ALL, border=10)
-        hbox_btns.Add(self.btn_rmv,   flag=wx.ALL, border=10)
+        hbox_btns.Add(btn_reset, flag=wx.ALL, border=10)
+        hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
+        hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox    
 
     def CIFBox(self,panel):
         '''
-        Frame for visual toolbox
+        Frame for cif toolbox
         '''
        
-        tlbx = wx.StaticBox(self.panel,label='CIF TOOLBOX')#, size=(200, 200))
+        tlbx = wx.StaticBox(self.panel,label='CIF TOOLBOX')
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
         ###########################
@@ -280,18 +273,18 @@ class Viewer1DXRD(wx.Frame):
 
         ###########################
         ## Scale
-        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
-        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        self.btn_scale = wx.Button(self.panel,label='set scale')
+        hbox_cifscl = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_cifscl = wx.StaticText(self.panel, label='SCALE Y TO:')
+        self.entr_cifscl = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        btn_cifscl = wx.Button(self.panel,label='set scale')
 
-        self.btn_scale.Bind(wx.EVT_BUTTON,   None)
+        btn_cifscl.Bind(wx.EVT_BUTTON,   None)
 
-        hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.entr_scale, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.btn_scale, flag=wx.RIGHT, border=8)
+        hbox_cifscl.Add(ttl_cifscl, flag=wx.RIGHT, border=8)
+        hbox_cifscl.Add(self.entr_cifscl, flag=wx.RIGHT, border=8)
+        hbox_cifscl.Add(btn_cifscl, flag=wx.RIGHT, border=8)
 
-        vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
+        vbox.Add(hbox_cifscl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         return vbox
 
@@ -299,14 +292,14 @@ class Viewer1DXRD(wx.Frame):
     
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.btn_data = wx.Button(panel,label='ADD NEW DATA SET')
-        self.btn_data.Bind(wx.EVT_BUTTON, self.loadXYFILE)
+        btn_data = wx.Button(panel,label='ADD NEW DATA SET')
+        btn_data.Bind(wx.EVT_BUTTON, self.loadXYFILE)
 
-        self.btn_cif = wx.Button(panel,label='ADD NEW CIF')
-        self.btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
+        btn_cif = wx.Button(panel,label='ADD NEW CIF')
+        btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
     
-        hbox.Add(self.btn_data, flag=wx.ALL, border=8)
-        hbox.Add(self.btn_cif, flag=wx.ALL, border=8)
+        hbox.Add(btn_data, flag=wx.ALL, border=8)
+        hbox.Add(btn_cif, flag=wx.ALL, border=8)
         return hbox
 
     def LeftSidePanel(self,panel):
@@ -334,17 +327,17 @@ class Viewer1DXRD(wx.Frame):
 
     def QuickButtons(self,panel):
         buttonbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_img = wx.Button(panel,label='SAVE FIGURE')
-        self.btn_calib = wx.Button(panel,label='PLOT SETTINGS')
-        self.btn_integ = wx.Button(panel,label='RESET PLOT')
+        btn_img = wx.Button(panel,label='SAVE FIGURE')
+        btn_calib = wx.Button(panel,label='PLOT SETTINGS')
+        btn_integ = wx.Button(panel,label='RESET PLOT')
         
-        self.btn_img.Bind(wx.EVT_BUTTON,   self.onSAVEfig)
-        self.btn_calib.Bind(wx.EVT_BUTTON, self.onPLOTset)
-        self.btn_integ.Bind(wx.EVT_BUTTON, self.onRESETplot)
+        btn_img.Bind(wx.EVT_BUTTON,   self.onSAVEfig)
+        btn_calib.Bind(wx.EVT_BUTTON, self.onPLOTset)
+        btn_integ.Bind(wx.EVT_BUTTON, self.onRESETplot)
         
-        buttonbox.Add(self.btn_img, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
+        buttonbox.Add(btn_img, flag=wx.ALL, border=8)
+        buttonbox.Add(btn_calib, flag=wx.ALL, border=8)
+        buttonbox.Add(btn_integ, flag=wx.ALL, border=8)
         return buttonbox
 
 
@@ -354,6 +347,11 @@ class Viewer1DXRD(wx.Frame):
     
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.write_message
+        
+
+        ## Set defaults for plotting  
+        self.plot1D.set_ylabel('Intensity (a.u.)')
+        self.plot1D.cursor_mode = 'zoom'
   
         ## trying to get this functionality into our gui
         ## mkak 2016.11.10      
@@ -381,12 +379,11 @@ class Viewer1DXRD(wx.Frame):
 
         ## Add to data array lists
         self.data_name.append(name)
+        self.xy_scale.append(max(y))
         self.xy_data.extend([x,y])
 
         ## redefine x,y based on scales
         self.xy_plot.extend([x,y])
-        self.xy_plot[(plt_no*2+1)] = self.normalize1Ddata(y)
-        y = self.xy_plot[(plt_no*2+1)]
        
         ## Add to plot       
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))#,xlabel=self.xlabel))
@@ -395,14 +392,24 @@ class Viewer1DXRD(wx.Frame):
         self.checkXaxis(None)
 
         ## Update toolbox panel
+        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
         self.onSELECT(None)
 
-    def normalize1Ddata(self,y,value=1000):
+    def normalize1Ddata(self,event):
     
-        maxy = np.max(y)
-        return y/maxy * value
+        plt_no = self.ch_data.GetSelection()
+        self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
+        if self.xy_scale[plt_no] <= 0:
+            self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+            self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+            
+
+        y = self.xy_data[(plt_no*2+1)]
+        self.xy_plot[(plt_no*2+1)] = y/np.max(y) * self.xy_scale[plt_no]
+
+        self.updatePLOT()
         
 
     def remove1Ddata(self,event):
@@ -412,8 +419,7 @@ class Viewer1DXRD(wx.Frame):
         ## mkak 2016.11.10
         
         plt_no = self.ch_data.GetSelection()        
-        print 'trying to DELETE plot number: %i' % plt_no
-        print '\t',self.data_name[plt_no]
+        print 'EVENTUALLY, button will remove plot: ',self.data_name[plt_no]
 
         ## removing name from list works... do not activate till rest is working
         ## mkak 2016.11.10
@@ -423,13 +429,15 @@ class Viewer1DXRD(wx.Frame):
     def hide1Ddata(self,event):
 
         plt_no = self.ch_data.GetSelection()        
-        print 'trying to hide plot number: %i' % plt_no
-        print '\t',self.data_name[plt_no]
+        print 'EVENTUALLY, button will hide plot: ',self.data_name[plt_no]
 
     def onSELECT(self,event):
     
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
         self.ttl_data.SetLabel('SELECTED: %s' % data_str)
+        
+        plt_no = self.ch_data.GetSelection()
+        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
     def checkXaxis(self, event):
         
@@ -444,11 +452,11 @@ class Viewer1DXRD(wx.Frame):
                 self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
 
         if self.ch_xaxis.GetSelection() == 2:
-            self.xlabel = 'd (A)'
+            self.xlabel = 'd ($\AA$)'
         elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
         else:
-            self.xlabel = 'q (1/A)'
+            self.xlabel = 'q (1/$\AA$)'
          
         self.plot1D.set_xlabel(self.xlabel)
         self.updatePLOT()
@@ -544,7 +552,8 @@ class Viewer1DXRD(wx.Frame):
 
         ## Add to plot       
         self.plotted_cif.append(self.plot1D.scatterplot(q,F,label=name,show_legend=True,xlabel=self.xlabel))
-
+        self.plot1D.cursor_mode = 'zoom'
+ 
         ## Update toolbox panel
         self.ch_cif.Set(self.cif_name)
         self.ch_cif.SetStringSelection(name)
@@ -558,6 +567,10 @@ class Viewer1DXRD(wx.Frame):
                                        self.xy_plot[(plt_no*2+1)])
         self.plot1D.canvas.draw()
         self.unzoom_all()
+        
+        self.updatePLOT()
+        self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
         
 
@@ -577,12 +590,14 @@ class Viewer1DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            x,y = xy_file_reader(path)
+            try:
+                x,y = xy_file_reader(path)
 
-            self.add1Ddata(x,y,name=os.path.split(path)[-1])
+                self.add1Ddata(x,y,name=os.path.split(path)[-1])
+            except:
+               print 'incorrect file format: %s' % os.path.split(path)[-1]
 
-            str_msg = 'Adding data: %s' % os.path.split(path)[-1]
-            self.write_message(str_msg,panel=0)
+
 
     def saveXYFILE(self,event):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
@@ -615,7 +630,6 @@ class Viewer1DXRD(wx.Frame):
         
         if read:
             cifile = os.path.split(path)[-1]
-            print 'CIF: %s' % cifile
 
             ## generate hkl list
             hkllist = []
@@ -653,6 +667,7 @@ class Viewer1DXRD(wx.Frame):
                         
                 self.addCIFdata(qall,Fall,name=os.path.split(path)[-1])
             except:
+                print 'incorrect file format: %s' % os.path.split(path)[-1]
                 pass
         
         
