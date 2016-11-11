@@ -76,7 +76,7 @@ class EditColumnFrame(wx.Frame) :
                           'Build Arrays from Data Columns for %s' % self.rawgroup.filename,
                           style=FRAMESTYLE)
 
-        self.SetFont(Font(11))
+        self.SetFont(Font(10))
 
         panel = wx.Panel(self)
         self.SetMinSize((600, 600))
@@ -220,7 +220,7 @@ class EditColumnFrame(wx.Frame) :
 
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
-                                         size=(100, -1))
+                                         size=(120, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
