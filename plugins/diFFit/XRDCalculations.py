@@ -194,7 +194,7 @@ def fabioOPEN(path):
         
     return np.zeros((1024,1024))
 ##########################################################################
-def xy_file_reader(xyfile,char=None):
+def xy_file_reader(xyfile,char=None,verbose=False):
     '''
     Parses (x,y) data from pyFAI .xy file.
     '''
@@ -215,7 +215,8 @@ def xy_file_reader(xyfile,char=None):
         x += [float(fields[0])]
         y += [float(fields[1])]
 
-    print '\nFinished reading file %s.' % (xyfile)
+    if verbose:
+        print '\nFinished reading file %s.' % (xyfile)
 
     return np.array(x),np.array(y)
 
