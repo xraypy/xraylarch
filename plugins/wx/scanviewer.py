@@ -757,11 +757,10 @@ class FitPanel(wx.Panel):
         pick3btn.SetToolTip(wx.ToolTip(
             'Select 3 Points on Plot to Guess Initial Values'))
 
-
-        panel.Add(HLine(panel, size=(80, 5)), style=wx.ALIGN_CENTER)
+        panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
         panel.Add(SLabel(" %sprefix='%s')" % (title, prefix), size=(250, -1),
                          colour='#0000AA'), dcol=4)
-        panel.Add(HLine(panel, size=(80, 5)), dcol=1, style=wx.ALIGN_CENTER)
+        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
         panel.Add(SLabel("Label:"),  newrow=True)
         panel.Add(mname)
         panel.Add(usebox)
@@ -790,8 +789,9 @@ class FitPanel(wx.Panel):
             panel.Add(pwids.expr)
             parwids[par.name] = pwids
 
-        panel.Add(HLine(panel, size=(540, 2)), dcol=6,
-                  style=wx.ALIGN_CENTER, newrow=True)
+        panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER, newrow=True)
+        panel.Add(HLine(panel, size=(360, 3)), dcol=4, style=wx.ALIGN_CENTER)
+        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)        
         fgroup.usebox = usebox
         fgroup.panel = panel
         fgroup.parwids = parwids
