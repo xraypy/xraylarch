@@ -17,8 +17,11 @@ import wx
 from wxmplot import PlotPanel
 from wxutils import MenuItem
 
+import xrayutilities as xu
+
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,xy_file_reader
+from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
@@ -59,6 +62,22 @@ class Viewer1DXRD(wx.Frame):
         self.xy_data      = []
         self.xy_plot      = []
         self.plotted_data = []
+        self.xy_scale     = []
+        self.xlabel = 'q (A^-1)'
+
+        self.cif_name     = []
+        self.cif_data     = []
+        self.cif_plot     = []
+        self.plotted_cif  = []
+        
+        self.x_for_zoom = None
+
+
+        
+        ## eventually don't hard code
+        ## mkak 2016.11.11
+        self.wavelength = 0.6525 ## units A
+
 
         self.XRD1DMenuBar()
         self.Panel1DViewer()
@@ -156,26 +175,26 @@ class Viewer1DXRD(wx.Frame):
         ###########################
         ## X-Scale
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_xaxis = wx.StaticText(self.panel, label='X-SCALE')
-        xunits = ['q (A^-1)',u'2\u03B8','d (A)'] ## \u212B
+        ttl_xaxis = wx.StaticText(self.panel, label='X-SCALE')
+        xunits = ['q',u'2\u03B8','d'] ## \u212B
         self.ch_xaxis = wx.Choice(self.panel,choices=xunits)
 
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.onCHANGEx)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
     
-        hbox_xaxis.Add(self.ttl_xaxis, flag=wx.RIGHT, border=8)
+        hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
         vbox.Add(hbox_xaxis, flag=wx.ALL, border=10)
 
         ###########################
         ## Y-Scale
         hbox_yaxis = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_yaxis = wx.StaticText(self.panel, label='Y-SCALE')
+        ttl_yaxis = wx.StaticText(self.panel, label='Y-SCALE')
         yscales = ['linear','log']
         self.ch_yaxis = wx.Choice(self.panel,choices=yscales)
 
         self.ch_yaxis.Bind(wx.EVT_CHOICE,   None)
     
-        hbox_yaxis.Add(self.ttl_yaxis, flag=wx.RIGHT, border=8)
+        hbox_yaxis.Add(ttl_yaxis, flag=wx.RIGHT, border=8)
         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
         vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
         
@@ -202,37 +221,29 @@ class Viewer1DXRD(wx.Frame):
 
         ###########################
 
-        self.ck_bkgd = wx.CheckBox(self.panel,label='BACKGROUND')
-        self.ck_smth = wx.CheckBox(self.panel,label='SMOOTHING')
-        
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   None)
-        self.ck_smth.Bind(wx.EVT_CHECKBOX,   None)
-
-        vbox.Add(self.ck_bkgd, flag=wx.ALL, border=8)
-        vbox.Add(self.ck_smth, flag=wx.ALL, border=8)
+#         self.ck_bkgd = wx.CheckBox(self.panel,label='BACKGROUND')
+#         self.ck_smth = wx.CheckBox(self.panel,label='SMOOTHING')
+#         
+#         self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   None)
+#         self.ck_smth.Bind(wx.EVT_CHECKBOX,   None)
+# 
+#         vbox.Add(self.ck_bkgd, flag=wx.ALL, border=8)
+#         vbox.Add(self.ck_smth, flag=wx.ALL, border=8)
     
         ###########################
         ## Scale
-        hbox_scl1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
-        self.sldr_scl = wx.Slider(self.panel)
-        self.sldr_scl.Bind(wx.EVT_SLIDER,   None)                
-
-        hbox_scl1.Add(self.ttl_scl, flag=wx.RIGHT, border=8)
-        hbox_scl1.Add(self.sldr_scl, flag=wx.RIGHT, border=8)
-
-        vbox.Add(hbox_scl1, flag=wx.BOTTOM|wx.TOP, border=8)
-
-        hbox_scl2 = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
         self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         self.btn_scale = wx.Button(self.panel,label='set scale')
 
         self.btn_scale.Bind(wx.EVT_BUTTON,   None)
 
-        hbox_scl2.Add(self.btn_scale, flag=wx.RIGHT, border=8)
-        hbox_scl2.Add(self.entr_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.entr_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.btn_scale, flag=wx.RIGHT, border=8)
 
-        vbox.Add(hbox_scl2, flag=wx.BOTTOM, border=10)
+        vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         ###########################
         ## Hide/show and reset
@@ -243,69 +254,156 @@ class Viewer1DXRD(wx.Frame):
         self.btn_rmv   = wx.Button(self.panel,label='remove')
         
         self.btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-        self.btn_reset.Bind(wx.EVT_BUTTON, None)
+        self.btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         self.btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
         
         hbox_btns.Add(self.btn_hide,  flag=wx.ALL, border=10)
         hbox_btns.Add(self.btn_reset, flag=wx.ALL, border=10)
         hbox_btns.Add(self.btn_rmv,   flag=wx.ALL, border=10)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
-               
         return vbox    
 
-    def RightSidePanel(self,panel):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot1DXRD(panel)
-        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+    def CIFBox(self,panel):
+        '''
+        Frame for visual toolbox
+        '''
+       
+        tlbx = wx.StaticBox(self.panel,label='CIF TOOLBOX')#, size=(200, 200))
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+        ###########################
+        ## DATA CHOICE
+
+        self.ch_cif = wx.Choice(self.panel,choices=self.cif_name)
+        self.ch_cif.Bind(wx.EVT_CHOICE,   self.onSELECT)
+        vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
+
+        ###########################
+        ## Scale
+        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_scl = wx.StaticText(self.panel, label='Y-SCALING')
+        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.btn_scale = wx.Button(self.panel,label='set scale')
+
+        self.btn_scale.Bind(wx.EVT_BUTTON,   None)
+
+        hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.entr_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.btn_scale, flag=wx.RIGHT, border=8)
+
+        vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         return vbox
+
+    def AddPanel(self,panel):
+    
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        self.btn_data = wx.Button(panel,label='ADD NEW DATA SET')
+        self.btn_data.Bind(wx.EVT_BUTTON, self.loadXYFILE)
+
+        self.btn_cif = wx.Button(panel,label='ADD NEW CIF')
+        self.btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
+    
+        hbox.Add(self.btn_data, flag=wx.ALL, border=8)
+        hbox.Add(self.btn_cif, flag=wx.ALL, border=8)
+        return hbox
 
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
         
         plttools = self.Toolbox(self.panel)
-        
-        self.btn_data = wx.Button(panel,label='ADD NEW DATA SET')
-        self.btn_data.Bind(wx.EVT_BUTTON, self.loadXYFILE)
-        
+        addbtns = self.AddPanel(self.panel)
         dattools = self.DataBox(self.panel)
+        ciftools = self.CIFBox(self.panel)        
         
         vbox.Add(plttools,flag=wx.ALL,border=10)
-        vbox.Add(self.btn_data, flag=wx.ALL, border=12)
+        vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
-        
-
+        vbox.Add(ciftools,flag=wx.ALL,border=10)
         return vbox
 
+    def RightSidePanel(self,panel):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot1DXRD(panel)
+        btnbox = self.QuickButtons(panel)
+        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        return vbox
+
+    def QuickButtons(self,panel):
+        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_img = wx.Button(panel,label='SAVE FIGURE')
+        self.btn_calib = wx.Button(panel,label='PLOT SETTINGS')
+        self.btn_integ = wx.Button(panel,label='RESET PLOT')
+        
+        self.btn_img.Bind(wx.EVT_BUTTON,   self.onSAVEfig)
+        self.btn_calib.Bind(wx.EVT_BUTTON, self.onPLOTset)
+        self.btn_integ.Bind(wx.EVT_BUTTON, self.onRESETplot)
+        
+        buttonbox.Add(self.btn_img, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
+        return buttonbox
 
 
 ##############################################
-#### XRD PLOTTING FUNCTIONS
+#### PLOTPANEL FUNCTIONS
     def plot1DXRD(self,panel):
     
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.write_message
   
-         ## trying to get this functionality into our gui
+        ## trying to get this functionality into our gui
         ## mkak 2016.11.10      
 #         interactive_legend().show()
 
+    def onSAVEfig(self,event):
+        self.plot1D.save_figure()
         
+    def onPLOTset(self,event):
+        self.plot1D.configure()
+        
+    def onRESETplot(self,event):
+        self.plot1D.reset_config()
+
+
+
+##############################################
+#### XRD PLOTTING FUNCTIONS
+       
     def add1Ddata(self,x,y,name=None):
         
-        plt_no = (len(self.xy_data)/2)
+        plt_no = len(self.data_name)
         if name is None:
             name = 'dataset %i' % plt_no
 
+        ## Add to data array lists
         self.data_name.append(name)
         self.xy_data.extend([x,y])
-        self.xy_plot.extend([x,y])
-        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
+        ## redefine x,y based on scales
+        self.xy_plot.extend([x,y])
+        self.xy_plot[(plt_no*2+1)] = self.normalize1Ddata(y)
+        y = self.xy_plot[(plt_no*2+1)]
+       
+        ## Add to plot       
+        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))#,xlabel=self.xlabel))
+
+        ## Use correct x-axis units
+        self.checkXaxis(None)
+
+        ## Update toolbox panel
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
         self.onSELECT(None)
+
+    def normalize1Ddata(self,y,value=1000):
+    
+        maxy = np.max(y)
+        return y/maxy * value
+        
 
     def remove1Ddata(self,event):
         
@@ -333,33 +431,135 @@ class Viewer1DXRD(wx.Frame):
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
         self.ttl_data.SetLabel('SELECTED: %s' % data_str)
 
-    def onCHANGEx(self, event):
+    def checkXaxis(self, event):
         
-        print 'changed x-axis...'
+        if self.ch_xaxis.GetSelection() == 1:
+            for plt_no in range(len(self.plotted_data)):
+                self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
+        elif self.ch_xaxis.GetSelection() == 2:
+            for plt_no in range(len(self.plotted_data)):
+                self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
+        else:
+            for plt_no in range(len(self.plotted_data)):
+                self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
 
-#         q,I = self.xrd.data1D
-# 
-#         if event is not None:
-#             if 0 == event.GetInt():
-#                 ## q in units 1/A
-#                 self.xunit = 'q'
-#                 self.xlabel = 'q (1/A)'
-#                 x = q
-#             elif 1 == event.GetInt():
-#                 ## d in units A
-#                 self.xunit = '2th'
-#                 self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-#                 x = calc_q_to_2th(q,self.xrd.wavelength*1e10)
-#             elif 2 == event.GetInt():
-#                 ## d in units A
-#                 self.xunit = 'd'
-#                 self.xlabel = 'd (A)'
-#                 x = calc_q_to_d(q)
-#         
-#         self.plot1d([x,I])
-# 
-#         if self.xrd2 is not None:
-#             self.oplot1D([x,I])
+        if self.ch_xaxis.GetSelection() == 2:
+            self.xlabel = 'd (A)'
+        elif self.ch_xaxis.GetSelection() == 1:
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+        else:
+            self.xlabel = 'q (1/A)'
+         
+        self.plot1D.set_xlabel(self.xlabel)
+        self.updatePLOT()
+
+
+    def updatePLOT(self):
+
+        xmax,xmin,ymax,ymin = None,None,None,None
+    
+        if len(self.plotted_data) > 0:
+            for plt_no in range(len(self.plotted_data)):
+
+                i = plt_no*2
+                j = i+1
+ 
+                x = self.xy_plot[i]
+                y = self.xy_plot[j]
+                
+                if xmax is None or xmax < max(x):
+                    xmax = max(x)
+                if xmin is None or xmin < min(x):
+                    xmin = min(x)
+                if ymax is None or ymax < max(y):
+                    ymax = max(y)
+                if ymin is None or ymin < min(y):
+                    ymin = min(y)
+                
+                self.plot1D.update_line(plt_no,x,y)
+            
+            self.unzoom_all()
+            self.plot1D.canvas.draw()
+            
+            if self.ch_xaxis.GetSelection() == 2:
+                xmax = 6
+            self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
+
+####### BEGIN #######            
+## THIS IS DIRECTLY FROM XRDDISPLAY.PY
+## will this work here, too?
+## mkak 2016.11.11
+    def unzoom_all(self, event=None):
+
+        xmid, xrange, xmin, xmax = self._get1Dlims()
+
+        self._set_xview(xmin, xmax)
+        self.xview_range = None
+
+    def _get1Dlims(self):
+        xmin, xmax = self.plot1D.axes.get_xlim()
+        xrange = xmax-xmin
+        xmid   = (xmax+xmin)/2.0
+        if self.x_for_zoom is not None:
+            xmid = self.x_for_zoom
+        return (xmid, xrange, xmin, xmax)
+
+    def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
+
+        xmin,xmax = self.abs_limits()
+        xrange = x2-x1
+        x1 = max(xmin,x1)
+        x2 = min(xmax,x2)
+
+        if pan:
+            if x2 == xmax:
+                x1 = x2-xrange
+            elif x1 == xmin:
+                x2 = x1+xrange
+        if not keep_zoom:
+            self.x_for_zoom = (x1+x2)/2.0
+        self.plot1D.axes.set_xlim((x1, x2))
+        self.xview_range = [x1, x2]
+        self.plot1D.canvas.draw()
+
+    def abs_limits(self):
+        if len(self.data_name) > 0:
+            xmin, xmax = self.xy_plot[0].min(), self.xy_plot[0].max()
+   
+        return xmin,xmax
+#######  END  #######
+
+
+            
+    def addCIFdata(self,q,F,name=None):
+        
+        plt_no = len(self.cif_name)
+        if name is None:
+            name = 'cif %i' % plt_no
+
+        ## Add to data array lists
+        self.cif_name.append(name)
+        self.cif_data.extend([q,F])
+        self.cif_plot.extend([q,F])
+
+        ## Add to plot       
+        self.plotted_cif.append(self.plot1D.scatterplot(q,F,label=name,show_legend=True,xlabel=self.xlabel))
+
+        ## Update toolbox panel
+        self.ch_cif.Set(self.cif_name)
+        self.ch_cif.SetStringSelection(name)
+
+    def reset1Dscale(self,event):
+
+        plt_no = self.ch_data.GetSelection()        
+       
+        self.xy_plot[(plt_no*2+1)] = self.xy_data[(plt_no*2+1)]
+        self.plot1D.update_line(plt_no,self.xy_plot[(plt_no*2)],
+                                       self.xy_plot[(plt_no*2+1)])
+        self.plot1D.canvas.draw()
+        self.unzoom_all()
+
+        
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
@@ -398,85 +598,143 @@ class Viewer1DXRD(wx.Frame):
         dlg.Destroy()
         
         if save:
-            
             print 'need to write something to save data - like pyFAI does?'
 
+    def loadCIF(self,event):
+    
+        wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose CIF',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
 
-def interactive_legend(ax=None):
-    if ax is None:
-        ax = plt.gca()
-    if ax.legend_ is None:
-        ax.legend()
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            cifile = os.path.split(path)[-1]
+            print 'CIF: %s' % cifile
 
-    return InteractiveLegend(ax.legend_)
+            ## generate hkl list
+            hkllist = []
+            maxhkl = 3
+            for i in range(maxhkl):
+                for j in range(maxhkl):
+                    for k in range(maxhkl):
+                        if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
+                            hkllist.append([i,j,k])
 
-class InteractiveLegend(object):
-    def __init__(self, legend):
-        self.legend = legend
-        self.fig = legend.axes.figure
+            hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+            energy = hc/(self.wavelength*(1e-10))*1e3 ## units: eV
 
-        self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
-        self._setup_connections()
 
-        self.update()
+            QMIN = 0.3
+            QMAX = 8.0
+            QSTEP = 0.01
 
-    def _setup_connections(self):
-        for artist in self.legend.texts + self.legend.legendHandles:
-            artist.set_picker(10) # 10 points tolerance
+            try:
+                cif = xu.materials.Crystal.fromCIF(cifile)
+        
+                qlist = cif.Q(hkllist)
+                Flist = cif.StructureFactorForQ(qlist,energy)
+        
+                Fall = []
+                qall = []
+                for i,hkl in enumerate(hkllist):
+                    if np.abs(Flist[i]) > 0.01:
+                        Fadd = np.abs(Flist[i])
+                        qadd = round(np.linalg.norm(qlist[i]) / QSTEP) * QSTEP ## np.linalg.norm(qlist[i])
+                        if qadd not in qall:
+                            Fall.append(Fadd)
+                            qall.append(qadd)
+                        
+                self.addCIFdata(qall,Fall,name=os.path.split(path)[-1])
+            except:
+                pass
+        
+        
+            
+            
 
-        self.fig.canvas.mpl_connect('pick_event', self.on_pick)
-        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
-    def _build_lookups(self, legend):
-        labels = [t.get_text() for t in legend.texts]
-        handles = legend.legendHandles
-        label2handle = dict(zip(labels, handles))
-        handle2text = dict(zip(handles, legend.texts))
-
-        lookup_artist = {}
-        lookup_handle = {}
-        for artist in legend.axes.get_children():
-            if artist.get_label() in labels:
-                handle = label2handle[artist.get_label()]
-                lookup_handle[artist] = handle
-                lookup_artist[handle] = artist
-                lookup_artist[handle2text[handle]] = artist
-
-        lookup_handle.update(zip(handles, handles))
-        lookup_handle.update(zip(legend.texts, handles))
-
-        return lookup_artist, lookup_handle
-
-    def on_pick(self, event):
-        handle = event.artist
-        if handle in self.lookup_artist:
-            artist = self.lookup_artist[handle]
-            artist.set_visible(not artist.get_visible())
-            self.update()
-
-    def on_click(self, event):
-        if event.button == 3:
-            visible = False
-        elif event.button == 2:
-            visible = True
-        else:
-            return
-
-        for artist in self.lookup_artist.values():
-            artist.set_visible(visible)
-        self.update()
-
-    def update(self):
-        for artist in self.lookup_artist.values():
-            handle = self.lookup_handle[artist]
-            if artist.get_visible():
-                handle.set_visible(True)
-            else:
-                handle.set_visible(False)
-        self.fig.canvas.draw()
-
-    def show(self):
-        plt.show()
+# def interactive_legend(ax=None):
+#     if ax is None:
+#         ax = plt.gca()
+#     if ax.legend_ is None:
+#         ax.legend()
+# 
+#     return InteractiveLegend(ax.legend_)
+# 
+# class InteractiveLegend(object):
+#     def __init__(self, legend):
+#         self.legend = legend
+#         self.fig = legend.axes.figure
+# 
+#         self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
+#         self._setup_connections()
+# 
+#         self.update()
+# 
+#     def _setup_connections(self):
+#         for artist in self.legend.texts + self.legend.legendHandles:
+#             artist.set_picker(10) # 10 points tolerance
+# 
+#         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
+#         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+# 
+#     def _build_lookups(self, legend):
+#         labels = [t.get_text() for t in legend.texts]
+#         handles = legend.legendHandles
+#         label2handle = dict(zip(labels, handles))
+#         handle2text = dict(zip(handles, legend.texts))
+# 
+#         lookup_artist = {}
+#         lookup_handle = {}
+#         for artist in legend.axes.get_children():
+#             if artist.get_label() in labels:
+#                 handle = label2handle[artist.get_label()]
+#                 lookup_handle[artist] = handle
+#                 lookup_artist[handle] = artist
+#                 lookup_artist[handle2text[handle]] = artist
+# 
+#         lookup_handle.update(zip(handles, handles))
+#         lookup_handle.update(zip(legend.texts, handles))
+# 
+#         return lookup_artist, lookup_handle
+# 
+#     def on_pick(self, event):
+#         handle = event.artist
+#         if handle in self.lookup_artist:
+#             artist = self.lookup_artist[handle]
+#             artist.set_visible(not artist.get_visible())
+#             self.update()
+# 
+#     def on_click(self, event):
+#         if event.button == 3:
+#             visible = False
+#         elif event.button == 2:
+#             visible = True
+#         else:
+#             return
+# 
+#         for artist in self.lookup_artist.values():
+#             artist.set_visible(visible)
+#         self.update()
+# 
+#     def update(self):
+#         for artist in self.lookup_artist.values():
+#             handle = self.lookup_handle[artist]
+#             if artist.get_visible():
+#                 handle.set_visible(True)
+#             else:
+#                 handle.set_visible(False)
+#         self.fig.canvas.draw()
+# 
+#     def show(self):
+#         plt.show()
 
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
@@ -564,7 +822,7 @@ class Calc1DPopup(wx.Dialog):
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
         
         xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
-        xunits = ['q (A^-1)',u'2\u03B8','d (A)'] ## \u212B
+        xunits = ['q',u'2\u03B8','d'] ## \u212B
         ttl_xunit = wx.StaticText(self.panel, label='units')
         self.ch_xunit = wx.Choice(self.panel,choices=xunits)
         self.ch_xunit.Bind(wx.EVT_CHOICE,self.onUnits)
