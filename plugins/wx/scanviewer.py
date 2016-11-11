@@ -24,7 +24,7 @@ from wxutils import (SimpleText, pack, Button, HLine,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 import lmfit.models as lm_models
-from lmfit import Parameter
+from lmfit import Parameter, Parameters
 
 from larch import Interpreter, isParameter, Group
 from larch.larchlib import read_workdir, save_workdir
@@ -514,6 +514,8 @@ class FitPanel(wx.Panel):
         self.parent = parent
         self.main  = main
         self.fit_components = []
+        self.fit_model = None
+        self.fit_params = None
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
         self.pick2_timer = wx.Timer(self)
@@ -549,7 +551,7 @@ class FitPanel(wx.Panel):
         opts = {'size': (70, -1), 'gformat': True}
         self.xmin = FloatCtrl(row, value=-np.inf, **opts)
         self.xmax = FloatCtrl(row, value=np.inf, **opts)
-
+        
         rsizer.Add(SimpleText(row, 'Fit Range: [ '), 0, LCEN, 3)
         rsizer.Add(xmin_sel, 0, LCEN, 3)
         rsizer.Add(self.xmin, 0, LCEN, 3)
@@ -557,22 +559,24 @@ class FitPanel(wx.Panel):
         rsizer.Add(xmax_sel, 0, LCEN, 3)
         rsizer.Add(self.xmax, 0, LCEN, 3)
         rsizer.Add(SimpleText(row, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(Button(row, 'Use Full Range', size=(100, -1),
+        rsizer.Add(Button(row, 'Use Full Range', size=(150, -1),
                           action=self.onResetRange), 0, LCEN, 3)
 
         pack(row, rsizer)
 
+        self.plot_comps = Check(panel, label='Plot Components?',
+                                default=True, size=(140, -1))        
+
         panel.Add(HLine(self, size=(550, 2)), dcol=5)
         panel.Add(row, dcol=5, newrow=True)
 
-        panel.Add(Button(panel, 'Show Model',
+        panel.Add(Button(panel, 'Plot Model',
                          size=(100, -1), action=self.onShowModel), newrow=True)
-        panel.Add(Button(panel, 'Show Components',
-                         size=(100, -1), action=self.onShowComponents))
-        panel.Add(Button(panel, 'Save Fit Script',
+        panel.Add(self.plot_comps)
+        panel.Add(Button(panel, 'Save Fit',
                          size=(100, -1), action=self.onSaveFit))
         panel.Add(Button(panel, 'Run Fit',
-                         size=(100, -1), action=self.onRunFit))
+                         size=(150, -1), action=self.onRunFit))
 
         panel.Add(SimpleText(panel, ' Add Model: '), newrow=True)
         panel.Add(Choice(panel, size=(150, -1), choices=ModelChoices,
@@ -608,16 +612,13 @@ class FitPanel(wx.Panel):
             form = model.lower()
             if form.startswith('err'): form = 'erf'
             title = "Step(form='%s', " % form
-
             mclass = lm_models.StepModel
             minst = mclass(form=form)
         else:
             mclass = getattr(lm_models, model+'Model')
             minst = mclass()
 
-
         fgroup = Group(icomp=icomp, prefix=prefix, mclass=mclass)
-
         panel = GridPanel(self.modelpanel, ncols=1, nrows=1,
                           pad=1, itemstyle=LCEN)
 
@@ -626,7 +627,7 @@ class FitPanel(wx.Panel):
                                size=size, style=wx.ALIGN_LEFT, **kws)
         mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
-        delbtn = Button(panel, 'Delete', size=(75, -1),
+        delbtn = Button(panel, 'Delete', size=(100, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
         pick2msg = SimpleText(panel, "    ", size=(90, -1))
         pick2btn = Button(panel, 'Pick Range', size=(80, -1),
@@ -642,32 +643,23 @@ class FitPanel(wx.Panel):
                          colour='#0000AA'), dcol=4)
         panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
         panel.Add(SLabel("Label:"),  newrow=True)
-        panel.Add(mname)
-        panel.Add(usebox)
-        panel.Add(pick2btn)
-        panel.Add(pick2msg)
-        panel.Add(delbtn)
+        panel.AddMany((mname, usebox, pick2btn, pick2msg, delbtn))
 
         panel.Add(SLabel("Parameter"),   newrow=True)
-        panel.Add(SLabel("Value"))
-        panel.Add(SLabel("Type"))
-        panel.Add(SLabel("Min"))
-        panel.Add(SLabel("Max"))
-        panel.Add(SLabel("Expression"))
+        panel.AddMany((SLabel("Value"), SLabel("Type"), SLabel("Min"),
+                       SLabel("Max"), SLabel("Expression")))
+
         parwids = {}
         for pname in sorted(minst.param_names):
             par = Parameter(name=pname, value=0, vary=True)
             pwids = ParameterWidgets(panel, par, name_size=90,
-                                     float_size=75,
+                                     float_size=75, prefix="%s_"% prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
-            panel.Add(pwids.name, newrow=True)
-            panel.Add(pwids.value)
-            panel.Add(pwids.vary)
-            panel.Add(pwids.minval)
-            panel.Add(pwids.maxval)
-            panel.Add(pwids.expr)
             parwids[par.name] = pwids
+            panel.Add(pwids.name, newrow=True)
+            panel.AddMany((pwids.value, pwids.vary, pwids.minval,
+                           pwids.maxval, pwids.expr))
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER, newrow=True)
         panel.Add(HLine(panel, size=(360, 3)), dcol=4, style=wx.ALIGN_CENTER)
@@ -703,7 +695,7 @@ class FitPanel(wx.Panel):
         except:
             return
         if (time.time() - self.pick2_t0) > self.pick2_timeout:
-            msg = self.pick2_group.pick2_msg.SetLabel("time out")
+            msg = self.pick2_group.pick2_msg.SetLabel(" ")
             self.main.larch.symtable._plotter.plot1.cursor_hist = []
             self.pick2_timer.Stop()
             return
@@ -725,18 +717,19 @@ class FitPanel(wx.Panel):
         i1 = index_of(dgroup.x, xmax)
         x, y = dgroup.x[i0:i1+1], dgroup.y[i0:i1+1]
 
-        mod = self.pick2_group.mclass()
+        mod = self.pick2_group.mclass(prefix="%s_" % self.pick2_group.prefix)
         parwids = self.pick2_group.parwids
         try:
             guesses = mod.guess(y, x=x)
         except:
             return
+
         for name, param in guesses.items():
             if name in parwids:
                 parwids[name].value.SetValue(param.value)
 
-        dgroup.yfit0 = mod.eval(guesses, x=dgroup.x)
-        self.main.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup.yfit0)
+        dgroup._tmp = mod.eval(guesses, x=dgroup.x)
+        self.main.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup._tmp)
         self.main.larch.symtable._plotter.plot1.cursor_hist = []
 
     def onPick2Points(self, evt=None, comp=-1):
@@ -755,12 +748,19 @@ class FitPanel(wx.Panel):
         self.pick2_timer.Start(250)
 
     def onSaveFit(self, event=None):
-        print "Save Fit"
+        print "Save Fit : ", self.fit_model, self.fit_components
 
+        if (self.fit_model is None and
+            len(self.fit_components) > 0):
+            self.build_fitmodel()
+        print self.fit_model
+        print self.fit_params.dumps()
+        
     def onResetRange(self, event=None):
-        print("  reset range")
-
-
+        dgroup = self.get_datagroup()
+        self.xmin.SetValue(min(dgroup.x))
+        self.xmax.SetValue(max(dgroup.x))
+        
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
         try:
@@ -773,75 +773,62 @@ class FitPanel(wx.Panel):
             elif opt == 'xmax':
                 self.xmax.SetValue(xval)
 
+    def get_datagroup(self):
+        dgroup = None
+        if self.main.groupname is not None:
+            try:
+                dgroup = getattr(self.main.larch.symtable,
+                                      self.main.groupname)
+            except:
+                pass
+        return dgroup
+
+    def build_fitmodel(self):
+        """ use fit components to build model"""
+        dgroup = self.get_datagroup()
+
+        model = None
+        params = Parameters()
+        for comp in self.fit_components:
+            if comp.usebox.IsChecked():
+                for parwids in comp.parwids.values():
+                    params.add(parwids.param)
+                if model is None:
+                    model = comp.mclass(prefix="%s_" % comp.prefix)
+                else:
+                    model += comp.mclass(prefix="%s_" % comp.prefix)
+        self.fit_model = model
+        self.fit_params = params
+
+        self.plotter = self.main.larch.symtable._plotter.plot1
+        if dgroup is not None:
+            dgroup.y_init = self.fit_model.eval(self.fit_params,
+                                                x=dgroup.x)
+            dgroup.y_comps = self.fit_model.eval_components(params=self.fit_params,
+                                                            x=dgroup.x)
+              
     def onShowModel(self, event=None):
-        print "Show model"
-        for g in self.fit_components:
-            print g
-            print(dir(g))
-
-    def onShowComponents(self, event=None):
-        print "Show model components"
-        for g in self.fit_components:
-            print g
-
+        self.build_fitmodel()
+        dgroup = self.get_datagroup()
+        self.main.plot_group(self.main.groupname, new=True)
+        if dgroup is not None:
+            self.plotter.oplot(dgroup.x, dgroup.y_init)
+            if self.plot_comps.IsChecked() and len(dgroup.y_comps) > 1:
+                for _y in dgroup.y_comps.values():
+                    self.plotter.oplot(dgroup.x, _y)
+            
     def onRunFit(self, event=None):
-        gname = self.main.groupname
+        self.build_fitmodel()
+        dgroup = self.get_datagroup()
+        if dgroup is not None:
+            x = dgroup.x
+            result = self.fit_model.fit(dgroup.y,
+                                        params=self.fit_params,
+                                        x=x, method='leastsq')
+            self.main.plot_group(self.main.groupname, new=True)
+            self.plotter.oplot(x, result.best_fit)
+            print(result.fit_report())
 
-        dtext = []
-        print("Do Fit ", self.fit_components)
-
-        x = """
-        dtext.append('Fit Model: %s' % model)
-        bkg =  self.fit_bkg.GetStringSelection()
-        if bkg == 'None':
-            bkg = None
-        if bkg is None:
-            dtext.append('No Background')
-        else:
-            dtext.append('Background: %s' % bkg)
-
-        step = self.fit_step.GetStringSelection().lower()
-        if model in ('step', 'rectangle'):
-            dtext.append('Step form: %s' % step)
-
-        try:
-            lgroup =  getattr(self.main.larch.symtable, gname)
-            x = lgroup.xdat
-            y = lgroup.ydat
-        except AttributeError:
-            self.main.write_message('need data to fit!')
-            return
-        if step.startswith('error'):
-            step = 'erf'
-        elif step.startswith('arctan'):
-            step = 'atan'
-
-        pgroup = fit_peak(x, y, model, background=bkg, step=step,
-                          _larch=self.larch)
-
-        dtext = '\n'.join(dtext)
-        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
-                                                _larch=self.larch))
-
-        self.main.show_subframe('fitreport', ReportFrame)
-        self.main.subframes['fitreport'].set_text(dtext)
-
-        if not hasattr(lgroup, 'fits'):
-            lgroup.fits = []
-
-        lgroup.fits.append((model, bkg, step, dtext))
-
-        lgroup.plot_yarrays = [(lgroup.y, PLOTOPTS_1, lgroup.plot_ylabel)]
-        if bkg is None:
-            lgroup._fit = pgroup.fit[:]
-            lgroup.plot_yarrays.append((lgroup._fit, PLOTOPTS_2, 'fit'))
-        else:
-            lgroup._fit     = pgroup.fit[:]
-            lgroup._fit_bgr = pgroup.bkg[:]
-            lgroup.plot_yarrays.append((lgroup._fit,    PLOTOPTS_2, 'fit'))
-            lgroup.plot_yarrays.append((lgroup._fit_bgr, PLOTOPTS_2, 'background'))
-        self.main.plot_group(gname, new=True)
-        """
 
 class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
