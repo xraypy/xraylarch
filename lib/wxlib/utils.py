@@ -2,6 +2,10 @@ import wx
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
+def SetTip(wid, msg):
+    "set tooltip message"
+    wid.SetToolTip(wx.ToolTip(msg))
+
 def BitmapButton(parent, bmp, action=None, tooltip=None,
                  size=(20, 20), **kws):
     b = wx.BitmapButton(parent, -1, bmp, size=size, **kws)
@@ -37,7 +41,7 @@ class FileCheckList(wx.CheckListBox):
                  right_click=True,
                  remove_action=None, **kws):
         wx.CheckListBox.__init__(self, parent, **kws)
-        
+
         self.SetDropTarget(FileDropTarget(main))
 
         self.SetBackgroundColour(wx.Colour(248, 248, 235))
