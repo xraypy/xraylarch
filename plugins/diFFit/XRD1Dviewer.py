@@ -492,6 +492,7 @@ class Calc1DPopup(wx.Dialog):
         self.mask = mask
         self.data2D = xrd2Ddata
         self.ai = ai
+        self.steps = 5001
         
 
         self.Init()
@@ -647,6 +648,9 @@ class Calc1DPopup(wx.Dialog):
 
 
     def onSAVE(self,event):
+
+        self.getValues()
+        
         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save file as...',
                            defaultDir=os.getcwd(),
@@ -663,11 +667,17 @@ class Calc1DPopup(wx.Dialog):
             self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,file=path,verbose=True)
 
     def onPLOT(self,event):
+
+        self.getValues()
         
         self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False,verbose=True)
         Viewer1DXRD(self.data1D)
 
-
+    def getValues(self):
+    
+        self.steps = int(self.xstep.GetValue())
+    
+    
       
 class diFFit1D(wx.App):
     def __init__(self):
