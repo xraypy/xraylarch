@@ -551,7 +551,7 @@ class FitPanel(wx.Panel):
         opts = {'size': (70, -1), 'gformat': True}
         self.xmin = FloatCtrl(row, value=-np.inf, **opts)
         self.xmax = FloatCtrl(row, value=np.inf, **opts)
-        
+
         rsizer.Add(SimpleText(row, 'Fit Range: [ '), 0, LCEN, 3)
         rsizer.Add(xmin_sel, 0, LCEN, 3)
         rsizer.Add(self.xmin, 0, LCEN, 3)
@@ -565,7 +565,7 @@ class FitPanel(wx.Panel):
         pack(row, rsizer)
 
         self.plot_comps = Check(panel, label='Plot Components?',
-                                default=True, size=(140, -1))        
+                                default=True, size=(140, -1))
 
         panel.Add(HLine(self, size=(550, 2)), dcol=5)
         panel.Add(row, dcol=5, newrow=True)
@@ -604,7 +604,7 @@ class FitPanel(wx.Panel):
             return
 
         icomp = len(self.fit_components)
-        prefix = "p%i" % (icomp + 1)
+        prefix = "p%i_" % (icomp + 1)
 
         title = "%s(" % model
 
@@ -629,7 +629,7 @@ class FitPanel(wx.Panel):
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
         delbtn = Button(panel, 'Delete', size=(100, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
-        pick2msg = SimpleText(panel, "    ", size=(90, -1))
+        pick2msg = SimpleText(panel, "    ", size=(80, -1))
         pick2btn = Button(panel, 'Pick Range', size=(80, -1),
                           action=partial(self.onPick2Points, comp=icomp))
 
@@ -652,8 +652,8 @@ class FitPanel(wx.Panel):
         parwids = {}
         for pname in sorted(minst.param_names):
             par = Parameter(name=pname, value=0, vary=True)
-            pwids = ParameterWidgets(panel, par, name_size=90,
-                                     float_size=75, prefix="%s_"% prefix,
+            pwids = ParameterWidgets(panel, par, name_size=80,
+                                     float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
             parwids[par.name] = pwids
@@ -662,7 +662,7 @@ class FitPanel(wx.Panel):
                            pwids.maxval, pwids.expr))
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER, newrow=True)
-        panel.Add(HLine(panel, size=(360, 3)), dcol=4, style=wx.ALIGN_CENTER)
+        panel.Add(HLine(panel, size=(325, 3)), dcol=4, style=wx.ALIGN_CENTER)
         panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
         fgroup.usebox = usebox
         fgroup.panel = panel
@@ -717,7 +717,7 @@ class FitPanel(wx.Panel):
         i1 = index_of(dgroup.x, xmax)
         x, y = dgroup.x[i0:i1+1], dgroup.y[i0:i1+1]
 
-        mod = self.pick2_group.mclass(prefix="%s_" % self.pick2_group.prefix)
+        mod = self.pick2_group.mclass(prefix=self.pick2_group.prefix)
         parwids = self.pick2_group.parwids
         try:
             guesses = mod.guess(y, x=x)
@@ -755,12 +755,12 @@ class FitPanel(wx.Panel):
             self.build_fitmodel()
         print self.fit_model
         print self.fit_params.dumps()
-        
+
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
         self.xmin.SetValue(min(dgroup.x))
         self.xmax.SetValue(max(dgroup.x))
-        
+
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
         try:
@@ -794,9 +794,9 @@ class FitPanel(wx.Panel):
                 for parwids in comp.parwids.values():
                     params.add(parwids.param)
                 if model is None:
-                    model = comp.mclass(prefix="%s_" % comp.prefix)
+                    model = comp.mclass(prefix=comp.prefix)
                 else:
-                    model += comp.mclass(prefix="%s_" % comp.prefix)
+                    model += comp.mclass(prefix=comp.prefix)
         self.fit_model = model
         self.fit_params = params
 
@@ -806,7 +806,7 @@ class FitPanel(wx.Panel):
                                                 x=dgroup.x)
             dgroup.y_comps = self.fit_model.eval_components(params=self.fit_params,
                                                             x=dgroup.x)
-              
+
     def onShowModel(self, event=None):
         self.build_fitmodel()
         dgroup = self.get_datagroup()
@@ -816,7 +816,7 @@ class FitPanel(wx.Panel):
             if self.plot_comps.IsChecked() and len(dgroup.y_comps) > 1:
                 for _y in dgroup.y_comps.values():
                     self.plotter.oplot(dgroup.x, _y)
-            
+
     def onRunFit(self, event=None):
         self.build_fitmodel()
         dgroup = self.get_datagroup()
@@ -827,7 +827,22 @@ class FitPanel(wx.Panel):
                                         x=x, method='leastsq')
             self.main.plot_group(self.main.groupname, new=True)
             self.plotter.oplot(x, result.best_fit)
-            print(result.fit_report())
+            self.main.show_report(result.fit_report())
+
+            allparwids = {}
+            for comp in self.fit_components:
+                if comp.usebox.IsChecked():
+                    for name, parwids in comp.parwids.items():
+                        allparwids[name] = parwids
+
+            for n, p in allparwids.items():
+                print n, allparwids[n].param
+
+            for pname, par in result.params.items():
+                if pname in allparwids:
+                    allparwids[pname].value.SetValue(par.value)
+
+
 
 
 class ScanViewerFrame(wx.Frame):
@@ -1151,6 +1166,10 @@ class ScanViewerFrame(wx.Frame):
                 del self.subframes[name]
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
+
+    def show_report(self, text, evt=None):
+        self.show_subframe('reportframe', ReportFrame)
+        self.subframes['reportframe'].set_text(text)
 
     def onEditColumns(self, evt=None):
         self.show_subframe('coledit', EditColumnFrame,
