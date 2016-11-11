@@ -43,13 +43,16 @@ class ParameterWidgets(object):
     param = Parameter(value=11.22, vary=True, min=0, name='x1')
     wid   = ParameterPanel(parent_wid, param)
     """
-    def __init__(self, parent, param,  name_size=None,
+    def __init__(self, parent, param,  name_size=None, prefix=None,
                  expr_size=120, stderr_size=120, float_size=80,
                  widgets=PAR_WIDS):
 
         self.parent = parent
         self.param = param
-
+        if (prefix is not None and
+            not self.param.name.startswith(prefix)):
+            self.param.name = "%s%s" %(prefix, self.param.name)
+            
         for attr in PAR_WIDS:
             setattr(self, attr, None)
 
@@ -71,7 +74,10 @@ class ParameterWidgets(object):
 
         if 'value' in widgets:
             self.value = FloatCtrl(parent, value=param.value,
-                                   minval=param.min, maxval=param.max,
+                                   minval=param.min,
+                                   maxval=param.max,
+                                   action=self.onValue,
+                                   act_on_losefocus=True,
                                    gformat=True,
                                    size=(float_size, -1))
 
@@ -82,6 +88,7 @@ class ParameterWidgets(object):
             self.minval = FloatCtrl(parent, value=minval,
                                     gformat=True,
                                     size=(float_size, -1),
+                                    act_on_losefocus=True,
                                     action=self.onMinval)
             self.minval.Enable(vary_choice==PAR_VAR)
 
@@ -92,6 +99,7 @@ class ParameterWidgets(object):
             self.maxval = FloatCtrl(parent, value=maxval,
                                     gformat=True,
                                     size=(float_size, -1),
+                                    act_on_losefocus=True,                                    
                                     action=self.onMaxval)
             self.maxval.Enable(vary_choice==PAR_VAR)
 
@@ -108,7 +116,9 @@ class ParameterWidgets(object):
             self.expr = wx.TextCtrl(parent, -1, value=expr,
                                       size=(expr_size, -1))
             self.expr.Enable(vary_choice==PAR_CON)
-
+            self.expr.Bind(wx.EVT_TEXT, self.onExpr)
+            SetTip(self.expr, 'Enter constraint expression')
+            
         if 'stderr' in widgets:
             stderr = param.stderr
             if stderr in (None, 'None', ''):
@@ -116,6 +126,13 @@ class ParameterWidgets(object):
             self.stderr = wx.StaticText(parent, label=stderr,
                                         size=(stderr_size, -1))
 
+    def onValue(self, evt=None, value=None):
+        if value is not None:
+            self.param.value = value
+
+    def onExpr(self, evt=None, value=None):
+        self.param.expr = evt.GetString()
+        
     def onMinval(self, evt=None, value=None):
         if value in (None, 'None', ''):
             value = -np.inf
@@ -123,7 +140,8 @@ class ParameterWidgets(object):
             v = self.value.GetValue()
             self.value.SetMin(value)
             self.value.SetValue(v)
-
+            self.param.min = value
+            
     def onMaxval(self, evt=None, value=None):
         # print "onMaxval " , value, self.value, self.value
         if value in (None, 'None', ''):
@@ -132,6 +150,7 @@ class ParameterWidgets(object):
             v = self.value.GetValue()
             self.value.SetMax( value)
             self.value.SetValue(v)
+            self.param.max = value            
 
     def onVaryChoice(self, evt=None):
         if self.vary is None:
