@@ -20,8 +20,10 @@ from wx.richtext import RichTextCtrl
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
-                     Choice,  Check, MenuItem, GUIColors,
+                     Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
+
+LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
 import lmfit.models as lm_models
 from lmfit import Parameter
@@ -45,6 +47,7 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname)
 
 from larch_plugins.xafs import pre_edge
+
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
@@ -84,13 +87,14 @@ def assign_gsescan_groups(group):
     group.array_labels = labels
 
 
+StepChoices = ('<Select Step Form>', 'Linear', 'Arctan', 'ErrorFunction',
+               'Logistic')
 
-StepChoices = ('Linear', 'Arctan', 'ErrorFunction', 'Logistic')
-
-ModelChoices = ('Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt', 'Pearson7',
-               'StudentsT', 'SkewedGaussian', 'Constant', 'Linear',
-               'Quadratic', 'Exponential', 'PowerLaw', 'Rectangle',
-               'DampedOscillator', 'Lognormal', 'BreitWigner', 'Donaich')
+ModelChoices = ('<Select Model>', 'Gaussian', 'Lorentzian', 'Voigt',
+               'PseudoVoigt', 'Pearson7', 'StudentsT', 'SkewedGaussian',
+               'Constant', 'Linear', 'Quadratic', 'Exponential',
+               'PowerLaw', 'Rectangle', 'DampedOscillator', 'Lognormal',
+               'BreitWigner', 'Donaich')
 
 
 XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
@@ -123,10 +127,10 @@ class ProcessPanel(wx.Panel):
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(group2dict(dgroup.proc_opts))
 
-        self.xshift.SetVale(predefs['xshift'])
-        self.yshift.SetVale(predefs['yshift'])
-        self.xscale.SetVale(predefs['xscale'])
-        self.yscale.SetVale(predefs['yscale'])
+        self.xshift.SetValue(predefs['xshift'])
+        self.yshift.SetValue(predefs['yshift'])
+        self.xscale.SetValue(predefs['xscale'])
+        self.yscale.SetValue(predefs['yscale'])
 
         self.smooth_op.SetStringSelection(predefs['smooth_op'])
         self.smooth_conv.SetStringSelection(predefs['smooth_conv'])
@@ -151,22 +155,22 @@ class ProcessPanel(wx.Panel):
             self.xas_autostep.SetValue(predefs['auto_step'])
 
     def build_display(self):
+        self.SetFont(Font(10))
 
-        self.SetFont(Font(11))
+        titleopts = dict(font=Font(11), colour='#AA0000')
 
-        titleopts = dict(font=Font(12), colour='#AA0000')
-
-        xas = self.xaspanel = wx.Panel(self)
-        gen = self.genpanel = wx.Panel(self)
+        gopts = dict(ncols=4, nrows=4, pad=2, itemstyle=LCEN)
+        xas = self.xaspanel = GridPanel(self, **gopts)
+        gen = self.genpanel = GridPanel(self, **gopts)
         self.btns = {}
         #gen
-        opts  = dict(action=self.UpdatePlot, size=(100, -1))
+        opts  = dict(action=self.UpdatePlot, size=(100, -1), gformat=True)
 
-        self.xshift = FloatCtrl(gen, value=0.0, precision=4, **opts)
-        self.xscale = FloatCtrl(gen, value=1.0, precision=4, **opts)
+        self.xshift = FloatCtrl(gen, value=0.0, **opts)
+        self.xscale = FloatCtrl(gen, value=1.0, **opts)
 
-        self.yshift = FloatCtrl(gen, value=0.0, precision=4, **opts)
-        self.yscale = FloatCtrl(gen, value=1.0, precision=4, **opts)
+        self.yshift = FloatCtrl(gen, value=0.0, **opts)
+        self.yscale = FloatCtrl(gen, value=1.0, **opts)
 
         self.btns['xshift'] = BitmapButton(gen, get_icon('plus'),
                                            action=partial(self.on_selpoint, opt='xshift'),
@@ -184,7 +188,7 @@ class ProcessPanel(wx.Panel):
         self.smooth_c0 = FloatCtrl(sm_row1, value=2, precision=0, **opts)
         self.smooth_c1 = FloatCtrl(sm_row1, value=1, precision=0, **opts)
         opts['size'] =  (75, -1)
-        self.smooth_sig = FloatCtrl(sm_row2, value=1, precision=4, **opts)
+        self.smooth_sig = FloatCtrl(sm_row2, value=1, gformat=True, **opts)
 
         opts['size'] =  (120, -1)
         self.smooth_op = Choice(sm_row1, choices=SMOOTH_OPS, **opts)
@@ -211,33 +215,24 @@ class ProcessPanel(wx.Panel):
         pack(sm_row1, sm_siz1)
         pack(sm_row2, sm_siz2)
 
-        sizer = wx.GridBagSizer(5, 5)
+        gen.Add(SimpleText(gen, ' General Data Processing', **titleopts), dcol=8)
+        gen.Add(SimpleText(gen, ' X shift:'),  newrow=True)
+        gen.Add(self.btns['xshift'])
+        gen.Add(self.xshift, dcol=2)
+        gen.Add(SimpleText(gen, ' X scale:'))
+        gen.Add(self.xscale, dcol=2)
 
-        ir = 0
-        sizer.Add(SimpleText(gen, ' General Data Processing', **titleopts),
-                  (ir, 0), (1, 8), LCEN, 5)
+        gen.Add(SimpleText(gen, ' Y shift:'),  newrow=True)
+        gen.Add(self.btns['yshift'])
+        gen.Add(self.yshift, dcol=2)
+        gen.Add(SimpleText(gen, ' Y scale:'))
+        gen.Add(self.yscale, dcol=2)
 
-        ir += 1
-        sizer.Add(SimpleText(gen, ' X shift:'),  (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.btns['xshift'],           (ir, 1), (1, 1), LCEN, 0)
-        sizer.Add(self.xshift,                   (ir, 2), (1, 2), LCEN, 0)
-        sizer.Add(SimpleText(gen, ' X scale:'),  (ir, 4), (1, 1), LCEN, 0)
-        sizer.Add(self.xscale,                   (ir, 5), (1, 2), LCEN, 0)
+        gen.Add(SimpleText(gen, ' Smoothing:'), newrow=True)
+        gen.Add(sm_row1, dcol=7)
+        gen.Add(sm_row2, icol=1, dcol=7, newrow=True)
 
-        ir += 1
-        sizer.Add(SimpleText(gen, ' Y shift:'),  (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.btns['yshift'],           (ir, 1), (1, 1), LCEN, 0)
-        sizer.Add(self.yshift,                   (ir, 2), (1, 2), LCEN, 0)
-        sizer.Add(SimpleText(gen, ' Y scale:'),  (ir, 4), (1, 1), LCEN, 0)
-        sizer.Add(self.yscale,                   (ir, 5), (1, 2), LCEN, 0)
-
-
-        ir += 1
-        sizer.Add(SimpleText(gen, ' Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(sm_row1, (ir,   1), (1, 7), LCEN)
-        sizer.Add(sm_row2, (ir+1, 1), (1, 7), LCEN)
-
-        pack(gen, sizer)
+        gen.pack()
 
         #xas
         opts = {'action': self.UpdatePlot}
@@ -253,7 +248,7 @@ class ProcessPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = {'size': (85, -1), 'precision': 3,
+        opts = {'size': (85, -1), 'gformat': True,
                 'action': self.UpdatePlot}
 
         self.xas_e0   = FloatCtrl(xas, value  = 0, **opts)
@@ -271,52 +266,40 @@ class ProcessPanel(wx.Panel):
         self.xas_nnor = Choice(xas, **opts)
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(2)
-        sizer = wx.GridBagSizer(5, 5)
 
+        xas.Add(SimpleText(xas, ' XAS Data Processing', **titleopts), dcol=7)
+        xas.Add(SimpleText(xas, 'Arrays to Plot: '),  newrow=True)
+        xas.Add(self.xas_op,  dcol=7)
 
-        ir = 0
-        sizer.Add(SimpleText(xas, ' XAS Data Processing', **titleopts),
-                  (ir, 0), (1, 7), LCEN, 0)
+        xas.Add(SimpleText(xas, 'E0 : '), newrow=True)
+        xas.Add(self.btns['e0'])
+        xas.Add(self.xas_e0)
+        xas.Add(self.xas_autoe0, dcol=2)
+        xas.Add(self.xas_showe0, dcol=2)
 
-        ir += 1
-        sizer.Add(SimpleText(xas, 'Arrays to Plot: '),  (ir, 0), (1, 1), LCEN)
-        sizer.Add(self.xas_op,                           (ir, 1), (1, 7), LCEN)
+        xas.Add(SimpleText(xas, 'Edge Step: '), newrow=True)
+        xas.Add(self.xas_step)
+        xas.Add(self.xas_autostep, dcol=3)
 
-        ir += 1
-        sizer.Add(SimpleText(xas, 'E0 : '),   (ir, 0), (1, 1), LCEN)
-        sizer.Add(self.btns['e0'],             (ir, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_e0,                 (ir, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autoe0,             (ir, 3), (1, 2), LCEN)
-        sizer.Add(self.xas_showe0,             (ir, 5), (1, 2), LCEN)
+        xas.Add(SimpleText(xas, 'Pre-edge range: '), newrow=True)
+        xas.Add(self.btns['pre1'])
+        xas.Add(self.xas_pre1)
+        xas.Add(SimpleText(xas, ':'))
+        xas.Add(self.btns['pre2'])
+        xas.Add(self.xas_pre2)
+        xas.Add(SimpleText(xas, 'Victoreen:'))
+        xas.Add(self.xas_vict)
 
+        xas.Add(SimpleText(xas, 'Normalization range: '), newrow=True)
+        xas.Add(self.btns['nor1'])
+        xas.Add(self.xas_nor1)
+        xas.Add(SimpleText(xas, ':'))
+        xas.Add(self.btns['nor2'])
+        xas.Add(self.xas_nor2)
+        xas.Add(SimpleText(xas, 'PolyOrder:'))
+        xas.Add(self.xas_nnor)
 
-        ir += 1
-        sizer.Add(SimpleText(xas, 'Edge Step: '),  (ir, 0), (1, 1), LCEN)
-        sizer.Add(self.xas_step,               (ir, 2), (1, 1), LCEN)
-        sizer.Add(self.xas_autostep,           (ir, 3), (1, 3), LCEN)
-
-        ir += 1
-        sizer.Add(SimpleText(xas, 'Pre-edge range: '),  (ir, 0), (1, 1), LCEN)
-        sizer.Add(self.btns['pre1'],           (ir, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_pre1,               (ir, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(xas, ':'),       (ir, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['pre2'],           (ir, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_pre2,               (ir, 5), (1, 1), LCEN)
-        sizer.Add(SimpleText(xas, 'Victoreen:'), (ir, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_vict,               (ir, 7), (1, 1), LCEN)
-
-        ir += 1
-        sizer.Add(SimpleText(xas, 'Normalization range: '), (ir, 0), (1, 1), LCEN)
-        sizer.Add(self.btns['nor1'],           (ir, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_nor1,               (ir, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(xas, ':'),          (ir, 3), (1, 1), LCEN)
-        sizer.Add(self.btns['nor2'],           (ir, 4), (1, 1), LCEN)
-        sizer.Add(self.xas_nor2,               (ir, 5), (1, 1), LCEN)
-        sizer.Add(SimpleText(xas, 'PolyOrder:'), (ir, 6), (1, 1), LCEN)
-        sizer.Add(self.xas_nnor,               (ir, 7), (1, 1), LCEN)
-        ir +=1
-
-        pack(xas, sizer)
+        xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.AddMany([((10,10), 0, LCEN, 0),
@@ -521,17 +504,143 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
 
+class ParameterWidgets(object):
+    """a set of related widgets for a lmfit Parameter
+
+    param = Parameter(value=11.22, vary=True, min=0, name='x1')
+    wid   = ParameterPanel(parent_wid, param)
+    """
+    def __init__(self, parent, param,  name_size=None,
+                 expr_size=120, stderr_size=120, float_size=80,
+                 widgets=('name', 'value',  'minval', 
+                          'maxval', 'vary', 'expr', 'stderr')):
+        
+        self.parent = parent
+        self.param = param
+
+        self.value = None
+        self.name = None
+        self.vary = None
+        self.minval = None
+        self.maxval = None
+        self.expr = None
+        self.stderr = None
+        
+        if 'name' in widgets:
+            name = param.name
+            if name in (None, 'None', ''):
+                name = ''
+            if name_size is None:
+                name_size = min(50, len(param.name)*10)
+            self.name = wx.StaticText(parent, label=name,
+                                      size=(name_size, -1))
+
+        if 'value' in widgets:
+            self.value = FloatCtrl(parent, value=param.value,
+                                   minval=param.min, maxval=param.max,
+                                   gformat=True,                                   
+                                   size=(float_size, -1))
+            self.value.__digits = '0123456789.-e'
+
+        if 'minval' in widgets:
+            minval = param.min
+            if minval in (None, 'None', -np.inf):
+                minval = -np.inf
+            
+            self.minval = FloatCtrl(parent, value=minval,
+                                    gformat=True,
+                                    size=(float_size, -1),
+                                    action=self.onMinval)
+            self.minval.__digits = '0123456789.-e'
+
+        if 'maxval' in widgets:
+            maxval = param.max
+            if maxval in (None, 'None', np.inf):
+                maxval = np.inf
+            self.maxval = FloatCtrl(parent, value=maxval,
+                                    gformat=True,
+                                    size=(float_size, -1),
+                                    action=self.onMaxval)
+            self.maxval.__digits = '0123456789.-e'
+            
+        if 'vary' in widgets:
+            self.vary = Choice(parent,
+                               choices=('vary', 'fix', 'constrain'),
+                               action=self.onVaryChoice, size=(90, -1))
+            vary_choice = 0
+            if param.expr is not None:
+                vary_choice = 2
+            elif not param.vary:
+                vary_choice = 1
+            self.vary.SetSelection(vary_choice)
+
+        if 'expr' in widgets:
+            expr = param.expr
+            if expr in (None, 'None', ''):
+                expr = ''
+            self.expr = wx.TextCtrl(parent, -1, value=expr,
+                                      size=(expr_size, -1))
+
+        if 'stderr' in widgets:
+            stderr = param.stderr
+            if stderr in (None, 'None', ''):
+                stderr = ''
+            self.stderr = wx.StaticText(parent, label=stderr,
+                                        size=(stderr_size, -1))
+
+    def onMinval(self, evt=None, value=None):
+        if value in (None, 'None', ''):
+            value = -np.inf        
+        if self.value is not None:
+            v = self.value.GetValue()
+            self.value.SetMin(value)
+            self.value.SetValue(v)
+
+    def onMaxval(self, evt=None, value=None):
+        # print "onMaxval " , value, self.value, self.value
+        if value in (None, 'None', ''):
+            value = np.inf
+        if self.value is not None:
+            v = self.value.GetValue()
+            self.value.SetMax( value)
+            self.value.SetValue(v)
+
+    def onVaryChoice(self, evt=None):
+        if self.vary is None:
+            return
+        vary = evt.GetString().lower()
+
+        self.param.vary = False
+        expr, minval, maxval, value = False, False, False, False
+        if vary.startswith('con'):
+            expr = True
+        elif vary.startswith('fix'):
+            value = True
+        elif vary.startswith('var'):
+            value, minval, maxval = True, True, True
+            self.param.vary = True
+            
+        if self.value is not None:   self.value.Enable(value)
+        if self.expr is not None:    self.expr.Enable(expr)
+        if self.minval is not None:  self.minval.Enable(minval)
+        if self.maxval is not None:  self.maxval.Enable(maxval)
+
+
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
 
         wx.Panel.__init__(self, parent, -1, **kws)
-
         self.parent = parent
         self.main  = main
         self.fit_components = []
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
-
+        self.pick3_timer = wx.Timer(self)
+        self.pick3_group = None
+        self.Bind(wx.EVT_TIMER, self.onPick3Timer, self.pick3_timer)
+        self.pick3_t0 = 0.
+        self.pick3_timeout = 15.
+        
     def build_display(self):
 
         self.modelpanel = scrolled.ScrolledPanel(self, style=wx.GROW|wx.TAB_TRAVERSAL)
@@ -539,6 +648,7 @@ class FitPanel(wx.Panel):
 
         pack(self.modelpanel, self.modelsizer)
         self.modelpanel.SetupScrolling()
+        self.modelpanel.SetAutoLayout(1)
 
         top = wx.Panel(self)
 
@@ -560,7 +670,7 @@ class FitPanel(wx.Panel):
                                      action=partial(self.on_selpoint, opt='xmax'),
                                      tooltip='use last point selected from plot')
 
-        opts = {'size': (90, -1), 'precision': 3}
+        opts = {'size': (90, -1), 'gformat': True}
         self.xmin = FloatCtrl(row, value=0, **opts)
         self.xmax = FloatCtrl(row, value=0, **opts)
 
@@ -604,91 +714,166 @@ class FitPanel(wx.Panel):
     def addModel(self, event=None, model=None, is_step=False):
         if model is None and event is not None:
             model = event.GetString()
-        if model is None:
+        if model is None or model.startswith('<'):
             return
 
-        title = model
+        icomp = len(self.fit_components)
+        prefix = "p%i" % (icomp + 1)
+
+        title = "%s(" % model
+
         if is_step:
-            title = "Step(%s)" % model
             form = model.lower()
             if form.startswith('err'): form = 'erf'
+            title = "Step(form='%s', " % form
+
             mclass = lm_models.StepModel
             minst = mclass(form=form)
         else:
             mclass = getattr(lm_models, model+'Model')
             minst = mclass()
 
-        icomp = len(self.fit_components)
 
-        prefix = "p%i" % (icomp + 1)
+        fgroup = Group(icomp=icomp, prefix=prefix, mclass=mclass)
 
-        mpanel = self.modelpanel
-
-        modbox = wx.StaticBox(mpanel, -1, title)
-
-        sizer = wx.GridBagSizer(3, 3)
-
-        def SLabel(s):
-            return SimpleText(modbox, s, minsize=(80, -1), style=LCEN)
-
-        mname  = wx.TextCtrl(modbox, -1, prefix, size=(80, -1))
-        usebox = Check(modbox, default=True, label='Use in Model', size=(100, -1))
-        delbtn = Button(modbox, 'Delete', size=(80, -1),
+        panel = GridPanel(self.modelpanel, ncols=1, nrows=1,
+                          pad=1, itemstyle=LCEN)
+        
+        def SLabel(label, size=(80, -1), **kws):
+            return  SimpleText(panel, label,
+                               size=size, style=wx.ALIGN_LEFT, **kws)
+        mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
+        mname.SetToolTip(wx.ToolTip('Label for the model component'))
+        usebox = Check(panel, default=True, label='Use?', size=(90, -1))
+        usebox.SetToolTip(wx.ToolTip('Use this component in fit?'))
+        
+        delbtn = Button(panel, 'Delete', size=(75, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
+        delbtn.SetToolTip(wx.ToolTip('Delete this model component'))
 
-        pick3btn = Button(modbox, 'Pick 3 Points', size=(80, -1),
+        pick3msg = SimpleText(panel, "    ", size=(90, -1))
+        pick3btn = Button(panel, 'Pick 3 Pts', size=(80, -1),
                           action=partial(self.onPick3Points, comp=icomp))
-        pick3msg = SimpleText(modbox, "    ", size=(100, -1))
-
-        sizer.Add(SLabel("Component"),  (0, 0), (1, 1), LCEN, 2)
-        sizer.Add(mname,     (0, 1), (1, 1), LCEN, 2)
-        sizer.Add(usebox,    (0, 2), (1, 1), LCEN, 2)
-        sizer.Add(pick3btn,  (0, 3), (1, 1), LCEN, 2)
-        sizer.Add(pick3msg,  (0, 4), (1, 2), LCEN, 2)
-        sizer.Add(delbtn,    (0, 6), (1, 1), LCEN, 2)
-
-        sizer.Add(SLabel("Param Name"),  (1, 0), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("Value"),       (1, 1), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("Type"),        (1, 2), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("Min"),         (1, 3), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("Max"),         (1, 4), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("StdErr"),      (1, 5), (1, 1), LCEN, 2)
-        sizer.Add(SLabel("More..."),     (1, 6), (1, 1), LCEN, 2)
+        pick3btn.SetToolTip(wx.ToolTip(
+            'Select 3 Points on Plot to Guess Initial Values'))
 
 
-        ir = 1
-        parpanels = []
+        panel.Add(HLine(panel, size=(80, 5)), style=wx.ALIGN_CENTER)
+        panel.Add(SLabel(" %sprefix='%s')" % (title, prefix), size=(250, -1),
+                         colour='#0000AA'), dcol=4)
+        panel.Add(HLine(panel, size=(80, 5)), dcol=1, style=wx.ALIGN_CENTER)
+        panel.Add(SLabel("Label:"),  newrow=True)
+        panel.Add(mname)
+        panel.Add(usebox)
+        panel.Add(pick3btn)
+        panel.Add(pick3msg)
+        panel.Add(delbtn)
+        
+        panel.Add(SLabel("Parameter"),   newrow=True)
+        panel.Add(SLabel("Value"))
+        panel.Add(SLabel("Type"))
+        panel.Add(SLabel("Min"))
+        panel.Add(SLabel("Max"))
+        panel.Add(SLabel("Expression"))
+        parwids = {}
         for pname in sorted(minst.param_names):
             par = Parameter(name=pname, value=0, vary=True)
-            ppan = ParameterPanel(modbox, par, show_name=False, show_bounds=True)
-            ir += 1
-            sizer.Add(SLabel(pname), (ir, 0), (1, 1), LCEN, 2)
-            sizer.Add(ppan,          (ir, 1), (1, 5), LCEN|wx.GROW, 2)
-            parpanels.append(ppan)
+            pwids = ParameterWidgets(panel, par, name_size=90,
+                                     float_size=75,
+                                     widgets=('name', 'value',  'minval', 
+                                              'maxval', 'vary', 'expr'))
+            panel.Add(pwids.name, newrow=True)
+            panel.Add(pwids.value)
+            panel.Add(pwids.vary)
+            panel.Add(pwids.minval)
+            panel.Add(pwids.maxval)
+            panel.Add(pwids.expr)
+            parwids[par.name] = pwids
 
-        self.fit_components.append((icomp, modbox, mname, usebox, delbtn, pick3btn, pick3msg))
-        pack(modbox, sizer)
-
-
-        self.modelsizer.Add(modbox, 0, LCEN|wx.GROW, 2)
+        panel.Add(HLine(panel, size=(540, 2)), dcol=6,
+                  style=wx.ALIGN_CENTER, newrow=True)
+        fgroup.usebox = usebox
+        fgroup.panel = panel
+        fgroup.parwids = parwids
+        fgroup.pick3_msg = pick3msg
+        self.fit_components.append(fgroup)
+        panel.pack()
+        
+        self.modelsizer.Add(panel, 0, LCEN|wx.GROW, 2)
         pack(self.modelpanel, self.modelsizer)
-
+        sx,sy = self.GetSize()
+        self.SetSize((sx, sy+1))
+        self.SetSize((sx, sy))
 
     def onDeleteComponent(self, evt=None, comp=-1):
         if comp > -1:
-            this = self.fit_components[comp]
-            icomp, box = this[0], this[1]
-            self.fit_components[comp] = [None, None, None]
-            if icomp == comp and box is not None:
-                box.Destroy()
+            fgroup = self.fit_components[comp]
+            if fgroup.icomp == comp and fgroup.panel is not None:
+                fgroup.panel.Destroy()
+                fgroup.icomp = fgroup.panel = None
+                fgroup.parwids = fgroup.usebox = None
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
-    def onPick3Points(self, evt=None, comp=-1):
-        pass
+    def onPick3Timer(self, evt=None):
+        try:
+            curhist = self.main.larch.symtable._plotter.plot1.cursor_hist[:]
+        except:
+            return
+        if (time.time() - self.pick3_t0) > self.pick3_timeout:
+            msg = self.pick3_group.pick3_msg.SetLabel("time out")
+            self.main.larch.symtable._plotter.plot1.cursor_hist = []
+            self.pick3_timer.Stop()
+            return
 
+        if len(curhist) < 3:
+            self.pick3_group.pick3_msg.SetLabel("%i/3" % (len(curhist)))
+            return
+        
+        self.pick3_group.pick3_msg.SetLabel("done.")
+        self.pick3_timer.Stop()
+
+        # guess param values
+        xcur = (curhist[0][0], curhist[1][0], curhist[2][0])
+        xmin, xmax = min(xcur), max(xcur)
+
+        dgroup = getattr(self.main.larch.symtable, self.main.groupname)
+        x, y = dgroup.x, dgroup.y
+        i0 = index_of(dgroup.x, xmin)
+        i1 = index_of(dgroup.x, xmax)
+        x, y = dgroup.x[i0:i1+1], dgroup.y[i0:i1+1]
+
+        mod = self.pick3_group.mclass()
+        parwids = self.pick3_group.parwids
+        try:
+            guesses = mod.guess(y, x=x)
+        except:
+            return
+        for name, param in guesses.items():
+            if name in parwids:
+                parwids[name].value.SetValue(param.value)
+
+        dgroup.yfit0 = mod.eval(guesses, x=dgroup.x)
+        self.main.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup.yfit0)
+        self.main.larch.symtable._plotter.plot1.cursor_hist = []
+            
+    def onPick3Points(self, evt=None, comp=-1):
+        if comp > -1:
+            fgroup = self.fit_components[comp]
+            if fgroup.icomp != comp or fgroup.panel is None:
+                return
+        self.main.larch.symtable._plotter.plot1.cursor_hist = []
+        fgroup.npts = len(self.main.larch.symtable._plotter.plot1.cursor_hist)
+        self.pick3_group = fgroup
+
+        if fgroup.pick3_msg is not None:
+            fgroup.pick3_msg.SetLabel("0/3")
+
+        self.pick3_t0 = time.time()
+        self.pick3_timer.Start(250)
+        
     def onSaveFit(self, event=None):
         pass
 
@@ -788,7 +973,7 @@ class ScanViewerFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        # read_workdir('scanviewer.dat')
+        read_workdir('scanviewer.dat')
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -798,13 +983,13 @@ class ScanViewerFrame(wx.Frame):
         ltop = wx.Panel(leftpanel)
 
         plot_one = Button(ltop, 'Plot One',
-                          size=(100, 40),
+                          size=(90, 30),
                           action=self.onPlotOne)
         plot_sel = Button(ltop, 'Plot Selected',
-                          size=(100, 40),
+                          size=(130, 30),
                           action=self.onPlotSel)
-        plot_one.SetFont(Font(12))
-        plot_sel.SetFont(Font(12))
+        plot_one.SetFont(Font(11))
+        plot_sel.SetFont(Font(11))
         self.filelist = FileCheckList(leftpanel, main=self,
                                       select_action=self.ShowFile)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
