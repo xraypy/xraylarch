@@ -166,7 +166,7 @@ class ProcessPanel(wx.Panel):
         gen = self.genpanel = GridPanel(self, **gopts)
         self.btns = {}
         #gen
-        opts  = dict(action=self.UpdatePlot, size=(100, -1), gformat=True)
+        opts  = dict(action=self.UpdatePlot, size=(75, -1), gformat=True)
 
         self.xshift = FloatCtrl(gen, value=0.0, **opts)
         self.xscale = FloatCtrl(gen, value=1.0, **opts)
@@ -250,7 +250,7 @@ class ProcessPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = {'size': (85, -1), 'gformat': True,
+        opts = {'size': (75, -1), 'gformat': True,
                 'action': self.UpdatePlot}
 
         self.xas_e0   = FloatCtrl(xas, value=0, **opts)
@@ -276,10 +276,11 @@ class ProcessPanel(wx.Panel):
         xas.Add(SimpleText(xas, 'E0 : '), newrow=True)
         xas.Add(self.btns['e0'])
         xas.Add(self.xas_e0)
-        xas.Add(self.xas_autoe0, dcol=2)
+        xas.Add(self.xas_autoe0, dcol=3)
         xas.Add(self.xas_showe0, dcol=2)
 
         xas.Add(SimpleText(xas, 'Edge Step: '), newrow=True)
+        xas.Add((10, 1))
         xas.Add(self.xas_step)
         xas.Add(self.xas_autostep, dcol=3)
 
@@ -835,14 +836,9 @@ class FitPanel(wx.Panel):
                     for name, parwids in comp.parwids.items():
                         allparwids[name] = parwids
 
-            for n, p in allparwids.items():
-                print n, allparwids[n].param
-
             for pname, par in result.params.items():
                 if pname in allparwids:
                     allparwids[pname].value.SetValue(par.value)
-
-
 
 
 class ScanViewerFrame(wx.Frame):
