@@ -846,7 +846,7 @@ class FitPanel(wx.Panel):
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        xsel = x[slice(i1, i2)]
+        xsel = dgroup.x[slice(i1, i2)]
         ysel = dgroup.y[slice(i1, i2)]
         
         result = self.fit_model.fit(ysel,
