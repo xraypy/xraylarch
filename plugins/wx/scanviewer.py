@@ -858,8 +858,8 @@ class FitPanel(wx.Panel):
                              xmin=xv1, xmax=xv2)
         self.plot1.oplot(xsel, result.best_fit)
         _plotter = self.main.larch.symtable._plotter
-        _plotter.plot_axvline(xmin, colour='#888888')
-        _plotter.plot_axvline(xmax, colour='#888888')
+        _plotter.plot_axvline(dgroup.x[i1], colour='#888888')
+        _plotter.plot_axvline(dgroup.x[i2], colour='#888888')
         
         self.main.show_report(result.fit_report())
 
