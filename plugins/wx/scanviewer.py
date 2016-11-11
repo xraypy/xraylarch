@@ -47,8 +47,6 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
 
 from larch_plugins.xafs import pre_edge
 
-from parameter import ParameterWidgets
-
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
@@ -627,16 +625,16 @@ class FitPanel(wx.Panel):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
-        SetTip(mname, 'Label for the model component')
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
-        SetTip(usebox, 'Use this component in fit?')
-
         delbtn = Button(panel, 'Delete', size=(75, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
-        SetTip(selbtn,'Delete this model component')
         pick2msg = SimpleText(panel, "    ", size=(90, -1))
         pick2btn = Button(panel, 'Pick Range', size=(80, -1),
                           action=partial(self.onPick2Points, comp=icomp))
+
+        SetTip(mname, 'Label for the model component')
+        SetTip(usebox, 'Use this component in fit?')
+        SetTip(delbtn,'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
