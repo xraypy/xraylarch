@@ -278,9 +278,7 @@ class EditColumnFrame(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
 
-        if not hasattr(self.outgroup, 'xdat'):
-            self.onUpdate()
-
+        self.onUpdate()
         if self.wid_groupname is not None:
             self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
 
@@ -296,11 +294,11 @@ class EditColumnFrame(wx.Frame) :
         yerr_choice = evt.GetString()
         self.yerr_arr.Disable()
         self.yerr_const.Disable()
-
         if 'const' in yerr_choice.lower():
             self.yerr_const.Enable()
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
+        self.onUpdate()
 
     def onSmoothChoice(self, evt=None):
         choice = self.smooth_op.GetStringSelection().lower()
@@ -450,7 +448,7 @@ class EditColumnFrame(wx.Frame) :
         outgroup.y           = outgroup.ydat
         outgroup.yerr        = yerr
         if isinstance(yerr, np.ndarray):
-            outgroup.yerr        = np.array(yerr[:npts])
+            outgroup.yerr    = np.array(yerr[:npts])
 
         if outgroup.datatype == 'xas':
             outgroup.energy = outgroup.xdat
