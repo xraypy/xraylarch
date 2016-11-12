@@ -52,7 +52,7 @@ class ParameterWidgets(object):
         if (prefix is not None and
             not self.param.name.startswith(prefix)):
             self.param.name = "%s%s" %(prefix, self.param.name)
-            
+
         for attr in PAR_WIDS:
             setattr(self, attr, None)
 
@@ -99,7 +99,7 @@ class ParameterWidgets(object):
             self.maxval = FloatCtrl(parent, value=maxval,
                                     gformat=True,
                                     size=(float_size, -1),
-                                    act_on_losefocus=True,                                    
+                                    act_on_losefocus=True,
                                     action=self.onMaxval)
             self.maxval.Enable(vary_choice==PAR_VAR)
 
@@ -118,7 +118,7 @@ class ParameterWidgets(object):
             self.expr.Enable(vary_choice==PAR_CON)
             self.expr.Bind(wx.EVT_TEXT, self.onExpr)
             SetTip(self.expr, 'Enter constraint expression')
-            
+
         if 'stderr' in widgets:
             stderr = param.stderr
             if stderr in (None, 'None', ''):
@@ -132,7 +132,7 @@ class ParameterWidgets(object):
 
     def onExpr(self, evt=None, value=None):
         self.param.expr = evt.GetString()
-        
+
     def onMinval(self, evt=None, value=None):
         if value in (None, 'None', ''):
             value = -np.inf
@@ -141,7 +141,7 @@ class ParameterWidgets(object):
             self.value.SetMin(value)
             self.value.SetValue(v)
             self.param.min = value
-            
+
     def onMaxval(self, evt=None, value=None):
         # print "onMaxval " , value, self.value, self.value
         if value in (None, 'None', ''):
@@ -150,7 +150,7 @@ class ParameterWidgets(object):
             v = self.value.GetValue()
             self.value.SetMax( value)
             self.value.SetValue(v)
-            self.param.max = value            
+            self.param.max = value
 
     def onVaryChoice(self, evt=None):
         if self.vary is None:
