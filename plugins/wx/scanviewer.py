@@ -655,6 +655,8 @@ class FitPanel(wx.Panel):
         parwids = {}
         for pname in sorted(minst.param_names):
             par = Parameter(name=pname, value=0, vary=True)
+            if 'sigma' in pname:
+                par.min = 0.0
             pwids = ParameterWidgets(panel, par, name_size=80,
                                      float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
@@ -672,7 +674,7 @@ class FitPanel(wx.Panel):
                        mclass=mclass, mclass_kws=mclass_kws,
                        usebox=usebox, panel=panel, parwids=parwids,
                        pick2_msg=pick2msg)
-        
+
         self.fit_components.append(fgroup)
         panel.pack()
 
@@ -687,8 +689,8 @@ class FitPanel(wx.Panel):
             fgroup = self.fit_components[comp]
             if fgroup.icomp == comp and fgroup.panel is not None:
                 fgroup.panel.Destroy()
-                fgroup.icomp = fgroup.panel = None
-                fgroup.parwids = fgroup.usebox = None
+                for attr in dir(fgroup):
+                    setattr(fgroup, attr, None)
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
@@ -788,17 +790,31 @@ class FitPanel(wx.Panel):
                 pass
         return dgroup
 
+    def get_xranges(self, x):
+        xmin, xmax = min(x), max(x)
+        i1, i2 = 0, len(x)
+        _xmin = self.xmin.GetValue()
+        _xmax = self.xmax.GetValue()
+        if _xmin > min(x):
+            i1 = index_of(x, _xmin)
+            xmin = x[i1]
+        if _xmax < max(x):
+            i2 = index_of(x, _xmax) + 1
+            xmax = x[i2]
+        xv1 = max(min(x), xmin - (xmax-xmin)/5.0)
+        xv2 = min(max(x), xmax + (xmax-xmin)/5.0)
+        return i1, i2, xv1, xv2
+
     def build_fitmodel(self):
         """ use fit components to build model"""
         dgroup = self.get_datagroup()
-
         model = None
         params = Parameters()
         for comp in self.fit_components:
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     params.add(parwids.param)
-                thismodel = comp.mclass(**comp.mclass_kws)               
+                thismodel = comp.mclass(**comp.mclass_kws)
                 if model is None:
                     model = thismodel
                 else:
@@ -808,66 +824,77 @@ class FitPanel(wx.Panel):
 
         self.plot1 = self.main.larch.symtable._plotter.plot1
         if dgroup is not None:
-            dgroup.y_init = self.fit_model.eval(self.fit_params,
-                                                x=dgroup.x)
-            dgroup.y_comps = self.fit_model.eval_components(params=self.fit_params,
-                                                            x=dgroup.x)
+            i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
+            xsel = dgroup.x[slice(i1, i2)]
+            dgroup.xfit = xsel
+            dgroup.yfit = self.fit_model.eval(self.fit_params, x=xsel)
+            dgroup.ycomps = self.fit_model.eval_components(params=self.fit_params,
+                                                           x=xsel)
+        return dgroup
 
     def onShowModel(self, event=None):
-        self.build_fitmodel()
-        dgroup = self.get_datagroup()
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        self.main.plot_group(self.main.groupname, new=True,
-                             xmin=xv1, xmax=xv2)
+        dgroup = self.build_fitmodel()
         if dgroup is not None:
-            self.plot1.oplot(dgroup.x, dgroup.y_init)
-            if self.plot_comps.IsChecked() and len(dgroup.y_comps) > 1:
-                for _y in dgroup.y_comps.values():
-                    self.plot1.oplot(dgroup.x, _y)
+            with_components = (self.plot_comps.IsChecked() and
+                               len(dgroup.ycomps) > 1)
 
-    def get_xranges(self, x):
-        xmin, xmax = min(x), max(x)
-        i1, i2 = None, None
-        _xmin = self.xmin.GetValue()
-        _xmax = self.xmax.GetValue()
-        if _xmin > min(x):
-            i1 = index_of(x, _xmin)
-            xmin = x[i1]            
-        if _xmax < max(x):
-            i2 = index_of(x, _xmax) + 1
-            xmax = x[i2]
-        xv1 = max(min(x), xmin - (xmax-xmin)/5.0)
-        xv2 = min(max(x), xmax + (xmax-xmin)/5.0)        
-        return i1, i2, xv1, xv2
-        
-    def onRunFit(self, event=None):
-        self.build_fitmodel()
-        dgroup = self.get_datagroup()
+            self.plot_fitmodel(dgroup, show_resid=False,
+                               with_components=with_components)
+
+    def plot_fitmodel(self, dgroup, show_resid=False, with_components=None):
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        xsel = dgroup.x[slice(i1, i2)]
-        ysel = dgroup.y[slice(i1, i2)]
-        
-        result = self.fit_model.fit(ysel,
-                                    params=self.fit_params,
-                                    x=xsel, method='leastsq')
-
-
         self.main.plot_group(self.main.groupname, new=True,
-                             xmin=xv1, xmax=xv2)
-        self.plot1.oplot(xsel, result.best_fit)
-        _plotter = self.main.larch.symtable._plotter
-        _plotter.plot_axvline(dgroup.x[i1], colour='#888888')
-        _plotter.plot_axvline(dgroup.x[i2], colour='#888888')
-        
-        self.main.show_report(result.fit_report())
+                             xmin=xv1, xmax=xv2, label='data')
 
+        self.plot1.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+        if with_components is None:
+            with_components = (self.plot_comps.IsChecked() and
+                               len(dgroup.ycomps) > 1)
+        if with_components:
+            for label, _y in dgroup.ycomps.items():
+                self.plot1.oplot(dgroup.xfit, _y, label=label)
+
+        _plotter = self.main.larch.symtable._plotter
+        _plotter.plot_axvline(dgroup.x[i1], color='#999999')
+        _plotter.plot_axvline(dgroup.x[i2], color='#999999')
+
+
+    def onRunFit(self, event=None):
+        dgroup = self.build_fitmodel()
+        if dgroup is None:
+            return
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
+        dgroup.xfit = dgroup.x[slice(i1, i2)]
+        ysel = dgroup.y[slice(i1, i2)]
+        weights = np.ones(len(ysel))
+
+        if hasattr(dgroup, 'yerr'):
+            yerr = dgroup.yerr
+            if not isinstance(yerr, np.ndarray):
+                yerr = yerr * np.ones(len(ysel))
+            else:
+                yerr = yerr[slice(i1, i2)]
+            yerr_min = 1.e-9*ysel.mean()
+            yerr[np.where(yerr < yerr_min)] = yerr_min
+            weights = 1.0/yerr
+
+        result = self.fit_model.fit(ysel, params=self.fit_params,
+                                    x=dgroup.xfit, weights=weights,
+                                    method='leastsq')
+
+        dgroup.yfit = result.best_fit
+        dgroup.ycomps = self.fit_model.eval_components(params=result.params,
+                                                       x=dgroup.xfit)
+        self.plot_fitmodel(dgroup, show_resid=True, with_components=False)
+
+        self.main.show_report(result.fit_report())
 
         # fill parameters with best fit values
         allparwids = {}
         for comp in self.fit_components:
-            if comp.usebox.IsChecked():
+            if comp.usebox is not None and comp.usebox.IsChecked():
                 for name, parwids in comp.parwids.items():
                     allparwids[name] = parwids
 
@@ -880,7 +907,7 @@ class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, parent=None, size=(850, 650), _larch=None, **kws):
+    def __init__(self, parent=None, size=(825, 650), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
         self.file_groups = {}
         self.last_array_sel = {}
@@ -1037,8 +1064,7 @@ class ScanViewerFrame(wx.Frame):
             self.plot_group(groupname, title='', new=newplot)
             newplot=False
 
-    def plot_group(self, groupname, title=None,
-                   new=True, xmin=None, xmax=None):
+    def plot_group(self, groupname, title=None, new=True, **kws):
         oplot = self.larch.symtable._plotter.plot
         newplot = self.larch.symtable._plotter.newplot
         getdisplay = self.larch.symtable._plotter.get_display
@@ -1063,9 +1089,10 @@ class ScanViewerFrame(wx.Frame):
             plot_yarrays = [(dgroup.y, {}, None)]
         # print("Plt Group ", groupname, hasattr(dgroup,'plot_yarrays'))
 
-        popts = {'xmin': xmin, 'xmax': xmax}
+        popts = kws
         path, fname = os.path.split(dgroup.filename)
-        popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
+        if not 'label' in popts:
+            popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
         if getattr(dgroup, 'plot_y2label', None) is not None:
@@ -1094,7 +1121,6 @@ class ScanViewerFrame(wx.Frame):
                 axes.plot([x], [y], **popts)
         ppanel.canvas.draw()
         self.Raise()
-
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
