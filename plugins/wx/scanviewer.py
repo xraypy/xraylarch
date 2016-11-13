@@ -23,34 +23,32 @@ from wxutils import (SimpleText, pack, Button, HLine,
                      Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
-import lmfit.models as lm_models
-from lmfit import Parameter, Parameters
 
-from larch import Interpreter, isParameter, Group
+from larch import Interpreter, Group
 from larch.larchlib import read_workdir, save_workdir
+
 from larch.wxlib import (larchframe, EditColumnFrame, ReportFrame,
-                         BitmapButton, FileCheckList, ParameterWidgets,
-                         FloatCtrl, SetTip)
+                         BitmapButton, FileCheckList, FloatCtrl, SetTip)
 
 from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
-from larch_plugins.math import fit_peak, index_of
+from larch_plugins.math import index_of
 from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
 
 from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
 from larch_plugins.wx.icons import get_icon
-from larch_plugins.wx.parameter import ParameterDialog, ParameterPanel
 from larch_plugins.wx.larchfit_fitpanel import FitPanel
+from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group, fix_varname)
+                              gsescan_group, fix_varname, is_athena_project)
 
 from larch_plugins.xafs import pre_edge
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NODRAG|flat_nb.FNB_NO_NAV_BUTTONS
 
 
@@ -109,7 +107,6 @@ class ProcessPanel(wx.Panel):
         self.build_display()
 
     def fill(self, dgroup):
-
         predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50, edge_step=0,
                        norm2=-10, nnorm=3, nvict=2, auto_step=True,
                        auto_e0=True, show_e0=True, xas_op=0,
@@ -130,7 +127,6 @@ class ProcessPanel(wx.Panel):
         self.smooth_c0.SetValue(predefs['smooth_c0'])
         self.smooth_c1.SetValue(predefs['smooth_c1'])
         self.smooth_sig.SetValue(predefs['smooth_sig'])
-
 
         if dgroup.datatype == 'xas':
             self.xas_op.SetSelection(predefs['xas_op'])
@@ -442,7 +438,7 @@ class ProcessPanel(wx.Panel):
             proc_opts.auto_step = self.xas_autostep.IsChecked()
             proc_opts.nnorm = int(self.xas_nnor.GetSelection())
             proc_opts.nvict = int(self.xas_vict.GetSelection())
-            proc_opts.xas_opt = self.xas_op.GetSelection()
+            proc_opts.xas_op = self.xas_op.GetSelection()
 
             if self.xas_autoe0.IsChecked():
                 self.xas_e0.SetValue(dgroup.e0)
@@ -506,7 +502,7 @@ class ScanViewerFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
         self.file_groups = {}
         self.last_array_sel = {}
-        title = "Column Data File Viewer"
+        title = "LarchFit: Spectra Viewer and Fitter"
         self.larch = _larch
         self.larch_buffer = None
         self.subframes = {}
@@ -529,26 +525,31 @@ class ScanViewerFrame(wx.Frame):
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(225)
+        splitter.SetMinimumPaneSize(250)
 
         leftpanel = wx.Panel(splitter)
         ltop = wx.Panel(leftpanel)
 
-        plot_one = Button(ltop, 'Plot One',
-                          size=(90, 30),
-                          action=self.onPlotOne)
-        plot_sel = Button(ltop, 'Plot Selected',
-                          size=(130, 30),
-                          action=self.onPlotSel)
+
+        def Btn(msg, x, act):
+            return Button(ltop, msg, size=(x, 30),  action=act)
+
+        plot_one = Btn('Plot One',      120, self.onPlotOne)
+        plot_sel = Btn('Plot Selected', 120, self.onPlotSel)
+        sel_none = Btn('Select None',   120, self.onSelNone)
+        sel_all  = Btn('Select All',    120, self.onSelAll)
+
         plot_one.SetFont(Font(11))
         plot_sel.SetFont(Font(11))
         self.filelist = FileCheckList(leftpanel, main=self,
                                       select_action=self.ShowFile)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        tsizer = wx.GridBagSizer(5, 5)
+        tsizer = wx.GridBagSizer(3, 3)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
         tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
+        tsizer.Add(sel_none, (1, 0), (1, 1), LCEN, 2)
+        tsizer.Add(sel_all,  (1, 1), (1, 1), LCEN, 2)
 
         pack(ltop, tsizer)
 
@@ -590,6 +591,14 @@ class ScanViewerFrame(wx.Frame):
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
 
+    def onSelAll(self, event=None):
+        self.filelist.SetCheckedStrings(self.file_groups.keys())
+
+
+    def onSelNone(self, event=None):
+        self.filelist.SetCheckedStrings([])
+
+
 
     def init_larch(self):
         t0 = time.time()
@@ -617,7 +626,6 @@ class ScanViewerFrame(wx.Frame):
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
-
 
     def onPlotOne(self, evt=None, groupname=None):
         if groupname is None:
@@ -752,7 +760,7 @@ class ScanViewerFrame(wx.Frame):
         #
         fmenu = wx.Menu()
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
-                 "Read Scan File",  self.onReadDialog)
+                 "Open Data File",  self.onReadDialog)
 
         MenuItem(self, fmenu, "Show Larch Buffer\tCtrl+L",
                   "Show Larch Programming Buffer",
@@ -764,7 +772,6 @@ class ScanViewerFrame(wx.Frame):
                  self.onEditColumns)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "debug wx", "debug", self.showInspectionTool)
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
@@ -833,7 +840,7 @@ class ScanViewerFrame(wx.Frame):
                                               overwrite=True))
 
     def onReadDialog(self, evt=None):
-        dlg = wx.FileDialog(self, message="Load Column Data File",
+        dlg = wx.FileDialog(self, message="Read Data File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS, style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
@@ -861,6 +868,15 @@ class ScanViewerFrame(wx.Frame):
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
+        # check for athena projects
+        if is_athena_project(path):
+            self.show_subframe('athena_import', AthenaImporter,
+                               filename=path, _larch=self.larch,
+                               read_ok_cb=partial(self.onRead_OK,
+                                                  overwrite=False))
+            return
+
+        ## not athena, plain ASCII:
         fh = open(path, 'r')
         line1 = fh.readline().lower()
         fh.close()
@@ -885,12 +901,13 @@ class ScanViewerFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=False))
 
-    def onRead_OK(self, datagroup, array_sel, overwrite=False):
+    def onRead_OK(self, datagroup, array_sel=None, overwrite=False, plot=True):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when editing a datagroup
 
         """
-        self.last_array_sel = array_sel
+        if array_sel is not None:
+            self.last_array_sel = array_sel
         filename = datagroup.filename
         groupname= datagroup.groupname
         # print("READ SCAN  storing datagroup ", datagroup, groupname, filename)
@@ -910,7 +927,8 @@ class ScanViewerFrame(wx.Frame):
         if datagroup.datatype == 'xas':
             self.proc_panel.fill(datagroup)
         self.nb.SetSelection(0)
-        self.onPlotOne(groupname=groupname)
+        if plot:
+            self.onPlotOne(groupname=groupname)
 
 class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
