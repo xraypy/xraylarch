@@ -548,8 +548,8 @@ class ScanViewerFrame(wx.Frame):
         tsizer = wx.GridBagSizer(3, 3)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
         tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
-        tsizer.Add(sel_none, (1, 0), (1, 1), LCEN, 2)
-        tsizer.Add(sel_all,  (1, 1), (1, 1), LCEN, 2)
+        tsizer.Add(sel_all,  (1, 0), (1, 1), LCEN, 2)
+        tsizer.Add(sel_none, (1, 1), (1, 1), LCEN, 2)
 
         pack(ltop, tsizer)
 
