@@ -283,7 +283,7 @@ class EditColumnFrame(wx.Frame) :
             self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, self.array_sel)
+            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
         self.Destroy()
 
     def onCancel(self, event=None):
