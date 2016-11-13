@@ -331,7 +331,7 @@ class ProcessPanel(wx.Panel):
             print(" Copy to ", checked)
             dgroup = getattr(self.larch.symtable, checked, None)
             print(" Group dir=", dir(dgroup))
-            print (dgroup.proc_opts)
+            print(dgroup.proc_opts)
 
     def onSmoothChoice(self, evt=None, value=1):
         try:
@@ -560,7 +560,7 @@ class LarchFitModel():
         return self.group
 
     def process(self, dgroup):
-        print "Process steps for group ", dgroup
+        print( "Process steps for group ", dgroup)
 
     def plot_group(self, groupname, title=None, new=True, **kws):
         plotcmd = oplot = self.symtable._plotter.plot
@@ -575,7 +575,6 @@ class LarchFitModel():
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'energy', None) is None or
                  getattr(dgroup, 'mu', None) is None)):
-                print " plot_group->process ", dir(dgroup)
                 self.process(dgroup)
 
         if not hasattr(dgroup, 'x'):
