@@ -7,8 +7,6 @@ from functools import partial
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
-
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font)
@@ -30,7 +28,6 @@ from larch_plugins.wx.parameter import ParameterDialog, ParameterPanel
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
-
 StepChoices = ('<Add Step Model>', 'Linear', 'Arctan', 'ErrorFunction',
                'Logistic')
 
@@ -38,9 +35,8 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
                'PseudoVoigt', 'Pearson7', 'StudentsT', 'SkewedGaussian',
                'Moffat', 'BreitWigner', 'Donaich', 'Lognormal')
 
-
-ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic', 'Exponential',
-               'PowerLaw', 'Rectangle', 'DampedOscillator')
+ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
+               'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
 class FitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
