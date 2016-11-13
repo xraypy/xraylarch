@@ -159,22 +159,22 @@ class FitPanel(wx.Panel):
         fgroup = Group(icomp=icomp, prefix=prefix,
                        mclass=mclass, mclass_kws=mclass_kws)
         panel = GridPanel(self.modelpanel, ncols=1, nrows=1,
-                          pad=1, itemstyle=LCEN)
+                          pad=1, itemstyle=CEN)
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
         usebox = Check(panel, default=True, label='Use?', size=(90, -1))
-        delbtn = Button(panel, 'Delete', size=(100, -1),
+        delbtn = Button(panel, 'Delete', size=(80, -1),
                         action=partial(self.onDeleteComponent, comp=icomp))
         pick2msg = SimpleText(panel, "    ", size=(80, -1))
         pick2btn = Button(panel, 'Pick Range', size=(80, -1),
                           action=partial(self.onPick2Points, comp=icomp))
 
-        SetTip(mname, 'Label for the model component')
+        SetTip(mname,  'Label for the model component')
         SetTip(usebox, 'Use this component in fit?')
-        SetTip(delbtn,'Delete this model component')
+        SetTip(delbtn, 'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
         panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
@@ -202,7 +202,7 @@ class FitPanel(wx.Panel):
             panel.AddMany((pwids.value, pwids.vary, pwids.minval,
                            pwids.maxval, pwids.expr))
 
-        panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER, newrow=True)
+        panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
         panel.Add(HLine(panel, size=(325, 3)), dcol=4, style=wx.ALIGN_CENTER)
         panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
 
