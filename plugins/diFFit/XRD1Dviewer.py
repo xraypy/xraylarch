@@ -209,8 +209,8 @@ class Viewer1DXRD(wx.Frame):
         self.ch_data.Bind(wx.EVT_CHOICE,   self.onSELECT)
         vbox.Add(self.ch_data, flag=wx.EXPAND|wx.ALL, border=8)
     
-        self.ttl_data = wx.StaticText(self.panel, label='')
-        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+        #self.ttl_data = wx.StaticText(self.panel, label='')
+        #vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
 
         ###########################
 
@@ -256,37 +256,37 @@ class Viewer1DXRD(wx.Frame):
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox    
 
-    def CIFBox(self,panel):
-        '''
-        Frame for cif toolbox
-        '''
-       
-        tlbx = wx.StaticBox(self.panel,label='CIF TOOLBOX')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-
-        ###########################
-        ## DATA CHOICE
-
-        self.ch_cif = wx.Choice(self.panel,choices=self.cif_name)
-        self.ch_cif.Bind(wx.EVT_CHOICE,   self.onSELECT)
-        vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
-
-        ###########################
-        ## Scale
-        hbox_cifscl = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_cifscl = wx.StaticText(self.panel, label='SCALE Y TO:')
-        self.entr_cifscl = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        btn_cifscl = wx.Button(self.panel,label='set scale')
-
-        btn_cifscl.Bind(wx.EVT_BUTTON,   None)
-
-        hbox_cifscl.Add(ttl_cifscl, flag=wx.RIGHT, border=8)
-        hbox_cifscl.Add(self.entr_cifscl, flag=wx.RIGHT, border=8)
-        hbox_cifscl.Add(btn_cifscl, flag=wx.RIGHT, border=8)
-
-        vbox.Add(hbox_cifscl, flag=wx.BOTTOM|wx.TOP, border=8)
-
-        return vbox
+#     def CIFBox(self,panel):
+#         '''
+#         Frame for cif toolbox
+#         '''
+#        
+#         tlbx = wx.StaticBox(self.panel,label='CIF TOOLBOX')
+#         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+# 
+#         ###########################
+#         ## DATA CHOICE
+# 
+#         self.ch_cif = wx.Choice(self.panel,choices=self.cif_name)
+# #         self.ch_cif.Bind(wx.EVT_CHOICE,   self.onSELECT)
+#         vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
+# 
+#         ###########################
+#         ## Scale
+#         hbox_cifscl = wx.BoxSizer(wx.HORIZONTAL)
+#         ttl_cifscl = wx.StaticText(self.panel, label='SCALE Y TO:')
+#         self.entr_cifscl = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         btn_cifscl = wx.Button(self.panel,label='set scale')
+# 
+#         btn_cifscl.Bind(wx.EVT_BUTTON,   None)
+# 
+#         hbox_cifscl.Add(ttl_cifscl, flag=wx.RIGHT, border=8)
+#         hbox_cifscl.Add(self.entr_cifscl, flag=wx.RIGHT, border=8)
+#         hbox_cifscl.Add(btn_cifscl, flag=wx.RIGHT, border=8)
+# 
+#         vbox.Add(hbox_cifscl, flag=wx.BOTTOM|wx.TOP, border=8)
+# 
+#         return vbox
 
     def AddPanel(self,panel):
     
@@ -309,12 +309,12 @@ class Viewer1DXRD(wx.Frame):
         plttools = self.Toolbox(self.panel)
         addbtns = self.AddPanel(self.panel)
         dattools = self.DataBox(self.panel)
-        ciftools = self.CIFBox(self.panel)        
+#         ciftools = self.CIFBox(self.panel)        
         
         vbox.Add(plttools,flag=wx.ALL,border=10)
         vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
-        vbox.Add(ciftools,flag=wx.ALL,border=10)
+#         vbox.Add(ciftools,flag=wx.ALL,border=10)
         return vbox
 
     def RightSidePanel(self,panel):
@@ -371,11 +371,20 @@ class Viewer1DXRD(wx.Frame):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
        
-    def add1Ddata(self,x,y,name=None):
+    def add1Ddata(self,x,y,name=None,cif=False):
         
         plt_no = len(self.data_name)
-        if name is None:
-            name = 'dataset %i' % plt_no
+        
+        if cif:
+            if name is None:
+                name = 'cif %i' % plt_no
+            else:
+               name = 'cif: %s' % name
+        else:
+            if name is None:
+                name = 'dataset %i' % plt_no
+            else:
+                name = 'data: %s' % name
 
         ## Add to data array lists
         self.data_name.append(name)
@@ -392,10 +401,14 @@ class Viewer1DXRD(wx.Frame):
         self.checkXaxis(None)
 
         ## Update toolbox panel
-        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+        if cif:
+            self.entr_scale.SetValue('1000')
+            self.normalize1Ddata(None)
+        else:
+            self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
-        self.onSELECT(None)
+        #self.onSELECT(None)
 
     def normalize1Ddata(self,event):
     
@@ -434,7 +447,7 @@ class Viewer1DXRD(wx.Frame):
     def onSELECT(self,event):
     
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
-        self.ttl_data.SetLabel('SELECTED: %s' % data_str)
+#         self.ttl_data.SetLabel('SELECTED: %s' % data_str)
         
         plt_no = self.ch_data.GetSelection()
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
@@ -464,7 +477,7 @@ class Viewer1DXRD(wx.Frame):
 
     def updatePLOT(self):
 
-        xmax,xmin,ymax,ymin = None,None,None,None
+        xmax,xmin,ymax,ymin = None,0,None,0
     
         if len(self.plotted_data) > 0:
             for plt_no in range(len(self.plotted_data)):
@@ -477,11 +490,11 @@ class Viewer1DXRD(wx.Frame):
                 
                 if xmax is None or xmax < max(x):
                     xmax = max(x)
-                if xmin is None or xmin < min(x):
+                if xmin > min(x):
                     xmin = min(x)
                 if ymax is None or ymax < max(y):
                     ymax = max(y)
-                if ymin is None or ymin < min(y):
+                if ymin > min(y):
                     ymin = min(y)
                 
                 self.plot1D.update_line(plt_no,x,y)
@@ -493,9 +506,22 @@ class Viewer1DXRD(wx.Frame):
                 xmax = 6
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
+    def reset1Dscale(self,event):
+
+        plt_no = self.ch_data.GetSelection()        
+       
+        self.xy_plot[(plt_no*2+1)] = self.xy_data[(plt_no*2+1)]
+        self.plot1D.update_line(plt_no,self.xy_plot[(plt_no*2)],
+                                       self.xy_plot[(plt_no*2+1)])
+        self.plot1D.canvas.draw()
+        self.unzoom_all()
+        
+        self.updatePLOT()
+        self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+
 ####### BEGIN #######            
 ## THIS IS DIRECTLY FROM XRDDISPLAY.PY
-## will this work here, too?
 ## mkak 2016.11.11
     def unzoom_all(self, event=None):
 
@@ -536,43 +562,7 @@ class Viewer1DXRD(wx.Frame):
    
         return xmin,xmax
 #######  END  #######
-
-
-            
-    def addCIFdata(self,q,F,name=None):
-        
-        plt_no = len(self.cif_name)
-        if name is None:
-            name = 'cif %i' % plt_no
-
-        ## Add to data array lists
-        self.cif_name.append(name)
-        self.cif_data.extend([q,F])
-        self.cif_plot.extend([q,F])
-
-        ## Add to plot       
-        self.plotted_cif.append(self.plot1D.scatterplot(q,F,label=name,show_legend=True,xlabel=self.xlabel))
-        self.plot1D.cursor_mode = 'zoom'
- 
-        ## Update toolbox panel
-        self.ch_cif.Set(self.cif_name)
-        self.ch_cif.SetStringSelection(name)
-
-    def reset1Dscale(self,event):
-
-        plt_no = self.ch_data.GetSelection()        
        
-        self.xy_plot[(plt_no*2+1)] = self.xy_data[(plt_no*2+1)]
-        self.plot1D.update_line(plt_no,self.xy_plot[(plt_no*2)],
-                                       self.xy_plot[(plt_no*2+1)])
-        self.plot1D.canvas.draw()
-        self.unzoom_all()
-        
-        self.updatePLOT()
-        self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
-        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-
-        
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
@@ -595,7 +585,7 @@ class Viewer1DXRD(wx.Frame):
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
             except:
-               print 'incorrect file format: %s' % os.path.split(path)[-1]
+               print 'incorrect xy file format: %s' % os.path.split(path)[-1]
 
 
 
@@ -633,7 +623,7 @@ class Viewer1DXRD(wx.Frame):
 
             ## generate hkl list
             hkllist = []
-            maxhkl = 3
+            maxhkl = 8
             for i in range(maxhkl):
                 for j in range(maxhkl):
                     for k in range(maxhkl):
@@ -644,35 +634,31 @@ class Viewer1DXRD(wx.Frame):
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
             energy = hc/(self.wavelength*(1e-10))*1e3 ## units: eV
 
-
-            QMIN = 0.3
-            QMAX = 8.0
-            QSTEP = 0.01
-
             try:
-                cif = xu.materials.Crystal.fromCIF(cifile)
-        
-                qlist = cif.Q(hkllist)
-                Flist = cif.StructureFactorForQ(qlist,energy)
-        
-                Fall = []
-                qall = []
-                for i,hkl in enumerate(hkllist):
-                    if np.abs(Flist[i]) > 0.01:
-                        Fadd = np.abs(Flist[i])
-                        qadd = round(np.linalg.norm(qlist[i]) / QSTEP) * QSTEP ## np.linalg.norm(qlist[i])
-                        if qadd not in qall:
-                            Fall.append(Fadd)
-                            qall.append(qadd)
-                        
-                self.addCIFdata(qall,Fall,name=os.path.split(path)[-1])
+                cif = xu.materials.Crystal.fromCIF(path)
             except:
                 print 'incorrect file format: %s' % os.path.split(path)[-1]
                 pass
-        
-        
+
+            qlist = cif.Q(hkllist)
+            Flist = cif.StructureFactorForQ(qlist,energy)
             
-            
+            Fall = []
+            qall = []
+            for i,hkl in enumerate(hkllist):
+                if np.abs(Flist[i]) > 0.01:
+                    Fadd = np.abs(Flist[i])
+                    qadd = np.linalg.norm(qlist[i])
+                    if qadd not in qall and qadd < 6:
+                        Fall.extend((0,Fadd,0))
+                        qall.extend((qadd,qadd,qadd))
+            if np.shape(Fall)[0] > 0:
+                Fall = np.array(Fall)
+                qall = np.array(qall)
+                self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
+            else:
+                print 'Could not calculate real structure factors.'
+
 
 
 # def interactive_legend(ax=None):
