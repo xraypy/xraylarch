@@ -82,7 +82,8 @@ from larch.wxlib import larchframe
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.xrddisplay import XRD1D_DisplayFrame,XRD2D_DisplayFrame
-
+from larch_plugins.diFFit.XRD1Dviewer import Viewer1DXRD
+from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
 from larch_plugins.wx.mapimageframe import MapImageFrame
 
 from larch_plugins.io import nativepath, tifffile
@@ -1294,8 +1295,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('Saving 2D data in file: %s\n' % (tiffname))
             tifffile.imsave(tiffname,map)
         
-        if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_xrd_display(title, det=None)
+#         if len(self.owner.im_displays) == 0 or new:
+#             iframe = self.owner.add_xrd_display(title, det=None)
         self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
 
     def onXRD1D(self, event=None, as_2=False, unit='q', save=True):
@@ -1337,7 +1338,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         except:
             return
 
-        self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
+        #self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
+        self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D)
+        
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1521,19 +1524,21 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+            #self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
 
         try:
             self.xrddisplay1D.Show()
         except PyDeadObjectError:
-            self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+            #self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
+            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
             self.xrddisplay1D.Show()
 
         if do_raise:
             self.xrddisplay1D.Raise()
-        if clear:
-            self.xrddisplay1D.panel.clear()
-            self.xrddisplay1D.panel.reset_config()
+        #if clear:
+        #    self.xrddisplay1D.panel.clear()
+        #    self.xrddisplay1D.panel.reset_config()
 
     def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:
@@ -1667,41 +1672,45 @@ class MapViewerFrame(wx.Frame):
 
     def display_2Dxrd(self, map, title='', info='', xrmfile=None):
         """display a map in an available image display"""
-        displayed = False
-        lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
+#         displayed = False
+#         lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
+# 
+#         try:
+#             calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
+#             AI = calculate_ai(self.current_file.xrmmap['xrd'])
+#         except:
+#             AI = None
+# 
+#         try:
+#             maskdata = self.current_file.xrmmap['xrd/mask']
+#         except:
+#             maskdata = None
 
-        try:
-            calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
-            AI = calculate_ai(self.current_file.xrmmap['xrd'])
-        except:
-            AI = None
+        imd = Viewer2DXRD(map=map,_larch=self.larch)
 
-        try:
-            maskdata = self.current_file.xrmmap['xrd/mask']
-        except:
-            maskdata = None
-
-        while not displayed:
-            try:
-                imd = self.im_displays.pop()
-                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
-                imd.lasso_callback = lasso_cb
-                displayed = True
-            except IndexError:
-                imd = XRD2D_DisplayFrame(output_title=title,
-                                    lasso_callback=lasso_cb,
-                                    cursor_labels = self.cursor_menulabels,
-                                    move_callback=self.move_callback,
-                                    save_callback=self.onSavePixel)
-
-                imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
-                displayed = True
-            except PyDeadObjectError:
-                displayed = False
-        self.im_displays.append(imd)
-        imd.SetStatusText(info, 1)
+#         while not displayed:
+#             try:
+# 
+#                 imd = self.im_displays.pop()
+#                 imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
+#                 imd.lasso_callback = lasso_cb
+#                 displayed = True
+#             except IndexError:
+#                 imd = XRD2D_DisplayFrame(output_title=title,
+#                                     lasso_callback=lasso_cb,
+#                                     cursor_labels = self.cursor_menulabels,
+#                                     move_callback=self.move_callback,
+#                                     save_callback=self.onSavePixel)
+# 
+# 
+#                 imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
+#                 displayed = True
+#             except PyDeadObjectError:
+#                 displayed = False
+#         self.im_displays.append(imd)
+#         imd.SetStatusText(info, 1)
         imd.Show()
-        imd.Raise()
+#         imd.Raise()
 
     def init_larch(self):
         if self.larch is None:

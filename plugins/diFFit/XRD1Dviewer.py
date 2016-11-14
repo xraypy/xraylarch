@@ -48,7 +48,7 @@ class Viewer1DXRD(wx.Frame):
     '''
     Frame for housing all 1D XRD viewer widgets
     '''
-    def __init__(self, data):
+    def __init__(self, _larch=None):
         
         label = 'diFFit.py : 1D XRD Viewer'
         wx.Frame.__init__(self, None, -1,title=label, size=(1500, 600))
@@ -85,11 +85,13 @@ class Viewer1DXRD(wx.Frame):
         self.Centre()
         self.Show(True)
 
+    
+    def plot1Dxrd(self,data):#,*args,**kwargs):
+
         try:
             self.add1Ddata(*data)
         except:
             pass
-            
      
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
@@ -621,30 +623,34 @@ class Viewer1DXRD(wx.Frame):
         if read:
             cifile = os.path.split(path)[-1]
 
-            ## generate hkl list
-            hkllist = []
-            maxhkl = 8
-            for i in range(maxhkl):
-                for j in range(maxhkl):
-                    for k in range(maxhkl):
-                        if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
-                            hkllist.append([i,j,k])
-
-            hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            energy = hc/(self.wavelength*(1e-10))*1e3 ## units: eV
-
             try:
                 cif = xu.materials.Crystal.fromCIF(path)
             except:
                 print 'incorrect file format: %s' % os.path.split(path)[-1]
-                pass
+                return
+
+            ## generate hkl list
+            hkllist = []
+            maxhkl = 8
+            for i in range(-maxhkl,maxhkl+1):
+                for j in range(-maxhkl,maxhkl+1):
+                    for k in range(-maxhkl,maxhkl+1):
+                        if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
+                            hkllist.append([i,j,k])
+            
+#             hkllist.append([i,j,k] for i,j,k in np.arange(maxhkl),np.arange(maxhkl),np.arange(maxhkl))
+#             print hkllist
+            
+
+            hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
 
             qlist = cif.Q(hkllist)
-            Flist = cif.StructureFactorForQ(qlist,energy)
+            Flist = cif.StructureFactorForQ(qlist,(hc/(self.wavelength*(1e-10))*1e3))
             
             Fall = []
             qall = []
+            hklall = []
             for i,hkl in enumerate(hkllist):
                 if np.abs(Flist[i]) > 0.01:
                     Fadd = np.abs(Flist[i])
@@ -652,10 +658,12 @@ class Viewer1DXRD(wx.Frame):
                     if qadd not in qall and qadd < 6:
                         Fall.extend((0,Fadd,0))
                         qall.extend((qadd,qadd,qadd))
+                        hklall.append(hkl)
             if np.shape(Fall)[0] > 0:
                 Fall = np.array(Fall)
                 qall = np.array(qall)
                 self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
+                print hklall
             else:
                 print 'Could not calculate real structure factors.'
 
@@ -772,7 +780,7 @@ class Calc1DPopup(wx.Dialog):
         self.ch_mask.Bind(wx.EVT_CHECKBOX,None)
         
         mainsizer.Add(self.ch_mask,flag=wx.ALL,border=8)
-        if self.mask == None:
+        if self.mask is None:
             self.ch_mask.Disable()
         
         ## Azimutal wedges 
@@ -930,7 +938,9 @@ class Calc1DPopup(wx.Dialog):
         self.getValues()
         
         self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False,verbose=True)
-        Viewer1DXRD(self.data1D)
+        xrddisplay1D = Viewer1DXRD()
+        xrddisplay1D.plot1Dxrd(self.data1D)
+        
 
     def getValues(self):
     

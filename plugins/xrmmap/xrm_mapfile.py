@@ -1073,13 +1073,14 @@ class GSEXRM_MapFile(object):
             xrdgrp = self.xrmmap['xrd']
                     
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            
-            ## hard-code for now: detector at 13IDE images need vertical flip
-            vertflip = True
-            if vertflip:
-                xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
-            else:
-                xrdgrp['data2D'][thisrow,] = row.xrd2d
+
+#             ## hard-code for now: detector at 13IDE images need vertical flip
+#             vertflip = True
+#             if vertflip:
+#                 xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
+#             else:
+#                 xrdgrp['data2D'][thisrow,] = row.xrd2d
+            xrdgrp['data2D'][thisrow,] = row.xrd2d
                 
             if hasattr(self.xrmmap['xrd'],'maskfile'):
                 mask = xrdgrp.attrs['maskfile']

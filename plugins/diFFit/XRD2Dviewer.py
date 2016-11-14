@@ -44,7 +44,7 @@ class Viewer2DXRD(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, *args, **kw):
+    def __init__(self, map=None, _larch=None, *args, **kw):
         label = 'diFFit.py : 2D XRD Viewer'
         wx.Frame.__init__(self, None, -1,title=label, size=(1000, 600))
         
@@ -53,11 +53,14 @@ class Viewer2DXRD(wx.Frame):
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION )
 
         ## Default image information
-        self.raw_img  = np.zeros((1024,1024))
+        if map is None:
+            self.raw_img  = np.zeros((1024,1024))
+        else:
+            self.raw_img = map
         self.flp_img = self.raw_img
-        self.plt_img = np.zeros((1024,1024))
-        self.mask = np.ones((1024,1024))
-        self.bkgd = np.zeros((1024,1024))
+        self.plt_img = self.raw_img
+        self.mask = np.ones(np.shape(self.raw_img))
+        self.bkgd = np.zeros(np.shape(self.raw_img))
         self.bkgd_scale = 1
         self.bkgdMAX = 5
         
@@ -603,7 +606,7 @@ class Viewer2DXRD(wx.Frame):
             self.showPONI(None)
 
     def showPONI(self,event):
-        if self.ai == None:
+        if self.ai is None:
             print ' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx '
         else:
             print
@@ -676,6 +679,9 @@ class Viewer2DXRD(wx.Frame):
 
             self.checkIMAGE()
 
+        self.ch_msk.SetValue(True)
+        self.applyMask(event=True)
+
     def createMask(self,event):
         
         MaskToolsPopup(self)
@@ -690,10 +696,7 @@ class Viewer2DXRD(wx.Frame):
             print('No mask defined.')
             self.ch_msk.SetValue(False)
                     
-        if event.GetEventObject().GetValue():
-            self.use_mask = True
-        else:
-            self.use_mask = False
+        self.use_mask = self.ch_msk.GetValue()
 
         self.calcIMAGE()
 
