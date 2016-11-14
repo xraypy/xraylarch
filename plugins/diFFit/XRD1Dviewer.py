@@ -658,12 +658,12 @@ class Viewer1DXRD(wx.Frame):
                     if qadd not in qall and qadd < 6:
                         Fall.extend((0,Fadd,0))
                         qall.extend((qadd,qadd,qadd))
-                        hklall.append(hkl)
+#                         hklall.append(hkl)
             if np.shape(Fall)[0] > 0:
                 Fall = np.array(Fall)
                 qall = np.array(qall)
                 self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
-                print hklall
+#                 print hklall
             else:
                 print 'Could not calculate real structure factors.'
 
