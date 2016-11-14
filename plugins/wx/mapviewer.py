@@ -1249,7 +1249,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting XRD pattern for area \'%s\'...' % aname)
+        self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
 
         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
         ## AREA MASK : area.value
@@ -1280,7 +1280,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % aname)
+        self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % label)
 
         map = self._xrd.data2D
         info  = 'Size: %s; Intensity: [%g, %g]' %(map.shape,map.min(), map.max())
@@ -1288,9 +1288,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if save:
             counter = 1
-            while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)):
+            while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)):
                 counter += 1
-            tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,aname,counter)
+            tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)
             print('Saving 2D data in file: %s\n' % (tiffname))
             tifffile.imsave(tiffname,map)
         
@@ -1319,7 +1319,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % aname)
+        self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
 
 
         map = self._xrd.data2D
@@ -1332,7 +1332,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         try:
             self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001, save=save,
                                     AI = xrmfile.xrmmap['xrd'], mask=mask,
-                                    aname=aname, prefix=fname, path=pref)
+                                    aname=label, prefix=fname, path=pref)
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
         except:
             return
