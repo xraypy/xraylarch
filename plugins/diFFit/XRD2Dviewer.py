@@ -44,34 +44,29 @@ class Viewer2DXRD(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, map=None, _larch=None, *args, **kw):
-        label = 'diFFit.py : 2D XRD Viewer'
-        wx.Frame.__init__(self, None, -1,title=label, size=(1000, 600))
+    def __init__(self, _larch=None, *args, **kw):
+        title = 'diFFit.py : 2D XRD Viewer'
+        wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
         
         self.SetMinSize((700,500))
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION )
 
         ## Default image information
-        if map is None:
-            self.raw_img  = np.zeros((1024,1024))
-        else:
-            self.raw_img = map
-        self.flp_img = self.raw_img
-        self.plt_img = self.raw_img
-        self.mask = np.ones(np.shape(self.raw_img))
-        self.bkgd = np.zeros(np.shape(self.raw_img))
-        self.bkgd_scale = 1
-        self.bkgdMAX = 5
+        self.name_images = []
+        self.data_images = []
+        self.raw_img  = None
+        self.flp_img = None
+        self.plt_img = None
         
-        self.countPIXELS()
+        self.msk_img = None
+        self.bkgd_img = None
+        
+        self.bkgd_scale = 0
+        self.bkgdMAX = 2
         
         self.use_mask = False
         self.use_bkgd = False
-        if self.msk_pxls > 0:
-            self.use_mask = True
-        if self.bkgd_pxls > 0:
-            self.use_bkgd = True
         
         self.color = 'bone'
         self.flip = 'none'
@@ -88,272 +83,111 @@ class Viewer2DXRD(wx.Frame):
         '''write a message to the Status Bar'''
         self.SetStatusText(s, panel)
 
-
 ##############################################
-#### PANEL DEFINITIONS
-    def XRD2DMenuBar(self):
+#### OPENING AND DISPLAYING IMAGES
 
-        menubar = wx.MenuBar()
-        
-        ###########################
-        ## diFFit2D
-        diFFitMenu = wx.Menu()
-        
-        MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
-        MenuItem(self, diFFitMenu, '&Save settings', '', None)
-        MenuItem(self, diFFitMenu, '&Load settings', '', None)
-        MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
-       
-        menubar.Append(diFFitMenu, '&diFFit2D')
-
-        ###########################
-        ## Process
-        ProcessMenu = wx.Menu()
-        
-        MenuItem(self, ProcessMenu, '&Load mask file', '', self.openMask)
-        MenuItem(self, ProcessMenu, '&Remove current mask', '', self.clearMask)
-        MenuItem(self, ProcessMenu, '&Create mask', '', self.createMask)
-        ProcessMenu.AppendSeparator()
-        MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
-        MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
-        
-        menubar.Append(ProcessMenu, '&Process')
-
-        ###########################
-        ## Analyze
-        AnalyzeMenu = wx.Menu()
-        
-        MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
-        MenuItem(self, AnalyzeMenu, '&Load calibration file', '', self.openPONI)
-        MenuItem(self, AnalyzeMenu, '&Show current calibration', '', self.showPONI)
-        AnalyzeMenu.AppendSeparator()
-        MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', None)
-
-        menubar.Append(AnalyzeMenu, '&Analyze')
-
-        ###########################
-        ## Create Menu Bar
-        self.SetMenuBar(menubar)
-
-    def Panel2DViewer(self):
-        '''
-        Frame for housing all 2D XRD viewer widgets
-        '''
-        self.panel = wx.Panel(self)
-
-        vistools = self.Toolbox(self.panel)
-        rightside = self.RightSidePanel(self.panel)        
-
-        panel2D = wx.BoxSizer(wx.HORIZONTAL)
-        panel2D.Add(vistools,flag=wx.ALL,border=10)
-        panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
-
-        self.panel.SetSizer(panel2D)
+    def loadIMAGE(self,event):
     
-    def Toolbox(self,panel):
-        '''
-        Frame for visual toolbox
-        '''
+        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose 2D XRD image',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
         
-        tlbx = wx.StaticBox(self.panel,label='TOOLBOX')#, size=(200, 200))
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-
-        ###########################
-        ## Color
-        hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_clr = wx.StaticText(self.panel, label='COLOR')
-        colors = []
-        for key in colormap.datad:
-            if not key.endswith('_r'):
-                colors.append(key)
-        self.ch_clr = wx.Choice(self.panel,choices=colors)
-
-        self.ch_clr.Bind(wx.EVT_CHOICE,self.onColor)
-    
-        hbox_clr.Add(self.txt_clr, flag=wx.RIGHT, border=8)
-        hbox_clr.Add(self.ch_clr, flag=wx.EXPAND, border=8)
-        vbox.Add(hbox_clr, flag=wx.ALL, border=10)
-    
-        ###########################
-        ## Contrast
-        vbox_ct = wx.BoxSizer(wx.VERTICAL)
-    
-        hbox_ct1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_ct1 = wx.StaticText(self.panel, label='CONTRAST')
-        self.txt_ct2 = wx.StaticText(self.panel, label='')
-        
-        hbox_ct1.Add(self.txt_ct1, flag=wx.EXPAND|wx.RIGHT, border=8)
-        hbox_ct1.Add(self.txt_ct2, flag=wx.ALIGN_RIGHT, border=8)
-        vbox_ct.Add(hbox_ct1, flag=wx.BOTTOM, border=8)
-    
-        hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_min = wx.StaticText(self.panel, label='min')
-        self.sldr_min = wx.Slider(self.panel)
-        self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-
-        self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+        if read:
+            newimg = fabioOPEN(path)
+            self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
-        hbox_ct2.Add(self.ttl_min, flag=wx.RIGHT, border=8)
-        hbox_ct2.Add(self.sldr_min, flag=wx.EXPAND, border=8)
-        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT, border=8)
-        vbox_ct.Add(hbox_ct2, flag=wx.BOTTOM, border=8)        
-    
-        hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_max = wx.StaticText(self.panel, label='max')
-        self.sldr_max = wx.Slider(self.panel)
-        self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+    def plot2Dxrd(self,img,iname):
+        str_msg = 'Displaying image: %s' % iname
+        self.write_message(str_msg,panel=0)
 
-        self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+        img_no = np.shape(self.data_images)[0]
+        self.name_images.append(iname)
+        self.data_images.append(img)
         
-        hbox_ct3.Add(self.ttl_max, flag=wx.RIGHT, border=8)
-        hbox_ct3.Add(self.sldr_max, flag=wx.EXPAND, border=8)
-        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT, border=8)
-        vbox_ct.Add(hbox_ct3, flag=wx.BOTTOM, border=8)
+        self.ch_img.Set(self.name_images)
+        self.ch_img.SetStringSelection(iname)
 
-        hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_ct1 = wx.Button(self.panel,label='reset range')
-        self.btn_ct2 = wx.Button(self.panel,label='set range')
-
-        self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
-        self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
-
-        hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT, border=8)
-        hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT, border=8)
-        vbox_ct.Add(hbox_ct4, flag=wx.ALIGN_RIGHT|wx.BOTTOM,border=8)
-        vbox.Add(vbox_ct, flag=wx.ALL, border=10)
-
-        ###########################
-        ## Flip
-        hbox_flp = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_flp = wx.StaticText(self.panel, label='IMAGE FLIP')
-        flips = ['none','vertical','horizontal','both']
-        self.ch_flp = wx.Choice(self.panel,choices=flips)
-
-        self.ch_flp.Bind(wx.EVT_CHOICE,self.onFlip)
-    
-        hbox_flp.Add(self.txt_flp, flag=wx.RIGHT, border=8)
-        hbox_flp.Add(self.ch_flp, flag=wx.EXPAND, border=8)
-        vbox.Add(hbox_flp, flag=wx.ALL, border=10)
-    
-        ###########################
-        ## Scale
-        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
-        self.txt_scl = wx.StaticText(self.panel, label='SCALE')
-        scales = ['linear','log']
-        self.ch_scl = wx.Choice(self.panel,choices=scales)
-    
-        self.ch_scl.Bind(wx.EVT_CHOICE,self.onScale)
-    
-        hbox_scl.Add(self.txt_scl, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.ch_scl, flag=wx.EXPAND, border=8)
-        vbox.Add(hbox_scl, flag=wx.ALL, border=10)
-
-
-        ###########################
-        ## Mask
-        hbox_msk = wx.BoxSizer(wx.HORIZONTAL)
- #       self.txt_msk = wx.StaticText(self.panel, label='MASK')
-        self.btn_mask = wx.Button(panel,label='MASK')
-        self.ch_msk = wx.CheckBox(self.panel,label='Apply?')
+        self.raw_img = self.data_images[img_no]
+        self.displayIMAGE()
+           
+    def displayIMAGE(self):
+        self.flipIMAGE()
+        self.checkIMAGE()
+        self.calcIMAGE()
         
-        self.ch_msk.Bind(wx.EVT_CHECKBOX,self.applyMask)
-        self.btn_mask.Bind(wx.EVT_BUTTON,self.openMask)
-    
-#        hbox_msk.Add(self.txt_msk, flag=wx.RIGHT, border=8)
-        hbox_msk.Add(self.btn_mask, flag=wx.RIGHT, border=8)
-        hbox_msk.Add(self.ch_msk, flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_msk, flag=wx.ALL, border=10)
-    
-        ###########################
-        ## Background
-        hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
-        self.sldr_bkgd = wx.Slider(self.panel)
+        self.plot2D.display(self.plt_img)       
+        self.autoContrast(None)        
 
-        self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
-        self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
+        self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
+                         (np.min(self.plt_img),np.max(self.plt_img))) 
 
-        hbox_bkgd1.Add(self.btn_bkgd, flag=wx.RIGHT, border=8)
-        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_bkgd1, flag=wx.TOP, border=10)
-
-
-        hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_scale = wx.Button(self.panel,label='set range')
-        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+    def redrawIMAGE(self):
+        self.flipIMAGE()
+        self.checkIMAGE()
+        self.calcIMAGE()
+        self.colorIMAGE()
         
-        self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
-        
-        hbox_bkgd2.Add(self.btn_scale, flag=wx.RIGHT, border=10)
-        hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_bkgd2, flag=wx.ALL, border=10)
+        self.plot2D.redraw()
 
-        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
-        if self.bkgd_pxls == 0:
-            self.sldr_bkgd.Disable()
-            self.entr_scale.Disable()
-            self.btn_scale.Disable()
-
-        ###########################
-        ## Set defaults  
-        self.ch_clr.SetStringSelection(self.color)
-        self.ch_flp.SetStringSelection(self.flip)
-        if self.msk_pxls == 0:
-            self.ch_msk.Disable()
-        
-        return vbox    
-
-    def RightSidePanel(self,panel):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot2DXRD(panel)
-        btnbox = self.QuickButtons(panel)
-        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
-        return vbox
-
-    def QuickButtons(self,panel):
-        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_img = wx.Button(panel,label='LOAD IMAGE')
-        self.btn_calib = wx.Button(panel,label='CALIBRATION')
-        self.btn_integ = wx.Button(panel,label='INTEGRATE (1D)')
-        
-        self.btn_img.Bind(wx.EVT_BUTTON,self.loadIMAGE)
-        self.btn_calib.Bind(wx.EVT_BUTTON,self.openPONI)
-        self.btn_integ.Bind(wx.EVT_BUTTON,self.on1DXRD)
-        
-        buttonbox.Add(self.btn_img, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
-        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
-        
-        return buttonbox
+    def selectIMAGE(self,event):
+        img_no = self.ch_img.GetSelection()
+        self.raw_img = self.data_images[img_no]
+        self.displayIMAGE()
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
-    def countPIXELS(self):
-        ## Calculates the number of pixels in image, masked pixels, and background pixels
-        self.img_pxls = int(self.raw_img.shape[0]*self.raw_img.shape[1])
-        self.msk_pxls   = self.img_pxls - int(sum(sum(self.mask)))
-        self.bkgd_pxls = int(sum(sum(self.bkgd)))
+    def calcIMAGE(self):
+
+        if self.use_mask is True:
+            if self.use_bkgd is True:
+                self.plt_img = self.flp_img * self.msk_img - self.bkgd_img * self.bkgd_scale
+            else:
+                self.plt_img = self.flp_img * self.msk_img
+        else:
+            if self.use_bkgd is True:
+                self.plt_img = self.flp_img - self.bkgd_img * self.bkgd_scale
+            else:
+                self.plt_img = self.flp_img
+
+    def flipIMAGE(self):
+        if self.flip == 'vertical': # Vertical
+            self.flp_img = self.raw_img[::-1,:]
+        elif self.flip == 'horizontal': # Horizontal
+            self.flp_img = self.raw_img[:,::-1]
+        elif self.flip == 'both': # both
+            self.flp_img = self.raw_img[::-1,::-1]
+        else: # None
+            self.flp_img = self.raw_img
 
     def checkIMAGE(self):
+        
         ## Reshapes/replaces mask and/or background if shape doesn't match that of image    
-        if self.mask.shape != self.raw_img.shape:
-            self.mask = np.ones(self.raw_img.shape)
-        if self.bkgd.shape != self.raw_img.shape:
-            self.bkgd = np.zeros(self.raw_img.shape)
+        if np.shape(self.msk_img) != np.shape(self.raw_img):
+            self.msk_img = np.ones(np.shape(self.raw_img))
+        if np.shape(self.bkgd_img) != np.shape(self.raw_img):
+            self.bkgd_img = np.zeros(np.shape(self.raw_img))
 
-        self.countPIXELS()
+        ## Calculates the number of pixels in image, masked pixels, and background pixels
+        img_pxls  = len(self.raw_img)
+        msk_pxls  = img_pxls - int(sum(sum(self.msk_img)))
+        bkgd_pxls = int(sum(sum(self.bkgd_img)))
 
         ## Enables mask checkbox.
-        if self.msk_pxls == 0 or self.msk_pxls == self.img_pxls:
+        if msk_pxls == 0 or msk_pxls == img_pxls:
             self.ch_msk.Disable()
-            self.mask = np.ones(self.raw_img.shape)
+            self.msk_img = np.ones(np.shape(self.raw_img))
         else:
             self.ch_msk.Enable()
         
         ## Enables background slider and sets range.
-        if self.bkgd_pxls == 0:
+        if bkgd_pxls == 0:
             self.entr_scale.SetLabel('')
             
             self.sldr_bkgd.Disable()
@@ -361,68 +195,63 @@ class Viewer2DXRD(wx.Frame):
             self.btn_scale.Disable()
             
             self.use_bkgd = False
+            self.entr_scale.SetLabel('0')
         else:
             self.btn_scale.Enable()
             self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
 
-            self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
-            self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
-            self.entr_scale.SetLabel(str(self.bkgdMAX))
-
             self.use_bkgd = True
+            self.entr_scale.SetLabel('1')
 
-    def calcIMAGE(self):
+        self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
+        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
 
-        if self.use_mask is True:
-            if self.use_bkgd is True:
-                self.plt_img = self.flp_img * self.mask - self.bkgd * self.bkgd_scale
-            else:
-                self.plt_img = self.flp_img * self.mask
-        else:
-            if self.use_bkgd is True:
-                self.plt_img = self.flp_img - self.bkgd * self.bkgd_scale
-            else:
-                self.plt_img = self.flp_img
+    def colorIMAGE(self):
+        self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2D.display(self.plt_img)
 
-        ## Update image control panel if there.
-        try:
-            self.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
-                         (np.min(self.plt_img),np.max(self.plt_img))) 
-        except:
-            pass
+    def setCOLOR(self,event):
+        if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
+            self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
+            self.colorIMAGE()
 
-    def plot2DXRD(self,panel):
-    
-        self.plot2D = ImagePanel(panel,size=(500, 500))
-        self.plot2D.messenger = self.write_message
-        self.plot2D.display(self.plt_img)
-
-        self.setColor()
-        self.autoContrast(None)
-        self.checkFLIPS()
-
+    def setFLIP(self,event):
+        self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
+        self.redrawIMAGE()
+               
+    def setZSCALE(self,event):
+        if self.ch_scl.GetSelection() == 1: ## log
+            self.plot2D.conf.log_scale = True
+        else:  ## linear
+            self.plot2D.conf.log_scale = False
         self.plot2D.redraw()
+    
 
+##############################################
+#### BACKGROUND FUNCTIONS
     def onBkgdScale(self,event):
         
         self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
         self.entr_scale.SetValue(str(self.bkgd_scale))
         
-        self.calcIMAGE()
-        self.setColor()
-        self.checkFLIPS()
-        self.plot2D.redraw()      
-
+        self.redrawIMAGE()        
+        
     def onChangeBkgdScale(self,event):
 
-        self.bkgdMAX = float(self.entr_scale.GetValue())
-        self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
+        self.bkgd_scale = float(self.entr_scale.GetValue())
+        self.bkgdMAX = (float(self.entr_scale.GetValue()) * 2) / SLIDER_SCALE
+        
+        #self.bkgd_scale = float(self.entr_scale.GetValue())
+        #self.bkgdMAX = self.sldr_bkgd.GetValue()/SLIDER_SCALE
         
         self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
-        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)        
-
+        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+        
+        self.redrawIMAGE()       
+        
+##############################################
+#### IMAGE CONTRAST FUNCTIONS
     def autoContrast(self,event):
 
         self.minINT = int(np.min(self.plt_img))
@@ -459,8 +288,9 @@ class Viewer2DXRD(wx.Frame):
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
-        ## Create safety to keep min. below max.
-        ## mkak 2016.10.20
+        if self.minCURRENT > self.maxCURRENT:
+            self.sldr_min.SetValue(self.maxCURRENT)
+            self.sldr_max.SetValue(self.minCURRENT)
 
         self.setContrast()
 
@@ -477,71 +307,8 @@ class Viewer2DXRD(wx.Frame):
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
 
-    def onFlip(self,event):
-        '''
-        Eventually, should just set self.raw_img or self.fli_img - better than this
-        mkak 2016.10.20
-        '''
-        self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
-        self.checkFLIPS()
-        self.calcIMAGE()
-
-
-    def checkFLIPS(self):
-
-        if self.flip == 'vertical': # Vertical
-            self.flp_img = self.raw_img[::-1,:]
-        elif self.flip == 'horizontal': # Horizontal
-            self.flp_img = self.raw_img[:,::-1]
-        elif self.flip == 'both': # both
-            self.flp_img = self.raw_img[::-1,::-1]
-        else: # None
-            self.flp_img = self.raw_img
-                
-    def onScale(self,event):
-        if self.ch_scl.GetSelection() == 1: ## log
-            self.plot2D.conf.log_scale = True
-        else:  ## linear
-            self.plot2D.conf.log_scale = False
-        self.plot2D.redraw()
-    
-    def onColor(self,event):
-        if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
-            self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
-            self.setColor()
-    
-    def setColor(self):
-        self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
-        self.plot2D.display(self.plt_img)
-
 ##############################################
 #### XRD MANIPULATION FUNTIONS 
-    def loadIMAGE(self,event):
-    
-        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose 2D XRD image',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            self.openIMAGE(path)
-            self.plot2D.display(self.plt_img)       
-            self.autoContrast(None)
-
-            str_msg = 'Displaying image: %s' % os.path.split(path)[-1]
-            self.write_message(str_msg,panel=0)
-
-    def openIMAGE(self,path):
-        self.raw_img = fabioOPEN(path)
-        self.flp_img = self.raw_img
-        self.checkIMAGE()
-        self.calcIMAGE()
 
     def saveIMAGE(self,event):
         wildcards = 'XRD image (*.tiff)|*.tiff|All files (*.*)|*.*'
@@ -565,11 +332,7 @@ class Viewer2DXRD(wx.Frame):
         if self.ai is None:
             print 'Cannot calculate 1D XRD without calibration file.'
         else:
-            if self.msk_pxls == 0:
-                mask= None
-            else:
-                mask=self.mask
-            myDlg = Calc1DPopup(self.plt_img,self.ai,mask=mask)
+            myDlg = Calc1DPopup(self.plt_img,self.ai)
             if myDlg.ShowModal() == wx.ID_OK:
                 read = True
 
@@ -638,7 +401,7 @@ class Viewer2DXRD(wx.Frame):
 ##############################################
 #### BACKGROUND FUNCTIONS
     def clearBkgd(self,event):
-        self.bkgd = np.zeros(self.raw_img.shape)
+        self.bkgd = np.zeros(np.shape(self.raw_img))
         self.checkIMAGE()
 
     def openBkgd(self,event):
@@ -675,7 +438,7 @@ class Viewer2DXRD(wx.Frame):
         
         if read:
             raw_mask = fabioOPEN(path)
-            self.mask = np.ones(np.shape(raw_mask))-raw_mask
+            self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
             self.checkIMAGE()
 
@@ -688,21 +451,286 @@ class Viewer2DXRD(wx.Frame):
         print 'Popup to create mask!'
 
     def clearMask(self,event):
-        self.mask = np.zeros(self.raw_img.shape)
+        self.msk_img = np.zeros(np.shape(self.raw_img))
         self.checkIMAGE()
 
     def applyMask(self,event):
-        if self.msk_pxls == 0:
-            print('No mask defined.')
-            self.ch_msk.SetValue(False)
                     
         self.use_mask = self.ch_msk.GetValue()
+        self.redrawIMAGE() 
 
-        self.calcIMAGE()
+##############################################
+#### PANEL DEFINITIONS
+    def XRD2DMenuBar(self):
 
-        self.setColor()
-        self.checkFLIPS()
-        self.plot2D.redraw()
+        menubar = wx.MenuBar()
+        
+        ###########################
+        ## diFFit2D
+        diFFitMenu = wx.Menu()
+        
+        MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
+        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
+        MenuItem(self, diFFitMenu, '&Save settings', '', None)
+        MenuItem(self, diFFitMenu, '&Load settings', '', None)
+        MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
+       
+        menubar.Append(diFFitMenu, '&diFFit2D')
+
+        ###########################
+        ## Process
+        ProcessMenu = wx.Menu()
+        
+        MenuItem(self, ProcessMenu, '&Load mask file', '', self.openMask)
+        MenuItem(self, ProcessMenu, '&Remove current mask', '', self.clearMask)
+        MenuItem(self, ProcessMenu, '&Create mask', '', self.createMask)
+        ProcessMenu.AppendSeparator()
+        MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
+        MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
+        
+        menubar.Append(ProcessMenu, '&Process')
+
+        ###########################
+        ## Analyze
+        AnalyzeMenu = wx.Menu()
+        
+        MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
+        MenuItem(self, AnalyzeMenu, '&Load calibration file', '', self.openPONI)
+        MenuItem(self, AnalyzeMenu, '&Show current calibration', '', self.showPONI)
+        AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', None)
+
+        menubar.Append(AnalyzeMenu, '&Analyze')
+
+        ###########################
+        ## Create Menu Bar
+        self.SetMenuBar(menubar)
+
+    def LeftSidePanel(self,panel):
+        
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        imgbox = self.ImageBox(self.panel)
+        vistools = self.Toolbox(self.panel)
+        
+        vbox.Add(imgbox,flag=wx.ALL|wx.EXPAND,border=10)
+        vbox.Add(vistools,flag=wx.ALL,border=10)
+
+        return vbox
+
+    def Panel2DViewer(self):
+        '''
+        Frame for housing all 2D XRD viewer widgets
+        '''
+        self.panel = wx.Panel(self)
+
+        leftside = self.LeftSidePanel(self.panel)
+        rightside = self.RightSidePanel(self.panel)        
+
+        panel2D = wx.BoxSizer(wx.HORIZONTAL)
+        panel2D.Add(leftside,flag=wx.ALL,border=10)
+        panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+
+        self.panel.SetSizer(panel2D)
+
+    def ImageBox(self,panel):
+        '''
+        Frame for data toolbox
+        '''
+        
+        tlbx = wx.StaticBox(self.panel,label='DISPLAYED IMAGE')
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+
+        ###########################
+        ## DATA CHOICE
+
+        self.ch_img = wx.Choice(self.panel,choices=self.name_images)
+        self.ch_img.Bind(wx.EVT_CHOICE, self.selectIMAGE)
+        vbox.Add(self.ch_img, flag=wx.EXPAND|wx.ALL, border=8)
+    
+        return vbox    
+
+    
+    def Toolbox(self,panel):
+        '''
+        Frame for visual toolbox
+        '''
+        
+        tlbx = wx.StaticBox(self.panel,label='TOOLBOX')#, size=(200, 200))
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+        ###########################
+        ## Color
+        hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_clr = wx.StaticText(self.panel, label='COLOR')
+        colors = []
+        for key in colormap.datad:
+            if not key.endswith('_r'):
+                colors.append(key)
+        self.ch_clr = wx.Choice(self.panel,choices=colors)
+
+        self.ch_clr.Bind(wx.EVT_CHOICE,self.setCOLOR)
+    
+        hbox_clr.Add(self.txt_clr, flag=wx.RIGHT,  border=6)
+        hbox_clr.Add(self.ch_clr,  flag=wx.RIGHT,  border=6)
+        vbox.Add(hbox_clr,         flag=wx.ALL,    border=4)
+    
+        ###########################
+        ## Contrast
+        vbox_ct = wx.BoxSizer(wx.VERTICAL)
+    
+        hbox_ct1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_ct1 = wx.StaticText(self.panel, label='CONTRAST')
+        self.txt_ct2 = wx.StaticText(self.panel, label='')
+        
+        hbox_ct1.Add(self.txt_ct1, flag=wx.RIGHT,         border=6)
+        hbox_ct1.Add(self.txt_ct2, flag=wx.RIGHT,         border=6)
+        vbox_ct.Add(hbox_ct1,      flag=wx.TOP|wx.BOTTOM, border=4)
+    
+        hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.ttl_min = wx.StaticText(self.panel, label='min')
+        self.sldr_min = wx.Slider(self.panel)
+        self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+            
+        hbox_ct2.Add(self.ttl_min,  flag=wx.RIGHT,         border=6)
+        hbox_ct2.Add(self.sldr_min, flag=wx.RIGHT,         border=6)
+        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT,         border=6)
+        vbox_ct.Add(hbox_ct2,       flag=wx.TOP|wx.BOTTOM, border=4)        
+    
+        hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
+        self.ttl_max = wx.StaticText(self.panel, label='max')
+        self.sldr_max = wx.Slider(self.panel)
+        self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+        
+        hbox_ct3.Add(self.ttl_max,  flag=wx.RIGHT,         border=6)
+        hbox_ct3.Add(self.sldr_max, flag=wx.RIGHT,         border=6)
+        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT,         border=6)
+        vbox_ct.Add(hbox_ct3,       flag=wx.TOP|wx.BOTTOM, border=4)
+
+        hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_ct1 = wx.Button(self.panel,label='reset range')
+        self.btn_ct2 = wx.Button(self.panel,label='set range')
+
+        self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
+        self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
+
+        hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
+        hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT,              border=6)
+        vbox_ct.Add(hbox_ct4,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
+        vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
+
+        ###########################
+        ## Flip
+        hbox_flp = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_flp = wx.StaticText(self.panel, label='IMAGE FLIP')
+        flips = ['none','vertical','horizontal','both']
+        self.ch_flp = wx.Choice(self.panel,choices=flips)
+
+        self.ch_flp.Bind(wx.EVT_CHOICE,self.setFLIP)
+    
+        hbox_flp.Add(self.txt_flp, flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        hbox_flp.Add(self.ch_flp,  flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        vbox.Add(hbox_flp,         flag=wx.ALL,   border=4)
+    
+        ###########################
+        ## Scale
+        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+        self.txt_scl = wx.StaticText(self.panel, label='SCALE')
+        scales = ['linear','log']
+        self.ch_scl = wx.Choice(self.panel,choices=scales)
+    
+        self.ch_scl.Bind(wx.EVT_CHOICE,self.setZSCALE)
+    
+        hbox_scl.Add(self.txt_scl, flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        hbox_scl.Add(self.ch_scl,  flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        vbox.Add(hbox_scl,         flag=wx.ALL,   border=4)
+
+
+        ###########################
+        ## Mask
+        hbox_msk = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_mask = wx.Button(panel,label='MASK')
+        self.ch_msk = wx.CheckBox(self.panel,label='Apply?')
+        
+        self.ch_msk.Bind(wx.EVT_CHECKBOX,self.applyMask)
+        self.btn_mask.Bind(wx.EVT_BUTTON,self.openMask)
+    
+        hbox_msk.Add(self.btn_mask, flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        hbox_msk.Add(self.ch_msk,   flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+        vbox.Add(hbox_msk,          flag=wx.ALL,   border=4)
+    
+        ###########################
+        ## Background
+        hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
+        self.sldr_bkgd = wx.Slider(self.panel)
+
+        self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
+        self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
+
+        hbox_bkgd1.Add(self.btn_bkgd,  flag=wx.RIGHT|wx.TOP,         border=6)
+        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.ALIGN_RIGHT|wx.TOP,   border=6)
+        vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM, border=4)
+
+
+        hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_scale = wx.Button(self.panel,label='set scaling')
+        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        
+        self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
+        
+        hbox_bkgd2.Add(self.btn_scale,  flag=wx.RIGHT,                        border=6)
+        hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT,                        border=6)
+        vbox.Add(hbox_bkgd2,            flag=wx.TOP|wx.BOTTOM|wx.ALIGN_RIGHT, border=4)
+
+        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+        self.sldr_bkgd.Disable()
+        self.entr_scale.Disable()
+        self.btn_scale.Disable()
+
+        ###########################
+        ## Set defaults  
+        self.ch_clr.SetStringSelection(self.color)
+        self.ch_flp.SetStringSelection(self.flip)
+        self.ch_msk.Disable()
+        
+        return vbox    
+
+    def panel2DXRDplot(self,panel):
+    
+        self.plot2D = ImagePanel(panel,size=(500, 500))
+        self.plot2D.messenger = self.write_message
+
+    def RightSidePanel(self,panel):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.panel2DXRDplot(panel)
+        btnbox = self.QuickButtons(panel)
+        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        return vbox
+
+    def QuickButtons(self,panel):
+        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_img = wx.Button(panel,label='LOAD IMAGE')
+        self.btn_calib = wx.Button(panel,label='CALIBRATION')
+        self.btn_integ = wx.Button(panel,label='INTEGRATE (1D)')
+        
+        self.btn_img.Bind(wx.EVT_BUTTON,self.loadIMAGE)
+        self.btn_calib.Bind(wx.EVT_BUTTON,self.openPONI)
+        self.btn_integ.Bind(wx.EVT_BUTTON,self.on1DXRD)
+        
+        buttonbox.Add(self.btn_img, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_calib, flag=wx.ALL, border=8)
+        buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
+        
+        return buttonbox
+
+
 
      
 class diFFit2D(wx.App):

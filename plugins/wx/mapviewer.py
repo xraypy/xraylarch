@@ -1323,14 +1323,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## AREA MASK : area.value
 
         self._getxrd_area(aname)
-        map = self._xrd.data2D
-        
+                
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
 
+        map = self._xrd.data2D
         if show:
             self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
         if save:
@@ -1343,13 +1343,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         else:
             self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
 
-        #self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file,AI=xrmfile.xrmmap['xrd'])
         self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
         if show:
             self.owner.show_1DXRDDisplay()
             self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D,label=label)
-        
-
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1679,7 +1676,7 @@ class MapViewerFrame(wx.Frame):
 
         self.im_displays.append(imframe)
 
-    def display_2Dxrd(self, map, title='', info='', xrmfile=None):
+    def display_2Dxrd(self, map, title='image 1', info='', xrmfile=None):
         """display a map in an available image display"""
 #         displayed = False
 #         lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
@@ -1695,7 +1692,8 @@ class MapViewerFrame(wx.Frame):
 #         except:
 #             maskdata = None
 
-        imd = Viewer2DXRD(map=map,_larch=self.larch)
+        imd = Viewer2DXRD(_larch=self.larch)
+        imd.plot2Dxrd(map=None, label='image 0')
 
 #         while not displayed:
 #             try:

@@ -60,14 +60,6 @@ except ImportError:
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
                   save=False, file='~/test.xy', mask=None, dark=None, verbose=False):
 
-    print 'integrate_xrd'
-    print np.shape(xrd_map)
-    
-    if mask is None:
-        mask = np.ones(np.shape(xrd_map))
-    if dark is None:
-        dark = np.zeros(np.shape(xrd_map))
-
     if HAS_pyFAI:
         if ai is None:
             if AI is None:
@@ -105,7 +97,7 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
     else:
         print('pyFAI not imported. Cannot calculate 1D integration without it.')
         return
-
+    
     return qI
 ##########################################################################
 def calculate_ai(AI):
@@ -219,7 +211,7 @@ def fabioOPEN(path):
     else:
         print 'fabio not available for opening images.'
         
-    return np.zeros((1024,1024))
+    return
 ##########################################################################
 def xy_file_reader(xyfile,char=None,verbose=False):
     '''
