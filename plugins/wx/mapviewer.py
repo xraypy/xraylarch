@@ -91,7 +91,8 @@ from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
                                   GSEXRM_Exception, GSEXRM_NotOwner)
 
-from larch_plugins.xrd import integrate_xrd,calculate_ai
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
+#from larch_plugins.xrd import integrate_xrd,calculate_ai
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -1261,6 +1262,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
         ## AREA MASK : area.value
 
+        print
         if flag2D:
             self.onXRD2D(save=save,show=show)
         if flag1D:
@@ -1301,7 +1303,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)):
                 counter += 1
             tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)
-            print('Saving 2D data in file: %s\n' % (tiffname))
+            print('Saving 2D data in file: %s' % (tiffname))
             tifffile.imsave(tiffname,map)
         
 #         if len(self.owner.im_displays) == 0 or new:
@@ -1320,40 +1322,34 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## DATA      : xrmfile.xrmmap['xrd/data1D'][i,j,] !!!!!!
         ## AREA MASK : area.value
 
-        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-        xrd_thread.start()
-        self.owner.show_1DXRDDisplay()
-        xrd_thread.join()
-
+        self._getxrd_area(aname)
+        map = self._xrd.data2D
+        
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
+
         if show:
             self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
         if save:
             self.owner.message('Saving 1D XRD pattern for area \'%s\'...' % label)
+            counter = 1
+            while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
+                counter += 1
+            file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
+            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file, AI=xrmfile.xrmmap['xrd'])
+        else:
+            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
 
-        map = self._xrd.data2D
-        try:
-            import fabio
-            mask = fabio.open(xrmfile.xrmmap['xrd'].attrs['maskfile']).data
-        except:
-            mask = None
-        
-        try:
-            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save,
-                                    AI = xrmfile.xrmmap['xrd'], mask=mask,
-                                    aname=label, prefix=fname, path=pref)
-            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
-        except:
-            return
-
-        #self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
+        #self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file,AI=xrmfile.xrmmap['xrd'])
+        self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
         if show:
-            self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D)
+            self.owner.show_1DXRDDisplay()
+            self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D,label=label)
         
+
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',

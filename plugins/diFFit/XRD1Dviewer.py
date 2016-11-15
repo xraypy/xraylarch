@@ -20,7 +20,7 @@ from wxutils import MenuItem
 import xrayutilities as xu
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,xy_file_reader
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
@@ -86,10 +86,10 @@ class Viewer1DXRD(wx.Frame):
         self.Show(True)
 
     
-    def plot1Dxrd(self,data):#,*args,**kwargs):
+    def plot1Dxrd(self,data,label=None):#,*args,**kwargs):
 
         try:
-            self.add1Ddata(*data)
+            self.add1Ddata(*data,name=label)
         except:
             pass
      
@@ -402,15 +402,15 @@ class Viewer1DXRD(wx.Frame):
         ## Use correct x-axis units
         self.checkXaxis(None)
 
-        ## Update toolbox panel
-        if cif:
+        self.ch_data.Set(self.data_name)
+        self.ch_data.SetStringSelection(name)
+        
+        ## Update toolbox panel, scale all cif to 1000
+        if cif is True:
             self.entr_scale.SetValue('1000')
             self.normalize1Ddata(None)
         else:
             self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-        self.ch_data.Set(self.data_name)
-        self.ch_data.SetStringSelection(name)
-        #self.onSELECT(None)
 
     def normalize1Ddata(self,event):
     
@@ -419,7 +419,6 @@ class Viewer1DXRD(wx.Frame):
         if self.xy_scale[plt_no] <= 0:
             self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
             self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-            
 
         y = self.xy_data[(plt_no*2+1)]
         self.xy_plot[(plt_no*2+1)] = y/np.max(y) * self.xy_scale[plt_no]

@@ -58,7 +58,15 @@ except ImportError:
 
 ##########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
-                  save=True, file='~/test.xy', mask=None, dark=None, verbose=False):
+                  save=False, file='~/test.xy', mask=None, dark=None, verbose=False):
+
+    print 'integrate_xrd'
+    print np.shape(xrd_map)
+    
+    if mask is None:
+        mask = np.ones(np.shape(xrd_map))
+    if dark is None:
+        dark = np.zeros(np.shape(xrd_map))
 
     if HAS_pyFAI:
         if ai is None:
@@ -83,7 +91,7 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
         t0 = time.time()
     
         if save:
-            print('\nSaving %s data in file: %s\n' % (unit,file))
+            print('Saving %s data to file: %s\n' % (unit,file))
             qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark,filename=file)
         else:
             qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark)
@@ -105,6 +113,7 @@ def calculate_ai(AI):
     Builds ai structure using AzimuthalIntegrator from hdf5 parameters
     mkak 2016.08.30
     '''
+
     if HAS_pyFAI:
         try:
             distance = float(AI.attrs['distance'])
