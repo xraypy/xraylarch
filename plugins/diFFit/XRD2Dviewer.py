@@ -17,7 +17,7 @@ from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd
+from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,calculate_ai
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
@@ -368,6 +368,14 @@ class Viewer2DXRD(wx.Frame):
 
             self.showPONI(None)
 
+    def setPONI(self,ai):
+        self.ai = ai
+        print 'ai'
+        print self.ai
+        print
+        print
+        self.showPONI(None)
+    
     def showPONI(self,event):
         if self.ai is None:
             print ' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx '

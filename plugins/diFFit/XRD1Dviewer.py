@@ -63,7 +63,8 @@ class Viewer1DXRD(wx.Frame):
         self.xy_plot      = []
         self.plotted_data = []
         self.xy_scale     = []
-        self.xlabel = 'q (A^-1)'
+        self.wavelength   = None
+        self.xlabel       = 'q (A^-1)'
 
         self.cif_name     = []
         self.cif_data     = []
@@ -72,13 +73,6 @@ class Viewer1DXRD(wx.Frame):
         
         self.x_for_zoom = None
 
-
-        
-        ## eventually don't hard code
-        ## mkak 2016.11.11
-        self.wavelength = 0.6525 ## units A
-
-
         self.XRD1DMenuBar()
         self.Panel1DViewer()
         
@@ -86,12 +80,10 @@ class Viewer1DXRD(wx.Frame):
         self.Show(True)
 
     
-    def plot1Dxrd(self,data,label=None):#,*args,**kwargs):
+    def plot1Dxrd(self,data,label=None,wavelength=None):
 
-        try:
-            self.add1Ddata(*data,name=label)
-        except:
-            pass
+        self.add1Ddata(*data,name=label,wavelength=wavelength)
+        print 'WAVELENGTH',wavelength
      
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
@@ -108,10 +100,9 @@ class Viewer1DXRD(wx.Frame):
         ## diFFit1D
         diFFitMenu = wx.Menu()
         
-        MenuItem(self, diFFitMenu, '&Open diffration image', '', None)
-        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', None)
-        MenuItem(self, diFFitMenu, '&Save settings', '', None)
-        MenuItem(self, diFFitMenu, '&Load settings', '', None)
+        MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.loadXYFILE)
+        MenuItem(self, diFFitMenu, '&Open CIFile', '', self.loadCIF)
+        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.onSAVEfig)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
        
         menubar.Append(diFFitMenu, '&diFFit1D')
@@ -120,11 +111,12 @@ class Viewer1DXRD(wx.Frame):
         ## Process
         ProcessMenu = wx.Menu()
         
-        MenuItem(self, ProcessMenu, '&Load mask file', '', None)
-        MenuItem(self, ProcessMenu, '&Remove current mask', '', None)
-        MenuItem(self, ProcessMenu, '&Create mask', '', None)
-        MenuItem(self, ProcessMenu, 'Load &background image', '', None)
-        MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
+        MenuItem(self, ProcessMenu, '&Load calibration file', '', self.openPONI)
+        MenuItem(self, ProcessMenu, '&Define energy/wavelegth', '', self.setLAMBDA)
+        ProcessMenu.AppendSeparator()
+        MenuItem(self, ProcessMenu, 'Fit &background', '', None)
+        MenuItem(self, ProcessMenu, 'Save &background', '', None)
+        MenuItem(self, ProcessMenu, '&Remove current background', '', None)
         
         menubar.Append(ProcessMenu, '&Process')
 
@@ -132,11 +124,7 @@ class Viewer1DXRD(wx.Frame):
         ## Analyze
         AnalyzeMenu = wx.Menu()
         
-        MenuItem(self, AnalyzeMenu, '&Calibrate', '', None)
-        MenuItem(self, AnalyzeMenu, '&Load calibration file', '', None)
-        MenuItem(self, AnalyzeMenu, '&Show current calibration', '', None)
-        AnalyzeMenu.AppendSeparator()
-        MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', None)
+        MenuItem(self, AnalyzeMenu, '&Something about fitting...', '', None)
 
         menubar.Append(AnalyzeMenu, '&Analyze')
 
@@ -171,7 +159,7 @@ class Viewer1DXRD(wx.Frame):
         ## X-Scale
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xaxis = wx.StaticText(self.panel, label='X-SCALE')
-        xunits = ['q',u'2\u03B8','d'] ## \u212B
+        xunits = ['q','d']
         self.ch_xaxis = wx.Choice(self.panel,choices=xunits)
 
         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
@@ -373,7 +361,7 @@ class Viewer1DXRD(wx.Frame):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
        
-    def add1Ddata(self,x,y,name=None,cif=False):
+    def add1Ddata(self,x,y,name=None,cif=False,wavelength=None):
         
         plt_no = len(self.data_name)
         
@@ -387,6 +375,9 @@ class Viewer1DXRD(wx.Frame):
                 name = 'dataset %i' % plt_no
             else:
                 name = 'data: %s' % name
+                
+        if wavelength is not None:
+            self.addLAMBDA(wavelength)
 
         ## Add to data array lists
         self.data_name.append(name)
@@ -411,6 +402,25 @@ class Viewer1DXRD(wx.Frame):
             self.normalize1Ddata(None)
         else:
             self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+
+    def addLAMBDA(self,wavelength,units='m'):
+        
+        ## convert to units A
+        if units == 'm':
+            self.wavelength = wavelength*1e10 
+        elif units == 'cm':
+            self.wavelength = wavelength*1e8
+        elif units == 'mm':
+            self.wavelength = wavelength*1e7        
+        elif units == 'um':
+            self.wavelength = wavelength*1e4
+        elif units == 'nm':
+            self.wavelength = wavelength*1e1
+        else: ## units 'A'        
+            self.wavelength = wavelength
+
+        xunits = ['q','d',u'2\u03B8']
+        self.ch_xaxis.Set(xunits)
 
     def normalize1Ddata(self,event):
     
@@ -455,10 +465,10 @@ class Viewer1DXRD(wx.Frame):
 
     def checkXaxis(self, event):
         
-        if self.ch_xaxis.GetSelection() == 1:
+        if self.ch_xaxis.GetSelection() == 2:
             for plt_no in range(len(self.plotted_data)):
                 self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
-        elif self.ch_xaxis.GetSelection() == 2:
+        elif self.ch_xaxis.GetSelection() == 1:
             for plt_no in range(len(self.plotted_data)):
                 self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
         else:
@@ -466,15 +476,14 @@ class Viewer1DXRD(wx.Frame):
                 self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
 
         if self.ch_xaxis.GetSelection() == 2:
-            self.xlabel = 'd ($\AA$)'
-        elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+        elif self.ch_xaxis.GetSelection() == 1:
+            self.xlabel = 'd ($\AA$)'
         else:
             self.xlabel = 'q (1/$\AA$)'
          
         self.plot1D.set_xlabel(self.xlabel)
         self.updatePLOT()
-
 
     def updatePLOT(self):
 
@@ -503,8 +512,8 @@ class Viewer1DXRD(wx.Frame):
             self.unzoom_all()
             self.plot1D.canvas.draw()
             
-            if self.ch_xaxis.GetSelection() == 2:
-                xmax = 6
+            if self.ch_xaxis.GetSelection() == 1:
+                xmax = 5
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
     def reset1Dscale(self,event):
@@ -666,7 +675,43 @@ class Viewer1DXRD(wx.Frame):
             else:
                 print 'Could not calculate real structure factors.'
 
+    def openPONI(self,event):
+             
+        wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
 
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+
+            try:
+                print 'Loading calibration file: %s' % path
+                ai = pyFAI.load(path)
+            except:
+                print('Not recognized as a pyFAI calibration file.')
+                return
+
+            self.addLAMBDA(ai._wavelength,units='m')
+
+    def setLAMBDA(self,event):
+
+        dlg = SetLambdaDialog()
+
+        path, okay = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            okay = True
+            wavelength = dlg.wavelength
+        dlg.Destroy()
+        
+        if okay:
+            self.addLAMBDA(wavelength,units='A')
+              
 
 # def interactive_legend(ax=None):
 #     if ax is None:
@@ -747,19 +792,16 @@ class Viewer1DXRD(wx.Frame):
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
-    def __init__(self,xrd2Ddata,ai,mask=None):
+    def __init__(self,xrd2Ddata,ai):
     
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         
-       
-        self.mask = mask
         self.data2D = xrd2Ddata
         self.ai = ai
         self.steps = 5001
-        
 
         self.Init()
         self.setDefaults()
@@ -774,14 +816,6 @@ class Calc1DPopup(wx.Dialog):
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         
-        ## Mask 
-        self.ch_mask = wx.CheckBox(self.panel, label='APPLY CURRENT MASK?')
-        self.ch_mask.Bind(wx.EVT_CHECKBOX,None)
-        
-        mainsizer.Add(self.ch_mask,flag=wx.ALL,border=8)
-        if self.mask is None:
-            self.ch_mask.Disable()
-        
         ## Azimutal wedges 
         wedgesizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -791,7 +825,7 @@ class Calc1DPopup(wx.Dialog):
         self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         self.wedge_arrow = wx.SpinButton(self.panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
        
-        self.wedge_arrow.Bind(wx.EVT_SPIN, self.OnSpin)
+        self.wedge_arrow.Bind(wx.EVT_SPIN, self.onSPIN)
         
         wsizer.Add(self.wedges,flag=wx.RIGHT,border=8)
         wsizer.Add(self.wedge_arrow,flag=wx.RIGHT,border=8)
@@ -830,7 +864,7 @@ class Calc1DPopup(wx.Dialog):
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
         
         xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
-        xunits = ['q',u'2\u03B8','d'] ## \u212B
+        xunits = ['q','d',u'2\u03B8']
         ttl_xunit = wx.StaticText(self.panel, label='units')
         self.ch_xunit = wx.Choice(self.panel,choices=xunits)
         self.ch_xunit.Bind(wx.EVT_CHOICE,self.onUnits)
@@ -857,10 +891,10 @@ class Calc1DPopup(wx.Dialog):
         xmaxsizer.Add(self.xmax,  flag=wx.RIGHT, border=5)
 
         xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
-        xsizer.Add(xunitsizer, flag=wx.ALL, border=5)
-        xsizer.Add(xstepsizer, flag=wx.ALL, border=5)
-        xsizer.Add(xminsizer,  flag=wx.BOTTOM, border=5)
-        xsizer.Add(xmaxsizer,  flag=wx.BOTTOM, border=5)
+        xsizer.Add(xunitsizer, flag=wx.TOP|wx.BOTTOM, border=5)
+        xsizer.Add(xstepsizer, flag=wx.TOP|wx.BOTTOM, border=5)
+        xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
+        xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
         mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
 
         ## Okay Buttons
@@ -908,10 +942,9 @@ class Calc1DPopup(wx.Dialog):
 #             energy = hc/(wavelength) ## units: keV
 #             self.EorL.SetValue(str(energy))
 
-    def OnSpin(self, event):
+    def onSPIN(self, event):
         self.wedges.SetValue(str(event.GetPosition())) 
-
-
+        print 'not currently using multiple wedges for calculations'
 
     def onSAVE(self,event):
 
@@ -938,13 +971,80 @@ class Calc1DPopup(wx.Dialog):
         
         self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False,verbose=True)
         xrddisplay1D = Viewer1DXRD()
-        xrddisplay1D.plot1Dxrd(self.data1D)
+        xrddisplay1D.plot1Dxrd(self.data1D,wavelength=self.ai._wavelength)
         
 
     def getValues(self):
     
         self.steps = int(self.xstep.GetValue())
     
+
+class SetLambdaDialog(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='Define wavelength/energy')#,size=(500, 440))
+        ## remember: size=(width,height)
+        
+        panel = wx.Panel(self)
+        
+        main = wx.BoxSizer(wx.VERTICAL)
+        hmain1 = wx.BoxSizer(wx.HORIZONTAL)
+        
+        #####
+        ## Energy or Wavelength
+        hmain1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.ch_EorL = wx.Choice(panel,choices=['Energy (keV)','Wavelength (A)'])
+        self.entr_EorL = wx.TextCtrl(panel)#, size=(110, -1))
+ 
+        self.ch_EorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
+ 
+        hmain1.Add(self.ch_EorL,   flag=wx.RIGHT,  border=8)
+        hmain1.Add(self.entr_EorL, flag=wx.RIGHT,  border=8)
+        
+        #####
+        ## OKAY!
+        hmain2 = wx.BoxSizer(wx.HORIZONTAL)
+        #hlpBtn = wx.Button(panel, wx.ID_HELP    )
+        okBtn  = wx.Button(panel, wx.ID_OK      )
+        canBtn = wx.Button(panel, wx.ID_CANCEL  )
+
+        #hmain2.Add(hlpBtn,flag=wx.RIGHT,  border=8)
+        hmain2.Add(canBtn, flag=wx.RIGHT, border=8) 
+        hmain2.Add(okBtn,  flag=wx.RIGHT,  border=8)
+
+        main.Add(hmain1, flag=wx.ALL, border=10) 
+        main.Add(hmain2, flag=wx.ALL, border=10) 
+
+        panel.SetSizer(main)
+
+        self.Show()
+        
+        ## set default
+        self.hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+        self.energy = 19.0        
+        self.wavelength = self.hc/(self.energy)*1e10 ## units: A
+        self.ch_EorL.SetSelection(0)
+        self.entr_EorL.SetValue(str(self.energy))
+
+    def onEorLSel(self,event): 
+        
+        if float(self.entr_EorL.GetValue()) < 0 or self.entr_EorL.GetValue() == '':
+            self.ch_EorL.SetSelection(1)
+            self.entr_EorL.SetValue('19.0')     ## 19.0 keV
+
+        if self.ch_EorL.GetSelection() == 1:
+            self.energy = float(self.entr_EorL.GetValue()) ## units keV
+            self.wavelength = self.hc/(self.energy)*1e10 ## units: A
+            self.entr_EorL.SetValue(str(self.wavelength))
+        else:
+            self.wavelength = float(self.entr_EorL.GetValue())*1e-10 ## units: m
+            self.energy = self.hc/(self.wavelength) ## units: keV
+            self.entr_EorL.SetValue(str(self.energy))
     
       
 class diFFit1D(wx.App):

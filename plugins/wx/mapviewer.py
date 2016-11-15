@@ -1678,22 +1678,20 @@ class MapViewerFrame(wx.Frame):
 
     def display_2Dxrd(self, map, title='image 1', info='', xrmfile=None):
         """display a map in an available image display"""
+
+        try:
+            calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
+            AI = calculate_ai(self.current_file.xrmmap['xrd'])
+        except:
+            AI = None
+            
+
 #         displayed = False
 #         lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
 # 
-#         try:
-#             calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
-#             AI = calculate_ai(self.current_file.xrmmap['xrd'])
-#         except:
-#             AI = None
-# 
-#         try:
-#             maskdata = self.current_file.xrmmap['xrd/mask']
-#         except:
-#             maskdata = None
-
         imd = Viewer2DXRD(_larch=self.larch)
-        imd.plot2Dxrd(map=None, label='image 0')
+        imd.setPONI(AI)
+        imd.plot2Dxrd(map,title)
 
 #         while not displayed:
 #             try:
