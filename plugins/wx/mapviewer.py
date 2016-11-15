@@ -901,8 +901,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        self.xrd_plot  = Button(pane, 'Show XRD pattern', size=(135, -1),
-                                                action=partial(self.onXRD,   new=True))
+        self.xrd_save  = Button(pane, 'Save XRD data', size=(135, -1),
+                                                action=partial(self.onXRD,save=True))
+        self.xrd_plot  = Button(pane, 'Show XRD data', size=(135, -1),
+                                                action=partial(self.onXRD,show=True))
         ######################################
 
         def txt(s):
@@ -929,7 +931,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         sizer.Add(self.onreport,            ( 7, 0), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.xrd_plot,            ( 8, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd_save,            ( 8, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd_plot,            ( 8, 2), (1, 2), ALL_LEFT, 2)
 
         sizer.Add(legend,                   (10, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
@@ -1220,7 +1223,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
-    def onXRD(self, event=None, new=True):
+    def onXRD(self, event=None, save=False, show=False):
 
         ## First, check to make sure there is XRD data
         ## either use FLAG or look for data structures.
@@ -1250,17 +1253,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
-
+        if show:
+            self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
+        if save:
+            self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
+        
         ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
         ## AREA MASK : area.value
 
         if flag2D:
-            self.onXRD2D(save=True)
+            self.onXRD2D(save=save,show=show)
         if flag1D:
-            self.onXRD1D(save=True)
+            self.onXRD1D(save=save,show=show)
                               
-    def onXRD2D(self, event=None, new=True, save=True):
+    def onXRD2D(self, event=None, save=False, show=False):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -1281,8 +1287,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % label)
-
+        if show:
+            self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % label)
+        if save:
+            self.owner.message('Saving 2D XRD pattern for area \'%s\'...' % label)
+            
         map = self._xrd.data2D
         info  = 'Size: %s; Intensity: [%g, %g]' %(map.shape,map.min(), map.max())
         title = '%s: %s' % (fname, aname)
@@ -1297,9 +1306,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         
 #         if len(self.owner.im_displays) == 0 or new:
 #             iframe = self.owner.add_xrd_display(title, det=None)
-        self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
+        if show:
+            self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
 
-    def onXRD1D(self, event=None, as_2=False, unit='q', save=True):
+    def onXRD1D(self, event=None, save=False, show=False):
 
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -1320,8 +1330,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
-        self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
-
+        if show:
+            self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
+        if save:
+            self.owner.message('Saving 1D XRD pattern for area \'%s\'...' % label)
 
         map = self._xrd.data2D
         try:
@@ -1331,7 +1343,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             mask = None
         
         try:
-            self._xrd.data1D = integrate_xrd(map, unit=unit, steps=5001, save=save,
+            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save,
                                     AI = xrmfile.xrmmap['xrd'], mask=mask,
                                     aname=label, prefix=fname, path=pref)
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
@@ -1339,7 +1351,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         #self.owner.xrddisplay1D.plot1Dxrd(self._xrd,unit=unit)
-        self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D)
+        if show:
+            self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D)
         
 
 class MapViewerFrame(wx.Frame):
