@@ -79,7 +79,8 @@ class AthenaImporter(wx.Frame) :
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
         self.all = read_athena(filename, do_bkg=False, do_fft=False, _larch=_larch)
-        self.grouplist.Append(dir(self.all))
+        for item in dir(self.all):
+            self.grouplist.Append(item)
 
         self.Show()
         self.Raise()
