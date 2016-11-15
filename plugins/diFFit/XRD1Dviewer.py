@@ -48,10 +48,10 @@ class Viewer1DXRD(wx.Frame):
     '''
     Frame for housing all 1D XRD viewer widgets
     '''
-    def __init__(self, _larch=None):
+    def __init__(self, _larch=None,parent=None):
         
         label = 'diFFit.py : 1D XRD Viewer'
-        wx.Frame.__init__(self, None, -1,title=label, size=(1500, 600))
+        wx.Frame.__init__(self, None, -1,title=label, parent=parent, size=(1500, 600))
         
         self.SetMinSize((700,500))
         
