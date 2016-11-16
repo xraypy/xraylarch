@@ -44,9 +44,9 @@ class Viewer2DXRD(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, parent=None, *args, **kw):
+    def __init__(self, _larch=None, *args, **kw):
         title = 'diFFit.py : 2D XRD Viewer'
-        wx.Frame.__init__(self, None, -1,parent=parent,title=title, size=(1000, 600))
+        wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
         
         self.SetMinSize((700,500))
         
@@ -369,11 +369,8 @@ class Viewer2DXRD(wx.Frame):
             self.showPONI(None)
 
     def setPONI(self,ai):
+
         self.ai = ai
-        print 'ai'
-        print self.ai
-        print
-        print
         self.showPONI(None)
     
     def showPONI(self,event):

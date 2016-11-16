@@ -48,10 +48,10 @@ class Viewer1DXRD(wx.Frame):
     '''
     Frame for housing all 1D XRD viewer widgets
     '''
-    def __init__(self, _larch=None,parent=None):
+    def __init__(self, _larch=None,):
         
         label = 'diFFit.py : 1D XRD Viewer'
-        wx.Frame.__init__(self, None, -1,title=label, parent=parent, size=(1500, 600))
+        wx.Frame.__init__(self, None, -1,title=label, size=(1500, 600))
         
         self.SetMinSize((700,500))
         
@@ -83,7 +83,6 @@ class Viewer1DXRD(wx.Frame):
     def plot1Dxrd(self,data,label=None,wavelength=None):
 
         self.add1Ddata(*data,name=label,wavelength=wavelength)
-        print 'WAVELENGTH',wavelength
      
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''

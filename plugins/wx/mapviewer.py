@@ -1234,6 +1234,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
+        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
+        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
+        ## AREA MASK : area.value
+
         ## Calculate area
         try:
             aname = self._getarea()
@@ -1245,108 +1249,46 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('No map file and/or areas specified.')
             return
 
-        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-        xrd_thread.start()
-        xrd_thread.join()
+        self._getxrd_area(aname)
 
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
         self._xrd.filename = fname
         self._xrd.title = label
         self._xrd.npixels = npix
+        map = self._xrd.data2D
+
         if show:
             self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
-        
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
 
         print
         if flag2D:
-            self.onXRD2D(save=save,show=show)
+            if save:
+                counter = 1
+                while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)):
+                    counter += 1
+                tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)
+                print('Saving 2D data in file: %s' % (tiffname))
+                tifffile.imsave(tiffname,map)
+
+            if show:
+                title = '%s: %s' % (fname, label)
+                self.owner.display_2Dxrd(map, title=title, xrmfile=xrmfile)
         if flag1D:
-            self.onXRD1D(save=save,show=show)
-                              
-    def onXRD2D(self, event=None, save=False, show=False):
+            if save:
+                counter = 1
+                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
+                    counter += 1
+                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
+                self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file, AI=xrmfile.xrmmap['xrd'])
+            else:
+                self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
 
-        aname = self._getarea()
-        xrmfile = self.owner.current_file
-        area  = xrmfile.xrmmap['areas/%s' % aname]
-        label = area.attrs.get('description', aname)
-        self._xrd  = None
-
-        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
-
-        xrd_thread = Thread(target=self._getxrd_area, args=(aname,))
-        xrd_thread.start()
-        xrd_thread.join()
-
-        pref, fname = os.path.split(self.owner.current_file.filename)
-        npix = len(area.value[np.where(area.value)])
-        self._xrd.filename = fname
-        self._xrd.title = label
-        self._xrd.npixels = npix
-        if show:
-            self.owner.message('Plotting 2D XRD pattern for area \'%s\'...' % label)
-        if save:
-            self.owner.message('Saving 2D XRD pattern for area \'%s\'...' % label)
-            
-        map = self._xrd.data2D
-        info  = 'Size: %s; Intensity: [%g, %g]' %(map.shape,map.min(), map.max())
-        title = '%s: %s' % (fname, aname)
-
-        if save:
-            counter = 1
-            while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)):
-                counter += 1
-            tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)
-            print('Saving 2D data in file: %s' % (tiffname))
-            tifffile.imsave(tiffname,map)
-        
-#         if len(self.owner.im_displays) == 0 or new:
-#             iframe = self.owner.add_xrd_display(title, det=None)
-        if show:
-            self.owner.display_2Dxrd(map, title=title, info=info, xrmfile=xrmfile)
-
-    def onXRD1D(self, event=None, save=False, show=False):
-
-        aname = self._getarea()
-        xrmfile = self.owner.current_file
-        area  = xrmfile.xrmmap['areas/%s' % aname]
-        label = area.attrs.get('description', aname)
-        self._xrd  = None
-
-        ## DATA      : xrmfile.xrmmap['xrd/data1D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
-
-        self._getxrd_area(aname)
-                
-        pref, fname = os.path.split(self.owner.current_file.filename)
-        npix = len(area.value[np.where(area.value)])
-        self._xrd.filename = fname
-        self._xrd.title = label
-        self._xrd.npixels = npix
-
-        map = self._xrd.data2D
-        if show:
-            self.owner.message('Plotting 1D XRD pattern for area \'%s\'...' % label)
-        if save:
-            self.owner.message('Saving 1D XRD pattern for area \'%s\'...' % label)
-            counter = 1
-            while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
-                counter += 1
-            file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
-            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file, AI=xrmfile.xrmmap['xrd'])
-        else:
-            self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
-
-        self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
-        if show:
-            self.owner.show_1DXRDDisplay()
-            self.owner.xrddisplay1D.plot1Dxrd(self._xrd.data1D,label=label)
+            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
+            if show:
+                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1525,27 +1467,6 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.clear()
             self.xrfdisplay.panel.reset_config()
 
-    def show_1DXRDDisplay(self, do_raise=True, clear=True, xrmfile=None):
-        'make sure 1D XRD frame is enabled and visible'
-        if xrmfile is None:
-            xrmfile = self.current_file
-        if self.xrddisplay1D is None:
-            #self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
-            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
-
-        try:
-            self.xrddisplay1D.Show()
-        except PyDeadObjectError:
-            #self.xrddisplay1D = XRD1D_DisplayFrame(_larch=self.larch)
-            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
-            self.xrddisplay1D.Show()
-
-        if do_raise:
-            self.xrddisplay1D.Raise()
-        #if clear:
-        #    self.xrddisplay1D.panel.clear()
-        #    self.xrddisplay1D.panel.reset_config()
-
     def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:
             return
@@ -1666,56 +1587,33 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def add_xrd_display(self, title, det=None):
-        on_lasso = partial(self.lassoHandler, det=det)
-        imframe = XRD2D_DisplayFrame(output_title=title,
-                                     lasso_callback=on_lasso,
-                                     cursor_labels = self.cursor_menulabels,
-                                     move_callback=self.move_callback,
-                                     save_callback=self.onSavePixel)
+    def display_2Dxrd(self, map, title='image 0', xrmfile=None):
+        'displays 2D XRD pattern in diFFit viewer'
 
-        self.im_displays.append(imframe)
+        if self.xrddisplay2D is None:
+            self.xrddisplay2D = Viewer2DXRD(_larch=self.larch)
+            try:
+                AI = calculate_ai(self.current_file.xrmmap['xrd'])
+                self.xrddisplay2D.setPONI(AI)
+            except:
+                pass
+        self.xrddisplay2D.plot2Dxrd(map,title)
 
-    def display_2Dxrd(self, map, title='image 1', info='', xrmfile=None):
-        """display a map in an available image display"""
+        self.xrddisplay2D.Show()
 
-        try:
-            calfile = self.current_file.xrmmap['xrd'].attrs['calfile']
-            AI = calculate_ai(self.current_file.xrmmap['xrd'])
-        except:
-            AI = None
-            
+    def display_1Dxrd(self, xy, label='dataset 0', xrmfile=None):
+        'displays 1D XRD pattern in diFFit viewer'
+        
+        if self.xrddisplay1D is None:
+            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
+            try:
+                AI = calculate_ai(self.current_file.xrmmap['xrd'])
+                self.xrddisplay1D.addLAMBDA(AI._wavelength,units='m')
+            except:
+                pass
 
-#         displayed = False
-#         lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
-# 
-        imd = Viewer2DXRD(_larch=self.larch)
-        imd.setPONI(AI)
-        imd.plot2Dxrd(map,title)
-
-#         while not displayed:
-#             try:
-# 
-#                 imd = self.im_displays.pop()
-#                 imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
-#                 imd.lasso_callback = lasso_cb
-#                 displayed = True
-#             except IndexError:
-#                 imd = XRD2D_DisplayFrame(output_title=title,
-#                                     lasso_callback=lasso_cb,
-#                                     cursor_labels = self.cursor_menulabels,
-#                                     move_callback=self.move_callback,
-#                                     save_callback=self.onSavePixel)
-# 
-# 
-#                 imd.display(map, title=title, xrmfile=xrmfile, ai=AI, mask=maskdata)
-#                 displayed = True
-#             except PyDeadObjectError:
-#                 displayed = False
-#         self.im_displays.append(imd)
-#         imd.SetStatusText(info, 1)
-        imd.Show()
-#         imd.Raise()
+        self.xrddisplay1D.plot1Dxrd(xy, label=label)
+        self.xrddisplay1D.Show()
 
     def init_larch(self):
         if self.larch is None:
