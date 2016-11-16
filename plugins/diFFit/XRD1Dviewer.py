@@ -960,13 +960,13 @@ class Calc1DPopup(wx.Dialog):
         dlg.Destroy()
         
         if save:
-            self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,file=path,verbose=True)
+            self.data1D = integrate_xrd(self.data2D,save=save,steps=self.steps,ai = self.ai,file=path)
 
     def onPLOT(self,event):
 
         self.getValues()
         
-        self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False,verbose=True)
+        self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False)
         xrddisplay1D = Viewer1DXRD()
         xrddisplay1D.plot1Dxrd(self.data1D,wavelength=self.ai._wavelength)
         

@@ -97,7 +97,7 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
     else:
         print('pyFAI not imported. Cannot calculate 1D integration without it.')
         return
-    
+
     return qI
 ##########################################################################
 def calculate_ai(AI):
