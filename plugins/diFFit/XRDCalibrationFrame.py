@@ -266,10 +266,10 @@ class CalibrationPopup(wx.Frame):
 
 
     def onCalSel(self,event):
-        print 'Selected calibrant: ',self.ch_cal.GetString(self.ch_cal.GetSelection())
+        print('Selected calibrant: %s' % self.ch_cal.GetString(self.ch_cal.GetSelection()))
 
     def onDetSel(self,event):
-        print 'Selected detector: ',self.ch_det.GetString(self.ch_det.GetSelection())
+        print('Selected detector: %s' % self.ch_det.GetString(self.ch_det.GetSelection()))
 
 
     def onEorLSel(self,event): 
@@ -311,7 +311,7 @@ class CalibrationPopup(wx.Frame):
             try:
                 self.raw_img = fabio.open(path).data
             except:
-                print 'This is not an image openable by fabio.'
+                print('This is not an image openable by fabio.')
                 pass
             self.plot2Dimg.display(self.raw_img)       
             self.plot2Dimg.redraw()
@@ -444,7 +444,7 @@ class CalibrationPopup(wx.Frame):
             try:
                 print
                 self.ai = pyFAI.load(path)
-                print 'Loading calibration file: %s' % path
+                print('Loading calibration file: %s' % path)
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
                 return
