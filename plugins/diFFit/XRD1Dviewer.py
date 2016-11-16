@@ -442,7 +442,7 @@ class Viewer1DXRD(wx.Frame):
         ## mkak 2016.11.10
         
         plt_no = self.ch_data.GetSelection()        
-        print 'EVENTUALLY, button will remove plot: ',self.data_name[plt_no]
+        print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
 
         ## removing name from list works... do not activate till rest is working
         ## mkak 2016.11.10
@@ -452,7 +452,7 @@ class Viewer1DXRD(wx.Frame):
     def hide1Ddata(self,event):
 
         plt_no = self.ch_data.GetSelection()        
-        print 'EVENTUALLY, button will hide plot: ',self.data_name[plt_no]
+        print('EVENTUALLY, button will hide plot: %s' % self.data_name[plt_no])
 
     def onSELECT(self,event):
     
@@ -594,7 +594,7 @@ class Viewer1DXRD(wx.Frame):
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
             except:
-               print 'incorrect xy file format: %s' % os.path.split(path)[-1]
+               print('incorrect xy file format: %s' % os.path.split(path)[-1])
 
 
 
@@ -612,7 +612,8 @@ class Viewer1DXRD(wx.Frame):
         dlg.Destroy()
         
         if save:
-            print 'need to write something to save data - like pyFAI does?'
+            ## mkak 2016.11.16
+            print('need to write something to save data - like pyFAI does?')
 
     def loadCIF(self,event):
     
@@ -633,7 +634,7 @@ class Viewer1DXRD(wx.Frame):
             try:
                 cif = xu.materials.Crystal.fromCIF(path)
             except:
-                print 'incorrect file format: %s' % os.path.split(path)[-1]
+                print('incorrect file format: %s' % os.path.split(path)[-1])
                 return
 
             ## generate hkl list
@@ -645,10 +646,6 @@ class Viewer1DXRD(wx.Frame):
                         if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
                             hkllist.append([i,j,k])
             
-#             hkllist.append([i,j,k] for i,j,k in np.arange(maxhkl),np.arange(maxhkl),np.arange(maxhkl))
-#             print hkllist
-            
-
             hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
 
@@ -670,7 +667,7 @@ class Viewer1DXRD(wx.Frame):
                 qall = np.array(qall)
                 self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
             else:
-                print 'Could not calculate real structure factors.'
+                print('Could not calculate real structure factors.')
 
     def openPONI(self,event):
              
@@ -688,7 +685,7 @@ class Viewer1DXRD(wx.Frame):
         if read:
 
             try:
-                print 'Loading calibration file: %s' % path
+                print('Loading calibration file: %s' % path)
                 ai = pyFAI.load(path)
             except:
                 print('Not recognized as a pyFAI calibration file.')
@@ -941,7 +938,7 @@ class Calc1DPopup(wx.Dialog):
 
     def onSPIN(self, event):
         self.wedges.SetValue(str(event.GetPosition())) 
-        print 'not currently using multiple wedges for calculations'
+        print('WARNING: not currently using multiple wedges for calculations')
 
     def onSAVE(self,event):
 

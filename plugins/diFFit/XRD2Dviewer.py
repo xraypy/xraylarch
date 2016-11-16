@@ -332,7 +332,7 @@ class Viewer2DXRD(wx.Frame):
     def on1DXRD(self,event):
         
         if self.ai is None:
-            print 'Cannot calculate 1D XRD without calibration file.'
+            print('Cannot calculate 1D XRD without calibration file.')
         else:
             myDlg = Calc1DPopup(self.plt_img,self.ai)
             if myDlg.ShowModal() == wx.ID_OK:
@@ -362,7 +362,7 @@ class Viewer2DXRD(wx.Frame):
         if read:
             try:
                 self.ai = pyFAI.load(path)
-                print 'Loading calibration file: %s' % path
+                print('Loading calibration file: %s' % path)
                 self.showPONI(None)
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
@@ -374,7 +374,7 @@ class Viewer2DXRD(wx.Frame):
     
     def showPONI(self,event):
         if self.ai is None:
-            print ' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx '
+            print(' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx ')
         else:
             print
             print
@@ -452,7 +452,7 @@ class Viewer2DXRD(wx.Frame):
     def createMask(self,event):
         
         MaskToolsPopup(self)
-        print 'Popup to create mask!'
+        print('Popup to create mask!')
 
     def clearMask(self,event):
         self.msk_img = np.zeros(np.shape(self.raw_img))

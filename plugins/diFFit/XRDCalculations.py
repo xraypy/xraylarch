@@ -89,7 +89,7 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
             qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark)
         t1 = time.time()
         if verbose:
-            print('\ttime to integrate data = %0.3f s' % ((t1-t0)))
+            print('\tTime to integrate data = %0.3f s' % ((t1-t0)))
 
         if verbose:
             print('Parameters for 1D integration:')
@@ -207,9 +207,9 @@ def fabioOPEN(path):
             image = fabio.open(path).data
             return image
         except:
-            print 'fabio could not import the image: %s' % path
+            print('fabio could not import the image: %s' % path)
     else:
-        print 'fabio not available for opening images.'
+        print('fabio package not available for opening images.')
         
     return
 ##########################################################################
@@ -235,7 +235,7 @@ def xy_file_reader(xyfile,char=None,verbose=False):
         y += [float(fields[1])]
 
     if verbose:
-        print '\nFinished reading file %s.' % (xyfile)
+        print('\nFinished reading file %s.' % xyfile)
 
     return np.array(x),np.array(y)
 
@@ -408,7 +408,7 @@ def read_datfile(filename):
         y += [float(line.split()[1])]        
 
     if VERBOSE:
-        print '\nFinished reading file %s.' % (filename)
+        print('\nFinished reading file %s.' % filename)
 
     return np.array(x),np.array(y)   
 
@@ -502,7 +502,7 @@ def calculate_peaks(ciffile):
     if F_cif and max(F_cif) > 0:
         q_cif = np.array(q_cif)
     else:
-        print 'Could not calculate any structure factors.'
+        print('Could not calculate any structure factors.')
         return
     
     return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
@@ -525,7 +525,7 @@ def write_rawfile(a,b,filename):
     ## Close file
     ##    
     f.close()
-    print '\nCreated file %s.' % (filename)
+    print('\nCreated file %s.' % filename)
 
     return()
 
@@ -755,7 +755,7 @@ def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift):
             noplot = 1
             if i < 10 and noplot == 0:
                 plt_str = 'inst = %0.6f\nsize = %0.6f\n comb = %0.6f'
-                print plt_str % (Bi[i],Bs[i],Bm)
+                print(plt_str % (Bi[i],Bs[i],Bm))
                 plot_diff(twthG,intBi,'instrument') 
                 plot_diff(twthG,intBs,'size')
                 plot_diff(twthG,intBm,'comb.')
@@ -779,7 +779,7 @@ def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift):
 
 
             if i < 10 and noplot == 0:
-                print '2theda shift is', B-shift2th
+                print('2theda shift is %0.4f' %(B-shift2th))
                 plot_diff(twthG,new_intensity,'conv.')
                 plt.legend()
                 plt.show()
@@ -827,9 +827,9 @@ def fit_uvw(args,data_q,data_int):
                 pkct = pkct + 1
                 ilist[pkct] = i
                 qlist[pkct] = data_q[i]
-                #print 'Peak %i found at %0.3f 1/A.' % (pkct,qlist[pkct])
+                #print('Peak %i found at %0.3f 1/A.' % (pkct,qlist[pkct]))
     if VERBOSE:
-        print '%i peaks found.' % pkct
+        print('%i peaks found.' % pkct)
 
     #pkct = 14 ## OVERRIDE
     fit_2th  = np.zeros(pkct)
@@ -840,12 +840,12 @@ def fit_uvw(args,data_q,data_int):
     for i in range(pkct):
         j = ilist[i+1]
         if VERBOSE: # and args.plot:
-            print 'Fitting peak #%i' % (i+1)
+            print('Fitting peak #%i' % (i+1))
         if j > HW and abs(np.shape(data_int)[0]-j) > HW:
             minval = int(j - HW)
             maxval = int(j + HW)
         else:
-            print 'need to limit range'
+            print('need to limit range')
 
         
         xdata = data_q[minval:maxval]
@@ -855,7 +855,7 @@ def fit_uvw(args,data_q,data_int):
         (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(args,xdata,ydata,i)
         tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
         sqFWHM[i] = fit_FWHM[i]**2
-        #print fit_2th[i],fit_FWHM[i]     
+        #print(fit_2th[i],fit_FWHM[i])    
 
     (u,v,w) = data_poly_fit(tanth,sqFWHM)
     
@@ -899,9 +899,9 @@ def plot_patterns(args):
 
     ## Plot diffraction pattern and data.
     if args.skip:
-        print 'Skipping diffraction data plot.'
+        print('Skipping diffraction data plot.')
     else:
-        print '\nPlotting:'
+        print('\nPlotting:')
         letint = ord('a')
         fit_str = ''
         plt.figure()
@@ -1014,7 +1014,7 @@ def plot_patterns(args):
         if args.save:
             pngfile = '%s.png' % DATfile.split('.')[0]
             plb.savefig(pngfile, bbox_inches='tight')
-            print 'Saved diffraction data: %s' % pngfile
+            print('Saved diffraction data: %s' % pngfile)
         else:
             plt.show()
 
@@ -1079,7 +1079,7 @@ def fit_background(my_pars, data_q, data_int):
     c = my_pars['c'].value
     
     if ERRORcheck == 1:
-        print a,b,c
+        print(a,b,c)
     
     calc_int = background(data_q,a,b,c)
 
@@ -1095,7 +1095,7 @@ def fit_pattern(my_pars, data_q, data_int):
     pk_shift = my_pars['pk_shift'].value
     
     if ERRORcheck == 1:
-        print nsize,a,b,c,pk_shift
+        print(nsize,a,b,c,pk_shift)
     
     calc_int = patternbroadening(data_q,nsize,pk_shift)+background(data_q,a,b,c)
 
@@ -1135,7 +1135,7 @@ def fit_with_minimization():
         minC =  0.8*bkgdC
         maxC =  1.2*bkgdC
         
-    print minA,minB,minC,maxA,maxB,maxC
+    print(minA,minB,minC,maxA,maxB,maxC)
 
     my_pars.add('a', value=bkgdA, min=minA, max=maxA)
     my_pars.add('b', value=bkgdB, min=minB, max=maxB)

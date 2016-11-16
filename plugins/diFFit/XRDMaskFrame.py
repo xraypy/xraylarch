@@ -173,10 +173,10 @@ class MaskToolsPopup(wx.Frame):
             try:
                 self.raw_img = fabio.open(path).data
             except:
-                print 'This is not an image openable by fabio.'
+                print('This is not an image openable by fabio.')
                 self.raw_img = np.zeros((1024,1024))
         else:
-            print 'No image selected.'
+            print('No image selected.')
             self.raw_img = np.zeros((1024,1024))            
 
     def ImageSizer(self):
@@ -245,22 +245,22 @@ class MaskToolsPopup(wx.Frame):
 
     def ShapeChoice(self, event):
     
-        print 'The shape you chose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection())
+        print('The shape you chose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection()))
     
     def clearMask(self, event):
         
-        print 'Clearing the mask...'
+        print('Clearing the mask...')
 
     def saveMask(self, event):
 
-        print 'This will trigger the saving of a mask.'
+        print('This will trigger the saving of a mask.')
         
     def addAREA(self,event):
 
         ## Needs to be called when area is drawn.
         ## mkak 2016.10.31
 
-        print 'updates the list with new areas'
+        print('updates the list with new areas')
         #self.area_list.append('area %i' % len(self.area_list))
         #self.slct_area.Set(self.area_list)
 
