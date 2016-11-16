@@ -21,7 +21,6 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
                             
 from larch_plugins.xrd import XRD
-from larch_plugins.xrd import integrate_xrd
 
 HAS_pyFAI = False
 try:
@@ -721,19 +720,13 @@ class GSEXRM_MapFile(object):
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
-        mkak 2016.08.30
-        restructured
-        mkak 2016.09.09
-        adding new options; clean up
-        mkak 2016.09.28
+        mkak 2016.11.16
         """
 
         checkFORsubgroup('xrd',self.xrmmap)
         xrdgrp = self.xrmmap['xrd']
                 
         checkFORattrs('calfile',xrdgrp)
-        checkFORattrs('maskfile',xrdgrp)
-        checkFORattrs('bkgdfile',xrdgrp)
 
         xrdcal = False        
         if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
@@ -771,27 +764,6 @@ class GSEXRM_MapFile(object):
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
             xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-
-
-        try:
-            if self.xrdmask and os.path.exists(self.xrdmask):
-                if xrdgrp.attrs['maskfile'] != str(self.xrdmask):
-                    print('New mask file detected: %s' % str(self.xrdmask))
-                    xrdgrp.attrs['maskfile'] = '%s' % (self.xrdmask)
-                    self.readEDFfile(name='mask',keyword='maskfile')
-        except:
-            print('Mask not loaded correctly.')
-            pass
-
-        try:
-            if self.xrdbkgd and os.path.exists(self.xrdbkgd):
-                if xrdgrp.attrs['bkgdfile'] != str(self.xrdbkgd):
-                    print('New background file detected: %s' % str(self.xrdbkgd))
-                    xrdgrp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
-                    self.readEDFfile(name='bkgd',keyword='bkgdfile')
-        except:
-            print('Background not loaded correctly.')
-            pass
 
         print('')
         self.h5root.flush()

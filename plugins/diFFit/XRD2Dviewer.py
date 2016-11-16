@@ -68,6 +68,8 @@ class Viewer2DXRD(wx.Frame):
         self.use_mask = False
         self.use_bkgd = False
         
+        self.xrddisplay1D = None
+        
         self.color = 'bone'
         self.flip = 'none'
         
@@ -358,15 +360,12 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-
             try:
                 self.ai = pyFAI.load(path)
                 print 'Loading calibration file: %s' % path
+                self.showPONI(None)
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
-                pass
-
-            self.showPONI(None)
 
     def setPONI(self,ai):
 
