@@ -44,13 +44,13 @@ class Viewer2DXRD(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, *args, **kw):
-        title = 'diFFit.py : 2D XRD Viewer'
+    def __init__(self, _larch=None,title='', *args, **kw):
+        label = 'diFFit : 2D XRD Data Analysis Software'
         wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
         
         self.SetMinSize((700,500))
         
-        self.statusbar = self.CreateStatusBar(3,wx.CAPTION )
+        self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
         ## Default image information
         self.name_images = []

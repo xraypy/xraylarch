@@ -82,7 +82,7 @@ from larch.wxlib import larchframe
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame
-from larch_plugins.diFFit.XRD1Dviewer import Viewer1DXRD
+from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
 
@@ -1597,10 +1597,10 @@ class MapViewerFrame(wx.Frame):
         'displays 1D XRD pattern in diFFit viewer'
         
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = Viewer1DXRD(_larch=self.larch)
+            self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
             try:
                 AI = calculate_ai(self.current_file.xrmmap['xrd'])
-                self.xrddisplay1D.addLAMBDA(AI._wavelength,units='m')
+                self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
             except:
                 pass
 
