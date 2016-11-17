@@ -124,7 +124,7 @@ class diFFit1DFrame(wx.Frame):
         self.statusbar.SetStatusText(s, panel)
 
     def plot1Dxrd(self,data,label=None,wavelength=None):
-
+    
         self.xrd1Dviewer.add1Ddata(*data,name=label,wavelength=wavelength)
 
 class Fitting1DXRD(wx.Panel):
@@ -1039,6 +1039,8 @@ class Calc1DPopup(wx.Dialog):
         ## Set defaults
         self.wedges.SetValue('1')
         
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
 
     def Init(self):
     
@@ -1063,7 +1065,6 @@ class Calc1DPopup(wx.Dialog):
         wedgesizer.Add(ttl_wedges,flag=wx.BOTTOM,border=8)
         wedgesizer.Add(wsizer,flag=wx.BOTTOM,border=8)
 
-        mainsizer.Add(wedgesizer,flag=wx.ALL,border=8)
 
         ## Y-Range
         ysizer = wx.BoxSizer(wx.VERTICAL)
@@ -1085,7 +1086,7 @@ class Calc1DPopup(wx.Dialog):
         ysizer.Add(ttl_yrange,  flag=wx.BOTTOM, border=5)        
         ysizer.Add(yminsizer,  flag=wx.BOTTOM, border=5)
         ysizer.Add(ymaxsizer,  flag=wx.BOTTOM, border=5)
-        mainsizer.Add(ysizer,  flag=wx.ALL, border=5)
+
 
 
         ## X-Range
@@ -1125,24 +1126,37 @@ class Calc1DPopup(wx.Dialog):
         xsizer.Add(xstepsizer, flag=wx.TOP|wx.BOTTOM, border=5)
         xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
         xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
-        mainsizer.Add(xsizer,  flag=wx.ALL, border=5)
 
-        ## Okay Buttons
-#         btn_cncl = wx.Button(self.panel, wx.CANCEL)
-        btn_save = wx.Button(self.panel, label = 'Save 1D')
-        btn_plot  = wx.Button(self.panel, label = 'Plot 1D')
+        ## Plot/save
 
-        btn_save.Bind(wx.EVT_BUTTON,self.onSAVE)
-        btn_plot.Bind(wx.EVT_BUTTON,self.onPLOT)
-#         btn_cncl.SetLabel('Close')
+        self.ch_save = wx.CheckBox(self.panel, label = 'Save 1D?')
+        self.ch_plot  = wx.CheckBox(self.panel, label = 'Plot 1D?')
 
-        minisizer = wx.BoxSizer(wx.HORIZONTAL)
-#         minisizer.Add(btn_cncl,  flag=wx.RIGHT, border=5)
-        minisizer.Add(btn_save,  flag=wx.RIGHT, border=5)
-        minisizer.Add(btn_plot,  flag=wx.RIGHT, border=5)
-        
-        mainsizer.Add(minisizer, flag=wx.ALL, border=8)
-#         mainsizer.Add(btn_cncl, flag=wx.ALL, border=8)
+        minisizer = wx.BoxSizer(wx.VERTICAL)
+        minisizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
+        minisizer.Add(self.ch_plot,  flag=wx.RIGHT, border=5)
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+        #hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        #oksizer.Add(hlpBtn,flag=wx.RIGHT,  border=8)
+        oksizer.Add(canBtn, flag=wx.RIGHT, border=8) 
+        oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
+
+        mainsizer.Add(wedgesizer, flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(ysizer,     flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(xsizer,     flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(minisizer,  flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer,    flag=wx.ALL, border=10) 
+
 
         self.panel.SetSizer(mainsizer)
         
@@ -1176,33 +1190,33 @@ class Calc1DPopup(wx.Dialog):
         self.wedges.SetValue(str(event.GetPosition())) 
         print('WARNING: not currently using multiple wedges for calculations')
 
-    def onSAVE(self,event):
-
-        self.getValues()
-        
-        wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, 'Save file as...',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards,
-                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
-
-        path, save = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            save = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if save:
-            self.data1D = integrate_xrd(self.data2D,save=save,steps=self.steps,ai = self.ai,file=path)
-
-    def onPLOT(self,event):
-
-        self.getValues()
-        
-        self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False)
-        xrddisplay1D = Viewer1DXRD()
-        xrddisplay1D.plot1Dxrd(self.data1D,wavelength=self.ai._wavelength)
-        
+#     def onSAVE(self,event):
+# 
+#         self.getValues()
+#         
+#         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+#         dlg = wx.FileDialog(self, 'Save file as...',
+#                            defaultDir=os.getcwd(),
+#                            wildcard=wildcards,
+#                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
+# 
+#         path, save = None, False
+#         if dlg.ShowModal() == wx.ID_OK:
+#             save = True
+#             path = dlg.GetPath().replace('\\', '/')
+#         dlg.Destroy()
+#         
+#         if save:
+#             self.data1D = integrate_xrd(self.data2D,save=save,steps=self.steps,ai = self.ai,file=path)
+# 
+#     def onPLOT(self,event):
+# 
+#         self.getValues()
+# 
+#         self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False)
+#         xrddisplay1D = diFFit1DFrame()
+#         xrddisplay1D.plot1Dxrd(self.data1D,wavelength=self.ai._wavelength)
+#         xrddisplay1D.Show()
 
     def getValues(self):
     
@@ -1247,11 +1261,13 @@ class SetLambdaDialog(wx.Dialog):
         hmain2.Add(okBtn,  flag=wx.RIGHT,  border=8)
 
         main.Add(hmain1, flag=wx.ALL, border=10) 
-        main.Add(hmain2, flag=wx.ALL, border=10) 
+        main.Add(hmain2, flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
         panel.SetSizer(main)
 
         self.Show()
+        ix,iy = panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
         
         ## set default
         self.hc = constants.value(u'Planck constant in eV s') * \

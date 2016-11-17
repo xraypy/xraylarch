@@ -21,7 +21,7 @@ from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,calcula
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
-from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup
+from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
 
 HAS_pyFAI = False
 try:
@@ -79,7 +79,9 @@ class Viewer2DXRD(wx.Frame):
         self.Panel2DViewer()
         
         self.Centre()
-        self.Show(True)
+        self.Show()
+        
+        self.btn_integ.Disable()
 
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
@@ -331,15 +333,41 @@ class Viewer2DXRD(wx.Frame):
 
     def on1DXRD(self,event):
         
-        if self.ai is None:
-            print('Cannot calculate 1D XRD without calibration file.')
-        else:
-            myDlg = Calc1DPopup(self.plt_img,self.ai)
-            if myDlg.ShowModal() == wx.ID_OK:
-                read = True
+        myDlg = Calc1DPopup(self.plt_img,self.ai)
+        
+        read, save, plot = False, False, False
+        if myDlg.ShowModal() == wx.ID_OK:
+            read = True
+            attrs = {'ai':self.ai, 'steps':myDlg.steps}
+            save = myDlg.ch_save.GetValue()
+            plot = myDlg.ch_plot.GetValue()
+        myDlg.Destroy()
+        
+        print 'your choices:'
+        print 'save?',save
+        print 'plot?',plot
+            
+        if read:
+            if save:
+                wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+                dlg = wx.FileDialog(self, 'Save file as...',
+                                   defaultDir=os.getcwd(),
+                                   wildcard=wildcards,
+                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                path, save = None, False
+                if dlg.ShowModal() == wx.ID_OK:
+                    save = True
+                    path = dlg.GetPath().replace('\\', '/')
+                    attrs.update({'file':path,'save':save})
+                dlg.Destroy()
 
-            myDlg.Destroy()
-
+            data1D = integrate_xrd(self.plt_img,**attrs)
+            if plot:
+                if self.xrddisplay1D is None:
+                    self.xrddisplay1D = diFFit1DFrame()
+                self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
+                self.xrddisplay1D.Show()
+            
 ##############################################
 #### CALIBRATION FUNCTIONS
     def Calibrate(self,event):
@@ -363,14 +391,16 @@ class Viewer2DXRD(wx.Frame):
             try:
                 self.ai = pyFAI.load(path)
                 print('Loading calibration file: %s' % path)
-                self.showPONI(None)
+                #self.showPONI(None)
+                self.btn_integ.Enable()
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
 
     def setPONI(self,ai):
 
         self.ai = ai
-        self.showPONI(None)
+        #self.showPONI(None)
+        self.btn_integ.Enable()
     
     def showPONI(self,event):
         if self.ai is None:
