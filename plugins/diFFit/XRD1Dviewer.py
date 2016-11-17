@@ -1131,6 +1131,9 @@ class Calc1DPopup(wx.Dialog):
 
         self.ch_save = wx.CheckBox(self.panel, label = 'Save 1D?')
         self.ch_plot  = wx.CheckBox(self.panel, label = 'Plot 1D?')
+        
+        self.ch_save.Bind(wx.EVT_CHECKBOX, self.onCHECK)
+        self.ch_plot.Bind(wx.EVT_CHECKBOX, self.onCHECK)
 
         minisizer = wx.BoxSizer(wx.VERTICAL)
         minisizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
@@ -1155,7 +1158,7 @@ class Calc1DPopup(wx.Dialog):
         mainsizer.AddSpacer(15)
         mainsizer.Add(minisizer,  flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
-        mainsizer.Add(oksizer,    flag=wx.ALL, border=10) 
+        mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
 
         self.panel.SetSizer(mainsizer)
@@ -1167,9 +1170,6 @@ class Calc1DPopup(wx.Dialog):
            self.okBtn.Enable()
         else:
             self.okBtn.Disable()
-            
-     
-        
         
     def setDefaults(self):
 
@@ -1182,7 +1182,15 @@ class Calc1DPopup(wx.Dialog):
         
         self.wedge_arrow.SetRange(1, 10)
         self.wedge_arrow.SetValue(1)
-#         self.okBtn.Disable()
+        self.okBtn.Disable()
+
+        self.ymin.Disable()
+        self.ymax.Disable()
+        self.xmin.Disable()
+        self.xmax.Disable()
+        self.wedges.Disable()
+        self.wedge_arrow.Disable()
+        self.ch_xunit.Disable()
         
     def onUnits(self,event):
 
