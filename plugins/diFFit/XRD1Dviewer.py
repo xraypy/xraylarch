@@ -1190,34 +1190,6 @@ class Calc1DPopup(wx.Dialog):
         self.wedges.SetValue(str(event.GetPosition())) 
         print('WARNING: not currently using multiple wedges for calculations')
 
-#     def onSAVE(self,event):
-# 
-#         self.getValues()
-#         
-#         wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
-#         dlg = wx.FileDialog(self, 'Save file as...',
-#                            defaultDir=os.getcwd(),
-#                            wildcard=wildcards,
-#                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
-# 
-#         path, save = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             save = True
-#             path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-#         
-#         if save:
-#             self.data1D = integrate_xrd(self.data2D,save=save,steps=self.steps,ai = self.ai,file=path)
-# 
-#     def onPLOT(self,event):
-# 
-#         self.getValues()
-# 
-#         self.data1D = integrate_xrd(self.data2D,steps=self.steps,ai = self.ai,save=False)
-#         xrddisplay1D = diFFit1DFrame()
-#         xrddisplay1D.plot1Dxrd(self.data1D,wavelength=self.ai._wavelength)
-#         xrddisplay1D.Show()
-
     def getValues(self):
     
         self.steps = int(self.xstep.GetValue())
