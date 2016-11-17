@@ -71,29 +71,26 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
             else:
                 ai = calculate_ai(AI)
         
-        if unit == 'q':
-            iunit = 'q_A^-1'
-        elif unit == '2th':
-            iunit='2th_deg'
+        attrs = {}
+        if unit == '2th':
+            attrs.update({'unit':'2th_deg'})
         else:
-            print('Unknown unit: %s. Using q.' % unit)
-            unit = 'q'
-            iunit = 'q_A^-1'
-
-        t0 = time.time()
-    
+            attrs.update({'unit':'q_A^-1'})
+        if mask:
+            attrs.update({'mask':mask})
+        if dark:
+            attrs.update({'dark':dark})        
         if save:
             print('Saving %s data to file: %s\n' % (unit,file))
-            qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark,filename=file)
-        else:
-            qI = ai.integrate1d(xrd_map,steps,unit=iunit,mask=mask,dark=dark)
-        t1 = time.time()
-        if verbose:
-            print('\tTime to integrate data = %0.3f s' % ((t1-t0)))
+            attrs.update({'filename':file})
 
         if verbose:
-            print('Parameters for 1D integration:')
-            print(ai)
+            t0 = time.time()
+        qI = ai.integrate1d(xrd_map,steps,**attrs)
+        if verbose:
+            t1 = time.time()
+            print('\tTime to integrate data = %0.3f s' % ((t1-t0)))
+
     else:
         print('pyFAI not imported. Cannot calculate 1D integration without it.')
         return

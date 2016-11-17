@@ -338,14 +338,16 @@ class Viewer2DXRD(wx.Frame):
         read, save, plot = False, False, False
         if myDlg.ShowModal() == wx.ID_OK:
             read = True
-            attrs = {'ai':self.ai, 'steps':myDlg.steps}
             save = myDlg.ch_save.GetValue()
             plot = myDlg.ch_plot.GetValue()
+
+            attrs = {'ai':self.ai}
+            if int(myDlg.xstep.GetValue()) < 1:
+                attrs.update({'steps':5001})
+            else:
+                attrs.update({'steps':int(myDlg.steps)})
+
         myDlg.Destroy()
-        
-        print 'your choices:'
-        print 'save?',save
-        print 'plot?',plot
             
         if read:
             if save:

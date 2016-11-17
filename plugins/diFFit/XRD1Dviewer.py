@@ -1140,12 +1140,12 @@ class Calc1DPopup(wx.Dialog):
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
         #hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
-        okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        self.okBtn  = wx.Button(self.panel, wx.ID_OK      )
         canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
 
         #oksizer.Add(hlpBtn,flag=wx.RIGHT,  border=8)
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8) 
-        oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
+        oksizer.Add(self.okBtn,  flag=wx.RIGHT,  border=8)
 
         mainsizer.Add(wedgesizer, flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
@@ -1160,6 +1160,16 @@ class Calc1DPopup(wx.Dialog):
 
         self.panel.SetSizer(mainsizer)
         
+
+    def onCHECK(self,event):
+    
+        if self.ch_save.GetValue() or self.ch_plot.GetValue():
+           self.okBtn.Enable()
+        else:
+            self.okBtn.Disable()
+            
+     
+        
         
     def setDefaults(self):
 
@@ -1172,6 +1182,7 @@ class Calc1DPopup(wx.Dialog):
         
         self.wedge_arrow.SetRange(1, 10)
         self.wedge_arrow.SetValue(1)
+#         self.okBtn.Disable()
         
     def onUnits(self,event):
 
