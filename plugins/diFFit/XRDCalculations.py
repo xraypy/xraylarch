@@ -461,7 +461,7 @@ def calculate_peaks(ciffile):
     wvlgth = LAMBDA
     try:
         energy = xu.utilities.lam2en(wvlgth)
-    else:
+    except:
         hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
         energy = hc/(self.wavelength*(1e-10))*1e3
