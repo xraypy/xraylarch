@@ -459,7 +459,12 @@ def calculate_peaks(ciffile):
 
     ## Calculate the wavelength/energy
     wvlgth = LAMBDA
-    energy = xu.utilities.lam2en(wvlgth)
+    try:
+        energy = xu.utilities.lam2en(wvlgth)
+    else:
+        hc = constants.value(u'Planck constant in eV s') * \
+                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+        energy = hc/(self.wavelength*(1e-10))*1e3
     
     ## Generate hkl list
     maxhkl = 8
