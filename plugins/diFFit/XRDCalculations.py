@@ -57,6 +57,20 @@ except ImportError:
 
 
 ##########################################################################
+def find_peaks(q,I):
+
+    ttlpnts = len(q)
+
+    pnts = 50
+    peak_indices = signal.find_peaks_cwt(I, np.arange(1,int(ttlpnts/pnts)),gap_thresh=5)
+    print peak_indices
+    peak_x, peak_y = [],[]
+    for i in peak_indices:
+        peak_x += [q[i]]
+        peak_y += [I[i]]
+
+    return peak_x,peak_y
+#########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
                   save=False, file='~/test.xy', mask=None, dark=None, verbose=False):
 
