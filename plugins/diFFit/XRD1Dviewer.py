@@ -57,29 +57,35 @@ import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
+# musicdata = {
+# 1 : ("213", "The Price Of Love", "Rock"),
+# 2 : ("392", "Tom's Diner", "Rock"),
+# 3 : ("641", "Praying For Time", "Rock"),
+# 4 : ("Gloria Estefan", "Here We Are", "Rock"),
+# 5 : ("Linda Ronstadt", "Don't Know Much", "Rock"),
+# 6 : ("Michael Bolton", "How Am I Supposed To Live Without You", "Blues"),
+# 7 : ("Paul Young", "Oh Girl", "Rock"),
+# 8 : ("Paula Abdul", "Opposites Attract", "Rock"),
+# 9 : ("Richard Marx", "Should've Known Better", "Rock"),
+# 10: ("Rod Stewart", "Forever Young", "Rock"),
+# 11: ("Roxette", "Dangerous", "Rock"),
+# 12: ("Sheena Easton", "The Lover In Me", "Rock"),
+# 13: ("Sinead O'Connor", "Nothing Compares 2 U", "Rock"),
+# 14: ("Stevie B.", "Because I Love You", "Rock"),
+# 15: ("Taylor Dayne", "Love Will Lead You Back", "Rock"),
+# 16: ("The Bangles", "Eternal Flame", "Rock"),
+# 17: ("Wilson Phillips", "Release Me", "Rock"),
+# 18: ("Billy Joel", "Blonde Over Blue", "Rock"),
+# 19: ("Billy Joel", "Famous Last Words", "Rock"),
+# 20: ("Billy Joel", "Lullabye (Goodnight, My Angel)", "Rock"),
+# 21: ("Billy Joel", "The River Of Dreams", "Rock"),
+# 22: ("Billy Joel", "Two Thousand Years", "Rock")
+# }
+
 musicdata = {
-1 : ("Bad English", "The Price Of Love", "Rock"),
-2 : ("DNA featuring Suzanne Vega", "Tom's Diner", "Rock"),
-3 : ("George Michael", "Praying For Time", "Rock"),
-4 : ("Gloria Estefan", "Here We Are", "Rock"),
-5 : ("Linda Ronstadt", "Don't Know Much", "Rock"),
-6 : ("Michael Bolton", "How Am I Supposed To Live Without You", "Blues"),
-7 : ("Paul Young", "Oh Girl", "Rock"),
-8 : ("Paula Abdul", "Opposites Attract", "Rock"),
-9 : ("Richard Marx", "Should've Known Better", "Rock"),
-10: ("Rod Stewart", "Forever Young", "Rock"),
-11: ("Roxette", "Dangerous", "Rock"),
-12: ("Sheena Easton", "The Lover In Me", "Rock"),
-13: ("Sinead O'Connor", "Nothing Compares 2 U", "Rock"),
-14: ("Stevie B.", "Because I Love You", "Rock"),
-15: ("Taylor Dayne", "Love Will Lead You Back", "Rock"),
-16: ("The Bangles", "Eternal Flame", "Rock"),
-17: ("Wilson Phillips", "Release Me", "Rock"),
-18: ("Billy Joel", "Blonde Over Blue", "Rock"),
-19: ("Billy Joel", "Famous Last Words", "Rock"),
-20: ("Billy Joel", "Lullabye (Goodnight, My Angel)", "Rock"),
-21: ("Billy Joel", "The River Of Dreams", "Rock"),
-22: ("Billy Joel", "Two Thousand Years", "Rock")
+1 : ("18323", "Guidottiite", "173 : P 63"),
+2 : ("392", "Crandallite", "166 : R -3 m"),
+3 : ("11298", "CsCl", "225 : F m -3 m")
 }
 
 class diFFit1DFrame(wx.Frame):
@@ -197,9 +203,9 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.SetAutoLayout(True)
         
     def populateList(self):
-        self.list.InsertColumn(0, "AMSCD ID")
-        self.list.InsertColumn(1, "Name", wx.LIST_FORMAT_RIGHT)
-        self.list.InsertColumn(2, "Space Group")
+        self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
+        self.list.InsertColumn(1, 'Name')
+        self.list.InsertColumn(2, 'Space Group')
         items = musicdata.items()
         
         for key, data in items:
@@ -211,17 +217,17 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(2, 100)
-
-        # show how to select an item
-        self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
-
-        # show how to change the colour of a couple items
-        item = self.list.GetItem(1)
-        item.SetTextColour(wx.BLUE)
-        self.list.SetItem(item)
-        item = self.list.GetItem(4)
-        item.SetTextColour(wx.RED)
-        self.list.SetItem(item)
+# 
+#         # show how to select an item
+#         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+# 
+#         # show how to change the colour of a couple items
+#         item = self.list.GetItem(1)
+#         item.SetTextColour(wx.BLUE)
+#         self.list.SetItem(item)
+#         item = self.list.GetItem(4)
+#         item.SetTextColour(wx.RED)
+#         self.list.SetItem(item)
 
         self.currentItem = 0
         
