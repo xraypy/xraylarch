@@ -12,13 +12,12 @@ from scipy import constants
 import matplotlib.cm as colormap
 
 import wx
+import wx.lib.scrolledpanel as scrolled
 
 #from wxmplot.imagepanel import ImagePanel
 from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
-
-import xrayutilities as xu
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
@@ -34,6 +33,13 @@ try:
     import pyFAI.calibrant
     from pyFAI.calibration import Calibration
     HAS_pyFAI = True
+except ImportError:
+    pass
+
+HAS_XRAYUTIL = False
+try:
+    import xrayutilities as xu
+    HAS_XRAYUTIL = True
 except ImportError:
     pass
 
@@ -66,10 +72,12 @@ class diFFit1DFrame(wx.Frame):
         # create the page windows as children of the notebook
         self.xrd1Dviewer = Viewer1DXRD(nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(nb,owner=self)
+        self.xrddatabase = DatabaseXRD(nb)
 
         # add the pages to the notebook with the label to show on the tab
         nb.AddPage(self.xrd1Dviewer, 'Viewer')
         nb.AddPage(self.xrd1Dfitting, 'Fitting')
+        nb.AddPage(self.xrddatabase, 'XRD Database')
 
         # finally, put the notebook in a sizer for the panel to manage
         # the layout
@@ -126,6 +134,13 @@ class diFFit1DFrame(wx.Frame):
     def plot1Dxrd(self,data,label=None,wavelength=None):
     
         self.xrd1Dviewer.add1Ddata(*data,name=label,wavelength=wavelength)
+
+
+# class DatabaseXRD(wx.Panel):
+class DatabaseXRD(scrolled.ScrolledPanel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        t = wx.StaticText(self, -1, 'This is where we will show the XRD database.', (60,60))
 
 class Fitting1DXRD(wx.Panel):
     '''
