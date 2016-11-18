@@ -480,10 +480,10 @@ class cifDB(object):
             print 'Error on file : %s' % os.path.split(cifile)[-1]
             return
 
-#         if verbose:
-#             self.print_cif_entry(amcds_id,ALLelements,mineral_name,iuc_id,authors,cifile=cifile)
-#         else:
-#             print 'File : %s' % os.path.split(cifile)[-1]
+        if verbose:
+            self.print_cif_entry(amcds_id,ALLelements,mineral_name,iuc_id,authors,cifile=cifile)
+        else:
+            print 'File : %s' % os.path.split(cifile)[-1]
 
       
         
@@ -623,7 +623,7 @@ class cifDB(object):
         print_cif_entry(amcds_id,ALLelements,mineral_name,iuc_id,authors)
 
 
-    def print_cif_entry(amcds_id,ALLelements,mineral_name,iuc_id,authors,cifile=None):
+    def print_cif_entry(self,amcds_id,ALLelements,mineral_name,iuc_id,authors,cifile=None):
 
         if cifile:
             print ' ==== File : %s ====' % os.path.split(cifile)[-1] 
