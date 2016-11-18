@@ -90,11 +90,13 @@ XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
               'Pre-edge subtracted',
               'Raw Data + Pre-edge/Post-edge')
 
+
 class ProcessPanel(wx.Panel):
-    def __init__(self, parent, filelist=None, model=None, **kws):
+    def __init__(self, parent, filelist=None, file_groups=None, model=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
 
         self.filelist = filelist
+        self.file_groups = file_groups
         self.model = model
         self.groupname = None
         self.needs_update = False
@@ -113,6 +115,8 @@ class ProcessPanel(wx.Panel):
                        xshift=0, xscale=1, yshift=0, yscale=1,
                        smooth_op='None', smooth_conv='Lorentzian',
                        smooth_c0=2, smooth_c1=1, smooth_sig=1)
+
+        print 'Fill ' , dgroup
 
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(dgroup.proc_opts)
@@ -325,8 +329,11 @@ class ProcessPanel(wx.Panel):
         print(" Copy Param to Selected Groups: ", name)
         print(" Current: ", self.model.group)
         for checked in self.filelist.GetCheckedStrings():
-            print(" Copy to ", checked)
-            dgroup = self.model.get_group(checked)
+            groupname = self.file_groups[str(checked)]
+            dgroup = self.model.get_group(groupname)
+            if dgroup is None:
+                dgroup = self.model.get_group(str(groupname))
+            print(" Copy to ", checked, groupname, dgroup)
             print(" Group dir=", dir(dgroup))
             print(dgroup.proc_opts)
 
@@ -542,9 +549,11 @@ class LarchFitModel():
         return self.symtable._plotter.get_display(wintitle=wintitle)
 
     def get_group(self, groupname=None):
+        print(" Get group ", groupname)
         if groupname is None:
             groupname = self.groupname
         self.group = getattr(self.symtable, groupname, None)
+        print(" Get group ", self.group)
         self.groupname = groupname
         return self.group
 
@@ -560,9 +569,11 @@ class LarchFitModel():
         return xval, yval
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
-        plotcmd = oplot = self.symtable._plotter.plot
+        newplot = self.symtable._plotter.newplot
+        oplot = self.symtable._plotter.plot
+        plotcmd = oplot
         if new:
-            plotcmd = newplot = self.symtable._plotter.newplot
+            plotcmd = newplot
 
         dgroup = self.get_group(groupname=None)
         if not hasattr(dgroup, 'xdat'):
@@ -703,7 +714,9 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
         self.proc_panel = ProcessPanel(parent=self.nb,
-                                       filelist=self.filelist, model=self.model)
+                                       filelist=self.filelist,
+                                       file_groups=self.file_groups,
+                                       model=self.model)
         self.fit_panel =  FitPanel(parent=self.nb, main=self)
 
         self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
@@ -784,7 +797,8 @@ class ScanViewerFrame(wx.Frame):
         dgroup = self.model.get_group(groupname)
         self.nb.SetSelection(0)
         self.groupname = groupname
-        self.proc_panel.fill(groupname)
+        print("ShowFile Groupname ", groupname, dgroup)
+        self.proc_panel.fill(dgroup)
         self.proc_panel.groupname = groupname
         #         if self.dgroup.datatype == 'xas':
         #             self.proc_panel.xaspanel.Enable()
