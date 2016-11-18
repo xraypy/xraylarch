@@ -92,13 +92,10 @@ XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
 
 
 class ProcessPanel(wx.Panel):
-    def __init__(self, parent, filelist=None, file_groups=None, model=None, **kws):
+    def __init__(self, parent, model=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
 
-        self.filelist = filelist
-        self.file_groups = file_groups
         self.model = model
-        self.groupname = None
         self.needs_update = False
         self.proc_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
@@ -116,11 +113,9 @@ class ProcessPanel(wx.Panel):
                        smooth_op='None', smooth_conv='Lorentzian',
                        smooth_c0=2, smooth_c1=1, smooth_sig=1)
 
-        print 'Fill ' , dgroup
-
         if hasattr(dgroup, 'proc_opts'):
             predefs.update(dgroup.proc_opts)
-
+        
         self.xshift.SetValue(predefs['xshift'])
         self.yshift.SetValue(predefs['yshift'])
         self.xscale.SetValue(predefs['xscale'])
@@ -326,17 +321,35 @@ class ProcessPanel(wx.Panel):
         pack(self, sizer)
 
     def onCopyParam(self, name=None, event=None):
-        print(" Copy Param to Selected Groups: ", name)
-        print(" Current: ", self.model.group)
-        for checked in self.filelist.GetCheckedStrings():
-            groupname = self.file_groups[str(checked)]
-            dgroup = self.model.get_group(groupname)
-            if dgroup is None:
-                dgroup = self.model.get_group(str(groupname))
-            print(" Copy to ", checked, groupname, dgroup)
-            print(" Group dir=", dir(dgroup))
-            print(dgroup.proc_opts)
+        proc_opts = self.model.group.proc_opts
+        opts = {}
+        name = str(name)
+        if name == 'xas_op':
+            opts['xas_op'] = proc_opts['xas_op']
+        elif name == 'xas_e0':
+            opts['e0'] = proc_opts['e0']
+            opts['show_e0'] = proc_opts['show_e0']
+            opts['auto_e0'] = False
+        elif name == 'xas_step':
+            opts['edge_step'] = proc_opts['edge_step']
+            opts['auto_step'] = False
+        elif name == 'xas_pre':
+            opts['nvict'] = proc_opts['nvict']
+            opts['pre1'] = proc_opts['pre1']
+            opts['pre2'] = proc_opts['pre2']
+        elif name == 'xas_norm':
+            opts['nnorm'] = proc_opts['nnorm']
+            opts['norm1'] = proc_opts['norm1']
+            opts['norm2'] = proc_opts['norm2']
 
+        for checked in self.model.filelist.GetCheckedStrings():
+            groupname = self.model.file_groups[str(checked)]
+            grp = self.model.get_group(groupname)
+            if grp != self.model.group:
+                grp.proc_opts.update(opts)
+                self.fill(grp)
+                self.process(grp.groupname)
+                
     def onSmoothChoice(self, evt=None, value=1):
         try:
             choice = self.smooth_op.GetStringSelection().lower()
@@ -361,7 +374,7 @@ class ProcessPanel(wx.Panel):
     def onProcessTimer(self, evt=None):
         if self.needs_update and self.model.groupname is not None:
             self.process(self.model.groupname)
-            self.model.plot_group(groupname=self.groupname, new=True)
+            self.model.plot_group(groupname=self.model.groupname, new=True)
             self.needs_update = False
 
     def UpdatePlot(self, evt=None, **kws):
@@ -395,7 +408,10 @@ class ProcessPanel(wx.Panel):
         """
         dgroup = self.model.get_group(gname)
         if not hasattr(dgroup, 'proc_opts'):
-            dgroup.proc_opts = dict(datatype='xas')
+            dgroup.proc_opts = {}
+        if dgroup.proc_opts.get('datatype', None) is None:
+            dgroup.proc_opts['datatype'] = 'xas'
+
         proc_opts = dgroup.proc_opts
 
         proc_opts['xshift'] = self.xshift.GetValue()
@@ -456,9 +472,9 @@ class ProcessPanel(wx.Panel):
 
         if dgroup.datatype.startswith('xas'):
             pre_edge(dgroup, **preopts)
-
             for attr in  ('e0', 'edge_step'):
                 proc_opts[attr] = getattr(dgroup, attr)
+                
             for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
                 proc_opts[attr] = getattr(dgroup.pre_edge_details, attr)
 
@@ -471,6 +487,8 @@ class ProcessPanel(wx.Panel):
             self.xas_pre2.SetValue(proc_opts['pre2'])
             self.xas_nor1.SetValue(proc_opts['norm1'])
             self.xas_nor2.SetValue(proc_opts['norm2'])
+
+            dgroup.proc_opts = proc_opts
 
             dgroup.orig_ylabel = dgroup.plot_ylabel
             dgroup.plot_ylabel = '$\mu$'
@@ -526,6 +544,8 @@ class LarchFitModel():
         self.larch = _larch
         if self.larch is None:
             self.larch = Interpreter()
+        self.filelist = None
+        self.file_groups = {}
         self.proc_opts = {}
         self.group = None
         self.groupname = None
@@ -548,15 +568,14 @@ class LarchFitModel():
     def get_display(self, wintitle='LarchFit Plot Window'):
         return self.symtable._plotter.get_display(wintitle=wintitle)
 
-    def get_group(self, groupname=None):
-        print(" Get group ", groupname)
+    def get_group(self, groupname):
         if groupname is None:
             groupname = self.groupname
-        self.group = getattr(self.symtable, groupname, None)
-        print(" Get group ", self.group)
-        self.groupname = groupname
-        return self.group
-
+        grp = getattr(self.symtable, groupname, None)
+        if not hasattr(grp, 'proc_opts'):
+            grp.proc_opts = {}
+        return grp
+    
     def process(self, dgroup):
         print( "Process steps for group ", dgroup)
 
@@ -575,7 +594,7 @@ class LarchFitModel():
         if new:
             plotcmd = newplot
 
-        dgroup = self.get_group(groupname=None)
+        dgroup = self.get_group(groupname)
         if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)
 
@@ -636,12 +655,11 @@ class ScanViewerFrame(wx.Frame):
   """
     def __init__(self, parent=None, size=(825, 650), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
-        self.file_groups = {}
+
         self.last_array_sel = {}
         title = "LarchFit: XY Spectra Viewing and Curve Fitting"
         self.model = LarchFitModel(wxparent=self, _larch=_larch)
         self.larch = self.model.larch
-        self.groupname = None
         self.larch_buffer = self.model.larch_buffer
         self.subframes = {}
         self.plotframe = None
@@ -677,9 +695,9 @@ class ScanViewerFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        self.filelist = FileCheckList(leftpanel, main=self,
+        self.model.filelist = FileCheckList(leftpanel, main=self,
                                       select_action=self.ShowFile)
-        self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
+        self.model.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.GridBagSizer(1, 1)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
@@ -691,7 +709,7 @@ class ScanViewerFrame(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ltop, 0, LCEN|wx.GROW, 1)
-        sizer.Add(self.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.model.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
 
         pack(leftpanel, sizer)
 
@@ -714,8 +732,6 @@ class ScanViewerFrame(wx.Frame):
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
         self.proc_panel = ProcessPanel(parent=self.nb,
-                                       filelist=self.filelist,
-                                       file_groups=self.file_groups,
                                        model=self.model)
         self.fit_panel =  FitPanel(parent=self.nb, main=self)
 
@@ -731,10 +747,10 @@ class ScanViewerFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def onSelAll(self, event=None):
-        self.filelist.SetCheckedStrings(self.file_groups.keys())
+        self.model.filelist.SetCheckedStrings(self.model.file_groups.keys())
 
     def onSelNone(self, event=None):
-        self.filelist.SetCheckedStrings([])
+        self.model.filelist.SetCheckedStrings([])
 
     def init_larch(self):
         self.SetStatusText('ready')
@@ -755,18 +771,17 @@ class ScanViewerFrame(wx.Frame):
 
     def onPlotOne(self, evt=None, groupname=None):
         if groupname is None:
-            groupname = self.groupname
+            groupname = self.model.groupname
 
         dgroup = self.model.get_group(groupname)
         if dgroup is not None:
-            self.groupname = groupname
             self.model.plot_group(groupname=groupname, new=True)
 
     def onPlotSel(self, evt=None):
         newplot = True
-        group_ids = self.filelist.GetCheckedStrings()
+        group_ids = self.model.filelist.GetCheckedStrings()
         for checked in group_ids:
-            groupname = self.file_groups[str(checked)]
+            groupname = self.model.file_groups[str(checked)]
             dgroup = self.model.get_group(groupname)
             if dgroup is None:
                 continue
@@ -788,22 +803,17 @@ class ScanViewerFrame(wx.Frame):
 
     def ShowFile(self, evt=None, groupname=None, **kws):
         if groupname is None and evt is not None:
-            groupname = self.file_groups[str(evt.GetString())]
+            groupname = self.model.file_groups[str(evt.GetString())]
 
         if not hasattr(self.larch.symtable, groupname):
             print( 'Error reading file ', groupname)
             return
 
         dgroup = self.model.get_group(groupname)
+        self.model.group = dgroup
+        self.model.groupname = groupname
         self.nb.SetSelection(0)
-        self.groupname = groupname
-        print("ShowFile Groupname ", groupname, dgroup)
         self.proc_panel.fill(dgroup)
-        self.proc_panel.groupname = groupname
-        #         if self.dgroup.datatype == 'xas':
-        #             self.proc_panel.xaspanel.Enable()
-        #         else:
-        #             self.proc_panel.xaspanel.Disable()
         self.title.SetLabel(str(evt.GetString()))
 
 
@@ -898,7 +908,7 @@ class ScanViewerFrame(wx.Frame):
         self.subframes['reportframe'].set_text(text)
 
     def onEditColumns(self, evt=None):
-        dgroup = self.model.get_group(groupname)
+        dgroup = self.model.get_group(self.model.groupname)
         self.show_subframe('coledit', EditColumnFrame,
                            group=dgroup.raw,
                            last_array_sel=self.last_array_sel,
@@ -918,7 +928,7 @@ class ScanViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onRead(self, path):
-        if path in self.file_groups:
+        if path in self.model.file_groups:
             if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
                                   'Re-read file?'):
                 return
@@ -979,16 +989,16 @@ class ScanViewerFrame(wx.Frame):
         groupname = datagroup.groupname
         # print("READ SCAN  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
-        if filename in self.file_groups and not overwrite:
+        if filename in self.model.file_groups and not overwrite:
             for i in range(1, 101):
                 ftest = "%s (%i)"  % (filename, i)
-                if ftest not in self.file_groups:
+                if ftest not in self.model.file_groups:
                     filename = ftest
                     break
 
-        if filename not in self.file_groups:
-            self.filelist.Append(filename)
-            self.file_groups[filename] = groupname
+        if filename not in self.model.file_groups:
+            self.model.filelist.Append(filename)
+            self.model.file_groups[filename] = groupname
 
         setattr(self.larch.symtable, groupname, datagroup)
         if datagroup.datatype == 'xas':
