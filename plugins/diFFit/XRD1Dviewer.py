@@ -19,6 +19,16 @@ from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
 
+<<<<<<< HEAD
+=======
+HAS_XRAYUTIL = False
+try:
+    import xrayutilities as xu
+    HAS_XRAYUTIL = True
+except ImportError:
+    pass
+
+>>>>>>> ac8ceb578f8aea09adafa7dce0d7be0d0e9928a8
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th
