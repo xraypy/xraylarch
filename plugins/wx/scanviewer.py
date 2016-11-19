@@ -106,41 +106,32 @@ class ProcessPanel(wx.Panel):
         pass
 
     def fill(self, dgroup):
-        predefs = dict(e0=0, pre1=-200, pre2=-30, norm1=50, edge_step=0,
-                       norm2=-10, nnorm=3, nvict=2, auto_step=True,
-                       auto_e0=True, show_e0=True, xas_op='Raw Data',
-                       xshift=0, xscale=1, yshift=0, yscale=1,
-                       smooth_op='None', smooth_conv='Lorentzian',
-                       smooth_c0=2, smooth_c1=1, smooth_sig=1)
+        opts = self.model.get_proc_opts(dgroup)
 
-        if hasattr(dgroup, 'proc_opts'):
-            predefs.update(dgroup.proc_opts)
-        
-        self.xshift.SetValue(predefs['xshift'])
-        self.yshift.SetValue(predefs['yshift'])
-        self.xscale.SetValue(predefs['xscale'])
-        self.yscale.SetValue(predefs['yscale'])
+        self.xshift.SetValue(opts['xshift'])
+        self.yshift.SetValue(opts['yshift'])
+        self.xscale.SetValue(opts['xscale'])
+        self.yscale.SetValue(opts['yscale'])
 
-        self.smooth_op.SetStringSelection(predefs['smooth_op'])
-        self.smooth_conv.SetStringSelection(predefs['smooth_conv'])
-        self.smooth_c0.SetValue(predefs['smooth_c0'])
-        self.smooth_c1.SetValue(predefs['smooth_c1'])
-        self.smooth_sig.SetValue(predefs['smooth_sig'])
+        self.smooth_op.SetStringSelection(opts['smooth_op'])
+        self.smooth_conv.SetStringSelection(opts['smooth_conv'])
+        self.smooth_c0.SetValue(opts['smooth_c0'])
+        self.smooth_c1.SetValue(opts['smooth_c1'])
+        self.smooth_sig.SetValue(opts['smooth_sig'])
 
         if dgroup.datatype == 'xas':
-            self.xas_op.SetStringSelection(predefs['xas_op'])
-            self.xas_e0.SetValue(predefs['e0'])
-            self.xas_step.SetValue(predefs['edge_step'])
-            self.xas_pre1.SetValue(predefs['pre1'])
-            self.xas_pre2.SetValue(predefs['pre2'])
-            self.xas_nor1.SetValue(predefs['norm1'])
-            self.xas_nor2.SetValue(predefs['norm2'])
-            self.xas_vict.SetSelection(predefs['nvict'])
-            self.xas_nnor.SetSelection(predefs['nnorm'])
-
-            self.xas_showe0.SetValue(predefs['show_e0'])
-            self.xas_autoe0.SetValue(predefs['auto_e0'])
-            self.xas_autostep.SetValue(predefs['auto_step'])
+            self.xas_op.SetStringSelection(opts['xas_op'])
+            self.xas_e0.SetValue(opts['e0'])
+            self.xas_step.SetValue(opts['edge_step'])
+            self.xas_pre1.SetValue(opts['pre1'])
+            self.xas_pre2.SetValue(opts['pre2'])
+            self.xas_nor1.SetValue(opts['norm1'])
+            self.xas_nor2.SetValue(opts['norm2'])
+            self.xas_vict.SetSelection(opts['nvict'])
+            self.xas_nnor.SetSelection(opts['nnorm'])
+            self.xas_showe0.SetValue(opts['show_e0'])
+            self.xas_autoe0.SetValue(opts['auto_e0'])
+            self.xas_autostep.SetValue(opts['auto_step'])
 
     def build_display(self):
         self.SetFont(Font(10))
@@ -286,7 +277,6 @@ class ProcessPanel(wx.Panel):
         xas.Add((10, 1))
         xas.Add(CopyBtn('xas_step'), style=RCEN)
 
-
         xas.Add(SimpleText(xas, 'Pre-edge range: '), newrow=True)
         xas.Add(self.btns['pre1'])
         xas.Add(self.xas_pre1)
@@ -349,7 +339,7 @@ class ProcessPanel(wx.Panel):
                 grp.proc_opts.update(opts)
                 self.fill(grp)
                 self.process(grp.groupname)
-                
+
     def onSmoothChoice(self, evt=None, value=1):
         try:
             choice = self.smooth_op.GetStringSelection().lower()
@@ -402,55 +392,34 @@ class ProcessPanel(wx.Panel):
         elif opt == 'yshift':
             self.yshift.SetValue(yval)
 
-    def process(self, gname, new_mu=False, **kws):
-        """ process (pre-edge/normalize) XAS data from XAS form, overwriting
+    def process(self, gname,  **kws):
+        """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
         dgroup = self.model.get_group(gname)
-        if not hasattr(dgroup, 'proc_opts'):
-            dgroup.proc_opts = {}
-        if dgroup.proc_opts.get('datatype', None) is None:
-            dgroup.proc_opts['datatype'] = 'xas'
-
-        proc_opts = dgroup.proc_opts
+        proc_opts = {}
 
         proc_opts['xshift'] = self.xshift.GetValue()
         proc_opts['yshift'] = self.yshift.GetValue()
         proc_opts['xscale'] = self.xscale.GetValue()
         proc_opts['yscale'] = self.yscale.GetValue()
-
-        dgroup.x = proc_opts['xscale']*(dgroup.xdat - proc_opts['xshift'])
-        dgroup.y = proc_opts['yscale']*(dgroup.ydat - proc_opts['yshift'])
-
-        # apply smoothhing here
         proc_opts['smooth_op'] = self.smooth_op.GetStringSelection()
         proc_opts['smooth_c0'] = int(self.smooth_c0.GetValue())
         proc_opts['smooth_c1'] = int(self.smooth_c1.GetValue())
         proc_opts['smooth_sig'] = float(self.smooth_sig.GetValue())
         proc_opts['smooth_conv'] = self.smooth_conv.GetStringSelection()
 
-
         self.xaspanel.Enable(dgroup.datatype.startswith('xas'))
         if dgroup.datatype.startswith('xas'):
-            dgroup.energy = dgroup.x
-            dgroup.mu = dgroup.y
-            e0 = None
-            if not self.xas_autoe0.IsChecked():
-                _e0 = self.xas_e0.GetValue()
-                if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                    e0 = float(_e0)
-
-            preopts = {'e0': e0}
-            if not self.xas_autostep.IsChecked():
-                preopts['step'] = self.xas_step.GetValue()
-            preopts['pre1']  = self.xas_pre1.GetValue()
-            preopts['pre2']  = self.xas_pre2.GetValue()
-            preopts['norm1'] = self.xas_nor1.GetValue()
-            preopts['norm2'] = self.xas_nor2.GetValue()
-            preopts['nvict'] = self.xas_vict.GetSelection()
-            preopts['nnorm'] = self.xas_nnor.GetSelection()
-            preopts['make_flat'] = False
-            preopts['_larch'] = self.model.larch
+            proc_opts['datatype'] = 'xas'
+            proc_opts['e0'] = self.xas_e0.GetValue()
+            proc_opts['step'] = self.xas_step.GetValue()
+            proc_opts['pre1']  = self.xas_pre1.GetValue()
+            proc_opts['pre2']  = self.xas_pre2.GetValue()
+            proc_opts['norm1'] = self.xas_nor1.GetValue()
+            proc_opts['norm2'] = self.xas_nor2.GetValue()
+            proc_opts['nvict'] = self.xas_vict.GetSelection()
+            proc_opts['nnorm'] = self.xas_nnor.GetSelection()
 
             proc_opts['auto_e0'] = self.xas_autoe0.IsChecked()
             proc_opts['show_e0'] = self.xas_showe0.IsChecked()
@@ -459,36 +428,19 @@ class ProcessPanel(wx.Panel):
             proc_opts['nvict'] = int(self.xas_vict.GetSelection())
             proc_opts['xas_op'] = self.xas_op.GetStringSelection()
 
-        smop = proc_opts['smooth_op'].lower()
-        cform = str(proc_opts['smooth_conv'].lower())
-        if smop.startswith('box'):
-            dgroup.y = boxcar(dgroup.y, proc_opts['smooth_c0'])
-        elif smop.startswith('savit'):
-            winsize = 2*proc_opts['smooth_c0'] + 1
-            dgroup.y = savitzky_golay(dgroup.y, winsize, proc_opts['smooth_c1'])
-        elif smop.startswith('conv'):
-            dgroup.y = smooth(dgroup.x, dgroup.y,
-                              sigma=proc_opts['smooth_sig'], form=cform)
+        self.model.process(dgroup, proc_opts=proc_opts)
 
         if dgroup.datatype.startswith('xas'):
-            pre_edge(dgroup, **preopts)
-            for attr in  ('e0', 'edge_step'):
-                proc_opts[attr] = getattr(dgroup, attr)
-                
-            for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-                proc_opts[attr] = getattr(dgroup.pre_edge_details, attr)
 
             if self.xas_autoe0.IsChecked():
-                self.xas_e0.SetValue(dgroup.e0)
+                self.xas_e0.SetValue(dgroup.proc_opts['e0'])
             if self.xas_autostep.IsChecked():
-                self.xas_step.SetValue(dgroup.edge_step)
+                self.xas_step.SetValue(dgroup.proc_opts['edge_step'])
 
-            self.xas_pre1.SetValue(proc_opts['pre1'])
-            self.xas_pre2.SetValue(proc_opts['pre2'])
-            self.xas_nor1.SetValue(proc_opts['norm1'])
-            self.xas_nor2.SetValue(proc_opts['norm2'])
-
-            dgroup.proc_opts = proc_opts
+            self.xas_pre1.SetValue(dgroup.proc_opts['pre1'])
+            self.xas_pre2.SetValue(dgroup.proc_opts['pre2'])
+            self.xas_nor1.SetValue(dgroup.proc_opts['norm1'])
+            self.xas_nor2.SetValue(dgroup.proc_opts['norm2'])
 
             dgroup.orig_ylabel = dgroup.plot_ylabel
             dgroup.plot_ylabel = '$\mu$'
@@ -533,7 +485,6 @@ class ProcessPanel(wx.Panel):
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
                 dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
-
 class LarchFitModel():
     """
     class hollding the Larch session and doing the
@@ -575,9 +526,81 @@ class LarchFitModel():
         if not hasattr(grp, 'proc_opts'):
             grp.proc_opts = {}
         return grp
-    
-    def process(self, dgroup):
-        print( "Process steps for group ", dgroup)
+
+    def get_proc_opts(self, dgroup):
+        opts = dict(xshift=0, xscale=1, yshift=0, yscale=1,
+                    smooth_op='None', smooth_conv='Lorentzian',
+                    smooth_c0=2, smooth_c1=1, smooth_sig=1)
+
+        if dgroup.datatype == 'xas':
+            opts.update(dict(e0=0, pre1=-200, pre2=-30, edge_step=0,
+                             nnorm=3, norm1=50, norm2=-10, nvict=2,
+                             auto_step=True, auto_e0=True, show_e0=True,
+                             xas_op='Raw Data'))
+
+        if hasattr(dgroup, 'proc_opts'):
+            opts.update(dgroup.proc_opts)
+        return opts
+
+    def process(self, dgroup, proc_opts=None):
+        print("Model Process steps for group ", dgroup)
+
+        if not hasattr(dgroup, 'proc_opts'):
+            dgroup.proc_opts = {}
+
+        if 'xscale' not in dgroup.proc_opts:
+            dgroup.proc_opts.update(self.get_proc_opts(dgroup))
+
+        if proc_opts is not None:
+            dgroup.proc_opts.update(proc_opts)
+
+        opts = dgroup.proc_opts
+        # scaling
+        dgroup.x = opts['xscale']*(dgroup.xdat - opts['xshift'])
+        dgroup.y = opts['yscale']*(dgroup.ydat - opts['yshift'])
+
+        # smoothing
+        smop = opts['smooth_op'].lower()
+        cform = str(opts['smooth_conv'].lower())
+        if smop.startswith('box'):
+            dgroup.y = boxcar(dgroup.y, opts['smooth_c0'])
+        elif smop.startswith('savit'):
+            winsize = 2*opts['smooth_c0'] + 1
+            dgroup.y = savitzky_golay(dgroup.y, winsize, opts['smooth_c1'])
+        elif smop.startswith('conv'):
+            dgroup.y = smooth(dgroup.x, dgroup.y,
+                              sigma=opts['smooth_sig'], form=cform)
+
+        # xas
+        if dgroup.datatype.startswith('xas'):
+
+            dgroup.energy = dgroup.x
+            dgroup.mu = dgroup.y
+
+            preopts = {'e0': None, 'step': None, 'make_flat':False,
+                      '_larch':self.larch}
+
+            if not opts['auto_e0']:
+                _e0 = opts['e0']
+                if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
+                    preopts['e0'] = float(_e0)
+
+            if not opts['auto_step']:
+                preopts['step'] = opts['step']
+
+            for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+                preopts[attr]  = opts[attr]
+
+            pre_edge(dgroup, **preopts)
+
+            for attr in  ('e0', 'edge_step'):
+                opts[attr] = getattr(dgroup, attr)
+
+            for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
+                opts[attr] = getattr(dgroup.pre_edge_details, attr)
+
+            dgroup.proc_opts.update(opts)
+
 
     def get_cursor(self):
         try:
@@ -602,13 +625,13 @@ class LarchFitModel():
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'energy', None) is None or
                  getattr(dgroup, 'mu', None) is None)):
+                print("-> Mode.process")
                 self.process(dgroup)
 
         if not hasattr(dgroup, 'x'):
             dgroup.x = dgroup.xdat[:]
         if not hasattr(dgroup, 'y'):
             dgroup.y = dgroup.ydat[:]
-
 
         if hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
@@ -816,7 +839,6 @@ class ScanViewerFrame(wx.Frame):
         self.proc_panel.fill(dgroup)
         self.title.SetLabel(str(evt.GetString()))
 
-
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -829,16 +851,13 @@ class ScanViewerFrame(wx.Frame):
                   "Show Larch Programming Buffer",
                   self.onShowLarchBuffer)
 
-
         MenuItem(self, fmenu, "Re-select Data Columns\tCtrl+R",
                  "Change which data columns used for this file",
                  self.onEditColumns)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "debug wx\tCtrl+I", "", self.showInspectionTool)
-
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
 
         self.menubar.Append(fmenu, "&File")
 
