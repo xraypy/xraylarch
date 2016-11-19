@@ -38,8 +38,9 @@ from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
 
 from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
 from larch_plugins.wx.icons import get_icon
-from larch_plugins.wx.larchfit_fitpanel import FitPanel
 from larch_plugins.wx.athena_importer import AthenaImporter
+
+from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, is_athena_project)
@@ -485,10 +486,10 @@ class ProcessPanel(wx.Panel):
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
                 dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
-class LarchFitModel():
+class XYFitModel():
     """
     class hollding the Larch session and doing the
-    processing work for LarchFit
+    processing work for Larch XYFit
     """
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
@@ -516,7 +517,7 @@ class LarchFitModel():
         larchdir = self.symtable._sys.config.larchdir
         return os.path.join(larchdir, 'icons', ICON_FILE)
 
-    def get_display(self, wintitle='LarchFit Plot Window'):
+    def get_display(self, wintitle='Larch XYFit Plot Window'):
         return self.symtable._plotter.get_display(wintitle=wintitle)
 
     def get_group(self, groupname):
@@ -651,7 +652,7 @@ class LarchFitModel():
             title = fname
 
         popts['title'] = title
-        popts['wintitle'] = 'LarchFilt Plot Window'
+        popts['wintitle'] = 'Larch XYFit Plot Window'
         for yarr in plot_yarrays:
             popts.update(yarr[1])
             if yarr[2] is not None:
@@ -671,8 +672,8 @@ class LarchFitModel():
         ppanel.canvas.draw()
 
 
-class ScanViewerFrame(wx.Frame):
-    _about = """LarchFit: XY Spectra Viewing and Curve Fitting
+class XYFitFrame(wx.Frame):
+    _about = """Larch XYFit: XY Data Viewing & Curve Fitting
 
   Matt Newville <newville @ cars.uchicago.edu>
   """
@@ -680,8 +681,8 @@ class ScanViewerFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
-        title = "LarchFit: XY Spectra Viewing and Curve Fitting"
-        self.model = LarchFitModel(wxparent=self, _larch=_larch)
+        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
+        self.model = XYFitModel(wxparent=self, _larch=_larch)
         self.larch = self.model.larch
         self.larch_buffer = self.model.larch_buffer
         self.subframes = {}
@@ -756,7 +757,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.proc_panel = ProcessPanel(parent=self.nb,
                                        model=self.model)
-        self.fit_panel =  FitPanel(parent=self.nb, main=self)
+        self.fit_panel =  XYFitPanel(parent=self.nb, main=self)
 
         self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,  ' Curve Fitting ',  True)
@@ -884,7 +885,7 @@ class ScanViewerFrame(wx.Frame):
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
-                               "About ScanViewer",
+                               "About Larch XYFit",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -1026,7 +1027,7 @@ class ScanViewerFrame(wx.Frame):
         if plot:
             self.onPlotOne(groupname=groupname)
 
-class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
@@ -1034,7 +1035,7 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.MainLoop()
 
     def createApp(self):
-        frame = ScanViewerFrame()
+        frame = XYFitFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -1043,26 +1044,16 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-class DebugScanViewer(ScanViewer, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
-        ScanViewer.__init__(self, **kws)
-
-    def OnInit(self):
-        self.Init()
-        self.createApp()
-        self.ShowInspectionTool()
-        return True
-
 def initializeLarchPlugin(_larch=None):
-    """add ScanFrameViewer to _sys.gui_apps """
+    """add XYFitFrame to _sys.gui_apps """
     if _larch is not None:
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['scanviewer'] = ('Scan Viewer', ScanViewerFrame)
+        _sys.gui_apps['xyfit'] = ('XY Data Viewing & Fitting', XYFitFrame)
 
 def registerLarchPlugin():
     return ('_wx', {})
 
 if __name__ == "__main__":
-    ScanViewer().run()
+    XYFitViewer().run()
