@@ -38,7 +38,7 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
 ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
                'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
-class FitPanel(wx.Panel):
+class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, main=None, **kws):
 
         wx.Panel.__init__(self, parent, -1, size=(550, 500), **kws)
