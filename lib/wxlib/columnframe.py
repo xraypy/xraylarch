@@ -277,10 +277,17 @@ class EditColumnFrame(wx.Frame) :
 
     def onOK(self, event=None):
         """ build arrays according to selection """
-
-        self.onUpdate()
         if self.wid_groupname is not None:
             self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
+
+        yerr_op = self.yerr_op.GetStringSelection().lower()
+        if yerr_op.startswith('const'):
+            self.outgroup.yerr = self.yerr_const.GetValue()
+        elif yerr_op.startswith('array'):
+            yerr = self.yerr_arr.GetStringSelection().strip()
+            self.outgroup.yerr = get_data(rawgroup, yerr)
+        elif yerr_op.startswith('sqrt'):
+            self.outgroup.yerr = np.sqrt(outgroup.ydat)
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
@@ -399,7 +406,7 @@ class EditColumnFrame(wx.Frame) :
             yerr = self.yerr_arr.GetStringSelection().strip()
             yerr = get_data(rawgroup, yerr)
         elif yerr_op.startswith('sqrt'):
-            yerr = sqrt(outgroup.ydat)
+            yerr = np.sqrt(outgroup.ydat)
 
 
         ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
