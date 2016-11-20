@@ -3,9 +3,11 @@ import numpy as np
 np.seterr(all='ignore')
 
 from functools import partial
+from collections import OrderedDict
 
 import wx
 import wx.lib.scrolledpanel as scrolled
+import wx.lib.agw.flatnotebook as flat_nb
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
@@ -28,6 +30,8 @@ from larch_plugins.wx.parameter import ParameterDialog, ParameterPanel
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
+
 StepChoices = ('<Add Step Model>', 'Linear', 'Arctan', 'ErrorFunction',
                'Logistic')
 
@@ -38,15 +42,34 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
 ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
                'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
+
+class AllParamsPanel(wx.Panel):
+    """Panel containing simple list of all Parameters"""
+    def __init__(self, parent=None, controller=None, **kws):
+        wx.Panel.__init__(self, parent, -1, **kws)
+        self.parent = parent
+        self.parameters = OrderedDict()
+
+    def addParameter(self, param):
+        """add a parameter"""
+        print "add parameter ", param
+
+    def delParameter(self, param):
+        """delete a parameter"""
+        print "del parameter ", param
+
+
 class XYFitPanel(wx.Panel):
-    def __init__(self, parent=None, main=None, **kws):
+    def __init__(self, parent=None, controller=None, **kws):
 
         wx.Panel.__init__(self, parent, -1, size=(550, 500), **kws)
         self.parent = parent
-        self.main  = main
-        self.fit_components = []
+        self.controller = controller
+        self.larch = controller.larch
+        self.fit_components = OrderedDict()
         self.fit_model = None
         self.fit_params = None
+        self.summary = None
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
         self.pick2_timer = wx.Timer(self)
@@ -57,12 +80,15 @@ class XYFitPanel(wx.Panel):
 
     def build_display(self):
 
-        self.modelpanel = scrolled.ScrolledPanel(self, style=wx.GROW|wx.TAB_TRAVERSAL)
-        self.modelsizer = wx.BoxSizer(wx.VERTICAL)
+        self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
+        self.mod_nb.SetTabAreaColour(wx.Colour(250,250,250))
+        self.mod_nb.SetActiveTabColour(wx.Colour(254,254,195))
 
-        pack(self.modelpanel, self.modelsizer)
-        self.modelpanel.SetupScrolling()
-        self.modelpanel.SetAutoLayout(1)
+        self.mod_nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
+        self.mod_nb.SetActiveTabTextColour(wx.Colour(128,0,0))
+
+        self.param_panel = AllParamsPanel(self, controller=self.controller)
+        self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
 
         row1 = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -78,14 +104,14 @@ class XYFitPanel(wx.Panel):
         self.xmin = FloatCtrl(row1, value=-np.inf, **opts)
         self.xmax = FloatCtrl(row1, value=np.inf, **opts)
 
-        rsizer.Add(SimpleText(row1, 'Fit Range: [ '), 0, LCEN, 3)
+        rsizer.Add(SimpleText(row1, 'Fit X Range: [ '), 0, LCEN, 3)
         rsizer.Add(xmin_sel, 0, LCEN, 3)
         rsizer.Add(self.xmin, 0, LCEN, 3)
         rsizer.Add(SimpleText(row1, ' : '), 0, LCEN, 3)
         rsizer.Add(xmax_sel, 0, LCEN, 3)
         rsizer.Add(self.xmax, 0, LCEN, 3)
         rsizer.Add(SimpleText(row1, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(Button(row1, 'Use Full Range', size=(120, -1),
+        rsizer.Add(Button(row1, 'Full Data Range', size=(100, -1),
                           action=self.onResetRange), 0, LCEN, 3)
 
         pack(row1, rsizer)
@@ -94,15 +120,17 @@ class XYFitPanel(wx.Panel):
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.plot_comps = Check(row2, label='Plot Components?',
-                                default=True, size=(140, -1))
+                                default=True, size=(150, -1))
 
-        rsizer.Add(Button(row2, 'Plot Model',
-                          size=(100, -1), action=self.onShowModel), 0, LCEN, 3)
-        rsizer.Add(self.plot_comps, 0, LCEN, 3)
-        rsizer.Add(Button(row2, 'Save Fit',
-                         size=(100, -1), action=self.onSaveFit), 0, LCEN, 3)
         rsizer.Add(Button(row2, 'Run Fit',
                           size=(150, -1), action=self.onRunFit), 0, RCEN, 3)
+        rsizer.Add(Button(row2, 'Save Fit',
+                         size=(150, -1), action=self.onSaveFit), 0, LCEN, 3)
+
+        rsizer.Add(Button(row2, 'Plot Current Model',
+                          size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
+        rsizer.Add(self.plot_comps, 0, LCEN, 3)
+
         pack(row2, rsizer)
 
         row3 = wx.Panel(self)
@@ -119,13 +147,13 @@ class XYFitPanel(wx.Panel):
         pack(row3, rsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([(row1, 0, LCEN, 5),
-                       (row2, 0, LCEN, 5),
+        sizer.AddMany([(row2, 0, LCEN, 5),
+                       (row1, 0, LCEN, 5),
                        (row3, 0, LCEN, 5),
-                       ((5,5), 0, LCEN, 0),
+                       ((5,5), 0, LCEN, 5),
                        (HLine(self, size=(550, 2)), 0, LCEN, 10),
                        ((5,5), 0, LCEN, 0),
-                       (self.modelpanel,  1, LCEN|wx.GROW, 10)])
+                       (self.mod_nb,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
 
@@ -136,61 +164,79 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        icomp = len(self.fit_components)
-        prefix = "p%i_" % (icomp + 1)
+        curmodels = ["p%i_" % (i+1) for i in range(1+len(self.fit_components))]
+        for comp in self.fit_components:
+            if comp in curmodels:
+                curmodels.remove(comp)
 
-        title = "%s(" % model
+        prefix = curmodels[0]
+
+        label = "%s(prefix='%s')" % (model, prefix)
+        title = "%s: %s" % (prefix[:-1], (model+' '*4)[:5])
         mclass_kws = {'prefix': prefix}
         if is_step:
             form = model.lower()
             if form.startswith('err'): form = 'erf'
-            title = "Step(form='%s', " % form
+            label = "Step(form='%s', prefix='%s')" % (form, prefix)
+            title = "%s: Step %s" % (prefix, form[:3])
             mclass = lm_models.StepModel
             mclass_kws['form'] = form
-            minst = mclass(form=form)
+            minst = mclass(form=form, prefix=prefix)
         else:
             mclass = getattr(lm_models, model+'Model')
-            minst = mclass()
+            minst = mclass(prefix=prefix)
 
-        fgroup = Group(icomp=icomp, prefix=prefix,
-                       mclass=mclass, mclass_kws=mclass_kws)
-        panel = GridPanel(self.modelpanel, ncols=1, nrows=1,
-                          pad=1, itemstyle=CEN)
+        panel = GridPanel(self.mod_nb, ncols=1, nrows=1, pad=1, itemstyle=CEN)
 
-        def SLabel(label, size=(80, -1), **kws):
+        def SLabel(label, size=(75, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        mname  = wx.TextCtrl(panel, -1, prefix, size=(80, -1))
-        usebox = Check(panel, default=True, label='Use?', size=(90, -1))
-        delbtn = Button(panel, 'Delete', size=(80, -1),
-                        action=partial(self.onDeleteComponent, comp=icomp))
-        pick2msg = SimpleText(panel, "    ", size=(80, -1))
-        pick2btn = Button(panel, 'Pick Range', size=(80, -1),
-                          action=partial(self.onPick2Points, comp=icomp))
+        usebox = Check(panel, default=True, label='Use?', size=(75, -1))
+        delbtn = Button(panel, 'Delete Model', size=(120, -1),
+                        action=partial(self.onDeleteComponent, prefix=prefix))
+        pick2msg = SimpleText(panel, "    ", size=(75, -1))
+        pick2btn = Button(panel, 'Pick Data Range', size=(125, -1),
+                          action=partial(self.onPick2Points, prefix=prefix))
 
-        SetTip(mname,  'Label for the model component')
+        # SetTip(mname,  'Label for the model component')
         SetTip(usebox, 'Use this component in fit?')
         SetTip(delbtn, 'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
-        panel.Add(HLine(panel, size=(90, 3)), style=wx.ALIGN_CENTER)
-        panel.Add(SLabel(" %sprefix='%s')" % (title, prefix), size=(250, -1),
-                         colour='#0000AA'), dcol=4)
-        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
-        panel.Add(SLabel("Label:"),  newrow=True)
-        panel.AddMany((mname, usebox, pick2btn, pick2msg, delbtn))
+        panel.Add(HLine(panel, size=(520, 3)), style=wx.ALIGN_CENTER, dcol=6)
+
+        panel.Add(SLabel(label, size=(200, -1), colour='#0000AA'),
+                  dcol=3,  newrow=True)
+        panel.AddMany((usebox, pick2msg, pick2btn))
 
         panel.Add(SLabel("Parameter"),   newrow=True)
         panel.AddMany((SLabel("Value"), SLabel("Type"), SLabel("Min"),
                        SLabel("Max"), SLabel("Expression")))
 
-        parwids = {}
-        for pname in sorted(minst.param_names):
+        parwids = OrderedDict()
+
+        parnames = sorted(minst.param_names)
+        for a in minst._func_allargs:
+            pname = "%s%s" % (prefix, a)
+            if pname not in parnames and a not in minst.independent_vars:
+                parnames.append(pname)
+
+        for pname in parnames:
+            sname = pname[len(prefix):]
+            hints = minst.param_hints.get(sname, {})
+
             par = Parameter(name=pname, value=0, vary=True)
-            if 'sigma' in pname:
-                par.min = 0.0
-            pwids = ParameterWidgets(panel, par, name_size=80,
-                                     float_size=80, prefix=prefix,
+            if 'min' in hints:
+                par.min = hints['min']
+            if 'max' in hints:
+                par.max = hints['max']
+            if 'value' in hints:
+                par.value = hints['value']
+            if 'expr' in hints:
+                par.expr = hints['expr']
+
+            pwids = ParameterWidgets(panel, par, name_size=80, expr_size=150,
+                                     float_size=70, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
             parwids[par.name] = pwids
@@ -198,31 +244,51 @@ class XYFitPanel(wx.Panel):
             panel.AddMany((pwids.value, pwids.vary, pwids.minval,
                            pwids.maxval, pwids.expr))
 
-        panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
-        panel.Add(HLine(panel, size=(325, 3)), dcol=4, style=wx.ALIGN_CENTER)
-        panel.Add(HLine(panel, size=(120, 3)), style=wx.ALIGN_CENTER)
+        for sname, hint in minst.param_hints.items():
+            pname = "%s%s" % (prefix, sname)
+            if 'expr' in hint and pname not in parnames:
+                par = Parameter(name=pname, value=0, expr=hint['expr'])
 
-        fgroup = Group(icomp=icomp, prefix=prefix,
-                       mclass=mclass, mclass_kws=mclass_kws,
-                       usebox=usebox, panel=panel, parwids=parwids,
+                pwids = ParameterWidgets(panel, par, name_size=80, expr_size=275,
+                                         float_size=70, prefix=prefix,
+                                         widgets=('name', 'value', 'vary', 'expr'))
+                parwids[par.name] = pwids
+                panel.Add(pwids.name, newrow=True)
+                panel.AddMany((pwids.value, pwids.vary))
+                panel.Add(pwids.expr, dcol=3, style=wx.ALIGN_RIGHT)
+                pwids.value.Disable()
+                pwids.vary.Disable()
+
+        panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
+        panel.Add(delbtn, dcol=2)
+        panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
+
+        fgroup = Group(prefix=prefix, title=title, mclass=mclass,
+                       mclass_kws=mclass_kws, usebox=usebox, panel=panel,
+                       parwids=parwids, float_size=65, expr_size=150,
                        pick2_msg=pick2msg)
 
-        self.fit_components.append(fgroup)
+        self.fit_components[prefix] = fgroup
         panel.pack()
 
-        self.modelsizer.Add(panel, 0, LCEN|wx.GROW, 2)
-        pack(self.modelpanel, self.modelsizer)
+        self.mod_nb.AddPage(panel, title, True)
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
-    def onDeleteComponent(self, evt=None, comp=-1):
-        if comp > -1:
-            fgroup = self.fit_components[comp]
-            if fgroup.icomp == comp and fgroup.panel is not None:
-                fgroup.panel.Destroy()
-                for attr in dir(fgroup):
-                    setattr(fgroup, attr, None)
+    def onDeleteComponent(self, evt=None, prefix=None):
+        fgroup = self.fit_components.get(prefix, None)
+        if fgroup is None:
+            return
+
+        for i in range(self.mod_nb.GetPageCount()):
+            if fgroup.title == self.mod_nb.GetPageText(i):
+                self.mod_nb.DeletePage(i)
+
+        for attr in dir(fgroup):
+            setattr(fgroup, attr, None)
+
+        self.fit_components.pop(prefix)
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
@@ -230,12 +296,12 @@ class XYFitPanel(wx.Panel):
 
     def onPick2Timer(self, evt=None):
         try:
-            curhist = self.main.larch.symtable._plotter.plot1.cursor_hist[:]
+            curhist = self.larch.symtable._plotter.plot1.cursor_hist[:]
         except:
             return
         if (time.time() - self.pick2_t0) > self.pick2_timeout:
             msg = self.pick2_group.pick2_msg.SetLabel(" ")
-            self.main.larch.symtable._plotter.plot1.cursor_hist = []
+            self.larch.symtable._plotter.plot1.cursor_hist = []
             self.pick2_timer.Stop()
             return
 
@@ -250,7 +316,7 @@ class XYFitPanel(wx.Panel):
         xcur = (curhist[0][0], curhist[1][0])
         xmin, xmax = min(xcur), max(xcur)
 
-        dgroup = getattr(self.main.larch.symtable, self.main.groupname)
+        dgroup = getattr(self.larch.symtable, self.controller.groupname)
         x, y = dgroup.x, dgroup.y
         i0 = index_of(dgroup.x, xmin)
         i1 = index_of(dgroup.x, xmax)
@@ -268,16 +334,15 @@ class XYFitPanel(wx.Panel):
                 parwids[name].value.SetValue(param.value)
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.x)
-        self.main.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup._tmp)
-        self.main.larch.symtable._plotter.plot1.cursor_hist = []
+        self.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup._tmp)
+        self.larch.symtable._plotter.plot1.cursor_hist = []
 
-    def onPick2Points(self, evt=None, comp=-1):
-        if comp > -1:
-            fgroup = self.fit_components[comp]
-            if fgroup.icomp != comp or fgroup.panel is None:
+    def onPick2Points(self, evt=None, prefix=None):
+        fgroup = self.fit_components.get(prefix, None)
+        if fgroup is None:
                 return
-        self.main.larch.symtable._plotter.plot1.cursor_hist = []
-        fgroup.npts = len(self.main.larch.symtable._plotter.plot1.cursor_hist)
+        self.larch.symtable._plotter.plot1.cursor_hist = []
+        fgroup.npts = len(self.larch.symtable._plotter.plot1.cursor_hist)
         self.pick2_group = fgroup
 
         if fgroup.pick2_msg is not None:
@@ -288,12 +353,9 @@ class XYFitPanel(wx.Panel):
 
     def onSaveFit(self, event=None):
         print "Save Fit : ", self.fit_model, self.fit_components
-
-        if (self.fit_model is None and
-            len(self.fit_components) > 0):
-            self.build_fitmodel()
-        print self.fit_model
-        print self.fit_params.dumps()
+        if self.summary is not None:
+           for k, v in self.summary.items():
+               print k, v
 
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
@@ -303,7 +365,7 @@ class XYFitPanel(wx.Panel):
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
         try:
-            xval = self.main.larch.symtable._plotter.plot1_x
+            xval = self.larch.symtable._plotter.plot1_x
         except:
             xval = None
         if xval is not None:
@@ -314,10 +376,10 @@ class XYFitPanel(wx.Panel):
 
     def get_datagroup(self):
         dgroup = None
-        if self.main.groupname is not None:
+        if self.controller.groupname is not None:
             try:
-                dgroup = getattr(self.main.larch.symtable,
-                                      self.main.groupname)
+                dgroup = getattr(self.larch.symtable,
+                                 self.controller.groupname)
             except:
                 pass
         return dgroup
@@ -342,19 +404,22 @@ class XYFitPanel(wx.Panel):
         dgroup = self.get_datagroup()
         model = None
         params = Parameters()
-        for comp in self.fit_components:
+        self.summary = {'init_params':'', 'components': [], 'options': {}}
+        for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     params.add(parwids.param)
+                self.summary['components'].append((comp.mclass.__name__, comp.mclass_kws))
                 thismodel = comp.mclass(**comp.mclass_kws)
                 if model is None:
                     model = thismodel
                 else:
                     model += thismodel
+        self.summary['init_params'] = params.dumps()
         self.fit_model = model
         self.fit_params = params
 
-        self.plot1 = self.main.larch.symtable._plotter.plot1
+        self.plot1 = self.larch.symtable._plotter.plot1
         if dgroup is not None:
             i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
             xsel = dgroup.x[slice(i1, i2)]
@@ -377,7 +442,7 @@ class XYFitPanel(wx.Panel):
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        self.main.plot_group(self.main.groupname, new=True,
+        self.controller.plot_group(self.controller.groupname, new=True,
                              xmin=xv1, xmax=xv2, label='data')
 
         self.plot1.oplot(dgroup.xfit, dgroup.yfit, label='fit')
@@ -388,7 +453,7 @@ class XYFitPanel(wx.Panel):
             for label, _y in dgroup.ycomps.items():
                 self.plot1.oplot(dgroup.xfit, _y, label=label)
 
-        _plotter = self.main.larch.symtable._plotter
+        _plotter = self.larch.symtable._plotter
         _plotter.plot_axvline(dgroup.x[i1], color='#999999')
         _plotter.plot_axvline(dgroup.x[i2-1], color='#999999')
 
@@ -415,17 +480,25 @@ class XYFitPanel(wx.Panel):
         result = self.fit_model.fit(ysel, params=self.fit_params,
                                     x=dgroup.xfit, weights=weights,
                                     method='leastsq')
+        self.summary['final_params'] = result.params.dumps()
+        self.summary['fit_report'] = result.fit_report()
+        self.summary['xmin'] = xv1
+        self.summary['xmax'] = xv2
+        self.summary['result'] = result
+        if not hasattr(dgroup, 'fit_history'):
+            dgroup.fit_history = []
+        dgroup.fit_history.append(self.summary)
 
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
                                                        x=dgroup.xfit)
         self.plot_fitmodel(dgroup, show_resid=True, with_components=False)
 
-        self.main.show_report(result.fit_report())
+        self.controller.show_report(result.fit_report())
 
         # fill parameters with best fit values
         allparwids = {}
-        for comp in self.fit_components:
+        for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for name, parwids in comp.parwids.items():
                     allparwids[name] = parwids
