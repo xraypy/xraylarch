@@ -93,10 +93,11 @@ XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
 
 
 class ProcessPanel(wx.Panel):
-    def __init__(self, parent, model=None, **kws):
+    def __init__(self, parent, controller=None, reporter=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
 
-        self.model = model
+        self.controller = controller
+        self.reporter = reporter
         self.needs_update = False
         self.proc_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
@@ -107,7 +108,7 @@ class ProcessPanel(wx.Panel):
         pass
 
     def fill(self, dgroup):
-        opts = self.model.get_proc_opts(dgroup)
+        opts = self.controller.get_proc_opts(dgroup)
 
         self.xshift.SetValue(opts['xshift'])
         self.yshift.SetValue(opts['yshift'])
@@ -312,7 +313,7 @@ class ProcessPanel(wx.Panel):
         pack(self, sizer)
 
     def onCopyParam(self, name=None, event=None):
-        proc_opts = self.model.group.proc_opts
+        proc_opts = self.controller.group.proc_opts
         opts = {}
         name = str(name)
         if name == 'xas_op':
@@ -333,10 +334,10 @@ class ProcessPanel(wx.Panel):
             opts['norm1'] = proc_opts['norm1']
             opts['norm2'] = proc_opts['norm2']
 
-        for checked in self.model.filelist.GetCheckedStrings():
-            groupname = self.model.file_groups[str(checked)]
-            grp = self.model.get_group(groupname)
-            if grp != self.model.group:
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(checked)]
+            grp = self.controller.get_group(groupname)
+            if grp != self.controller.group:
                 grp.proc_opts.update(opts)
                 self.fill(grp)
                 self.process(grp.groupname)
@@ -363,16 +364,16 @@ class ProcessPanel(wx.Panel):
             pass
 
     def onProcessTimer(self, evt=None):
-        if self.needs_update and self.model.groupname is not None:
-            self.process(self.model.groupname)
-            self.model.plot_group(groupname=self.model.groupname, new=True)
+        if self.needs_update and self.controller.groupname is not None:
+            self.process(self.controller.groupname)
+            self.controller.plot_group(groupname=self.controller.groupname, new=True)
             self.needs_update = False
 
     def UpdatePlot(self, evt=None, **kws):
         self.needs_update = True
 
     def on_selpoint(self, evt=None, opt='e0'):
-        xval, yval = self.model.get_cursor()
+        xval, yval = self.controller.get_cursor()
         if xval is None:
             return
 
@@ -397,7 +398,7 @@ class ProcessPanel(wx.Panel):
         """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
-        dgroup = self.model.get_group(gname)
+        dgroup = self.controller.get_group(gname)
         proc_opts = {}
 
         proc_opts['xshift'] = self.xshift.GetValue()
@@ -429,7 +430,7 @@ class ProcessPanel(wx.Panel):
             proc_opts['nvict'] = int(self.xas_vict.GetSelection())
             proc_opts['xas_op'] = self.xas_op.GetStringSelection()
 
-        self.model.process(dgroup, proc_opts=proc_opts)
+        self.controller.process(dgroup, proc_opts=proc_opts)
 
         if dgroup.datatype.startswith('xas'):
 
@@ -486,7 +487,7 @@ class ProcessPanel(wx.Panel):
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
                 dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
 
-class XYFitModel():
+class XYFitController():
     """
     class hollding the Larch session and doing the
     processing work for Larch XYFit
@@ -502,6 +503,7 @@ class XYFitModel():
         self.group = None
         self.groupname = None
         self.larch_buffer = None
+        self.report_frame = None
         self.symtable = self.larch.symtable
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', self)
@@ -512,6 +514,18 @@ class XYFitModel():
                                            _larch=self.larch)
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
+
+    def show_report(self, text, evt=None):
+        shown = False
+        try:
+            self.report_frame.Raise()
+            shown = True
+        except:
+            del self.report_frame
+        if not shown:
+            self.report_frame = ReportFrame(self.wxparent)
+        self.report_frame.set_text(text)
+        self.report_frame.Raise()
 
     def get_iconfile(self):
         larchdir = self.symtable._sys.config.larchdir
@@ -544,7 +558,7 @@ class XYFitModel():
         return opts
 
     def process(self, dgroup, proc_opts=None):
-        print("Model Process steps for group ", dgroup)
+        print("Controller Process steps for group ", dgroup)
 
         if not hasattr(dgroup, 'proc_opts'):
             dgroup.proc_opts = {}
@@ -682,9 +696,9 @@ class XYFitFrame(wx.Frame):
 
         self.last_array_sel = {}
         title = "Larch XYFit: XY Data Viewing & Curve Fitting"
-        self.model = XYFitModel(wxparent=self, _larch=_larch)
-        self.larch = self.model.larch
-        self.larch_buffer = self.model.larch_buffer
+        self.controller = XYFitController(wxparent=self, _larch=_larch)
+        self.larch = self.controller.larch
+        self.larch_buffer = self.controller.larch_buffer
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -719,9 +733,9 @@ class XYFitFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        self.model.filelist = FileCheckList(leftpanel, main=self,
+        self.controller.filelist = FileCheckList(leftpanel, main=self,
                                       select_action=self.ShowFile)
-        self.model.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
+        self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.GridBagSizer(1, 1)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
@@ -733,7 +747,7 @@ class XYFitFrame(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ltop, 0, LCEN|wx.GROW, 1)
-        sizer.Add(self.model.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.controller.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
 
         pack(leftpanel, sizer)
 
@@ -755,9 +769,10 @@ class XYFitFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        self.proc_panel = ProcessPanel(parent=self.nb,
-                                       model=self.model)
-        self.fit_panel =  XYFitPanel(parent=self.nb, main=self)
+        panel_opts = dict(parent=self.nb, controller=self.controller)
+
+        self.proc_panel = ProcessPanel(**panel_opts)
+        self.fit_panel =  XYFitPanel(**panel_opts)
 
         self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,  ' Curve Fitting ',  True)
@@ -771,19 +786,19 @@ class XYFitFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def onSelAll(self, event=None):
-        self.model.filelist.SetCheckedStrings(self.model.file_groups.keys())
+        self.controller.filelist.SetCheckedStrings(self.controller.file_groups.keys())
 
     def onSelNone(self, event=None):
-        self.model.filelist.SetCheckedStrings([])
+        self.controller.filelist.SetCheckedStrings([])
 
     def init_larch(self):
         self.SetStatusText('ready')
         self.title.SetLabel('')
 
-        self.fit_panel.larch = self.model.larch
+        self.fit_panel.larch = self.controller.larch
 
-        fico = self.model.get_iconfile()
-        plotframe = self.model.get_display()
+        fico = self.controller.get_iconfile()
+        plotframe = self.controller.get_display()
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz, ypos))
@@ -795,18 +810,18 @@ class XYFitFrame(wx.Frame):
 
     def onPlotOne(self, evt=None, groupname=None):
         if groupname is None:
-            groupname = self.model.groupname
+            groupname = self.controller.groupname
 
-        dgroup = self.model.get_group(groupname)
+        dgroup = self.controller.get_group(groupname)
         if dgroup is not None:
-            self.model.plot_group(groupname=groupname, new=True)
+            self.controller.plot_group(groupname=groupname, new=True)
 
     def onPlotSel(self, evt=None):
         newplot = True
-        group_ids = self.model.filelist.GetCheckedStrings()
+        group_ids = self.controller.filelist.GetCheckedStrings()
         for checked in group_ids:
-            groupname = self.model.file_groups[str(checked)]
-            dgroup = self.model.get_group(groupname)
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
             if dgroup is None:
                 continue
             dgroup.plot_yarrays = [(dgroup.y, PLOTOPTS_1,
@@ -815,30 +830,35 @@ class XYFitFrame(wx.Frame):
                 dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
                 dgroup.plot_ymarkers = []
 
-            self.model.plot_group(groupname=groupname, title='', new=newplot)
+            self.controller.plot_group(groupname=groupname, title='', new=newplot)
             newplot=False
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
-        self.model.plot_group(groupname=groupname, title=title, new=new, **kws)
+        self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
         self.Raise()
 
     def onShowLarchBuffer(self, evt=None):
-        self.model.show_larch_buffer()
+        self.controller.show_larch_buffer()
 
     def ShowFile(self, evt=None, groupname=None, **kws):
-        if groupname is None and evt is not None:
-            groupname = self.model.file_groups[str(evt.GetString())]
+        filename = None
+        if evt is not None:
+            filename = str(evt.GetString())
+        if groupname is None and filename is not None:
+            groupname = self.controller.file_groups[filename]
 
         if not hasattr(self.larch.symtable, groupname):
             print( 'Error reading file ', groupname)
             return
 
-        dgroup = self.model.get_group(groupname)
-        self.model.group = dgroup
-        self.model.groupname = groupname
+        dgroup = self.controller.get_group(groupname)
+        self.controller.group = dgroup
+        self.controller.groupname = groupname
         self.nb.SetSelection(0)
         self.proc_panel.fill(dgroup)
-        self.title.SetLabel(str(evt.GetString()))
+        if filename is None:
+            filename = dgroup.filename
+        self.title.SetLabel(filename)
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -909,7 +929,6 @@ class XYFitFrame(wx.Frame):
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             del obj
-
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -923,12 +942,8 @@ class XYFitFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
-    def show_report(self, text, evt=None):
-        self.show_subframe('reportframe', ReportFrame)
-        self.subframes['reportframe'].set_text(text)
-
     def onEditColumns(self, evt=None):
-        dgroup = self.model.get_group(self.model.groupname)
+        dgroup = self.controller.get_group(self.controller.groupname)
         self.show_subframe('coledit', EditColumnFrame,
                            group=dgroup.raw,
                            last_array_sel=self.last_array_sel,
@@ -948,7 +963,7 @@ class XYFitFrame(wx.Frame):
         dlg.Destroy()
 
     def onRead(self, path):
-        if path in self.model.file_groups:
+        if path in self.controller.file_groups:
             if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
                                   'Re-read file?'):
                 return
@@ -1007,25 +1022,23 @@ class XYFitFrame(wx.Frame):
             self.last_array_sel = array_sel
         filename = datagroup.filename
         groupname = datagroup.groupname
-        # print("READ SCAN  storing datagroup ", datagroup, groupname, filename)
+        print("READ OK  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
-        if filename in self.model.file_groups and not overwrite:
+        if filename in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
                 ftest = "%s (%i)"  % (filename, i)
-                if ftest not in self.model.file_groups:
+                if ftest not in self.controller.file_groups:
                     filename = ftest
                     break
 
-        if filename not in self.model.file_groups:
-            self.model.filelist.Append(filename)
-            self.model.file_groups[filename] = groupname
+        if filename not in self.controller.file_groups:
+            self.controller.filelist.Append(filename)
+            self.controller.file_groups[filename] = groupname
 
         setattr(self.larch.symtable, groupname, datagroup)
-        if datagroup.datatype == 'xas':
-            self.proc_panel.fill(datagroup)
+
         self.nb.SetSelection(0)
-        if plot:
-            self.onPlotOne(groupname=groupname)
+        self.ShowFile(groupname=groupname)
 
 class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
