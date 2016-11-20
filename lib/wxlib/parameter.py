@@ -49,6 +49,7 @@ class ParameterWidgets(object):
 
         self.parent = parent
         self.param = param
+        self._saved_expr = ''
         if (prefix is not None and
             not self.param.name.startswith(prefix)):
             self.param.name = "%s%s" %(prefix, self.param.name)
@@ -58,7 +59,7 @@ class ParameterWidgets(object):
 
         # set vary_choice from param attributes
         vary_choice = PAR_VAR
-        if param.expr is not None:
+        if param.expr not in (None, 'None', ''):
             vary_choice = PAR_CON
         elif not param.vary:
             vary_choice = PAR_FIX
@@ -113,6 +114,7 @@ class ParameterWidgets(object):
             expr = param.expr
             if expr in (None, 'None', ''):
                 expr = ''
+            self._saved_expr = expr
             self.expr = wx.TextCtrl(parent, -1, value=expr,
                                       size=(expr_size, -1))
             self.expr.Enable(vary_choice==PAR_CON)
@@ -157,6 +159,13 @@ class ParameterWidgets(object):
             return
         vary = str(evt.GetString().lower())
         self.param.vary = (vary==PAR_VAR)
+        if ((vary == PAR_VAR or vary == PAR_FIX) and
+            self.param.expr not in (None, 'None', '')):
+            self._saved_expr = self.param.expr
+            self.param.expr = ''
+        elif (vary == PAR_CON and self.param.expr in (None, 'None', '')):
+            self.param.expr = self._saved_expr
+
         if self.value is not None:
             self.value.Enable(vary!=PAR_CON)
         if self.expr is not None:
