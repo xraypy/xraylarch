@@ -121,7 +121,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.larch = _larch
         if self.larch is None:
             self.init_larch()
-            
+
         ImageFrame.__init__(self, parent=parent, size=size,
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
@@ -152,7 +152,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         self.mask = mask
         if np.shape(self.mask) == np.shape(map):
             self.masked_map = map * (np.ones(np.shape(self.mask))-mask.value)
-        
+
         self.panel.xdata = np.arange(map.shape[0])
         self.panel.ydata = np.arange(map.shape[0])
 
@@ -308,7 +308,7 @@ class XRD2D_DisplayFrame(ImageFrame):
         if x is None or y is None:
             return
 
-        
+
         if self.ai is None:
             _point = 0, 0, 0
             for ix, iy in self.prof_dat[1]:
@@ -383,7 +383,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                 twth = np.degrees(twth)                                 ## units degrees
                 eta  = np.arctan2(y_m,x_m)                              ## units radians
                 eta  = np.degrees(eta)                                  ## units degrees
-                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s' % (ix, 
+                msg = 'Pixel [%i, %i], 2TH=%.2f deg., ETA=%.1f deg., Intensity= %s' % (ix,
                                       iy, twth, eta, dval)
         self.panel.write_message(msg, panel=0)
 
@@ -417,11 +417,11 @@ class XRD2D_DisplayFrame(ImageFrame):
         if event.GetEventObject().GetValue():
             if self.masked_map is None:
                 print('Mask file not defined.')
-                
+
                 question = 'No mask found in map file. Would you like to load a new file now?'
                 caption = 'Load mask file?'
                 dlg = wx.MessageDialog(self, question, caption, wx.YES_NO | wx.ICON_QUESTION)
-                print 'answer:', dlg.ShowModal() # == wx.ID_YES
+                print( 'answer:', dlg.ShowModal()) # == wx.ID_YES
                 read = dlg.ShowModal()
                 dlg.Destroy()
                 if read == wx.ID_YES:
@@ -432,8 +432,8 @@ class XRD2D_DisplayFrame(ImageFrame):
                 ImageFrame.display(self, self.masked_map)
 
         else:
-            ImageFrame.display(self, self.map)        
-       
+            ImageFrame.display(self, self.map)
+
     def onLoadMask(self, evt=None):
 
         wildcards = 'pyFAI mask (*.edf)|*.edf|All files (*.*)|*.*'
@@ -446,7 +446,7 @@ class XRD2D_DisplayFrame(ImageFrame):
             read = True
             edffile = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
-        
+
         if read:
 
             print('Reading mask file: %s' % edffile)
@@ -458,7 +458,7 @@ class XRD2D_DisplayFrame(ImageFrame):
                 ImageFrame.display(self, self.masked_map)
             except:
                 print('File must be .edf format; user must have fabio installed.')
-            
+
             ## Can this be called here?
             #readEDFfile(self,name='mask',keyword='maskfile')
             #add_calibration()
@@ -482,7 +482,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
-                          
+
         self.marker_color = '#77BB99'
         self.spectra_color = '#0000AA'
 
@@ -641,7 +641,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                                                     color=self.marker_color)
 
         def correct_units(ix):
-            
+
             if self.xunit == '2th':
                  xlbl = self.xunit
                  xunt = 'deg'
@@ -655,7 +655,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                  xunt = '1/A'
                  x = self.xdata[ix]
             y = self.ydata[ix]
-                 
+
             return x,y,xlbl,xunt
 
         if self.xmarker_left is not None:
@@ -710,7 +710,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         Font11 = Font(11)
 
         plttitle = txt(ctrlpanel, 'Plot Parameters', font=Font10, size=200)
-        
+
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
         ysizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -757,7 +757,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         xsizer.Add(xspace,     0, wx.EXPAND|wx.ALL, 0)
         xsizer.Add(self.xaxis, 0, wx.EXPAND|wx.ALL, 0)
         pack(xscalepanel, xsizer)
-        
+
 ###########################
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(plttitle, 0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
@@ -818,7 +818,7 @@ class XRD1D_DisplayFrame(wx.Frame):
 
         loadpanel = wx.Panel(searchpanel, name='LoadPanel')
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         l1 = Button(loadpanel, 'Search Database', size=(120, 30), action=self.onSearchDB)
         l2 = Button(loadpanel, 'Load CIF',  size=(120, 30), action=self.onLoadCIF)
 
@@ -857,7 +857,7 @@ class XRD1D_DisplayFrame(wx.Frame):
                 self.xunit = 'd'
                 self.xlabel = 'd (A)'
                 x = calc_q_to_d(q)
-        
+
         self.plot1d([x,I])
 
         if self.xrd2 is not None:
@@ -865,11 +865,11 @@ class XRD1D_DisplayFrame(wx.Frame):
 
     def onShowBkgd(self, event=None):
 
-        print ' show background!'
+        print( ' show background!')
 
     def onSubBkgd(self, event=None):
 
-        print ' subtract background!'
+        print( ' subtract background!')
 
 
     def createMainPanel(self):
@@ -884,9 +884,9 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.SetSize((cx+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
-        
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-       
+
         sizer.Add(ctrlpanel,   0, style, 3)
         sizer.Add(plotpanel,   1, style, 2)
 
@@ -905,7 +905,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         if self.x_for_zoom is not None:
             xmid = self.x_for_zoom
         return (xmid, xrange, xmin, xmax)
-        
+
     def abs_limits(self):
         if self.xrd is not None:
             xmin, xmax = self.xrd.data1D[0].min(), self.xrd.data1D[0].max()
@@ -916,9 +916,9 @@ class XRD1D_DisplayFrame(wx.Frame):
                 xmax = calc_q_to_d(xmin)
                 xmin = calc_q_to_d(xmax)
                 if xmax > 5:
-                    xmax = 5.0    
+                    xmax = 5.0
         return xmin,xmax
-    
+
     def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
 
         xmin,xmax = self.abs_limits()
@@ -948,23 +948,23 @@ class XRD1D_DisplayFrame(wx.Frame):
         x2 = xmax+0.9*xrange
         x1 = x2 - xrange
         self._set_xview(x1, x2, pan=True)
-        
+
     def onZoomIn(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
         x1 = max(xmin, xmid-xrange/3.0)
         x2 = min(xmax, xmid+xrange/3.0)
         self._set_xview(x1, x2, keep_zoom=True)
-                
+
     def onZoomOut(self, event=None):
         xmid, xrange, xmin, xmax = self._get1Dlims()
         x1 = min(xmin, xmid-1.25*xrange)
         x2 = max(xmax, xmid+1.25*xrange)
         self._set_xview(x1, x2)
-        
+
     def unzoom_all(self, event=None):
 
         xmid, xrange, xmin, xmax = self._get1Dlims()
-        
+
         self._set_xview(xmin, xmax)
         self.xview_range = None
 
@@ -972,7 +972,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         self.panel.toggle_grid()
 
     def onLoadCIF(self, event=None):
-       
+
         wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose CIF file',
                            defaultDir=os.getcwd(),
@@ -983,7 +983,7 @@ class XRD1D_DisplayFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
-        
+
         if read:
             cry_strc = struc_from_cif(path)
 
@@ -1011,7 +1011,7 @@ class XRD1D_DisplayFrame(wx.Frame):
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Save XRD File\tCtrl+S",
                  "Save GSECARS XRD File",  self.onSaveXRDFile)
-        
+
         fmenu.AppendSeparator()
         MenuItem(self, fmenu,  "&Save Plot\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
@@ -1157,7 +1157,7 @@ class XRD1D_DisplayFrame(wx.Frame):
             self.xdata = xrd.data1D[0]
             self.ydata = xrd.data1D[1]
 
-        self.xunit = unit        
+        self.xunit = unit
         if self.xunit == '2th':
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
         elif self.xunit == 'd':
