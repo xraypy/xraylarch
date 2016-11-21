@@ -56,32 +56,6 @@ import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
-
-# musicdata = {
-# 1 : ("213", "The Price Of Love", "Rock"),
-# 2 : ("392", "Tom's Diner", "Rock"),
-# 3 : ("641", "Praying For Time", "Rock"),
-# 4 : ("Gloria Estefan", "Here We Are", "Rock"),
-# 5 : ("Linda Ronstadt", "Don't Know Much", "Rock"),
-# 6 : ("Michael Bolton", "How Am I Supposed To Live Without You", "Blues"),
-# 7 : ("Paul Young", "Oh Girl", "Rock"),
-# 8 : ("Paula Abdul", "Opposites Attract", "Rock"),
-# 9 : ("Richard Marx", "Should've Known Better", "Rock"),
-# 10: ("Rod Stewart", "Forever Young", "Rock"),
-# 11: ("Roxette", "Dangerous", "Rock"),
-# 12: ("Sheena Easton", "The Lover In Me", "Rock"),
-# 13: ("Sinead O'Connor", "Nothing Compares 2 U", "Rock"),
-# 14: ("Stevie B.", "Because I Love You", "Rock"),
-# 15: ("Taylor Dayne", "Love Will Lead You Back", "Rock"),
-# 16: ("The Bangles", "Eternal Flame", "Rock"),
-# 17: ("Wilson Phillips", "Release Me", "Rock"),
-# 18: ("Billy Joel", "Blonde Over Blue", "Rock"),
-# 19: ("Billy Joel", "Famous Last Words", "Rock"),
-# 20: ("Billy Joel", "Lullabye (Goodnight, My Angel)", "Rock"),
-# 21: ("Billy Joel", "The River Of Dreams", "Rock"),
-# 22: ("Billy Joel", "Two Thousand Years", "Rock")
-# }
-
 musicdata = {
 1 : ("18323", "Guidottiite", "173 : P 63"),
 2 : ("392", "Crandallite", "166 : R -3 m"),
@@ -122,6 +96,7 @@ class diFFit1DFrame(wx.Frame):
 
         self.XRD1DMenuBar()
 
+
     def XRD1DMenuBar(self):
 
         menubar = wx.MenuBar()
@@ -134,7 +109,7 @@ class diFFit1DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, '&Open CIFile', '', self.xrd1Dviewer.loadCIF)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
-       
+        
         menubar.Append(diFFitMenu, '&diFFit1D')
 
         ###########################
@@ -613,12 +588,18 @@ class Viewer1DXRD(wx.Panel):
         btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
         btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
+
+        btn_hide.Disable()
+        btn_rmv.Disable()
         
         hbox_btns.Add(btn_reset, flag=wx.ALL, border=10)
         hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
         hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox   
+        
+
+        
 
     def AddPanel(self,panel):
     
