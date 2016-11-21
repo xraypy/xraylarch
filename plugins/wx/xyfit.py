@@ -19,7 +19,7 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, pack, Button, HLine,
+from wxutils import (SimpleText, pack, Button, HLine, FileSave,
                      Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
@@ -558,8 +558,6 @@ class XYFitController():
         return opts
 
     def process(self, dgroup, proc_opts=None):
-        print("Controller Process steps for group ", dgroup)
-
         if not hasattr(dgroup, 'proc_opts'):
             dgroup.proc_opts = {}
 
@@ -640,7 +638,7 @@ class XYFitController():
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'energy', None) is None or
                  getattr(dgroup, 'mu', None) is None)):
-                print("-> Mode.process")
+                # print("-> Mode.process")
                 self.process(dgroup)
 
         if not hasattr(dgroup, 'x'):
@@ -1022,7 +1020,7 @@ class XYFitFrame(wx.Frame):
             self.last_array_sel = array_sel
         filename = datagroup.filename
         groupname = datagroup.groupname
-        print("READ OK  storing datagroup ", datagroup, groupname, filename)
+        # print("READ OK  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
         if filename in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
