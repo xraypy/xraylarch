@@ -1622,22 +1622,26 @@ class MapViewerFrame(wx.Frame):
 
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
+            self.use_scandb = False
             try:
                 sys.path.insert(0, '//cars5/Data/xas_user/bin/python')
                 from scan_credentials import conn as DBCONN
                 import scan_credentials
-
-                from larch_plugins.epics.scandb_plugin import connect_scandb
-                DBCONN['_larch'] = self.larch
-                connect_scandb(**DBCONN)
-                self.scandb = self.larch.symtable._scan._scandb
-                self.instdb = self.larch.symtable._scan._instdb
-                self.inst_name = 'IDE_SampleStage'
-                print(" Connected to scandb='%s' on server at '%s'" %
-                      (DBCONN['dbname'], DBCONN['host']))
+                try:
+                    from larch_plugins.epics.scandb_plugin import connect_scandb
+                    DBCONN['_larch'] = self.larch
+                    connect_scandb(**DBCONN)
+                    self.scandb = self.larch.symtable._scan._scandb
+                    self.instdb = self.larch.symtable._scan._instdb
+                    self.inst_name = 'IDE_SampleStage'
+                    self.use_scandb = True
+                    print(" Connected to scandb='%s' on server at '%s'" %
+                          (DBCONN['dbname'], DBCONN['host']))
+                except:
+                    print('could not connect to ScanDB (epicsscan not installed?)')
             except:
-                print('Could not connect to ScanDB')
-                self.use_scandb = False
+                pass # print('Not at GSECARS')
+
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
