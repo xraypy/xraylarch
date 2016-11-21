@@ -4,6 +4,7 @@ np.seterr(all='ignore')
 
 from functools import partial
 from collections import OrderedDict
+import json
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -11,12 +12,13 @@ import wx.lib.agw.flatnotebook as flat_nb
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font)
+                     FRAMESTYLE, Font, FileSave)
 
 import lmfit.models as lm_models
 from lmfit import Parameter, Parameters
 
 from larch import Group
+from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, SetTip)
@@ -25,7 +27,7 @@ from larch.fitting import fit_report
 from larch_plugins.std import group2dict
 from larch_plugins.math import index_of
 from larch_plugins.wx.icons import get_icon
-from larch_plugins.wx.parameter import ParameterDialog, ParameterPanel
+from larch_plugins.wx.parameter import ParameterPanel
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
@@ -42,6 +44,7 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
 ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
                'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
+FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -52,11 +55,11 @@ class AllParamsPanel(wx.Panel):
 
     def addParameter(self, param):
         """add a parameter"""
-        print "add parameter ", param
+        print( "add parameter ", param)
 
     def delParameter(self, param):
         """delete a parameter"""
-        print "del parameter ", param
+        print( "del parameter ", param)
 
 
 class XYFitPanel(wx.Panel):
@@ -352,10 +355,26 @@ class XYFitPanel(wx.Panel):
         self.pick2_timer.Start(250)
 
     def onSaveFit(self, event=None):
-        print "Save Fit : ", self.fit_model, self.fit_components
-        if self.summary is not None:
-           for k, v in self.summary.items():
-               print k, v
+        print( "Save Fit : ", self.fit_model, self.fit_components)
+        dgroup = self.get_datagroup()
+        deffile = dgroup.filename.replace('.', '_') + '.fitconf'
+        outfile = FileSave(self, 'Save Fit Configuration and Results',
+                           default_file=deffile,
+                           wildcard=FITCONF_WILDCARDS)
+
+        if outfile is None:
+            return
+
+        buff = ['#XYFit Config version 1']
+        buff.append(json.dumps(encode4js(self.summary),
+                               encoding='UTF-8',default=str))
+        buff.append('')
+        try:
+            fout = open(outfile, 'w')
+            fout.write('\n'.join(buff))
+            fout.close()
+        except IOError:
+            print('could not write %s' % outfile)
 
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
@@ -404,7 +423,7 @@ class XYFitPanel(wx.Panel):
         dgroup = self.get_datagroup()
         model = None
         params = Parameters()
-        self.summary = {'init_params':'', 'components': [], 'options': {}}
+        self.summary = {'components': [], 'options': {}}
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
@@ -415,7 +434,6 @@ class XYFitPanel(wx.Panel):
                     model = thismodel
                 else:
                     model += thismodel
-        self.summary['init_params'] = params.dumps()
         self.fit_model = model
         self.fit_params = params
 
@@ -480,13 +498,16 @@ class XYFitPanel(wx.Panel):
         result = self.fit_model.fit(ysel, params=self.fit_params,
                                     x=dgroup.xfit, weights=weights,
                                     method='leastsq')
-        self.summary['final_params'] = result.params.dumps()
-        self.summary['fit_report'] = result.fit_report()
         self.summary['xmin'] = xv1
         self.summary['xmax'] = xv2
-        self.summary['result'] = result
-        if not hasattr(dgroup, 'fit_history'):
-            dgroup.fit_history = []
+        for attr in ('aic', 'bic', 'chisqr', 'redchi', 'ci_out', 'covar',
+                     'flatchain', 'success', 'nan_policy', 'nfev', 'ndata',
+                     'nfree', 'nvarys', 'init_values'):
+            self.summary[attr] = getattr(result, attr)
+        self.summary['final_params'] = result.params
+        self.summary['fit_report'] = result.fit_report()
+
+        dgroup.fit_history = []
         dgroup.fit_history.append(self.summary)
 
         dgroup.yfit = result.best_fit
