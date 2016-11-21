@@ -154,7 +154,7 @@ class LarchFrame(wx.Frame):
                                        output = self.output,
                                        input  = self.input)
         self.BuildMenus()
-        
+
         self.objtree.SetRootObject(self.larchshell.symtable)
         if parent is None and exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
@@ -257,12 +257,11 @@ class LarchFrame(wx.Frame):
         _sys = self.larchshell.symtable._sys
         if hasattr(_sys, 'gui_apps'):
             x_apps = _sys.gui_apps.keys()
-            x_apps.sort()
-            for appname in x_apps:
+            for appname in sorted(x_apps):
                 label, creator = _sys.gui_apps[appname]
-                
+
                 MenuItem(self, appmenu, label, label,
-                         partial(self.show_subframe, 
+                         partial(self.show_subframe,
                                  name=appname, creator=creator))
 
         hmenu = wx.Menu()
