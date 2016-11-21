@@ -355,7 +355,6 @@ class XYFitPanel(wx.Panel):
         self.pick2_timer.Start(250)
 
     def onSaveFit(self, event=None):
-        print( "Save Fit : ", self.fit_model, self.fit_components)
         dgroup = self.get_datagroup()
         deffile = dgroup.filename.replace('.', '_') + '.fitconf'
         outfile = FileSave(self, 'Save Fit Configuration and Results',
@@ -504,8 +503,8 @@ class XYFitPanel(wx.Panel):
                      'flatchain', 'success', 'nan_policy', 'nfev', 'ndata',
                      'nfree', 'nvarys', 'init_values'):
             self.summary[attr] = getattr(result, attr)
-        self.summary['final_params'] = result.params
-        self.summary['fit_report'] = result.fit_report()
+        self.summary['params'] = result.params
+        self.summary['report'] = result.fit_report()
 
         dgroup.fit_history = []
         dgroup.fit_history.append(self.summary)
