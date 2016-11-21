@@ -67,6 +67,7 @@ xrf_plot         browsable display for XRF spectra
 '''
 
 MAX_WINDOWS = 20
+MAX_CURSHIST = 25
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
@@ -120,11 +121,15 @@ class PlotDisplay(PlotFrame):
         self.window = int(window)
         self._larch = _larch
         self._xylims = {}
+        self.cursor_hist = []
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
+            if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
+                symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
 
@@ -144,8 +149,13 @@ class PlotDisplay(PlotFrame):
         symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
+        hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
+        self.cursor_hist.insert(0, (x, y))
+        if len(self.cursor_hist) > hmax:
+            self.cursor_hist = self.cursor_hist[:hmax]
+        symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -195,7 +205,7 @@ class ImageDisplay(ImageFrame):
 
 @larch.ValidateLarchPlugin
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
-                xrf=False, image=False):
+                wintitle=None, xrf=False, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if getattr(_larch.symtable._sys.wx, 'wxapp', None) is None:
@@ -222,14 +232,17 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display = _larch.symtable.get_symbol(symname, create=True)
     if display is None:
         display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
-    _larch.symtable.set_symbol(symname, display)
-    if display is not None:
+        if wintitle is not None:
+            title = wintitle
         display.SetTitle(title)
+
+    _larch.symtable.set_symbol(symname, display)
     return display
 
 @larch.ValidateLarchPlugin
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
-              wxparent=None, size=None, side='left', force_draw=True, **kws):
+              wxparent=None, size=None, side='left', force_draw=True, wintitle=None,
+              **kws):
     """xrf_plot(energy, data[, win=1], options])
 
     Show XRF trace of energy, data
@@ -252,7 +265,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     See Also: xrf_oplot, plot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
-                          _larch=_larch, xrf=True)
+                          _larch=_larch, wintitle=wintitle, xrf=True)
     if plotter is None:
         _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
@@ -299,7 +312,7 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
 
 @larch.ValidateLarchPlugin
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
-          force_draw=True, side='left', **kws):
+          force_draw=True, side='left', wintitle=None, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -336,7 +349,8 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
 
     See Also: oplot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          wintitle=wintitle,  _larch=_larch)
     if plotter is None:
         _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
@@ -386,7 +400,8 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
 
 
 @larch.ValidateLarchPlugin
-def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
+def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
+             **kws):
     """newplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any
@@ -397,7 +412,8 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
 
     See Also: plot, oplot
     """
-    _plot(x, y, win=win, size=size, new=True, _larch=_larch, wxparent=wxparent, **kws)
+    _plot(x, y, win=win, size=size, new=True, _larch=_larch,
+          wxparent=wxparent, wintitle=wintitle, **kws)
 
 @larch.ValidateLarchPlugin
 def _plot_text(text, x, y, win=1, side='left', size=None,

@@ -17,10 +17,11 @@ before_install:
     - conda info -a
 
 install:
-    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib pandas nose sphinx sqlalchemy
+    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib 
     - source activate test_env
     - conda config --add channels conda-forge
     - conda config --add channels newville
+    - conda install h5py matplotlib pandas nose sphinx sqlalchemy
     - conda install yaml pango pcre wxpython wxmplot wxutils
     - conda install lmfit termcolor pyepics fabio pyfai
     - python setup.py install

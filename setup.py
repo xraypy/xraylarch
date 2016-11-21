@@ -14,7 +14,8 @@ DEBUG = False
 cmdline_args = sys.argv[1:]
 
 
-required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six']
+required_modules = ['numpy', 'scipy', 'lmfit', 'matplotlib',
+                    'h5py', 'sqlalchemy', 'six']
 
 recommended_modules = {'basic analysis': required_modules,
                        'xrd modules' : ('fabio','pyFAI'),
