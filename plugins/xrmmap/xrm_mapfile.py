@@ -21,7 +21,6 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
                             
 from larch_plugins.xrd import XRD
-from larch_plugins.xrd import integrate_xrd
 
 HAS_pyFAI = False
 try:
@@ -536,8 +535,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=True, FLAGxrd=False, xchannels=5001, xwedge=1):
+                 FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -557,13 +555,10 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
-        self.xchan            = xchannels
-        self.xwedge           = xwedge
-        
 
-        self.calibration = calibration
-        self.xrdmask = mask
-        self.xrdbkgd = bkgd
+        self.calibration = None
+        self.xrdmask = None
+        self.xrdbkgd = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
         
@@ -635,31 +630,6 @@ class GSEXRM_MapFile(object):
             self.open(self.filename, root=self.root, check_status=False)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-
-    def copy_hdf5(self, newfile):
-        """
-        copy current GSEXRM HDF5 File without 2D XRD data
-        
-        this **must** be called for an existing, valid GSEXRM HDF5 File!!
-        """
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-      
-        newh5root = h5py.File(newfile, 'w')
-
-        self.h5root.copy('xrmmap', newh5root)
-
-        xrdgrp = newh5root['xrmmap/xrd']
-        if 'data2D' in xrdgrp:
-            if 'data1D' not in xrdgrp:
-                print('shape of data2D: ',xrdgrp['data2D'].shape) ## mkak 2016.09.15
-#                xrdgrp.create_dataset('data1D', data=integrate_xrd(xrdgrp['data2D'], 
-#                                                    unit='q', AI = xrdgrp, save=False),
-#                                                    compression=COMPRESSION_LEVEL)
-            xrdgrp.__delitem__('data2D')
-            newh5root.flush()
-        newh5root.close()
-
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nEnd: %Y-%m-%d %H:%M:%S'))      
 
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)
@@ -747,88 +717,53 @@ class GSEXRM_MapFile(object):
             pass
         self.xrmmap['xrd'].create_dataset(name, data=np.array(rawdata))
 
-    def checkFORattrs(self,attrib,group=None):
-        if group == None:
-            group = self.xrmmap
-        try:
-            group.attrs[attrib]
-        except:
-            group.attrs[attrib] = ''        
-
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
-        mkak 2016.08.30
-        restructured
-        mkak 2016.09.09
-        adding new options; clean up
-        mkak 2016.09.28
+        mkak 2016.11.16
         """
 
         checkFORsubgroup('xrd',self.xrmmap)
-        xrdgp = self.xrmmap['xrd']
+        xrdgrp = self.xrmmap['xrd']
                 
-        checkFORattrs('calfile',xrdgp)
-        checkFORattrs('maskfile',xrdgp)
-        checkFORattrs('bkgdfile',xrdgp)
+        checkFORattrs('calfile',xrdgrp)
 
         xrdcal = False        
-        if self.calibration and xrdgp.attrs['calfile'] != self.calibration:
+        if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
             print('New calibration file detected: %s' % self.calibration)
-            xrdgp.attrs['calfile'] = '%s' % (self.calibration)
-            if os.path.exists(xrdgp.attrs['calfile']):
+            xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
+            if os.path.exists(xrdgrp.attrs['calfile']):
                 xrdcal = True
            
 
         if HAS_pyFAI and xrdcal:
             try:
-                ai = pyFAI.load(xrdgp.attrs['calfile'])
+                ai = pyFAI.load(xrdgrp.attrs['calfile'])
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % self.calibration)
                 pass
 
             try:
-                xrdgp.attrs['detector'] = ai.detector.name
+                xrdgrp.attrs['detector'] = ai.detector.name
             except:
-                xrdgp.attrs['detector'] = ''
+                xrdgrp.attrs['detector'] = ''
             try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
+                xrdgrp.attrs['spline']   = ai.detector.splineFile
             except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
+                xrdgrp.attrs['spline']   = ''
+            xrdgrp.attrs['ps1']        = ai.detector.pixel1 ## units: m
+            xrdgrp.attrs['ps2']        = ai.detector.pixel2 ## units: m
+            xrdgrp.attrs['distance']   = ai._dist ## units: m
+            xrdgrp.attrs['poni1']      = ai._poni1
+            xrdgrp.attrs['poni2']      = ai._poni2
+            xrdgrp.attrs['rot1']       = ai._rot1
+            xrdgrp.attrs['rot2']       = ai._rot2
+            xrdgrp.attrs['rot3']       = ai._rot3
+            xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
             ## E = hf ; E = hc/lambda
             hc = constants.value(u'Planck constant in eV s') * \
                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-
-
-        try:
-            if self.xrdmask and os.path.exists(self.xrdmask):
-                if xrdgp.attrs['maskfile'] != str(self.xrdmask):
-                    print('New mask file detected: %s' % str(self.xrdmask))
-                    xrdgp.attrs['maskfile'] = '%s' % (self.xrdmask)
-                    self.readEDFfile(name='mask',keyword='maskfile')
-        except:
-            print('Mask not loaded correctly.')
-            pass
-
-        try:
-            if self.xrdbkgd and os.path.exists(self.xrdbkgd):
-                if xrdgp.attrs['bkgdfile'] != str(self.xrdbkgd):
-                    print('New background file detected: %s' % str(self.xrdbkgd))
-                    xrdgp.attrs['bkgdfile'] = '%s' % (self.xrdbkgd)
-                    self.readEDFfile(name='bkgd',keyword='bkgdfile')
-        except:
-            print('Background not loaded correctly.')
-            pass
+            xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
 
         print('')
         self.h5root.flush()
@@ -1107,39 +1042,26 @@ class GSEXRM_MapFile(object):
         if self.flag_xrd:
             ## Unneccessary at this point BUT convenient if two xrd detectors are used
             ## mkak 2016.08.03
-            xrd_dets = []
-            map_items = sorted(self.xrmmap.keys())
-            for gname in map_items:
-                g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'xrd detector' :
-                    xrd_dets.append(g)
+            xrdgrp = self.xrmmap['xrd']
                     
+            xrdpts, xpixx, xpixy = row.xrd2d.shape
+
+#             ## hard-code for now: detector at 13IDE images need vertical flip
+#             vertflip = True
+#             if vertflip:
+#                 xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
+#             else:
+#                 xrdgrp['data2D'][thisrow,] = row.xrd2d
+            xrdgrp['data2D'][thisrow,] = row.xrd2d
+                
             if hasattr(self.xrmmap['xrd'],'maskfile'):
-                mask = self.xrmmap['xrd'].attrs['maskfile']
+                mask = xrdgrp.attrs['maskfile']
             else:
                 mask = None
-            if hasattr(self.xrmmap['xrd'],'bkgdfile'):
-                bkgd = self.xrmmap['xrd'].attrs['bkgdfile']
+            if hasattr(xrdgrp,'bkgdfile'):
+                bkgd = xrdgrp.attrs['bkgdfile']
             else:
                 bkgd = None
-
-            xrdpts, xpixx, xpixy = row.xrd2d.shape
-            for idet, grp in enumerate(xrd_dets):
-                grp['data2D'][thisrow,] = row.xrd2d
-                
-                t1a = time.time()
-                ### HOW TO DO THIS WITHOUT LOOPING?
-## temp. test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#                if hasattr(self.xrmmap['xrd'],'calfile'):    
-#                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
-#                                        unit='q', steps=grp['data1D'].shape[-1],
-#                                        mask=mask, dark=bkgd,
-#                                        #calfile=self.xrmmap['xrd'].attrs['calfile'],
-#                                        AI = self.xrmmap['xrd'], 
-#                                        save=False)
-
 
         t2 = time.time()
         if verbose:
@@ -1315,17 +1237,6 @@ class GSEXRM_MapFile(object):
             xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
                                    chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-## temporary test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#            xchan = self.xchan
-#            xwedge = self.xwedge
-#            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
-#            ## what resolution should be used for q/2th integration?
-#            ## how many wedges for 1D integration?
-#            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), 
-#                                   np.int16, chunks = self.chunksize_1DXRD,
-#                                   compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))      
         
@@ -1334,39 +1245,27 @@ class GSEXRM_MapFile(object):
     def check_flags(self):
         '''
         check if any XRD OR XRF data in mapfile
-        mkak 2016.10.06
+        mkak 2016.10.13
         '''
-        xrmmap = self.xrmmap
-        try: 
-            xrmmap['flags']
-        except:
-            xrmmap.create_group('flags')
-            self.h5root.flush()
+        print 'running: self.check_flags()'
         
-        try:
-            self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
+        try: 
+            xrdgp = self.xrmmap['xrd']
+            xrddata = xrdgp['data2D']
+            self.flag_xrd = True
+        except:
+            self.flag_xrd = False        
+        try: 
+            xrfgp = self.xrmmap['xrf']
+            xrfdata = xrdgp['det1']
+            self.flag_xrf = True
         except:
             self.flag_xrf = False
-        
-        try:
-            self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
-        except:
-            self.flag_xrd = False
 
-        if self.flag_xrd is False:
-            xrd1d, xrd2d = self.check_xrd()
-            if xrd1d or xrd2d:
-                self.flag_xrd = True
-
-        if self.flag_xrf is False:
-            if self.check_xrf():
-                self.flag_xrf = True
-        
         self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
         self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
         self.h5root.flush()
         
-
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
@@ -1972,20 +1871,20 @@ class GSEXRM_MapFile(object):
         """
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            data2D = xrdgp['data2D']
+            xrdgrp = self.xrmmap['xrd']
+            data2D = xrdgrp['data2D']
             flag2D = True
         except:
             flag2D = False 
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            xrdgp['data1D']
+            xrdgrp = self.xrmmap['xrd']
+            xrdgrp['data1D']
             flag1D = True
         except:
             if flag2D:
                 try:
-                    xrdgp.attrs['calfile']
+                    xrdgrp.attrs['calfile']
                     flag1D = True
                 except:
                     flag1D = False
@@ -2358,4 +2257,4 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-
+    

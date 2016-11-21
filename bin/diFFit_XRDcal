@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+"""
+GUI to calibrate 2D XRD image
+"""
+import os
+
+try:
+    import larch
+    os.chdir(larch.site_config.home_dir)
+    from larch_plugins.diFFit.XRDCalibrationFrame import diFFit_XRDcal
+except:
+    pass
+
+diFFit_XRDcal().run()

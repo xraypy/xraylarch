@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+"""
+GUI to create 2D XRD mask
+"""
+import os
+
+try:
+    import larch
+    os.chdir(larch.site_config.home_dir)
+    from larch_plugins.diFFit.XRDMaskFrame import diFFit_XRDmask
+except:
+    pass
+
+diFFit_XRDmask().run()

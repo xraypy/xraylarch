@@ -1335,15 +1335,6 @@ class XRD1D_DisplayFrame(wx.Frame):
         if outfile is not None:
             self.xrd.save_xrdfile(outfile)
 
-# ## Not ready to incorporate peak fitting, yet...
-# ## mkak 2016.07.25
-#     def onFitPeaks(self, event=None, **kws):
-#         print('This function is not yet implemented...')
-#         #try:
-#         #    self.win_fit.Raise()
-#         #except:
-#         #    self.win_fit = FitSpectraFrame(self)
-
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
