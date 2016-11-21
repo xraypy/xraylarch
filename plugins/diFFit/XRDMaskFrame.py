@@ -159,7 +159,7 @@ class MaskToolsPopup(wx.Frame):
 
     def loadIMAGE(self,event): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRD calibration file',
+        dlg = wx.FileDialog(self, message='Choose XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
