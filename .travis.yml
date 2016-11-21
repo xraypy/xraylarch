@@ -21,7 +21,7 @@ install:
     - source activate test_env
     - conda config --add channels conda-forge
     - conda config --add channels newville
-    - conda install yaml pango wxpython wxmplot wxutils
+    - conda install yaml pango pcre wxpython wxmplot wxutils
     - conda install lmfit termcolor pyepics fabio pyfai
     - python setup.py install
 
