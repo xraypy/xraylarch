@@ -111,7 +111,7 @@ class diFFit1DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
         
         menubar.Append(diFFitMenu, '&diFFit1D')
-        diFFitMenu.Disable()
+
 
         ###########################
         ## Process
