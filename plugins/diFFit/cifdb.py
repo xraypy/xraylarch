@@ -1021,9 +1021,8 @@ class cifDB(object):
 
         for i in range(99999):
 #        for i in range(100,104):
-
             url_to_scrape = url % i
-            if 1==1:
+            try:
                 r = requests.get(url_to_scrape)
 
                 if r.text.split()[0] == "Can't" or '':
@@ -1041,7 +1040,6 @@ class cifDB(object):
                         if verbose:
                             print 'Saved %s' % file
                     if addDB:
-                        #cifinfo = r.text
                         self.add_cif_to_db(url_to_scrape,url=True,verbose=verbose)
-#             except:
-#                 pass
+            except:
+                pass
