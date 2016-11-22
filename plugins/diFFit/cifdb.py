@@ -584,7 +584,7 @@ class cifDB(object):
                 sqal.Column('amcsd_id', sqal.Integer, primary_key=True),
                 sqal.Column('mineral_id', sqal.Integer),
                 sqal.Column('iuc_id', sqal.ForeignKey('allspacegroups.iuc_id')),
-                sqal.Column('cifile', sqal.String(2500)) ## , nullable=True
+                sqal.Column('cif', sqal.String(25)) ## , nullable=True
                 )
         ###################################################
         ## Add all to file
@@ -932,37 +932,13 @@ class cifDB(object):
             else:
                 print 'File : %s' % os.path.split(cifile)[-1]
 
-        '''
-
-        ###################################################
-        ## Look up tables
-        self.allcif = sqal.Table('allcif', self.metadata)
-        self.allelements = sqal.Table('allelements', self.metadata)
-        self.allminerals = sqal.Table('allminerals', self.metadata)
-        self.allspacegroups = sqal.Table('allspacegroups', self.metadata)
-        self.allsymmetries = sqal.Table('allsymmetries', self.metadata)
-        self.allauthors = sqal.Table('allauthors', self.metadata)
-        self.qrange = sqal.Table('qrange', self.metadata)
-        self.allcategories = sqal.Table('allcategories', self.metadata)
-
-        ###################################################
-        ## Cross-reference tables
-        self.symmetry = sqal.Table('symmetry', self.metadata)
-        self.composition = sqal.Table('composition', self.metadata)
-        self.author = sqal.Table('author', self.metadata)
-        self.qpeak = sqal.Table('qpeaks', self.metadata)
-        self.category = sqal.Table('category', self.metadata)
-        '''
-
-
-
     def find_by_amcsd(self,amcsd_id):
 
         self.load_database()
 
         search_cif = self.allcif.select(self.allcif.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
-            cifstr = row.cifile
+            cifstr = row.cif
             mineral_id = row.mineral_id
             iuc_id = row.iuc_id
 
@@ -987,8 +963,6 @@ class cifDB(object):
                 authors.append(block.author_name)
         
         self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
-        print cifstr
-        print 
 
 
 
@@ -1020,7 +994,7 @@ class cifDB(object):
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
 
         for i in range(99999):
-#        for i in range(100,104):
+        #for i in range(100,104):
             url_to_scrape = url % i
             try:
                 r = requests.get(url_to_scrape)
