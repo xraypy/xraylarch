@@ -27,6 +27,7 @@ requirements:
     - wxutils
     - termcolor
     - pyepics
+    - lmfit
     - fabio
 
   run:
@@ -49,6 +50,7 @@ requirements:
     - wxutils
     - termcolor
     - pyepics
+    - lmfit
     - fabio
 
 test:
