@@ -13,15 +13,16 @@ from glob import glob
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
+required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six']
 
-required_modules = ['numpy', 'scipy', 'lmfit', 'matplotlib',
-                    'h5py', 'sqlalchemy', 'six']
+graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
 
 recommended_modules = {'basic analysis': required_modules,
+                       'graphics and plotting': graphics_modules,
                        'xrd modules' : ('fabio','pyFAI'),
-                       'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
                        'color-enhanced error messages': ('termcolor', ),
                        'using the EPICS control system': ('epics', ),
+                       'testing tools': ('nose', ),
                        }
 
 # files that may be left from earlier installs) and should be removed
@@ -43,7 +44,7 @@ if not deps_ok:
             if mod == 'wx':
                 try:
                     import wxversion
-                    wxversion.ensureMinimal('2.8')
+                    wxversion.ensureMinimal('2.9')
                 except:
                     pass
             if mod not in modules_imported:
