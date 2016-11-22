@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.4. XAFS: Fourier Transforms for XAFS &mdash; larch 0.9.30 documentation</title>
+    <title>8.4. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.31 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.30',
+        VERSION:     '0.9.31',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.30 documentation" href="../index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="larch 0.9.31 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.5. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
     <link rel="prev" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
@@ -73,7 +75,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
 
@@ -109,8 +111,8 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
@@ -137,12 +139,12 @@ the XAFS Fourier transform function described here.</p>
 <h2>8.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The standard Fourier transform of a signal <span class="math">\(f(t)\)</span> can be written as</p>
 <div class="math">
-\[\begin{eqnarray*}
+\begin{eqnarray*}
       {\tilde{f}}(\omega) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     f(t) e^{-i{\omega}t} dt \\
     f(t) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
-\end{eqnarray*}\]</div><p>where the symmetric normalization is one of the more common choices of
+\end{eqnarray*}</div><p>where the symmetric normalization is one of the more common choices of
 conventions.  This gives conjugate variables of <span class="math">\(\omega\)</span> and
 <span class="math">\(t\)</span>. Because XAFS goes as</p>
 <div class="math">
@@ -184,14 +186,14 @@ approximately <span class="math">\(\delta R\)</span> =  0.0307 <span class="math
 points <span class="math">\(k_n = n \, \delta k\)</span>, and samples of <span class="math">\(\chi(R)\)</span> at the
 points <span class="math">\(R_m = m \, \delta R\)</span>, the definitions become:</p>
 <div class="math">
-\[\begin{eqnarray*}
+\begin{eqnarray*}
 \tilde\chi(R_m) &amp;=&amp; \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
                     \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
 \tilde\chi(k_n) &amp;=&amp; \frac{2 i \delta R}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
                     \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
-\end{eqnarray*}\]</div><p>These normalizations preserve the symmetry properties of the Fourier
+\end{eqnarray*}</div><p>These normalizations preserve the symmetry properties of the Fourier
 Transforms with conjugate variables <span class="math">\(k\)</span> and <span class="math">\(2R\)</span>.
 Though the reverse transform converts the complex <span class="math">\(\chi(R)\)</span> to the
 complex <span class="math">\(\chi(k)\)</span> on the same <span class="math">\(k\)</span> spacing as the starting
@@ -524,10 +526,10 @@ center of the widows.  For the Gaussian window, the form is:</p>
 <p>between <span class="math">\(x_i\)</span>  and  <span class="math">\(x_f\)</span>, and 0 outside this range.
 The Kaiser-Bessel window is slightly more complicated:</p>
 <div class="math">
-\[\begin{eqnarray*}
+\begin{eqnarray*}
    a       &amp;=&amp; \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
   \Omega(x) &amp;=&amp; \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
-\end{eqnarray*}\]</div><p>where <span class="math">\(i_0\)</span> is the modified Bessel function of order 0.</p>
+\end{eqnarray*}</div><p>where <span class="math">\(i_0\)</span> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
 <h2>8.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
@@ -712,12 +714,12 @@ array.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>
