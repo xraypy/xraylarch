@@ -244,7 +244,7 @@ class GSEXRM_MapRow:
         if FLAGxrf:
             xrf_reader = read_xsp3_hdf5
             if not xrffile.startswith('xsp'):
-                xrf_reader = read_xmap_netcdf
+                xrf_reader = read_xrf_netcdf
 
         if FLAGxrd:
             xrd_reader = read_xrd_netcdf
