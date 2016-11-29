@@ -19,6 +19,7 @@ import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
+import cifdb
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
@@ -56,10 +57,10 @@ import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
-musicdata = {
-1 : ("18323", "Guidottiite", "173 : P 63"),
-2 : ("392", "Crandallite", "166 : R -3 m"),
-3 : ("11298", "CsCl", "225 : F m -3 m")
+music_info = {
+1 : ("18323", "Guidottiite", "173 : P 63", "H O"),
+2 : ("392", "Crandallite", "166 : R -3 m", "C O H"),
+3 : ("11298", "CsCl", "225 : F m -3 m", "S C O")
 }
 
 class diFFit1DFrame(wx.Frame):
@@ -163,6 +164,13 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
         self.createAndLayout()
         
+    def createDATABASEarray(self,file='amscd_cif.db'):
+    
+        mycifdatabase = cifdb.cifDB(dbname=file)
+        display_array = mycifdatabase.create_array()
+
+        return display_array
+    
     def createAndLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.list = TestListCtrl(self, wx.ID_ANY, style=wx.LC_REPORT
@@ -170,11 +178,13 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
                                  | wx.LC_EDIT_LABELS
                                  | wx.LC_SORT_ASCENDING)
         sizer.Add(self.list, 1, wx.EXPAND)
+        
+        self.database_info = self.createDATABASEarray()
+        
         self.populateList()
-        # Now that the list exists we can init the other base class,
-        # see wx/lib/mixins/listctrl.py
-        self.itemDataMap = musicdata
-        listmix.ColumnSorterMixin.__init__(self, 3)
+        
+        self.itemDataMap = self.database_info
+        listmix.ColumnSorterMixin.__init__(self, 4)
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         
@@ -182,17 +192,23 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
         self.list.InsertColumn(1, 'Name')
         self.list.InsertColumn(2, 'Space Group')
-        items = musicdata.items()
+        self.list.InsertColumn(3, 'Elements')
+        items = self.database_info.items()
+        
+        print items[2]
+        print music_info.items()[2]
         
         for key, data in items:
             index = self.list.InsertStringItem(sys.maxint, data[0])
             self.list.SetStringItem(index, 1, data[1])
             self.list.SetStringItem(index, 2, data[2])
+            self.list.SetStringItem(index, 3, data[3])
             self.list.SetItemData(index, key)
 
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(2, 100)
+        self.list.SetColumnWidth(1, 100)
+        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
 # 
 #         # show how to select an item
 #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
