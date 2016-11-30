@@ -635,23 +635,6 @@ class cifDB(object):
                 print('Duplicate: %s %s' % (str(iuc_id),name))
                 pass
   
-
-#### Do not fill with list of all authors and minerals. Add as you go.
-#         ###################################################
-#         ## Populate the look-up tables of the database
-# 
-#         ## Adds all authors
-#         with open('Database_Files/ALL_authors.txt','r') as afile:
-#             for author in afile:
-#                 self.new_author.execute(author_name=author.strip())
-# 
-#         ## Adds all mineral names   <---- should be checked and added to when importing new cif
-#         with open('Database_Files/ALL_mineral_names.txt','r') as mfile:
-#             for mineral in mfile:
-#                 self.new_mineral.execute(mineral_name=mineral.strip())
- 
-
-
     def load_database(self):
 
         ###################################################
