@@ -47,7 +47,7 @@ except ImportError:
 
 ###################################
 
-VERSION = '0 (18-October-2016)'
+VERSION = '0 (30-November-2016)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
