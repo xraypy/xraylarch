@@ -32,7 +32,7 @@ from larch_plugins.wx.gui_utils import ensuremod
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.xrf import isLarchMCAGroup
 
-mpl_dir = os.path.join(larch.site_config.larchdir, 'matplotlib')
+mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
     try:
