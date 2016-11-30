@@ -5,4 +5,4 @@ from .XRDCalculations import fabioOPEN,integrate_xrd,xy_file_reader
 from .XRDCalculations import calc_q_to_d,calc_q_to_2th
 from .XRDCalibrationFrame import CalibrationPopup
 from .XRDMaskFrame import MaskToolsPopup
-#from .cifdb import 
+from .cifdb import cifDB

@@ -4,23 +4,22 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 
 '''
 
-import sqlite3
 import os
-import json
+# import sqlite3
+# import json
 
 import glob
 import re
 import math
 
 import cStringIO
-#import json
 
 import xrayutilities as xu
 import CifFile
 
 import numpy as np
 
-import sqlalchemy as sqal
+
 
 from datetime import datetime
 
@@ -28,17 +27,17 @@ import time
 
 import os
 import time
-import json
 import six
 import numpy as np
-from scipy.interpolate import interp1d, splrep, splev, UnivariateSpline
-from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import sessionmaker, mapper, clear_mappers
+
+
+from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
+from sqlalchemy import Table,Column,Integer,String
+from sqlalchemy.orm import sessionmaker, mapper
 from sqlalchemy.pool import SingletonThreadPool
 
 import requests
 
-# from ?? import PrimaryKeyConstraint
 
 # needed for py2exe?
 import sqlalchemy.dialects.sqlite
@@ -358,11 +357,11 @@ def iscifDB(dbname):
         pass
     return result
 
-def json_encode(val):
-    "simple wrapper around json.dumps"
-    if val is None or isinstance(val, six.string_types):
-        return val
-    return  json.dumps(val)
+# def json_encode(val):
+#     "simple wrapper around json.dumps"
+#     if val is None or isinstance(val, six.string_types):
+#         return val
+#     return  json.dumps(val)
 
 class _BaseTable(object):
     "generic class to encapsulate SQLAlchemy table"
@@ -473,7 +472,7 @@ class cifDB(object):
     def open_database(self):
 
         print '\nAccessing database: %s' % self.dbname
-        self.metadata = sqal.MetaData('sqlite:///%s' % self.dbname)
+        self.metadata = MetaData('sqlite:///%s' % self.dbname)
     
     def build_new_database(self,name=None):
 
@@ -490,71 +489,71 @@ class cifDB(object):
 
         ###################################################
         ## Look up tables
-        element_table = sqal.Table('allelements', self.metadata,
-                sqal.Column('atomic_no', sqal.Integer, primary_key=True),
-                sqal.Column('element_name', sqal.String(40), unique=True, nullable=True),
-                sqal.Column('element_symbol', sqal.String(2), unique=True, nullable=False)
+        element_table = Table('allelements', self.metadata,
+                Column('atomic_no', Integer, primary_key=True),
+                Column('element_name', String(40), unique=True, nullable=True),
+                Column('element_symbol', String(2), unique=True, nullable=False)
                 )
-        mineral_table = sqal.Table('allminerals', self.metadata,
-                sqal.Column('mineral_id', sqal.Integer, primary_key=True),
-                sqal.Column('mineral_name', sqal.String(30), unique=True, nullable=True)
+        mineral_table = Table('allminerals', self.metadata,
+                Column('mineral_id', Integer, primary_key=True),
+                Column('mineral_name', String(30), unique=True, nullable=True)
                 )
-        spacegroup_table = sqal.Table('allspacegroups', self.metadata,
-                sqal.Column('iuc_id', sqal.Integer),
-                sqal.Column('hm_notation', sqal.String(16), unique=True, nullable=True),
-                sqal.PrimaryKeyConstraint('iuc_id', 'hm_notation')
+        spacegroup_table = Table('allspacegroups', self.metadata,
+                Column('iuc_id', Integer),
+                Column('hm_notation', String(16), unique=True, nullable=True),
+                PrimaryKeyConstraint('iuc_id', 'hm_notation')
                 )
-        symmetry_table = sqal.Table('allsymmetries', self.metadata,
-                sqal.Column('symmetry_id', sqal.Integer, primary_key=True),
-                sqal.Column('symmetry_name', sqal.String(16), unique=True, nullable=True)
+        symmetry_table = Table('allsymmetries', self.metadata,
+                Column('symmetry_id', Integer, primary_key=True),
+                Column('symmetry_name', String(16), unique=True, nullable=True)
                 )
-        authorlist_table = sqal.Table('allauthors', self.metadata,
-                sqal.Column('author_id', sqal.Integer, primary_key=True),
-                sqal.Column('author_name', sqal.String(40), unique=True, nullable=True)
+        authorlist_table = Table('allauthors', self.metadata,
+                Column('author_id', Integer, primary_key=True),
+                Column('author_name', String(40), unique=True, nullable=True)
                 )
-        qrange_table = sqal.Table('qrange', self.metadata,
-                sqal.Column('q_id', sqal.Integer, primary_key=True),
-                #sqal.Column('q', sqal.Integer)
-                sqal.Column('q', sqal.String())
+        qrange_table = Table('qrange', self.metadata,
+                Column('q_id', Integer, primary_key=True),
+                #Column('q', Integer)
+                Column('q', String())
                 )
-        categorylist_table = sqal.Table('allcategories', self.metadata,
-                sqal.Column('category_id', sqal.Integer, primary_key=True),
-                sqal.Column('category_name', sqal.String(16), unique=True, nullable=True)
+        categorylist_table = Table('allcategories', self.metadata,
+                Column('category_id', Integer, primary_key=True),
+                Column('category_name', String(16), unique=True, nullable=True)
                 )
         ###################################################
         ## Cross-reference tables
-        geometry_table = sqal.Table('symmetry', self.metadata,
-                sqal.Column('iuc_id', None, sqal.ForeignKey('allspacegroups.iuc_id')),
-                sqal.Column('symmetry_id', None, sqal.ForeignKey('allsymmetries.symmetry_id')),
-                sqal.PrimaryKeyConstraint('iuc_id', 'symmetry_id')
+        geometry_table = Table('symmetry', self.metadata,
+                Column('iuc_id', None, ForeignKey('allspacegroups.iuc_id')),
+                Column('symmetry_id', None, ForeignKey('allsymmetries.symmetry_id')),
+                PrimaryKeyConstraint('iuc_id', 'symmetry_id')
                 )
-        composition_table = sqal.Table('composition', self.metadata,
-                sqal.Column('atomic_no', None, sqal.ForeignKey('allelements.atomic_no')),
-                sqal.Column('amcsd_id', None, sqal.ForeignKey('allcif.amcsd_id')),
-                sqal.PrimaryKeyConstraint('atomic_no', 'amcsd_id')
+        composition_table = Table('composition', self.metadata,
+                Column('atomic_no', None, ForeignKey('allelements.atomic_no')),
+                Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
+                PrimaryKeyConstraint('atomic_no', 'amcsd_id')
                 )
-        author_table = sqal.Table('author', self.metadata,
-                sqal.Column('author_id', None, sqal.ForeignKey('allauthors.author_id')),
-                sqal.Column('amcsd_id', None, sqal.ForeignKey('allcif.amcsd_id')),
-                sqal.PrimaryKeyConstraint('author_id', 'amcsd_id')
+        author_table = Table('author', self.metadata,
+                Column('author_id', None, ForeignKey('allauthors.author_id')),
+                Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
+                PrimaryKeyConstraint('author_id', 'amcsd_id')
                 )
-        qpeak_table = sqal.Table('qpeaks', self.metadata,
-                sqal.Column('q_id', None, sqal.ForeignKey('qrange.q_id')),
-                sqal.Column('amcsd_id', None, sqal.ForeignKey('allcif.amcsd_id')),
-                sqal.PrimaryKeyConstraint('q_id', 'amcsd_id')
+        qpeak_table = Table('qpeaks', self.metadata,
+                Column('q_id', None, ForeignKey('qrange.q_id')),
+                Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
+                PrimaryKeyConstraint('q_id', 'amcsd_id')
                 )
-        category_table = sqal.Table('category', self.metadata,
-                sqal.Column('category_id', None, sqal.ForeignKey('allcategories.category_id')),
-                sqal.Column('amcsd_id', None, sqal.ForeignKey('allcif.amcsd_id')),
-                sqal.PrimaryKeyConstraint('category_id', 'amcsd_id')
+        category_table = Table('category', self.metadata,
+                Column('category_id', None, ForeignKey('allcategories.category_id')),
+                Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
+                PrimaryKeyConstraint('category_id', 'amcsd_id')
                 )
         ###################################################
         ## Main table
-        cif_table = sqal.Table('allcif', self.metadata,
-                sqal.Column('amcsd_id', sqal.Integer, primary_key=True),
-                sqal.Column('mineral_id', sqal.Integer),
-                sqal.Column('iuc_id', sqal.ForeignKey('allspacegroups.iuc_id')),
-                sqal.Column('cif', sqal.String(25)) ## , nullable=True
+        cif_table = Table('allcif', self.metadata,
+                Column('amcsd_id', Integer, primary_key=True),
+                Column('mineral_id', Integer),
+                Column('iuc_id', ForeignKey('allspacegroups.iuc_id')),
+                Column('cif', String(25)) ## , nullable=True
                 )
         ###################################################
         ## Add all to file
@@ -657,29 +656,29 @@ class cifDB(object):
 
         ###################################################
         ## Look up tables
-        self.allcif = sqal.Table('allcif', self.metadata)
-        self.allelements = sqal.Table('allelements', self.metadata)
-        self.allminerals = sqal.Table('allminerals', self.metadata)
-        self.allspacegroups = sqal.Table('allspacegroups', self.metadata)
-        self.allsymmetries = sqal.Table('allsymmetries', self.metadata)
-        self.allauthors = sqal.Table('allauthors', self.metadata)
-        self.qrange = sqal.Table('qrange', self.metadata)
-        self.allcategories = sqal.Table('allcategories', self.metadata)
+        self.allcif = Table('allcif', self.metadata)
+        self.allelements = Table('allelements', self.metadata)
+        self.allminerals = Table('allminerals', self.metadata)
+        self.allspacegroups = Table('allspacegroups', self.metadata)
+        self.allsymmetries = Table('allsymmetries', self.metadata)
+        self.allauthors = Table('allauthors', self.metadata)
+        self.qrange = Table('qrange', self.metadata)
+        self.allcategories = Table('allcategories', self.metadata)
 
         ###################################################
         ## Cross-reference tables
-        self.symmetry = sqal.Table('symmetry', self.metadata)
-        self.composition = sqal.Table('composition', self.metadata)
-        self.author = sqal.Table('author', self.metadata)
-        self.qpeak = sqal.Table('qpeaks', self.metadata)
-        self.category = sqal.Table('category', self.metadata)
+        self.symmetry = Table('symmetry', self.metadata)
+        self.composition = Table('composition', self.metadata)
+        self.author = Table('author', self.metadata)
+        self.qpeak = Table('qpeaks', self.metadata)
+        self.category = Table('category', self.metadata)
 
 
     def add_cif_to_db(self,cifile,verbose=True,url=False):
         '''
             ## Adds cifile into database
             When reading in new CIF:
-            -->  put entire cif into json - write 'cif' to 'cif data'
+            -->  put entire cif into field
             -->  read _database_code_amcsd - write 'amcsd_id' to 'cif data'
             -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'cif data'
             -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'cif data'
@@ -702,7 +701,7 @@ class cifDB(object):
 
         ## check for amcsd in file already
         ## Find amcsd_id in database
-        self.allcif = sqal.Table('allcif', self.metadata)
+        self.allcif = Table('allcif', self.metadata)
         search_cif = self.allcif.select(self.allcif.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
             if url:
@@ -779,23 +778,23 @@ class cifDB(object):
                     if qid not in all_qid:
                         all_qid.append(qid)
         except:
-#             if url:
-#                 print 'Could not import %s' % cifile
-#                 i = int(cifile.split('=')[-2].split('.')[0])
-#                 file = '/Users/koker/Data/XRMMappingCode/Search_and_Match/CIF_Errant/amcsd%05d.cif' % i
-#                 r = requests.get(cifile)
-#                 f = open(file,'w')
-#                 f.write(r.text)
-#             else:
-#                 print 'Error on file : %s' % os.path.split(cifile)[-1]
-#             
-#                 path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
-#                 if not os.path.exists(path):
-#                     command = 'mkdir %s' % path
-#                     os.system(command)
-# 
-#                 command = 'cp %s %s/.' % (cifile,path)
-#                 os.system(command)
+            if url:
+                print 'Could not import %s' % cifile
+                i = int(cifile.split('=')[-2].split('.')[0])
+                file = '/Users/koker/Data/XRMMappingCode/Search_and_Match/CIF_Errant/amcsd%05d.cif' % i
+                r = requests.get(cifile)
+                f = open(file,'w')
+                f.write(r.text)
+            else:
+                print 'Error on file : %s' % os.path.split(cifile)[-1]
+            
+                path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
+                if not os.path.exists(path):
+                    command = 'mkdir %s' % path
+                    os.system(command)
+
+                command = 'cp %s %s/.' % (cifile,path)
+                os.system(command)
             return
 
        
@@ -845,7 +844,7 @@ class cifDB(object):
             ## need a real way to deal with this trouble
             ## mkak 2016.11.04
             iuc_id = 0
-            print '\t----> %s (amcsd: %i)' % (hm_notation,int(amcsd_id))
+            print '\tSpace group? ----> %s (amcsd: %i)' % (hm_notation,int(amcsd_id))
 
         ## Save CIF entry into database
         self.new_cif.execute(amcsd_id=int(amcsd_id),
@@ -933,7 +932,7 @@ class cifDB(object):
                 authors.append(block.author_name)
         
         self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
-
+        
     def create_array(self):
     
         self.load_database()
@@ -958,9 +957,20 @@ class cifDB(object):
                 search_periodic = self.allelements.select(self.allelements.c.atomic_no == atomic_no)
                 for elmtrow in search_periodic.execute():
                     composition = '%s %s' % (composition,elmtrow.element_symbol)
+                    
+            search_authors = self.author.select(self.author.c.amcsd_id == amcsd_id)
+            authors = ''
+            for atrrow in search_authors.execute():
+                author_id = atrrow.author_id
+                search_alist = self.allauthors.select(self.allauthors.c.author_id == author_id)
+                for block in search_alist.execute():
+                    if authors == '':
+                        authors = '%s' % (block.author_name)
+                    else:
+                        authors = '%s; %s' % (authors,block.author_name)
 
             count = count + 1
-            cif_array.update({count:(str(amcsd_id),str(mineral_name),str(iuc_id),str(composition))})
+            cif_array.update({count:(str(amcsd_id),str(mineral_name),str(iuc_id),str(composition),str(authors))})
         
         return cif_array
 
@@ -992,7 +1002,7 @@ class cifDB(object):
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
 
         for i in range(99999):
-        #for i in range(100,104):
+        #for i in range(100,200):
             url_to_scrape = url % i
             try:
                 r = requests.get(url_to_scrape)
@@ -1015,3 +1025,16 @@ class cifDB(object):
                         self.add_cif_to_db(url_to_scrape,url=True,verbose=verbose)
             except:
                 pass
+
+## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+##
+## --- xrayutilities method for reading cif ---
+##
+##         search_cif = self.allcif.select(self.allcif.c.amcsd_id == amcsd_id)
+##         for row in search_cif.execute():
+##             cifstr = row.cif
+##         cif = xu.materials.Crystal.fromCIF('/fromdatabase/file.cif',fid=cStringIO.StringIO(cifstr))
+##
+## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+

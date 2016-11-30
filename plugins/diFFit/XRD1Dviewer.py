@@ -19,7 +19,7 @@ import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
-import cifdb
+from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
@@ -56,12 +56,6 @@ SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
-music_info = {
-1 : ("18323", "Guidottiite", "173 : P 63", "H O"),
-2 : ("392", "Crandallite", "166 : R -3 m", "C O H"),
-3 : ("11298", "CsCl", "225 : F m -3 m", "S C O")
-}
 
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
@@ -193,22 +187,22 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.list.InsertColumn(1, 'Name')
         self.list.InsertColumn(2, 'Space Group')
         self.list.InsertColumn(3, 'Elements')
-        items = self.database_info.items()
+        self.list.InsertColumn(4, 'Authors')
         
-        print items[2]
-        print music_info.items()[2]
-        
-        for key, data in items:
+        for key, data in self.database_info.items():
             index = self.list.InsertStringItem(sys.maxint, data[0])
             self.list.SetStringItem(index, 1, data[1])
             self.list.SetStringItem(index, 2, data[2])
             self.list.SetStringItem(index, 3, data[3])
+            self.list.SetStringItem(index, 4, data[4])
             self.list.SetItemData(index, key)
 
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(1, 100)
         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+        
 # 
 #         # show how to select an item
 #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
