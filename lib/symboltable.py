@@ -15,7 +15,7 @@ class Group(object):
     """
     Generic Group: a container for variables, modules, and subgroups.
     """
-    __private = ('_main', '_larch', '_parents', '__name__', '__doc__', 
+    __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
                  '__private', '_subgroups', '_members')
     def __init__(self, name=None, **kws):
         if name is None:
@@ -180,7 +180,7 @@ class SymbolTable(Group):
                                  modules_path= site_config.modules_path,
                                  larchdir    = site_config.larchdir,
                                  user_larchdir= site_config.usr_larchdir,
-                                 )
+                                 larch_version= site_config.larch_version)
 
     def save_frame(self):
         " save current local/module group"
