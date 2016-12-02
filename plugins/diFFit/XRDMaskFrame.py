@@ -11,17 +11,16 @@ from scipy import constants
 import wx
 
 from wxmplot.imagepanel import ImagePanel
-
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
+# HAS_pyFAI = False
+# try:
+#     import pyFAI
+#     import pyFAI.calibrant
+#     from pyFAI.calibration import Calibration
+#     HAS_pyFAI = True
+# except ImportError:
+#     pass
     
 HAS_fabio = False
 try:

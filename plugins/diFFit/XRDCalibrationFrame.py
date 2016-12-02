@@ -10,7 +10,6 @@ from scipy import constants
 import wx
 
 from wxmplot.imagepanel import ImagePanel
-
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
 HAS_pyFAI = False

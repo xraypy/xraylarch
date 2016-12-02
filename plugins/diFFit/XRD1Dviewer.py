@@ -23,9 +23,9 @@ from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th
+from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
+# from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
 import matplotlib.pyplot as plt
 
@@ -33,7 +33,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
-    from pyFAI.calibration import Calibration
+#     from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -113,7 +113,7 @@ class diFFit1DFrame(wx.Frame):
         ProcessMenu = wx.Menu()
         
         MenuItem(self, ProcessMenu, '&Load calibration file', '', self.xrd1Dviewer.openPONI)
-        MenuItem(self, ProcessMenu, '&Define energy/wavelegth', '', self.xrd1Dviewer.setLAMBDA)
+        MenuItem(self, ProcessMenu, '&Define energy/wavelength', '', self.xrd1Dviewer.setLAMBDA)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Fit &background', '', None)
         MenuItem(self, ProcessMenu, 'Save &background', '', None)
@@ -1100,13 +1100,7 @@ class Viewer1DXRD(wx.Panel):
                 return
 
             ## generate hkl list
-            hkllist = []
-            maxhkl = 8
-            for i in range(-maxhkl,maxhkl+1):
-                for j in range(-maxhkl,maxhkl+1):
-                    for k in range(-maxhkl,maxhkl+1):
-                        if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
-                            hkllist.append([i,j,k])
+            hkllist = generate_hkl(maxhkl=8)
             
             hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m

@@ -5,39 +5,37 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 '''
 
 import os
-# import sqlite3
-# import json
-
 import glob
 import re
 import math
+import time
+import six
+import requests
 
 import cStringIO
 
-import xrayutilities as xu
-import CifFile
+HAS_CifFile = False
+try:
+    import CifFile
+    HAS_CifFile = True
+except ImportError:
+    pass
+
+HAS_XRAYUTIL = False
+try:
+    import xrayutilities as xu
+    HAS_XRAYUTIL = True
+except ImportError:
+    pass
 
 import numpy as np
 
-
-
-from datetime import datetime
-
-import time
-
-import os
-import time
-import six
-import numpy as np
-
+from larch_plugins.diFFit.XRDCalculations import generate_hkl
 
 from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
 from sqlalchemy import Table,Column,Integer,String
 from sqlalchemy.orm import sessionmaker, mapper
 from sqlalchemy.pool import SingletonThreadPool
-
-import requests
-
 
 # needed for py2exe?
 import sqlalchemy.dialects.sqlite
@@ -325,6 +323,10 @@ CATEGORIES = ['soil',
               'salt',
               'clay']
 
+QMIN = 0.3
+QMAX = 8.0
+QSTEP = 0.01
+
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
                          poolclass=SingletonThreadPool)
@@ -356,12 +358,6 @@ def iscifDB(dbname):
     except:
         pass
     return result
-
-# def json_encode(val):
-#     "simple wrapper around json.dumps"
-#     if val is None or isinstance(val, six.string_types):
-#         return val
-#     return  json.dumps(val)
 
 class _BaseTable(object):
     "generic class to encapsulate SQLAlchemy table"
@@ -620,9 +616,6 @@ class cifDB(object):
             self.new_category.execute(category_name=cat)
 
         ## Adds qrange
-        QMIN = 0.3
-        QMAX = 8.0
-        QSTEP = 0.01
         qrange = np.arange(QMIN,QMAX+QSTEP,QSTEP)
         for q in qrange:
             self.populate_q.execute(q=float('%0.2f' % q))
@@ -671,6 +664,12 @@ class cifDB(object):
             -->  calculate q - find each corresponding 'q_id' for all peaks - in write 'q_id','amcsd_id' to 'qpeak'
         '''
 
+        if not HAS_CifFile or not HAS_XRAYUTIL:
+            print('Missing required package(s) for this function:')
+            print('Have CifFile? %r' % HAS_CifFile)
+            print('Have xrayutilities? %r' % HAS_XRAYUTIL)
+            return
+            
         cf = CifFile.ReadCif(cifile)
 
         key = cf.keys()[0]
@@ -725,19 +724,9 @@ class cifDB(object):
 
    
         ## generate hkl list
-        hkllist = []
-        maxhkl = 3
-        for i in range(maxhkl):
-            for j in range(maxhkl):
-                for k in range(maxhkl):
-                    if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
-                        hkllist.append([i,j,k])
+        hkllist = generate_hkl(maxhkl=3)
+
         energy = 8048 # units eV
-
-        QMIN = 0.3
-        QMAX = 8.0
-        QSTEP = 0.01
-
 
         if url:
             cifstr = requests.get(cifile).text
@@ -762,21 +751,21 @@ class cifDB(object):
                     if qid not in all_qid:
                         all_qid.append(qid)
         except:
+            
+            print 'Could not import : %s' % cifile
+            
+            path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
+            if not os.path.exists(path):
+                command = 'mkdir %s' % path
+                os.system(command)
+            
             if url:
-                print 'Could not import %s' % cifile
                 i = int(cifile.split('=')[-2].split('.')[0])
-                file = '/Users/koker/Data/XRMMappingCode/Search_and_Match/CIF_Errant/amcsd%05d.cif' % i
+                file = 'amcsd%05d.cif' % i
                 r = requests.get(cifile)
                 f = open(file,'w')
                 f.write(r.text)
             else:
-                print 'Error on file : %s' % os.path.split(cifile)[-1]
-            
-                path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
-                if not os.path.exists(path):
-                    command = 'mkdir %s' % path
-                    os.system(command)
-
                 command = 'cp %s %s/.' % (cifile,path)
                 os.system(command)
             return
