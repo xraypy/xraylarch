@@ -146,30 +146,19 @@ class diFFit1DFrame(wx.Frame):
         self.list = [name for name in self.xrd1Dviewer.data_name if 'cif' not in name]
         
         if len(self.list) > 0:
-			dlg = SelectFittingData(self.list)
+            dlg = SelectFittingData(self.list)
 
-			path, okay = None, False
-			if dlg.ShowModal() == wx.ID_OK:
-				okay = True
-				if dlg.slct_1Ddata.GetSelection() > 0:
-					area_str = dlg.slct_1Ddata.GetString(self.slct_1Ddata.GetSelection())
-			dlg.Destroy()
-		
-			if okay:
-				if dlg.slct_1Ddata.GetSelection() > 0:
-					print 'Displaying: %s' % area_str
-# 				else:
-# 				    print 'displaying file...'
+            if dlg.ShowModal() == wx.ID_OK:
+                data = dlg.data
+                if dlg.slct_1Ddata.GetSelection() > 0:
+                    file_tag = dlg.slct_1Ddata.GetString(self.slct_1Ddata.GetSelection())
+            dlg.Destroy()
+        
         else:
             data = self.loadXYFILE(None)
-            
-        #try:
+
         self.xrd1Dfitting.plot1D.oplot(*data)
 
-
-        ## find list of currently displayed
-        ## display list with option to open other
-        ## bring up dialog if other is chosen
 
     def loadXYFILE(self,event):
     
@@ -192,8 +181,7 @@ class diFFit1DFrame(wx.Frame):
                return
 
             self.list.append(os.path.split(path)[-1])
-            self.slct_1Ddata.Set(self.list)#(os.path.split(path)[-1])
-            # self.slct_1Ddata.SetString(os.path.split(path)[-1])
+            self.slct_1Ddata.Set(self.list)
 
             return data
 
