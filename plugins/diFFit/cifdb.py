@@ -413,11 +413,12 @@ class cifDB(object):
     '''
     interface to the American Mineralogist Crystal Structure Database
     '''
-    def __init__(self, dbname=None, read_only=True):
+    def __init__(self, dbname=None, read_only=True,verbose=False):
 
         ## This needs to be modified for creating new if does not exist.
         self.dbname=dbname
-        print '\n\n================ %s ================\n' % self.dbname
+        if verbose:
+            print '\n\n================ %s ================\n' % self.dbname
         if not os.path.exists(self.dbname):
             parent, child = os.path.split(__file__)
             self.dbname = os.path.join(parent, self.dbname)
