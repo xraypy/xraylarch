@@ -181,7 +181,7 @@ class XYFitPanel(wx.Panel):
             form = model.lower()
             if form.startswith('err'): form = 'erf'
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
-            title = "%s: Step %s" % (prefix, form[:3])
+            title = "%s: Step %s" % (prefix[:-1], form[:3])
             mclass = lm_models.StepModel
             mclass_kws['form'] = form
             minst = mclass(form=form, prefix=prefix)
@@ -219,9 +219,12 @@ class XYFitPanel(wx.Panel):
         parwids = OrderedDict()
 
         parnames = sorted(minst.param_names)
+
         for a in minst._func_allargs:
             pname = "%s%s" % (prefix, a)
-            if pname not in parnames and a not in minst.independent_vars:
+            if (pname not in parnames and
+                a in minst.param_hints and
+                a not in minst.independent_vars):
                 parnames.append(pname)
 
         for pname in parnames:

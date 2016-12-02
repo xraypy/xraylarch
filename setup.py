@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from distutils.core import setup
+# from distutils.core import setup
+from setuptools import setup
 
 import time
 import os
@@ -181,18 +182,23 @@ if (cmdline_args[0] == 'install' and
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = version.__version__,
-      author = 'Matthew Newville',
+      author = 'Matthew Newville and the X-rayLarch Development Team',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
       download_url = 'http://xraypy.github.io/xraylarch/',
-      requires = required_modules,
+      install_requires = required_modules,
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
       packages = ['larch', 'larch.utils', 'larch.wxlib',
                   'larch.fitting', 'larch.fitting.uncertainties'],
-      data_files  = data_files)
-
+      data_files  = data_files,
+      platforms = ['Windows', 'Linux', 'Mac OS X'],
+      classifiers=['Intended Audience :: Science/Research',
+                   'Operating System :: OS Independent',
+                   'Programming Language :: Python',
+                   'Topic :: Scientific/Engineering'],
+     )
 
 
 def remove_cruft(basedir, filelist):
