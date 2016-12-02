@@ -23,6 +23,8 @@ import textwrap
 #import yaml
 import time
 
+import wx
+
 import numpy as np
 from scipy import optimize
 from scipy import signal

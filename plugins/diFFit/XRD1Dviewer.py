@@ -143,21 +143,50 @@ class diFFit1DFrame(wx.Frame):
         
     def fit1Dxrd(self,event):
     
-        self.list = [name for name in self.xrd1Dviewer.data_name if 'cif' not in name]
+        indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
         
-        if len(self.list) > 0:
-            dlg = SelectFittingData(self.list)
+        if len(indicies) > 0:
+            
+            self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
+            self.all_data = [[self.xrd1Dviewer.xy_data[2*i],self.xrd1Dviewer.xy_data[2*i+1]] for i in indicies]
+            
+            dlg = SelectFittingData(self.list,self.all_data)
 
+            okay = False
             if dlg.ShowModal() == wx.ID_OK:
-                data = dlg.data
-                if dlg.slct_1Ddata.GetSelection() > 0:
-                    file_tag = dlg.slct_1Ddata.GetString(self.slct_1Ddata.GetSelection())
+                okay = True
+                index = dlg.slct_1Ddata.GetSelection()
+                self.list = dlg.list
+                self.all_data = dlg.all_data
             dlg.Destroy()
-        
+            if okay:
+                name = self.list[index]
+                data = self.all_data[index]
         else:
-            data = self.loadXYFILE(None)
+            data,name = self.loadXYFILE(None)
+            index = 1
 
-        self.xrd1Dfitting.plot1D.oplot(*data)
+        if index >= len(indicies):
+            ## Add to data array lists
+            self.xrd1Dviewer.data_name.append(name)
+            self.xrd1Dviewer.xy_scale.append(max(data[1]))
+            self.xrd1Dviewer.xy_data.extend(data)
+
+            ## redefine x,y based on scales
+            self.xrd1Dviewer.xy_plot.extend(data)
+       
+            ## Add to plot       
+            self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(*data,label=name,show_legend=True))
+
+            self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
+            self.xrd1Dviewer.ch_data.SetStringSelection(name)
+
+        
+        ## will clear everything on plot
+        ## provide warning message?
+        ## mkak 2016.12.02
+        self.xrd1Dfitting.ttl_data.SetLabel('Fitting - %s' %name)
+        self.xrd1Dfitting.plot1D.plot(*data)
 
 
     def loadXYFILE(self,event):
@@ -180,23 +209,21 @@ class diFFit1DFrame(wx.Frame):
                print('a: incorrect xy file format: %s' % os.path.split(path)[-1])
                return
 
-            self.list.append(os.path.split(path)[-1])
-            self.slct_1Ddata.Set(self.list)
-
-            return data
+            return data,os.path.split(path)[-1]
 
 
 
         
 class SelectFittingData(wx.Dialog):
-    def __init__(self,list):
+    def __init__(self,list,all_data):
     
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Select data for fitting',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
                                     size = (210,410))
         self.list = list
-        self.data = None
+        self.all_data = all_data
+        
         self.Init()
         
         ix,iy = self.panel.GetBestSize()
@@ -249,17 +276,14 @@ class SelectFittingData(wx.Dialog):
         
         if read:
             try:
-                self.data = xy_file_reader(path)
-
+                self.all_data.append(xy_file_reader(path))
                 self.list.append(os.path.split(path)[-1])
-                self.slct_1Ddata.Set(self.list)#(os.path.split(path)[-1])
-                #self.slct_1Ddata.SetString(os.path.split(path)[-1])
+                self.slct_1Ddata.Set(self.list)
+                self.slct_1Ddata.SetSelection(-1)
             except:
                print('b: incorrect xy file format: %s' % os.path.split(path)[-1])
                return
-
-
-
+               
 
 class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
@@ -414,12 +438,25 @@ class Fitting1DXRD(wx.Panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.ttl_data = wx.StaticText(self, label='')
-        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+        filechoice = self.FileChoicePanel(self)
+        vbox.Add(filechoice,flag=wx.ALL,border=10)
         
         plttools = self.Toolbox(self)
         vbox.Add(plttools,flag=wx.ALL,border=10)
 
+        return vbox
+        
+    def FileChoicePanel(self,panel):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+#         btn_chc = wx.Button(panel,label='Select data to fit')
+#         btn_chc.Bind(wx.EVT_BUTTON,   None) ## ---> need a way to point to parent's function, mkak 2016.12.02
+#         vbox.Add(btn_chc, flag=wx.EXPAND|wx.ALL, border=8)
+
+        self.ttl_data = wx.StaticText(self, label='')
+        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+        
         return vbox
 
     def RightSidePanel(self,panel):
