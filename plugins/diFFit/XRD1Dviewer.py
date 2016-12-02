@@ -186,6 +186,9 @@ class diFFit1DFrame(wx.Frame):
         ## provide warning message?
         ## mkak 2016.12.02
         self.xrd1Dfitting.ttl_data.SetLabel('Fitting - %s' %name)
+#         self.xrd1Dfitting.xy_data = data
+#         self.xrd1Dfitting.xy_plot = data
+#         self.xrd1Dfitting.plotted_data = self.xrd1Dfitting.plot1D.plot(*data)
         self.xrd1Dfitting.plot1D.plot(*data)
 
 
@@ -366,7 +369,7 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
 
 class Fitting1DXRD(wx.Panel):
     '''
-    Frame for housing all 1D XRD fitting widgets
+    Panel for housing 1D XRD fitting
     '''
     label='Fitting'
     def __init__(self,parent,owner=None,_larch=None):
@@ -375,6 +378,9 @@ class Fitting1DXRD(wx.Panel):
 
         self.parent = parent
         self.owner = owner
+#         self.plotted_data = []
+#         self.xy_data = []
+#         self.xy_plot = []
 
         ## Default information
         self.xlabel     = 'q (A^-1)'
@@ -399,40 +405,40 @@ class Fitting1DXRD(wx.Panel):
 
         self.SetSizer(panel1D)
     
-    def Toolbox(self,panel):
-        '''
-        Frame for visual toolbox
-        '''
-        
-        tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-
-        ###########################
-        ## X-Scale
-        hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-        self.ch_xaxis = wx.Choice(self,choices=self.xunits)
-
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
-    
-        hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
-        hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
-        vbox.Add(hbox_xaxis, flag=wx.ALL, border=10)
-
-        ###########################
-        ## Y-Scale
-        hbox_yaxis = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_yaxis = wx.StaticText(self, label='Y-SCALE')
-        yscales = ['linear','log']
-        self.ch_yaxis = wx.Choice(self,choices=yscales)
-
-        self.ch_yaxis.Bind(wx.EVT_CHOICE,   None)
-    
-        hbox_yaxis.Add(ttl_yaxis, flag=wx.RIGHT, border=8)
-        hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
-        vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
-        
-        return vbox
+#     def Toolbox(self,panel):
+#         '''
+#         Frame for visual toolbox
+#         '''
+#         
+#         tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
+#         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+# 
+#         ###########################
+#         ## X-Scale
+#         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
+#         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
+#         self.ch_xaxis = wx.Choice(self,choices=self.xunits)
+# 
+#         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
+#     
+#         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
+#         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
+#         vbox.Add(hbox_xaxis, flag=wx.ALL, border=10)
+# 
+#         ###########################
+#         ## Y-Scale
+#         hbox_yaxis = wx.BoxSizer(wx.HORIZONTAL)
+#         ttl_yaxis = wx.StaticText(self, label='Y-SCALE')
+#         yscales = ['linear','log']
+#         self.ch_yaxis = wx.Choice(self,choices=yscales)
+# 
+#         self.ch_yaxis.Bind(wx.EVT_CHOICE,   None)
+#     
+#         hbox_yaxis.Add(ttl_yaxis, flag=wx.RIGHT, border=8)
+#         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
+#         vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
+#         
+#         return vbox
 
     def LeftSidePanel(self,panel):
         
@@ -441,8 +447,8 @@ class Fitting1DXRD(wx.Panel):
         filechoice = self.FileChoicePanel(self)
         vbox.Add(filechoice,flag=wx.ALL,border=10)
         
-        plttools = self.Toolbox(self)
-        vbox.Add(plttools,flag=wx.ALL,border=10)
+#         plttools = self.Toolbox(self)
+#         vbox.Add(plttools,flag=wx.ALL,border=10)
 
         return vbox
         
@@ -508,27 +514,27 @@ class Fitting1DXRD(wx.Panel):
     def onRESETplot(self,event):
         self.plot1D.reset_config()
 
-    def checkXaxis(self, event):
-        
-        if self.ch_xaxis.GetSelection() == 2:
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
-        elif self.ch_xaxis.GetSelection() == 1:
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
-        else:
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
-
-        if self.ch_xaxis.GetSelection() == 2:
-            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-        elif self.ch_xaxis.GetSelection() == 1:
-            self.xlabel = 'd ($\AA$)'
-        else:
-            self.xlabel = 'q (1/$\AA$)'
-         
-        self.plot1D.set_xlabel(self.xlabel)
-        self.updatePLOT()
+#     def checkXaxis(self, event):
+#         
+#         if self.ch_xaxis.GetSelection() == 2:
+#             for plt_no in range(len(self.plotted_data)):
+#                 self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
+#         elif self.ch_xaxis.GetSelection() == 1:
+#             for plt_no in range(len(self.plotted_data)):
+#                 self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
+#         else:
+#             for plt_no in range(len(self.plotted_data)):
+#                 self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
+# 
+#         if self.ch_xaxis.GetSelection() == 2:
+#             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+#         elif self.ch_xaxis.GetSelection() == 1:
+#             self.xlabel = 'd ($\AA$)'
+#         else:
+#             self.xlabel = 'q (1/$\AA$)'
+#          
+#         self.plot1D.set_xlabel(self.xlabel)
+#         self.updatePLOT()
 
     def updatePLOT(self):
 
@@ -629,7 +635,7 @@ class Fitting1DXRD(wx.Panel):
 
 class Viewer1DXRD(wx.Panel):
     '''
-    Frame for housing all 1D XRD viewer widgets
+    Panel for housing 1D XRD viewer
     '''
     label='Viewer'
     def __init__(self,parent,owner=None,_larch=None):
@@ -670,7 +676,7 @@ class Viewer1DXRD(wx.Panel):
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
         panel1D.Add(leftside,flag=wx.ALL,border=10)
-        panel1D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+        panel1D.Add(rightside,proportion=1,flag=wx.ALL,border=10)
 
         self.SetSizer(panel1D)
     
