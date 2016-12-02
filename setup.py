@@ -15,12 +15,12 @@ DEBUG = False
 cmdline_args = sys.argv[1:]
 
 required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six']
-
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
+xrd_modules = ['fabio','pyFAI','xrayutilities','CifFile']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,
-                       'xrd modules' : ('fabio','pyFAI'),
+                       'xrd modules' : xrd_modules,
                        'color-enhanced error messages': ('termcolor', ),
                        'using the EPICS control system': ('epics', ),
                        'testing tools': ('nose', ),

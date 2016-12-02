@@ -19,12 +19,13 @@ import wx.lib.scrolledpanel as scrolled
 from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
+from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th
+from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
+# from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
 import matplotlib.pyplot as plt
 
@@ -32,7 +33,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
-    from pyFAI.calibration import Calibration
+#     from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -56,12 +57,6 @@ import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
-musicdata = {
-1 : ("18323", "Guidottiite", "173 : P 63"),
-2 : ("392", "Crandallite", "166 : R -3 m"),
-3 : ("11298", "CsCl", "225 : F m -3 m")
-}
-
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
@@ -81,7 +76,7 @@ class diFFit1DFrame(wx.Frame):
         self.xrd1Dviewer = Viewer1DXRD(nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(nb,owner=self)
         self.xrddatabase = DatabaseXRD(nb)
-
+        
         # add the pages to the notebook with the label to show on the tab
         nb.AddPage(self.xrd1Dviewer, 'Viewer')
         nb.AddPage(self.xrd1Dfitting, 'Fitting')
@@ -118,7 +113,7 @@ class diFFit1DFrame(wx.Frame):
         ProcessMenu = wx.Menu()
         
         MenuItem(self, ProcessMenu, '&Load calibration file', '', self.xrd1Dviewer.openPONI)
-        MenuItem(self, ProcessMenu, '&Define energy/wavelegth', '', self.xrd1Dviewer.setLAMBDA)
+        MenuItem(self, ProcessMenu, '&Define energy/wavelength', '', self.xrd1Dviewer.setLAMBDA)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Fit &background', '', None)
         MenuItem(self, ProcessMenu, 'Save &background', '', None)
@@ -130,7 +125,7 @@ class diFFit1DFrame(wx.Frame):
         ## Analyze
         AnalyzeMenu = wx.Menu()
         
-        MenuItem(self, AnalyzeMenu, '&Something about fitting...', '', None)
+        MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
 
         menubar.Append(AnalyzeMenu, '&Analyze')
 
@@ -145,9 +140,152 @@ class diFFit1DFrame(wx.Frame):
     def plot1Dxrd(self,data,label=None,wavelength=None):
     
         self.xrd1Dviewer.add1Ddata(*data,name=label,wavelength=wavelength)
+        
+    def fit1Dxrd(self,event):
+    
+        indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
+        
+        if len(indicies) > 0:
+            
+            self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
+            self.all_data = [[self.xrd1Dviewer.xy_data[2*i],self.xrd1Dviewer.xy_data[2*i+1]] for i in indicies]
+            
+            dlg = SelectFittingData(self.list,self.all_data)
+
+            okay = False
+            if dlg.ShowModal() == wx.ID_OK:
+                okay = True
+                index = dlg.slct_1Ddata.GetSelection()
+                self.list = dlg.list
+                self.all_data = dlg.all_data
+            dlg.Destroy()
+            if okay:
+                name = self.list[index]
+                data = self.all_data[index]
+        else:
+            data,name = self.loadXYFILE(None)
+            index = 1
+
+        if index >= len(indicies):
+            ## Add to data array lists
+            self.xrd1Dviewer.data_name.append(name)
+            self.xrd1Dviewer.xy_scale.append(max(data[1]))
+            self.xrd1Dviewer.xy_data.extend(data)
+
+            ## redefine x,y based on scales
+            self.xrd1Dviewer.xy_plot.extend(data)
+       
+            ## Add to plot       
+            self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(*data,label=name,show_legend=True))
+
+            self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
+            self.xrd1Dviewer.ch_data.SetStringSelection(name)
+
+        
+        ## will clear everything on plot
+        ## provide warning message?
+        ## mkak 2016.12.02
+        self.xrd1Dfitting.ttl_data.SetLabel('Fitting - %s' %name)
+        self.xrd1Dfitting.plot1D.plot(*data)
 
 
-class TestListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+    def loadXYFILE(self,event):
+    
+        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            try:
+                data = xy_file_reader(path)
+            except:
+               print('a: incorrect xy file format: %s' % os.path.split(path)[-1])
+               return
+
+            return data,os.path.split(path)[-1]
+
+
+
+        
+class SelectFittingData(wx.Dialog):
+    def __init__(self,list,all_data):
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='Select data for fitting',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
+                                    size = (210,410))
+        self.list = list
+        self.all_data = all_data
+        
+        self.Init()
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+
+    def Init(self):
+    
+        self.panel = wx.Panel(self)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ## Add things 
+        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130), self.list, wx.LB_SINGLE)
+
+        btn_new = wx.Button(self.panel,label='Load data from file')
+        
+        btn_new.Bind(wx.EVT_BUTTON, self.loadXYFILE)
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+        #hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        self.okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        #oksizer.Add(hlpBtn,flag=wx.RIGHT,  border=8)
+        oksizer.Add(canBtn, flag=wx.RIGHT, border=8) 
+        oksizer.Add(self.okBtn,  flag=wx.RIGHT,  border=8)
+
+        mainsizer.Add(self.slct_1Ddata, flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(btn_new, flag=wx.ALL, border=5)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer, flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
+
+        self.panel.SetSizer(mainsizer)
+
+    def loadXYFILE(self,event):
+    
+        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            try:
+                self.all_data.append(xy_file_reader(path))
+                self.list.append(os.path.split(path)[-1])
+                self.slct_1Ddata.Set(self.list)
+                self.slct_1Ddata.SetSelection(-1)
+            except:
+               print('b: incorrect xy file format: %s' % os.path.split(path)[-1])
+               return
+               
+
+class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
@@ -163,18 +301,27 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
         self.createAndLayout()
         
+    def createDATABASEarray(self,file='amscd_cif.db'):
+    
+        mycifdatabase = cifDB(dbname=file)
+        display_array = mycifdatabase.create_array()
+
+        return display_array
+    
     def createAndLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.list = TestListCtrl(self, wx.ID_ANY, style=wx.LC_REPORT
+        self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
                                  | wx.BORDER_NONE
                                  | wx.LC_EDIT_LABELS
                                  | wx.LC_SORT_ASCENDING)
         sizer.Add(self.list, 1, wx.EXPAND)
+        
+        self.database_info = self.createDATABASEarray()
+        
         self.populateList()
-        # Now that the list exists we can init the other base class,
-        # see wx/lib/mixins/listctrl.py
-        self.itemDataMap = musicdata
-        listmix.ColumnSorterMixin.__init__(self, 3)
+        
+        self.itemDataMap = self.database_info
+        listmix.ColumnSorterMixin.__init__(self, 4)
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         
@@ -182,17 +329,23 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
         self.list.InsertColumn(1, 'Name')
         self.list.InsertColumn(2, 'Space Group')
-        items = musicdata.items()
+        self.list.InsertColumn(3, 'Elements')
+        self.list.InsertColumn(4, 'Authors')
         
-        for key, data in items:
+        for key, data in self.database_info.items():
             index = self.list.InsertStringItem(sys.maxint, data[0])
             self.list.SetStringItem(index, 1, data[1])
             self.list.SetStringItem(index, 2, data[2])
+            self.list.SetStringItem(index, 3, data[3])
+            self.list.SetStringItem(index, 4, data[4])
             self.list.SetItemData(index, key)
 
         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(2, 100)
+        self.list.SetColumnWidth(1, 100)
+        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+        self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+        
 # 
 #         # show how to select an item
 #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
@@ -224,8 +377,8 @@ class Fitting1DXRD(wx.Panel):
         self.owner = owner
 
         ## Default information
-        self.xlabel       = 'q (A^-1)'
-        self.xunits        = ['q','d']
+        self.xlabel     = 'q (A^-1)'
+        self.xunits     = ['q','d']
 
         self.Panel1DFitting()
     
@@ -284,10 +437,26 @@ class Fitting1DXRD(wx.Panel):
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
+
+        filechoice = self.FileChoicePanel(self)
+        vbox.Add(filechoice,flag=wx.ALL,border=10)
         
         plttools = self.Toolbox(self)
-        
         vbox.Add(plttools,flag=wx.ALL,border=10)
+
+        return vbox
+        
+    def FileChoicePanel(self,panel):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+#         btn_chc = wx.Button(panel,label='Select data to fit')
+#         btn_chc.Bind(wx.EVT_BUTTON,   None) ## ---> need a way to point to parent's function, mkak 2016.12.02
+#         vbox.Add(btn_chc, flag=wx.EXPAND|wx.ALL, border=8)
+
+        self.ttl_data = wx.StaticText(self, label='')
+        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+        
         return vbox
 
     def RightSidePanel(self,panel):
@@ -449,6 +618,13 @@ class Fitting1DXRD(wx.Panel):
         return xmin,xmax
 #######  END  #######
 
+##############################################
+#### XRD PLOTTING FUNCTIONS
+       
+    def add1Ddata(self,x,y,wavelength=None):
+        
+        if wavelength is not None:
+            self.addLAMBDA(wavelength)
 
 
 class Viewer1DXRD(wx.Panel):
@@ -961,13 +1137,7 @@ class Viewer1DXRD(wx.Panel):
                 return
 
             ## generate hkl list
-            hkllist = []
-            maxhkl = 8
-            for i in range(-maxhkl,maxhkl+1):
-                for j in range(-maxhkl,maxhkl+1):
-                    for k in range(-maxhkl,maxhkl+1):
-                        if i+j+k > 0: # as long as h,k,l all positive, eliminates 0,0,0
-                            hkllist.append([i,j,k])
+            hkllist = generate_hkl(maxhkl=8)
             
             hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
