@@ -33,9 +33,13 @@ if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
 ##        Name              py script        icon name         description     is GUI App
 apps = (('Larch',          'larch',          'larch',      'Larch Command Line', False),
         ('Larch GUI',      'larch_gui',      'larch',      'Larch GUI',       True),
-        ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE MapViewer',   True),
-        ('GSE ScanViewer', 'gse_scanviewer', 'epics_scan', 'GSE ScanViewer',  True),
-        ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display', True))
+        ('XYFit',          'xyfit',          'epics_scan', 'XY Data Viewer and Peak Fitter',  True),
+        ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE XRF Map Viewer',   True),
+        ('GSE ScanViewer', 'gse_scanviewer', 'epics_scan', 'GSE XY Scan Viewer',  True),
+        ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display', True),
+        ('2D XRD Viewer',  'diFFit2D',       'larch',      '2D XRD Viewer', True),
+        ('1D XRD Viewer',  'diFFit1D',       'larch',      '1D XRD Viewer', True),
+        )
 
 mac_script_header = """#!/bin/bash
 ## Run X-ray Larch script with anaconda or system Python
@@ -122,6 +126,7 @@ elif os.name == 'nt':
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
         pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
+        print("Make Shortcut ", path, target)
         # add several checks for valid ways to run each script, including
         # accounting for Anaconda's automagic renaming and creation of exes.
         target_exe = '%s.exe' % target

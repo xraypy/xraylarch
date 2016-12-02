@@ -6,6 +6,8 @@ Smoothing routines
 from numpy import (pi, log, exp, sqrt, arange, concatenate, convolve,
                    int, abs, linalg, mat, linspace, interp, diff)
 
+from itertools import islice
+
 from larch_plugins.math.mathutils import index_of, index_nearest, realimag, remove_dups
 from larch_plugins.math.lineshapes import gaussian, lorentzian, voigt
 
@@ -167,6 +169,46 @@ def savitzky_golay(y, window_size, order, deriv=0):
     return convolve( m, y, mode='valid')
 
 
+def boxcar(data, nrepeats=1):
+    """boxcar average of an array
+
+    Arguments
+    ---------
+       data     nd-array, assumed to be 1d
+       nrepeats integer number of repeats [1]
+
+    Returns
+    -------
+       ndarray of same size as input data
+
+    Notes
+    -----
+      This does a 3-point smoothing, that can be repeated
+
+      out = data[:]
+      for i in range(nrepeats):
+          qdat = out/4.0
+          left  = 1.0*qdat
+          right = 1.0*qdat
+          right[1:] = qdat[:-1]
+          left[:-1] = qdat[1:]
+          out = 2*qdat + left + right
+    return out
+
+    """
+    out = data[:]
+    for i in range(nrepeats):
+        qdat = out/4.0
+        left  = 1.0*qdat
+        right = 1.0*qdat
+        right[1:] = qdat[:-1]
+        left[:-1] = qdat[1:]
+        out = 2*qdat + left + right
+    return out
+
+
+
 def registerLarchPlugin():
     return ('_math', {'savitzky_golay': savitzky_golay,
-                      'smooth': smooth})
+                      'smooth': smooth,
+                      'boxcar': boxcar})

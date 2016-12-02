@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from distutils.core import setup
+# from distutils.core import setup
+from setuptools import setup
 
 import time
 import os
@@ -13,14 +14,16 @@ from glob import glob
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
-
-required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy', 'six']
+required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six']
+graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
+xrd_modules = ['fabio','pyFAI','xrayutilities','CifFile']
 
 recommended_modules = {'basic analysis': required_modules,
-                       'xrd modules' : ('fabio','pyFAI','xrayutilities','CifFiles','cStringIO'),
-                       'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
+                       'graphics and plotting': graphics_modules,
+                       'xrd modules' : xrd_modules,
                        'color-enhanced error messages': ('termcolor', ),
                        'using the EPICS control system': ('epics', ),
+                       'testing tools': ('nose', ),
                        }
 
 # files that may be left from earlier installs) and should be removed
@@ -42,7 +45,7 @@ if not deps_ok:
             if mod == 'wx':
                 try:
                     import wxversion
-                    wxversion.ensureMinimal('2.8')
+                    wxversion.ensureMinimal('2.9')
                 except:
                     pass
             if mod not in modules_imported:
@@ -179,18 +182,23 @@ if (cmdline_args[0] == 'install' and
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = version.__version__,
-      author = 'Matthew Newville',
+      author = 'Matthew Newville and the X-rayLarch Development Team',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
       download_url = 'http://xraypy.github.io/xraylarch/',
-      requires = required_modules,
+      install_requires = required_modules,
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
       packages = ['larch', 'larch.utils', 'larch.wxlib',
                   'larch.fitting', 'larch.fitting.uncertainties'],
-      data_files  = data_files)
-
+      data_files  = data_files,
+      platforms = ['Windows', 'Linux', 'Mac OS X'],
+      classifiers=['Intended Audience :: Science/Research',
+                   'Operating System :: OS Independent',
+                   'Programming Language :: Python',
+                   'Topic :: Scientific/Engineering'],
+     )
 
 
 def remove_cruft(basedir, filelist):

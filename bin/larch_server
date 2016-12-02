@@ -10,8 +10,7 @@ import sys
 import time
 from subprocess import Popen
 from optparse import OptionParser
-from xmlrpclib import ServerProxy
-from larch.xmlrpc_server import (test_server, get_next_port,
+from larch.xmlrpc_server import (ServerProxy, test_server, get_next_port,
                                  NOT_IN_USE, CONNECTED, NOT_LARCHSERVER)
 
 def start_server(port=4966, wait=True, timeout=15):

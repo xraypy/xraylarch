@@ -103,11 +103,11 @@ class LarchServer(SimpleXMLRPCServer):
 
         self.register_introspection_functions()
         self.register_function(self.larch_exec, 'larch')
-        for method in  ('ls', 'chdir', 'cd', 'cwd', 'shutdown',
-                        'set_keepalive_time',
-                        'set_client_info',
-                        'get_client_info',
-                        'get_data', 'get_rawdata', 'get_messages', 'len_messages'):
+
+        for method in ('ls', 'chdir', 'cd', 'cwd', 'shutdown',
+                        'set_keepalive_time', 'set_client_info',
+                        'get_client_info', 'get_data', 'get_rawdata',
+                        'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
 
         # sys.stdout = self
@@ -116,7 +116,9 @@ class LarchServer(SimpleXMLRPCServer):
         self.activity_thread = Thread(target=self.check_activity)
 
     def write(self, text, **kws):
-        self.out_buffer.append(text)
+        if text is None:
+            text = ''
+        self.out_buffer.append(str(text))
 
     def flush(self):
         pass

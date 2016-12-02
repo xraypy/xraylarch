@@ -26,6 +26,21 @@ def perl2json(text):
 
 
 ERR_MSG = "Error reading Athena Project File"
+
+def is_athena_project(filename):
+    """tests whether file is a valid Athena Project file"""
+    result = False
+    if os.path.exists(filename):
+        try:
+            fh = GzipFile(filename)
+            line1 = bytes2str(fh.readline())
+            result = "Athena project file -- Demeter version" in line1
+        except:
+            pass
+        finally:
+            fh.close()
+    return result
+
 def read_athena(filename, match=None, do_preedge=True,
                 do_bkg=True, do_fft=True, use_hashkey=False, _larch=None):
     """read athena project file
@@ -51,7 +66,7 @@ def read_athena(filename, match=None, do_preedge=True,
         3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
            pre-edge, background subtraction, and FFT from Athena by using
            the parameters saved in the project file.
-        2. use_hashkey=True will name groups from the internal 5 character 
+        2. use_hashkey=True will name groups from the internal 5 character
            string used by Athena, instead of the group label.
 
     Example:
@@ -109,7 +124,7 @@ def read_athena(filename, match=None, do_preedge=True,
         match = match.lower()
 
     out = Group()
-    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)    
+    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
     for dat in athenagroups:
         label = dat['name']
         this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
