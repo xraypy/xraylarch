@@ -174,6 +174,7 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     ROI definitions, MCA calibration, Environment Data, etc'''
 
     xrmmap.create_group('areas')
+    xrmmap.create_group('work')
     xrmmap.create_group('positions')
 
     conf = xrmmap['config']
@@ -336,6 +337,8 @@ class GSEXRM_MapRow:
         xnpts, nmca, nchan = self.counts.shape
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
+
+        print("READ ROW Npts  ", gnpts, snpts, xnpts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -504,6 +507,7 @@ class GSEXRM_Area(object):
             raise ValueError('ROI name %s not found' % roiname)
         elo, ehi = self.det.rois[iroi].left, self.det.rois[iroi].right
         counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
+
 
 
 class GSEXRM_MapFile(object):
@@ -1256,7 +1260,7 @@ class GSEXRM_MapFile(object):
         check if any XRD OR XRF data in mapfile
         mkak 2016.10.13
         '''
-        print 'running: self.check_flags()'
+        print( 'running: self.check_flags()')
 
         try:
             xrdgp = self.xrmmap['xrd']
@@ -1321,6 +1325,57 @@ class GSEXRM_MapFile(object):
             old, npts, nx = g.shape
             g.resize((nrow, npts, nx))
         self.h5root.flush()
+
+    def add_work_array(self, data, name=None, **kws):
+        """
+        add an array to the work group of processed arrays
+        """
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        workgroup = self.xrmmap['work']
+
+        addr = 'arr_%3.3i' % (1+len(workgroup))
+        ds = workgroup.create_dataset(addr, data=data)
+        if name is None:
+            name = addr
+        ds.attrs['name'] = h5str(name)
+        for key, val in kws.items():
+            ds.attrs[key] = val
+        self.h5root.flush()
+
+
+    def get_work_array(self, name):
+        """
+        get an array from the work group of processed arrays by index or name
+        """
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        workgroup = self.xrmmap['work']
+
+        dat = None
+        name = h5str(name)
+        if name in workgroup:
+            dat = workgroup[name]
+        else:
+            for arr in workgroup.values():
+                if name == h5str(arr.attrs['name']):
+                    dat = arr
+                    break
+        return dat
+
+    def work_array_names(self):
+        """
+        return list of work array descriptions
+        """
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        return [h5str(g.attrs['name']) for g in self.xrmmap['work'].values()]
 
     def add_area(self, mask, name=None, desc=None):
         """add a selected area, with optional name
@@ -2124,6 +2179,7 @@ class GSEXRM_MapFile(object):
         imap = -1
         roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+        work_names = self.work_array_names()
         dat = 'roimap/sum_raw'
 
         # scaler, non-roi data
@@ -2133,6 +2189,11 @@ class GSEXRM_MapFile(object):
                 return self.xrmmap[dat][:, 1:-1, imap]
             else:
                 return self.xrmmap[dat][:, :, imap]
+        elif name in work_names:
+            map = self.get_work_array(name)
+            if no_hotcols and len(map.shape)==2:
+                map = map[:, 1:-1]
+            return map
 
         dat = 'roimap/sum_raw'
         if dtcorrect:
