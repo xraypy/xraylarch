@@ -140,49 +140,46 @@ class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
     label  = 'Map Math'
     def __init__(self, parent, owner, **kws):
+        self.map = None
+
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
-        sizer = wx.GridBagSizer(8, 9)
-        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
-                                   action=partial(self.onShowMap, new=True))
-        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+        sizer = wx.GridBagSizer(5, 5)
+        bpanel = wx.Panel(self)
+        show_new = Button(bpanel, 'Show New Map',     size=(120, -1),
+                          action=partial(self.onShowMap, new=True))
+        show_old = Button(bpanel, 'Replace Last Map', size=(120, -1),
                                    action=partial(self.onShowMap, new=False))
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        bsizer.Add(show_new, 0, 3)
+        bsizer.Add(show_old, 0, 3)
+        pack(bpanel, bsizer)
 
-        self.map_mode = Choice(self, choices= ['Intensity', 'R, G, B'],
-                                   size=(150, -1), action=self.onMode)
+        save_arr = Button(self, 'Save Array', size=(120, -1),
+                          action=self.onSaveArray)
 
-        self.expr_i = wx.TextCtrl(self, -1,   '', size=(150, -1))
-        self.expr_r = wx.TextCtrl(self, -1,   '', size=(150, -1))
-        self.expr_g = wx.TextCtrl(self, -1,   '', size=(150, -1))
-        self.expr_b = wx.TextCtrl(self, -1,   '', size=(150, -1))
+        self.expr_in = wx.TextCtrl(self, -1,   '', size=(180, -1))
+        self.name_in = wx.TextCtrl(self, -1,   '', size=(180, -1))
 
         ir = 0
-        sizer.Add(SimpleText(self, 'Map Mode:'),    (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.map_mode,                    (ir, 1), (1, 1), ALL_LEFT, 2)
-        txt = """Enter Math Expressions for Map:
- a+b,  (a-b)/c, log10(a+0.1),  etc"""
-
-        sizer.Add(SimpleText(self, txt),    (ir, 2), (2, 4), ALL_LEFT, 2)
+        txt = """Enter Math Expressions for Map: a+b, (a-b)/c, log10(a+0.1),  etc"""
+        sizer.Add(SimpleText(self, txt),    (ir, 0), (1, 6), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Intensity:'),    (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.expr_i,  (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Expression:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.expr_in,   (ir, 1), (1, 1), ALL_LEFT, 2)
         ir += 1
-        sizer.Add(SimpleText(self, 'R, G, B:'),    (ir, 0), (1, 1), ALL_CEN, 2)
 
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(self.expr_r,  0, ALL_LEFT, 2)
-        box.Add(self.expr_g,  0, ALL_LEFT, 2)
-        box.Add(self.expr_b,  0, ALL_LEFT, 2)
-        sizer.Add(box,  (ir, 1), (1, 5), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Array Name:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.name_in,   (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(save_arr,  (ir, 2), (1, 1), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_old,  (ir, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(bpanel,  (ir, 1), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Name'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Array'),       (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'File'),        (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'ROI'),         (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Detector'),    (ir, 3), (1, 1), ALL_CEN, 2)
@@ -194,7 +191,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.varrange   = {}
         self.vardet   = {}
         self.varcor   = {}
-        for varname in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
+        for varname in ('a', 'b', 'c', 'd', 'e', 'f'):
             self.varfile[varname]   = vfile  = Choice(self, choices=[], size=(200, -1),
                                                           action=partial(self.onROI, varname=varname))
             self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(120, -1),
@@ -221,23 +218,26 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         pack(self, sizer)
         self.SetupScrolling()
-        self.onMode(evt=None, choice='int')
 
-    def onMode(self, evt=None, choice=None):
-        mode = self.map_mode.GetStringSelection()
-        if choice is not None:
-            mode = choice
-        mode = mode.lower()
-        self.expr_i.Disable()
-        self.expr_r.Disable()
-        self.expr_g.Disable()
-        self.expr_b.Disable()
-        if mode.startswith('i'):
-            self.expr_i.Enable()
-        else:
-            self.expr_r.Enable()
-            self.expr_g.Enable()
-            self.expr_b.Enable()
+    def onSaveArray(self, evt=None):
+        name = self.name_in.GetValue()
+        expr = self.expr_in.GetValue()
+        xrmfile = self.owner.current_file
+        for varname in sorted(self.varfile.keys()):
+            fname   = self.varfile[varname].GetStringSelection()
+            roiname = self.varroi[varname].GetStringSelection()
+            dname   = self.vardet[varname].GetStringSelection()
+            dtcorr  = self.varcor[varname].IsChecked()
+            info.append((varname, (fname, roiname, dname, dtcorr)))
+
+        if self.map is None:
+            self.onShowMap()
+
+        xrmfile.add_work_array(self.map, name=h5str(name),
+                               expression=h5str(expr),
+                               info=json.dumps(info))
+
+
 
     def onROI(self, evt, varname='a'):
         fname   = self.varfile[varname].GetStringSelection()
@@ -255,6 +255,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
+        if 'work' in xrmmap:
+            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
         for wid in self.varroi.values():
             wid.SetChoices(rois)
 
@@ -263,20 +265,17 @@ class MapMathPanel(scrolled.ScrolledPanel):
             wid.SetChoices(fnames)
 
     def onShowMap(self, event=None, new=True):
-        mode = self.map_mode.GetStringSelection()
         def get_expr(wid):
             val = str(wid.Value)
             if len(val) == 0:
                 val = '1'
             return val
-        expr_i = get_expr(self.expr_i)
-        expr_r = get_expr(self.expr_r)
-        expr_g = get_expr(self.expr_g)
-        expr_b = get_expr(self.expr_b)
+        expr_in = get_expr(self.expr_in)
 
 
         main_file = None
         _larch = self.owner.larch
+        filemap = self.owner.filemap
 
         for varname in self.varfile.keys():
             fname   = self.varfile[varname].GetStringSelection()
@@ -286,27 +285,20 @@ class MapMathPanel(scrolled.ScrolledPanel):
             det =  None
             if dname != 'sum':  det = int(dname)
             if roiname == '1':
-                map = 1
+                self.map = 1
             else:
-                map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
+                self.map = filemap[fname].get_roimap(roiname,
+                                                     det=det,
+                                                     dtcorrect=dtcorr)
 
-            _larch.symtable.set_symbol(str(varname), map)
+            _larch.symtable.set_symbol(str(varname), self.map)
             if main_file is None:
-                main_file = self.owner.filemap[fname]
-        if mode.startswith('I'):
-            map = _larch.eval(expr_i)
-            info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
-            title = '%s: %s' % (fname, expr_i)
-            subtitles = None
-        else:
-            rmap = _larch.eval(expr_r)
-            gmap = _larch.eval(expr_g)
-            bmap = _larch.eval(expr_b)
-            map = np.array([rmap, gmap, bmap])
-            map = map.swapaxes(0, 2).swapaxes(0, 1)
-            title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, expr_r, expr_g, expr_b)
-            subtitles = {'red': expr_r, 'blue': expr_b, 'green': expr_g}
-            info = ''
+                main_file = filemap[fname]
+
+        self.map = _larch.eval(expr_in)
+        info  = 'Intensity: [%g, %g]' %(self.map.min(), self.map.max())
+        title = '%se: %s' % (fname, expr_in)
+        subtitles = None
         try:
             x = main_file.get_pos(0, mean=True)
         except:
@@ -321,7 +313,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
 
-        self.owner.display_map(map, title=title, subtitles=subtitles,
+        self.owner.display_map(self.map, title=title, subtitles=subtitles,
                                info=info, x=x, y=y,
                                det=None, xrmfile=main_file)
 
@@ -511,6 +503,8 @@ class SimpleMapPanel(GridPanel):
 
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
+        if 'work' in xrmmap:
+            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
         self.roi1.SetChoices(rois[1:])
         self.roi2.SetChoices(rois)
 
@@ -660,9 +654,11 @@ class TriColorMapPanel(GridPanel):
 
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
+        if 'work' in xrmmap:
+            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
+
         for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
             cbox.SetChoices(rois)
-
 
 
 class MapInfoPanel(scrolled.ScrolledPanel):
