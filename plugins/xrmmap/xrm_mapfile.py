@@ -329,7 +329,12 @@ class GSEXRM_MapRow:
 
         ## SPECIFIC TO XRD data
         if FLAGxrd:
-            self.xrd2d     = xrddat
+            if self.npts - xrddat.shape[0] == 0:
+                self.xrd2d     = xrddat
+            else:
+                print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+                self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
+                self.xrd2d[0:xrddat.shape[0]] = xrddat
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
@@ -345,7 +350,7 @@ class GSEXRM_MapRow:
             sdata = np.array(sdata)
             snpts = self.npts
         self.sisdata = sdata[:self.npts]
-
+        
         if xnpts > self.npts:
             if FLAGxrf:
                 self.counts    = self.counts[:self.npts]
@@ -1054,15 +1059,6 @@ class GSEXRM_MapFile(object):
             xrdgrp = self.xrmmap['xrd']
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-## mkak working here
-## 2016.12.02
-#             print 'SHAPE OF XRD2D DATA: ',row.xrd2d.shape
-#             print 'SHAPE OF FILE SPACE: ',np.shape(xrdgrp['data2D'][thisrow,])
-# 
-#             rowlen = np.shape(xrdgrp['data2D'][thisrow,])[0]
-#             if rowlen > xrdpts:
-#                  for i in range(rowlen-xrdpts):
-#                      row.xrd2d.append(np.zeros(xpixx,xpixy))
             xrdgrp['data2D'][thisrow,] = row.xrd2d
 
             if hasattr(self.xrmmap['xrd'],'maskfile'):
