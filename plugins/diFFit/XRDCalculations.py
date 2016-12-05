@@ -1479,6 +1479,5 @@ class XRDSymmetrySearch(wx.Dialog):
         self.SG.SetSelection(0)
 
 
-
 def registerLarchPlugin():
     return ('_diFFit', {})

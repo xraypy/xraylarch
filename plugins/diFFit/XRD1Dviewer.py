@@ -24,6 +24,7 @@ from larch_plugins.diFFit.cifdb import cifDB
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
+from larch_plugins.diFFit.mini_xu import Crystal
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 # from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
@@ -1136,6 +1137,8 @@ class Viewer1DXRD(wx.Panel):
         if read:
             cifile = os.path.split(path)[-1]
 
+## mkak 2016.12.05 - this is where I'm working
+#             cif = Crystal.fromCIF(path)
             try:
                 cif = xu.materials.Crystal.fromCIF(path)
             except:
