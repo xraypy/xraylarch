@@ -169,14 +169,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
         ir += 1
         sizer.Add(SimpleText(self, 'Expression:'),    (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.expr_in,   (ir, 1), (1, 1), ALL_LEFT, 2)
-        ir += 1
+        sizer.Add(bpanel,  (ir, 2), (1, 3), ALL_LEFT, 2)
 
+        ir += 1
         sizer.Add(SimpleText(self, 'Array Name:'),    (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.name_in,   (ir, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(save_arr,  (ir, 2), (1, 1), ALL_LEFT, 2)
-
-        ir += 1
-        sizer.Add(bpanel,  (ir, 1), (1, 2), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(SimpleText(self, 'Array'),       (ir, 0), (1, 1), ALL_CEN, 2)
@@ -223,6 +221,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         name = self.name_in.GetValue()
         expr = self.expr_in.GetValue()
         xrmfile = self.owner.current_file
+        info = []
         for varname in sorted(self.varfile.keys()):
             fname   = self.varfile[varname].GetStringSelection()
             roiname = self.varroi[varname].GetStringSelection()
@@ -233,10 +232,18 @@ class MapMathPanel(scrolled.ScrolledPanel):
         if self.map is None:
             self.onShowMap()
 
-        xrmfile.add_work_array(self.map, name=h5str(name),
+        if name in xrmfile.work_array_names():
+            if (wx.ID_YES == Popup(self.owner, """Overwrite Array '%s' for %s?
+    WARNING: This cannot be undone
+    """ % (name, xrmfile.filename),
+                                   'Overwrite Array?', style=wx.YES_NO)):
+                xrmfile.del_work_array(h5str(name))
+            else:
+                return
+
+        xrmfile.add_work_array(self.map, h5str(name),
                                expression=h5str(expr),
                                info=json.dumps(info))
-
 
 
     def onROI(self, evt, varname='a'):
@@ -256,7 +263,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
         if 'work' in xrmmap:
-            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
+            rois.extend(list(xrmmap['work'].keys()))
         for wid in self.varroi.values():
             wid.SetChoices(rois)
 
@@ -504,7 +511,7 @@ class SimpleMapPanel(GridPanel):
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
         if 'work' in xrmmap:
-            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
+            rois.extend(list(xrmmap['work'].keys()))
         self.roi1.SetChoices(rois[1:])
         self.roi2.SetChoices(rois)
 
@@ -655,8 +662,7 @@ class TriColorMapPanel(GridPanel):
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
         if 'work' in xrmmap:
-            rois.extend([g.attrs['name'] for g in xrmmap['work'].values()])
-
+            rois.extend(list(xrmmap['work'].keys()))
         for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
             cbox.SetChoices(rois)
 

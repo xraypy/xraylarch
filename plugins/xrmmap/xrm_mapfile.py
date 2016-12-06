@@ -509,7 +509,6 @@ class GSEXRM_Area(object):
         counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
 
 
-
 class GSEXRM_MapFile(object):
     """
     Access to GSECARS X-ray Microprobe Map File:
@@ -1326,56 +1325,54 @@ class GSEXRM_MapFile(object):
             g.resize((nrow, npts, nx))
         self.h5root.flush()
 
-    def add_work_array(self, data, name=None, **kws):
+    def ensure_workgroup(self):
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        return self.xrmmap['work']
+
+    def add_work_array(self, data, name, **kws):
         """
         add an array to the work group of processed arrays
         """
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
-        if not 'work' in self.xrmmap:
-            self.xrmmap.create_group('work')
-        workgroup = self.xrmmap['work']
-
-        addr = 'arr_%3.3i' % (1+len(workgroup))
-        ds = workgroup.create_dataset(addr, data=data)
+        workgroup = self.ensure_workgroup()
         if name is None:
-            name = addr
-        ds.attrs['name'] = h5str(name)
+            name = 'array_%3.3i' % (1+len(workgroup))
+        if name in workgroup:
+            raise ValueError("array name '%s' exists in work arrays" % name)
+        ds = workgroup.create_dataset(name, data=data)
         for key, val in kws.items():
             ds.attrs[key] = val
         self.h5root.flush()
 
+    def del_work_array(self, name):
+        """
+        delete an array to the work group of processed arrays
+        """
+        workgroup = self.ensure_workgroup()
+        name = h5str(name)
+        if name in workgroup:
+            del workgroup[name]
+            self.h5root.flush()
 
     def get_work_array(self, name):
         """
         get an array from the work group of processed arrays by index or name
         """
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
-        if not 'work' in self.xrmmap:
-            self.xrmmap.create_group('work')
-        workgroup = self.xrmmap['work']
-
+        workgroup = self.ensure_workgroup()
         dat = None
         name = h5str(name)
         if name in workgroup:
             dat = workgroup[name]
-        else:
-            for arr in workgroup.values():
-                if name == h5str(arr.attrs['name']):
-                    dat = arr
-                    break
         return dat
 
     def work_array_names(self):
         """
         return list of work array descriptions
         """
-        if not 'work' in self.xrmmap:
-            self.xrmmap.create_group('work')
-        return [h5str(g.attrs['name']) for g in self.xrmmap['work'].values()]
+        workgroup = self.ensure_workgroup()
+        return [h5str(g) for g in workgroup.keys()]
 
     def add_area(self, mask, name=None, desc=None):
         """add a selected area, with optional name
