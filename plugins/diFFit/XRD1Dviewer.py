@@ -26,6 +26,7 @@ from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.mini_xu import Crystal
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.xrd_bgr import xrd_background
 # from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
 import matplotlib.pyplot as plt
@@ -186,12 +187,29 @@ class diFFit1DFrame(wx.Frame):
         ## will clear everything on plot
         ## provide warning message?
         ## mkak 2016.12.02
-        self.xrd1Dfitting.ttl_data.SetLabel('Fitting - %s' %name)
-#         self.xrd1Dfitting.xy_data = data
-#         self.xrd1Dfitting.xy_plot = data
-#         self.xrd1Dfitting.plotted_data = self.xrd1Dfitting.plot1D.plot(*data)
-        self.xrd1Dfitting.plot1D.plot(*data)
+        adddata = True
+        if self.xrd1Dfitting.data is not None:
+            question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.name,name)
+            adddata = YesNo(self,question,caption='Overwrite warning')
+        
+        if adddata:
 
+            self.xrd1Dfitting.data = data
+            self.xrd1Dfitting.xmin = data[0][0]
+            self.xrd1Dfitting.xmax = data[0][-1]
+        
+            ## set text boxes to these values (min, max)
+        
+            self.xrd1Dfitting.plot1D.plot(*data,color='blue',title=name,
+                                           label='Raw data',show_legend=True)
+
+            self.xrd1Dfitting.name = name
+            self.xrd1Dfitting.ck_bkgd.SetValue(False)
+            self.xrd1Dfitting.btn_fbkgd.Enable()
+            self.xrd1Dfitting.btn_rbkgd.Disable()
+            self.xrd1Dfitting.ck_bkgd.Disable()
+            self.xrd1Dfitting.btn_obkgd.Enable()
+            
 
     def loadXYFILE(self,event):
     
@@ -215,8 +233,11 @@ class diFFit1DFrame(wx.Frame):
 
             return data,os.path.split(path)[-1]
 
-
-
+def YesNo(parent, question, caption = 'Yes or no?'):
+    dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+    result = dlg.ShowModal() == wx.ID_YES
+    dlg.Destroy()
+    return result
         
 class SelectFittingData(wx.Dialog):
     def __init__(self,list,all_data):
@@ -384,8 +405,14 @@ class Fitting1DXRD(wx.Panel):
 #         self.xy_plot = []
 
         ## Default information
-        self.xlabel     = 'q (A^-1)'
-        self.xunits     = ['q','d']
+        self.data       = None
+        self.bgr        = None
+        self.xmin       = None
+        self.xmax       = None
+        self.exponent   = 20
+        self.compress   = 2
+        self.width      = 4
+        self.name       = ''
 
         self.Panel1DFitting()
     
@@ -406,54 +433,85 @@ class Fitting1DXRD(wx.Panel):
 
         self.SetSizer(panel1D)
     
-#     def Toolbox(self,panel):
-#         '''
-#         Frame for visual toolbox
-#         '''
-#         
-#         tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
-#         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-# 
-#         ###########################
-#         ## X-Scale
-#         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
-#         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-#         self.ch_xaxis = wx.Choice(self,choices=self.xunits)
-# 
-#         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
-#     
-#         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
-#         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
-#         vbox.Add(hbox_xaxis, flag=wx.ALL, border=10)
-# 
-#         ###########################
-#         ## Y-Scale
-#         hbox_yaxis = wx.BoxSizer(wx.HORIZONTAL)
-#         ttl_yaxis = wx.StaticText(self, label='Y-SCALE')
-#         yscales = ['linear','log']
-#         self.ch_yaxis = wx.Choice(self,choices=yscales)
-# 
-#         self.ch_yaxis.Bind(wx.EVT_CHOICE,   None)
-#     
-#         hbox_yaxis.Add(ttl_yaxis, flag=wx.RIGHT, border=8)
-#         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
-#         vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
-#         
-#         return vbox
+    def FittingTools(self,panel):
+        '''
+        Frame for visual toolbox
+        '''
+        
+        tlbx = wx.StaticBox(self,label='FITTING TOOLS')
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+        ###########################
+        ## Background tools
+        vbox_bkgd = wx.BoxSizer(wx.VERTICAL)        
+        hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ttl_bkgd = wx.StaticText(self, label='BACKGROUND')
+        vbox_bkgd.Add(ttl_bkgd, flag=wx.BOTTOM, border=8)
+
+        self.btn_fbkgd = wx.Button(self,label='Fit')
+        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.fit_background)
+        hbox_bkgd.Add(self.btn_fbkgd, flag=wx.RIGHT, border=8)
+
+        self.btn_obkgd = wx.Button(self,label='Options')
+        self.btn_obkgd.Bind(wx.EVT_BUTTON,   self.background_options)
+        hbox_bkgd.Add(self.btn_obkgd, flag=wx.RIGHT, border=8)
+
+        self.btn_rbkgd = wx.Button(self,label='Remove')
+        self.btn_rbkgd.Bind(wx.EVT_BUTTON,   self.remove_background)
+      
+        vbox_bkgd.Add(hbox_bkgd, flag=wx.BOTTOM, border=8)
+        vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
+
+        self.ck_bkgd = wx.CheckBox(self,label='Subtract')
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   self.subtract_background)
+        vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
+        
+        vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
+
+        ###########################
+        ## Peak tools
+        vbox_pks = wx.BoxSizer(wx.VERTICAL)        
+        hbox_pks = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ttl_pks = wx.StaticText(self, label='PEAKS')
+        vbox_pks.Add(ttl_pks, flag=wx.BOTTOM, border=8)
+
+        btn_fpks = wx.Button(self,label='Find peaks')
+        btn_fpks.Bind(wx.EVT_BUTTON,   None)
+        vbox_pks.Add(btn_fpks, flag=wx.BOTTOM, border=8)
+
+        btn_rpks = wx.Button(self,label='Remove all')
+        btn_rpks.Bind(wx.EVT_BUTTON,   None)
+        hbox_pks.Add(btn_rpks, flag=wx.RIGHT, border=8)
+
+        btn_rpks = wx.Button(self,label='Select to remove')
+        btn_rpks.Bind(wx.EVT_BUTTON,   None)
+        hbox_pks.Add(btn_rpks, flag=wx.RIGHT, border=8)
+        
+        vbox_pks.Add(hbox_pks, flag=wx.BOTTOM, border=8)        
+        vbox.Add(vbox_pks, flag=wx.ALL, border=10)
+
+        self.btn_fbkgd.Disable()
+        self.btn_rbkgd.Disable()
+        self.ck_bkgd.Disable()
+        self.btn_obkgd.Disable()
+
+        return vbox
 
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        filechoice = self.FileChoicePanel(self)
+        filechoice = self.SettingsPanel(self)
         vbox.Add(filechoice,flag=wx.ALL,border=10)
         
-#         plttools = self.Toolbox(self)
-#         vbox.Add(plttools,flag=wx.ALL,border=10)
+        fittools = self.FittingTools(self)
+        vbox.Add(fittools,flag=wx.ALL,border=10)
 
         return vbox
         
-    def FileChoicePanel(self,panel):
+    def SettingsPanel(self,panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -461,8 +519,8 @@ class Fitting1DXRD(wx.Panel):
 #         btn_chc.Bind(wx.EVT_BUTTON,   None) ## ---> need a way to point to parent's function, mkak 2016.12.02
 #         vbox.Add(btn_chc, flag=wx.EXPAND|wx.ALL, border=8)
 
-        self.ttl_data = wx.StaticText(self, label='')
-        vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
+        self.ttl_energy = wx.StaticText(self, label='')
+        vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
         
         return vbox
 
@@ -489,6 +547,88 @@ class Fitting1DXRD(wx.Panel):
         buttonbox.Add(btn_integ, flag=wx.ALL, border=8)
         return buttonbox
 
+
+##############################################
+#### BACKGROUND FUNCTIONS
+
+    def fit_background(self,event):
+
+        if self.bgr is not None:
+            self.remove_background(None,buttons=False)
+#             self.bgr = None
+#             self.plot1D.plot(*self.data,color='blue',title=self.name,
+#                              label='Raw data',show_legend=True)
+
+        try:
+            ## this creates self.bgr and self.bgr_info
+            xrd_background(*self.data, group=self, exponent=self.exponent, 
+                                       compress=self.compress, width=self.width)
+        except:
+            print 'excepted...'
+            pass
+
+        self.ck_bkgd.Enable()
+        self.btn_rbkgd.Enable()
+        
+        cmprsz = np.shape(self.bgr)[0]
+        xaxis = self.data[0]
+        self.plot1D.oplot(xaxis[0:cmprsz],self.bgr,color='red',
+                          label='Fit background',show_legend=True)
+
+  
+    def subtract_background(self,event):
+    
+        try:
+            cmprsz = np.shape(self.bgr)[0]
+            xaxis = self.data[0]
+           
+            if self.ck_bkgd.GetValue() == True:
+                yaxis = self.data[1]
+                self.plot1D.plot(xaxis[0:cmprsz],(yaxis[0:cmprsz]-self.bgr),title=self.name,
+                            color='green',label='Background subtracted',show_legend=True)
+                self.btn_rbkgd.Disable()
+                self.btn_fbkgd.Disable()
+                self.btn_obkgd.Disable()
+            else:
+                self.plot1D.plot(*self.data,color='blue',title=self.name,
+                                 label='Raw data',show_legend=True)
+                self.plot1D.oplot(xaxis[0:cmprsz],self.bgr,color='red',
+                                  label='Fit background',show_legend=True)
+                self.btn_rbkgd.Enable()
+                self.btn_fbkgd.Enable()
+                self.btn_obkgd.Enable()
+        except:
+            pass
+
+    def remove_background(self,event,buttons=True):
+
+        try:
+            self.plot1D.plot(*self.data,color='blue',title=self.name,
+                             label='Raw data',show_legend=True)
+            self.bgr = None
+            if buttons:
+                self.ck_bkgd.Disable()
+                self.btn_rbkgd.Disable()
+        except:
+            pass
+    
+    def background_options(self,event):
+    
+        myDlg = BackgroundOptions(self)#parent=self)
+        
+        read, save, plot = False, False, False
+        if myDlg.ShowModal() == wx.ID_OK:
+            read = True
+            save = myDlg.ch_save.GetValue()
+            plot = myDlg.ch_plot.GetValue()
+
+            attrs = {'ai':self.ai}
+            if int(myDlg.xstep.GetValue()) < 1:
+                attrs.update({'steps':5001})
+            else:
+                attrs.update({'steps':int(myDlg.steps)})
+
+        myDlg.Destroy()
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -634,6 +774,107 @@ class Fitting1DXRD(wx.Panel):
             self.addLAMBDA(wavelength)
 
 
+class BackgroundOptions(wx.Dialog):
+    def __init__(self,parent):
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='Background fitting options',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
+                                    size = (210,410))
+        self.parent = parent
+        
+        self.Init()
+
+        ## Set defaults
+        self.val_xmin.SetValue('%0.4f' % self.parent.xmin)
+        self.val_xmax.SetValue('%0.4f' % self.parent.xmax)
+#         self.val_exponent.SetValue(str(self.parent.exponent))
+#         self.val_compress.SetValue(str(self.parent.compress))
+#         self.val_width.SetValue(str(self.parent.width))
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+
+    def Init(self):
+    
+        self.panel = wx.Panel(self)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        
+
+        ## X-Range
+        xsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
+
+        xminsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_xmin = wx.StaticText(self.panel, label='minimum')
+        self.val_xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)
+        xminsizer.Add(self.val_xmin,  flag=wx.RIGHT, border=5)
+        
+        xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_xmax = wx.StaticText(self.panel, label='maximum')
+        self.val_xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)        
+        xmaxsizer.Add(self.val_xmax,  flag=wx.RIGHT, border=5)
+
+        xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
+        xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
+        xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
+        
+        
+        expsizer = wx.BoxSizer(wx.VERTICAL)
+        compsizer = wx.BoxSizer(wx.VERTICAL)
+        widsizer = wx.BoxSizer(wx.VERTICAL)
+
+
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK )
+        canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8)
+        oksizer.Add(canBtn,     flag=wx.RIGHT, border=8) 
+        oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8)
+
+        mainsizer.Add(xsizer,     flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(expsizer, flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(compsizer,     flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
+
+
+        self.panel.SetSizer(mainsizer)
+        
+
+#     def onCHECK(self,event):
+#     
+#         if self.ch_save.GetValue() or self.ch_plot.GetValue():
+#            self.okBtn.Enable()
+#         else:
+#             self.okBtn.Disable()
+#         
+        
+    def onSPIN(self, event):
+        self.wedges.SetValue(str(event.GetPosition())) 
+        print('WARNING: not currently using multiple wedges for calculations')
+
+    def getValues(self):
+    
+        print 'get values'
+#         self.steps = int(self.xstep.GetValue())
+
+
+
 class Viewer1DXRD(wx.Panel):
     '''
     Panel for housing 1D XRD viewer
@@ -731,9 +972,6 @@ class Viewer1DXRD(wx.Panel):
         self.ch_data = wx.Choice(self,choices=self.data_name)
         self.ch_data.Bind(wx.EVT_CHOICE,   self.onSELECT)
         vbox.Add(self.ch_data, flag=wx.EXPAND|wx.ALL, border=8)
-    
-        #self.ttl_data = wx.StaticText(self, label='')
-        #vbox.Add(self.ttl_data, flag=wx.EXPAND|wx.ALL, border=8)
 
         ###########################
 
@@ -963,7 +1201,6 @@ class Viewer1DXRD(wx.Panel):
     def onSELECT(self,event):
     
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
-#         self.ttl_data.SetLabel('SELECTED: %s' % data_str)
         
         plt_no = self.ch_data.GetSelection()
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
