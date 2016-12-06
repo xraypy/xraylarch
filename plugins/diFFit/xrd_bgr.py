@@ -291,7 +291,7 @@ def xrd_background(xdata, ydata, group=None, width=4,
     bgr       background array
     bgr_info  dictionary of parameters used to calculate background
     """
-
+    
     if slope is None:
         slope = (xdata[-1] - xdata[0])/len(xdata)
 

@@ -407,6 +407,7 @@ class Fitting1DXRD(wx.Panel):
         ## Default information
         self.data       = None
         self.bgr        = None
+        self.bgr_info   = None
         self.xmin       = None
         self.xmax       = None
         self.exponent   = 20
@@ -555,17 +556,13 @@ class Fitting1DXRD(wx.Panel):
 
         if self.bgr is not None:
             self.remove_background(None,buttons=False)
-#             self.bgr = None
-#             self.plot1D.plot(*self.data,color='blue',title=self.name,
-#                              label='Raw data',show_legend=True)
 
         try:
             ## this creates self.bgr and self.bgr_info
             xrd_background(*self.data, group=self, exponent=self.exponent, 
                                        compress=self.compress, width=self.width)
         except:
-            print 'excepted...'
-            pass
+            return
 
         self.ck_bkgd.Enable()
         self.btn_rbkgd.Enable()
@@ -606,6 +603,7 @@ class Fitting1DXRD(wx.Panel):
             self.plot1D.plot(*self.data,color='blue',title=self.name,
                              label='Raw data',show_legend=True)
             self.bgr = None
+            self.bgr_info = None
             if buttons:
                 self.ck_bkgd.Disable()
                 self.btn_rbkgd.Disable()
@@ -619,16 +617,14 @@ class Fitting1DXRD(wx.Panel):
         read, save, plot = False, False, False
         if myDlg.ShowModal() == wx.ID_OK:
             read = True
-            save = myDlg.ch_save.GetValue()
-            plot = myDlg.ch_plot.GetValue()
-
-            attrs = {'ai':self.ai}
-            if int(myDlg.xstep.GetValue()) < 1:
-                attrs.update({'steps':5001})
-            else:
-                attrs.update({'steps':int(myDlg.steps)})
-
+            self.xmin     = float(myDlg.val_xmin.GetValue())
+            self.xmax     = float(myDlg.val_xmax.GetValue())
+            self.exponent = int(myDlg.val_exp.GetValue())
+            self.compress = int(myDlg.val_comp.GetValue())
+            self.width    = int(myDlg.val_wid.GetValue())
         myDlg.Destroy()
+        
+        self.fit_background(None)
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -788,9 +784,9 @@ class BackgroundOptions(wx.Dialog):
         ## Set defaults
         self.val_xmin.SetValue('%0.4f' % self.parent.xmin)
         self.val_xmax.SetValue('%0.4f' % self.parent.xmax)
-#         self.val_exponent.SetValue(str(self.parent.exponent))
-#         self.val_compress.SetValue(str(self.parent.compress))
-#         self.val_width.SetValue(str(self.parent.width))
+        self.val_exp.SetValue(str(self.parent.exponent))
+        self.val_comp.SetValue(str(self.parent.compress))
+        self.val_wid.SetValue(str(self.parent.width))
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
@@ -823,11 +819,32 @@ class BackgroundOptions(wx.Dialog):
         xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
         xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
         
-        
+        ## Exponent
         expsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_exp = wx.StaticText(self.panel, label='EXPONENT')
+
+        self.val_exp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        expsizer.Add(ttl_exp,  flag=wx.RIGHT, border=5)
+        expsizer.Add(self.val_exp,  flag=wx.RIGHT, border=5)
+
+        ## Compress
         compsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_comp = wx.StaticText(self.panel, label='COMPRESS')
+
+        self.val_comp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        compsizer.Add(ttl_comp,  flag=wx.RIGHT, border=5)
+        compsizer.Add(self.val_comp,  flag=wx.RIGHT, border=5)
+        
+        ## Width
         widsizer = wx.BoxSizer(wx.VERTICAL)
 
+        ttl_wid = wx.StaticText(self.panel, label='WIDTH')
+
+        self.val_wid = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        widsizer.Add(ttl_wid,  flag=wx.RIGHT, border=5)
+        widsizer.Add(self.val_wid,  flag=wx.RIGHT, border=5)
 
 
         #####
@@ -835,7 +852,7 @@ class BackgroundOptions(wx.Dialog):
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
         hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
-        self.okBtn = wx.Button(self.panel, wx.ID_OK )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK)#, label = 'Fit' )
         canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
 
         oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8)
