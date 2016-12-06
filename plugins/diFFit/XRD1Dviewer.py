@@ -6,7 +6,7 @@ GUI for displaying 1D XRD images
 
 import os
 import numpy as np
-from scipy import constants
+from scipy import constants,signal
 import sys
 
 #import h5py
@@ -143,7 +143,7 @@ class diFFit1DFrame(wx.Frame):
     
         self.xrd1Dviewer.add1Ddata(*data,name=label,wavelength=wavelength)
         
-    def fit1Dxrd(self,event):
+    def fit1Dxrd(self,event=None):
     
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
         
@@ -165,7 +165,7 @@ class diFFit1DFrame(wx.Frame):
                 name = self.list[index]
                 data = self.all_data[index]
         else:
-            data,name = self.loadXYFILE(None)
+            data,name = self.loadXYFILE()
             index = 1
 
         if index >= len(indicies):
@@ -211,7 +211,7 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dfitting.btn_obkgd.Enable()
             
 
-    def loadXYFILE(self,event):
+    def loadXYFILE(self,event=None):
     
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
@@ -286,7 +286,7 @@ class SelectFittingData(wx.Dialog):
 
         self.panel.SetSizer(mainsizer)
 
-    def loadXYFILE(self,event):
+    def loadXYFILE(self,event=None):
     
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
@@ -479,15 +479,15 @@ class Fitting1DXRD(wx.Panel):
         vbox_pks.Add(ttl_pks, flag=wx.BOTTOM, border=8)
 
         btn_fpks = wx.Button(self,label='Find peaks')
-        btn_fpks.Bind(wx.EVT_BUTTON,   None)
+        btn_fpks.Bind(wx.EVT_BUTTON,   self.find_peaks)
         vbox_pks.Add(btn_fpks, flag=wx.BOTTOM, border=8)
 
         btn_rpks = wx.Button(self,label='Remove all')
-        btn_rpks.Bind(wx.EVT_BUTTON,   None)
+        btn_rpks.Bind(wx.EVT_BUTTON,   self.remove_peaks)
         hbox_pks.Add(btn_rpks, flag=wx.RIGHT, border=8)
 
         btn_rpks = wx.Button(self,label='Select to remove')
-        btn_rpks.Bind(wx.EVT_BUTTON,   None)
+        btn_rpks.Bind(wx.EVT_BUTTON,   self.edit_peaks)
         hbox_pks.Add(btn_rpks, flag=wx.RIGHT, border=8)
         
         vbox_pks.Add(hbox_pks, flag=wx.BOTTOM, border=8)        
@@ -552,7 +552,7 @@ class Fitting1DXRD(wx.Panel):
 ##############################################
 #### BACKGROUND FUNCTIONS
 
-    def fit_background(self,event):
+    def fit_background(self,event=None):
 
         if self.bgr is not None:
             self.remove_background(None,buttons=False)
@@ -573,7 +573,7 @@ class Fitting1DXRD(wx.Panel):
                           label='Fit background',show_legend=True)
 
   
-    def subtract_background(self,event):
+    def subtract_background(self,event=None):
     
         try:
             cmprsz = np.shape(self.bgr)[0]
@@ -597,7 +597,7 @@ class Fitting1DXRD(wx.Panel):
         except:
             pass
 
-    def remove_background(self,event,buttons=True):
+    def remove_background(self,event=None,buttons=True):
 
         try:
             self.plot1D.plot(*self.data,color='blue',title=self.name,
@@ -610,7 +610,7 @@ class Fitting1DXRD(wx.Panel):
         except:
             pass
     
-    def background_options(self,event):
+    def background_options(self,event=None):
     
         myDlg = BackgroundOptions(self)#parent=self)
         
@@ -624,7 +624,44 @@ class Fitting1DXRD(wx.Panel):
             self.width    = int(myDlg.val_wid.GetValue())
         myDlg.Destroy()
         
-        self.fit_background(None)
+        self.fit_background()
+
+##############################################
+#### PEAK FUNCTIONS
+
+    def find_peaks(self,event=None):
+
+        pnts = 50
+        xaxis = self.data[0]
+        yaxis = self.data[1]
+        
+        ttlpnts = len(xaxis)
+        
+        peakind = signal.find_peaks_cwt(yaxis, np.arange(1,int(ttlpnts/pnts)),gap_thresh=5)
+        px, py = [],[]
+        for i in peakind:
+            px += [xaxis[i]]
+            py += [yaxis[i]]
+
+        self.plot1D.scatterplot(px,py,color='red',edge_color='yellow',
+                                selectcolor='green',size=12,
+                                label='signal.find_peaks_cwt (%i)' % pnts,show_legend=True)
+        self.plot1D.cursor_mode = 'zoom'
+ 
+# # #      def scatterplot(self, xdata, ydata, label=None, size=10,
+# # #                     color=None, edgecolor=None,
+# # #                     selectcolor=None, selectedge=None,
+# # #                     xlabel=None, ylabel=None, y2label=None,
+# # #                     xmin=None, xmax=None, ymin=None, ymax=None,
+# # #                     title=None, grid=None, callback=None, **kw):
+
+    def remove_peaks(self,event=None):
+    
+        print 'this will remove all peaks'
+        
+    def edit_peaks(self,event=None):
+    
+        print 'this will pop up a list of peaks for removing (and adding?)'
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -642,13 +679,13 @@ class Fitting1DXRD(wx.Panel):
         ## mkak 2016.11.10      
 #         interactive_legend().show()
 
-    def onSAVEfig(self,event):
+    def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
         
-    def onPLOTset(self,event):
+    def onPLOTset(self,event=None):
         self.plot1D.configure()
         
-    def onRESETplot(self,event):
+    def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
 #     def checkXaxis(self, event):
@@ -704,7 +741,7 @@ class Fitting1DXRD(wx.Panel):
                 xmax = 5
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
-    def reset1Dscale(self,event):
+    def reset1Dscale(self,event=None):
 
         plt_no = self.ch_data.GetSelection()        
        
@@ -873,7 +910,7 @@ class BackgroundOptions(wx.Dialog):
         self.panel.SetSizer(mainsizer)
         
 
-#     def onCHECK(self,event):
+#     def onCHECK(self,event=None):
 #     
 #         if self.ch_save.GetValue() or self.ch_plot.GetValue():
 #            self.okBtn.Enable()
@@ -1107,13 +1144,13 @@ class Viewer1DXRD(wx.Panel):
         ## mkak 2016.11.10      
 #         interactive_legend().show()
 
-    def onSAVEfig(self,event):
+    def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
         
-    def onPLOTset(self,event):
+    def onPLOTset(self,event=None):
         self.plot1D.configure()
         
-    def onRESETplot(self,event):
+    def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
 
@@ -1151,7 +1188,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))#,xlabel=self.xlabel))
 
         ## Use correct x-axis units
-        self.checkXaxis(None)
+        self.checkXaxis()
 
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
@@ -1159,7 +1196,7 @@ class Viewer1DXRD(wx.Panel):
         ## Update toolbox panel, scale all cif to 1000
         if cif is True:
             self.entr_scale.SetValue('1000')
-            self.normalize1Ddata(None)
+            self.normalize1Ddata()
         else:
             self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
@@ -1182,7 +1219,7 @@ class Viewer1DXRD(wx.Panel):
         self.xunits.append(u'2\u03B8')
         self.ch_xaxis.Set(self.xunits)
 
-    def normalize1Ddata(self,event):
+    def normalize1Ddata(self,event=None):
     
         plt_no = self.ch_data.GetSelection()
         self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
@@ -1196,7 +1233,7 @@ class Viewer1DXRD(wx.Panel):
         self.updatePLOT()
         
 
-    def remove1Ddata(self,event):
+    def remove1Ddata(self,event=None):
         
         ## Needs pop up warning: "Do you really want to delete this data set from plotter?
         ## Current settings will not be saved."
@@ -1210,12 +1247,12 @@ class Viewer1DXRD(wx.Panel):
 #         self.data_name.remove(self.data_name[plt_no])
 #         self.ch_data.Set(self.data_name)
 
-    def hide1Ddata(self,event):
+    def hide1Ddata(self,event=None):
 
         plt_no = self.ch_data.GetSelection()        
         print('EVENTUALLY, button will hide plot: %s' % self.data_name[plt_no])
 
-    def onSELECT(self,event):
+    def onSELECT(self,event=None):
     
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
         
@@ -1275,7 +1312,7 @@ class Viewer1DXRD(wx.Panel):
                 xmax = 5
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
-    def reset1Dscale(self,event):
+    def reset1Dscale(self,event=None):
 
         plt_no = self.ch_data.GetSelection()        
        
@@ -1335,7 +1372,7 @@ class Viewer1DXRD(wx.Panel):
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
-    def loadXYFILE(self,event):
+    def loadXYFILE(self,event=None):
     
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
@@ -1358,7 +1395,7 @@ class Viewer1DXRD(wx.Panel):
 
 
 
-    def saveXYFILE(self,event):
+    def saveXYFILE(self,event=None):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save data as...',
                            defaultDir=os.getcwd(),
@@ -1375,7 +1412,7 @@ class Viewer1DXRD(wx.Panel):
             ## mkak 2016.11.16
             print('need to write something to save data - like pyFAI does?')
 
-    def loadCIF(self,event):
+    def loadCIF(self,event=None):
     
         wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose CIF',
@@ -1428,7 +1465,7 @@ class Viewer1DXRD(wx.Panel):
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
 
-    def openPONI(self,event):
+    def openPONI(self,event=None):
              
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
@@ -1452,7 +1489,7 @@ class Viewer1DXRD(wx.Panel):
 
             self.addLAMBDA(ai._wavelength,units='m')
 
-    def setLAMBDA(self,event):
+    def setLAMBDA(self,event=None):
 
         dlg = SetLambdaDialog()
 
@@ -1687,7 +1724,7 @@ class Calc1DPopup(wx.Dialog):
         self.panel.SetSizer(mainsizer)
         
 
-    def onCHECK(self,event):
+    def onCHECK(self,event=None):
     
         if self.ch_save.GetValue() or self.ch_plot.GetValue():
            self.okBtn.Enable()
@@ -1715,7 +1752,7 @@ class Calc1DPopup(wx.Dialog):
         self.wedge_arrow.Disable()
         self.ch_xunit.Disable()
         
-    def onUnits(self,event):
+    def onUnits(self,event=None):
 
         hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
@@ -1791,7 +1828,7 @@ class SetLambdaDialog(wx.Dialog):
         self.ch_EorL.SetSelection(0)
         self.entr_EorL.SetValue(str(self.energy))
 
-    def onEorLSel(self,event): 
+    def onEorLSel(self,event=None): 
         
         if float(self.entr_EorL.GetValue()) < 0 or self.entr_EorL.GetValue() == '':
             self.ch_EorL.SetSelection(1)
@@ -1816,7 +1853,7 @@ class diFFit1D(wx.App):
 
     def createApp(self):
         frame = diFFit1DFrame()
-        #frame = Viewer1DXRD(None)
+        #frame = Viewer1DXRD()
         frame.Show()
         self.SetTopWindow(frame)
 
