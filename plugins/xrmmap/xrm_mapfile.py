@@ -333,7 +333,7 @@ class GSEXRM_MapRow:
             if self.npts - xrddat.shape[0] == 0:
                 self.xrd2d     = xrddat
             else:
-                print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+                # print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
 
@@ -343,7 +343,7 @@ class GSEXRM_MapRow:
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
 
-        print("READ ROW Npts  ", gnpts, snpts, xnpts)
+        #print("READ ROW Npts  ", gnpts, snpts, xnpts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
