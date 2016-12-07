@@ -248,6 +248,7 @@ class InputText:
             else:
                 self.curtext = "%s\n%s" % (self.curtext, txt)
 
+            blk_start = False
             if is_complete(self.curtext) and len(self.curtext)>0:
                 blk_start =  block_start(self.curtext)
                 if blk_start:
@@ -268,7 +269,7 @@ class InputText:
 
                 key = get_key(self.curtext)
                 ilevel = len(self.blocks)
-                if ilevel > 0 and (key == _delim or
+                if ilevel > 0 and (blk_start or
                                    key in BLOCK_FRIENDS[_delim]):
                     ilevel = ilevel - 1
 
