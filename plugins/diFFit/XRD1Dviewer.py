@@ -688,28 +688,6 @@ class Fitting1DXRD(wx.Panel):
     def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
-#     def checkXaxis(self, event):
-#         
-#         if self.ch_xaxis.GetSelection() == 2:
-#             for plt_no in range(len(self.plotted_data)):
-#                 self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
-#         elif self.ch_xaxis.GetSelection() == 1:
-#             for plt_no in range(len(self.plotted_data)):
-#                 self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
-#         else:
-#             for plt_no in range(len(self.plotted_data)):
-#                 self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
-# 
-#         if self.ch_xaxis.GetSelection() == 2:
-#             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-#         elif self.ch_xaxis.GetSelection() == 1:
-#             self.xlabel = 'd ($\AA$)'
-#         else:
-#             self.xlabel = 'q (1/$\AA$)'
-#          
-#         self.plot1D.set_xlabel(self.xlabel)
-#         self.updatePLOT()
-
     def updatePLOT(self):
 
         xmax,xmin,ymax,ymin = None,0,None,0
@@ -1259,7 +1237,7 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_data.GetSelection()
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
-    def checkXaxis(self, event):
+    def checkXaxis(self,event=None):
         
         if self.ch_xaxis.GetSelection() == 2:
             for plt_no in range(len(self.plotted_data)):
