@@ -30,26 +30,51 @@ def iso8601_time(ts):
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
-def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
+def read_ascii(fname, labels=None, simple_labels=False, sort=False,
+               sort_column=0, _larch=None):
     """read a column ascii column file, returning a group containing the data from the file.
 
-    read_ascii(filename, labels=None, sort=False, sort_column=0)
+    read_ascii(filename, labels=None, simple_labels=False, sort=False, sort_column=0)
 
-    If the header is one of the forms of
-        KEY : VAL
-        KEY = VAL
-    these will be parsed into a 'attrs' dictionary in the returned group.
+    Arguments
+    ---------
+     fname (str)           name of file to read
+     labels (list or None) list of labels to use for column labels [None]
+     simple_labels (bool)  whether to force simple column labels (note 1) [False]
+     sort (bool)           whether to sort row data (note 2) [False]
+     sort_column (int)     column to use for sorting (note 2) [0]
 
-    If labels is left the default value of None, column labels will be tried to
-    be created from the line immediately preceeding the data, or using 'col1', 'col2',
-    etc if column labels cannot be figured out.   The labels will be used to create
-    1-d arrays for each column
+    Returns
+    --------
+      group containing data read from file
 
-    The group will have a 'data' component containing the 2-dimensional data, it will also
-    have a 'header' component containing the text of the header -- an array of lines.
-    If a footer (text after the block of numerical data) is in the file, the array of
-    lines for this text will be put in the 'footer' component.
+    Notes
+    -----
+      1. column labels.  If `labels` is left the default value of `None`,
+         column labels will be tried to be created from the line
+         immediately preceeding the data, or using 'col1', 'col2', etc if
+         column labels cannot be figured out.  The labels will be used as
+         names for the 1-d arrays for each column.  If `simple_labels` is
+         `True`, the names 'col1', 'col2' etc will be used regardless of
+         the column labels found in the file.
 
+      2. sorting.  Data can be sorted to be in increasing order of any column,
+         by giving the column index (starting from 0).
+
+      3. header parsing. If header lineas are of the forms of
+            KEY : VAL
+            KEY = VAL
+         these will be parsed into a 'attrs' dictionary in the returned group.
+
+
+    The returned group will have a number of members:
+
+       GROUP.filename: text name of the file
+       GROUP.column_labels: column labels, names of 1-D arrays
+       GROUP.data:     2-dimensional data (ncolumns, nrows)
+       GROUP.header:   array of text lines of the header.
+       GROUP.footer:   array of text lines of the footer (text after the block of numerical data)
+       GROUP.attrs :   group of attributes parsed from header lines
     """
     if not os.path.isfile(fname):
         raise OSError("File not found: '%s'" % fname)
@@ -87,6 +112,8 @@ def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
                 ncol = len(rowdat)
             if ncol == len(rowdat):
                 data.append(rowdat)
+    if simple_labels:
+        _labelline = None
 
     # reverse header, footer, data, convert to arrays
     footers.reverse()
