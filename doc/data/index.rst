@@ -54,6 +54,7 @@ This file and others like it can be read with the builtin
    :type  commentchar:  string
    :param labels:  string to split for column labels
    :type labels:  string, ``None``, or ``False``
+   :type ilabels: boolean, column labels 'col1', 'col2', etc if True
 
     The commentchar argument (#;% by default) sets the valid comment characters:
     if the first character in a line matches one of these, the line is marked
@@ -74,6 +75,9 @@ This file and others like it can be read with the builtin
 
     If labels is ``False``, the group will have a *data* variable contain
     the 2-dimensional data.
+
+    If ilabels is ``True``, the column labels will be 'col1', 'col2', etc, regardless
+    of the column labels in the data file.
 
 Some examples of :func:`read_ascii`::
 

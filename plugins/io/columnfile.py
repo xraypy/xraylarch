@@ -30,10 +30,10 @@ def iso8601_time(ts):
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
-def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
+def read_ascii(fname, labels=None, sort=False, ilabels=False, sort_column=0, _larch=None):
     """read a column ascii column file, returning a group containing the data from the file.
 
-    read_ascii(filename, labels=None, sort=False, sort_column=0)
+    read_ascii(filename, labels=None, sort=False, ilabels=False, sort_column=0)
 
     If the header is one of the forms of
         KEY : VAL
@@ -43,7 +43,8 @@ def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     If labels is left the default value of None, column labels will be tried to
     be created from the line immediately preceeding the data, or using 'col1', 'col2',
     etc if column labels cannot be figured out.   The labels will be used to create
-    1-d arrays for each column
+    1-d arrays for each column.  If ilabels is True, the names 'col1', 'col2' etc will
+    be used regardless of the column labels found in the file.
 
     The group will have a 'data' component containing the 2-dimensional data, it will also
     have a 'header' component containing the text of the header -- an array of lines.
@@ -87,6 +88,8 @@ def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
                 ncol = len(rowdat)
             if ncol == len(rowdat):
                 data.append(rowdat)
+    if ilabels:
+        _labelline = None
 
     # reverse header, footer, data, convert to arrays
     footers.reverse()
