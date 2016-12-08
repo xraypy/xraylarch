@@ -150,7 +150,7 @@ class diFFit1DFrame(wx.Frame):
         if len(indicies) > 0:
             
             self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
-            self.all_data = [[self.xrd1Dviewer.xy_data[2*i],self.xrd1Dviewer.xy_data[2*i+1]] for i in indicies]
+            self.all_data = [[self.xrd1Dviewer.xy_data[i]] for i in indicies]
             
             dlg = SelectFittingData(self.list,self.all_data)
 
@@ -171,11 +171,13 @@ class diFFit1DFrame(wx.Frame):
         if index >= len(indicies):
             ## Add to data array lists
             self.xrd1Dviewer.data_name.append(name)
-            self.xrd1Dviewer.xy_scale.append(max(data[1]))
-            self.xrd1Dviewer.xy_data.extend(data)
+            self.xrd1Dviewer.xy_scale.append(np.max(data[1]))
+#             self.xrd1Dviewer.xy_data.extend(data)
+            self.xrd1Dviewer.xy_data.append([data])
 
             ## redefine x,y based on scales
-            self.xrd1Dviewer.xy_plot.extend(data)
+#             self.xrd1Dviewer.xy_plot.extend(data)
+            self.xrd1Dviewer.xy_plot.append([data])
        
             ## Add to plot       
             self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(*data,label=name,show_legend=True))
@@ -183,10 +185,6 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
 
-        
-        ## will clear everything on plot
-        ## provide warning message?
-        ## mkak 2016.12.02
         adddata = True
         if self.xrd1Dfitting.raw_data is not None:
             question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.name,name)
@@ -194,14 +192,12 @@ class diFFit1DFrame(wx.Frame):
         
         if adddata:
 
-            self.xrd1Dfitting.raw_data = data
-            self.xrd1Dfitting.plt_data = data
+            self.xrd1Dfitting.raw_data = data[0]
+            self.xrd1Dfitting.plt_data = data[0]
             self.xrd1Dfitting.xmin     = data[0][0]
             self.xrd1Dfitting.xmax     = data[0][-1]
         
-            ## set text boxes to these values (min, max)
-        
-            self.xrd1Dfitting.plot1D.plot(*data, title=name,
+            self.xrd1Dfitting.plot1D.plot(*data[0], title=name,
                                           color='blue', label='Raw data',
                                           show_legend=True)
 
@@ -741,14 +737,14 @@ class Fitting1DXRD(wx.Panel):
                 x = self.xy_plot[i]
                 y = self.xy_plot[j]
                 
-                if xmax is None or xmax < max(x):
-                    xmax = max(x)
-                if xmin > min(x):
-                    xmin = min(x)
-                if ymax is None or ymax < max(y):
-                    ymax = max(y)
-                if ymin > min(y):
-                    ymin = min(y)
+                if xmax is None or xmax < np.max(x):
+                    xmax = np.max(x)
+                if xmin > np.min(x):
+                    xmin = np.min(x)
+                if ymax is None or ymax < np.max(y):
+                    ymax = np.max(y)
+                if ymin > np.min(y):
+                    ymin = np.min(y)
                 
                 self.plot1D.update_line(plt_no,x,y)
             
@@ -770,7 +766,7 @@ class Fitting1DXRD(wx.Panel):
         self.unzoom_all()
         
         self.updatePLOT()
-        self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+        self.xy_scale[plt_no] = np.max(self.xy_data[(plt_no*2+1)])
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
 ####### BEGIN #######            
@@ -795,8 +791,8 @@ class Fitting1DXRD(wx.Panel):
 
         xmin,xmax = self.abs_limits()
         xrange = x2-x1
-        x1 = max(xmin,x1)
-        x2 = min(xmax,x2)
+        x1 = np.max(xmin,x1)
+        x2 = np.min(xmax,x2)
 
         if pan:
             if x2 == xmax:
@@ -811,7 +807,7 @@ class Fitting1DXRD(wx.Panel):
 
     def abs_limits(self):
         if len(self.data_name) > 0:
-            xmin, xmax = self.xy_plot[0].min(), self.xy_plot[0].max()
+            xmin, xmax = np.min(self.xy_plot[0][0]), np.max(self.xy_plot[0][0])
    
         return xmin,xmax
 #######  END  #######
@@ -961,8 +957,8 @@ class Viewer1DXRD(wx.Panel):
 
         ## Default information
         self.data_name    = []
-        self.xy_data      = []
-        self.xy_plot      = []
+        self.xy_data      = None #[]
+        self.xy_plot      = None #[]
         self.plotted_data = []
         self.xy_scale     = []
         self.wavelength   = None
@@ -975,7 +971,6 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_cif  = []
         
         self.x_for_zoom = None
-
 
         self.Panel1DViewer()
 
@@ -1196,12 +1191,19 @@ class Viewer1DXRD(wx.Panel):
 
         ## Add to data array lists
         self.data_name.append(name)
-        self.xy_scale.append(max(y))
-        self.xy_data.extend([x,y])
-
+        self.xy_scale.append(np.max(y))
+#         self.xy_data.extend([x,y])
+        if self.xy_data is None:
+            self.xy_data = [[x,y]]
+        else:
+            self.xy_data.append([[x],[y]])
+        
         ## redefine x,y based on scales
-        self.xy_plot.extend([x,y])
-       
+#         self.xy_plot.extend([x,y])
+        if self.xy_plot is None:
+            self.xy_plot = [[x,y]]
+        else:
+            self.xy_plot.append([[x],[y]])
         ## Add to plot       
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))#,xlabel=self.xlabel))
 
@@ -1240,13 +1242,13 @@ class Viewer1DXRD(wx.Panel):
     def normalize1Ddata(self,event=None):
     
         plt_no = self.ch_data.GetSelection()
+        y = self.xy_data[plt_no][1]
+        
         self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
         if self.xy_scale[plt_no] <= 0:
-            self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+            self.xy_scale[plt_no] = np.max(y)
             self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-
-        y = self.xy_data[(plt_no*2+1)]
-        self.xy_plot[(plt_no*2+1)] = y/np.max(y) * self.xy_scale[plt_no]
+        self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.updatePLOT()
         
@@ -1281,13 +1283,13 @@ class Viewer1DXRD(wx.Panel):
         
         if self.ch_xaxis.GetSelection() == 2:
             for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = calc_q_to_2th(self.xy_data[plt_no*2],self.wavelength)
+                self.xy_plot[plt_no][0] = calc_q_to_2th(np.array(self.xy_data[plt_no][0]),self.wavelength)
         elif self.ch_xaxis.GetSelection() == 1:
             for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = calc_q_to_d(self.xy_data[plt_no*2])
+                self.xy_plot[plt_no][0] = calc_q_to_d(np.array(self.xy_data[plt_no][0]))
         else:
             for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no*2] = self.xy_data[plt_no*2]
+                self.xy_plot[plt_no][0] = np.array(self.xy_data[plt_no][0])
 
         if self.ch_xaxis.GetSelection() == 2:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
@@ -1299,49 +1301,48 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.set_xlabel(self.xlabel)
         self.updatePLOT()
 
+
     def updatePLOT(self):
 
         xmax,xmin,ymax,ymin = None,0,None,0
-    
+
         if len(self.plotted_data) > 0:
             for plt_no in range(len(self.plotted_data)):
 
-                i = plt_no*2
-                j = i+1
- 
-                x = self.xy_plot[i]
-                y = self.xy_plot[j]
-                
-                if xmax is None or xmax < max(x):
-                    xmax = max(x)
-                if xmin > min(x):
-                    xmin = min(x)
-                if ymax is None or ymax < max(y):
-                    ymax = max(y)
-                if ymin > min(y):
-                    ymin = min(y)
-                
+                x = np.array(self.xy_plot[plt_no][0])
+                y = np.array(self.xy_plot[plt_no][1])
+
+                if xmax is None or xmax < np.max(x):
+                    xmax = np.max(x)
+                if xmin > np.min(x):
+                    xmin = np.min(x)
+                if ymax is None or ymax < np.max(y):
+                    ymax = np.max(y)
+                if ymin > np.min(y):
+                    ymin = np.min(y)
+
                 self.plot1D.update_line(plt_no,x,y)
-            
+
             self.unzoom_all()
             self.plot1D.canvas.draw()
-            
+
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
+
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
     def reset1Dscale(self,event=None):
 
         plt_no = self.ch_data.GetSelection()        
        
-        self.xy_plot[(plt_no*2+1)] = self.xy_data[(plt_no*2+1)]
-        self.plot1D.update_line(plt_no,self.xy_plot[(plt_no*2)],
-                                       self.xy_plot[(plt_no*2+1)])
+        self.xy_plot[plt_no][1] = self.xy_data[plt_no][1]
+        self.plot1D.update_line(plt_no,self.xy_plot[plt_no][0],
+                                       self.xy_plot[plt_no][1])
         self.plot1D.canvas.draw()
         self.unzoom_all()
         
         self.updatePLOT()
-        self.xy_scale[plt_no] = max(self.xy_data[(plt_no*2+1)])
+        self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
 ####### BEGIN #######            
@@ -1350,16 +1351,18 @@ class Viewer1DXRD(wx.Panel):
     def unzoom_all(self, event=None):
 
         xmid, xrange, xmin, xmax = self._get1Dlims()
-
         self._set_xview(xmin, xmax)
         self.xview_range = None
 
     def _get1Dlims(self):
         xmin, xmax = self.plot1D.axes.get_xlim()
+
         xrange = xmax-xmin
         xmid   = (xmax+xmin)/2.0
+
         if self.x_for_zoom is not None:
             xmid = self.x_for_zoom
+
         return (xmid, xrange, xmin, xmax)
 
     def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
@@ -1368,7 +1371,6 @@ class Viewer1DXRD(wx.Panel):
         xrange = x2-x1
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
-
         if pan:
             if x2 == xmax:
                 x1 = x2-xrange
@@ -1382,7 +1384,7 @@ class Viewer1DXRD(wx.Panel):
 
     def abs_limits(self):
         if len(self.data_name) > 0:
-            xmin, xmax = self.xy_plot[0].min(), self.xy_plot[0].max()
+            xmin, xmax = np.min(self.xy_plot[0][0]), np.max(self.xy_plot[0][0])
    
         return xmin,xmax
 #######  END  #######
