@@ -214,8 +214,53 @@ class MapMathPanel(scrolled.ScrolledPanel):
             sizer.Add(vshape,                       (ir, 1), (1, 1), ALL_LEFT, 2)
             sizer.Add(vrange,                       (ir, 2), (1, 3), ALL_LEFT, 2)
 
+        ir += 1
+        sizer.Add(HLine(self, size=(350, 4)), (ir, 0), (1, 5), ALL_LEFT, 2)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Work Arrays: '), (ir, 0), (1, 1), ALL_LEFT, 2)
+
+        self.workarray_choice = Choice(self, choices=[], size=(200, -1), 
+                                       action=self.onSelectArray)
+        btn_delete  = Button(self, 'Delete Array',  size=( 90, -1), 
+                              action=self.onDeleteArray)
+        self.info1   = wx.StaticText(self, -1, '',  size=(250, -1))
+        self.info2   = wx.StaticText(self, -1, '',  size=(250, -1))
+
+
+        sizer.Add(self.workarray_choice, (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(btn_delete, (ir, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.info1, (ir+1, 0), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.info2, (ir+2, 0), (3, 3), ALL_LEFT, 2)
+
         pack(self, sizer)
         self.SetupScrolling()
+    
+    def onSelectArray(self, evt=None):
+        xrmfile = self.owner.current_file
+        name = self.workarray_choice.GetStringSelection()
+        dset = xrmfile.get_work_array(h5str(name))        
+        expr = dset.attrs.get('expression', '<unknonwn>')
+        self.info1.SetLabel("Expression: %s" % expr)
+
+        info = json.loads(dset.attrs.get('info', []))
+        buff = []
+        for var, dat in info:
+            fname, aname, det, dtc = dat
+            if dat[1] != '1':
+                buff.append("%s= %s('%s', det=%s, dtcorr=%s)" % (var, fname, aname, det, dtc))
+        self.info2.SetLabel('\n'.join(buff))
+                        
+    def onDeleteArray(self, evt=None):
+        name = self.workarray_choice.GetStringSelection()
+        xrmfile = self.owner.current_file
+
+        if (wx.ID_YES == Popup(self.owner, """Delete Array '%s' for %s?
+    WARNING: This cannot be undone
+    """ % (name, xrmfile.filename),
+                               'Delete Array?', style=wx.YES_NO)):
+                xrmfile.del_work_array(h5str(name))
+                self.update_xrmmap(xrmfile)                
 
     def onSaveArray(self, evt=None):
         name = self.name_in.GetValue()
@@ -253,12 +298,15 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dtcorr  = self.varcor[varname].IsChecked()
         det =  None
         if dname != 'sum':  det = int(dname)
-        map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
+        map = self.owner.filemap[fname].get_roimap(roiname, det=det, 
+                                                   no_hotcols=False,
+                                                   dtcorrect=dtcorr)
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmmap):
         self.set_roi_choices(xrmmap)
+        self.set_workarray_choices(xrmmap)
 
     def set_roi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name'])
@@ -266,6 +314,14 @@ class MapMathPanel(scrolled.ScrolledPanel):
             rois.extend(list(xrmmap['work'].keys()))
         for wid in self.varroi.values():
             wid.SetChoices(rois)
+
+    def set_workarray_choices(self, xrmmap):
+        c = self.workarray_choice
+        c.Clear()
+        choices = [a for a in xrmmap['work']]
+        c.AppendItems(choices)
+        c.SetSelection(len(choices)-1)
+
 
     def set_file_choices(self, fnames):
         for wid in self.varfile.values():
@@ -294,8 +350,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if roiname == '1':
                 self.map = 1
             else:
-                self.map = filemap[fname].get_roimap(roiname,
-                                                     det=det,
+                self.map = filemap[fname].get_roimap(roiname, det=det,
+                                                     no_hotcols=False,
                                                      dtcorrect=dtcorr)
 
             _larch.symtable.set_symbol(str(varname), self.map)
@@ -303,7 +359,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 main_file = filemap[fname]
 
         self.map = _larch.eval(expr_in)
-        info  = 'Intensity: [%g, %g]' %(self.map.min(), self.map.max())
+        omap = self.map[:, 1:-1]
+        info  = 'Intensity: [%g, %g]' %(omap.min(), omap.max())
         title = '%se: %s' % (fname, expr_in)
         subtitles = None
         try:
@@ -320,7 +377,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
 
-        self.owner.display_map(self.map, title=title, subtitles=subtitles,
+        self.owner.display_map(omap, title=title, subtitles=subtitles,
                                info=info, x=x, y=y,
                                det=None, xrmfile=main_file)
 
@@ -624,7 +681,8 @@ class TriColorMapPanel(GridPanel):
         # print( 'I0 map : ', i0map.min(), i0map.max(), i0map.mean())
 
         pref, fname = os.path.split(datafile.filename)
-        title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
+        # title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
+        title = fname
         subtitles = {'red': 'Red: %s' % r,
                      'green': 'Green: %s' % g,
                      'blue': 'Blue: %s' % b}
