@@ -90,7 +90,6 @@ class MapImageFrame(ImageFrame):
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
 
-
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
             return
@@ -98,7 +97,6 @@ class MapImageFrame(ImageFrame):
             xmax, ymax  = event.x, event.y
         except:
             return
-
         xmin, ymin, xd, yd = self.zoom_ini
         if event.xdata is not None:
             self.lastpoint[0] = event.xdata
@@ -116,7 +114,6 @@ class MapImageFrame(ImageFrame):
         if not is_wxPhoenix:
             zdc.BeginDrawing()
 
-
         # erase previous box
         if self.rbbox is not None:
             zdc.DrawLine(*self.rbbox)
@@ -127,13 +124,12 @@ class MapImageFrame(ImageFrame):
 
     def prof_leftdown(self, event=None):
         self.report_leftdown(event=event)
-        if event.inaxes and len(self.map.shape) == 2:
+        if event.inaxes: #  and len(self.map.shape) == 2:
             self.lastpoint = [None, None]
             self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
 
     def prof_leftup(self, event=None):
-        if len(self.map.shape) != 2:
-            return
+        # print("Profile Left up ", self.map.shape, self.rbbox)
         if self.rbbox is not None:
             zdc = wx.ClientDC(self.panel.canvas)
             zdc.SetLogicalFunction(wx.XOR)
@@ -145,7 +141,6 @@ class MapImageFrame(ImageFrame):
             zdc.DrawLine(*self.rbbox)
             if not is_wxPhoenix:
                 zdc.EndDrawing()
-
             self.rbbox = None
 
         if self.zoom_ini is None or self.lastpoint[0] is None:
@@ -163,7 +158,6 @@ class MapImageFrame(ImageFrame):
             return
 
         outdat = []
-
         if dy > dx:
             _y0 = min(int(y0), int(y1+0.5))
             _y1 = max(int(y0), int(y1+0.5))
@@ -181,7 +175,7 @@ class MapImageFrame(ImageFrame):
         for ix, iy in outdat:
             x.append(ix)
             y.append(iy)
-            z.append(self.panel.conf.data[iy,ix])
+            z.append(self.panel.conf.data[iy, ix])
         self.prof_dat = dy>dx, outdat
 
         if self.prof_plotter is not None:
@@ -198,22 +192,42 @@ class MapImageFrame(ImageFrame):
 
         xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
 
+        x = np.array(x)
+        y = np.array(y)
+        z = np.array(z)
         if dy > dx:
             x, y = y, x
             xlabel, y2label = y2label, xlabel
-        self.prof_plotter.panel.clear() # reset_config()
+        self.prof_plotter.panel.clear() 
 
         if len(self.title) < 1:
             self.title = os.path.split(self.xrmfile.filename)[1]
 
         opts = dict(linewidth=2, marker='+', markersize=3,
                     show_legend=True, xlabel=xlabel)
-        self.prof_plotter.plot(x, z, title=self.title, color='blue',
-                               zorder=20, xmin=min(x)-3, xmax=max(x)+3,
-                               ylabel='counts', label='counts', **opts)
+
+        if isinstance(z[0], np.ndarray) and len(z[0]) == 3: # color plot
+            rlab = self.subtitles['red']
+            glab = self.subtitles['green']
+            blab = self.subtitles['blue']
+            self.prof_plotter.plot(x, z[:, 0], title=self.title, color='red',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=rlab, **opts)
+            self.prof_plotter.oplot(x, z[:, 1], title=self.title, color='darkgreen',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=glab, **opts)
+            self.prof_plotter.oplot(x, z[:, 2], title=self.title, color='blue',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=blab, **opts)
+
+        else:
+            
+            self.prof_plotter.plot(x, z, title=self.title, color='blue',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label='counts', **opts)
 
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
-                              zorder=3, side='right', color='#771111', **opts)
+                              zorder=3, side='right', color='black', **opts)
 
         self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
@@ -259,7 +273,6 @@ class MapImageFrame(ImageFrame):
             elif 2 == event.GetInt():
                 self.panel.cursor_mode = 'prof'
 
-
     def report_leftdown(self, event=None):
         if event is None:
             return
@@ -277,7 +290,6 @@ class MapImageFrame(ImageFrame):
             iy >= 0 and iy < conf.data.shape[0]):
             pos = ''
             pan = self.panel
-            # print( 'has xdata? ', pan.xdata is not None, pan.ydata is not None)
             labs, vals = [], []
             if pan.xdata is not None:
                 labs.append(pan.xlab)
@@ -339,17 +351,18 @@ class MapImageFrame(ImageFrame):
             sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
             # sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
 
-        if self.move_callback is not None:
-            mbutton = Button(panel, 'Move to Position', size=(100, -1),
-                                 action=self.onMoveToPixel)
-            irow  = irow + 2
-            sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
+        # if self.move_callback is not None:
+            # mbutton = Button(panel, 'Move to Position', size=(100, -1),
+            #                 action=self.onMoveToPixel)
+            # irow  = irow + 2
+            # sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
 
     def onMoveToPixel(self, event=None):
-        if self.this_point is not None and self.move_callback is not None:
-            p1 = float(self.panel.xdata[self.this_point[0]])
-            p2 = float(self.panel.ydata[self.this_point[1]])
-            self.move_callback(p1, p2)
+        pass
+        # if self.this_point is not None and self.move_callback is not None:
+        #    p1 = float(self.panel.xdata[self.this_point[0]])
+        #    p2 = float(self.panel.ydata[self.this_point[1]])
+        #    self.move_callback(p1, p2)
 
     def onSavePixel(self, event=None):
         if self.this_point is not None and self.save_callback is not None:
