@@ -90,7 +90,7 @@ class Viewer2DXRD(wx.Frame):
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
-    def loadIMAGE(self,event):
+    def loadIMAGE(self,event=None):
     
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
@@ -127,7 +127,7 @@ class Viewer2DXRD(wx.Frame):
         self.calcIMAGE()
         
         self.plot2D.display(self.plt_img)       
-        self.autoContrast(None)        
+        self.autoContrast()        
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
                          (np.min(self.plt_img),np.max(self.plt_img))) 
@@ -140,7 +140,7 @@ class Viewer2DXRD(wx.Frame):
         
         self.plot2D.redraw()
 
-    def selectIMAGE(self,event):
+    def selectIMAGE(self,event=None):
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.data_images[img_no]
         self.displayIMAGE()
@@ -215,16 +215,16 @@ class Viewer2DXRD(wx.Frame):
         self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2D.display(self.plt_img)
 
-    def setCOLOR(self,event):
+    def setCOLOR(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
             self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
             self.colorIMAGE()
 
-    def setFLIP(self,event):
+    def setFLIP(self,event=None):
         self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
         self.redrawIMAGE()
                
-    def setZSCALE(self,event):
+    def setZSCALE(self,event=None):
         if self.ch_scl.GetSelection() == 1: ## log
             self.plot2D.conf.log_scale = True
         else:  ## linear
@@ -234,14 +234,14 @@ class Viewer2DXRD(wx.Frame):
 
 ##############################################
 #### BACKGROUND FUNCTIONS
-    def onBkgdScale(self,event):
+    def onBkgdScale(self,event=None):
         
         self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
         self.entr_scale.SetValue(str(self.bkgd_scale))
         
         self.redrawIMAGE()        
         
-    def onChangeBkgdScale(self,event):
+    def onChangeBkgdScale(self,event=None):
 
         self.bkgd_scale = float(self.entr_scale.GetValue())
         self.bkgdMAX = (float(self.entr_scale.GetValue()) * 2) / SLIDER_SCALE
@@ -256,7 +256,7 @@ class Viewer2DXRD(wx.Frame):
         
 ##############################################
 #### IMAGE CONTRAST FUNCTIONS
-    def autoContrast(self,event):
+    def autoContrast(self,event=None):
 
         self.minINT = int(np.min(self.plt_img))
         self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
@@ -274,7 +274,7 @@ class Viewer2DXRD(wx.Frame):
             self.maxCURRENT = self.maxINT
         self.setContrast()    
 
-    def onContrastRange(self,event):
+    def onContrastRange(self,event=None):
     
         newMIN = int(self.entr_min.GetValue())
         newMAX = int(self.entr_max.GetValue())
@@ -288,7 +288,7 @@ class Viewer2DXRD(wx.Frame):
         self.setContrast()
             
 
-    def onSlider(self,event):
+    def onSlider(self,event=None):
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
@@ -314,7 +314,7 @@ class Viewer2DXRD(wx.Frame):
 ##############################################
 #### XRD MANIPULATION FUNTIONS 
 
-    def saveIMAGE(self,event):
+    def saveIMAGE(self,event=None):
         wildcards = 'XRD image (*.tiff)|*.tiff|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save image as...',
                            defaultDir=os.getcwd(),
@@ -331,7 +331,7 @@ class Viewer2DXRD(wx.Frame):
             
             tifffile.imsave(path,self.plt_img)
 
-    def on1DXRD(self,event):
+    def on1DXRD(self,event=None):
         
         myDlg = Calc1DPopup(self.plt_img,self.ai)
         
@@ -364,19 +364,34 @@ class Viewer2DXRD(wx.Frame):
                 dlg.Destroy()
 
             data1D = integrate_xrd(self.plt_img,**attrs)
+            
             if plot:
-                if self.xrddisplay1D is None:
-                    self.xrddisplay1D = diFFit1DFrame()
-                self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
-                self.xrddisplay1D.Show()
+#                 if self.xrddisplay1D is None:
+#                     self.xrddisplay1D = diFFit1DFrame()
+#                 self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
+#                 self.xrddisplay1D.Show()
+
+                try:
+                    if self.xrddisplay1D == None:
+                        self.xrddisplay1D = diFFit1DFrame()
+                    self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
+                    self.xrddisplay1D.Show()
+                except: #wxPyDeadObjectError:
+                    print 'Need to reset window creation here. Not sure how.'
+#                     #del self.xrddisplay1D
+#                     #clear_mappers()
+#                     self.xrddisplay1D = diFFit1DFrame()
+#                     self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
+#                     self.xrddisplay1D.Show()
+
             
 ##############################################
 #### CALIBRATION FUNCTIONS
-    def Calibrate(self,event):
+    def Calibrate(self,event=None):
 
         CalibrationPopup(self)
 
-    def openPONI(self,event):
+    def openPONI(self,event=None):
              
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
@@ -393,7 +408,7 @@ class Viewer2DXRD(wx.Frame):
             try:
                 self.ai = pyFAI.load(path)
                 print('Loading calibration file: %s' % path)
-                #self.showPONI(None)
+                #self.showPONI()
                 self.btn_integ.Enable()
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
@@ -401,10 +416,10 @@ class Viewer2DXRD(wx.Frame):
     def setPONI(self,ai):
 
         self.ai = ai
-        #self.showPONI(None)
+        #self.showPONI()
         self.btn_integ.Enable()
     
-    def showPONI(self,event):
+    def showPONI(self,event=None):
         if self.ai is None:
             print(' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx ')
         else:
@@ -436,11 +451,11 @@ class Viewer2DXRD(wx.Frame):
 
 ##############################################
 #### BACKGROUND FUNCTIONS
-    def clearBkgd(self,event):
+    def clearBkgd(self,event=None):
         self.bkgd = np.zeros(np.shape(self.raw_img))
         self.checkIMAGE()
 
-    def openBkgd(self,event):
+    def openBkgd(self,event=None):
     
         wildcards = 'XRD background image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD background image',
@@ -459,7 +474,7 @@ class Viewer2DXRD(wx.Frame):
 
 ##############################################
 #### MASK FUNCTIONS
-    def openMask(self,event):
+    def openMask(self,event=None):
 
         wildcards = 'pyFAI mask file (*.edf)|*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI mask file',
@@ -481,16 +496,16 @@ class Viewer2DXRD(wx.Frame):
         self.ch_msk.SetValue(True)
         self.applyMask(event=True)
 
-    def createMask(self,event):
+    def createMask(self,event=None):
         
         MaskToolsPopup(self)
         print('Popup to create mask!')
 
-    def clearMask(self,event):
+    def clearMask(self,event=None):
         self.msk_img = np.zeros(np.shape(self.raw_img))
         self.checkIMAGE()
 
-    def applyMask(self,event):
+    def applyMask(self,event=None):
                     
         self.use_mask = self.ch_msk.GetValue()
         self.redrawIMAGE() 
@@ -778,6 +793,7 @@ class diFFit2D(wx.App):
 
     def createApp(self):
         frame = Viewer2DXRD()
+        # frame.loadIMAGE()
         frame.Show()
         self.SetTopWindow(frame)
 
