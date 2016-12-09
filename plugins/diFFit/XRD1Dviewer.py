@@ -627,7 +627,9 @@ class Fitting1DXRD(wx.Panel):
 
         try:
             ## this creates self.bgr and self.bgr_info
-            xrd_background(*self.raw_data, group=self, exponent=self.exponent, 
+#             xrd_background(*self.raw_data, group=self, exponent=self.exponent, 
+#                            compress=self.compress, width=self.width)
+            xrd_background(*self.plt_data, group=self, exponent=self.exponent, 
                            compress=self.compress, width=self.width)
         except:
             return
@@ -636,7 +638,8 @@ class Fitting1DXRD(wx.Panel):
         self.btn_rbkgd.Enable()
         
         cmprsz = np.shape(self.bgr)[0]
-        xaxis = self.raw_data[0]
+#         xaxis = self.raw_data[0]
+        xaxis = self.plt_data[0]
         self.plot1D.oplot(xaxis[0:cmprsz],self.bgr,color='red',
                           label='Fit background',show_legend=True)
 
@@ -661,15 +664,28 @@ class Fitting1DXRD(wx.Panel):
     
         myDlg = BackgroundOptions(self)#parent=self)
         
-        read, save, plot = False, False, False
+        trim = False
         if myDlg.ShowModal() == wx.ID_OK:
-            read = True
-            self.xmin     = float(myDlg.val_xmin.GetValue())
-            self.xmax     = float(myDlg.val_xmax.GetValue())
+            if (float(myDlg.val_xmin.GetValue())-self.xmin) > 0.05:
+                 self.xmin     = float(myDlg.val_xmin.GetValue())
+                 trim = True
+            if (self.xmax - float(myDlg.val_xmax.GetValue())) > 0.05:
+                 self.xmax     = float(myDlg.val_xmax.GetValue())
+                 trim = True
+#             self.xmin     = float(myDlg.val_xmin.GetValue())
+#             self.xmax     = float(myDlg.val_xmax.GetValue())
             self.exponent = int(myDlg.val_exp.GetValue())
             self.compress = int(myDlg.val_comp.GetValue())
             self.width    = int(myDlg.val_wid.GetValue())
         myDlg.Destroy()
+        
+        if trim:
+#            print 'trim!'
+            indicies = [i for i,value in enumerate(self.plt_data[0]) if value>=self.xmin and value<=self.xmax]
+            if len(indicies) > 0:
+                x = [self.plt_data[0][i] for i in indicies]
+                y = [self.plt_data[1][i] for i in indicies]
+                self.plt_data = [x,y]
         
         self.fit_background()
 
@@ -860,7 +876,7 @@ class BackgroundOptions(wx.Dialog):
         ## X-Range
         xsizer = wx.BoxSizer(wx.VERTICAL)
         
-        ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
+        ttl_xrange = wx.StaticText(self.panel, label='Q-RANGE (1/A)')
 
         xminsizer = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xmin = wx.StaticText(self.panel, label='minimum')
