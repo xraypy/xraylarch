@@ -29,6 +29,8 @@ from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
 # from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
+from functools import partial
+
 import matplotlib.pyplot as plt
 
 HAS_pyFAI = False
@@ -1169,7 +1171,7 @@ class Viewer1DXRD(wx.Panel):
         ## DATA CHOICE
 
         self.ch_cif = wx.Choice(self,choices=self.cif_name)
-        self.ch_cif.Bind(wx.EVT_CHOICE,   self.onSELECT)
+        self.ch_cif.Bind(wx.EVT_CHOICE,   self.selectCIF)
         vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
 
         ###########################
@@ -1293,10 +1295,13 @@ class Viewer1DXRD(wx.Panel):
             name = 'cif %i' % plt_no
         else:
             name = 'cif: %s' % name
+            
+        cifscale = 1000
+        y = y/np.max(y)*cifscale
 
         ## Add 'raw' data to array
         self.cif_name.append(name)
-        self.cif_scale.append(np.max(y))
+        self.cif_scale.append(cifscale)
         if self.cif_data is None:
             self.cif_data = [[x,y]]
         else:
@@ -1318,11 +1323,9 @@ class Viewer1DXRD(wx.Panel):
         self.ch_cif.SetStringSelection(name)
         
         ## Update toolbox panel, scale all cif to 1000
-        self.entr_cifscale.SetValue('1000')
-        self.normalize1Ddata()
-
+        self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
        
-    def add1Ddata(self,x,y,name=None,cif=False,wavelength=None):
+    def add1Ddata(self,x,y,name=None,cif=False):
         
         plt_no = len(self.data_name)
         
@@ -1336,9 +1339,6 @@ class Viewer1DXRD(wx.Panel):
                 name = 'dataset %i' % plt_no
             else:
                 name = 'data: %s' % name
-                
-        if wavelength is not None:
-            self.addLAMBDA(wavelength)
 
         ## Add 'raw' data to array
         self.data_name.append(name)
@@ -1392,13 +1392,13 @@ class Viewer1DXRD(wx.Panel):
     
         if cif:
             plt_no = self.ch_cif.GetSelection()
-            y = self.xy_cif[plt_no][1]
+            y = self.cif_data[plt_no][1]
         
             self.cif_scale[plt_no] = float(self.entr_cifscale.GetValue())
             if self.cif_scale[plt_no] <= 0:
                 self.cif_scale[plt_no] = np.max(y)
                 self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
-            self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]        
+            self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]
         else:
             plt_no = self.ch_data.GetSelection()
             y = self.xy_data[plt_no][1]
@@ -1410,7 +1410,6 @@ class Viewer1DXRD(wx.Panel):
             self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.updatePLOT()
-        
 
     def remove1Ddata(self,event=None):
         
@@ -1438,25 +1437,34 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_data.GetSelection()
         self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
+    def selectCIF(self,event=None):
+    
+        cif_str = self.ch_cif.GetString(self.ch_cif.GetSelection())
+        
+        plt_no = self.ch_cif.GetSelection()
+        self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+
     def checkXaxis(self,event=None):
         
         if self.ch_xaxis.GetSelection() == 2:
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
             for plt_no in range(len(self.plotted_data)):
                 self.xy_plot[plt_no][0] = calc_q_to_2th(np.array(self.xy_data[plt_no][0]),self.wavelength)
-        elif self.ch_xaxis.GetSelection() == 1:
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = calc_q_to_d(np.array(self.xy_data[plt_no][0]))
-        else:
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = np.array(self.xy_data[plt_no][0])
-
-        if self.ch_xaxis.GetSelection() == 2:
-            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+            for plt_no in range(len(self.plotted_cif)):
+                self.cif_plot[plt_no][0] = calc_q_to_2th(np.array(self.cif_data[plt_no][0]),self.wavelength)
         elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = 'd ($\AA$)'
+            for plt_no in range(len(self.plotted_data)):
+                self.xy_plot[plt_no][0] = calc_q_to_d(np.array(self.xy_data[plt_no][0]))
+            for plt_no in range(len(self.plotted_cif)):
+                self.cif_plot[plt_no][0] = calc_q_to_d(np.array(self.cif_data[plt_no][0]))
         else:
             self.xlabel = 'q (1/$\AA$)'
-         
+            for plt_no in range(len(self.plotted_data)):
+                self.xy_plot[plt_no][0] = np.array(self.xy_data[plt_no][0])
+            for plt_no in range(len(self.plotted_cif)):
+                self.cif_plot[plt_no][0] = np.array(self.cif_data[plt_no][0])
+
         self.plot1D.set_xlabel(self.xlabel)
         self.updatePLOT()
 
@@ -1465,6 +1473,18 @@ class Viewer1DXRD(wx.Panel):
 
         xmax,xmin,ymax,ymin = None,0,None,0
 
+#         print 'cif',len(self.plotted_cif)
+        if len(self.plotted_cif) > 0:
+            for plt_no in range(len(self.plotted_cif)):
+                x = np.array(self.cif_plot[plt_no][0])
+                y = np.array(self.cif_plot[plt_no][1])
+
+                self.plot1D.update_line(plt_no,x,y)
+#                 print len(x)
+#                 print len(y)
+#                 print 'finished cif'
+#         print
+#         print 'data',len(self.plotted_data)
         if len(self.plotted_data) > 0:
             for plt_no in range(len(self.plotted_data)):
 
@@ -1481,13 +1501,16 @@ class Viewer1DXRD(wx.Panel):
                     ymin = np.min(y)
 
                 self.plot1D.update_line(plt_no,x,y)
+#                 print len(x)
+#                 print len(y)
+#                 print 'finished cif'
+#         print
+        self.unzoom_all()
+        self.plot1D.canvas.draw()
 
-            self.unzoom_all()
-            self.plot1D.canvas.draw()
-
+        if len(self.plotted_data) > 0:
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
-
             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
 
     def reset1Dscale(self,event=None):
@@ -1544,6 +1567,8 @@ class Viewer1DXRD(wx.Panel):
     def abs_limits(self):
         if len(self.data_name) > 0:
             xmin, xmax = np.min(self.xy_plot[0][0]), np.max(self.xy_plot[0][0])
+        elif len(self.cif_name) > 0:
+            xmin, xmax = np.min(self.cif_plot[0][0]), np.max(self.cif_plot[0][0])
    
         return xmin,xmax
 #######  END  #######
