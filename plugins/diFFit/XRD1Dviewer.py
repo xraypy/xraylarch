@@ -69,10 +69,6 @@ class diFFit1DFrame(wx.Frame):
         wx.Frame.__init__(self, None,title=label,size=(1500, 700))
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
-        #self.statusbar.SetStatusWidths([-3, -1])
-
-#         self.createMainPanel()
-
         
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
@@ -86,7 +82,6 @@ class diFFit1DFrame(wx.Frame):
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
         self.nb.AddPage(self.xrd1Dfitting, 'Fitting')
         self.nb.AddPage(self.xrddatabase, 'XRD Database')
-        ##page = self.nb.GetPage(1)
 
         # finally, put the notebook in a sizer for the panel to manage
         # the layout
@@ -145,10 +140,6 @@ class diFFit1DFrame(wx.Frame):
         '''write a message to the Status Bar'''
         self.statusbar.SetStatusText(s, panel)
 
-#     def plot1Dxrd(self,data,label=None):
-#     
-#         self.xrd1Dviewer.add1Ddata(*data,name=label)
-        
     def fit1Dxrd(self,event=None):
     
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
@@ -471,9 +462,6 @@ class Fitting1DXRD(wx.Panel):
 
         self.parent = parent
         self.owner = owner
-#         self.plotted_data = []
-#         self.xy_data = []
-#         self.xy_plot = []
 
         ## Default information
         self.raw_data   = None
@@ -541,7 +529,7 @@ class Fitting1DXRD(wx.Panel):
         vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
 
         self.ck_bkgd = wx.CheckBox(self,label='Subtract')
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   self.subtract_background)
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   self.replot)
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
         
         vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
@@ -653,48 +641,6 @@ class Fitting1DXRD(wx.Panel):
                           label='Fit background',show_legend=True)
 
   
-    def subtract_background(self,event=None):
-    
-        try:
-            cmprsz = np.shape(self.bgr)[0]
-            xaxis = self.raw_data[0]
-            if self.ck_bkgd.GetValue() == True:
-                yaxis = self.raw_data[1]
-                self.plt_data = np.zeros((2,cmprsz))
-                self.plt_data[0] = xaxis[0:cmprsz]
-                self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
-
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='green', label='Background subtracted',
-                                 show_legend=True)
-
-                self.btn_rbkgd.Disable()
-                self.btn_fbkgd.Disable()
-                self.btn_obkgd.Disable()
-            else:
-                self.plt_data = self.raw_data
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='blue', label='Raw data',
-                                 show_legend=True)
-                self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
-                                  color='red', label='Fit background',
-                                  show_legend=True)
-                                  
-                self.btn_rbkgd.Enable()
-                self.btn_fbkgd.Enable()
-                self.btn_obkgd.Enable()
-            
-        except:
-            self.plt_data = self.raw_data
-            self.plot1D.plot(*self.plt_data, title=self.name,
-                             color='blue', label='Raw data',
-                             show_legend=True)
-
-        if self.ipeaks is not None:
-            self.calc_peaks()
-            self.plot_peaks()
-
-
     def remove_background(self,event=None,buttons=True):
 
         try:
@@ -706,7 +652,7 @@ class Fitting1DXRD(wx.Panel):
                 self.ck_bkgd.Disable()
                 self.btn_rbkgd.Disable()
 
-            self.subtract_background()
+            self.replot()
 
         except:
             pass
@@ -769,7 +715,8 @@ class Fitting1DXRD(wx.Panel):
     def remove_peaks(self,event=None):
     
         self.peaks = None
-        self.subtract_background()
+        self.ipeaks = None
+        self.replot()
 
         self.btn_rpks.Disable()        
         self.btn_spks.Disable()
@@ -780,6 +727,46 @@ class Fitting1DXRD(wx.Panel):
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
+    def replot(self,event=None):
+    
+        try:
+            cmprsz = np.shape(self.bgr)[0]
+            xaxis = self.raw_data[0]
+            if self.ck_bkgd.GetValue() == True:
+                yaxis = self.raw_data[1]
+                self.plt_data = np.zeros((2,cmprsz))
+                self.plt_data[0] = xaxis[0:cmprsz]
+                self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
+
+                self.plot1D.plot(*self.plt_data, title=self.name,
+                                 color='green', label='Background subtracted',
+                                 show_legend=True)
+
+                self.btn_rbkgd.Disable()
+                self.btn_fbkgd.Disable()
+                self.btn_obkgd.Disable()
+            else:
+                self.plt_data = self.raw_data
+                self.plot1D.plot(*self.plt_data, title=self.name,
+                                 color='blue', label='Raw data',
+                                 show_legend=True)
+                self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
+                                  color='red', label='Fit background',
+                                  show_legend=True)
+                                  
+                self.btn_rbkgd.Enable()
+                self.btn_fbkgd.Enable()
+                self.btn_obkgd.Enable()
+        except:
+            self.plt_data = self.raw_data
+            self.plot1D.plot(*self.plt_data, title=self.name,
+                             color='blue', label='Raw data',
+                             show_legend=True)
+
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
+
     def plot1DXRD(self,panel):
     
         self.plot1D = PlotPanel(panel,size=(1000, 500))
@@ -789,10 +776,6 @@ class Fitting1DXRD(wx.Panel):
         ## Set defaults for plotting  
         self.plot1D.set_ylabel('Intensity (a.u.)')
         self.plot1D.cursor_mode = 'zoom'
-  
-        ## trying to get this functionality into our gui
-        ## mkak 2016.11.10      
-#         interactive_legend().show()
 
     def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
@@ -802,51 +785,6 @@ class Fitting1DXRD(wx.Panel):
         
     def onRESETplot(self,event=None):
         self.plot1D.reset_config()
-
-    def updatePLOT(self):
-
-        xmax,xmin,ymax,ymin = None,0,None,0
-    
-        if len(self.plotted_data) > 0:
-            for plt_no in range(len(self.plotted_data)):
-
-                i = plt_no*2
-                j = i+1
- 
-                x = self.xy_plot[i]
-                y = self.xy_plot[j]
-                
-                if xmax is None or xmax < np.max(x):
-                    xmax = np.max(x)
-                if xmin > np.min(x):
-                    xmin = np.min(x)
-                if ymax is None or ymax < np.max(y):
-                    ymax = np.max(y)
-                if ymin > np.min(y):
-                    ymin = np.min(y)
-                
-                self.plot1D.update_line(plt_no,x,y)
-            
-            self.unzoom_all()
-            self.plot1D.canvas.draw()
-            
-            if self.ch_xaxis.GetSelection() == 1:
-                xmax = 5
-            self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
-
-    def reset1Dscale(self,event=None):
-
-        plt_no = self.ch_data.GetSelection()        
-       
-        self.xy_plot[(plt_no*2+1)] = self.xy_data[(plt_no*2+1)]
-        self.plot1D.update_line(plt_no,self.xy_plot[(plt_no*2)],
-                                       self.xy_plot[(plt_no*2+1)])
-        self.plot1D.canvas.draw()
-        self.unzoom_all()
-        
-        self.updatePLOT()
-        self.xy_scale[plt_no] = np.max(self.xy_data[(plt_no*2+1)])
-        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
 
 ####### BEGIN #######            
 ## THIS IS DIRECTLY FROM XRDDISPLAY.PY
@@ -890,15 +828,6 @@ class Fitting1DXRD(wx.Panel):
    
         return xmin,xmax
 #######  END  #######
-# 
-# ##############################################
-# #### XRD PLOTTING FUNCTIONS
-#        
-#     def add1Ddata(self,x,y,wavelength=None):
-#         
-#         if wavelength is not None:
-#             self.addLAMBDA(wavelength)
-
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
@@ -1002,15 +931,6 @@ class BackgroundOptions(wx.Dialog):
 
         self.panel.SetSizer(mainsizer)
         
-
-#     def onCHECK(self,event=None):
-#     
-#         if self.ch_save.GetValue() or self.ch_plot.GetValue():
-#            self.okBtn.Enable()
-#         else:
-#             self.okBtn.Disable()
-#         
-        
     def onSPIN(self, event):
         self.wedges.SetValue(str(event.GetPosition())) 
         print('WARNING: not currently using multiple wedges for calculations')
@@ -1041,12 +961,16 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_data = []
         self.xy_scale     = []
         self.xlabel       = 'q (A^-1)'
-
+        
         self.cif_name     = []
         self.cif_data     = None #[]
         self.cif_plot     = None #[]
         self.plotted_cif  = []
         self.cif_scale    = []
+
+        self.idata        = []
+        self.icif         = []
+        self.icount       = 0
         
         self.x_for_zoom = None
         
@@ -1301,6 +1225,8 @@ class Viewer1DXRD(wx.Panel):
 
         ## Add 'raw' data to array
         self.cif_name.append(name)
+        self.icif.append(self.icount)
+        self.icount = self.icount+1
         self.cif_scale.append(cifscale)
         if self.cif_data is None:
             self.cif_data = [[x,y]]
@@ -1342,6 +1268,8 @@ class Viewer1DXRD(wx.Panel):
 
         ## Add 'raw' data to array
         self.data_name.append(name)
+        self.idata.append(self.icount)
+        self.icount = self.icount+1
         self.xy_scale.append(np.max(y))
         if self.xy_data is None:
             self.xy_data = [[x,y]]
@@ -1472,39 +1400,37 @@ class Viewer1DXRD(wx.Panel):
     def updatePLOT(self):
 
         xmax,xmin,ymax,ymin = None,0,None,0
+        
+        print self.icif
+        print self.idata
+        print self.icount
+        print
 
-#         print 'cif',len(self.plotted_cif)
-        if len(self.plotted_cif) > 0:
-            for plt_no in range(len(self.plotted_cif)):
-                x = np.array(self.cif_plot[plt_no][0])
-                y = np.array(self.cif_plot[plt_no][1])
+        for i,plt_no in enumerate(self.icif):
+            print '%i of %i cif.' % ((i+1),len(self.icif))
+            print '%i of %i total files.' % ((plt_no+1),self.icount)
+            x = np.array(self.cif_plot[i][0])
+            y = np.array(self.cif_plot[i][1])
 
-                self.plot1D.update_line(plt_no,x,y)
-#                 print len(x)
-#                 print len(y)
-#                 print 'finished cif'
-#         print
-#         print 'data',len(self.plotted_data)
-        if len(self.plotted_data) > 0:
-            for plt_no in range(len(self.plotted_data)):
+            self.plot1D.update_line(plt_no,x,y)
 
-                x = np.array(self.xy_plot[plt_no][0])
-                y = np.array(self.xy_plot[plt_no][1])
+        for i,plt_no in enumerate(self.idata):
+            print '%i of %i data.' % ((1+i),len(self.idata))
+            print '%i of %i total files.' % ((1+plt_no),self.icount)
+            x = np.array(self.xy_plot[i][0])
+            y = np.array(self.xy_plot[i][1])
 
-                if xmax is None or xmax < np.max(x):
-                    xmax = np.max(x)
-                if xmin > np.min(x):
-                    xmin = np.min(x)
-                if ymax is None or ymax < np.max(y):
-                    ymax = np.max(y)
-                if ymin > np.min(y):
-                    ymin = np.min(y)
+            if xmax is None or xmax < np.max(x):
+                xmax = np.max(x)
+            if xmin > np.min(x):
+                xmin = np.min(x)
+            if ymax is None or ymax < np.max(y):
+                ymax = np.max(y)
+            if ymin > np.min(y):
+                ymin = np.min(y)
 
-                self.plot1D.update_line(plt_no,x,y)
-#                 print len(x)
-#                 print len(y)
-#                 print 'finished cif'
-#         print
+            self.plot1D.update_line(plt_no,x,y)
+
         self.unzoom_all()
         self.plot1D.canvas.draw()
 
@@ -1518,8 +1444,9 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_data.GetSelection()        
        
         self.xy_plot[plt_no][1] = self.xy_data[plt_no][1]
-        self.plot1D.update_line(plt_no,self.xy_plot[plt_no][0],
-                                       self.xy_plot[plt_no][1])
+        self.plot1D.update_line(int(self.idata[plt_no]),
+                                np.array(self.xy_plot[plt_no][0]),
+                                np.array(self.xy_plot[plt_no][1]))
         self.plot1D.canvas.draw()
         self.unzoom_all()
         
@@ -1632,8 +1559,6 @@ class Viewer1DXRD(wx.Panel):
         if read:
             cifile = os.path.split(path)[-1]
 
-## mkak 2016.12.05 - this is where I'm working
-#             cif = Crystal.fromCIF(path)
             try:
                 cif = xu.materials.Crystal.fromCIF(path)
             except:
