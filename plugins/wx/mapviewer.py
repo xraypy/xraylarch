@@ -81,7 +81,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
-from larch_plugins.wx.mapimageframe import MapImageFrame
+from larch_plugins.wx.mapimageframe import MapImageFrame, DualMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
@@ -145,7 +145,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
-        sizer = wx.GridBagSizer(5, 5)
+        sizer = wx.GridBagSizer(3, 3)
         bpanel = wx.Panel(self)
         show_new = Button(bpanel, 'Show New Map',     size=(120, -1),
                           action=partial(self.onShowMap, new=True))
@@ -190,12 +190,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e', 'f'):
-            self.varfile[varname]   = vfile  = Choice(self, choices=[], size=(200, -1),
+            self.varfile[varname]   = vfile  = Choice(self, choices=[], size=(180, -1),
                                                           action=partial(self.onROI, varname=varname))
-            self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(120, -1),
+            self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(100, -1),
                                                           action=partial(self.onROI, varname=varname))
             self.vardet[varname]    = vdet   = Choice(self, choices=DETCHOICES,
-                                                      size=(90, -1))
+                                                      size=(80, -1))
             self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
             self.varshape[varname]  = vshape = SimpleText(self, 'Array Shape = (, )',
                                                           size=(200, -1))
@@ -220,9 +220,9 @@ class MapMathPanel(scrolled.ScrolledPanel):
         ir += 1
         sizer.Add(SimpleText(self, 'Work Arrays: '), (ir, 0), (1, 1), ALL_LEFT, 2)
 
-        self.workarray_choice = Choice(self, choices=[], size=(200, -1), 
+        self.workarray_choice = Choice(self, choices=[], size=(200, -1),
                                        action=self.onSelectArray)
-        btn_delete  = Button(self, 'Delete Array',  size=( 90, -1), 
+        btn_delete  = Button(self, 'Delete Array',  size=(90, -1),
                               action=self.onDeleteArray)
         self.info1   = wx.StaticText(self, -1, '',  size=(250, -1))
         self.info2   = wx.StaticText(self, -1, '',  size=(250, -1))
@@ -235,11 +235,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         pack(self, sizer)
         self.SetupScrolling()
-    
+
     def onSelectArray(self, evt=None):
         xrmfile = self.owner.current_file
         name = self.workarray_choice.GetStringSelection()
-        dset = xrmfile.get_work_array(h5str(name))        
+        dset = xrmfile.get_work_array(h5str(name))
         expr = dset.attrs.get('expression', '<unknonwn>')
         self.info1.SetLabel("Expression: %s" % expr)
 
@@ -250,7 +250,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if dat[1] != '1':
                 buff.append("%s= %s('%s', det=%s, dtcorr=%s)" % (var, fname, aname, det, dtc))
         self.info2.SetLabel('\n'.join(buff))
-                        
+
     def onDeleteArray(self, evt=None):
         name = self.workarray_choice.GetStringSelection()
         xrmfile = self.owner.current_file
@@ -260,7 +260,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     """ % (name, xrmfile.filename),
                                'Delete Array?', style=wx.YES_NO)):
                 xrmfile.del_work_array(h5str(name))
-                self.update_xrmmap(xrmfile)                
+                self.update_xrmmap(xrmfile)
 
     def onSaveArray(self, evt=None):
         name = self.name_in.GetValue()
@@ -298,7 +298,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dtcorr  = self.varcor[varname].IsChecked()
         det =  None
         if dname != 'sum':  det = int(dname)
-        map = self.owner.filemap[fname].get_roimap(roiname, det=det, 
+        map = self.owner.filemap[fname].get_roimap(roiname, det=det,
                                                    no_hotcols=False,
                                                    dtcorrect=dtcorr)
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
@@ -468,6 +468,7 @@ class SimpleMapPanel(GridPanel):
         if roiname1 in ('', '1') or roiname2 in ('', '1'):
             return
 
+
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -475,18 +476,23 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols = self.hotcols.IsChecked()
-        self.owner.no_hotcols = no_hotcols
+        self.owner.no_hotcols = self.hotcols.IsChecked()
+
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
 
+        # print("Show Correl ", map1.shape, map2.shape)
+        # correl_plot = DualMapFrame(parent=self.owner, xrmfile=datafile)
+        # correl_plot.display(roiname1, roiname2, det=det)
+        # correl_plot.Show()
+        # correl_plot.Raise()
+
         if self.limrange.IsChecked():
             lims = [wid.GetValue() for wid in self.lims]
             map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
             map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
-
         path, fname = os.path.split(datafile.filename)
         title ='%s: %s vs %s' %(fname, roiname2, roiname1)
         pframe = PlotFrame(title=title, output_title=title)
@@ -733,7 +739,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
 
-        sizer = wx.GridBagSizer(8, 2)
+        sizer = wx.GridBagSizer(3, 3)
         self.wids = {}
 
         ir = 0
@@ -919,7 +925,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## GENERAL MAP AREAS
         self.owner = owner
         pane = wx.Panel(self)
-        sizer = wx.GridBagSizer(10, 7) #6)
+        sizer = wx.GridBagSizer(3, 3)
         self.choices = {}
         self.choice = Choice(pane, choices=[], size=(200, -1), action=self.onSelect)
         self.desc    = wx.TextCtrl(pane,   -1, '',  size=(200, -1))
@@ -1346,7 +1352,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(700, 450),
+    def __init__(self, parent=None,  size=(825, 500),
                  use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
@@ -1397,34 +1403,23 @@ class MapViewerFrame(wx.Frame):
             self.filemap.pop(filename)
 
     def createMainPanel(self):
-        sizer = wx.BoxSizer(wx.VERTICAL)
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(275)
+        splitter.SetMinimumPaneSize(250)
 
         self.filelist = EditableListBox(splitter, self.ShowFile,
                                         remove_action=self.CloseFile,
                                         size=(250, -1))
 
         dpanel = self.detailspanel = wx.Panel(splitter)
-        dpanel.SetMinSize((700, 450))
         self.createNBPanels(dpanel)
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
-        wx.CallAfter(self.init_larch)
         pack(self, sizer)
+        wx.CallAfter(self.init_larch)
 
     def createNBPanels(self, parent):
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        # title area:
-        tpanel = wx.Panel(parent)
-        self.title    = SimpleText(tpanel, 'initializing...', size=(600, -1))
-        tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(self.title,     0, ALL_LEFT)
-        pack(tpanel, tsizer)
-
-        sizer.Add(tpanel, 0, ALL_CEN)
+        self.title    = SimpleText(parent, 'initializing...', size=(680, -1))
 
         self.nb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.nb.SetBackgroundColour('#FCFCFA')
@@ -1439,9 +1434,14 @@ class MapViewerFrame(wx.Frame):
             self.nb.AddPage(p, p.label.title(), True)
             bgcol = p.GetBackgroundColour()
             self.nbpanels.append(p)
+            p.SetSize((750, 550))
 
-            self.nb.SetSelection(0)
+        self.nb.SetSelection(0)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
+        parent.SetSize((700, 400))
+        pack(parent, sizer)
 
         # self.area_sel = AreaSelectionPanel(parent, owner=self)
         # self.area_sel.SetBackgroundColour('#F0F0E8')
@@ -1450,7 +1450,6 @@ class MapViewerFrame(wx.Frame):
         #                         style=wx.LI_HORIZONTAL),
         #          0,  wx.ALL|wx.EXPAND)
         # sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
-        pack(parent, sizer)
 
     def get_mca_area(self, det, mask, xoff=0, yoff=0, xrmfile=None):
         if xrmfile is None:
@@ -1589,9 +1588,6 @@ class MapViewerFrame(wx.Frame):
 
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
-
-
-
 
 
     def add_imdisplay(self, title, det=None):
@@ -2302,7 +2298,7 @@ class AddToMapFolder(wx.Dialog):
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx  )
         self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck,   xrdCkBx  )
 
-        sizer = wx.GridBagSizer(5, 6)
+        sizer = wx.GridBagSizer(3, 3)
 
         sizer.Add(fileTtl,   pos = ( 1,1) )
         sizer.Add(self.File, pos = ( 2,1), span = (1,4) )
@@ -2456,7 +2452,7 @@ class CalXRD(wx.Dialog):
         self.slctDorP.Bind(wx.EVT_CHOICE, self.onDorPSel)
         self.slctEorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
 
-        self.sizer = wx.GridBagSizer( 5, 6)
+        self.sizer = wx.GridBagSizer(3, 3)
 
         self.sizer.Add(caliImg,       pos = ( 1,1)               )
         self.sizer.Add(self.calFil,   pos = ( 1,2), span = (1,2) )
