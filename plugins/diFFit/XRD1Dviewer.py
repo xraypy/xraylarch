@@ -148,9 +148,8 @@ class diFFit1DFrame(wx.Frame):
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
         
         if len(indicies) > 0:
-            
             self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
-            self.all_data = [[self.xrd1Dviewer.xy_data[i]] for i in indicies]
+            self.all_data = self.xrd1Dviewer.xy_data
             
             dlg = SelectFittingData(self.list,self.all_data)
 
@@ -168,22 +167,38 @@ class diFFit1DFrame(wx.Frame):
             data,name = self.loadXYFILE()
             index = 1
 
+        print
+        print
+        print 'shape a',np.shape(self.xrd1Dviewer.xy_data)
+        print 'shape',np.shape(self.xrd1Dviewer.xy_plot)
+        print 'name',np.shape(self.xrd1Dviewer.data_name)
+        print 'scale',np.shape(self.xrd1Dviewer.xy_scale)
+        print 'plotted',np.shape(self.xrd1Dviewer.plotted_data)
+        print
         if index >= len(indicies):
             ## Add to data array lists
             self.xrd1Dviewer.data_name.append(name)
             self.xrd1Dviewer.xy_scale.append(np.max(data[1]))
-#             self.xrd1Dviewer.xy_data.extend(data)
-            self.xrd1Dviewer.xy_data.append([data])
-
-            ## redefine x,y based on scales
-#             self.xrd1Dviewer.xy_plot.extend(data)
-            self.xrd1Dviewer.xy_plot.append([data])
+            if self.xrd1Dviewer.xy_data is None:
+                self.xrd1Dviewer.xy_data = data
+            else:
+                self.xrd1Dviewer.xy_data.append(data)
+            if self.xrd1Dviewer.xy_plot is None:
+                self.xrd1Dviewer.xy_plot = data
+            else:
+                self.xrd1Dviewer.xy_plot.append(data)
        
             ## Add to plot       
             self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(*data,label=name,show_legend=True))
 
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
+        print 'shape b',np.shape(self.xrd1Dviewer.xy_data)
+        print 'shape',np.shape(self.xrd1Dviewer.xy_plot)
+        print 'name',np.shape(self.xrd1Dviewer.data_name)
+        print 'scale',np.shape(self.xrd1Dviewer.xy_scale)
+        print 'plotted',np.shape(self.xrd1Dviewer.plotted_data)
+        print
 
         adddata = True
         if self.xrd1Dfitting.raw_data is not None:
@@ -192,12 +207,13 @@ class diFFit1DFrame(wx.Frame):
         
         if adddata:
 
-            self.xrd1Dfitting.raw_data = data[0]
-            self.xrd1Dfitting.plt_data = data[0]
+            self.xrd1Dfitting.raw_data = data
+            self.xrd1Dfitting.plt_data = data
             self.xrd1Dfitting.xmin     = data[0][0]
             self.xrd1Dfitting.xmax     = data[0][-1]
-        
-            self.xrd1Dfitting.plot1D.plot(*data[0], title=name,
+            print 'limits',data[0][0],data[0][-1]
+            print 'data',np.shape(data)
+            self.xrd1Dfitting.plot1D.plot(*data, title=name,
                                           color='blue', label='Raw data',
                                           show_legend=True)
 
