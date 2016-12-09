@@ -146,7 +146,7 @@ class diFFit1DFrame(wx.Frame):
     def fit1Dxrd(self,event=None):
     
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
-        
+
         if len(indicies) > 0:
             self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
             self.all_data = self.xrd1Dviewer.xy_data
@@ -162,43 +162,34 @@ class diFFit1DFrame(wx.Frame):
             dlg.Destroy()
             if okay:
                 name = self.list[index]
-                data = self.all_data[index]
+                x = np.array(self.all_data[index][0]).flatten()
+                y = np.array(self.all_data[index][1]).flatten()
         else:
-            data,name = self.loadXYFILE()
+            x,y,name = self.loadXYFILE()
             index = 1
-
-        print
-        print
-        print 'shape a',np.shape(self.xrd1Dviewer.xy_data)
-        print 'shape',np.shape(self.xrd1Dviewer.xy_plot)
-        print 'name',np.shape(self.xrd1Dviewer.data_name)
-        print 'scale',np.shape(self.xrd1Dviewer.xy_scale)
-        print 'plotted',np.shape(self.xrd1Dviewer.plotted_data)
-        print
+        
         if index >= len(indicies):
-            ## Add to data array lists
+
+            ## Add 'raw' data to array
             self.xrd1Dviewer.data_name.append(name)
-            self.xrd1Dviewer.xy_scale.append(np.max(data[1]))
+            self.xrd1Dviewer.xy_scale.append(np.max(y))
             if self.xrd1Dviewer.xy_data is None:
-                self.xrd1Dviewer.xy_data = data
+                self.xrd1Dviewer.xy_data = [[x,y]]
             else:
-                self.xrd1Dviewer.xy_data.append(data)
+                self.xrd1Dviewer.xy_data.append([[x],[y]])
+        
+            ## Add 'as plotted' data to array
             if self.xrd1Dviewer.xy_plot is None:
-                self.xrd1Dviewer.xy_plot = data
+                self.xrd1Dviewer.xy_plot = [[x,y]]
             else:
-                self.xrd1Dviewer.xy_plot.append(data)
-       
+                self.xrd1Dviewer.xy_plot.append([[x],[y]])
+
             ## Add to plot       
-            self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(*data,label=name,show_legend=True))
+            self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(x,y,label=name,show_legend=True))
 
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
-        print 'shape b',np.shape(self.xrd1Dviewer.xy_data)
-        print 'shape',np.shape(self.xrd1Dviewer.xy_plot)
-        print 'name',np.shape(self.xrd1Dviewer.data_name)
-        print 'scale',np.shape(self.xrd1Dviewer.xy_scale)
-        print 'plotted',np.shape(self.xrd1Dviewer.plotted_data)
-        print
+            self.xrd1Dviewer.entr_scale.SetValue(str(np.max(y)))
 
         adddata = True
         if self.xrd1Dfitting.raw_data is not None:
@@ -207,14 +198,12 @@ class diFFit1DFrame(wx.Frame):
         
         if adddata:
 
-            self.xrd1Dfitting.raw_data = data
-            self.xrd1Dfitting.plt_data = data
-            self.xrd1Dfitting.xmin     = data[0][0]
-            self.xrd1Dfitting.xmax     = data[0][-1]
-            print 'limits',data[0][0],data[0][-1]
-            print 'data',np.shape(data)
-            self.xrd1Dfitting.plot1D.plot(*data, title=name,
-                                          color='blue', label='Raw data',
+            self.xrd1Dfitting.raw_data = [x,y]
+            self.xrd1Dfitting.plt_data = [x,y]
+            self.xrd1Dfitting.xmin     = np.min(x)
+            self.xrd1Dfitting.xmax     = np.max(x)
+
+            self.xrd1Dfitting.plot1D.plot(x,y, title=name, color='blue', label='Raw data',
                                           show_legend=True)
 
             self.xrd1Dfitting.name = name
@@ -240,12 +229,12 @@ class diFFit1DFrame(wx.Frame):
         
         if read:
             try:
-                data = xy_file_reader(path)
+                x,y = xy_file_reader(path)
             except:
-               print('a: incorrect xy file format: %s' % os.path.split(path)[-1])
+               print('incorrect xy file format: %s' % os.path.split(path)[-1])
                return
 
-            return data,os.path.split(path)[-1]
+            return x,y,os.path.split(path)[-1]
 
 def YesNo(parent, question, caption = 'Yes or no?'):
     dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
@@ -320,7 +309,7 @@ class SelectFittingData(wx.Dialog):
                 self.slct_1Ddata.Set(self.list)
                 self.slct_1Ddata.SetSelection(-1)
             except:
-               print('b: incorrect xy file format: %s' % os.path.split(path)[-1])
+               print('incorrect xy file format: %s' % os.path.split(path)[-1])
                return
                
 
@@ -1205,23 +1194,22 @@ class Viewer1DXRD(wx.Panel):
         if wavelength is not None:
             self.addLAMBDA(wavelength)
 
-        ## Add to data array lists
+        ## Add 'raw' data to array
         self.data_name.append(name)
         self.xy_scale.append(np.max(y))
-#         self.xy_data.extend([x,y])
         if self.xy_data is None:
             self.xy_data = [[x,y]]
         else:
             self.xy_data.append([[x],[y]])
         
-        ## redefine x,y based on scales
-#         self.xy_plot.extend([x,y])
+        ## Add 'as plotted' data to array
         if self.xy_plot is None:
             self.xy_plot = [[x,y]]
         else:
             self.xy_plot.append([[x],[y]])
-        ## Add to plot       
-        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))#,xlabel=self.xlabel))
+        
+        ## Plot data (x,y) 
+        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
         self.checkXaxis()
