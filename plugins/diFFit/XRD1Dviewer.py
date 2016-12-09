@@ -1394,20 +1394,20 @@ class Viewer1DXRD(wx.Panel):
             plt_no = self.ch_cif.GetSelection()
             y = self.xy_cif[plt_no][1]
         
-			self.cif_scale[plt_no] = float(self.entr_cifscale.GetValue())
-			if self.cif_scale[plt_no] <= 0:
-				self.cif_scale[plt_no] = np.max(y)
-				self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
-			self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]        
+            self.cif_scale[plt_no] = float(self.entr_cifscale.GetValue())
+            if self.cif_scale[plt_no] <= 0:
+                self.cif_scale[plt_no] = np.max(y)
+                self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+            self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]        
         else:
             plt_no = self.ch_data.GetSelection()
             y = self.xy_data[plt_no][1]
         
-			self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
-			if self.xy_scale[plt_no] <= 0:
-				self.xy_scale[plt_no] = np.max(y)
-				self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-			self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
+            self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
+            if self.xy_scale[plt_no] <= 0:
+                self.xy_scale[plt_no] = np.max(y)
+                self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+            self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.updatePLOT()
         
