@@ -1401,22 +1401,14 @@ class Viewer1DXRD(wx.Panel):
 
         xmax,xmin,ymax,ymin = None,0,None,0
         
-        print self.icif
-        print self.idata
-        print self.icount
-        print
 
         for i,plt_no in enumerate(self.icif):
-            print '%i of %i cif.' % ((i+1),len(self.icif))
-            print '%i of %i total files.' % ((plt_no+1),self.icount)
             x = np.array(self.cif_plot[i][0])
             y = np.array(self.cif_plot[i][1])
 
             self.plot1D.update_line(plt_no,x,y)
 
         for i,plt_no in enumerate(self.idata):
-            print '%i of %i data.' % ((1+i),len(self.idata))
-            print '%i of %i total files.' % ((1+plt_no),self.icount)
             x = np.array(self.xy_plot[i][0])
             y = np.array(self.xy_plot[i][1])
 
