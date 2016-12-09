@@ -58,12 +58,13 @@ SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
+HC = constants.value(u'Planck constant in eV s') * \
+           constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(1500, 600))
+        wx.Frame.__init__(self, None,title=label,size=(1500, 700))
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
         #self.statusbar.SetStatusWidths([-3, -1])
@@ -92,6 +93,9 @@ class diFFit1DFrame(wx.Frame):
         panel.SetSizer(sizer)
 
         self.XRD1DMenuBar()
+        
+        self.energy = 19.0 ## keV
+        self.wavelength = HC/(self.energy)*1e10 ## A
 
 
     def XRD1DMenuBar(self):
@@ -114,8 +118,8 @@ class diFFit1DFrame(wx.Frame):
         ## Process
         ProcessMenu = wx.Menu()
         
-        MenuItem(self, ProcessMenu, '&Load calibration file', '', self.xrd1Dviewer.openPONI)
-        MenuItem(self, ProcessMenu, '&Define energy/wavelength', '', self.xrd1Dviewer.setLAMBDA)
+        MenuItem(self, ProcessMenu, '&Load calibration file', '', self.openPONI)
+        MenuItem(self, ProcessMenu, '&Define energy/wavelength', '', self.setLAMBDA)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Fit &background', '', None)
         MenuItem(self, ProcessMenu, 'Save &background', '', None)
@@ -139,9 +143,9 @@ class diFFit1DFrame(wx.Frame):
         '''write a message to the Status Bar'''
         self.statusbar.SetStatusText(s, panel)
 
-    def plot1Dxrd(self,data,label=None,wavelength=None):
-    
-        self.xrd1Dviewer.add1Ddata(*data,name=label,wavelength=wavelength)
+#     def plot1Dxrd(self,data,label=None):
+#     
+#         self.xrd1Dviewer.add1Ddata(*data,name=label)
         
     def fit1Dxrd(self,event=None):
     
@@ -238,6 +242,65 @@ class diFFit1DFrame(wx.Frame):
 
             return x,y,os.path.split(path)[-1]
 
+    def openPONI(self,event=None):
+             
+        wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+
+            try:
+                print('Loading calibration file: %s' % path)
+                ai = pyFAI.load(path)
+            except:
+                print('Not recognized as a pyFAI calibration file.')
+                return
+
+            self.xrd1Dviewer.addLAMBDA(ai._wavelength,units='m')
+            
+            energy = HC/(ai._wavelength)
+            self.setELvalues(energy,(ai._wavelength*1e10))
+
+    def setLAMBDA(self,event=None):
+
+        dlg = SetLambdaDialog(energy=self.energy)
+
+        path, okay = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            okay = True
+            if dlg.ch_EorL.GetSelection() == 0:
+                energy = float(dlg.entr_EorL.GetValue()) ## units keV
+                wavelength = HC/(energy)*1e10 ## units: A
+            elif dlg.ch_EorL.GetSelection() == 1:
+                wavelength = float(dlg.entr_EorL.GetValue()) ## units: A
+                energy = HC/(wavelength*1e-10) ## units: keV
+        dlg.Destroy()
+        
+        if okay:
+            self.xrd1Dviewer.addLAMBDA(wavelength,units='A')
+            self.setELvalues(energy,wavelength)
+
+    def setELvalues(self,energy,wavelength):
+
+            self.energy = energy
+            self.wavelength = wavelength
+            self.xrd1Dviewer.energy = energy
+            self.xrd1Dviewer.wavelength = wavelength
+            self.xrd1Dfitting.energy = energy
+            self.xrd1Dfitting.wavelength = wavelength
+
+            self.xrd1Dviewer.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
+            self.xrd1Dfitting.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
+    
+
 def YesNo(parent, question, caption = 'Yes or no?'):
     dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
     result = dlg.ShowModal() == wx.ID_YES
@@ -253,6 +316,7 @@ class SelectFittingData(wx.Dialog):
                                     size = (210,410))
         self.list = list
         self.all_data = all_data
+        self.energy = 19.0
         
         self.Init()
         
@@ -422,6 +486,8 @@ class Fitting1DXRD(wx.Panel):
         self.compress   = 2
         self.width      = 4
         self.name       = ''
+        self.energy     = 19.0   ## keV
+        self.wavelength = HC/(self.energy)*1e10 ## A
 
         self.Panel1DFitting()
     
@@ -516,8 +582,8 @@ class Fitting1DXRD(wx.Panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        filechoice = self.SettingsPanel(self)
-        vbox.Add(filechoice,flag=wx.ALL,border=10)
+        settings = self.SettingsPanel(self)
+        vbox.Add(settings,flag=wx.ALL,border=10)
         
         fittools = self.FittingTools(self)
         vbox.Add(fittools,flag=wx.ALL,border=10)
@@ -532,7 +598,7 @@ class Fitting1DXRD(wx.Panel):
 #         btn_chc.Bind(wx.EVT_BUTTON,   None) ## ---> need a way to point to parent's function, mkak 2016.12.02
 #         vbox.Add(btn_chc, flag=wx.EXPAND|wx.ALL, border=8)
 
-        self.ttl_energy = wx.StaticText(self, label='')
+        self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (self.energy,self.wavelength)))
         vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
         
         return vbox
@@ -822,14 +888,14 @@ class Fitting1DXRD(wx.Panel):
    
         return xmin,xmax
 #######  END  #######
-
-##############################################
-#### XRD PLOTTING FUNCTIONS
-       
-    def add1Ddata(self,x,y,wavelength=None):
-        
-        if wavelength is not None:
-            self.addLAMBDA(wavelength)
+# 
+# ##############################################
+# #### XRD PLOTTING FUNCTIONS
+#        
+#     def add1Ddata(self,x,y,wavelength=None):
+#         
+#         if wavelength is not None:
+#             self.addLAMBDA(wavelength)
 
 
 class BackgroundOptions(wx.Dialog):
@@ -972,16 +1038,18 @@ class Viewer1DXRD(wx.Panel):
         self.xy_plot      = None #[]
         self.plotted_data = []
         self.xy_scale     = []
-        self.wavelength   = None
         self.xlabel       = 'q (A^-1)'
-        self.xunits        = ['q','d']
 
         self.cif_name     = []
-        self.cif_data     = []
-        self.cif_plot     = []
+        self.cif_data     = None #[]
+        self.cif_plot     = None #[]
         self.plotted_cif  = []
+        self.cif_scale    = []
         
         self.x_for_zoom = None
+        
+        self.energy = 19.0   ## keV
+        self.wavelength = HC/(self.energy)*1e10 ## A
 
         self.Panel1DViewer()
 
@@ -1012,7 +1080,8 @@ class Viewer1DXRD(wx.Panel):
         ## X-Scale
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-        self.ch_xaxis = wx.Choice(self,choices=self.xunits)
+        xunits = ['q','d',u'2\u03B8']
+        self.ch_xaxis = wx.Choice(self,choices=xunits)
 
         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
     
@@ -1053,16 +1122,6 @@ class Viewer1DXRD(wx.Panel):
 
         ###########################
 
-#         self.ck_bkgd = wx.CheckBox(self,label='BACKGROUND')
-#         self.ck_smth = wx.CheckBox(self,label='SMOOTHING')
-#         
-#         self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   None)
-#         self.ck_smth.Bind(wx.EVT_CHECKBOX,   None)
-# 
-#         vbox.Add(self.ck_bkgd, flag=wx.ALL, border=8)
-#         vbox.Add(self.ck_smth, flag=wx.ALL, border=8)
-    
-        ###########################
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
@@ -1098,7 +1157,38 @@ class Viewer1DXRD(wx.Panel):
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox   
         
+    def CIFBox(self,panel):
+        '''
+        Frame for data toolbox
+        '''
+        
+        tlbx = wx.StaticBox(self,label='CIF TOOLBOX')
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
+        ###########################
+        ## DATA CHOICE
+
+        self.ch_cif = wx.Choice(self,choices=self.cif_name)
+        self.ch_cif.Bind(wx.EVT_CHOICE,   self.onSELECT)
+        vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
+
+        ###########################
+
+        ## Scale
+        hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
+        ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
+        self.entr_cifscale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        btn_scale = wx.Button(self,label='set')
+
+        btn_scale.Bind(wx.EVT_BUTTON, partial(self.normalize1Ddata,cif=True))
+        
+        hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.entr_cifscale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
+
+        vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
+
+        return vbox   
         
 
     def AddPanel(self,panel):
@@ -1118,14 +1208,18 @@ class Viewer1DXRD(wx.Panel):
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
-        
+
+        settings = self.SettingsPanel(self)        
         plttools = self.Toolbox(self)
         addbtns = self.AddPanel(self)
         dattools = self.DataBox(self)
+        ciftools = self.CIFBox(self)
         
+        vbox.Add(settings,flag=wx.ALL,border=10)
         vbox.Add(plttools,flag=wx.ALL,border=10)
         vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
+        vbox.Add(ciftools,flag=wx.ALL,border=10)
         return vbox
 
     def RightSidePanel(self,panel):
@@ -1134,6 +1228,15 @@ class Viewer1DXRD(wx.Panel):
         btnbox = self.QuickButtons(panel)
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        return vbox
+
+        
+    def SettingsPanel(self,panel):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (self.energy,self.wavelength)))
+        vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
+        
         return vbox
 
     def QuickButtons(self,panel):
@@ -1181,6 +1284,43 @@ class Viewer1DXRD(wx.Panel):
 
 ##############################################
 #### XRD PLOTTING FUNCTIONS
+
+    def addCIFdata(self,x,y,name=None):
+        
+        plt_no = len(self.cif_name)
+        
+        if name is None:
+            name = 'cif %i' % plt_no
+        else:
+            name = 'cif: %s' % name
+
+        ## Add 'raw' data to array
+        self.cif_name.append(name)
+        self.cif_scale.append(np.max(y))
+        if self.cif_data is None:
+            self.cif_data = [[x,y]]
+        else:
+            self.cif_data.append([[x],[y]])
+        
+        ## Add 'as plotted' data to array
+        if self.cif_plot is None:
+            self.cif_plot = [[x,y]]
+        else:
+            self.cif_plot.append([[x],[y]])
+        
+        ## Plot data (x,y) 
+        self.plotted_cif.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+
+        ## Use correct x-axis units
+        self.checkXaxis()
+
+        self.ch_cif.Set(self.cif_name)
+        self.ch_cif.SetStringSelection(name)
+        
+        ## Update toolbox panel, scale all cif to 1000
+        self.entr_cifscale.SetValue('1000')
+        self.normalize1Ddata()
+
        
     def add1Ddata(self,x,y,name=None,cif=False,wavelength=None):
         
@@ -1246,19 +1386,28 @@ class Viewer1DXRD(wx.Panel):
         else: ## units 'A'        
             self.wavelength = wavelength
 
-        self.xunits.append(u'2\u03B8')
-        self.ch_xaxis.Set(self.xunits)
+        self.energy = HC/(wavelength*(1e-10))*1e3
 
-    def normalize1Ddata(self,event=None):
+    def normalize1Ddata(self,event=None,cif=False):
     
-        plt_no = self.ch_data.GetSelection()
-        y = self.xy_data[plt_no][1]
+        if cif:
+            plt_no = self.ch_cif.GetSelection()
+            y = self.xy_cif[plt_no][1]
         
-        self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
-        if self.xy_scale[plt_no] <= 0:
-            self.xy_scale[plt_no] = np.max(y)
-            self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
-        self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
+			self.cif_scale[plt_no] = float(self.entr_cifscale.GetValue())
+			if self.cif_scale[plt_no] <= 0:
+				self.cif_scale[plt_no] = np.max(y)
+				self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+			self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]        
+        else:
+            plt_no = self.ch_data.GetSelection()
+            y = self.xy_data[plt_no][1]
+        
+			self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
+			if self.xy_scale[plt_no] <= 0:
+				self.xy_scale[plt_no] = np.max(y)
+				self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+			self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.updatePLOT()
         
@@ -1469,12 +1618,9 @@ class Viewer1DXRD(wx.Panel):
             ## generate hkl list
             hkllist = generate_hkl(maxhkl=8)
             
-            hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-
             if self.wavelength is not None:
                 qlist = cif.Q(hkllist)
-                Flist = cif.StructureFactorForQ(qlist,(hc/(self.wavelength*(1e-10))*1e3))
+                Flist = cif.StructureFactorForQ(qlist,(HC/(self.wavelength*(1e-10))*1e3))
             
                 Fall = []
                 qall = []
@@ -1489,49 +1635,12 @@ class Viewer1DXRD(wx.Panel):
                 if np.shape(Fall)[0] > 0:
                     Fall = np.array(Fall)
                     qall = np.array(qall)
-                    self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
+                    # self.add1Ddata(qall,Fall,name=os.path.split(path)[-1],cif=True)
+                    self.addCIFdata(qall,Fall,name=os.path.split(path)[-1])
                 else:
                     print('Could not calculate real structure factors.')
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
-
-    def openPONI(self,event=None):
-             
-        wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-
-            try:
-                print('Loading calibration file: %s' % path)
-                ai = pyFAI.load(path)
-            except:
-                print('Not recognized as a pyFAI calibration file.')
-                return
-
-            self.addLAMBDA(ai._wavelength,units='m')
-
-    def setLAMBDA(self,event=None):
-
-        dlg = SetLambdaDialog()
-
-        path, okay = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            okay = True
-            wavelength = dlg.wavelength
-        dlg.Destroy()
-        
-        if okay:
-            self.addLAMBDA(wavelength,units='A')
-              
 
 # def interactive_legend(ax=None):
 #     if ax is None:
@@ -1685,10 +1794,10 @@ class Calc1DPopup(wx.Dialog):
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
         
         self.xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.xunits = ['q','d',u'2\u03B8']
+        xunits = ['q','d',u'2\u03B8']
         ttl_xunit = wx.StaticText(self.panel, label='units')
-        self.ch_xunit = wx.Choice(self.panel,choices=self.xunits)
-        self.ch_xunit.Bind(wx.EVT_CHOICE,self.onUnits)
+        self.ch_xunit = wx.Choice(self.panel,choices=xunits)
+        self.ch_xunit.Bind(wx.EVT_CHOICE,None)#self.onUnits)
         
         self.xunitsizer.Add(ttl_xunit, flag=wx.RIGHT, border=5)
         self.xunitsizer.Add(self.ch_xunit, flag=wx.RIGHT, border=5)
@@ -1782,17 +1891,15 @@ class Calc1DPopup(wx.Dialog):
         self.wedge_arrow.Disable()
         self.ch_xunit.Disable()
         
-    def onUnits(self,event=None):
-
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+#     def onUnits(self,event=None):
+# 
 #         if self.slctEorL.GetSelection() == 1:
 #             energy = float(self.EorL.GetValue()) ## units keV
-#             wavelength = hc/(energy)*1e10 ## units: A
+#             wavelength = HC/(energy)*1e10 ## units: A
 #             self.EorL.SetValue(str(wavelength))
 #         else:
 #             wavelength = float(self.EorL.GetValue())*1e-10 ## units: m
-#             energy = hc/(wavelength) ## units: keV
+#             energy = HC/(wavelength) ## units: keV
 #             self.EorL.SetValue(str(energy))
 
     def onSPIN(self, event):
@@ -1808,7 +1915,7 @@ class SetLambdaDialog(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self,energy=19.0):
     
         ## Constructor
         dialog = wx.Dialog.__init__(self, None, title='Define wavelength/energy')#,size=(500, 440))
@@ -1851,28 +1958,37 @@ class SetLambdaDialog(wx.Dialog):
         self.SetSize((ix+20, iy+20))
         
         ## set default
-        self.hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-        self.energy = 19.0        
-        self.wavelength = self.hc/(self.energy)*1e10 ## units: A
+        self.energy = energy      
+        self.wavelength = HC/(self.energy)*1e10 ## units: A
         self.ch_EorL.SetSelection(0)
-        self.entr_EorL.SetValue(str(self.energy))
+        self.entr_EorL.SetValue('%0.3f' % self.energy)
+        self.pre_sel = 0
 
     def onEorLSel(self,event=None): 
         
         if float(self.entr_EorL.GetValue()) < 0 or self.entr_EorL.GetValue() == '':
             self.ch_EorL.SetSelection(1)
             self.entr_EorL.SetValue('19.0')     ## 19.0 keV
-
-        if self.ch_EorL.GetSelection() == 1:
-            self.energy = float(self.entr_EorL.GetValue()) ## units keV
-            self.wavelength = self.hc/(self.energy)*1e10 ## units: A
-            self.entr_EorL.SetValue(str(self.wavelength))
+            return
+        
+        if self.pre_sel == self.ch_EorL.GetSelection():
+            if self.ch_EorL.GetSelection() == 0:
+                self.energy = float(self.entr_EorL.GetValue()) ## units keV
+                self.wavelength = HC/(self.energy)*1e10 ## units: A
+            else:
+                self.wavelength = float(self.entr_EorL.GetValue()) ## units: A
+                self.energy = HC/(self.wavelength*1e-10) ## units: keV
         else:
-            self.wavelength = float(self.entr_EorL.GetValue())*1e-10 ## units: m
-            self.energy = self.hc/(self.wavelength) ## units: keV
-            self.entr_EorL.SetValue(str(self.energy))
-    
+            if self.ch_EorL.GetSelection() == 0:
+                self.wavelength = float(self.entr_EorL.GetValue()) ## units: A
+                self.energy = HC/(self.wavelength*1e-10) ## units: keV
+                self.entr_EorL.SetValue('%0.3f' % self.energy)
+            else:
+                self.energy = float(self.entr_EorL.GetValue()) ## units keV
+                self.wavelength = HC/(self.energy)*1e10 ## units: A
+                self.entr_EorL.SetValue('%0.4f' % self.wavelength)
+            self.pre_sel = self.ch_EorL.GetSelection()
+
       
 class diFFit1D(wx.App):
     def __init__(self):
