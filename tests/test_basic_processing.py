@@ -164,6 +164,32 @@ endif
         self.isValue('x',  2)
         self.isValue('y', 33)
 
+    def test_nestedif(self):
+        """test of single-line ifs in if blocks"""
+        self.trytext("""
+def xtest(xt, out=None):
+    if out is None:
+        out = 'A'
+        if xt < 9:  out = 'B'
+        if xt < 5:  out = 'C'
+        if xt < 2:  out = 'D'
+    #endif
+    return out
+#enddef
+
+a = xtest(100)
+b = xtest(8)
+c = xtest(4)
+d = xtest(1)
+q = xtest(4, out='Q')
+""")
+        self.isValue('a', 'A')
+        self.isValue('b', 'B')
+        self.isValue('c', 'C')
+        self.isValue('d', 'D')
+        self.isValue('q', 'Q')
+
+
     def test_print(self):
         '''print (ints, str, ....)'''
         out, err  = self.trytext("print(31)")
