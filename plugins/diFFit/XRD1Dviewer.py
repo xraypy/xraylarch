@@ -72,23 +72,23 @@ class diFFit1DFrame(wx.Frame):
 
         
         panel = wx.Panel(self)
-        nb = wx.Notebook(panel)
+        self.nb = wx.Notebook(panel)
 
         # create the page windows as children of the notebook
-        self.xrd1Dviewer = Viewer1DXRD(nb,owner=self)
-        self.xrd1Dfitting = Fitting1DXRD(nb,owner=self)
-        self.xrddatabase = DatabaseXRD(nb)
+        self.xrd1Dviewer = Viewer1DXRD(self.nb,owner=self)
+        self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
+        self.xrddatabase = DatabaseXRD(self.nb)
         
         # add the pages to the notebook with the label to show on the tab
-        nb.AddPage(self.xrd1Dviewer, 'Viewer')
-        nb.AddPage(self.xrd1Dfitting, 'Fitting')
-        nb.AddPage(self.xrddatabase, 'XRD Database')
-        ##page = nb.GetPage(1)
+        self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
+        self.nb.AddPage(self.xrd1Dfitting, 'Fitting')
+        self.nb.AddPage(self.xrddatabase, 'XRD Database')
+        ##page = self.nb.GetPage(1)
 
         # finally, put the notebook in a sizer for the panel to manage
         # the layout
         sizer = wx.BoxSizer()
-        sizer.Add(nb, -1, wx.EXPAND)
+        sizer.Add(self.nb, -1, wx.EXPAND)
         panel.SetSizer(sizer)
 
         self.XRD1DMenuBar()
@@ -190,6 +190,8 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
             self.xrd1Dviewer.entr_scale.SetValue(str(np.max(y)))
+        
+        self.nb.SetSelection(1)
 
         adddata = True
         if self.xrd1Dfitting.raw_data is not None:
@@ -614,26 +616,30 @@ class Fitting1DXRD(wx.Panel):
                 self.btn_fbkgd.Enable()
                 self.btn_obkgd.Enable()
             
+        except:
+            self.plt_data = self.raw_data
+            self.plot1D.plot(*self.plt_data, title=self.name,
+                             color='blue', label='Raw data',
+                             show_legend=True)
+
+        if self.ipeaks is not None:
             self.calc_peaks()
             self.plot_peaks()
 
-        except:
-            pass
 
     def remove_background(self,event=None,buttons=True):
 
         try:
             self.plt_data = self.raw_data
-            self.subtract_background()
-
-#             self.plot1D.plot(*self.plt_data, title=self.name,
-#                              color='blue', label='Raw data',
-#                              show_legend=True)
+            self.ck_bkgd.SetValue(False)
             self.bgr = None
             self.bgr_info = None
             if buttons:
                 self.ck_bkgd.Disable()
                 self.btn_rbkgd.Disable()
+
+            self.subtract_background()
+
         except:
             pass
     
