@@ -33,6 +33,10 @@ from functools import partial
 
 import matplotlib.pyplot as plt
 
+import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.mixins.listctrl  as listmix
+
+
 HAS_pyFAI = False
 try:
     import pyFAI
@@ -53,15 +57,24 @@ except ImportError:
 ###################################
 
 VERSION = '0 (30-November-2016)'
+
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
+
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
+HC = constants.value(u'Planck constant in eV s') * \
+           constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+
+FIT_METHODS = ['scipy.signal.find_peaks_cwt']
 
 ###################################
 
-import wx.lib.agw.flatnotebook as flat_nb
-import wx.lib.mixins.listctrl  as listmix
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-HC = constants.value(u'Planck constant in eV s') * \
-           constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+def YesNo(parent, question, caption = 'Yes or no?'):
+    dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+    result = dlg.ShowModal() == wx.ID_YES
+    dlg.Destroy()
+    return result
+    
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
@@ -186,7 +199,7 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
-            self.xrd1Dviewer.entr_scale.SetValue(str(np.max(y)))
+            self.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
         
         self.nb.SetSelection(1)
 
@@ -206,12 +219,15 @@ class diFFit1DFrame(wx.Frame):
                                           show_legend=True)
 
             self.xrd1Dfitting.name = name
+            self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % np.min(x))
+            self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % np.max(x))
             self.xrd1Dfitting.ck_bkgd.SetValue(False)
             self.xrd1Dfitting.btn_fbkgd.Enable()
             self.xrd1Dfitting.btn_rbkgd.Disable()
             self.xrd1Dfitting.ck_bkgd.Disable()
             self.xrd1Dfitting.btn_obkgd.Enable()
             self.xrd1Dfitting.btn_fpks.Enable()
+            self.xrd1Dfitting.btn_opks.Enable()
 
     def loadXYFILE(self,event=None):
     
@@ -292,14 +308,7 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dviewer.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
             self.xrd1Dfitting.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
-    
 
-def YesNo(parent, question, caption = 'Yes or no?'):
-    dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
-    result = dlg.ShowModal() == wx.ID_YES
-    dlg.Destroy()
-    return result
-        
 class SelectFittingData(wx.Dialog):
     def __init__(self,list,all_data):
     
@@ -370,7 +379,6 @@ class SelectFittingData(wx.Dialog):
             except:
                print('incorrect xy file format: %s' % os.path.split(path)[-1])
                return
-               
 
 class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
@@ -469,7 +477,9 @@ class Fitting1DXRD(wx.Panel):
         self.bgr        = None
         self.bgr_info   = None
         self.ipeaks     = None
-        self.plt_peaks  = None        
+        self.plt_peaks  = None  
+        self.trim       = False
+        self.indicies   = None      
         self.xmin       = None
         self.xmax       = None
         self.exponent   = 20
@@ -478,6 +488,10 @@ class Fitting1DXRD(wx.Panel):
         self.name       = ''
         self.energy     = 19.0   ## keV
         self.wavelength = HC/(self.energy)*1e10 ## A
+        
+        # Peak fitting defaults
+        self.iregions = 50
+        self.gapthrsh = 5
 
         self.Panel1DFitting()
     
@@ -505,6 +519,40 @@ class Fitting1DXRD(wx.Panel):
         
         tlbx = wx.StaticBox(self,label='FITTING TOOLS')
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+        ###########################
+        ## Range tools
+        vbox_rng = wx.BoxSizer(wx.VERTICAL)
+        hbox_qmin = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_qmax = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_qset = wx.BoxSizer(wx.HORIZONTAL)
+
+        ttl_rng = wx.StaticText(self, label='Q-RANGE (1/A)')
+        
+        ttl_qmin = wx.StaticText(self, label='minimum') 
+        self.val_qmin = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
+        hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
+        
+        ttl_qmax= wx.StaticText(self, label='maximum') 
+        self.val_qmax = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
+        hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
+
+        btn_rngreset = wx.Button(self,label='reset')
+        btn_rngreset.Bind(wx.EVT_BUTTON, self.reset_range)
+        btn_rngset = wx.Button(self,label='set')
+        btn_rngset.Bind(wx.EVT_BUTTON, self.set_range)
+        
+        hbox_qset.Add(btn_rngreset, flag=wx.RIGHT, border=8)
+        hbox_qset.Add(btn_rngset, flag=wx.RIGHT, border=8)
+        
+        vbox_rng.Add(ttl_rng,   flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_qmax, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_qset,   flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
+
+        vbox.Add(vbox_rng, flag=wx.ALL, border=8)
 
         ###########################
         ## Background tools
@@ -537,24 +585,30 @@ class Fitting1DXRD(wx.Panel):
         ###########################
         ## Peak tools
         vbox_pks = wx.BoxSizer(wx.VERTICAL)        
-        hbox_pks = wx.BoxSizer(wx.HORIZONTAL)
+        hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
+        hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
         
         ttl_pks = wx.StaticText(self, label='PEAKS')
         vbox_pks.Add(ttl_pks, flag=wx.BOTTOM, border=8)
 
         self.btn_fpks = wx.Button(self,label='Find peaks')
         self.btn_fpks.Bind(wx.EVT_BUTTON,   self.find_peaks)
-        vbox_pks.Add(self.btn_fpks, flag=wx.BOTTOM, border=8)
+        hbox1_pks.Add(self.btn_fpks, flag=wx.RIGHT, border=8)
+
+        self.btn_opks = wx.Button(self,label='Options')
+        self.btn_opks.Bind(wx.EVT_BUTTON,   self.peak_options)
+        hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
 
         self.btn_rpks = wx.Button(self,label='Remove all')
         self.btn_rpks.Bind(wx.EVT_BUTTON,   self.remove_peaks)
-        hbox_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
+        hbox2_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
 
         self.btn_spks = wx.Button(self,label='Select to remove')
         self.btn_spks.Bind(wx.EVT_BUTTON,   self.edit_peaks)
-        hbox_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
+        hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
         
-        vbox_pks.Add(hbox_pks, flag=wx.BOTTOM, border=8)        
+        vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
         vbox.Add(vbox_pks, flag=wx.ALL, border=10)
 
         self.btn_fbkgd.Disable()
@@ -563,6 +617,7 @@ class Fitting1DXRD(wx.Panel):
         self.btn_obkgd.Disable()
         
         self.btn_fpks.Disable()
+        self.btn_opks.Disable()
         self.btn_rpks.Disable()        
         self.btn_spks.Disable()
 
@@ -618,17 +673,131 @@ class Fitting1DXRD(wx.Panel):
 
 
 ##############################################
+#### DATA CALCULATIONS FUNCTIONS
+
+    def replot(self,event=None):
+    
+        try:
+            cmprsz = np.shape(self.bgr)[0]
+            xaxis = self.raw_data[0]
+            if self.ck_bkgd.GetValue() == True:
+                yaxis = self.raw_data[1]
+                self.plt_data = np.zeros((2,cmprsz))
+                self.plt_data[0] = xaxis[0:cmprsz]
+                self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
+
+                self.plot1D.plot(*self.plt_data, title=self.name,
+                                 color='green', label='Background subtracted',
+                                 show_legend=True)
+
+                self.btn_rbkgd.Disable()
+                self.btn_fbkgd.Disable()
+                self.btn_obkgd.Disable()
+            else:
+                if trim:
+                    self.plot1D.plot(*self.raw_data, title=self.name,
+                                     color='gray', label='Raw data',
+                                     show_legend=True)
+                    self.plot1D.oplot(*self.plt_data,
+                                      color='blue', label='Trimmed data',
+                                      show_legend=True)
+                else:
+                    self.plot1D.plot(*self.raw_data, title=self.name,
+                                     color='blue', label='Raw data',
+                                     show_legend=True)
+                self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
+                                  color='red', label='Fit background',
+                                  show_legend=True)
+                                  
+                self.btn_rbkgd.Enable()
+                self.btn_fbkgd.Enable()
+                self.btn_obkgd.Enable()
+        except:
+            ## resets since something is wrong?
+            print 'in this except statement'
+            self.plt_data = self.raw_data
+            self.plot1D.plot(*self.plt_data, title=self.name,
+                             color='blue', label='Raw data',
+                             show_legend=True)
+
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
+
+    def calculate_data(self):
+    
+        print 'raw_data',np.shape(self.raw_data)
+        print 'plt_data',np.shape(self.plt_data)
+        print
+        print 'trim?',self.trim
+
+        if self.trim:
+            indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
+            if len(indicies) > 0:
+                x = [self.raw_data[0][i] for i in indicies]
+                y = [self.raw_data[1][i] for i in indicies]
+                self.plt_data = [x,y]
+        else:
+            self.plt_data = self.raw_data
+            
+        print 'raw_data',np.shape(self.raw_data)
+        print 'plt_data',np.shape(self.plt_data)
+        print
+        print
+            
+        
+                
+##############################################
+#### RANGE FUNCTIONS
+
+    def set_range(self,event=None):
+        
+        if float(self.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
+            self.xmin = float(self.val_qmin.GetValue())
+        else:
+            self.xmin = np.min(self.raw_data[0])
+            self.val_qmin.SetValue('%0.3f' % np.min(self.raw_data[0]))            
+
+        if np.max(self.raw_data[0]) - float(self.val_qmax.GetValue()) > 0.005:
+            self.xmax = float(self.val_qmax.GetValue())
+        else:
+            self.xmax = np.max(self.raw_data[0])
+            self.val_qmax.SetValue('%0.3f' % np.max(self.raw_data[0])) 
+            
+        if np.max(self.raw_data[0])-self.xmax > 0.005 or self.xmin-np.min(self.raw_data[0]) > 0.005:
+            self.trim = True
+            if self.bgr is not None:
+                self.fit_background()
+        else:
+            self.trim = False
+            
+        self.calculate_data()
+            
+    def reset_range(self,event=None):
+
+        self.xmin = np.min(self.raw_data[0])
+        self.xmax = np.max(self.raw_data[0])
+        
+        self.val_qmin.SetValue('%0.3f' % self.xmin)
+        self.val_qmax.SetValue('%0.3f' % self.xmax)
+        
+        self.calculate_data()        
+
+        
+
+##############################################
 #### BACKGROUND FUNCTIONS
 
     def fit_background(self,event=None):
 
+        print 'in background fitting'
+        print 'shape of plt data',np.shape(self.plt_data)
+        
         if self.bgr is not None:
             self.remove_background(None,buttons=False)
 
         try:
             ## this creates self.bgr and self.bgr_info
-#             xrd_background(*self.raw_data, group=self, exponent=self.exponent, 
-#                            compress=self.compress, width=self.width)
             xrd_background(*self.plt_data, group=self, exponent=self.exponent, 
                            compress=self.compress, width=self.width)
         except:
@@ -636,11 +805,10 @@ class Fitting1DXRD(wx.Panel):
 
         self.ck_bkgd.Enable()
         self.btn_rbkgd.Enable()
-        
-        cmprsz = np.shape(self.bgr)[0]
-#         xaxis = self.raw_data[0]
-        xaxis = self.plt_data[0]
-        self.plot1D.oplot(xaxis[0:cmprsz],self.bgr,color='red',
+
+        print 'shape of bgr',np.shape(self.bgr)
+
+        self.plot1D.oplot(self.plt_data[0],self.bgr,color='red',
                           label='Fit background',show_legend=True)
 
   
@@ -664,42 +832,32 @@ class Fitting1DXRD(wx.Panel):
     
         myDlg = BackgroundOptions(self)#parent=self)
         
-        trim = False
+        fit = False
         if myDlg.ShowModal() == wx.ID_OK:
-            if (float(myDlg.val_xmin.GetValue())-self.xmin) > 0.05:
-                 self.xmin     = float(myDlg.val_xmin.GetValue())
-                 trim = True
-            if (self.xmax - float(myDlg.val_xmax.GetValue())) > 0.05:
-                 self.xmax     = float(myDlg.val_xmax.GetValue())
-                 trim = True
-#             self.xmin     = float(myDlg.val_xmin.GetValue())
-#             self.xmax     = float(myDlg.val_xmax.GetValue())
             self.exponent = int(myDlg.val_exp.GetValue())
             self.compress = int(myDlg.val_comp.GetValue())
             self.width    = int(myDlg.val_wid.GetValue())
+            fit = True
         myDlg.Destroy()
-        
-        if trim:
-#            print 'trim!'
-            indicies = [i for i,value in enumerate(self.plt_data[0]) if value>=self.xmin and value<=self.xmax]
-            if len(indicies) > 0:
-                x = [self.plt_data[0][i] for i in indicies]
-                y = [self.plt_data[1][i] for i in indicies]
-                self.plt_data = [x,y]
-        
-        self.fit_background()
+
+        if fit:
+            self.fit_background()
 
 ##############################################
 #### PEAK FUNCTIONS
 
     def find_peaks(self,event=None):
-
-        pnts = 50
-        ttlpnts = len(self.plt_data[0])
+    
+        ## clears previous searches
+        self.remove_peaks()
         
-        self.ipeaks = signal.find_peaks_cwt(self.plt_data[1], 
-                                           np.arange(1,int(ttlpnts/pnts)),
-                                           gap_thresh=5)
+        ttlpnts = len(self.plt_data[0])
+        widths = np.arange(1,int(ttlpnts/self.iregions))
+        
+        self.ipeaks = signal.find_peaks_cwt(self.plt_data[1], widths,
+                                           gap_thresh=self.gapthrsh)
+# # #   scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+# # #                     gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
         self.calc_peaks()
         self.plot_peaks()
@@ -741,48 +899,22 @@ class Fitting1DXRD(wx.Panel):
     
         print 'this will pop up a list of peaks for removing (and adding?)'
 
+    def peak_options(self,event=None):
+    
+        myDlg = PeakOptions(self)
+
+        fit = False
+        if myDlg.ShowModal() == wx.ID_OK:
+            self.iregions = int(myDlg.val_regions.GetValue())
+            self.gapthrsh = int(myDlg.val_gapthr.GetValue())
+            fit = True
+        myDlg.Destroy()
+        
+        if fit:
+            self.find_peaks()
+
 ##############################################
 #### PLOTPANEL FUNCTIONS
-    def replot(self,event=None):
-    
-        try:
-            cmprsz = np.shape(self.bgr)[0]
-            xaxis = self.raw_data[0]
-            if self.ck_bkgd.GetValue() == True:
-                yaxis = self.raw_data[1]
-                self.plt_data = np.zeros((2,cmprsz))
-                self.plt_data[0] = xaxis[0:cmprsz]
-                self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
-
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='green', label='Background subtracted',
-                                 show_legend=True)
-
-                self.btn_rbkgd.Disable()
-                self.btn_fbkgd.Disable()
-                self.btn_obkgd.Disable()
-            else:
-                self.plt_data = self.raw_data
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='blue', label='Raw data',
-                                 show_legend=True)
-                self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
-                                  color='red', label='Fit background',
-                                  show_legend=True)
-                                  
-                self.btn_rbkgd.Enable()
-                self.btn_fbkgd.Enable()
-                self.btn_obkgd.Enable()
-        except:
-            self.plt_data = self.raw_data
-            self.plot1D.plot(*self.plt_data, title=self.name,
-                             color='blue', label='Raw data',
-                             show_legend=True)
-
-        if self.ipeaks is not None:
-            self.calc_peaks()
-            self.plot_peaks()
-
     def plot1DXRD(self,panel):
     
         self.plot1D = PlotPanel(panel,size=(1000, 500))
@@ -791,6 +923,7 @@ class Fitting1DXRD(wx.Panel):
 
         ## Set defaults for plotting  
         self.plot1D.set_ylabel('Intensity (a.u.)')
+        self.plot1D.set_xlabel('q (1/$\AA$)')  #'q (1/A)')
         self.plot1D.cursor_mode = 'zoom'
 
     def onSAVEfig(self,event=None):
@@ -857,8 +990,6 @@ class BackgroundOptions(wx.Dialog):
         self.Init()
 
         ## Set defaults
-        self.val_xmin.SetValue('%0.4f' % self.parent.xmin)
-        self.val_xmax.SetValue('%0.4f' % self.parent.xmax)
         self.val_exp.SetValue(str(self.parent.exponent))
         self.val_comp.SetValue(str(self.parent.compress))
         self.val_wid.SetValue(str(self.parent.width))
@@ -871,28 +1002,6 @@ class BackgroundOptions(wx.Dialog):
         self.panel = wx.Panel(self)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        
-
-        ## X-Range
-        xsizer = wx.BoxSizer(wx.VERTICAL)
-        
-        ttl_xrange = wx.StaticText(self.panel, label='Q-RANGE (1/A)')
-
-        xminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmin = wx.StaticText(self.panel, label='minimum')
-        self.val_xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)
-        xminsizer.Add(self.val_xmin,  flag=wx.RIGHT, border=5)
-        
-        xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmax = wx.StaticText(self.panel, label='maximum')
-        self.val_xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)        
-        xmaxsizer.Add(self.val_xmax,  flag=wx.RIGHT, border=5)
-
-        xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
-        xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
-        xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
         
         ## Exponent
         expsizer = wx.BoxSizer(wx.VERTICAL)
@@ -927,36 +1036,107 @@ class BackgroundOptions(wx.Dialog):
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
         hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK      )
+        canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8 )
+        oksizer.Add(canBtn,     flag=wx.RIGHT,  border=8 ) 
+        oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8 )
+
+        mainsizer.Add(expsizer,  flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(compsizer, flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer,   flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
+
+
+        self.panel.SetSizer(mainsizer)
+
+class PeakOptions(wx.Dialog):
+    def __init__(self,parent):
+    
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='Peak searching options',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
+                                    size = (210,410))
+        self.parent = parent
+        
+        self.Init()
+
+        ## Set defaults
+        self.val_regions.SetValue(str(self.parent.iregions))
+        self.val_gapthr.SetValue(str(self.parent.gapthrsh))
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+
+    def Init(self):
+    
+        self.panel = wx.Panel(self)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ##  Fit type
+        fitsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        ttl_fit = wx.StaticText(self.panel, label='Fit type')
+        self.ch_pkfit = wx.Choice(self.panel,choices=FIT_METHODS)
+
+        self.ch_pkfit.Bind(wx.EVT_CHOICE, None)
+        
+        fitsizer.Add(ttl_fit,  flag=wx.RIGHT, border=5)
+        fitsizer.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
+        
+        ## Regions
+        rgnsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_rgn = wx.StaticText(self.panel, label='Number of regions')
+        self.val_regions = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        rgnsizer.Add(ttl_rgn,  flag=wx.RIGHT, border=5)
+        rgnsizer.Add(self.val_regions,  flag=wx.RIGHT, border=5)
+
+        ## Gap threshold
+        gpthrsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_gpthr = wx.StaticText(self.panel, label='Gap threshold')
+
+        self.val_gapthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        gpthrsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
+        gpthrsizer.Add(self.val_gapthr,  flag=wx.RIGHT, border=5)
+        
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
         self.okBtn = wx.Button(self.panel, wx.ID_OK)#, label = 'Fit' )
         canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        hlpBtn.Bind(wx.EVT_BUTTON, lambda(evt): wx.TipWindow(
+            self, 'These values are specific to the built-in scipy function:'
+            ' scipy.signal.find_peaks_cwt(vector, widths, wavelet=None,'
+            ' max_distances=None, gap_thresh=None, min_length=None,'
+            ' min_snr=1, noise_perc=10), where he number of regions defines the'
+            ' width squence [widths = arange(int(len(x_axis)/regions))]'))
 
         oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8)
         oksizer.Add(canBtn,     flag=wx.RIGHT, border=8) 
         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8)
 
-        mainsizer.Add(xsizer,     flag=wx.ALL, border=5)        
+        mainsizer.Add(fitsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
-        mainsizer.Add(expsizer, flag=wx.ALL, border=8)
+        mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
-        mainsizer.Add(compsizer,     flag=wx.ALL, border=5)        
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
+        mainsizer.Add(gpthrsizer, flag=wx.ALL, border=5)        
         mainsizer.AddSpacer(15)
         mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
 
         self.panel.SetSizer(mainsizer)
-        
-    def onSPIN(self, event):
-        self.wedges.SetValue(str(event.GetPosition())) 
-        print('WARNING: not currently using multiple wedges for calculations')
-
-    def getValues(self):
-    
-        print 'get values'
-#         self.steps = int(self.xstep.GetValue())
-
-
 
 class Viewer1DXRD(wx.Panel):
     '''
@@ -1067,13 +1247,13 @@ class Viewer1DXRD(wx.Panel):
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
-        self.entr_scale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_scale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
         btn_scale = wx.Button(self,label='set')
 
         btn_scale.Bind(wx.EVT_BUTTON, self.normalize1Ddata)
         
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.entr_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.val_scale, flag=wx.RIGHT, border=8)
         hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
@@ -1119,13 +1299,13 @@ class Viewer1DXRD(wx.Panel):
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
-        self.entr_cifscale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_cifscale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
         btn_scale = wx.Button(self,label='set')
 
         btn_scale.Bind(wx.EVT_BUTTON, partial(self.normalize1Ddata,cif=True))
         
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(self.entr_cifscale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.val_cifscale, flag=wx.RIGHT, border=8)
         hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
@@ -1265,7 +1445,7 @@ class Viewer1DXRD(wx.Panel):
         self.ch_cif.SetStringSelection(name)
         
         ## Update toolbox panel, scale all cif to 1000
-        self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+        self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
        
     def add1Ddata(self,x,y,name=None,cif=False):
         
@@ -1309,10 +1489,10 @@ class Viewer1DXRD(wx.Panel):
         
         ## Update toolbox panel, scale all cif to 1000
         if cif is True:
-            self.entr_scale.SetValue('1000')
+            self.val_scale.SetValue('1000')
             self.normalize1Ddata()
         else:
-            self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+            self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
     def addLAMBDA(self,wavelength,units='m'):
         
@@ -1338,19 +1518,19 @@ class Viewer1DXRD(wx.Panel):
             plt_no = self.ch_cif.GetSelection()
             y = self.cif_data[plt_no][1]
         
-            self.cif_scale[plt_no] = float(self.entr_cifscale.GetValue())
+            self.cif_scale[plt_no] = float(self.val_cifscale.GetValue())
             if self.cif_scale[plt_no] <= 0:
                 self.cif_scale[plt_no] = np.max(y)
-                self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+                self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
             self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]
         else:
             plt_no = self.ch_data.GetSelection()
             y = self.xy_data[plt_no][1]
         
-            self.xy_scale[plt_no] = float(self.entr_scale.GetValue())
+            self.xy_scale[plt_no] = float(self.val_scale.GetValue())
             if self.xy_scale[plt_no] <= 0:
                 self.xy_scale[plt_no] = np.max(y)
-                self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+                self.val_scale.SetValue(str(self.xy_scale[plt_no]))
             self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.updatePLOT()
@@ -1379,14 +1559,14 @@ class Viewer1DXRD(wx.Panel):
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
         
         plt_no = self.ch_data.GetSelection()
-        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
     def selectCIF(self,event=None):
     
         cif_str = self.ch_cif.GetString(self.ch_cif.GetSelection())
         
         plt_no = self.ch_cif.GetSelection()
-        self.entr_cifscale.SetValue(str(self.cif_scale[plt_no]))
+        self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
 
     def checkXaxis(self,event=None):
         
@@ -1460,7 +1640,7 @@ class Viewer1DXRD(wx.Panel):
         
         self.updatePLOT()
         self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
-        self.entr_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
 ####### BEGIN #######            
 ## THIS IS DIRECTLY FROM XRDDISPLAY.PY
@@ -1868,7 +2048,6 @@ class Calc1DPopup(wx.Dialog):
     
         self.steps = int(self.xstep.GetValue())
     
-
 class SetLambdaDialog(wx.Dialog):
     """"""
 
@@ -1946,7 +2125,6 @@ class SetLambdaDialog(wx.Dialog):
                 self.wavelength = HC/(self.energy)*1e10 ## units: A
                 self.entr_EorL.SetValue('%0.4f' % self.wavelength)
             self.pre_sel = self.ch_EorL.GetSelection()
-
       
 class diFFit1D(wx.App):
     def __init__(self):
