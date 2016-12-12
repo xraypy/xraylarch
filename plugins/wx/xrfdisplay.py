@@ -1330,7 +1330,7 @@ def initializeLarchPlugin(_larch=None):
         _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
 def registerLarchPlugin():
-    return ('_wx', {})
+    return ('_sys.wx', {})
 
 if __name__ == "__main__":
     XRFApp().MainLoop()
