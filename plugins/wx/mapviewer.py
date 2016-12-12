@@ -316,12 +316,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
             wid.SetChoices(rois)
 
     def set_workarray_choices(self, xrmmap):
+            
         c = self.workarray_choice
         c.Clear()
-        choices = [a for a in xrmmap['work']]
-        c.AppendItems(choices)
-        c.SetSelection(len(choices)-1)
-
+        if 'work' in xrmmap:
+            choices = [a for a in xrmmap['work']]
+            c.AppendItems(choices)
+            c.SetSelection(len(choices)-1)
 
     def set_file_choices(self, fnames):
         for wid in self.varfile.values():
