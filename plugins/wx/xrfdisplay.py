@@ -1239,8 +1239,10 @@ class XRFDisplayFrame(wx.Frame):
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        elif hasattr(self.mca, 'filename'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
         if hasattr(self.mca, 'areaname'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'areaname'))
+            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
         if deffile == '':
             deffile ='test'
         if not deffile.endswith('.mca'):
@@ -1250,13 +1252,29 @@ class XRFDisplayFrame(wx.Frame):
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
-
         if outfile is not None:
             self.mca.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
-        print( '  onSaveColumnFile not yet implemented  ')
-        pass
+        deffile = ''
+        if hasattr(self.mca, 'sourcefile'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        elif hasattr(self.mca, 'filename'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
+        if hasattr(self.mca, 'areaname'):
+            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
+        if deffile == '':
+            deffile ='test'
+        if not deffile.endswith('.dat'):
+            deffile = deffile + '.dat'
+
+        deffile = fix_filename(str(deffile))
+        ASCII_WILDCARDS = "Data File (*.dat)|*.dat|All files (*.*)|*.*"
+        outfile = FileSave(self, "Save ASCII File for MCA Data",
+                           default_file=deffile,
+                           wildcard=ASCII_WILDCARDS)
+        if outfile is not None:
+            self.mca.save_columnfile(outfile)
 
     def onCalibrateEnergy(self, event=None, **kws):
         try:
