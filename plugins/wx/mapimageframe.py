@@ -21,8 +21,10 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
+import wxmplot
 from wxmplot import ImageFrame, PlotFrame, PlotPanel
 from wxmplot.imagepanel import ImagePanel
+from wxmplot.imageframe import ColorMapPanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex, register_custom_colormaps
 
@@ -42,7 +44,7 @@ class MapImageFrame(ImageFrame):
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=None, mode='intensity',
+    def __init__(self, parent=None, size=(700, 525), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
@@ -324,38 +326,60 @@ class MapImageFrame(ImageFrame):
         self.zoom_mode.SetSelection(0)
         self.panel.cursor_mode = 'zoom'
 
-    def CustomConfig(self, panel, sizer, irow):
+    def CustomConfig(self, panel, sizer=None, irow=0):
         """config panel for left-hand-side of frame"""
-        conf = self.panel.conf
-        lpanel = panel
-        lsizer = sizer
+        wmv = [int(w) for w in wxmplot.__version__ .split('.')]
+        wxmplot_version = wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
+
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+        zoom_opts = ('Zoom to Rectangle',
+                     'Pick Area for XRF Spectrum',
+                     'Show Line Profile')
 
-        self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
-                                     wx.DefaultPosition, wx.DefaultSize,
-                                     ('Zoom to Rectangle',
-                                      'Pick Area for XRF Spectrum',
-                                      'Show Line Profile'),
-                                     1, wx.RA_SPECIFY_COLS)
-        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-        sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-        if self.save_callback is not None:
-            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
-                                        style=wx.TE_PROCESS_ENTER)
-            self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-            label   = SimpleText(panel, label='Save Position:',
-                                 size=(-1, -1))
-            # sbutton = Button(panel, 'Save Position', size=(100, -1),
-            #                  action=self.onSavePixel)
-            sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
-            sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
-            # sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
+        if wxmplot_version > 0.921:
+            cpanel = wx.Panel(panel)
+            if sizer is None:
+                sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle), 0, labstyle, 3)
+            self.zoom_mode = wx.RadioBox(cpanel, -1, "",
+                                         wx.DefaultPosition, wx.DefaultSize,
+                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
+            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
 
-        # if self.move_callback is not None:
-            # mbutton = Button(panel, 'Move to Position', size=(100, -1),
-            #                 action=self.onMoveToPixel)
-            # irow  = irow + 2
-            # sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
+            sizer.Add(self.zoom_mode, 1, labstyle, 4)
+
+            if self.save_callback is not None:
+                sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle), 0, labstyle, 3)
+                self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
+                                            style=wx.TE_PROCESS_ENTER)
+                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+                sizer.Add(self.pos_name, 0, labstyle, 3)
+
+            pack(cpanel, sizer)
+            return cpanel
+        else:  # support older versions of wxmplot, will be able to deprecate
+            conf = self.panel.conf
+            lpanel = panel
+            lsizer = sizer
+            self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
+                                         wx.DefaultPosition, wx.DefaultSize,
+                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
+            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+            sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+            if self.save_callback is not None:
+                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
+                                            style=wx.TE_PROCESS_ENTER)
+                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+                label   = SimpleText(panel, label='Save Position:',
+                                     size=(-1, -1))
+                sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
+                sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
+
+            # if self.move_callback is not None:
+            #    mbutton = Button(panel, 'Move to Position', size=(100, -1),
+            #                     action=self.onMoveToPixel)
+            #    irow  = irow + 2
+            #    sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
 
     def onMoveToPixel(self, event=None):
         pass
@@ -399,6 +423,15 @@ class DualMapFrame(wx.Frame):
         conf_panel = wx.Panel(splitter)
         main_panel = wx.Panel(splitter)
 
+        # main panel
+        self.plot_panel = PlotPanel(main_panel, size=(400, 300))
+        self.plot_panel.axesmargins = (15, 15, 15, 15)
+        self.plot_panel.conf.set_axes_style(style='open')
+
+        self.img1_panel = ImagePanel(main_panel, size=(400, 300))
+        self.img2_panel = ImagePanel(main_panel, size=(400, 300))
+        self.dual_panel = ImagePanel(main_panel, size=(400, 300))
+
         sizer = wx.GridBagSizer(3, 3)
 
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
@@ -408,6 +441,7 @@ class DualMapFrame(wx.Frame):
         cmap_colors = ('blue', 'red')
 
         for i in range(2):
+
             mapsel = Choice(conf_panel, size=(175, -1), choices=[],
                              action=partial(self.on_mapsel, index=i))
 
@@ -432,14 +466,6 @@ class DualMapFrame(wx.Frame):
 
         pack(conf_panel, sizer)
 
-        # main panel
-        self.plot_panel = PlotPanel(main_panel, size=(400, 300))
-        self.plot_panel.axesmargins = (15, 15, 15, 15)
-        self.plot_panel.conf.set_axes_style(style='open')
-
-        self.img1_panel = ImagePanel(main_panel, size=(400, 300))
-        self.img2_panel = ImagePanel(main_panel, size=(400, 300))
-        self.dual_panel = ImagePanel(main_panel, size=(400, 300))
 
         for name, panel in (('corplot', self.plot_panel),
                             ('map1',    self.img1_panel),
