@@ -1064,7 +1064,7 @@ def initializeLarchPlugin(_larch=None):
         _sys.gui_apps['xyfit'] = ('XY Data Viewing & Fitting', XYFitFrame)
 
 def registerLarchPlugin():
-    return ('_wx', {})
+    return ('_sys.wx', {})
 
 if __name__ == "__main__":
     XYFitViewer().run()
