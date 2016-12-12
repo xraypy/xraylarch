@@ -1736,7 +1736,7 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Perform XRD &Calibration',
                  'Calibrate XRD Detector',  self.onCalXRD)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Show Larch Buffer',
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                   'Show Larch Programming Buffer',
                   self.onShowLarchBuffer)
 
