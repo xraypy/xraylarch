@@ -730,57 +730,6 @@ class Fitting1DXRD(wx.Panel):
 
 
 
-
-
-#     def replot(self,event=None):
-#     
-#         try:
-#             cmprsz = np.shape(self.bgr)[0]
-#             xaxis = self.raw_data[0]
-#             if self.ck_bkgd.GetValue() == True:
-#                 yaxis = self.raw_data[1]
-#                 self.plt_data = np.zeros((2,cmprsz))
-#                 self.plt_data[0] = xaxis[0:cmprsz]
-#                 self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
-# 
-#                 self.plot1D.plot(*self.plt_data, title=self.name,
-#                                  color='green', label='Background subtracted',
-#                                  show_legend=True)
-# 
-#                 self.btn_rbkgd.Disable()
-#                 self.btn_fbkgd.Disable()
-#                 self.btn_obkgd.Disable()
-#             else:
-#                 if trim:
-#                     self.plot1D.plot(*self.raw_data, title=self.name,
-#                                      color='gray', label='Raw data',
-#                                      show_legend=True)
-#                     self.plot1D.oplot(*self.plt_data,
-#                                       color='blue', label='Trimmed data',
-#                                       show_legend=True)
-#                 else:
-#                     self.plot1D.plot(*self.raw_data, title=self.name,
-#                                      color='blue', label='Raw data',
-#                                      show_legend=True)
-#                 self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
-#                                   color='red', label='Fit background',
-#                                   show_legend=True)
-#                                   
-#                 self.btn_rbkgd.Enable()
-#                 self.btn_fbkgd.Enable()
-#                 self.btn_obkgd.Enable()
-#         except:
-#             ## resets since something is wrong?
-#             print 'in this except statement'
-#             self.plt_data = self.raw_data
-#             self.plot1D.plot(*self.plt_data, title=self.name,
-#                              color='blue', label='Raw data',
-#                              show_legend=True)
-# 
-#         if self.ipeaks is not None:
-#             self.calc_peaks()
-#             self.plot_peaks()
-
     def calculate_data(self):
     
         print 'raw_data',np.shape(self.raw_data)
