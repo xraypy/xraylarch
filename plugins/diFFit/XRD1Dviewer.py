@@ -79,8 +79,9 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(1500, 700))
-
+#         wx.Frame.__init__(self, None,title=label,size=(1500, 700))
+        wx.Frame.__init__(self, None,title=label,size=(900, 500))
+        
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
         
         panel = wx.Panel(self)
@@ -210,8 +211,8 @@ class diFFit1DFrame(wx.Frame):
         
         if adddata:
 
-            self.xrd1Dfitting.raw_data = [x,y]
-            self.xrd1Dfitting.plt_data = [x,y]
+            self.xrd1Dfitting.raw_data = np.array([x,y])
+            self.xrd1Dfitting.plt_data = np.array([x,y])
             self.xrd1Dfitting.xmin     = np.min(x)
             self.xrd1Dfitting.xmax     = np.max(x)
 
@@ -585,7 +586,7 @@ class Fitting1DXRD(wx.Panel):
         vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
 
         self.ck_bkgd = wx.CheckBox(self,label='Subtract')
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,   self.replot)
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.subtract_background)#self.replot)
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
         
         vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
@@ -684,35 +685,28 @@ class Fitting1DXRD(wx.Panel):
 #### DATA CALCULATIONS FUNCTIONS
 
     def replot(self,event=None):
-    
-#         A : if self.bgr is not None
-#         B : if self.trim
-#         C : if self.ck_bkgd.GetValue() == True
         
         if self.ck_bkgd.GetValue() == False:
             if self.trim:
-                print 'plot raw_data in blue'
                 self.plot1D.plot(*self.raw_data, title=self.name,
-                                 color='blue', label='Background subtracted',
-                                 show_legend=True)
-            else:
-                print 'plot raw_data in grey, plot plt_data in blue'
-                self.plot1D.plot(*self.raw_data, title=self.name,
-                                 color='gray', label='Background subtracted',
+                                 color='gray', label='Raw data',
                                  show_legend=True)
                 self.plot1D.oplot(*self.plt_data, title=self.name,
-                                 color='blue', label='Background subtracted',
+                                 color='blue', label='Trimmed data',
+                                 show_legend=True)
+            else:
+                self.plot1D.plot(*self.raw_data, title=self.name,
+                                 color='blue', label='Raw data',
                                  show_legend=True)
 
         if self.bgr is not None:
             if self.ck_bkgd.GetValue() == True:
-                print 'plot plt_data in blue'
                 self.plot1D.plot(*self.plt_data, title=self.name,
                                  color='blue', label='Background subtracted',
                                  show_legend=True)
             else:
-                self.plot1D.oplot(self.bgr_data, title=self.name,
-                                 color='red', label='Background subtracted',
+                self.plot1D.oplot(*self.bgr_data, title=self.name,
+                                 color='red', label='Background',
                                  show_legend=True)
             
 
@@ -728,31 +722,6 @@ class Fitting1DXRD(wx.Panel):
 #                 self.btn_fbkgd.Enable()
 #                 self.btn_obkgd.Enable()
 
-
-
-    def calculate_data(self):
-    
-        print 'raw_data',np.shape(self.raw_data)
-        print 'plt_data',np.shape(self.plt_data)
-        print
-        print 'trim?',self.trim
-
-        if self.trim:
-            indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
-            if len(indicies) > 0:
-                x = [self.raw_data[0][i] for i in indicies]
-                y = [self.raw_data[1][i] for i in indicies]
-                self.plt_data = [x,y]
-        else:
-            self.plt_data = self.raw_data
-            
-        print 'raw_data',np.shape(self.raw_data)
-        print 'plt_data',np.shape(self.plt_data)
-        print
-        print
-            
-        
-                
 ##############################################
 #### RANGE FUNCTIONS
 
@@ -777,7 +746,8 @@ class Fitting1DXRD(wx.Panel):
         else:
             self.trim = False
             
-        self.calculate_data()
+        self.trim_data()
+        self.replot()
             
     def reset_range(self,event=None):
 
@@ -787,9 +757,21 @@ class Fitting1DXRD(wx.Panel):
         self.val_qmin.SetValue('%0.3f' % self.xmin)
         self.val_qmax.SetValue('%0.3f' % self.xmax)
         
-        self.calculate_data()        
+        self.trim = False
+        self.trim_data()
+        self.replot()        
 
-        
+    def trim_data(self):
+
+        if self.trim:
+            indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
+            if len(indicies) > 0:
+                x = [self.raw_data[0,i] for i in indicies]
+                y = [self.raw_data[1,i] for i in indicies]
+                self.plt_data = np.array([x,y])
+        else:
+            self.plt_data = self.raw_data[:]
+#         self.replot()        
 
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -809,29 +791,29 @@ class Fitting1DXRD(wx.Panel):
         self.ck_bkgd.Enable()
         self.btn_rbkgd.Enable()
 
-        self.bgr_data = np.zeros((2,np.shape(self.bgr)[0]))
-        self.bgr_data[0] = self.plt_data[0][0:-1]
+        self.bgr_data    = self.plt_data[:,:np.shape(self.bgr)[0]]
         self.bgr_data[1] = self.bgr
-
+        
         self.plot1D.oplot(*self.bgr_data,color='red',
                           label='Fit background',show_legend=True)
 
   
     def remove_background(self,event=None,buttons=True):
 
-        try:
-            self.plt_data = self.raw_data
-            self.ck_bkgd.SetValue(False)
-            self.bgr = None
-            self.bgr_info = None
-            if buttons:
-                self.ck_bkgd.Disable()
-                self.btn_rbkgd.Disable()
+        ## sets background to none
+        self.bgr_data = None
+        self.bgr = None
+        self.bgr_info = None
 
-            self.replot()
+        self.ck_bkgd.SetValue(False)
+        if buttons:
+            self.ck_bkgd.Disable()
+            self.btn_rbkgd.Disable()
 
-        except:
-            pass
+        ## resets to trimmed data state
+        self.trim_data()
+        self.replot()
+
     
     def background_options(self,event=None):
     
@@ -848,6 +830,23 @@ class Fitting1DXRD(wx.Panel):
         if fit:
             self.fit_background()
 
+    def subtract_background(self,event=None):
+    
+        self.trim_data()
+        if self.bgr_data is not None:
+            if (np.shape(self.plt_data)[1]-np.shape(self.bgr_data)[1]) > 2:
+                self.fit_background()
+            self.plt_data = self.plt_data[:,:np.shape(self.bgr)[0]]
+            self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
+            print 'here'
+        else:
+            print 'did not work'
+            self.ck_bkgd.SetValue(False)
+            
+            self.bgr_data = None
+            self.bgr = None
+                
+        self.replot()
 ##############################################
 #### PEAK FUNCTIONS
 
