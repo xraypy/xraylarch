@@ -474,17 +474,20 @@ class Fitting1DXRD(wx.Panel):
         ## Default information
         self.raw_data   = None
         self.plt_data   = None
+        self.bgr_data   = None
+        
         self.bgr        = None
         self.bgr_info   = None
+        
         self.ipeaks     = None
         self.plt_peaks  = None  
+        
         self.trim       = False
         self.indicies   = None      
+
         self.xmin       = None
         self.xmax       = None
-        self.exponent   = 20
-        self.compress   = 2
-        self.width      = 4
+
         self.name       = ''
         self.energy     = 19.0   ## keV
         self.wavelength = HC/(self.energy)*1e10 ## A
@@ -492,6 +495,11 @@ class Fitting1DXRD(wx.Panel):
         # Peak fitting defaults
         self.iregions = 50
         self.gapthrsh = 5
+        
+        # Background fitting defaults
+        self.exponent   = 20
+        self.compress   = 2
+        self.width      = 4
 
         self.Panel1DFitting()
     
@@ -677,52 +685,101 @@ class Fitting1DXRD(wx.Panel):
 
     def replot(self,event=None):
     
-        try:
-            cmprsz = np.shape(self.bgr)[0]
-            xaxis = self.raw_data[0]
-            if self.ck_bkgd.GetValue() == True:
-                yaxis = self.raw_data[1]
-                self.plt_data = np.zeros((2,cmprsz))
-                self.plt_data[0] = xaxis[0:cmprsz]
-                self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
-
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='green', label='Background subtracted',
+#         A : if self.bgr is not None
+#         B : if self.trim
+#         C : if self.ck_bkgd.GetValue() == True
+        
+        if self.ck_bkgd.GetValue() == False:
+            if self.trim:
+                print 'plot raw_data in blue'
+                self.plot1D.plot(*self.raw_data, title=self.name,
+                                 color='blue', label='Background subtracted',
+                                 show_legend=True)
+            else:
+                print 'plot raw_data in grey, plot plt_data in blue'
+                self.plot1D.plot(*self.raw_data, title=self.name,
+                                 color='gray', label='Background subtracted',
+                                 show_legend=True)
+                self.plot1D.oplot(*self.plt_data, title=self.name,
+                                 color='blue', label='Background subtracted',
                                  show_legend=True)
 
-                self.btn_rbkgd.Disable()
-                self.btn_fbkgd.Disable()
-                self.btn_obkgd.Disable()
+        if self.bgr is not None:
+            if self.ck_bkgd.GetValue() == True:
+                print 'plot plt_data in blue'
+                self.plot1D.plot(*self.plt_data, title=self.name,
+                                 color='blue', label='Background subtracted',
+                                 show_legend=True)
             else:
-                if trim:
-                    self.plot1D.plot(*self.raw_data, title=self.name,
-                                     color='gray', label='Raw data',
-                                     show_legend=True)
-                    self.plot1D.oplot(*self.plt_data,
-                                      color='blue', label='Trimmed data',
-                                      show_legend=True)
-                else:
-                    self.plot1D.plot(*self.raw_data, title=self.name,
-                                     color='blue', label='Raw data',
-                                     show_legend=True)
-                self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
-                                  color='red', label='Fit background',
-                                  show_legend=True)
-                                  
-                self.btn_rbkgd.Enable()
-                self.btn_fbkgd.Enable()
-                self.btn_obkgd.Enable()
-        except:
-            ## resets since something is wrong?
-            print 'in this except statement'
-            self.plt_data = self.raw_data
-            self.plot1D.plot(*self.plt_data, title=self.name,
-                             color='blue', label='Raw data',
-                             show_legend=True)
+                self.plot1D.oplot(self.bgr_data, title=self.name,
+                                 color='red', label='Background subtracted',
+                                 show_legend=True)
+            
 
         if self.ipeaks is not None:
             self.calc_peaks()
             self.plot_peaks()
+
+#                 self.btn_rbkgd.Disable()
+#                 self.btn_fbkgd.Disable()
+#                 self.btn_obkgd.Disable()
+#                                   
+#                 self.btn_rbkgd.Enable()
+#                 self.btn_fbkgd.Enable()
+#                 self.btn_obkgd.Enable()
+
+
+
+
+
+#     def replot(self,event=None):
+#     
+#         try:
+#             cmprsz = np.shape(self.bgr)[0]
+#             xaxis = self.raw_data[0]
+#             if self.ck_bkgd.GetValue() == True:
+#                 yaxis = self.raw_data[1]
+#                 self.plt_data = np.zeros((2,cmprsz))
+#                 self.plt_data[0] = xaxis[0:cmprsz]
+#                 self.plt_data[1] = yaxis[0:cmprsz]-self.bgr
+# 
+#                 self.plot1D.plot(*self.plt_data, title=self.name,
+#                                  color='green', label='Background subtracted',
+#                                  show_legend=True)
+# 
+#                 self.btn_rbkgd.Disable()
+#                 self.btn_fbkgd.Disable()
+#                 self.btn_obkgd.Disable()
+#             else:
+#                 if trim:
+#                     self.plot1D.plot(*self.raw_data, title=self.name,
+#                                      color='gray', label='Raw data',
+#                                      show_legend=True)
+#                     self.plot1D.oplot(*self.plt_data,
+#                                       color='blue', label='Trimmed data',
+#                                       show_legend=True)
+#                 else:
+#                     self.plot1D.plot(*self.raw_data, title=self.name,
+#                                      color='blue', label='Raw data',
+#                                      show_legend=True)
+#                 self.plot1D.oplot(xaxis[0:cmprsz], self.bgr,
+#                                   color='red', label='Fit background',
+#                                   show_legend=True)
+#                                   
+#                 self.btn_rbkgd.Enable()
+#                 self.btn_fbkgd.Enable()
+#                 self.btn_obkgd.Enable()
+#         except:
+#             ## resets since something is wrong?
+#             print 'in this except statement'
+#             self.plt_data = self.raw_data
+#             self.plot1D.plot(*self.plt_data, title=self.name,
+#                              color='blue', label='Raw data',
+#                              show_legend=True)
+# 
+#         if self.ipeaks is not None:
+#             self.calc_peaks()
+#             self.plot_peaks()
 
     def calculate_data(self):
     
@@ -789,9 +846,6 @@ class Fitting1DXRD(wx.Panel):
 #### BACKGROUND FUNCTIONS
 
     def fit_background(self,event=None):
-
-        print 'in background fitting'
-        print 'shape of plt data',np.shape(self.plt_data)
         
         if self.bgr is not None:
             self.remove_background(None,buttons=False)
@@ -806,9 +860,11 @@ class Fitting1DXRD(wx.Panel):
         self.ck_bkgd.Enable()
         self.btn_rbkgd.Enable()
 
-        print 'shape of bgr',np.shape(self.bgr)
+        self.bgr_data = np.zeros((2,np.shape(self.bgr)[0]))
+        self.bgr_data[0] = self.plt_data[0][0:-1]
+        self.bgr_data[1] = self.bgr
 
-        self.plot1D.oplot(self.plt_data[0],self.bgr,color='red',
+        self.plot1D.oplot(*self.bgr_data,color='red',
                           label='Fit background',show_legend=True)
 
   
