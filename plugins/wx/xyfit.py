@@ -753,7 +753,7 @@ class XYFitFrame(wx.Frame):
         panel = wx.Panel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.title = SimpleText(panel, 'initializing...')
+        self.title = SimpleText(panel, 'initializing...', size=(300, -1))
         self.title.SetFont(Font(10))
 
         ir = 0
