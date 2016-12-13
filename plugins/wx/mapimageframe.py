@@ -104,6 +104,8 @@ class MapImageFrame(ImageFrame):
 
         if self.wxmplot_version > 0.921:
             sd = kws.get('subtitles', {})
+            if sd is None: 
+                return
             t_red = sd.get('red', None)
             t_green = sd.get('green', None)
             t_blue = sd.get('blue', None)
