@@ -39,12 +39,16 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to select like for profile')}
 
 
+def get_wxmplot_version():
+    wmv = [int(w) for w in wxmplot.__version__ .split('.')]
+    return  wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
+
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=(700, 525), mode='intensity',
+    def __init__(self, parent=None, size=(750, 675), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
@@ -56,6 +60,8 @@ class MapImageFrame(ImageFrame):
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
+        self.wxmplot_version = get_wxmplot_version()
+
 
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
@@ -68,6 +74,10 @@ class MapImageFrame(ImageFrame):
         self.panel.report_leftdown = self.report_leftdown
         self.panel.report_motion   = self.report_motion
 
+        w, h = self.GetSize()
+        w = min(w, 750)
+        h = min(h, 675)
+        self.SetSize((w, h))
 
         self.prof_plotter = None
         self.zoom_ini =  None
@@ -91,6 +101,18 @@ class MapImageFrame(ImageFrame):
             self.panel.ydata = kws['y']
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
+
+        if self.wxmplot_version > 0.921:
+            sd = kws.get('subtitles', {})
+            t_red = sd.get('red', None)
+            t_green = sd.get('green', None)
+            t_blue = sd.get('blue', None)
+            if t_red is not None:
+                self.cmap_panels[0].title.SetLabel(t_red)
+            if t_green is not None:
+                self.cmap_panels[1].title.SetLabel(t_green)
+            if t_blue is not None:
+                self.cmap_panels[2].title.SetLabel(t_blue)
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -328,15 +350,13 @@ class MapImageFrame(ImageFrame):
 
     def CustomConfig(self, panel, sizer=None, irow=0):
         """config panel for left-hand-side of frame"""
-        wmv = [int(w) for w in wxmplot.__version__ .split('.')]
-        wxmplot_version = wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
 
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
         zoom_opts = ('Zoom to Rectangle',
                      'Pick Area for XRF Spectrum',
                      'Show Line Profile')
 
-        if wxmplot_version > 0.921:
+        if self.wxmplot_version > 0.921:
             cpanel = wx.Panel(panel)
             if sizer is None:
                 sizer = wx.BoxSizer(wx.VERTICAL)
