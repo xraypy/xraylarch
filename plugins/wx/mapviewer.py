@@ -818,34 +818,30 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
             name = str(name).lower()
-            if 'ring current' in name:
+            if 'ring_current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
-            elif 'mono energy' in name and cur_energy=='':
+            elif 'mono.energy' in name and cur_energy=='':
                 self.wids['X-ray Energy'].SetLabel('%s eV' % val)
                 cur_energy = val
-            elif 'i0 trans' in name:
+            elif 'beamline.fluxestimate' in name:
                 i0vals['flux'] = val
             elif 'i0 current' in name:
                 i0vals['current'] = val
-            else:
-                addr = str(addr)
-                if addr.endswith('.VAL'):
-                    addr = addr[:-4]
-                if addr in pos_addrs:
-                    plab = pos_label[pos_addrs.index(addr)].lower()
 
-                    if 'stage x' in plab:
-                        self.wids['Sample Stage X'].SetLabel('%s mm' % val)
-                    elif 'stage y' in plab:
-                        self.wids['Sample Stage Y'].SetLabel('%s mm' % val)
-                    elif 'stage z' in plab:
-                        self.wids['Sample Stage Z'].SetLabel('%s mm' % val)
-                    elif 'theta' in plab:
-                        self.wids['Sample Stage Theta'].SetLabel('%s deg' % val)
-                    elif 'x' in plab:
-                        fines['X'] = val
-                    elif 'y' in plab:
-                        fines['Y'] = val
+            elif name.startswith('samplestage.'):
+                name = name.replace('samplestage.', '')
+                if 'coarsex' in name:
+                    self.wids['Sample Stage X'].SetLabel('%s mm' % val)
+                elif 'coarsey' in name:
+                    self.wids['Sample Stage Y'].SetLabel('%s mm' % val)
+                elif 'coarsez' in name:
+                    self.wids['Sample Stage Z'].SetLabel('%s mm' % val)
+                elif 'theta' in name:
+                    self.wids['Sample Stage Theta'].SetLabel('%s deg' % val)
+                elif 'finex' in name:
+                    fines['X'] = val
+                elif 'finey' in name:
+                    fines['Y'] = val
 
         i0val = 'Flux=%(flux)s Hz, I0 Current=%(current)s uA' % i0vals
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
