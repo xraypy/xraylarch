@@ -853,8 +853,36 @@ class Fitting1DXRD(wx.Panel):
 
     def subtract_background(self,event=None):
         print '[subtract_background]'
-            
 
+#         if self.ck_bkgd.GetValue() == True:
+#             
+#             if (np.shape(self.plt_data)[1]-np.shape(self.bgr_data)[1]) > 2:
+#                 print '**** refitting background from subtract button'
+#                 print np.shape(self.plt_data)[1],np.shape(self.bgr_data)[1]
+#                 print np.shape(self.plt_data),np.shape(self.bgr_data)
+#                 self.fit_background()
+#             
+#             self.plt_data = self.plt_data[:,:np.shape(self.bgr)[0]]
+#             self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
+# 
+#             
+#             self.plot1D.plot(*self.plt_data, title=self.name,
+#                              color='blue', label='Background subtracted',
+#                              show_legend=True)
+# 
+#             self.btn_rbkgd.Disable()
+#             self.btn_fbkgd.Disable()
+#             self.btn_obkgd.Disable()
+#         
+#         else:
+#             
+#             self.plt_data = self.raw_data[:]
+#             self.replot()
+#             
+#             self.btn_rbkgd.Enable()
+#             self.btn_fbkgd.Enable()
+#             self.btn_obkgd.Enable()
+            
 ##############################################
 #### PEAK FUNCTIONS
 
@@ -877,6 +905,9 @@ class Fitting1DXRD(wx.Panel):
         
         self.btn_rpks.Enable()        
         self.btn_spks.Enable()
+
+    def fit_peaks(self,event=None):
+        print '[fit_peaks]'
 
     def calc_peaks(self):
         print '[calc_peaks]'
