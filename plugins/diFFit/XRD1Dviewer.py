@@ -572,7 +572,7 @@ class Fitting1DXRD(wx.Panel):
         vbox_bkgd.Add(ttl_bkgd, flag=wx.BOTTOM, border=8)
 
         self.btn_fbkgd = wx.Button(self,label='Fit')
-        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.fit_background)
+        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.background_fit)
         hbox_bkgd.Add(self.btn_fbkgd, flag=wx.RIGHT, border=8)
 
         self.btn_obkgd = wx.Button(self,label='Options')
@@ -586,7 +586,7 @@ class Fitting1DXRD(wx.Panel):
         vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
 
         self.ck_bkgd = wx.CheckBox(self,label='Subtract')
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.subtract_background)#self.replot)
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.subtract_background)
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
         
         vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
@@ -684,73 +684,70 @@ class Fitting1DXRD(wx.Panel):
 ##############################################
 #### DATA CALCULATIONS FUNCTIONS
 
-    def replot(self,event=None):
+    def plot_data(self,event=None):
+        print '[plot_data]'
         
-        if self.ck_bkgd.GetValue() == False:
-            if self.trim:
-                self.plot1D.plot(*self.raw_data, title=self.name,
-                                 color='gray', label='Raw data',
-                                 show_legend=True)
-                self.plot1D.oplot(*self.plt_data, title=self.name,
-                                 color='blue', label='Trimmed data',
-                                 show_legend=True)
-            else:
-                self.plot1D.plot(*self.raw_data, title=self.name,
-                                 color='blue', label='Raw data',
-                                 show_legend=True)
+        if self.trim:
+            self.plot1D.plot(*self.raw_data, title=self.name, 
+                             color='grey', label='Raw data',
+                             show_legend=True)
+            self.plot1D.oplot(*self.plt_data, title=self.name, 
+                              color='blue', label='Trimmed data',
+                              show_legend=True)
+        else:
+            self.plot1D.plot(*self.raw_data, title=self.name, 
+                             color='blue', label='Raw data',
+                             show_legend=True)
 
-        if self.bgr is not None:
-            if self.ck_bkgd.GetValue() == True:
-                self.plot1D.plot(*self.plt_data, title=self.name,
-                                 color='blue', label='Background subtracted',
-                                 show_legend=True)
-            else:
-                self.plot1D.oplot(*self.bgr_data, title=self.name,
-                                 color='red', label='Background',
-                                 show_legend=True)
-            
-
-        if self.ipeaks is not None:
-            self.calc_peaks()
-            self.plot_peaks()
-
-#                 self.btn_rbkgd.Disable()
-#                 self.btn_fbkgd.Disable()
-#                 self.btn_obkgd.Disable()
-#                                   
-#                 self.btn_rbkgd.Enable()
-#                 self.btn_fbkgd.Enable()
-#                 self.btn_obkgd.Enable()
-
+        
 ##############################################
 #### RANGE FUNCTIONS
 
     def set_range(self,event=None):
+        print '[set_range]'
         
+        if float(self.val_qmax.GetValue()) < float(self.val_qmin.GetValue()):
+            min = float(self.val_qmax.GetValue())
+            max = float(self.val_qmin.GetValue())
+            self.val_qmin.SetValue('%0.3f' % min)
+            self.val_qmax.SetValue('%0.3f' % max)        
+        
+        self.check_range()
+        self.trim_data()
+        if self.bgr is not None:
+            self.fit_background()
+
+        self.plot_data()
+        self.plot_background()
+
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
+    
+    def check_range(self,event=None):
+        print '[check_range]'
+
+        self.trim = True
         if float(self.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
             self.xmin = float(self.val_qmin.GetValue())
         else:
             self.xmin = np.min(self.raw_data[0])
-            self.val_qmin.SetValue('%0.3f' % np.min(self.raw_data[0]))            
-
+            
         if np.max(self.raw_data[0]) - float(self.val_qmax.GetValue()) > 0.005:
             self.xmax = float(self.val_qmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[0])
-            self.val_qmax.SetValue('%0.3f' % np.max(self.raw_data[0])) 
+
+        self.val_qmin.SetValue('%0.3f' % self.xmin)
+        self.val_qmax.SetValue('%0.3f' % self.xmax)
             
-        if np.max(self.raw_data[0])-self.xmax > 0.005 or self.xmin-np.min(self.raw_data[0]) > 0.005:
-            self.trim = True
-            if self.bgr is not None:
-                self.fit_background()
-        else:
+        if np.max(self.raw_data[0])-self.xmax < 0.005 and self.xmin-np.min(self.raw_data[0]) < 0.005:
             self.trim = False
-            
-        self.trim_data()
-        self.replot()
+    
             
     def reset_range(self,event=None):
-
+        print '[reset_range]'
+        
         self.xmin = np.min(self.raw_data[0])
         self.xmax = np.max(self.raw_data[0])
         
@@ -759,9 +756,18 @@ class Fitting1DXRD(wx.Panel):
         
         self.trim = False
         self.trim_data()
-        self.replot()        
+        if self.bgr is not None:
+            self.fit_background()
+                    
+        self.plot_data()
+        self.plot_background()
+
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
 
     def trim_data(self):
+        print '[trim_data]'
 
         if self.trim:
             indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
@@ -770,54 +776,69 @@ class Fitting1DXRD(wx.Panel):
                 y = [self.raw_data[1,i] for i in indicies]
                 self.plt_data = np.array([x,y])
         else:
-            self.plt_data = self.raw_data[:]
-#         self.replot()        
+            self.plt_data = np.copy(self.raw_data)
+     
 
 ##############################################
 #### BACKGROUND FUNCTIONS
 
-    def fit_background(self,event=None):
-        
+    def background_fit(self,event=None):        
+
         if self.bgr is not None:
-            self.remove_background(None,buttons=False)
+            self.plot_data()
+            if self.ipeaks is not None:
+                self.calc_peaks()
+                self.plot_peaks()
+        self.fit_background()
+        self.plot_background()
 
-        try:
-            ## this creates self.bgr and self.bgr_info
-            xrd_background(*self.plt_data, group=self, exponent=self.exponent, 
+    def fit_background(self,event=None):
+        print '[fit_background]'
+        
+        self.delete_background()
+        
+        ## this creates self.bgr and self.bgr_info
+        xrd_background(*self.plt_data, group=self, exponent=self.exponent, 
                            compress=self.compress, width=self.width)
-        except:
-            return
-
-        self.ck_bkgd.Enable()
-        self.btn_rbkgd.Enable()
-
-        self.bgr_data    = self.plt_data[:,:np.shape(self.bgr)[0]]
+   
+        self.bgr_data    = np.copy(self.plt_data[:,:np.shape(self.bgr)[0]])
         self.bgr_data[1] = self.bgr
         
-        self.plot1D.oplot(*self.bgr_data,color='red',
-                          label='Fit background',show_legend=True)
-
+        self.ck_bkgd.Enable()
+        self.btn_rbkgd.Enable()
   
-    def remove_background(self,event=None,buttons=True):
+    def remove_background(self,event=None):
+        print '[remove_background]'
 
-        ## sets background to none
+        self.delete_background()
+        self.plot_data()
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
+        
+        self.ck_bkgd.SetValue(False)
+        self.ck_bkgd.Disable()
+        self.btn_rbkgd.Disable()
+
+        
+    def delete_background(self,event=None):
+        print '[delete_background]'    
         self.bgr_data = None
         self.bgr = None
         self.bgr_info = None
 
-        self.ck_bkgd.SetValue(False)
-        if buttons:
-            self.ck_bkgd.Disable()
-            self.btn_rbkgd.Disable()
+    def plot_background(self,event=None):
+        print '[plot_background]'
 
-        ## resets to trimmed data state
-        self.trim_data()
-        self.replot()
+        if self.bgr is not None:
+            self.plot1D.oplot(*self.bgr_data, title=self.name, 
+                              color='red', label='Background',
+                              show_legend=True)
 
-    
     def background_options(self,event=None):
+        print '[background_options]'
     
-        myDlg = BackgroundOptions(self)#parent=self)
+        myDlg = BackgroundOptions(self)
         
         fit = False
         if myDlg.ShowModal() == wx.ID_OK:
@@ -828,36 +849,20 @@ class Fitting1DXRD(wx.Panel):
         myDlg.Destroy()
 
         if fit:
-            self.fit_background()
+            self.background_fit()
 
     def subtract_background(self,event=None):
-
-        if self.ck_bkgd.GetValue() == True:
-            if (np.shape(self.plt_data)[1]-np.shape(self.bgr_data)[1]) > 2:
-                self.fit_background()
-            self.plt_data = self.plt_data[:,:np.shape(self.bgr)[0]]
-            self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
-
-            self.btn_rbkgd.Disable()
-            self.btn_fbkgd.Disable()
-            self.btn_obkgd.Disable()
-        
-        else:
-            self.plt_data = self.raw_data[:]
-            self.btn_rbkgd.Enable()
-            self.btn_fbkgd.Enable()
-            self.btn_obkgd.Enable()
+        print '[subtract_background]'
             
 
-                
-        self.replot()
 ##############################################
 #### PEAK FUNCTIONS
 
     def find_peaks(self,event=None):
-    
+        print '[find_peaks]'
+        
         ## clears previous searches
-        self.remove_peaks()
+        self.delete_peaks()
         
         ttlpnts = len(self.plt_data[0])
         widths = np.arange(1,int(ttlpnts/self.iregions))
@@ -874,41 +879,45 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Enable()
 
     def calc_peaks(self):
-
+        print '[calc_peaks]'
         self.plt_peaks = np.zeros((2,len(self.ipeaks)))
         for i,j in enumerate(self.ipeaks):
             self.plt_peaks[0,i] = self.plt_data[0][j]
             self.plt_peaks[1,i] = self.plt_data[1][j]
             
     def plot_peaks(self):
-
+        print '[plot_peaks]'
         self.plot1D.scatterplot(*self.plt_peaks,
                           color='red',edge_color='yellow', selectcolor='green',size=12,
                           show_legend=True)
         self.plot1D.cursor_mode = 'zoom'
  
-# # #      def scatterplot(self, xdata, ydata, label=None, size=10,
-# # #                     color=None, edgecolor=None,
-# # #                     selectcolor=None, selectedge=None,
-# # #                     xlabel=None, ylabel=None, y2label=None,
-# # #                     xmin=None, xmax=None, ymin=None, ymax=None,
-# # #                     title=None, grid=None, callback=None, **kw):
+# # #   scatterplot(self, xdata, ydata, label=None, size=10, color=None, edgecolor=None,
+# # #           selectcolor=None, selectedge=None, xlabel=None, ylabel=None, y2label=None,
+# # #           xmin=None, xmax=None, ymin=None, ymax=None, title=None, grid=None,
+# # #           callback=None, **kw):
 
     def remove_peaks(self,event=None):
-    
-        self.peaks = None
-        self.ipeaks = None
-        self.replot()
+        print '[remove_peaks]'
+
+        self.delete_peaks()
+        self.plot_data()
+        self.plot_background()
 
         self.btn_rpks.Disable()        
         self.btn_spks.Disable()
 
+    def delete_peaks(self,event=None):
+        print '[delete_peaks]'
+        self.peaks = None
+        self.ipeaks = None
+
     def edit_peaks(self,event=None):
-    
+        print '[edit_peaks]'
         print 'this will pop up a list of peaks for removing (and adding?)'
 
     def peak_options(self,event=None):
-    
+        print '[peak_options]'
         myDlg = PeakOptions(self)
 
         fit = False
@@ -1043,9 +1052,16 @@ class BackgroundOptions(wx.Dialog):
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
-        self.okBtn = wx.Button(self.panel, wx.ID_OK      )
-        canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
+        hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK     )
+        canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
+
+        hlpBtn.Bind(wx.EVT_BUTTON, lambda(evt): wx.TipWindow(
+            self, 'These values are specific to the background fitting defined in:'
+            ' Nucl. Instrum. Methods (1987) B22, 78-81.\n'
+            ' EXPONENT : Specifies the power of polynomial which is used.\n'
+            ' COMPRESS : Compression factor to apply before fitting the background.\n'
+            ' WIDTH : Specifies the width of the polynomials which are concave downward.'))
 
         oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8 )
         oksizer.Add(canBtn,     flag=wx.RIGHT,  border=8 ) 
@@ -1120,9 +1136,9 @@ class PeakOptions(wx.Dialog):
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        hlpBtn     = wx.Button(self.panel, wx.ID_HELP    )
-        self.okBtn = wx.Button(self.panel, wx.ID_OK)#, label = 'Fit' )
-        canBtn     = wx.Button(self.panel, wx.ID_CANCEL  )
+        hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK     )
+        canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
 
         hlpBtn.Bind(wx.EVT_BUTTON, lambda(evt): wx.TipWindow(
             self, 'These values are specific to the built-in scipy function:'
