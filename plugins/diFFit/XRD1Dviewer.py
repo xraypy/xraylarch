@@ -24,6 +24,7 @@ from larch_plugins.diFFit.cifdb import cifDB
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
+from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
 # from larch_plugins.diFFit.mini_xu import Crystal
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
@@ -175,6 +176,8 @@ class diFFit1DFrame(wx.Frame):
                 name = self.list[index]
                 x = np.array(self.all_data[index][0]).flatten()
                 y = np.array(self.all_data[index][1]).flatten()
+                
+                
         else:
             x,y,name = self.loadXYFILE()
             index = 1
@@ -218,17 +221,40 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dfitting.plot1D.plot(x,y, title=name, color='blue', label='Raw data',
                                           show_legend=True)
+            self.reset_fitting(name=name,min=np.min(x),max=np.max(x))
 
-            self.xrd1Dfitting.name = name
-            self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % np.min(x))
-            self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % np.max(x))
-            self.xrd1Dfitting.ck_bkgd.SetValue(False)
-            self.xrd1Dfitting.btn_fbkgd.Enable()
-            self.xrd1Dfitting.btn_rbkgd.Disable()
-            self.xrd1Dfitting.ck_bkgd.Disable()
-            self.xrd1Dfitting.btn_obkgd.Enable()
-            self.xrd1Dfitting.btn_fpks.Enable()
-            self.xrd1Dfitting.btn_opks.Enable()
+    def reset_fitting(self,name=None,min=0,max=1):
+
+        print '[reset_fitting]'
+        self.xrd1Dfitting.name = name
+        self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % min)
+        self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % max)
+        self.xrd1Dfitting.ck_bkgd.SetValue(False)
+        self.xrd1Dfitting.btn_fbkgd.Enable()
+        self.xrd1Dfitting.btn_rbkgd.Disable()
+        self.xrd1Dfitting.ck_bkgd.Disable()
+        self.xrd1Dfitting.btn_obkgd.Enable()
+        self.xrd1Dfitting.btn_fpks.Enable()
+        self.xrd1Dfitting.btn_opks.Enable()    
+   
+        self.xrd1Dfitting.delete_peaks()
+        self.xrd1Dfitting.delete_background()  
+        
+        self.xrd1Dfitting.trim       = False
+        self.xrd1Dfitting.indicies   = None      
+
+        self.xrd1Dfitting.xmin       = min
+        self.xrd1Dfitting.xmax       = max
+        
+        # Peak fitting defaults
+        self.xrd1Dfitting.iregions = 50
+        self.xrd1Dfitting.gapthrsh = 5
+        
+        # Background fitting defaults
+        self.xrd1Dfitting.exponent   = 20
+        self.xrd1Dfitting.compress   = 2
+        self.xrd1Dfitting.width      = 4
+   
 
     def loadXYFILE(self,event=None):
     
@@ -596,7 +622,8 @@ class Fitting1DXRD(wx.Panel):
         vbox_pks = wx.BoxSizer(wx.VERTICAL)        
         hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
-        
+        hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
+
         ttl_pks = wx.StaticText(self, label='PEAKS')
         vbox_pks.Add(ttl_pks, flag=wx.BOTTOM, border=8)
 
@@ -616,8 +643,17 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Bind(wx.EVT_BUTTON,   self.edit_peaks)
         hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
         
+        self.btn_fitpks = wx.Button(self,label='Fit peaks')
+        self.btn_fitpks.Bind(wx.EVT_BUTTON,   self.fit_peaks)
+        hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
+
+#         self.btn_opks = wx.Button(self,label='Options')
+#         self.btn_opks.Bind(wx.EVT_BUTTON,   self.peak_options)
+#         hbox3_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
+        
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(hbox3_pks, flag=wx.BOTTOM, border=8)
         vbox.Add(vbox_pks, flag=wx.ALL, border=10)
 
         self.btn_fbkgd.Disable()
@@ -908,6 +944,23 @@ class Fitting1DXRD(wx.Panel):
 
     def fit_peaks(self,event=None):
         print '[fit_peaks]'
+        ilmt = 50
+        for i,j in enumerate(self.ipeaks):
+            if j > ilmt and j < (np.shape(self.plt_data)[1]-ilmt):
+                x = self.plt_data[0,(j-ilmt):(j+ilmt)]
+                y = self.plt_data[1,(j-ilmt):(j+ilmt)]
+                print np.min(y),np.max(y)
+                if (np.max(y)/np.min(y)) > 3:
+                    print 'enough!'
+                    try:
+                        pkpos,pkfwhm = gaussian_peak_fit(x,y,double=True,plot=True)
+                        print pkpos,pkfwhm
+                        print
+                        print
+                    except:
+                        pass
+
+
 
     def calc_peaks(self):
         print '[calc_peaks]'
