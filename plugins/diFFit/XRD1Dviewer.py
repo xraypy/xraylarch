@@ -79,8 +79,8 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-#         wx.Frame.__init__(self, None,title=label,size=(1500, 700))
-        wx.Frame.__init__(self, None,title=label,size=(900, 500))
+        wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
+#         wx.Frame.__init__(self, None,title=label,size=(900, 500)) #laptop
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
         
@@ -831,20 +831,24 @@ class Fitting1DXRD(wx.Panel):
             self.fit_background()
 
     def subtract_background(self,event=None):
-    
-        self.trim_data()
-        if self.bgr_data is not None:
+
+        if self.ck_bkgd.GetValue() == True:
             if (np.shape(self.plt_data)[1]-np.shape(self.bgr_data)[1]) > 2:
                 self.fit_background()
             self.plt_data = self.plt_data[:,:np.shape(self.bgr)[0]]
             self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
-            print 'here'
+
+            self.btn_rbkgd.Disable()
+            self.btn_fbkgd.Disable()
+            self.btn_obkgd.Disable()
+        
         else:
-            print 'did not work'
-            self.ck_bkgd.SetValue(False)
+            self.plt_data = self.raw_data[:]
+            self.btn_rbkgd.Enable()
+            self.btn_fbkgd.Enable()
+            self.btn_obkgd.Enable()
             
-            self.bgr_data = None
-            self.bgr = None
+
                 
         self.replot()
 ##############################################
