@@ -150,9 +150,10 @@ class ParameterWidgets(object):
         try:
             ast.parse(value)
             self.param.expr = value
-            bgcol = '#FFFFFF'
-            fgcol = '#000000'
+            bgcol, fgcol = 'white', 'black'
         except SyntaxError:
+            bgcol, fgcol = 'red', 'yellow'
+
         self.expr.SetForegroundColour(fgcol)
         self.expr.SetBackgroundColour(bgcol)
 
