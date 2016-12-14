@@ -205,7 +205,7 @@ class FloatCtrl(wx.TextCtrl):
             return
         # allow 'inf' and '-inf', but very restricted
         if ckey in ('i', 'n', 'f'):
-            has_num = any([x in entry for x in self.__digits])
+            has_num = any([x in entry for x in self.__digits[:11]])
             if ((ckey in entry) or has_num or
                 entry not in ('', '-', '-i', 'i', '-n', 'n', '-f', 'f',
                               '-in', 'in', '-if', 'if',
