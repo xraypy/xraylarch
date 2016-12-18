@@ -24,11 +24,15 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import wxmplot
 from wxmplot import ImageFrame, PlotFrame, PlotPanel
 from wxmplot.imagepanel import ImagePanel
-from wxmplot.imageframe import ColorMapPanel
+
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex, register_custom_colormaps
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
+
+def get_wxmplot_version():
+    wmv = [int(w) for w in wxmplot.__version__ .split('.')]
+    return  wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
 
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
@@ -38,10 +42,6 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
 
-
-def get_wxmplot_version():
-    wmv = [int(w) for w in wxmplot.__version__ .split('.')]
-    return  wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
 
 class MapImageFrame(ImageFrame):
     """
@@ -104,7 +104,7 @@ class MapImageFrame(ImageFrame):
 
         if self.wxmplot_version > 0.921:
             sd = kws.get('subtitles', {})
-            if sd is None: 
+            if sd is None:
                 return
             t_red = sd.get('red', None)
             t_green = sd.get('green', None)
@@ -420,128 +420,19 @@ class MapImageFrame(ImageFrame):
             self.save_callback(name, ix, iy, x=x, y=y,
                                title=self.title, datafile=self.xrmfile)
 
+CorrelatedMapFrame = None
+if get_wxmplot_version() > 0.922:
 
-class DualMapFrame(wx.Frame):
-    """
-    wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
-    """
+    class CorrelatedMapFrame(wxmplot.ImageMatrixFrame):
+        """
+        wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
+        """
+        def __init__(self, parent=None, xrmfile=None,
+                     title='CorrelatedMaps',  **kws):
 
-    def __init__(self, parent=None, xrmfile=None, size=None,
-                 lasso_callback=None, move_callback=None, save_callback=None,
-                 cursor_labels=None, output_title='Image',   **kws):
+            self.xrmfile = xrmfile
+            wxmplot.ImageMatrixFrame.__init__(self, parent, size=(900, 625),
+                                              title=title, **kws)
 
-        wx.Frame.__init__(self, parent, -1)
-        self.xrmfile = xrmfile
-        self.move_callback = move_callback
-        self.save_callback = save_callback
-
-        register_custom_colormaps()
-        self.build_display()
-
-    def build_display(self):
-        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(200)
-
-        conf_panel = wx.Panel(splitter)
-        main_panel = wx.Panel(splitter)
-
-        # main panel
-        self.plot_panel = PlotPanel(main_panel, size=(400, 300))
-        self.plot_panel.axesmargins = (15, 15, 15, 15)
-        self.plot_panel.conf.set_axes_style(style='open')
-
-        self.img1_panel = ImagePanel(main_panel, size=(400, 300))
-        self.img2_panel = ImagePanel(main_panel, size=(400, 300))
-        self.dual_panel = ImagePanel(main_panel, size=(400, 300))
-
-        sizer = wx.GridBagSizer(3, 3)
-
-        labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-
-        ir = 0
-        self.wids = {}
-        cmap_colors = ('blue', 'red')
-
-        for i in range(2):
-
-            mapsel = Choice(conf_panel, size=(175, -1), choices=[],
-                             action=partial(self.on_mapsel, index=i))
-
-            maplab= wx.StaticText(conf_panel, label='Map %i:' % (i+1), size=(175, -1))
-            cmaplab= wx.StaticText(conf_panel, label='Color Table:', size=(100, -1))
-
-            cmap =  Choice(conf_panel, size=(75, -1), choices=cmap_colors,
-                           action=partial(self.on_colormap, index=i))
-            cmap.SetSelection(i)
-
-            self.wids['map%i'%i] = mapsel
-            self.wids['label%i'%i] = maplab
-            self.wids['cmap%i'%i] = cmap
-
-            ir += 1
-            sizer.Add(maplab, (ir, 0), (1, 3), labstyle, 2)
-            ir += 1
-            sizer.Add(mapsel, (ir, 0), (1, 3), labstyle, 2)
-            ir += 1
-            sizer.Add(cmaplab, (ir, 0), (1, 1), labstyle, 2)
-            sizer.Add(cmap,     (ir, 1), (1, 1), labstyle, 2)
-
-        pack(conf_panel, sizer)
-
-
-        for name, panel in (('corplot', self.plot_panel),
-                            ('map1',    self.img1_panel),
-                            ('map2',    self.img2_panel),
-                            ('dual',    self.dual_panel)):
-
-            panel.add_cursor_mode('prof',
-                                  motion = partial(self.prof_motion, name=name),
-                                  leftdown = partial(self.prof_leftdown, name=name),
-                                  leftup   = partial(self.prof_leftup, name=name))
-            panel.report_leftdown = partial(self.report_leftdown, name=name)
-            panel.report_motion   = partial(self.report_motion, name=name)
-
-
-        sizer = wx.GridBagSizer(2, 2)
-        sizer.Add(self.img1_panel, (0, 0), (1, 1), labstyle, 2)
-        sizer.Add(self.dual_panel, (0, 1), (1, 1), labstyle, 2)
-        sizer.Add(self.plot_panel, (1, 0), (1, 1), labstyle, 2)
-        sizer.Add(self.img2_panel, (1, 1), (1, 1), labstyle, 2)
-
-        pack(main_panel, sizer)
-        main_panel.SetMinSize((750, 550))
-        splitter.SplitVertically(conf_panel, main_panel, 1)
-
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
-        pack(self, sizer)
-
-
-    def prof_motion(self, event=None, name=None):
-        print("prof motion, ", name, event)
-
-    def prof_leftdown(self, event=None, name=None):
-        print("prof leftdown, ", name, event)
-
-    def prof_leftup(self, event=None, name=None):
-        print("prof leftup, ", name, event)
-
-    def report_motion(self, event=None, name=None):
-        print("report motion, ", name, event)
-
-    def report_leftdown(self, event=None, name=None):
-        print("report leftdown, ", name, event)
-
-    def report_leftup(self, event=None, name=None):
-        print("report leftup, ", name, event)
-
-    def on_colormap(self, event=None, index=0):
-        print("on colormap ", index)
-
-    def on_mapsel(self, event=None, index=0):
-        print("on mapsel ", index)
-
-    def display(self, map1, map2, title=None, x=None, y=None, xoff=None, yoff=None,
-                subtitles=None, xrmfile=None, det=None):
-        print("Display map1, map2 ", map1, map2)
+        def CustomConfig(self, parent):
+            pass # print("no custom config yet")
