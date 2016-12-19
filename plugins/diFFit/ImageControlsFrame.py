@@ -266,7 +266,8 @@ class ImageToolboxFrame(wx.Frame):
             self.setColor()
     
     def setColor(self):
-        self.plot2Dframe.conf.cmap['int'] = getattr(colormap, self.color)
+        self.plot2Dframe.conf.cmap[0] = getattr(colormap, self.color)
+#         self.plot2Dframe.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2Dframe.display(self.plt_img)  
         self.checkFLIPS()
         self.plot2Dframe.redraw()

@@ -212,7 +212,8 @@ class Viewer2DXRD(wx.Frame):
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
 
     def colorIMAGE(self):
-        self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
+        self.plot2D.conf.cmap[0] = getattr(colormap, self.color)
+#         self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2D.display(self.plt_img)
 
     def setCOLOR(self,event=None):
