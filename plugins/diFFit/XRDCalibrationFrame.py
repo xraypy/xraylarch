@@ -378,8 +378,10 @@ class CalibrationPopup(wx.Frame):
             self.maxCURRENT = self.maxINT
         
         self.plot2Dimg.conf.auto_intensity = False        
-        self.plot2Dimg.conf.int_lo['int'] = self.minCURRENT
-        self.plot2Dimg.conf.int_hi['int'] = self.maxCURRENT
+        self.plot2Dimg.conf.int_lo[0] = self.minCURRENT
+        self.plot2Dimg.conf.int_hi[0] = self.maxCURRENT
+#         self.plot2Dimg.conf.int_lo['int'] = self.minCURRENT
+#         self.plot2Dimg.conf.int_hi['int'] = self.maxCURRENT
         
         ## vertical flip default
         self.plot2Dimg.conf.flip_ud = True

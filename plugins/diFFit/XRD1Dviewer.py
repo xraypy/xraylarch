@@ -15,7 +15,6 @@ import matplotlib.cm as colormap
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-#from wxmplot.imagepanel import ImagePanel
 from wxmplot import PlotPanel
 from wxutils import MenuItem,pack
 
@@ -25,7 +24,6 @@ from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
-# from larch_plugins.diFFit.mini_xu import Crystal
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
 # from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup

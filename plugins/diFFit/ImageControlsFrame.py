@@ -174,8 +174,10 @@ class ImageToolboxFrame(wx.Frame):
             
     def setSlider(self):
     
-        self.minCURRENT = self.plot2Dframe.conf.int_lo['int']
-        self.maxCURRENT = self.plot2Dframe.conf.int_hi['int']
+        self.minCURRENT = self.plot2Dframe.conf.int_lo[0]
+        self.maxCURRENT = self.plot2Dframe.conf.int_hi[0]
+#         self.minCURRENT = self.plot2Dframe.conf.int_lo['int']
+#         self.maxCURRENT = self.plot2Dframe.conf.int_hi['int']
         
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
@@ -213,8 +215,10 @@ class ImageToolboxFrame(wx.Frame):
         self.sldr_max.SetValue(self.maxCURRENT)
 
         self.plot2Dframe.conf.auto_intensity = False        
-        self.plot2Dframe.conf.int_lo['int'] = self.minCURRENT
-        self.plot2Dframe.conf.int_hi['int'] = self.maxCURRENT
+        self.plot2Dframe.conf.int_lo[0] = self.minCURRENT
+        self.plot2Dframe.conf.int_hi[0] = self.maxCURRENT
+#         self.plot2Dframe.conf.int_lo['int'] = self.minCURRENT
+#         self.plot2Dframe.conf.int_hi['int'] = self.maxCURRENT
         
         self.plot2Dframe.redraw()
             

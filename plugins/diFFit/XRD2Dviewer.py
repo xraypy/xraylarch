@@ -303,8 +303,10 @@ class Viewer2DXRD(wx.Frame):
         self.sldr_max.SetValue(self.maxCURRENT)
 
         self.plot2D.conf.auto_intensity = False        
-        self.plot2D.conf.int_lo['int'] = self.minCURRENT
-        self.plot2D.conf.int_hi['int'] = self.maxCURRENT
+        self.plot2D.conf.int_lo[0] = self.minCURRENT
+        self.plot2D.conf.int_hi[0] = self.maxCURRENT
+#         self.plot2D.conf.int_lo['int'] = self.minCURRENT
+#         self.plot2D.conf.int_hi['int'] = self.maxCURRENT
         
         self.plot2D.redraw()
             
@@ -373,30 +375,8 @@ class Viewer2DXRD(wx.Frame):
                     except:
                         pass
                 label = self.name_images[self.ch_img.GetSelection()]
-                print 'label?',label
                 self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
                 self.xrddisplay1D.Show()
-
-#                 if self.xrddisplay1D is None:
-#                     self.xrddisplay1D = diFFit1DFrame()
-#                 self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
-#                 self.xrddisplay1D.Show()
-
-#                 try:
-#                     if self.xrddisplay1D == None:
-#                         self.xrddisplay1D = diFFit1DFrame()
-#                     self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
-#                     self.xrddisplay1D.Show()
-#                 except: #wxPyDeadObjectError:
-#                     print 'Need to reset window creation here. Not sure how.'
-# #                     #del self.xrddisplay1D
-# #                     #clear_mappers()
-# #                     self.xrddisplay1D = diFFit1DFrame()
-# #                     self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
-# #                     self.xrddisplay1D.Show()
-
-
-
             
 ##############################################
 #### CALIBRATION FUNCTIONS
