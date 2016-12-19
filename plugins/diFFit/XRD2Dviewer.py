@@ -366,23 +366,36 @@ class Viewer2DXRD(wx.Frame):
             data1D = integrate_xrd(self.plt_img,**attrs)
             
             if plot:
+                if self.xrddisplay1D is None:
+                    self.xrddisplay1D = diFFit1DFrame()
+                    try:
+                        self.xrddisplay1D.xrd1Dviewer.addLAMBDA(self.ai._wavelength,units='m')
+                    except:
+                        pass
+                label = self.name_images[self.ch_img.GetSelection()]
+                print 'label?',label
+                self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                self.xrddisplay1D.Show()
+
 #                 if self.xrddisplay1D is None:
 #                     self.xrddisplay1D = diFFit1DFrame()
 #                 self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
 #                 self.xrddisplay1D.Show()
 
-                try:
-                    if self.xrddisplay1D == None:
-                        self.xrddisplay1D = diFFit1DFrame()
-                    self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
-                    self.xrddisplay1D.Show()
-                except: #wxPyDeadObjectError:
-                    print 'Need to reset window creation here. Not sure how.'
-#                     #del self.xrddisplay1D
-#                     #clear_mappers()
-#                     self.xrddisplay1D = diFFit1DFrame()
+#                 try:
+#                     if self.xrddisplay1D == None:
+#                         self.xrddisplay1D = diFFit1DFrame()
 #                     self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
 #                     self.xrddisplay1D.Show()
+#                 except: #wxPyDeadObjectError:
+#                     print 'Need to reset window creation here. Not sure how.'
+# #                     #del self.xrddisplay1D
+# #                     #clear_mappers()
+# #                     self.xrddisplay1D = diFFit1DFrame()
+# #                     self.xrddisplay1D.plot1Dxrd(data1D,wavelength=self.ai._wavelength)
+# #                     self.xrddisplay1D.Show()
+
+
 
             
 ##############################################
