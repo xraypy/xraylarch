@@ -1332,7 +1332,7 @@ class Viewer1DXRD(wx.Panel):
         yscales = ['linear','log']
         self.ch_yaxis = wx.Choice(self,choices=yscales)
 
-        self.ch_yaxis.Bind(wx.EVT_CHOICE,   None)
+        self.ch_yaxis.Bind(wx.EVT_CHOICE,   self.onLogLinear)
     
         hbox_yaxis.Add(ttl_yaxis, flag=wx.RIGHT, border=8)
         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
@@ -1516,7 +1516,40 @@ class Viewer1DXRD(wx.Panel):
     def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
+    def onLogLinear(self, event=None):
 
+        ## Not working yet....?
+        self.ylog_scale = 'log' == self.ch_yaxis.GetString(self.ch_yaxis.GetSelection())
+        #self.ylog_scale = 'log' == event.GetString()
+      
+# #         self.unzoom_all()
+# #         self.plot1D.canvas.draw()
+# 
+# #         for i,plt_no in enumerate(self.icif):
+# #             x = np.array(self.cif_plot[i][0])
+# #             y = np.array(self.cif_plot[i][1])
+# # 
+# #             self.plot1D.update_line(plt_no,x,y)
+# 
+#         for i,plt_no in enumerate(self.idata):
+#             print 'updating %i, %i' % (i,plt_no)
+# #             x = np.array(self.xy_plot[i][0])
+# #             y = np.array(self.xy_plot[i][1])
+# # 
+# #             if xmax is None or xmax < np.max(x):
+# #                 xmax = np.max(x)
+# #             if xmin > np.min(x):
+# #                 xmin = np.min(x)
+# #             if ymax is None or ymax < np.max(y):
+# #                 ymax = np.max(y)
+# #             if ymin > np.min(y):
+# #                 ymin = np.min(y)
+# 
+# #             self.plot1D.update_line(plt_no,x,y)
+#             self.plot1D.update_line(plt_no,*np.array(self.xy_plot[i]))
+#         
+#         self.unzoom_all()
+#         self.plot1D.canvas.draw()
 
 ##############################################
 #### XRD PLOTTING FUNCTIONS
