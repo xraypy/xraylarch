@@ -27,7 +27,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
-#     from pyFAI.calibration import Calibration
+    # from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass

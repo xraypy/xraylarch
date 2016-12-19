@@ -52,7 +52,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
-#     from pyFAI.calibration import Calibration
+    # from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -251,6 +251,82 @@ def xy_file_reader(xyfile,char=None,verbose=False):
         print('\nFinished reading file %s.' % xyfile)
 
     return np.array(x),np.array(y)
+
+def gaussian_peak_fit(x,y,double=False,plot=False):
+    '''
+    Fits one or two Gaussian functions.
+    '''
+    meanx = sum(x)/float(len(x))
+    meany = sum(y)/float(len(y))
+    sigma = np.sqrt(sum(y*(x-meanx)**2)/float(len(x)))
+    
+    print x
+    print y
+    print
+    print
+    print 'mean x',meanx
+    print 'mean y',meany
+    print 'sigma',sigma
+        
+    plx =  0.05*(max(x)-min(x)) + min(x)
+    ply = -0.2*(max(y)-min(y)) + max(y)
+
+    ## ASSUMES PEAK IN CENTER FOR FIRST GUESS
+    #popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
+    try:
+        popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
+    except:
+        popt = [1,1,1]
+        print 'used default...'
+    
+    if double:
+        a,b,c = popt
+        popt2,pcov2 = optimize.curve_fit(doublegaussian,x,y,p0=[a,b,c,np.min(y),meanx,sigma])
+
+    rsqu_n1 = 0
+    rsqu_n2 = 0
+    rsqu_d = 0
+    for i in range(x.shape[0]):
+        rsqu_n1 = (y[i] - gaussian(x[i],*popt))**2 + rsqu_n1
+        if double:
+            rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
+        rsqu_d = (y[i] - meany)**2 + rsqu_d
+
+    print '---Single Gaussian'
+    print '---Peak @',popt[1]
+    print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt[2])
+    print 'Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d)
+    print
+    if double:
+        print '---Double Gaussian'
+        print '---Peak @',popt2[1]
+        print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
+        print 'Goodness of fit, R^2:',1-rsqu_n2/rsqu_d
+        print
+
+    
+    if double:
+        pkpos = popt2[1]
+        pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
+    else:
+        pkpos = popt[1]
+        pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
+
+    if plot:
+        title_str = 'Gaussian fit for Peak'
+        fit_str =  'q = %0.2f 1/A\nFWHM = %0.4f 1/A\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
+        plt.plot(x,y,'r+',label='Data')
+        plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
+        if double:        
+            plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
+        plt.legend()
+        plt.xlabel('q (1/A)')
+        plt.ylabel('Intensity')
+        plt.text(plx,ply,fit_str)
+        plt.title(title_str)
+        plt.show()
+    
+    return(pkpos,pkfwhm)
 
 def data_gaussian_fit(args,x,y,pknum):
     '''
