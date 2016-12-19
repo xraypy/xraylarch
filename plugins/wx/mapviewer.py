@@ -65,7 +65,7 @@ HAS_pyFAI = False
 try:
     import pyFAI
     import pyFAI.calibrant
-    from pyFAI.calibration import Calibration
+    # from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -951,9 +951,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        self.xrd_save  = Button(pane, 'Save XRD data', size=(135, -1),
+        self.xrd_save  = Button(pane, 'Save XRD Data', size=(135, -1),
                                                 action=partial(self.onXRD,save=True))
-        self.xrd_plot  = Button(pane, 'Show XRD data', size=(135, -1),
+        self.xrd_plot  = Button(pane, 'Show XRD Data', size=(135, -1),
                                                 action=partial(self.onXRD,show=True))
         ######################################
 
@@ -1656,8 +1656,7 @@ class MapViewerFrame(wx.Frame):
                 self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
             except:
                 pass
-
-        self.xrddisplay1D.plot1Dxrd(xy, label=label)
+        self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
         self.xrddisplay1D.Show()
 
     def init_larch(self):

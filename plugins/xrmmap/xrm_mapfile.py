@@ -20,7 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   readEnvironFile, parseEnviron,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
 
-from larch_plugins.xrd import XRD
+from larch_plugins.diFFit.xrd import XRD
 
 HAS_pyFAI = False
 try:
@@ -330,15 +330,18 @@ class GSEXRM_MapRow:
 
         ## SPECIFIC TO XRD data
         if FLAGxrd:
-            self.xrd2d     = xrddat
+            if self.npts - xrddat.shape[0] == 0:
+                self.xrd2d     = xrddat
+            else:
+                # print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+                self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
+                self.xrd2d[0:xrddat.shape[0]] = xrddat
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
-
-        # print("READ ROW Npts  ", gnpts, snpts, xnpts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -348,7 +351,7 @@ class GSEXRM_MapRow:
             sdata = np.array(sdata)
             snpts = self.npts
         self.sisdata = sdata[:self.npts]
-
+        
         if xnpts > self.npts:
             if FLAGxrf:
                 self.counts    = self.counts[:self.npts]
@@ -1057,13 +1060,6 @@ class GSEXRM_MapFile(object):
             xrdgrp = self.xrmmap['xrd']
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-
-#             ## hard-code for now: detector at 13IDE images need vertical flip
-#             vertflip = True
-#             if vertflip:
-#                 xrdgrp['data2D'][thisrow,] = row.xrd2d[:,::-1,:]
-#             else:
-#                 xrdgrp['data2D'][thisrow,] = row.xrd2d
             xrdgrp['data2D'][thisrow,] = row.xrd2d
 
             if hasattr(self.xrmmap['xrd'],'maskfile'):
