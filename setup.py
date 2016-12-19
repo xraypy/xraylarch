@@ -14,7 +14,7 @@ from glob import glob
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
-required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six', 'pillow']
+required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six', 'PIL']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
 xrd_modules = ['fabio','pyFAI','xrayutilities','CifFile', 'requests']
 
