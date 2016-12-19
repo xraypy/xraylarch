@@ -973,10 +973,7 @@ class Fitting1DXRD(wx.Panel):
         self.plt_peaks = np.zeros((2,len(self.ipeaks)))
         for i,j in enumerate(self.ipeaks):
             self.plt_peaks[0,i] = self.plt_data[0,j]
-            if self.subtracted:
-                self.plt_peaks[1,i] = self.plt_data[1,j]-self.bgr_data[1,j]            
-            else:
-                self.plt_peaks[1,i] = self.plt_data[1,j]
+            self.plt_peaks[1,i] = self.plt_data[1,j]
             
     def plot_peaks(self):
         #print '[plot_peaks]'
