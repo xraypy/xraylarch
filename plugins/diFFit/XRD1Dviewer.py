@@ -26,7 +26,6 @@ from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,gener
 from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
-# from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 
 from functools import partial
 
@@ -223,7 +222,7 @@ class diFFit1DFrame(wx.Frame):
 
     def reset_fitting(self,name=None,min=0,max=1):
 
-        print '[reset_fitting]'
+        #print '[reset_fitting]'
         self.xrd1Dfitting.name = name
         self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % min)
         self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % max)
@@ -508,7 +507,9 @@ class Fitting1DXRD(wx.Panel):
         self.plt_peaks  = None  
         
         self.trim       = False
-        self.indicies   = None      
+        self.indicies   = None    
+        
+        self.subtracted = False  
 
         self.xmin       = None
         self.xmax       = None
@@ -719,7 +720,7 @@ class Fitting1DXRD(wx.Panel):
 #### DATA CALCULATIONS FUNCTIONS
 
     def plot_data(self,event=None):
-        print '[plot_data]'
+        #print '[plot_data]'
         
         if self.trim:
             self.plot1D.plot(*self.raw_data, title=self.name, 
@@ -738,7 +739,7 @@ class Fitting1DXRD(wx.Panel):
 #### RANGE FUNCTIONS
 
     def set_range(self,event=None):
-        print '[set_range]'
+        #print '[set_range]'
         
         if float(self.val_qmax.GetValue()) < float(self.val_qmin.GetValue()):
             min = float(self.val_qmax.GetValue())
@@ -759,7 +760,7 @@ class Fitting1DXRD(wx.Panel):
             self.plot_peaks()
     
     def check_range(self,event=None):
-        print '[check_range]'
+        #print '[check_range]'
 
         self.trim = True
         if float(self.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
@@ -780,7 +781,7 @@ class Fitting1DXRD(wx.Panel):
     
             
     def reset_range(self,event=None):
-        print '[reset_range]'
+        #print '[reset_range]'
         
         self.xmin = np.min(self.raw_data[0])
         self.xmax = np.max(self.raw_data[0])
@@ -801,7 +802,7 @@ class Fitting1DXRD(wx.Panel):
             self.plot_peaks()
 
     def trim_data(self):
-        print '[trim_data]'
+        #print '[trim_data]'
 
         if self.trim:
             indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
@@ -827,7 +828,7 @@ class Fitting1DXRD(wx.Panel):
         self.plot_background()
 
     def fit_background(self,event=None):
-        print '[fit_background]'
+        #print '[fit_background]'
         
         self.delete_background()
         
@@ -842,7 +843,7 @@ class Fitting1DXRD(wx.Panel):
         self.btn_rbkgd.Enable()
   
     def remove_background(self,event=None):
-        print '[remove_background]'
+        #print '[remove_background]'
 
         self.delete_background()
         self.plot_data()
@@ -856,13 +857,13 @@ class Fitting1DXRD(wx.Panel):
 
         
     def delete_background(self,event=None):
-        print '[delete_background]'    
+        #print '[delete_background]'    
         self.bgr_data = None
         self.bgr = None
         self.bgr_info = None
 
     def plot_background(self,event=None):
-        print '[plot_background]'
+        #print '[plot_background]'
 
         if self.bgr is not None:
             self.plot1D.oplot(*self.bgr_data, title=self.name, 
@@ -870,7 +871,7 @@ class Fitting1DXRD(wx.Panel):
                               show_legend=True)
 
     def background_options(self,event=None):
-        print '[background_options]'
+        #print '[background_options]'
     
         myDlg = BackgroundOptions(self)
         
@@ -886,42 +887,49 @@ class Fitting1DXRD(wx.Panel):
             self.background_fit()
 
     def subtract_background(self,event=None):
-        print '[subtract_background]'
+        #print '[subtract_background]'
 
-#         if self.ck_bkgd.GetValue() == True:
-#             
-#             if (np.shape(self.plt_data)[1]-np.shape(self.bgr_data)[1]) > 2:
-#                 print '**** refitting background from subtract button'
-#                 print np.shape(self.plt_data)[1],np.shape(self.bgr_data)[1]
-#                 print np.shape(self.plt_data),np.shape(self.bgr_data)
-#                 self.fit_background()
-#             
-#             self.plt_data = self.plt_data[:,:np.shape(self.bgr)[0]]
-#             self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
-# 
-#             
-#             self.plot1D.plot(*self.plt_data, title=self.name,
-#                              color='blue', label='Background subtracted',
-#                              show_legend=True)
-# 
-#             self.btn_rbkgd.Disable()
-#             self.btn_fbkgd.Disable()
-#             self.btn_obkgd.Disable()
-#         
-#         else:
-#             
-#             self.plt_data = self.raw_data[:]
-#             self.replot()
-#             
-#             self.btn_rbkgd.Enable()
-#             self.btn_fbkgd.Enable()
-#             self.btn_obkgd.Enable()
+        if self.ck_bkgd.GetValue() == True:
+            if np.shape(self.plt_data)[1] != np.shape(self.bgr_data)[1]:
+                if (np.shape(self.plt_data)[1] - np.shape(self.bgr_data)[1]) > 2:
+                    print '**** refitting background from subtract button'
+                    self.fit_background()
+                self.plt_data = self.plt_data[:,:np.shape(self.bgr_data)[1]]
+            self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
+            self.subtracted = True
+
+            self.plot1D.plot(*self.plt_data, title=self.name,
+                             color='blue', label='Background subtracted',
+                             show_legend=True)
+
+            self.btn_rbkgd.Disable()
+            self.btn_fbkgd.Disable()
+            self.btn_obkgd.Disable()
+        
+        else:
+            if self.subtracted:
+                self.plt_data[1] = self.plt_data[1] + self.bgr_data[1]
+                self.subtracted = False
+
+            self.btn_rbkgd.Enable()
+            self.btn_fbkgd.Enable()
+            self.btn_obkgd.Enable()
+            
+            self.plot_data()
+            self.plot_background()
+
+        if self.ipeaks is not None:
+            self.calc_peaks()
+            self.plot_peaks()
+
+           
+
             
 ##############################################
 #### PEAK FUNCTIONS
 
     def find_peaks(self,event=None):
-        print '[find_peaks]'
+        #print '[find_peaks]'
         
         ## clears previous searches
         self.delete_peaks()
@@ -941,7 +949,7 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Enable()
 
     def fit_peaks(self,event=None):
-        print '[fit_peaks]'
+        #print '[fit_peaks]'
         ilmt = 50
         for i,j in enumerate(self.ipeaks):
             if j > ilmt and j < (np.shape(self.plt_data)[1]-ilmt):
@@ -961,14 +969,17 @@ class Fitting1DXRD(wx.Panel):
 
 
     def calc_peaks(self):
-        print '[calc_peaks]'
+        #print '[calc_peaks]'
         self.plt_peaks = np.zeros((2,len(self.ipeaks)))
         for i,j in enumerate(self.ipeaks):
-            self.plt_peaks[0,i] = self.plt_data[0][j]
-            self.plt_peaks[1,i] = self.plt_data[1][j]
+            self.plt_peaks[0,i] = self.plt_data[0,j]
+            if self.subtracted:
+                self.plt_peaks[1,i] = self.plt_data[1,j]-self.bgr_data[1,j]            
+            else:
+                self.plt_peaks[1,i] = self.plt_data[1,j]
             
     def plot_peaks(self):
-        print '[plot_peaks]'
+        #print '[plot_peaks]'
         self.plot1D.scatterplot(*self.plt_peaks,
                           color='red',edge_color='yellow', selectcolor='green',size=12,
                           show_legend=True)
@@ -980,7 +991,7 @@ class Fitting1DXRD(wx.Panel):
 # # #           callback=None, **kw):
 
     def remove_peaks(self,event=None):
-        print '[remove_peaks]'
+        #print '[remove_peaks]'
 
         self.delete_peaks()
         self.plot_data()
@@ -990,16 +1001,16 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Disable()
 
     def delete_peaks(self,event=None):
-        print '[delete_peaks]'
+        #print '[delete_peaks]'
         self.peaks = None
         self.ipeaks = None
 
     def edit_peaks(self,event=None):
-        print '[edit_peaks]'
+        #print '[edit_peaks]'
         print 'this will pop up a list of peaks for removing (and adding?)'
 
     def peak_options(self,event=None):
-        print '[peak_options]'
+        #print '[peak_options]'
         myDlg = PeakOptions(self)
 
         fit = False
