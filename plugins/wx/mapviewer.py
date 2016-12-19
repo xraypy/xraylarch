@@ -890,9 +890,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        self.xrd_save  = Button(pane, 'Save XRD data', size=(135, -1),
+        self.xrd_save  = Button(pane, 'Save XRD Data', size=(135, -1),
                                                 action=partial(self.onXRD,save=True))
-        self.xrd_plot  = Button(pane, 'Show XRD data', size=(135, -1),
+        self.xrd_plot  = Button(pane, 'Show XRD Data', size=(135, -1),
                                                 action=partial(self.onXRD,show=True))
         ######################################
 
@@ -1282,7 +1282,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
             if show:
+                print 'trying to show'
                 self.owner.display_1Dxrd(self._xrd.data1D,label=label)
+                print 'did it work?'
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1301,8 +1303,8 @@ class MapViewerFrame(wx.Frame):
         self.plot_displays = []
         self.larch = _larch
         self.xrfdisplay = None
-        self.xrddisplay1D = None
-        self.xrddisplay2D = None
+        self.xrddisplay1D = []
+        self.xrddisplay2D = []
         self.larch_buffer = None
         self.watch_files = False
         self.file_timer = wx.Timer(self)
@@ -1584,7 +1586,7 @@ class MapViewerFrame(wx.Frame):
     def display_2Dxrd(self, map, title='image 0', xrmfile=None):
         'displays 2D XRD pattern in diFFit viewer'
 
-        if self.xrddisplay2D is None:
+        if len(self.xrddisplay2D) == 0:
             self.xrddisplay2D = Viewer2DXRD(_larch=self.larch)
             try:
                 AI = calculate_ai(self.current_file.xrmmap['xrd'])
@@ -1598,16 +1600,20 @@ class MapViewerFrame(wx.Frame):
     def display_1Dxrd(self, xy, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
 
-        if self.xrddisplay1D is None:
+        print 'initially',self.xrddisplay1D
+        if len(self.xrddisplay1D) == 0:
             self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
             try:
                 AI = calculate_ai(self.current_file.xrmmap['xrd'])
                 self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
             except:
                 pass
+        print 'after initializing',self.xrddisplay1D
 
-        self.xrddisplay1D.plot1Dxrd(xy, label=label)
+        self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
         self.xrddisplay1D.Show()
+
+        print 'now plotted?',self.xrddisplay1D
 
     def init_larch(self):
         if self.larch is None:
