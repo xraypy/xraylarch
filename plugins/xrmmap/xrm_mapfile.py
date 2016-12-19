@@ -20,7 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   readEnvironFile, parseEnviron,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
 
-from larch_plugins.xrd import XRD
+from larch_plugins.diFFit.xrd import XRD
 
 HAS_pyFAI = False
 try:
