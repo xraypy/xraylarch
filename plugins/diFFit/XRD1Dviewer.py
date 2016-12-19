@@ -1647,7 +1647,7 @@ class Viewer1DXRD(wx.Panel):
                 self.val_scale.SetValue(str(self.xy_scale[plt_no]))
             self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
-        self.updatePLOT()
+        self.rescale1Daxis()
 
     def remove1Ddata(self,event=None):
         
@@ -1704,10 +1704,10 @@ class Viewer1DXRD(wx.Panel):
                 self.cif_plot[plt_no][0] = np.array(self.cif_data[plt_no][0])
 
         self.plot1D.set_xlabel(self.xlabel)
-        self.updatePLOT()
+        self.rescale1Daxis()
 
 
-    def updatePLOT(self):
+    def rescale1Daxis(self):
 
         xmax,xmin,ymax,ymin = None,0,None,0
         
@@ -1752,7 +1752,7 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.canvas.draw()
         self.unzoom_all()
         
-        self.updatePLOT()
+        self.rescale1Daxis()
         self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
