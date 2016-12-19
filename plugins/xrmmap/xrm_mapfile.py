@@ -343,8 +343,6 @@ class GSEXRM_MapRow:
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
 
-        #print("READ ROW Npts  ", gnpts, snpts, xnpts)
-
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
             sdata = list(sdata)

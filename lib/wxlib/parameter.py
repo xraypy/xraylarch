@@ -4,6 +4,7 @@ ParameterWidgets to create selected widgets for a Parameter
 """
 
 import numpy as np
+import ast
 import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
@@ -118,7 +119,8 @@ class ParameterWidgets(object):
             self.expr = wx.TextCtrl(parent, -1, value=expr,
                                       size=(expr_size, -1))
             self.expr.Enable(vary_choice==PAR_CON)
-            self.expr.Bind(wx.EVT_TEXT, self.onExpr)
+            self.expr.Bind(wx.EVT_CHAR, self.onExprChar)
+            self.expr.Bind(wx.EVT_KILL_FOCUS, self.onExprKillFocus)
             SetTip(self.expr, 'Enter constraint expression')
 
         if 'stderr' in widgets:
@@ -132,8 +134,29 @@ class ParameterWidgets(object):
         if value is not None:
             self.param.value = value
 
+    def onExprChar(self, evt=None):
+        key = evt.GetKeyCode()
+        if key == wx.WXK_RETURN:
+            self.onExpr(value=self.expr.GetValue())
+        evt.Skip()
+
+    def onExprKillFocus(self, evt=None):
+        self.onExpr(value=self.expr.GetValue())
+        evt.Skip()
+
     def onExpr(self, evt=None, value=None):
-        self.param.expr = evt.GetString()
+        if value is None and evt is not None:
+            value = evt.GetString()
+        try:
+            ast.parse(value)
+            self.param.expr = value
+            bgcol, fgcol = 'white', 'black'
+        except SyntaxError:
+            bgcol, fgcol = 'red', 'yellow'
+
+        self.expr.SetForegroundColour(fgcol)
+        self.expr.SetBackgroundColour(bgcol)
+
 
     def onMinval(self, evt=None, value=None):
         if value in (None, 'None', ''):

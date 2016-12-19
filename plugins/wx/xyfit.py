@@ -753,7 +753,7 @@ class XYFitFrame(wx.Frame):
         panel = wx.Panel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.title = SimpleText(panel, 'initializing...')
+        self.title = SimpleText(panel, 'initializing...', size=(300, -1))
         self.title.SetFont(Font(10))
 
         ir = 0
@@ -1064,7 +1064,7 @@ def initializeLarchPlugin(_larch=None):
         _sys.gui_apps['xyfit'] = ('XY Data Viewing & Fitting', XYFitFrame)
 
 def registerLarchPlugin():
-    return ('_wx', {})
+    return ('_sys.wx', {})
 
 if __name__ == "__main__":
     XYFitViewer().run()

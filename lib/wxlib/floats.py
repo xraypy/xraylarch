@@ -174,7 +174,7 @@ class FloatCtrl(wx.TextCtrl):
         """ on Character event"""
         key   = event.GetKeyCode()
         entry = wx.TextCtrl.GetValue(self).strip()
-        pos   = wx.TextCtrl.GetSelection(self)
+        pos   = wx.TextCtrl.GetSelection(self)[0]
         # really, the order here is important:
         # 1. return sends to ValidateEntry
         if key == wx.WXK_RETURN:
@@ -191,21 +191,32 @@ class FloatCtrl(wx.TextCtrl):
 
         # 3. check for multiple '.' and out of place '-' signs and ignore these
         #    note that chr(key) will now work due to return at #2
-        #         if len(entry) > 1:
-        #             try:
-        #                 fval = float(entry)
-        #             except:
-        #                 return
-        leading_minus = entry.startswith('-')
-        has_expon = 'e' in entry        
         ckey = chr(key)
-        if ((ckey == '.' and (self.__prec == 0 or '.' in entry) ) or
-            (not has_expon and
-             (ckey == '-' and leading_minus and pos[0] != 0) or
-             (ckey != '-' and leading_minus and pos[0] == 0))):
+        if ((ckey == '.' and (self.__prec == 0 or '.' in entry)) or
+            (ckey != '-' and pos == 0 and entry.startswith('-'))):
             return
-        # 4. allow digits, but not other characters
-        if chr(key) in self.__digits:
+        if 'e' in entry:
+            if ckey == 'e':
+                return
+            ind_e = entry.index('e')
+            if (ckey == '-' and pos not in (0, ind_e+1)):
+                return
+        elif (ckey == '-' and '-' in entry):
+            return
+        # allow 'inf' and '-inf', but very restricted
+        if ckey in ('i', 'n', 'f'):
+            has_num = any([x in entry for x in self.__digits[:11]])
+            if ((ckey in entry) or has_num or
+                entry not in ('', '-', '-i', 'i', '-n', 'n', '-f', 'f',
+                              '-in', 'in', '-if', 'if',
+                             '-nf', 'nf', '-inf', 'inf')):
+                return
+        elif (ckey != '-' and ckey in self.__digits and
+              any([x in ('i', 'n', 'f') for x in entry])):
+            return
+
+        # 4. allow digits or +/-inf but not other characters
+        if ckey in self.__digits or ckey in ('i', 'n', 'f'):
             event.Skip()
 
     def OnText(self, event=None):

@@ -93,69 +93,68 @@ class XYFitPanel(wx.Panel):
         self.param_panel = AllParamsPanel(self, controller=self.controller)
         self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
 
-        row1 = wx.Panel(self)
+        range_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        xmin_sel = BitmapButton(row1, get_icon('plus'),
+        xmin_sel = BitmapButton(range_row, get_icon('plus'),
                                 action=partial(self.on_selpoint, opt='xmin'),
                                 tooltip='use last point selected from plot')
-        xmax_sel = BitmapButton(row1, get_icon('plus'),
+        xmax_sel = BitmapButton(range_row, get_icon('plus'),
                                 action=partial(self.on_selpoint, opt='xmax'),
                                 tooltip='use last point selected from plot')
 
         opts = {'size': (70, -1), 'gformat': True}
-        self.xmin = FloatCtrl(row1, value=-np.inf, **opts)
-        self.xmax = FloatCtrl(row1, value=np.inf, **opts)
+        self.xmin = FloatCtrl(range_row, value=-np.inf, **opts)
+        self.xmax = FloatCtrl(range_row, value=np.inf, **opts)
 
-        rsizer.Add(SimpleText(row1, 'Fit X Range: [ '), 0, LCEN, 3)
+        rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
         rsizer.Add(xmin_sel, 0, LCEN, 3)
         rsizer.Add(self.xmin, 0, LCEN, 3)
-        rsizer.Add(SimpleText(row1, ' : '), 0, LCEN, 3)
+        rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
         rsizer.Add(xmax_sel, 0, LCEN, 3)
         rsizer.Add(self.xmax, 0, LCEN, 3)
-        rsizer.Add(SimpleText(row1, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(Button(row1, 'Full Data Range', size=(100, -1),
+        rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
+        rsizer.Add(Button(range_row, 'Use Full Data Range', size=(150, -1),
                           action=self.onResetRange), 0, LCEN, 3)
 
-        pack(row1, rsizer)
+        pack(range_row, rsizer)
 
-        row2 = wx.Panel(self)
+        action_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.plot_comps = Check(row2, label='Plot Components?',
+        self.plot_comps = Check(action_row, label='Plot Components?',
                                 default=True, size=(150, -1))
 
-        rsizer.Add(Button(row2, 'Run Fit',
-                          size=(150, -1), action=self.onRunFit), 0, RCEN, 3)
-        rsizer.Add(Button(row2, 'Save Fit',
-                         size=(150, -1), action=self.onSaveFit), 0, LCEN, 3)
+        rsizer.Add(Button(action_row, 'Run Fit',
+                          size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
+        rsizer.Add(Button(action_row, 'Save Fit',
+                         size=(100, -1), action=self.onSaveFit), 0, LCEN, 3)
 
-        rsizer.Add(Button(row2, 'Plot Current Model',
+        rsizer.Add(Button(action_row, 'Plot Current Model',
                           size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
         rsizer.Add(self.plot_comps, 0, LCEN, 3)
 
-        pack(row2, rsizer)
+        pack(action_row, rsizer)
 
-        row3 = wx.Panel(self)
+        models_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        rsizer.Add(SimpleText(row3, ' Add Model: '), 0, LCEN, 3)
-        rsizer.Add(Choice(row3, size=(150, -1), choices=PeakChoices,
+        rsizer.Add(SimpleText(models_row, ' Add Model: '), 0, LCEN, 3)
+        rsizer.Add(Choice(models_row, size=(150, -1), choices=PeakChoices,
                           action=self.addModel), 0, LCEN, 3)
-        rsizer.Add(Choice(row3, size=(150, -1), choices=StepChoices,
+        rsizer.Add(Choice(models_row, size=(150, -1), choices=StepChoices,
                          action=partial(self.addModel, is_step=True)), 0, LCEN, 3)
-        rsizer.Add(Choice(row3, size=(150, -1), choices=ModelChoices,
+        rsizer.Add(Choice(models_row, size=(150, -1), choices=ModelChoices,
                           action=self.addModel), 0, LCEN, 3)
 
-        pack(row3, rsizer)
+        pack(models_row, rsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([(row2, 0, LCEN, 5),
-                       (row1, 0, LCEN, 5),
-                       (row3, 0, LCEN, 5),
-                       ((5,5), 0, LCEN, 5),
-                       (HLine(self, size=(550, 2)), 0, LCEN, 10),
-                       ((5,5), 0, LCEN, 0),
+        sizer.AddMany([(range_row, 0, LCEN,  4), ((9, 9), 0, LCEN, 4),
+                       (models_row, 0, LCEN, 4), ((9, 9), 0, LCEN, 4),
+                       (action_row, 0, LCEN, 4), ((9, 9), 0, LCEN, 4),
+                       (HLine(self, size=(550, 3)), 0, LCEN, 4),
+                       ((10,10), 0, LCEN, 2),
                        (self.mod_nb,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
