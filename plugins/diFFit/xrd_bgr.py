@@ -194,6 +194,7 @@ class XRDBackground:
 
         # Compress scratch spectrum
         if compress > 1:
+            scratch = scratch[0:(nchans-(nchans % compress))] ## prepares for compression
             tmp = compress_array(scratch, compress)
             if tmp is None:
                 compress = 1

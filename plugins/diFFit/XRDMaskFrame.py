@@ -11,17 +11,16 @@ from scipy import constants
 import wx
 
 from wxmplot.imagepanel import ImagePanel
-
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
+# HAS_pyFAI = False
+# try:
+#     import pyFAI
+#     import pyFAI.calibrant
+#     from pyFAI.calibration import Calibration
+#     HAS_pyFAI = True
+# except ImportError:
+#     pass
     
 HAS_fabio = False
 try:
@@ -234,8 +233,10 @@ class MaskToolsPopup(wx.Frame):
             self.maxCURRENT = self.maxINT
         
         self.plot2Dimg.conf.auto_intensity = False        
-        self.plot2Dimg.conf.int_lo['int'] = self.minCURRENT
-        self.plot2Dimg.conf.int_hi['int'] = self.maxCURRENT
+        self.plot2Dimg.conf.int_lo[0] = self.minCURRENT
+        self.plot2Dimg.conf.int_hi[0] = self.maxCURRENT
+#         self.plot2Dimg.conf.int_lo['int'] = self.minCURRENT
+#         self.plot2Dimg.conf.int_hi['int'] = self.maxCURRENT
         
         ## vertical flip default
         self.plot2Dimg.conf.flip_ud = True
