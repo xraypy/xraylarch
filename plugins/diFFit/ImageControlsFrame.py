@@ -141,7 +141,7 @@ class ImageToolboxFrame(wx.Frame):
     
         self.panel.SetSizer(vbox)
 
-    def autoContrast(self,event):
+    def autoContrast(self,event=None):
 
         self.minINT = int(np.min(self.plt_img))
         self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
@@ -159,7 +159,7 @@ class ImageToolboxFrame(wx.Frame):
             self.maxCURRENT = self.maxINT
         self.setContrast()    
 
-    def onContrastRange(self,event):
+    def onContrastRange(self,event=None):
     
         newMIN = int(self.entr_min.GetValue())
         newMAX = int(self.entr_max.GetValue())
@@ -199,7 +199,7 @@ class ImageToolboxFrame(wx.Frame):
         except:
             pass
 
-    def onSlider(self,event):
+    def onSlider(self,event=None):
 
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
@@ -225,7 +225,7 @@ class ImageToolboxFrame(wx.Frame):
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
 
-    def onFlip(self,event):
+    def onFlip(self,event=None):
         '''
         Eventually, should just set self.raw_img or self.fli_img - better than this
         mkak 2016.10.20
@@ -253,14 +253,14 @@ class ImageToolboxFrame(wx.Frame):
             self.plot2Dframe.conf.flip_ud = False
             self.plot2Dframe.conf.flip_lr = False
                 
-    def onScale(self,event):
+    def onScale(self,event=None):
         if self.ch_scl.GetSelection() == 1: ## log
             self.plot2Dframe.conf.log_scale = True
         else:  ## linear
             self.plot2Dframe.conf.log_scale = False
         self.plot2Dframe.redraw()
 
-    def onColor(self,event):
+    def onColor(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
             self.color = self.ch_clr.GetString(self.ch_clr.GetSelection())
             self.setColor()
@@ -278,7 +278,7 @@ class ImageToolboxFrame(wx.Frame):
         self.txt_ct2.SetLabel('[ full range: %i, %i ]' % 
                   (np.min(self.plt_img),np.max(self.plt_img)))
         
-        self.autoContrast(None)
+        self.autoContrast()
         self.checkFLIPS()
 
         self.plot2Dframe.redraw()

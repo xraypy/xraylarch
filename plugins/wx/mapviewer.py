@@ -2481,21 +2481,21 @@ class CalXRD(wx.Dialog):
         self.panel.SetSizer(self.sizer)
 
 
-    def onCalSel(self,event):
+    def onCalSel(self,event=None):
         #if self.calslct.GetSelection() == 0:
         #    self.FlagCalibrant = False
         #else:
         #    self.FlagCalibrant = True
         self.checkOK()
 
-    def onDetSel(self,event):
+    def onDetSel(self,event=None):
         #if self.detslct.GetSelection() == 0:
         #    self.FlagDetector = False
         #else:
         #    self.FlagDetector = True
         self.checkOK()
 
-    def onCheckOK(self,event):
+    def onCheckOK(self,event=None):
         self.checkOK()
 
     def checkOK(self):
@@ -2510,7 +2510,7 @@ class CalXRD(wx.Dialog):
         else:
             self.FindWindowById(wx.ID_OK).Disable()
 
-    def onEorLSel(self,event):
+    def onEorLSel(self,event=None):
         hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
         if self.slctEorL.GetSelection() == 1:
@@ -2524,7 +2524,7 @@ class CalXRD(wx.Dialog):
 
         self.checkOK()
 
-    def onDorPSel(self,event):
+    def onDorPSel(self,event=None):
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
             self.sizer.Show(self.detslct)

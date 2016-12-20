@@ -95,7 +95,7 @@ class CalibrationPopup(wx.Frame):
         self.entr_cntrx.SetValue(str(int(self.raw_img.shape[0]/2))) ## x-position of beam
         self.entr_cntry.SetValue(str(int(self.raw_img.shape[1]/2))) ## y-position of beam
         
-        self.onDorPSel(None)
+        self.onDorPSel()
 
     def DirectionsSizer(self):
 
@@ -264,14 +264,14 @@ class CalibrationPopup(wx.Frame):
         self.parbox.Add(hbox_cal8,   flag=wx.BOTTOM, border=8) 
 
 
-    def onCalSel(self,event):
+    def onCalSel(self,event=None):
         print('Selected calibrant: %s' % self.ch_cal.GetString(self.ch_cal.GetSelection()))
 
-    def onDetSel(self,event):
+    def onDetSel(self,event=None):
         print('Selected detector: %s' % self.ch_det.GetString(self.ch_det.GetSelection()))
 
 
-    def onEorLSel(self,event): 
+    def onEorLSel(self,event=None): 
         hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
         if self.ch_EorL.GetSelection() == 1:
@@ -283,7 +283,7 @@ class CalibrationPopup(wx.Frame):
             energy = hc/(wavelength) ## units: keV
             self.entr_EorL.SetValue(str(energy))
 
-    def onDorPSel(self,event): 
+    def onDorPSel(self,event=None): 
         if self.ch_DorP.GetSelection() == 0:
             self.entr_pix.Hide()
             self.ch_det.Show()
@@ -350,7 +350,7 @@ class CalibrationPopup(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onImageTools(self,event):
+    def onImageTools(self,event=None):
         
         self.toolbox = ImageToolboxFrame(self.plot2Dimg,self.raw_img)
 
@@ -408,7 +408,7 @@ class CalibrationPopup(wx.Frame):
         self.checkRANGE()
         self.showDirection()
     
-    def onPREVIOUS(self,event):
+    def onPREVIOUS(self,event=None):
         self.stepno = self.stepno - 1
         self.checkRANGE()
         self.showDirection()
@@ -427,7 +427,7 @@ class CalibrationPopup(wx.Frame):
                     
         self.followdir.SetLabel(dirsteps[self.stepno])
 
-    def openPONI(self,event):
+    def openPONI(self,event=None):
              
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
@@ -456,7 +456,7 @@ class CalibrationPopup(wx.Frame):
             self.ch_DorP.SetSelection(1)
             self.entr_EorL.SetValue('%0.4f' % float(self.ai._wavelength*1.e10))
             self.ch_EorL.SetSelection(1)
-            self.onDorPSel(None)
+            self.onDorPSel()
             
             cenx = float(self.ai._poni1)/float(self.ai.detector.pixel1)
             ceny = float(self.ai._poni2)/float(self.ai.detector.pixel2)
@@ -471,7 +471,7 @@ class diFFit_XRDcal(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = CalibrationPopup(None)
+        frame = CalibrationPopup()
         frame.Show()
         self.SetTopWindow(frame)
 

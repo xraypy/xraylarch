@@ -55,6 +55,8 @@ class Viewer2DXRD(wx.Frame):
         ## Default image information
         self.name_images = []
         self.data_images = []
+        self.min_images  = []
+        self.max_images  = []
         self.raw_img  = None
         self.flp_img = None
         self.plt_img = None
@@ -114,20 +116,25 @@ class Viewer2DXRD(wx.Frame):
         img_no = np.shape(self.data_images)[0]
         self.name_images.append(iname)
         self.data_images.append(img)
+        self.min_images.append(int(np.min(img)))
+        self.max_images.append(int(np.max(img)))
         
         self.ch_img.Set(self.name_images)
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.data_images[img_no]
-        self.displayIMAGE()
+        self.displayIMAGE(reset=True)
            
-    def displayIMAGE(self):
+    def displayIMAGE(self,reset=False):
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
         
         self.plot2D.display(self.plt_img)       
-        self.autoContrast()        
+        if reset:
+            self.autoContrast()
+        else:
+            self.setContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
                          (np.min(self.plt_img),np.max(self.plt_img))) 
@@ -273,15 +280,21 @@ class Viewer2DXRD(wx.Frame):
         self.maxCURRENT = self.maxINT
         if self.maxCURRENT > self.maxINT:
             self.maxCURRENT = self.maxINT
-        self.setContrast()    
+
+        img_no = self.ch_img.GetSelection()
+        self.min_images[img_no] = self.minCURRENT
+        self.max_images[img_no] = self.maxCURRENT
+
+        self.setContrast()  
 
     def onContrastRange(self,event=None):
     
         newMIN = int(self.entr_min.GetValue())
         newMAX = int(self.entr_max.GetValue())
         
-        self.minCURRENT = newMIN
-        self.maxCURRENT = newMAX
+        img_no = self.ch_img.GetSelection()
+        self.min_images[img_no] = newMIN
+        self.max_images[img_no] = newMAX
 
         self.sldr_min.SetRange(newMIN,newMAX)
         self.sldr_max.SetRange(newMIN,newMAX)
@@ -300,6 +313,11 @@ class Viewer2DXRD(wx.Frame):
         self.setContrast()
 
     def setContrast(self):
+
+        img_no = self.ch_img.GetSelection()
+        self.minCURRENT = int(self.min_images[img_no])
+        self.maxCURRENT = int(self.max_images[img_no])
+
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
 
@@ -313,6 +331,7 @@ class Viewer2DXRD(wx.Frame):
             
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
+
 
 ##############################################
 #### XRD MANIPULATION FUNTIONS 

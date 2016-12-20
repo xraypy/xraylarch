@@ -43,7 +43,7 @@ class MaskToolsPopup(wx.Frame):
         try:
             self.raw_img = parent.plt_img ## raw_img or flp_img or plt_img mkak 2016.10.28
         except:
-            self.loadIMAGE(None)
+            self.loadIMAGE()
         
         self.area_list = []
         
@@ -156,7 +156,7 @@ class MaskToolsPopup(wx.Frame):
     
         self.loadIMAGE() 
 
-    def loadIMAGE(self,event): 
+    def loadIMAGE(self,event=None): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD image',
                            defaultDir=os.getcwd(),
@@ -205,7 +205,7 @@ class MaskToolsPopup(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onImageTools(self,event):
+    def onImageTools(self,event=None):
         
         self.toolbox = ImageToolboxFrame(self.plot2Dimg,self.raw_img)
 
@@ -242,7 +242,7 @@ class MaskToolsPopup(wx.Frame):
         self.plot2Dimg.conf.flip_ud = True
         self.plot2Dimg.conf.flip_lr = False 
        
-        self.plot2Dimg.redraw()   
+        self.plot2Dimg.redraw()
 
     def ShapeChoice(self, event):
     
@@ -256,7 +256,7 @@ class MaskToolsPopup(wx.Frame):
 
         print('This will trigger the saving of a mask.')
         
-    def addAREA(self,event):
+    def addAREA(self,event=None):
 
         ## Needs to be called when area is drawn.
         ## mkak 2016.10.31
@@ -265,7 +265,7 @@ class MaskToolsPopup(wx.Frame):
         #self.area_list.append('area %i' % len(self.area_list))
         #self.slct_area.Set(self.area_list)
 
-    def showAREA(self,event):
+    def showAREA(self,event=None):
 
         if self.slct_area.GetSelection() > 0:
             area_str = self.slct_area.GetString(self.slct_area.GetSelection())
@@ -274,7 +274,7 @@ class MaskToolsPopup(wx.Frame):
             
             ## show area on map, image
 
-    def deleteAREA(self,event):
+    def deleteAREA(self,event=None):
     
         if self.slct_area.GetSelection() > 0:
             area_str = self.slct_area.GetString(self.slct_area.GetSelection())
@@ -292,7 +292,7 @@ class diFFit_XRDmask(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = MaskToolsPopup(None)
+        frame = MaskToolsPopup()
         frame.Show()
         self.SetTopWindow(frame)
 

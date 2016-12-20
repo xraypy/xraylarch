@@ -1420,13 +1420,13 @@ class XRDSearchGUI(wx.Dialog):
 
         self.Show()
 #########################################################################
-    def onChemistry(self,event):
+    def onChemistry(self,event=None):
         print('Will eventually show Periodic Table...')
 #########################################################################
-    def onSymmetry(self,event):
+    def onSymmetry(self,event=None):
         XRDSymmetrySearch()
 #########################################################################
-    def onReset(self,event):
+    def onReset(self,event=None):
         self.Mineral.Clear()
         self.Author.Clear()
         self.Chemistry.Clear()
@@ -1539,7 +1539,7 @@ class XRDSymmetrySearch(wx.Dialog):
 
         self.Show()
 #########################################################################
-    def onReset(self,event):
+    def onReset(self,event=None):
         self.min_a.Clear()
         self.max_a.Clear()
         self.min_b.Clear()
