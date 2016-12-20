@@ -1303,7 +1303,33 @@ class Viewer1DXRD(wx.Panel):
         panel1D.Add(rightside,proportion=1,flag=wx.ALL,border=10)
 
         self.SetSizer(panel1D)
-    
+
+    def LeftSidePanel(self,panel):
+        
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        settings = self.SettingsPanel(self)        
+        plttools = self.Toolbox(self)
+        addbtns = self.AddPanel(self)
+        dattools = self.DataBox(self)
+        ciftools = self.CIFBox(self)
+        
+        vbox.Add(settings,flag=wx.ALL,border=10)
+        vbox.Add(plttools,flag=wx.ALL,border=10)
+        vbox.Add(addbtns,flag=wx.ALL,border=10)
+        vbox.Add(dattools,flag=wx.ALL,border=10)
+        vbox.Add(ciftools,flag=wx.ALL,border=10)
+        return vbox
+
+    def RightSidePanel(self,panel):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot1DXRD(panel)
+        btnbox = self.QuickButtons(panel)
+        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        return vbox
+
+
     def Toolbox(self,panel):
         '''
         Frame for visual toolbox
@@ -1441,32 +1467,6 @@ class Viewer1DXRD(wx.Panel):
         hbox.Add(btn_cif, flag=wx.ALL, border=8)
         return hbox
 
-    def LeftSidePanel(self,panel):
-        
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        settings = self.SettingsPanel(self)        
-        plttools = self.Toolbox(self)
-        addbtns = self.AddPanel(self)
-        dattools = self.DataBox(self)
-        ciftools = self.CIFBox(self)
-        
-        vbox.Add(settings,flag=wx.ALL,border=10)
-        vbox.Add(plttools,flag=wx.ALL,border=10)
-        vbox.Add(addbtns,flag=wx.ALL,border=10)
-        vbox.Add(dattools,flag=wx.ALL,border=10)
-        vbox.Add(ciftools,flag=wx.ALL,border=10)
-        return vbox
-
-    def RightSidePanel(self,panel):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot1DXRD(panel)
-        btnbox = self.QuickButtons(panel)
-        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
-        return vbox
-
-        
     def SettingsPanel(self,panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -1518,38 +1518,9 @@ class Viewer1DXRD(wx.Panel):
 
     def onLogLinear(self, event=None):
 
-        ## Not working yet....?
-        self.ylog_scale = 'log' == self.ch_yaxis.GetString(self.ch_yaxis.GetSelection())
-        #self.ylog_scale = 'log' == event.GetString()
-      
-# #         self.unzoom_all()
-# #         self.plot1D.canvas.draw()
-# 
-# #         for i,plt_no in enumerate(self.icif):
-# #             x = np.array(self.cif_plot[i][0])
-# #             y = np.array(self.cif_plot[i][1])
-# # 
-# #             self.plot1D.update_line(plt_no,x,y)
-# 
-#         for i,plt_no in enumerate(self.idata):
-#             print 'updating %i, %i' % (i,plt_no)
-# #             x = np.array(self.xy_plot[i][0])
-# #             y = np.array(self.xy_plot[i][1])
-# # 
-# #             if xmax is None or xmax < np.max(x):
-# #                 xmax = np.max(x)
-# #             if xmin > np.min(x):
-# #                 xmin = np.min(x)
-# #             if ymax is None or ymax < np.max(y):
-# #                 ymax = np.max(y)
-# #             if ymin > np.min(y):
-# #                 ymin = np.min(y)
-# 
-# #             self.plot1D.update_line(plt_no,x,y)
-#             self.plot1D.update_line(plt_no,*np.array(self.xy_plot[i]))
-#         
-#         self.unzoom_all()
-#         self.plot1D.canvas.draw()
+        self.plot1D.axes.set_yscale(self.ch_yaxis.GetString(self.ch_yaxis.GetSelection()))
+        self.rescale1Daxis()
+
 
 ##############################################
 #### XRD PLOTTING FUNCTIONS
