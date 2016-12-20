@@ -22,7 +22,8 @@ install:
     - conda config --add channels conda-forge
     - conda config --add channels newville
     - conda install h5py matplotlib pandas nose sphinx sqlalchemy
-    - conda install yaml pango pcre wxpython wxmplot wxutils
+    - conda install pillow requests yaml pango pcre
+    - conda install wxpython wxmplot wxutils
     - conda install lmfit termcolor pyepics fabio pyfai
     - python setup.py install
 

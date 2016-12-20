@@ -81,7 +81,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
-from larch_plugins.wx.mapimageframe import MapImageFrame, DualMapFrame
+from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
@@ -316,7 +316,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             wid.SetChoices(rois)
 
     def set_workarray_choices(self, xrmmap):
-            
+
         c = self.workarray_choice
         c.Clear()
         if 'work' in xrmmap:
@@ -477,35 +477,40 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        self.owner.no_hotcols = self.hotcols.IsChecked()
-
+        no_hotcols  = self.hotcols.IsChecked()
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
 
-        # print("Show Correl ", map1.shape, map2.shape)
-        # correl_plot = DualMapFrame(parent=self.owner, xrmfile=datafile)
-        # correl_plot.display(roiname1, roiname2, det=det)
-        # correl_plot.Show()
-        # correl_plot.Raise()
+        x = datafile.get_pos(0, mean=True)
+        y = datafile.get_pos(1, mean=True)
 
-        if self.limrange.IsChecked():
-            lims = [wid.GetValue() for wid in self.lims]
-            map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
-            map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
-        path, fname = os.path.split(datafile.filename)
-        title ='%s: %s vs %s' %(fname, roiname2, roiname1)
-        pframe = PlotFrame(title=title, output_title=title)
-        pframe.plot(map2.flatten(), map1.flatten(),
-                    xlabel=roiname2, ylabel=roiname1,
-                    marker='o', markersize=4, linewidth=0)
-        pframe.panel.cursor_mode = 'lasso'
-        pframe.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
+        # try to use correlation plot from wxmplot 0.9.23 and later
+        if CorrelatedMapFrame is not None:
+            title="%s: %s vs %s" %(datafile.filename, roiname1, roiname2)
+            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
+            correl_plot.display(map1, map2, name1=roiname1, name2=roiname2,
+                                x=x, y=y, title=title)
 
-        pframe.Show()
-        pframe.Raise()
-        self.owner.plot_displays.append(pframe)
+        else:
+            if self.limrange.IsChecked():
+                lims = [wid.GetValue() for wid in self.lims]
+                map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
+                map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
+            path, fname = os.path.split(datafile.filename)
+            title ='%s: %s vs %s' %(fname, roiname2, roiname1)
+            correl_plot = PlotFrame(title=title, output_title=title)
+            correl_plot.plot(map2.flatten(), map1.flatten(),
+                             xlabel=roiname2, ylabel=roiname1,
+                             marker='o', markersize=4, linewidth=0)
+            correl_plot.panel.cursor_mode = 'lasso'
+            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
+
+        correl_plot.Show()
+        correl_plot.Raise()
+        self.owner.plot_displays.append(correl_plot)
+
 
     def onShowMap(self, event=None, new=True):
         datafile  = self.owner.current_file
