@@ -88,8 +88,8 @@ class Interpreter:
                        'importfrom', 'index', 'interrupt', 'list',
                        'listcomp', 'module', 'name', 'nameconstant', 'num',
                        'pass', 'print', 'raise', 'repr', 'return', 'slice',
-                       'str', 'subscript', 'try', 'tryexcept', 'tuple',
-                       'unaryop', 'while')
+                       'str', 'subscript', 'try', 'tryexcept', 'tryfinally',
+                       'tuple', 'unaryop', 'while')
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
         self.writer = writer or StdWriter()
@@ -154,6 +154,7 @@ class Interpreter:
                         loaded_plugins.append(pname)
 
         self.on_try = self.on_tryexcept
+        self.on_tryfinally = self.on_tryexcept
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
 
@@ -647,17 +648,20 @@ class Interpreter:
                     htype = None
                     if hnd.type is not None:
                         htype = __builtins__.get(hnd.type.id, None)
-
                     if htype is None or isinstance(this_exc, htype):
                         self.error = []
-                        no_errors = True
                         self._interrupt = None
                         if hnd.name is not None:
                             self.node_assign(hnd.name, e_value)
                         for tline in hnd.body:
                             self.run(tline)
-        if no_errors:
+                        break
+        if no_errors and hasattr(node, 'orelse'):
             for tnode in node.orelse:
+                self.run(tnode)
+
+        if hasattr(node, 'finalbody'):
+            for tnode in node.finalbody:
                 self.run(tnode)
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
