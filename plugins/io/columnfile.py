@@ -203,8 +203,8 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     attrs = {'filename': filename}
     attrs['column_labels'] = attrs['array_labels'] = _labels
-    if sort and sort_column >= 0 and sort_column < nrow:
-         data = data[:,np.argsort(data[sort_column])]
+    if sort and sort_column >= 0 and sort_column < ncol:
+         data = data[:, np.argsort(data[sort_column])]
 
     group = Group(name='ascii_file %s' % filename,
                   filename=filename, header=headers, data=data,
