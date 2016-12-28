@@ -24,7 +24,7 @@ if not hasattr(sys, 'frozen'):
 import wx
 import wx.lib.newevent
 
-from wxmplot import PlotFrame, ImageFrame
+from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 
 import larch
 
@@ -45,6 +45,7 @@ HIST_DOC = Axes.hist.__doc__
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
+FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
 MODNAME = '_plotter'
 
@@ -157,6 +158,55 @@ class PlotDisplay(PlotFrame):
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
 
+
+class StackedPlotDisplay(StackedPlotFrame):
+    def __init__(self, wxparent=None, window=1, _larch=None,  size=None, **kws):
+        StackedPlotFrame.__init__(self, parent=None,
+                                  exit_callback=self.onExit, **kws)
+
+        self.Show()
+        self.Raise()
+        self.panel.cursor_callback = self.onCursor
+        self.panel.cursor_mode = 'zoom'
+        self.window = int(window)
+        self._larch = _larch
+        self._xylims = {}
+        self.cursor_hist = []
+        self.symname = '%s.plot%i' % (MODNAME, self.window)
+        symtable = ensuremod(self._larch, MODNAME)
+
+        if symtable is not None:
+            symtable.set_symbol(self.symname, self)
+            if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
+                symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+
+        if window not in PLOT_DISPLAYS:
+            PLOT_DISPLAYS[window] = self
+
+    def onExit(self, o, **kw):
+        try:
+            symtable = self._larch.symtable
+            if symtable.has_group(MODNAME):
+                symtable.del_symbol(self.symname)
+        except:
+            pass
+        if self.window in PLOT_DISPLAYS:
+            PLOT_DISPLAYS.pop(self.window)
+
+        self.Destroy()
+
+    def onCursor(self, x=None, y=None, **kw):
+        symtable = ensuremod(self._larch, MODNAME)
+        if symtable is None:
+            return
+        hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+        symtable.set_symbol('%s_x'  % self.symname, x)
+        symtable.set_symbol('%s_y'  % self.symname, y)
+        self.cursor_hist.insert(0, (x, y))
+        if len(self.cursor_hist) > hmax:
+            self.cursor_hist = self.cursor_hist[:hmax]
+        symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
+
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
         ImageFrame.__init__(self, parent=None, size=size,
@@ -205,7 +255,7 @@ class ImageDisplay(ImageFrame):
 
 @larch.ValidateLarchPlugin
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
-                wintitle=None, xrf=False, image=False):
+                wintitle=None, xrf=False, image=False, stacked=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if getattr(_larch.symtable._sys.wx, 'wxapp', None) is None:
@@ -225,6 +275,9 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display_dict = XRF_DISPLAYS
         title   = 'XRF Display Window %i' % win
         symname = '%s.xrf%i' % (MODNAME, win)
+    elif stacked:
+        creator = StackedPlotDisplay
+        display_dict = FITPLOT_DISPLAYS
 
     if win in display_dict:
         display = display_dict[win]
@@ -605,6 +658,29 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
     if force_draw:
         wx_update(_larch=_larch)
 
+
+@larch.ValidateLarchPlugin
+def _fitplot(x, y, panel='top', win=1, _larch=None, wxparent=None, size=None,
+          force_draw=True,  **kws):
+    """fitplot(x, y, yerr=None, resid=None, win=1, options)
+
+    Plot x, y values for a fit using a StackedPlot with main plot of data in the top
+    panel, and the residual shown in the bottom panel.   By default, arrays will be
+    plotted in the top panel, and you must specify `panel='bot'` to plot an array in
+    the bottom panel.
+
+    Parameters are the same as for plot() and oplot()
+
+    See Also: plot, newplot
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, stacked=True, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(None, msg='No Plotter defined')
+    plotter.Raise()
+    plotter.plot(x, y, panel=panel, **kws)
+    if force_draw:
+        wx_update(_larch=_larch)
+
 @larch.ValidateLarchPlugin
 def _hist(x, bins=10, win=1, new=False,
            _larch=None, wxparent=None, size=None, force_draw=True,  *args, **kws):
@@ -729,4 +805,5 @@ def registerLarchPlugin():
                       'contour':_contour,
                       'xrf_plot': _xrf_plot,
                       'xrf_oplot': _xrf_oplot,
+                      'fit_plot': _fitplot,
                       })
