@@ -200,6 +200,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if len(_labels) < ncols:
         for i in range(len(_labels), ncols):
             _labels.append("col%" % (i+1))
+    elif len(_labels) > ncols:
+        _labels = _labels[:ncols]
+
 
     attrs = {'filename': filename}
     attrs['column_labels'] = attrs['array_labels'] = _labels
@@ -213,6 +216,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
         group.footer = footers
     for i in range(ncols):
         nam = _labels[i].lower()
+        if nam in ('data', 'array_labels', 'filename',
+                   'attrs', 'header', 'footer'):
+            nam = "%s_" % nam
         setattr(group, nam, data[i])
     group.attrs = Group(name='header attributes from %s' % filename)
     for key, val in header_attrs.items():
