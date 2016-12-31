@@ -81,6 +81,10 @@ class XYFitPanel(wx.Panel):
         self.pick2_t0 = 0.
         self.pick2_timeout = 15.
 
+        self.pick2erase_timer = wx.Timer(self)
+        self.pick2erase_panel = None
+        self.Bind(wx.EVT_TIMER, self.onPick2EraseTimer, self.pick2erase_timer)
+
     def build_display(self):
 
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
@@ -299,14 +303,27 @@ class XYFitPanel(wx.Panel):
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
+
+    def onPick2EraseTimer(self, evt=None):
+        print("Pick 2 Erase !! ", self.pick2erase_panel)
+        self.pick2erase_timer.Stop()
+
+        panel = self.pick2erase_panel
+        ntrace = panel.conf.ntrace - 1
+        panel.conf.get_mpl_line(ntrace).set_data(np.array([]), np.array([]))
+        panel.draw()
+
+
     def onPick2Timer(self, evt=None):
         try:
-            curhist = self.larch.symtable._plotter.plot1.cursor_hist[:]
+            plotframe = self.controller.get_display(stacked=False)
+            curhist = plotframe.cursor_hist[:]
         except:
             return
+
         if (time.time() - self.pick2_t0) > self.pick2_timeout:
             msg = self.pick2_group.pick2_msg.SetLabel(" ")
-            self.larch.symtable._plotter.plot1.cursor_hist = []
+            plotframe.cursor_hist = []
             self.pick2_timer.Stop()
             return
 
@@ -339,15 +356,24 @@ class XYFitPanel(wx.Panel):
                 parwids[name].value.SetValue(param.value)
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.x)
-        self.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup._tmp)
-        self.larch.symtable._plotter.plot1.cursor_hist = []
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.cursor_hist = []
+        plotframe.oplot(dgroup.x, dgroup._tmp)
+        self.pick2erase_panel = plotframe.panel
+
+        self.pick2erase_timer.Start(5000)
+
 
     def onPick2Points(self, evt=None, prefix=None):
         fgroup = self.fit_components.get(prefix, None)
         if fgroup is None:
-                return
-        self.larch.symtable._plotter.plot1.cursor_hist = []
-        fgroup.npts = len(self.larch.symtable._plotter.plot1.cursor_hist)
+            return
+
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.Raise()
+
+        plotframe.cursor_hist = []
+        fgroup.npts = 0
         self.pick2_group = fgroup
 
         if fgroup.pick2_msg is not None:
@@ -438,7 +464,6 @@ class XYFitPanel(wx.Panel):
         self.fit_model = model
         self.fit_params = params
 
-        self.plot1 = self.larch.symtable._plotter.plot1
         if dgroup is not None:
             i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
             xsel = dgroup.x[slice(i1, i2)]
@@ -461,20 +486,38 @@ class XYFitPanel(wx.Panel):
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        self.controller.plot_group(self.controller.groupname, new=True,
-                             xmin=xv1, xmax=xv2, label='data')
+        ysel = dgroup.y[slice(i1, i2)]
 
-        self.plot1.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+        plotframe = self.controller.get_display(stacked=True)
+        plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
+                       xmin=xv1, xmax=xv2, label='data',
+                       xlabel=dgroup.plot_xlabel, ylabel=dgroup.plot_ylabel,
+                       title='Larch XYFit: %s' % dgroup.filename )
+
+        plotframe.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+
+        plotframe.plot(dgroup.xfit, ysel-dgroup.yfit, grid=False,
+                       marker='o', markersize=4, linewidth=1, panel='bot')
+
         if with_components is None:
             with_components = (self.plot_comps.IsChecked() and
                                len(dgroup.ycomps) > 1)
         if with_components:
             for label, _y in dgroup.ycomps.items():
-                self.plot1.oplot(dgroup.xfit, _y, label=label)
+                plotframe.oplot(dgroup.xfit, _y, label=label,
+                                style='short dashed')
 
-        _plotter = self.larch.symtable._plotter
-        _plotter.plot_axvline(dgroup.x[i1], color='#999999')
-        _plotter.plot_axvline(dgroup.x[i2-1], color='#999999')
+        line_opts = dict(color='#AAAAAA', label='_nolegend_',
+                    linewidth=1, zorder=-5)
+        plotframe.panel_bot.axes.axhline(0, **line_opts)
+        axvline = plotframe.panel.axes.axvline
+        if i1 > 0:
+            axvline(dgroup.x[i1], **line_opts)
+
+        if i2 < len(dgroup.x):
+            axvline(dgroup.x[i2-1], **line_opts)
+
+        plotframe.panel.canvas.draw()
 
 
     def onRunFit(self, event=None):
