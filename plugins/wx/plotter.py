@@ -125,6 +125,7 @@ class PlotDisplay(PlotFrame):
         self.cursor_hist = []
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
+        self.panel.canvas.figure.set_facecolor('#FDFDFB')
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
@@ -174,6 +175,8 @@ class StackedPlotDisplay(StackedPlotFrame):
         self.cursor_hist = []
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
+        self.panel.canvas.figure.set_facecolor('#FDFDFB')
+        self.panel_bot.canvas.figure.set_facecolor('#FDFDFB')
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
