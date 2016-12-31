@@ -106,7 +106,8 @@ class AthenaImporter(wx.Frame) :
                             plot_xlabel='Energy (eV)',
                             plot_ylabel='mu')
 
-            self.read_ok_cb(outgroup, array_sel=None, overwrite=True)
+            if self.read_ok_cb is not None:
+                self.read_ok_cb(outgroup, array_sel=None, overwrite=True)
 
         self.Destroy()
 
