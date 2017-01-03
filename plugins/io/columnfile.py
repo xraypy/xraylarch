@@ -34,7 +34,7 @@ def getfloats(txt, allow_times=True):
       The `allow_times` will try to support common date-time strings
       using the dateutil module, returning a numerical value as the
       Unix timestamp, using
-          time.mktime(dateutil.parser.parse(word, fuzzy=True).timetuple())
+          time.mktime(dateutil.parser.parse(word).timetuple())
     """
     words = [w.strip() for w in txt.replace(',', ' ').split()]
     mktime = time.mktime
@@ -44,7 +44,7 @@ def getfloats(txt, allow_times=True):
             val = float(w)
         except ValueError:
             try:
-                val = mktime(dateparse(w, fuzzy=False).timetuple())
+                val = mktime(dateparse(w).timetuple())
             except ValueError:
                 pass
         words[i] = val
@@ -176,7 +176,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     ncols, nrow = data.shape
 
-    # set column labels
+    # set column labels from label line
     _labels = None
     _clabels = ['col%i' % (i+1) for i in range(ncols)]
     if labels is not None:
@@ -200,6 +200,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if len(_labels) < ncols:
         for i in range(len(_labels), ncols):
             _labels.append("col%" % (i+1))
+    elif len(_labels) > ncols:
+        _labels = _labels[:ncols]
+
 
     attrs = {'filename': filename}
     attrs['column_labels'] = attrs['array_labels'] = _labels
@@ -213,6 +216,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
         group.footer = footers
     for i in range(ncols):
         nam = _labels[i].lower()
+        if nam in ('data', 'array_labels', 'filename',
+                   'attrs', 'header', 'footer'):
+            nam = "%s_" % nam
         setattr(group, nam, data[i])
     group.attrs = Group(name='header attributes from %s' % filename)
     for key, val in header_attrs.items():
