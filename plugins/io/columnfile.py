@@ -44,7 +44,7 @@ def getfloats(txt, allow_times=True):
             val = float(w)
         except ValueError:
             try:
-                val = mktime(dateparse(w, fuzzy=True).timetuple())
+                val = mktime(dateparse(w, fuzzy=False).timetuple())
             except ValueError:
                 pass
         words[i] = val
