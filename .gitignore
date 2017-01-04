@@ -22,3 +22,5 @@ AMAP/
 *.h5
 *.mca
 *credentials*
+.DS_Store
+Thumbs.db
