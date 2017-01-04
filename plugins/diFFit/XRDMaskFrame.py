@@ -36,7 +36,7 @@ class MaskToolsPopup(wx.Frame):
     def __init__(self,parent):
     
         self.frame = wx.Frame.__init__(self, parent, title='Create mask',size=(800,600))
-        
+
         self.parent = parent
         self.statusbar = self.CreateStatusBar(2,wx.CAPTION )
 
@@ -44,8 +44,10 @@ class MaskToolsPopup(wx.Frame):
             self.raw_img = parent.plt_img ## raw_img or flp_img or plt_img mkak 2016.10.28
         except:
             self.loadIMAGE()
+
+
+        self.setDefaults()        
         
-        self.area_list = []
         
         self.Init()
         self.Show()
@@ -53,7 +55,6 @@ class MaskToolsPopup(wx.Frame):
 #        wx.Window.GetEffectiveMinSize
 #        wx.GetBestSize(self)
 
-        self.setDefaults()
         
         
         
@@ -73,13 +74,8 @@ class MaskToolsPopup(wx.Frame):
 
     def setDefaults(self):
     
-        ## Sets some typical defaults specific to GSE 13-ID procedure
-        for i in range(10):
-            self.area_list.append('area %i' % i)
-        #self.area_list = ['area 1','area 2','area 3','area 4','area 5','area 6','area 7','area 8']
-        self.slct_area.Set(self.area_list)
-
-
+        self.area_list = []
+        
     def MainSizer(self):
     
         self.mainbox = wx.BoxSizer(wx.VERTICAL)
@@ -151,6 +147,11 @@ class MaskToolsPopup(wx.Frame):
         self.btn_save = wx.Button(self.panel,label='SAVE MASK')
         self.btn_save.Bind(wx.EVT_BUTTON,self.saveMask)
         self.toolbox.Add(self.btn_save, flag=wx.ALL, border=10)
+        
+        self.btn_SHWarea.Disable()
+        self.btn_DELarea.Disable()
+        self.btn_clear.Disable()
+        self.btn_save.Disable()
 
     def startIMAGE(self):
     
@@ -189,7 +190,7 @@ class MaskToolsPopup(wx.Frame):
         imagetools = wx.BoxSizer(wx.HORIZONTAL)
         
         self.btn_image = wx.Button(self.panel,label='IMAGE TOOLS')
-        self.btn_load = wx.Button(self.panel,label='LOAD IMAGE')
+        self.btn_load = wx.Button(self.panel,label='CHANGE IMAGE')
 
         self.btn_image.Bind(wx.EVT_BUTTON,self.onImageTools)
         self.btn_load.Bind(wx.EVT_BUTTON,self.loadIMAGE)
@@ -213,6 +214,8 @@ class MaskToolsPopup(wx.Frame):
     
         self.plot2Dimg = ImagePanel(self.panel)#,size=(300, 300))
         self.plot2Dimg.messenger = self.write_message
+
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         self.plot2Dimg.display(self.raw_img) 
         self.AutoContrast()      
@@ -244,30 +247,56 @@ class MaskToolsPopup(wx.Frame):
        
         self.plot2Dimg.redraw()
 
-    def ShapeChoice(self, event):
+    def ShapeChoice(self,event=None):
     
-        print('The shape you chose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection()))
+        print('The shape you choose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection()))
+        
+        print
+        print 'trying this new thing...'
+        print 'eventually trigger this by actually drawing'
+        self.addAREA()
+
+        
+    def OnPaint(self, event=None):
+        
+        print 'Shape : %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection())
+        dc = wx.PaintDC(self)
+        dc.Clear()
+        dc.SetPen(wx.Pen(wx.BLACK, 4))
+        dc.DrawLine(0, 0, 50, 50)
     
-    def clearMask(self, event):
+    def clearMask(self,event=None):
         
         print('Clearing the mask...')
-
-    def saveMask(self, event):
+        print 'show we provide a warning message?'
+        self.area_list = []
+        self.slct_area.Set(self.area_list)
+        
+        self.btn_SHWarea.Disable()
+        self.btn_DELarea.Disable()
+        self.btn_clear.Disable()
+        self.btn_save.Disable()
+        
+        
+    def saveMask(self,event=None):
 
         print('This will trigger the saving of a mask.')
         
     def addAREA(self,event=None):
+        area_name = 'area %i (%s)' % (len(self.area_list),self.ch_shp.GetString(self.ch_shp.GetSelection()))
+        self.area_list.append(area_name)
+        self.slct_area.Set(self.area_list)
 
-        ## Needs to be called when area is drawn.
-        ## mkak 2016.10.31
 
-        print('updates the list with new areas')
-        #self.area_list.append('area %i' % len(self.area_list))
-        #self.slct_area.Set(self.area_list)
+        if len(self.area_list) > 0:
+            self.btn_SHWarea.Enable()
+            self.btn_DELarea.Enable()
+            self.btn_clear.Enable()
+            self.btn_save.Enable()
 
     def showAREA(self,event=None):
 
-        if self.slct_area.GetSelection() > 0:
+        if len(self.area_list) > 0:
             area_str = self.slct_area.GetString(self.slct_area.GetSelection())
             str_msg = 'Displaying: %s' % area_str
             self.write_message(str_msg,panel=0)
@@ -276,13 +305,19 @@ class MaskToolsPopup(wx.Frame):
 
     def deleteAREA(self,event=None):
     
-        if self.slct_area.GetSelection() > 0:
+        if len(self.area_list) > 0:
             area_str = self.slct_area.GetString(self.slct_area.GetSelection())
             str_msg = 'Deleting: %s' % area_str
             self.write_message(str_msg,panel=0)
             
             self.area_list.remove(self.slct_area.GetString(self.slct_area.GetSelection()))
             self.slct_area.Set(self.area_list)
+        
+        if len(self.area_list) == 0:
+            self.btn_SHWarea.Disable()
+            self.btn_DELarea.Disable()
+            self.btn_clear.Disable()
+            self.btn_save.Disable()
 
 class diFFit_XRDmask(wx.App):
     def __init__(self):
@@ -292,7 +327,7 @@ class diFFit_XRDmask(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = MaskToolsPopup()
+        frame = MaskToolsPopup(None)
         frame.Show()
         self.SetTopWindow(frame)
 

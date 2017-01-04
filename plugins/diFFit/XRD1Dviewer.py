@@ -1943,14 +1943,14 @@ class Viewer1DXRD(wx.Panel):
 # 
 #         return lookup_artist, lookup_handle
 # 
-#     def on_pick(self, event):
+#     def on_pick(self,event=None):
 #         handle = event.artist
 #         if handle in self.lookup_artist:
 #             artist = self.lookup_artist[handle]
 #             artist.set_visible(not artist.get_visible())
 #             self.update()
 # 
-#     def on_click(self, event):
+#     def on_click(self,event=None):
 #         if event.button == 3:
 #             visible = False
 #         elif event.button == 2:
@@ -2158,7 +2158,7 @@ class Calc1DPopup(wx.Dialog):
 #             energy = HC/(wavelength) ## units: keV
 #             self.EorL.SetValue(str(energy))
 
-    def onSPIN(self, event):
+    def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition())) 
         print('WARNING: not currently using multiple wedges for calculations')
 

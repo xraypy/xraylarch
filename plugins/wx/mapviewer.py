@@ -2098,7 +2098,7 @@ class MapViewerFrame(wx.Frame):
                                            args=(filename,))
             self.h5convert_thread.start()
 
-    def onTimer(self, event):
+    def onTimer(self,event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
         self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
@@ -2231,17 +2231,17 @@ class OpenMapFolder(wx.Dialog):
         else:
                 self.FindWindowById(wx.ID_OK).Disable()
 
-    def onXRFcheck(self, event):
+    def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
 
         self.checkOK()
 
-    def onXRDcheck(self, event):
+    def onXRDcheck(self,event=None):
         self.FLAGxrd = event.GetEventObject().GetValue()
 
         self.checkOK()
 
-    def onBROWSE(self, event):
+    def onBROWSE(self,event=None):
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
@@ -2318,15 +2318,15 @@ class AddToMapFolder(wx.Dialog):
         sizer.AddGrowableCol(2)
         panel.SetSizer(sizer)
 
-    def onXRFcheck(self, event):
+    def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
         self.checkOK()
 
-    def onXRDcheck(self, event):
+    def onXRDcheck(self,event=None):
         self.FLAGxrd = event.GetEventObject().GetValue()
         self.checkOK()
 
-    def onBROWSEfldr(self, event):
+    def onBROWSEfldr(self,event=None):
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
@@ -2344,7 +2344,7 @@ class AddToMapFolder(wx.Dialog):
 
         self.checkOK()
 
-    def onBROWSEfile(self, event):
+    def onBROWSEfile(self,event=None):
         wildcards = 'XRM map file (*.h5)|*.h5|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Read XRM Map File',
                            defaultDir=os.getcwd(),
@@ -2534,7 +2534,7 @@ class CalXRD(wx.Dialog):
 
         self.checkOK()
 
-    def onBROWSE1(self, event):
+    def onBROWSE1(self,event=None):
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=os.getcwd(),

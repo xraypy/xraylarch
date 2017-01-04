@@ -294,7 +294,7 @@ class CalibrationPopup(wx.Frame):
         self.panel.GetSizer().Layout() 
         self.panel.GetParent().Layout()
 
-    def loadIMAGE(self, event): 
+    def loadIMAGE(self,event=None): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=os.getcwd(),
@@ -403,7 +403,7 @@ class CalibrationPopup(wx.Frame):
         else:
             self.btn_next.Enable()
 
-    def onNEXT(self, event):
+    def onNEXT(self,event=None):
         self.stepno = self.stepno + 1
         self.checkRANGE()
         self.showDirection()
