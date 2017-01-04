@@ -31,6 +31,7 @@ except ImportError:
     pass
 
 
+
 class TestCase(unittest.TestCase):
     """testing of asteval"""
 
@@ -756,16 +757,6 @@ class TestEval(TestCase):
         self.isvalue('x', 42)
         z = self.interp("""def foo(): return 42\nfoo()""")
         self.assertEqual(z, 42)
-
-
-class TestCase2(unittest.TestCase):
-    def test_stringio(self):
-        """ test using stringio for output/errors """
-        out = StringIO()
-        err = StringIO()
-        intrep = Interpreter(writer=out)
-        intrep("print('out')")
-        self.assertEqual(out.getvalue(), 'out\n')
 
 
 if __name__ == '__main__':
