@@ -20,6 +20,7 @@ class LarchSession(object):
         self._larch = Interpreter()
         self.input  = InputText(prompt='test>', _larch=self._larch)
         self.symtable = self._larch.symtable
+        self.symtable.set_symbol('testdir',  os.getcwd())
         self.symtable.set_symbol('_plotter.newplot',  nullfunction)
         self.symtable.set_symbol('_plotter.plot',     nullfunction)
         self.symtable.set_symbol('_plotter.oplot',    nullfunction)
