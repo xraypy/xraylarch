@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythonw
 """
 Larch server -- this will make sure a larch server is running on the desired port.
 """

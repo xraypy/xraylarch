@@ -8,6 +8,8 @@ import os
 import numpy as np
 from scipy import constants
 
+import matplotlib.pyplot as plt
+
 import wx
 
 from wxmplot.imagepanel import ImagePanel
@@ -22,12 +24,12 @@ from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 # except ImportError:
 #     pass
     
-HAS_fabio = False
-try:
-    import fabio
-    HAS_fabio = True
-except ImportError:
-    pass
+# HAS_fabio = False
+# try:
+#     import fabio
+#     HAS_fabio = True
+# except ImportError:
+#     pass
 
 ###################################
 
@@ -171,9 +173,10 @@ class MaskToolsPopup(wx.Frame):
         
         if read:
             try:
-                self.raw_img = fabio.open(path).data
+                self.raw_img = plt.imread(path)
+                #self.raw_img = fabio.open(path).data
             except:
-                print('This is not an image openable by fabio.')
+                print('Image not properly opened.')
                 self.raw_img = np.zeros((1024,1024))
         else:
             print('No image selected.')

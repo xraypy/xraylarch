@@ -10,6 +10,7 @@ from scipy import constants
 
 #import h5py
 import matplotlib.cm as colormap
+import matplotlib.pyplot as plt
 
 import wx
 
@@ -17,7 +18,7 @@ from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,calculate_ai
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai #,fabioOPEN
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
@@ -106,7 +107,9 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            newimg = fabioOPEN(path)
+            newimg = plt.imread(path)
+            #newimg = fabioOPEN(path)
+            
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
     def plot2Dxrd(self,img,iname):
@@ -482,7 +485,8 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            self.bkgd = fabioOPEN(path)
+            self.bkgd = plt.imread(path)
+            #self.bkgd = fabioOPEN(path)
             self.checkIMAGE()
 
 ##############################################
@@ -501,7 +505,8 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            raw_mask = fabioOPEN(path)
+            raw_mask = plt.imread(path)
+            #raw_mask = fabioOPEN(path)
             self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
             self.checkIMAGE()

@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 from scipy import constants
 import scipy.stats as stats
+import matplotlib.pyplot as plt
 import json
 import larch
 from larch.utils.debugtime import debugtime
@@ -19,7 +20,6 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
-
 from larch_plugins.diFFit.xrd import XRD
 
 HAS_pyFAI = False
@@ -719,11 +719,12 @@ class GSEXRM_MapFile(object):
         edffile = self.xrmmap['xrd'].attrs[keyword]
         print('Reading %s file: %s' % (name,edffile))
 
-        try:
-            import fabio
-            rawdata = fabio.open(edffile).data
-        except:
-            print('File must be .edf format; user must have fabio installed.')
+        rawdata = plt.imread(edffile)
+#         try:
+#             import fabio
+#             rawdata = fabio.open(edffile).data
+#         except:
+#             print('File must be .edf format; user must have fabio installed.')
         print('\t Shape: %s' % str(np.shape(rawdata)))
 
         try:

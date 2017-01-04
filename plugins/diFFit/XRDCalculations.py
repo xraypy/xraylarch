@@ -41,12 +41,12 @@ try:
 except ImportError:
     pass
 
-HAS_fabio = False
-try:
-    import fabio
-    HAS_fabio = True
-except ImportError:
-    pass
+# HAS_fabio = False
+# try:
+#     import fabio
+#     HAS_fabio = True
+# except ImportError:
+#     pass
 
 HAS_pyFAI = False
 try:
@@ -213,18 +213,18 @@ def calc_2th_to_q(twth,wavelength,units='degrees'):
         twth = np.radians(twth)
     return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
 ##########################################################################
-def fabioOPEN(path):
-
-    if HAS_fabio:
-        try:
-            image = fabio.open(path).data
-            return image
-        except:
-            print('fabio could not import the image: %s' % path)
-    else:
-        print('fabio package not available for opening images.')
-        
-    return
+# def fabioOPEN(path):
+# 
+#     if HAS_fabio:
+#         try:
+#             image = fabio.open(path).data
+#             return image
+#         except:
+#             print('fabio could not import the image: %s' % path)
+#     else:
+#         print('fabio package not available for opening images.')
+#         
+#     return
 ##########################################################################
 def xy_file_reader(xyfile,char=None,verbose=False):
     '''

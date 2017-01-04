@@ -7,6 +7,8 @@ import os
 import numpy as np
 from scipy import constants
 
+import matplotlib.pyplot as plt
+
 import wx
 
 from wxmplot.imagepanel import ImagePanel
@@ -21,12 +23,12 @@ try:
 except ImportError:
     pass
     
-HAS_fabio = False
-try:
-    import fabio
-    HAS_fabio = True
-except ImportError:
-    pass
+# HAS_fabio = False
+# try:
+#     import fabio
+#     HAS_fabio = True
+# except ImportError:
+#     pass
 
 ###################################
 
@@ -308,9 +310,10 @@ class CalibrationPopup(wx.Frame):
         
         if read:
             try:
-                self.raw_img = fabio.open(path).data
+                self.raw_img = plt.imread(path)
+                #self.raw_img = fabio.open(path).data
             except:
-                print('This is not an image openable by fabio.')
+                print('Image not properly opened.')
                 pass
             self.plot2Dimg.display(self.raw_img)       
             self.plot2Dimg.redraw()
