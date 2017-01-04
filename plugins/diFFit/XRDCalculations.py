@@ -59,13 +59,15 @@ except ImportError:
 
 
 ##########################################################################
-def find_peaks(q,I):
+def find_peaks(q, I, regions=50, gapthrsh=5):
 
     ttlpnts = len(q)
+    widths = np.arange(1,int(ttlpnts/regions))
 
-    pnts = 50
-    peak_indices = signal.find_peaks_cwt(I, np.arange(1,int(ttlpnts/pnts)),gap_thresh=5)
-    print peak_indices
+    peak_indices = signal.find_peaks_cwt(I, widths, gap_thresh=gapthrsh)
+# # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+# #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+
     peak_x, peak_y = [],[]
     for i in peak_indices:
         peak_x += [q[i]]

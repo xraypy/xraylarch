@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonw
+#!/usr/bin/env python
 """
 GUI to calibrate 2D XRD image
 """
