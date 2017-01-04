@@ -260,10 +260,10 @@ class MaskToolsPopup(wx.Frame):
     def OnPaint(self, event=None):
         
         print 'Shape : %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection())
-        dc = wx.PaintDC(self)
-        dc.Clear()
-        dc.SetPen(wx.Pen(wx.BLACK, 4))
-        dc.DrawLine(0, 0, 50, 50)
+#         dc = wx.PaintDC(self)
+#         dc.Clear()
+#         dc.SetPen(wx.Pen(wx.BLACK, 4))
+#         dc.DrawLine(0, 0, 50, 50)
     
     def clearMask(self,event=None):
         
