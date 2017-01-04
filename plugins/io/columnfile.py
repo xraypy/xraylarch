@@ -4,22 +4,51 @@
 """
 import os
 import time
+from  dateutil.parser import parse as dateparse
 import numpy as np
 from larch import ValidateLarchPlugin, Group
 from larch.utils import fixName
 from larch.symboltable import isgroup
+
 
 MODNAME = '_io'
 TINY = 1.e-7
 MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
 COMMENTCHARS = '#;%*!$'
 
-def getfloats(txt):
+def getfloats(txt, allow_times=True):
+    """convert a line of numbers into a list of floats,
+    as for reading a file with columnar numerical data.
+
+    Arguments
+    ---------
+      txt           str, line of text to parse
+      allow_times   bool, whether to support time stamps [True]
+
+    Returns
+    -------
+      list, each entry either a float or None
+
+    Notes
+    -----
+      The `allow_times` will try to support common date-time strings
+      using the dateutil module, returning a numerical value as the
+      Unix timestamp, using
+          time.mktime(dateutil.parser.parse(word).timetuple())
+    """
     words = [w.strip() for w in txt.replace(',', ' ').split()]
-    try:
-        return [float(w) for w in words]
-    except:
-        return None
+    mktime = time.mktime
+    for i, w in enumerate(words):
+        val = None
+        try:
+            val = float(w)
+        except ValueError:
+            try:
+                val = mktime(dateparse(w).timetuple())
+            except ValueError:
+                pass
+        words[i] = val
+    return words
 
 def colname(txt):
     return fixName(txt.strip().lower()).replace('.', '_')
@@ -30,15 +59,16 @@ def iso8601_time(ts):
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
-def read_ascii(fname, labels=None, simple_labels=False, sort=False,
-               sort_column=0, _larch=None):
-    """read a column ascii column file, returning a group containing the data from the file.
+def read_ascii(filename, labels=None, simple_labels=False,
+               sort=False, sort_column=0, _larch=None):
+    """read a column ascii column file, returning a group containing the data
+    extracted from the file.
 
     read_ascii(filename, labels=None, simple_labels=False, sort=False, sort_column=0)
 
     Arguments
     ---------
-     fname (str)           name of file to read
+     filename (str)           name of file to read
      labels (list or None) list of labels to use for column labels [None]
      simple_labels (bool)  whether to force simple column labels (note 1) [False]
      sort (bool)           whether to sort row data (note 2) [False]
@@ -70,37 +100,41 @@ def read_ascii(fname, labels=None, simple_labels=False, sort=False,
     The returned group will have a number of members:
 
        GROUP.filename: text name of the file
-       GROUP.column_labels: column labels, names of 1-D arrays
+       GROUP.array_labels: array labels, names of 1-D arrays
        GROUP.data:     2-dimensional data (ncolumns, nrows)
        GROUP.header:   array of text lines of the header.
        GROUP.footer:   array of text lines of the footer (text after the block of numerical data)
        GROUP.attrs :   group of attributes parsed from header lines
     """
-    if not os.path.isfile(fname):
-        raise OSError("File not found: '%s'" % fname)
-    if os.stat(fname).st_size > MAX_FILESIZE:
-        raise OSError("File '%s' too big for read_ascii()" % fname)
+    if not os.path.isfile(filename):
+        raise OSError("File not found: '%s'" % filename)
+    if os.stat(filename).st_size > MAX_FILESIZE:
+        raise OSError("File '%s' too big for read_ascii()" % filename)
 
-    finp = open(fname, 'r')
-    text = finp.readlines()
-    finp.close()
+    with open(filename, 'rw') as fh:
+        text = fh.read()
 
-    _labelline, ncol = None, None
+    text = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+
+    _labelline = None
+    ncol = None
     data, footers, headers = [], [], []
 
     text.reverse()
     section = 'FOOTER'
 
     for line in text:
-        line = line[:-1].strip()
+        line = line.strip()
         if len(line) < 1:
             continue
         # look for section transitions (going from bottom to top)
-        if section == 'FOOTER' and getfloats(line) is not None:
+        if section == 'FOOTER' and not None in getfloats(line):
             section = 'DATA'
-        elif section == 'DATA' and getfloats(line) is None:
+        elif section == 'DATA' and None in getfloats(line):
             section = 'HEADER'
             _labelline = line
+            if _labelline[0] in COMMENTCHARS:
+                _labelline = _labelline[1:].strip()
         # act of current section:
         if section == 'FOOTER':
             footers.append(line)
@@ -112,8 +146,6 @@ def read_ascii(fname, labels=None, simple_labels=False, sort=False,
                 ncol = len(rowdat)
             if ncol == len(rowdat):
                 data.append(rowdat)
-    if simple_labels:
-        _labelline = None
 
     # reverse header, footer, data, convert to arrays
     footers.reverse()
@@ -143,153 +175,54 @@ def read_ascii(fname, labels=None, simple_labels=False, sort=False,
                 header_attrs[key] = words[1].strip()
 
     ncols, nrow = data.shape
-    # set column labels
-    _labels = ['col%i' % (i+1) for i in range(ncols)]
-    if labels is None:
-        if _labelline is None:
-            _labelline = ' '.join(_labels)
-        if _labelline[0] in COMMENTCHARS:
-            _labelline = _labelline[1:].strip()
+
+    # set column labels from label line
+    _labels = None
+    _clabels = ['col%i' % (i+1) for i in range(ncols)]
+    if labels is not None:
+        _labels = [colname(l) for l in labels.split()]
+    elif simple_labels or _labelline is None:
+        _labels = _clabels
+    else:
         _labelline = _labelline.lower()
-        try:
-            labels = [colname(l) for l in _labelline.split()]
-        except:
-            labels = []
-    elif isinstance(labels, str):
-        labels = labels.replace(',', ' ')
-        labels = [colname(l) for l in labels.split()]
+        for delim in ('\t', ','):
+            if delim in _labelline:
+                _labs = [colname(l) for l in _labelline.split(delim)]
+                if len(_labs) > int(1 + ncols/2.0):
+                    _labels = _labs
+                    break
+        if _labels is None:
+            _labelline = _labelline.replace(', ', '  ').replace('\t', ' ')
+            _labels = [colname(l) for l in _labelline.split()]
 
-    for i, lab in enumerate(labels):
-        try:
-            _labels[i] = lab
-        except:
-            pass
+    if _labels is None:
+        _labels = _clabels
+    if len(_labels) < ncols:
+        for i in range(len(_labels), ncols):
+            _labels.append("col%" % (i+1))
+    elif len(_labels) > ncols:
+        _labels = _labels[:ncols]
 
-    attrs = {'filename': fname}
-    attrs['column_labels'] = _labels
-    attrs['array_labels'] = _labels
-    if sort and sort_column >= 0 and sort_column < nrow:
-         data = data[:,np.argsort(data[sort_column])]
 
-    group = Group(name='ascii_file %s' % fname,
-                  filename=fname, header=headers,
-                  column_labels=_labels,
-                  array_labels=_labels,
-                  data=data)
+    attrs = {'filename': filename}
+    attrs['column_labels'] = attrs['array_labels'] = _labels
+    if sort and sort_column >= 0 and sort_column < ncol:
+         data = data[:, np.argsort(data[sort_column])]
+
+    group = Group(name='ascii_file %s' % filename,
+                  filename=filename, header=headers, data=data,
+                  array_labels=_labels, column_labels=_labels)
     if len(footers) > 0:
         group.footer = footers
-    for i, nam in enumerate(_labels):
-        setattr(group, nam.lower(), data[i])
-    group.attrs = Group(name='header attributes from %s' % fname)
+    for i in range(ncols):
+        nam = _labels[i].lower()
+        if nam in ('data', 'array_labels', 'filename',
+                   'attrs', 'header', 'footer'):
+            nam = "%s_" % nam
+        setattr(group, nam, data[i])
+    group.attrs = Group(name='header attributes from %s' % filename)
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
-    return group
-
-
-def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=0, _larch=None):
-    """read a column ascii column file, returning a group containing the data from the file.
-
-    read_ascii(filename, commentchar='$;%', labels=None, sort=False, sort_column=0)
-
-    The commentchar argument (#;% by default) sets the valid comment characters:
-    if the the first character in a line matches one of these, the line is marked
-    as a  header lines.
-
-    Header lines continue until a line with
-       '#----' (any commentchar followed by 4 '-'
-    The line immediately following that is read as column labels
-    (space delimited)
-
-    If the header is of the form
-       # KEY : VAL   (ie commentchar key ':' value)
-    these will be parsed into a 'attributes' dictionary
-    in the returned group.
-
-    If labels is left the default value of None, column labels will be used
-    as the variable names. Variables from extra, unnamed columns will be
-    called 'col1', 'col2'.
-
-    If labels=False, the 'data' variable will contain the 2-dimensional data.
-
-    """
-    finp = open(fname, 'r')
-    text = finp.readlines()
-    finp.close()
-    kws = {'filename': fname}
-    _labels = None
-    data = []
-    header_txt = []
-    header_kws = {}
-    islabel = False
-    for iline, line in enumerate(text):
-        line = line[:-1].strip()
-        if line[0] in commentchar:
-            if islabel:
-                _labels = line[1:].strip()
-                islabel = False
-            elif line[2:].strip().startswith('---'):
-                islabel = True
-            elif '=' in line[1:]: # perhaps '# x = 22' format?
-                words = line[1:].split('=', 1)
-                key = colname(words[0])
-                if key.startswith('_'):
-                    key = key[1:]
-                if len(words) == 1:
-                    header_txt.append(words[0].strip())
-                else:
-                    header_kws[key] = words[1].strip()
-            elif ':' in line[1:]: # perhaps '# attribute: value' format?
-                words = line[1:].split(':', 1)
-                key = colname(words[0])
-                if key.startswith('_'):
-                    key = key[1:]
-                if len(words) == 1:
-                    header_txt.append(words[0].strip())
-                else:
-                    header_kws[key] = words[1].strip()
-        else:
-            words = line.replace(',', ' ').split()
-            data.append([float(w) for w in words])
-
-
-    if len(header_txt) > 0:
-        header_kws['header'] = '\n'.join(header_txt)
-    kws['attributes'] = header_kws
-    kws['column_labels'] = []
-    if labels is None:
-        labels = _labels
-    if labels is None:
-        labels = header_txt.pop()
-    data = np.array(data).transpose()
-    ncol, nrow = data.shape
-    if sort and sort_column >= 0 and sort_column < nrow:
-        data = data[:,np.argsort(data[sort_column])]
-
-    if not labels:
-        kws['data'] = data
-    else:
-        try:
-            labels = labels.replace(',', ' ').split()
-        except:
-            labels = []
-        for icol in range(ncol):
-            cname = 'col%i' % (1+icol)
-            if icol < len(labels):
-                cname = colname(labels[icol])
-            kws[cname] = data[icol]
-            kws['column_labels'].append(cname)
-
-    group = kws
-    if _larch is not None:
-        group = _larch.symtable.create_group(name='ascii_file %s' % fname)
-        atgrp = _larch.symtable.create_group(
-            name='header attributes from %s' % fname)
-        for key, val in kws['attributes'].items():
-            setattr(atgrp, key, val)
-
-        kws['attributes'] = atgrp
-        for key, val in kws.items():
-            setattr(group, key, val)
     return group
 
 @ValidateLarchPlugin
@@ -409,7 +342,6 @@ def write_group(filename, group, scalars=None,
 
 def registerLarchPlugin():
     return (MODNAME, {'read_ascii': read_ascii,
-                      # 'read_ascii0': _read_ascii0,
                       'write_ascii': write_ascii,
                       'write_group': write_group,
                      })

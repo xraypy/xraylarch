@@ -1,0 +1,47 @@
+import os
+
+if not hasattr(_main, 'testdir' ):
+    # r_main.testdir = os.path.split(cwd())[0]
+   _main.testdir = cwd()
+#endif
+
+xafsdir = '%s/../examples/xafsdata' % (_main.testdir)
+files = ls(xafsdir)
+results = {}
+
+for fname in files:
+    if not fname.endswith('.prj'):
+        path = "%s/%s" % (xafsdir, fname)
+        grp = read_ascii(path)
+        ncol, nrow = grp.data.shape
+        results[fname] = (ncol, nrow, grp.array_labels[:10])
+    #endif
+#endfor
+
+print "expected = ("
+for key, val in results.items():
+   print("     ('%s', %i, %i, %s)," % (key, val[0], val[1], repr(val[2])))
+#endfor
+print(")")
+
+expected = (
+     ('feo_exafs_pnccat2001.dat', 5, 412, ['mono', 'energy', '_', 'scaler', 'preset']),
+     ('scorodite_as_xafs.001', 57, 297, ['p1', 'p2', 'p3', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7']),
+     ('cu.chi', 2, 350, ['k', 'chi']),
+     ('znse_zn_xafs.001', 4, 469, ['p1', 'p2', 'd1', 'd2']),
+     ('cu_50k.xmu', 2, 620, ['energy', 'mu']),
+     ('cu_chi.dat', 2, 499, ['k', 'chi_k_']),
+     ('cu_10k.xmu', 2, 612, ['energy', 'mu']),
+     ('cu_rt01.xmu', 3, 408, ['energy', 'mu', 'i0']),
+     ('fe3c_rt.xdi', 3, 348, ['energy', 'mutrans', 'i0']),
+     ('feo_xafs.dat', 2, 412, ['energy', 'mu']),
+     ('fe2o3_rt1.xmu', 3, 412, ['energy', 'mu', 'i0']),
+     ('cu_150k.xmu', 2, 618, ['energy', 'mu']),
+     ('cu10k.chi', 2, 500, ['k', 'chi_k_']),
+     ('fe.060', 3, 511, ['energy', 'i0', 'it']),
+     ('se_na2so4_rt.xdi', 4, 469, ['energy', 'time', 'i0', 'itrans']),
+     ('feo_rt1.xmu', 3, 412, ['energy', 'mu', 'i0']),
+     ('ni_metal_rt.xdi', 3, 418, ['energy', 'mutrans', 'i0']),
+     ('cu.xmu', 2, 612, ['energy', 'mu']),
+     ('cu_metal_rt.xdi', 4, 408, ['energy', 'i0', 'itrans', 'mutrans']),
+)
