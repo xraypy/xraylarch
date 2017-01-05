@@ -21,7 +21,8 @@ from wxutils import MenuItem,pack
 from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader,peakfinder
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
+from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
@@ -756,7 +757,7 @@ class Fitting1DXRD(wx.Panel):
         self.plot_background()
 
         if self.ipeaks is not None:
-            self.calc_peaks()
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
     
     def check_range(self,event=None):
@@ -798,7 +799,7 @@ class Fitting1DXRD(wx.Panel):
         self.plot_background()
 
         if self.ipeaks is not None:
-            self.calc_peaks()
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
 
     def trim_data(self):
@@ -822,7 +823,7 @@ class Fitting1DXRD(wx.Panel):
         if self.bgr is not None:
             self.plot_data()
             if self.ipeaks is not None:
-                self.calc_peaks()
+                self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
                 self.plot_peaks()
         self.fit_background()
         self.plot_background()
@@ -848,7 +849,7 @@ class Fitting1DXRD(wx.Panel):
         self.delete_background()
         self.plot_data()
         if self.ipeaks is not None:
-            self.calc_peaks()
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
         
         self.ck_bkgd.SetValue(False)
@@ -919,7 +920,7 @@ class Fitting1DXRD(wx.Panel):
             self.plot_background()
 
         if self.ipeaks is not None:
-            self.calc_peaks()
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
 
            
@@ -944,7 +945,7 @@ class Fitting1DXRD(wx.Panel):
 # # # #   scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # # # #                     gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
-        self.calc_peaks()
+        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
         self.plot_peaks()
         
         self.btn_rpks.Enable()        
@@ -968,15 +969,6 @@ class Fitting1DXRD(wx.Panel):
                     except:
                         pass
 
-
-
-    def calc_peaks(self):
-        #print '[calc_peaks]'
-        self.plt_peaks = np.zeros((2,len(self.ipeaks)))
-        for i,j in enumerate(self.ipeaks):
-            self.plt_peaks[0,i] = self.plt_data[0,j]
-            self.plt_peaks[1,i] = self.plt_data[1,j]
-            
     def plot_peaks(self):
         #print '[plot_peaks]'
         self.plot1D.scatterplot(*self.plt_peaks,

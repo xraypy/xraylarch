@@ -51,6 +51,23 @@ except ImportError:
 
 
 ##########################################################################
+##########################################################################
+#####            DIFFRACTION PEAK RELATED FUNCTIONS                 ######
+##########################################################################
+##########################################################################
+def peaklocater(ipeaks,q,I):
+    '''
+    Returns q and I for data set cooresponding to peak indices solution
+    from peakfinder()
+    '''
+    plt_peaks = np.zeros((2,len(ipeaks)))
+    for i,j in enumerate(ipeaks):
+        plt_peaks[0,i] = q[j]
+        plt_peaks[1,i] = I[j]
+        
+    return plt_peaks
+
+##########################################################################
 def peakfinder(q, I, regions=50, gapthrsh=5):
 
     ttlpnts = len(q)
@@ -60,12 +77,6 @@ def peakfinder(q, I, regions=50, gapthrsh=5):
 # # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
-#     peak_x, peak_y = [],[]
-#     for i in peak_indices:
-#         peak_x += [q[i]]
-#         peak_y += [I[i]]
-# 
-#     return peak_x,peak_y
     return peak_indices
 #########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
@@ -225,7 +236,6 @@ def xy_file_reader(xyfile,char=None):
     options:
     char - chararacter separating columns in data file (e.g. ',')
     '''
-
     with open(xyfile) as f:
         lines = f.readlines()
 
@@ -240,7 +250,7 @@ def xy_file_reader(xyfile,char=None):
             y += [float(fields[1])]
 
     return np.array(x),np.array(y)
-
+##########################################################################
 def gaussian_peak_fit(x,y,double=False,plot=False):
     '''
     Fits one or two Gaussian functions.
