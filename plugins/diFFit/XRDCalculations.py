@@ -417,8 +417,15 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
                     print('Fit:')
                     print('%0.3f  %0.3f %0.3f  %0.3f' % (fit_2th[i],fit_FWHM[i],tanth[i],sqFWHM[i]))
    
+    cleaned_tanth = []
+    cleaned_sqFWHM = []
+    for i in range(pkct):
+        if tanth[i] != 0 and sqFWHM[i] != 0:
+            cleaned_tanth += [tanth[i]]
+            cleaned_sqFWHM += [sqFWHM[i]]
 
-    (u,v,w) = data_poly_fit(tanth,sqFWHM)
+#     (u,v,w) = data_poly_fit(tanth,sqFWHM)
+    (u,v,w) = data_poly_fit(np.array(cleaned_tanth),np.array(cleaned_sqFWHM))
     
     if verbose:
         print '\nInstrumental broadening parameters:'
@@ -427,7 +434,7 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
         print '---  W',w
         print
 
-    return(u,v,w)
+    #return(u,v,w)
 
 ##########################################################################
 
