@@ -390,7 +390,7 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
     
     wvlgth = 0.6525
     
-    HW = 15
+    HW = 40
     if verbose: 
         print('Total number of peaks: %i' % pkct)
     for i in range(pkct):
@@ -401,27 +401,23 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
             minval = int(j - HW)
             maxval = int(j + HW)
 
-            xdata = q[minval:maxval]
-            ydata = I[minval:maxval]
-            
-            print 'values'
-            print xypeaks[1,i],I[minval],I[maxval]
             if xypeaks[1,i] > I[minval] and xypeaks[1,i] > I[maxval]:
-                print 'peak in range.'
+                
+                xdata = q[minval:maxval]
+                ydata = I[minval:maxval]
+
                 xdata = calc_q_to_2th(xdata,wvlgth)
-                (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(xdata,ydata,i,instrumental=True)
-                tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
-                sqFWHM[i] = fit_FWHM[i]**2
+                try:
+                    (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(xdata,ydata,i,instrumental=True,plot=False)
+                    tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
+                    sqFWHM[i] = fit_FWHM[i]**2
+                except:
+                    pass
                 if verbose:
                     print('Fit:')
                     print('%0.3f  %0.3f %0.3f  %0.3f' % (fit_2th[i],fit_FWHM[i],tanth[i],sqFWHM[i]))
-            else:
-                print 'no peak in range'
-        else:
-            print('not enough range - skipping')
-
    
-    print('finished all peaks')
+
     (u,v,w) = data_poly_fit(tanth,sqFWHM)
     
     if verbose:
