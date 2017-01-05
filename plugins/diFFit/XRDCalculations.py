@@ -218,34 +218,20 @@ def peakfinder(x, y, regions=50, gapthrsh=5):
 
     return peak_indices
 ##########################################################################
-def gaussian_peak_fit(x,y,double=False,plot=False):
+def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=True):
     '''
-    Fits one or two Gaussian functions.
+    Fits a single or double Gaussian functions.
     '''
     meanx = sum(x)/float(len(x))
     meany = sum(y)/float(len(y))
     sigma = np.sqrt(sum(y*(x-meanx)**2)/float(len(x)))
-    
-    print x
-    print y
-    print
-    print
-    print 'mean x',meanx
-    print 'mean y',meany
-    print 'sigma',sigma
-        
-    plx =  0.05*(max(x)-min(x)) + min(x)
-    ply = -0.2*(max(y)-min(y)) + max(y)
 
-    ## ASSUMES PEAK IN CENTER FOR FIRST GUESS
-    #popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
     try:
         popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
     except:
         popt = [1,1,1]
-        print 'used default...'
-    
-    if double:
+
+    if fittype == 'double':
         a,b,c = popt
         popt2,pcov2 = optimize.curve_fit(doublegaussian,x,y,p0=[a,b,c,np.min(y),meanx,sigma])
 
@@ -254,92 +240,23 @@ def gaussian_peak_fit(x,y,double=False,plot=False):
     rsqu_d = 0
     for i in range(x.shape[0]):
         rsqu_n1 = (y[i] - gaussian(x[i],*popt))**2 + rsqu_n1
-        if double:
-            rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
-        rsqu_d = (y[i] - meany)**2 + rsqu_d
-
-    print '---Single Gaussian'
-    print '---Peak @',popt[1]
-    print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt[2])
-    print 'Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d)
-    print
-    if double:
-        print '---Double Gaussian'
-        print '---Peak @',popt2[1]
-        print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
-        print 'Goodness of fit, R^2:',1-rsqu_n2/rsqu_d
-        print
-
-    
-    if double:
-        pkpos = popt2[1]
-        pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
-    else:
-        pkpos = popt[1]
-        pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
-
-    if plot:
-        title_str = 'Gaussian fit for Peak'
-        fit_str =  'q = %0.2f 1/A\nFWHM = %0.4f 1/A\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
-        plt.plot(x,y,'r+',label='Data')
-        plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
-        if double:        
-            plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
-        plt.legend()
-        plt.xlabel('q (1/A)')
-        plt.ylabel('Intensity')
-        plt.text(plx,ply,fit_str)
-        plt.title(title_str)
-        plt.show()
-    
-    return(pkpos,pkfwhm)
-
-def data_gaussian_fit(x,y,pknum,instrumental=False,plot=True):
-    '''
-    Fits one or two Gaussian functions.
-    '''
-    meanx = sum(x)/float(len(x))
-    meany = sum(y)/float(len(y))
-    sigma = np.sqrt(sum(y*(x-meanx)**2)/float(len(x)))
-    
-    plx =  0.05*(max(x)-min(x)) + min(x)
-    ply = -0.2*(max(y)-min(y)) + max(y)
-
-    ## ASSUMES PEAK IN CENTER FOR FIRST GUESS
-    #popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
-    try:
-        popt,pcov = optimize.curve_fit(gaussian,x,y,p0=[np.max(y),meanx,sigma])
-    except:
-        popt = [1,1,1]
-    
-    
-    if instrumental:
-        a,b,c = popt
-        popt2,pcov2 = optimize.curve_fit(doublegaussian,x,y,p0=[a,b,c,np.min(y),meanx,sigma])
-
-    rsqu_n1 = 0
-    rsqu_n2 = 0
-    rsqu_d = 0
-    for i in range(x.shape[0]):
-        rsqu_n1 = (y[i] - gaussian(x[i],*popt))**2 + rsqu_n1
-        if instrumental:
+        if fittype == 'double':
             rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
     if plot:
-        print '---Single Gaussian'
-        print '---Peak @',popt[1]
-        print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt[2])
-        print 'Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d)
-        print
-        if instrumental:
-            print '---Double Gaussian'
-            print '---Peak @',popt2[1]
-            print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
-            print 'Goodness of fit, R^2:',1-rsqu_n2/rsqu_d
-            print
+        print('---Single Gaussian')
+        print('---Peak @  %0.2f' % (popt[1]))
+        print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt[2])))
+        print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d))
+        if fittype == 'double':
+            print('---Double Gaussian')
+            print('---Peak @  %0.2f' % (popt2[1]))
+            print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt2[2])))
+            print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n2/rsqu_d))
+
     
-    if instrumental:
+    if fittype == 'double':
         pkpos = popt2[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
     else:
@@ -349,9 +266,12 @@ def data_gaussian_fit(x,y,pknum,instrumental=False,plot=True):
     if plot:
         title_str = 'Gaussian fit for Peak %i' % (pknum+1)
         fit_str =  '2th = %0.2f deg.\nFWHM = %0.4f deg.\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
+        plx =  0.05*(max(x)-min(x)) + min(x)
+        ply = -0.2*(max(y)-min(y)) + max(y)
+        
         plt.plot(x,y,'r+',label='Data')
         plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
-        if instrumental:
+        if fittype == 'double':
             plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
         plt.legend()
         plt.xlabel('2th (deg.)')
@@ -406,9 +326,11 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
 
                 xdata = calc_q_to_2th(xdata,wvlgth)
                 try:
-                    fitdata += data_gaussian_fit(xdata,ydata,i,instrumental=True,plot=False)
+                    fitdata += [data_gaussian_fit(xdata,ydata,fittype='double',plot=True)]
                 except:
                     pass
+
+    print fitdata
 
     pkct = len(fitdata)/2
     fit_2th  = np.zeros(pkct)
@@ -997,61 +919,6 @@ def calc_fraction(intensity,fraction):
     
     return intensity*fraction
 
-##########################################################################
-def fit_uvw(args,data_q,data_int):
-
-    print '\nFitting instrumental broadening parameters...'
-
-    bkgrd = 100
-    pkct = 0
-    ilist = np.zeros(100)
-    qlist = np.zeros(100)
-    for i in range(1,np.shape(data_int)[0]-1):
-        if data_int[i] > data_int[i-1] and data_int[i] > data_int[i+1] and pkct < 10:
-            if data_int[i] > bkgrd and data_q[i] > MINq and data_q[i] < MAXq:
-                pkct = pkct + 1
-                ilist[pkct] = i
-                qlist[pkct] = data_q[i]
-                #print('Peak %i found at %0.3f 1/A.' % (pkct,qlist[pkct]))
-    if VERBOSE:
-        print('%i peaks found.' % pkct)
-
-    #pkct = 14 ## OVERRIDE
-    fit_2th  = np.zeros(pkct)
-    tanth    = np.zeros(pkct)
-    fit_FWHM = np.zeros(pkct)
-    sqFWHM   = np.zeros(pkct)
-    HW = 15
-    for i in range(pkct):
-        j = ilist[i+1]
-        if VERBOSE: # and args.plot:
-            print('Fitting peak #%i' % (i+1))
-        if j > HW and abs(np.shape(data_int)[0]-j) > HW:
-            minval = int(j - HW)
-            maxval = int(j + HW)
-        else:
-            print('need to limit range')
-
-        
-        xdata = data_q[minval:maxval]
-        ydata = data_int[minval:maxval]
-        
-        xdata = convertq_2th(xdata,LAMBDA)
-        (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(args,xdata,ydata,i)
-        tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
-        sqFWHM[i] = fit_FWHM[i]**2
-        #print(fit_2th[i],fit_FWHM[i])    
-
-    (u,v,w) = data_poly_fit(tanth,sqFWHM)
-    
-    if VERBOSE:
-        print '\nInstrumental broadening parameters:'
-        print '---  U',u
-        print '---  V',v
-        print '---  W',w
-        print
-
-    return(u,v,w)
 
 ##########################################################################
 def find_max(q,intensity):
