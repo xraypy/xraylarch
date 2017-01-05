@@ -22,7 +22,7 @@ from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater
+from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,instrumental_fit_uvw
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
@@ -930,44 +930,36 @@ class Fitting1DXRD(wx.Panel):
 #### PEAK FUNCTIONS
 
     def find_peaks(self,event=None):
-        #print '[find_peaks]'
-        
         ## clears previous searches
         self.delete_peaks()
         
         self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,gapthrsh=self.gapthrsh)
-        
-#         ttlpnts = len(self.plt_data[0])
-#         widths = np.arange(1,int(ttlpnts/self.iregions))
-#         
-#         self.ipeaks = signal.find_peaks_cwt(self.plt_data[1], widths,
-#                                            gap_thresh=self.gapthrsh)
-# # # #   scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
-# # # #                     gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
-
         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+
         self.plot_peaks()
-        
         self.btn_rpks.Enable()        
         self.btn_spks.Enable()
 
     def fit_peaks(self,event=None):
         #print '[fit_peaks]'
-        ilmt = 50
-        for i,j in enumerate(self.ipeaks):
-            if j > ilmt and j < (np.shape(self.plt_data)[1]-ilmt):
-                x = self.plt_data[0,(j-ilmt):(j+ilmt)]
-                y = self.plt_data[1,(j-ilmt):(j+ilmt)]
-                print np.min(y),np.max(y)
-                if (np.max(y)/np.min(y)) > 3:
-                    print 'enough!'
-                    try:
-                        pkpos,pkfwhm = gaussian_peak_fit(x,y,double=True,plot=True)
-                        print pkpos,pkfwhm
-                        print
-                        print
-                    except:
-                        pass
+
+        instrumental_fit_uvw(self.ipeaks,*self.plt_data,verbose=True)
+
+#         ilmt = 50
+#         for i,j in enumerate(self.ipeaks):
+#             if j > ilmt and j < (np.shape(self.plt_data)[1]-ilmt):
+#                 x = self.plt_data[0,(j-ilmt):(j+ilmt)]
+#                 y = self.plt_data[1,(j-ilmt):(j+ilmt)]
+#                 print np.min(y),np.max(y)
+#                 if (np.max(y)/np.min(y)) > 3:
+#                     print 'enough!'
+#                     try:
+#                         pkpos,pkfwhm = gaussian_peak_fit(x,y,double=True,plot=True)
+#                         print pkpos,pkfwhm
+#                         print
+#                         print
+#                     except:
+#                         pass
 
     def plot_peaks(self):
         #print '[plot_peaks]'

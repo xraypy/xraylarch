@@ -50,35 +50,12 @@ except ImportError:
     pass
 
 
-##########################################################################
-##########################################################################
-#####            DIFFRACTION PEAK RELATED FUNCTIONS                 ######
-##########################################################################
-##########################################################################
-def peaklocater(ipeaks,q,I):
-    '''
-    Returns q and I for data set cooresponding to peak indices solution
-    from peakfinder()
-    '''
-    plt_peaks = np.zeros((2,len(ipeaks)))
-    for i,j in enumerate(ipeaks):
-        plt_peaks[0,i] = q[j]
-        plt_peaks[1,i] = I[j]
-        
-    return plt_peaks
 
 ##########################################################################
-def peakfinder(q, I, regions=50, gapthrsh=5):
-
-    ttlpnts = len(q)
-    widths = np.arange(1,int(ttlpnts/regions))
-
-    peak_indices = signal.find_peaks_cwt(I, widths, gap_thresh=gapthrsh)
-# # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
-# #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
-
-    return peak_indices
-#########################################################################
+##########################################################################
+#####                 pyFAI RELATED FUNCTIONS                       ######
+##########################################################################
+##########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
                   save=False, file='~/test.xy', mask=None, dark=None):
     '''
@@ -211,45 +188,35 @@ def calculate_ai(AI):
                                     splineFile = spline, detector = detname,
                                     wavelength = xraylambda)
 ##########################################################################
-def calc_q_to_d(q):
-    return (2.*math.pi)/q
 ##########################################################################
-def calc_q_to_2th(q,wavelength,units='degrees'):
-    twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
-    if units == 'radians':
-        return twth
-    else:
-        return np.degrees(twth)
+#####            DIFFRACTION PEAK RELATED FUNCTIONS                 ######
 ##########################################################################
-def calc_d_to_q(d):
-    return (2.*math.pi)/d
 ##########################################################################
-def calc_2th_to_q(twth,wavelength,units='degrees'):
-    if units == 'degrees':
-        twth = np.radians(twth)
-    return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
-##########################################################################
-def xy_file_reader(xyfile,char=None):
+def peaklocater(ipeaks,x,y):
     '''
-    Parses (x,y) data from (pyFAI .xy) text file.
-
-    options:
-    char - chararacter separating columns in data file (e.g. ',')
+    Returns x and y for data set corresponding to peak indices solution
+    from peakfinder()
     '''
-    with open(xyfile) as f:
-        lines = f.readlines()
+    xypeaks = np.zeros((2,len(ipeaks)))
+    for i,j in enumerate(ipeaks):
+        xypeaks[0,i] = x[j]
+        xypeaks[1,i] = y[j]
+        
+    return xypeaks
 
-    x, y = [], []
-    for i,line in enumerate(lines):
-        if '#' not in line:
-            if char:
-                fields = re.split(' |%s' % char,lines[i])
-            else:
-                fields = lines[i].split()
-            x += [float(fields[0])]
-            y += [float(fields[1])]
+##########################################################################
+def peakfinder(x, y, regions=50, gapthrsh=5):
+    '''
+    Returns indices for peaks in y from dataset (x,y)
+    '''
+    ttlpnts = len(x)
+    widths = np.arange(1,int(ttlpnts/regions))
 
-    return np.array(x),np.array(y)
+    peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
+# # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+# #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+
+    return peak_indices
 ##########################################################################
 def gaussian_peak_fit(x,y,double=False,plot=False):
     '''
@@ -327,7 +294,7 @@ def gaussian_peak_fit(x,y,double=False,plot=False):
     
     return(pkpos,pkfwhm)
 
-def data_gaussian_fit(args,x,y,pknum):
+def data_gaussian_fit(x,y,pknum,instrumental=False,plot=True):
     '''
     Fits one or two Gaussian functions.
     '''
@@ -346,7 +313,7 @@ def data_gaussian_fit(args,x,y,pknum):
         popt = [1,1,1]
     
     
-    if args.instru:
+    if instrumental:
         a,b,c = popt
         popt2,pcov2 = optimize.curve_fit(doublegaussian,x,y,p0=[a,b,c,np.min(y),meanx,sigma])
 
@@ -355,36 +322,36 @@ def data_gaussian_fit(args,x,y,pknum):
     rsqu_d = 0
     for i in range(x.shape[0]):
         rsqu_n1 = (y[i] - gaussian(x[i],*popt))**2 + rsqu_n1
-        if args.instru:
+        if instrumental:
             rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
-    if args.plot:
+    if plot:
         print '---Single Gaussian'
         print '---Peak @',popt[1]
         print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt[2])
         print 'Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d)
         print
-        if args.instru:
+        if instrumental:
             print '---Double Gaussian'
             print '---Peak @',popt2[1]
             print '---FWHM',abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
             print 'Goodness of fit, R^2:',1-rsqu_n2/rsqu_d
             print
     
-    if args.instru:
+    if instrumental:
         pkpos = popt2[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
     else:
         pkpos = popt[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
 
-    if args.plot:
+    if plot:
         title_str = 'Gaussian fit for Peak %i' % (pknum+1)
         fit_str =  '2th = %0.2f deg.\nFWHM = %0.4f deg.\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
         plt.plot(x,y,'r+',label='Data')
         plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
-        if args.instru:        
+        if instrumental:
             plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
         plt.legend()
         plt.xlabel('2th (deg.)')
@@ -403,6 +370,122 @@ def gaussian(x,a,b,c):
 def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
 
+
+##########################################################################
+def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
+
+    print '\nFitting instrumental broadening parameters...'
+    
+    xypeaks = peaklocater(ipeaks,q,I)
+
+
+    pkct = len(ipeaks)
+    ilist = ipeaks
+    qlist = xypeaks[0,:]
+
+    fit_2th  = np.zeros(pkct)
+    tanth    = np.zeros(pkct)
+    fit_FWHM = np.zeros(pkct)
+    sqFWHM   = np.zeros(pkct)
+    
+    wvlgth = 0.6525
+    
+    HW = 15
+    if verbose: 
+        print('Total number of peaks: %i' % pkct)
+    for i in range(pkct):
+        j = ilist[i]
+        if verbose: 
+            print('Fitting peak #%i' % (i+1))
+        if j > HW and (np.shape(q)-j) > HW:
+            minval = int(j - HW)
+            maxval = int(j + HW)
+
+            xdata = q[minval:maxval]
+            ydata = I[minval:maxval]
+            
+            print 'values'
+            print xypeaks[1,i],I[minval],I[maxval]
+            if xypeaks[1,i] > I[minval] and xypeaks[1,i] > I[maxval]:
+                print 'peak in range.'
+                xdata = calc_q_to_2th(xdata,wvlgth)
+                (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(xdata,ydata,i,instrumental=True)
+                tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
+                sqFWHM[i] = fit_FWHM[i]**2
+                if verbose:
+                    print('Fit:')
+                    print('%0.3f  %0.3f %0.3f  %0.3f' % (fit_2th[i],fit_FWHM[i],tanth[i],sqFWHM[i]))
+            else:
+                print 'no peak in range'
+        else:
+            print('not enough range - skipping')
+
+   
+    print('finished all peaks')
+    (u,v,w) = data_poly_fit(tanth,sqFWHM)
+    
+    if verbose:
+        print '\nInstrumental broadening parameters:'
+        print '---  U',u
+        print '---  V',v
+        print '---  W',w
+        print
+
+    return(u,v,w)
+
+##########################################################################
+
+
+
+
+##########################################################################
+##########################################################################
+#####               BRAGG DIFFRACTION CALCULATIONS                  ######
+##########################################################################
+##########################################################################
+def calc_q_to_d(q):
+    return (2.*math.pi)/q
+##########################################################################
+def calc_q_to_2th(q,wavelength,units='degrees'):
+    twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
+    if units == 'radians':
+        return twth
+    else:
+        return np.degrees(twth)
+##########################################################################
+def calc_d_to_q(d):
+    return (2.*math.pi)/d
+##########################################################################
+def calc_2th_to_q(twth,wavelength,units='degrees'):
+    if units == 'degrees':
+        twth = np.radians(twth)
+    return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
+##########################################################################
+##########################################################################
+#####                   FILE READING FUNCTIONS                      ######
+##########################################################################
+##########################################################################
+def xy_file_reader(xyfile,char=None):
+    '''
+    Parses (x,y) data from xy text file.
+
+    options:
+    char - chararacter separating columns in data file (e.g. ',')
+    '''
+    with open(xyfile) as f:
+        lines = f.readlines()
+
+    x, y = [], []
+    for i,line in enumerate(lines):
+        if '#' not in line:
+            if char:
+                fields = re.split(' |%s' % char,lines[i])
+            else:
+                fields = lines[i].split()
+            x += [float(fields[0])]
+            y += [float(fields[1])]
+
+    return np.array(x),np.array(y)
 ##########################################################################
 def poly_func(x,a,b,c):
     return a*x**2 + b*x + c
