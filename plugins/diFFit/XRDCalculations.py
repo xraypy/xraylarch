@@ -218,7 +218,7 @@ def peakfinder(x, y, regions=50, gapthrsh=5):
 
     return peak_indices
 ##########################################################################
-def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=True):
+def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
     '''
     Fits a single or double Gaussian functions.
     '''
@@ -326,7 +326,7 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
 
                 xdata = calc_q_to_2th(xdata,wvlgth)
                 try:
-                    fitdata += data_gaussian_fit(xdata,ydata,fittype='double',plot=True)
+                    fitdata += data_gaussian_fit(xdata,ydata,fittype='double')
                 except:
                     pass
 
