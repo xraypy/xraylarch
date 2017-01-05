@@ -41,13 +41,6 @@ try:
 except ImportError:
     pass
 
-# HAS_fabio = False
-# try:
-#     import fabio
-#     HAS_fabio = True
-# except ImportError:
-#     pass
-
 HAS_pyFAI = False
 try:
     import pyFAI
