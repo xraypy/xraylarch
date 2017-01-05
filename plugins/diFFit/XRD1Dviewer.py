@@ -945,22 +945,6 @@ class Fitting1DXRD(wx.Panel):
 
         instrumental_fit_uvw(self.ipeaks,*self.plt_data,verbose=True)
 
-#         ilmt = 50
-#         for i,j in enumerate(self.ipeaks):
-#             if j > ilmt and j < (np.shape(self.plt_data)[1]-ilmt):
-#                 x = self.plt_data[0,(j-ilmt):(j+ilmt)]
-#                 y = self.plt_data[1,(j-ilmt):(j+ilmt)]
-#                 print np.min(y),np.max(y)
-#                 if (np.max(y)/np.min(y)) > 3:
-#                     print 'enough!'
-#                     try:
-#                         pkpos,pkfwhm = gaussian_peak_fit(x,y,double=True,plot=True)
-#                         print pkpos,pkfwhm
-#                         print
-#                         print
-#                     except:
-#                         pass
-
     def plot_peaks(self):
         #print '[plot_peaks]'
         self.plot1D.scatterplot(*self.plt_peaks,

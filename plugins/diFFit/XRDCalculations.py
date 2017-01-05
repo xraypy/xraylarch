@@ -326,7 +326,7 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
 
                 xdata = calc_q_to_2th(xdata,wvlgth)
                 try:
-                    fitdata += [data_gaussian_fit(xdata,ydata,fittype='double',plot=True)]
+                    fitdata += data_gaussian_fit(xdata,ydata,fittype='double',plot=True)
                 except:
                     pass
 
