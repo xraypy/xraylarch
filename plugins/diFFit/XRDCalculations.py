@@ -18,9 +18,8 @@ import math
 import operator
 import re
 import os
-import argparse
+# import argparse
 import textwrap
-#import yaml
 import time
 
 import wx
@@ -52,7 +51,7 @@ except ImportError:
 
 
 ##########################################################################
-def find_peaks(q, I, regions=50, gapthrsh=5):
+def peakfinder(q, I, regions=50, gapthrsh=5):
 
     ttlpnts = len(q)
     widths = np.arange(1,int(ttlpnts/regions))
@@ -61,15 +60,31 @@ def find_peaks(q, I, regions=50, gapthrsh=5):
 # # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
-    peak_x, peak_y = [],[]
-    for i in peak_indices:
-        peak_x += [q[i]]
-        peak_y += [I[i]]
-
-    return peak_x,peak_y
+#     peak_x, peak_y = [],[]
+#     for i in peak_indices:
+#         peak_x += [q[i]]
+#         peak_y += [I[i]]
+# 
+#     return peak_x,peak_y
+    return peak_indices
 #########################################################################
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
-                  save=False, file='~/test.xy', mask=None, dark=None, verbose=False):
+                  save=False, file='~/test.xy', mask=None, dark=None):
+    '''
+    Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
+
+    Must provide one of following: ai, AI, or calfile!
+    options :
+    ai -
+    AI - 
+    calfile - 
+    unit - 
+    steps - 
+    save -
+    file - 
+    mask - 
+    dark - 
+    '''
 
     if HAS_pyFAI:
         if ai is None:
@@ -95,15 +110,10 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
             print('Saving %s data to file: %s\n' % (unit,file))
             attrs.update({'filename':file})
 
-        if verbose:
-            t0 = time.time()
         qI = ai.integrate1d(xrd_map,steps,**attrs)
-        if verbose:
-            t1 = time.time()
-            print('\tTime to integrate data = %0.3f s' % ((t1-t0)))
 
     else:
-        print('pyFAI not imported. Cannot calculate 1D integration without it.')
+        print('pyFAI not imported. Cannot calculate 1D integration.')
         return
 
     return qI
@@ -208,42 +218,26 @@ def calc_2th_to_q(twth,wavelength,units='degrees'):
         twth = np.radians(twth)
     return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
 ##########################################################################
-# def fabioOPEN(path):
-# 
-#     if HAS_fabio:
-#         try:
-#             image = fabio.open(path).data
-#             return image
-#         except:
-#             print('fabio could not import the image: %s' % path)
-#     else:
-#         print('fabio package not available for opening images.')
-#         
-#     return
-##########################################################################
-def xy_file_reader(xyfile,char=None,verbose=False):
+def xy_file_reader(xyfile,char=None):
     '''
-    Parses (x,y) data from pyFAI .xy file.
+    Parses (x,y) data from (pyFAI .xy) text file.
+
+    options:
+    char - chararacter separating columns in data file (e.g. ',')
     '''
 
     with open(xyfile) as f:
         lines = f.readlines()
 
+    x, y = [], []
     for i,line in enumerate(lines):
         if '#' not in line:
-            break
-
-    x, y = [], []
-    for j in range(i, len(lines)):
-        if char:
-            fields = re.split(' |%s' % char,lines[j])
-        else:
-            fields = lines[j].split()
-        x += [float(fields[0])]
-        y += [float(fields[1])]
-
-    if verbose:
-        print('\nFinished reading file %s.' % xyfile)
+            if char:
+                fields = re.split(' |%s' % char,lines[i])
+            else:
+                fields = lines[i].split()
+            x += [float(fields[0])]
+            y += [float(fields[1])]
 
     return np.array(x),np.array(y)
 

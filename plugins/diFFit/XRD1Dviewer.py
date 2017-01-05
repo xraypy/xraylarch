@@ -21,7 +21,7 @@ from wxutils import MenuItem,pack
 from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader,peakfinder
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
 from larch_plugins.diFFit.XRDCalculations import gaussian_peak_fit
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
@@ -934,13 +934,15 @@ class Fitting1DXRD(wx.Panel):
         ## clears previous searches
         self.delete_peaks()
         
-        ttlpnts = len(self.plt_data[0])
-        widths = np.arange(1,int(ttlpnts/self.iregions))
+        self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,gapthrsh=self.gapthrsh)
         
-        self.ipeaks = signal.find_peaks_cwt(self.plt_data[1], widths,
-                                           gap_thresh=self.gapthrsh)
-# # #   scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
-# # #                     gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+#         ttlpnts = len(self.plt_data[0])
+#         widths = np.arange(1,int(ttlpnts/self.iregions))
+#         
+#         self.ipeaks = signal.find_peaks_cwt(self.plt_data[1], widths,
+#                                            gap_thresh=self.gapthrsh)
+# # # #   scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+# # # #                     gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
         self.calc_peaks()
         self.plot_peaks()
