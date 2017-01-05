@@ -199,7 +199,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
         _labels = _clabels
     if len(_labels) < ncols:
         for i in range(len(_labels), ncols):
-            _labels.append("col%" % (i+1))
+            _labels.append("col%i" % (i+1))
     elif len(_labels) > ncols:
         _labels = _labels[:ncols]
 
