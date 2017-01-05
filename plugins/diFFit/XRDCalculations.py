@@ -189,7 +189,7 @@ def calculate_ai(AI):
                                     wavelength = xraylambda)
 ##########################################################################
 ##########################################################################
-#####            DIFFRACTION PEAK RELATED FUNCTIONS                 ######
+#####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
 def peaklocater(ipeaks,x,y):
@@ -383,10 +383,8 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
     ilist = ipeaks
     qlist = xypeaks[0,:]
 
-    fit_2th  = np.zeros(pkct)
-    tanth    = np.zeros(pkct)
-    fit_FWHM = np.zeros(pkct)
-    sqFWHM   = np.zeros(pkct)
+    fitdata = []
+
     
     wvlgth = 0.6525
     
@@ -408,24 +406,22 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
 
                 xdata = calc_q_to_2th(xdata,wvlgth)
                 try:
-                    (fit_2th[i],fit_FWHM[i]) = data_gaussian_fit(xdata,ydata,i,instrumental=True,plot=False)
-                    tanth[i] = math.tan(math.radians(fit_2th[i]/2)) 
-                    sqFWHM[i] = fit_FWHM[i]**2
+                    fitdata += data_gaussian_fit(xdata,ydata,i,instrumental=True,plot=False)
                 except:
                     pass
-                if verbose:
-                    print('Fit:')
-                    print('%0.3f  %0.3f %0.3f  %0.3f' % (fit_2th[i],fit_FWHM[i],tanth[i],sqFWHM[i]))
-   
-    cleaned_tanth = []
-    cleaned_sqFWHM = []
-    for i in range(pkct):
-        if tanth[i] != 0 and sqFWHM[i] != 0:
-            cleaned_tanth += [tanth[i]]
-            cleaned_sqFWHM += [sqFWHM[i]]
 
-#     (u,v,w) = data_poly_fit(tanth,sqFWHM)
-    (u,v,w) = data_poly_fit(np.array(cleaned_tanth),np.array(cleaned_sqFWHM))
+    pkct = len(fitdata)/2
+    fit_2th  = np.zeros(pkct)
+    tanth    = np.zeros(pkct)
+    fit_FWHM = np.zeros(pkct)
+    sqFWHM   = np.zeros(pkct)
+    for i in range(pkct):
+        fit_2th[i]  = fitdata[2*i]
+        fit_FWHM[i] = fitdata[2*i+1]
+        tanth[i]    = math.tan(math.radians(fit_2th[i]/2))
+        sqFWHM[i]    = fit_FWHM[i]**2
+
+    (u,v,w) = data_poly_fit(tanth,sqFWHM)
     
     if verbose:
         print '\nInstrumental broadening parameters:'
@@ -437,7 +433,54 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
     #return(u,v,w)
 
 ##########################################################################
+##########################################################################
+def poly_func(x,a,b,c):
+    return a*x**2 + b*x + c
+    
+##########################################################################
+def data_poly_fit(x,y,plot=False):
+    '''
+    Fits a set of data with to a second order polynomial function.
+    '''
 
+    try:
+        popt,pcov = optimize.curve_fit(poly_func,x,y,p0=[1,1,1])
+    except:
+        print 'WARNING: scipy.optimize.curve_fit was unsuccessful.'
+        return [1,1,1]
+    
+    n = len(x)
+    meany = sum(y)/n
+
+    rsqu_n = 0
+    rsqu_d = 0
+    for i in range(x.shape[0]):
+        rsqu_n = (y[i] - poly_func(x[i],*popt))**2 + rsqu_n
+        rsqu_d = (y[i] - meany)**2 + rsqu_d
+
+    print '---Polynomial Fit'
+    print '---  U',popt[0]
+    print '---  V',popt[1]
+    print '---  W',popt[2]
+    print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
+    print
+    
+    if plot:
+        plx =  0.05*(max(x)-min(x)) + min(x)
+        ply = -0.25*(max(y)-min(y)) + max(y)
+        fit_str = 'B^2 = U [tan(TH)]^2 + V tan(TH) + W\n\nU = %f\nV = %f\nW = %f\n\nR^2 = %0.4f'
+
+        plt.plot(x,y,'r+',label='Data')
+        plt.plot(x,poly_func(x,*popt),'b-',label='Poly. Fit')
+        plt.legend()
+        plt.xlabel('tan(TH)')
+        plt.ylabel('FWHM^2 (degrees)')
+        plt.text(plx,ply,fit_str % (popt[0],popt[1],popt[2],1-rsqu_n/rsqu_d))
+        plt.show()
+    
+    return popt
+
+##########################################################################
 
 
 
@@ -489,52 +532,7 @@ def xy_file_reader(xyfile,char=None):
             y += [float(fields[1])]
 
     return np.array(x),np.array(y)
-##########################################################################
-def poly_func(x,a,b,c):
-    return a*x**2 + b*x + c
-    
-##########################################################################
-def data_poly_fit(x,y):
-    '''
-    Fits a set of data with to a second order polynomial function.
-    '''
-    
-    n = len(x)
-    plx =  0.05*(max(x)-min(x)) + min(x)
-    ply = -0.25*(max(y)-min(y)) + max(y)
-    meany = sum(y)/n
 
-    try:
-        popt,pcov = optimize.curve_fit(poly_func,x,y,p0=[1,1,1])
-    except:
-        print 'WARNING: scipy.optimize.curve_fit was unsuccessful.'
-        return [1,1,1]
-
-    rsqu_n = 0
-    rsqu_d = 0
-    for i in range(x.shape[0]):
-        rsqu_n = (y[i] - poly_func(x[i],*popt))**2 + rsqu_n
-        rsqu_d = (y[i] - meany)**2 + rsqu_d
-
-    print '---Polynomial Fit'
-    print '---  U',popt[0]
-    print '---  V',popt[1]
-    print '---  W',popt[2]
-    print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
-    print
-    fit_str = 'B^2 = U [tan(TH)]^2 + V tan(TH) + W\n\nU = %f\nV = %f\nW = %f\n\nR^2 = %0.4f'
-    
-    plt.plot(x,y,'r+',label='Data')
-    plt.plot(x,poly_func(x,*popt),'b-',label='Poly. Fit')
-    plt.legend()
-    plt.xlabel('tan(TH)')
-    plt.ylabel('FWHM^2 (degrees)')
-    plt.text(plx,ply,fit_str % (popt[0],popt[1],popt[2],1-rsqu_n/rsqu_d))
-    plt.show()
-    
-    return popt
-
-##########################################################################
 def file_length(filename):
 
     ##########################################################################
