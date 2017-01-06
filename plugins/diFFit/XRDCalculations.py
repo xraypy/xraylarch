@@ -187,6 +187,8 @@ def calculate_ai(AI):
                                     pixel1 = pixel_1, pixel2 = pixel_2,
                                     splineFile = spline, detector = detname,
                                     wavelength = xraylambda)
+
+
 ##########################################################################
 ##########################################################################
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
@@ -412,6 +414,9 @@ def calc_2th_to_q(twth,wavelength,units='degrees'):
     if units == 'degrees':
         twth = np.radians(twth)
     return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
+
+
+
 ##########################################################################
 ##########################################################################
 #####                   FILE READING FUNCTIONS                      ######
@@ -438,58 +443,6 @@ def xy_file_reader(xyfile,char=None):
             y += [float(fields[1])]
 
     return np.array(x),np.array(y)
-
-def file_length(filename):
-
-    ##########################################################################
-    ## Open .dat file for reading
-    ##
-    f=open(filename,'r')
-
-    ##########################################################################
-    ## Determine length of file
-    ##
-    eof = 0
-    count = 0
-    while not(eof):
-        line = f.readline()
-        s = line.split()
-        if len(s)>0:
-            count = count + 1
-        else:
-            eof = 1
-    if VERBOSE:
-        print '\n%s has %i lines.' % (filename,count)
-
-    ##########################################################################
-    ## Close file
-    ##
-    f.close()
-
-    return(count)    
-
-##########################################################################
-
-##########################################################################
-def read_datfile(filename):
-    '''
-    Reads text file continaining two columns of data.
-    mkak 2016.10.05 --> perhaps replace with xy_file_reader
-    '''
-    with open(filename,'r') as f:
-        lines = f.readlines()
-    filelen = len(lines)
-
-    x, y = [], []
-    for line in lines:
-        x += [float(line.split()[0])]
-        y += [float(line.split()[1])]        
-
-    if VERBOSE:
-        print('\nFinished reading file %s.' % filename)
-
-    return np.array(x),np.array(y)   
-
 ##########################################################################
 def read_peakfile(peakfile):
 
@@ -498,7 +451,7 @@ def read_peakfile(peakfile):
         if val <= 0:
             d = np.delete(d,i)
             I = np.delete(I,i)
-    q = convertd_q(d)
+    q = calc_d_to_q(d)
 
     pkqlist = [q,I]
    
@@ -531,7 +484,13 @@ def read_peakfile(peakfile):
             
     return np.array(pkqlist),np.array(newq),np.array(newint)
 
+
 ##########################################################################
+##########################################################################
+#####                   TO BE EDITED AND SORTED                     ######
+##########################################################################
+##########################################################################
+
 def generate_hkl(maxhkl=8,symmetry=None):
 
     ## Generate hkl list
@@ -545,20 +504,19 @@ def generate_hkl(maxhkl=8,symmetry=None):
     return hkllist
 
 
-def calculate_peaks(ciffile):
+def calculate_peaks(ciffile,wavelength):
     '''
     Calculate structure factor, F from cif
     mkak 2016.09.22
     '''
 
     ## Calculate the wavelength/energy
-    wvlgth = LAMBDA
     try:
-        energy = xu.utilities.lam2en(wvlgth)
+        energy = xu.utilities.lam2en(wavelength)
     except:
         hc = constants.value(u'Planck constant in eV s') * \
                        constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-        energy = hc/(self.wavelength*(1e-10))*1e3
+        energy = hc/(wavelength*(1e-10))*1e3
     
     ## Generate hkl list
     hkllist = generate_hkl()
@@ -621,59 +579,6 @@ def write_rawfile(a,b,filename):
     return()
 
 ##########################################################################
-def convertq_2th(q,wavelength):
-
-    #print wavelength
-
-    if np.shape(q):  
-        twth = np.zeros(q.shape[0])
-        for i in range(q.shape[0]):
-            twth[i] = 2*math.degrees(math.asin((wavelength*q[i])/(4*math.pi)))
-    else:
-        twth = 2*math.degrees(math.asin((wavelength*q)/(4*math.pi)))
-            
-    return(twth)
-
-##########################################################################
-def convertd_q(d):
-
-    q = 2*math.pi/d
-    #if np.shape(d):  
-    #    q = np.zeros(d.shape[0])    
-    #    for i in range(d.shape[0]):
-    #        q[i] = 2*math.pi/d[i] if d[i] > 0 else 0
-    #else:
-    #    q = 2*math.pi/d
-            
-    return(q)
-
-
-##########################################################################
-def convert2th_q(twth,wavelength):
-
-    if np.shape(twth):  
-        q = np.zeros(twth.shape[0])
-        for i in range(twth.shape[0]):
-            q[i] = ((4*math.pi)/wavelength)*math.sin(math.radians(twth[i]/2))
-    else:
-        q = ((4*math.pi)/wavelength)*math.sin(math.radians(twth/2))
-        
-    return(q)
-
-##########################################################################
-def plot_diff(x,int,tag):
-
-    ## Plot intensity as a function of 2theta/d/q...
-    ##plt.figure(2*ind+1)
-    #plt.figure()
-    plt.plot(x, int,'-',label=tag)
-    #plt.xlabel('Two theta (degrees)')
-    #plt.xlabel('q (1/A)')
-    plt.ylabel('Intensity (counts)')
-    #plt.title()
-    #plt.xlim(min2th,max2th)
-
-##########################################################################
 def find_y(x,stdx,stdy):
 
     len_x   = x.shape[0]
@@ -716,20 +621,17 @@ def calc_peak(q1,int1): # inputs: q, intensity
     shiftx = find_max(x,d)
     newx = x-shiftx
     
-    ## Plot diffraction pattern and data.
-    plt.figure()
-    plot_diff(x,b,'Lorentzian')
-    plot_diff(x,c,'Gaussian')
-    plot_diff(newx,d,'Voigt')
-    plt.legend()
-    plt.show()
+    ## Diffraction pattern data.
+    ## x,b    - 'Lorentzian'
+    ## x,c    - 'Gaussian'
+    ## newx,d - 'Voigt'
 
 ##########################################################################
 def instr_broadening(pkqlist,q,intensity,u,v,w): 
 
     ## Broadening calculation performed in 2theta - not q
-    twthlist = convertq_2th(pkqlist[0],LAMBDA)
-    twth = convertq_2th(q,LAMBDA)
+    twthlist = calc_q_to_2th(pkqlist[0],LAMBDA)
+    twth = calc_q_to_2th(q,LAMBDA)
 
     ## TERMS FOR INSTRUMENTAL BROADENING
     Bi = np.zeros(np.shape(pkqlist)[1])
@@ -758,7 +660,7 @@ def instr_broadening(pkqlist,q,intensity,u,v,w):
         min2th = B-2*width
         max2th = B+2*width        
         twthG = np.arange(max2th,min2th,-width/200)
-        qG = convert2th_q(twthG,LAMBDA)
+        qG = calc_2th_to_q(twthG,LAMBDA)
 
         ## Calculate peak for corresponding width
         intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
@@ -777,15 +679,15 @@ def instr_broadening(pkqlist,q,intensity,u,v,w):
 ##########################################################################
 
 ##########################################################################
-def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift): 
+def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298): 
 
     #global LAMBDA
     #pk_shift = 1.00307298
     
     ## Broadening calculation performed in 2theta - not q
-    twth = convertq_2th(q,LAMBDA)
-##    twthlist = convertq_2th(pkqlist[0],0.3917)
-    twthlist = convertq_2th(pkqlist[0],LAMBDA*pk_shift)
+    twth = calc_q_to_2th(q,LAMBDA)
+##    twthlist = calc_q_to_2th(pkqlist[0],0.3917)
+    twthlist = calc_q_to_2th(pkqlist[0],LAMBDA*pk_shift)
 
 
     ## TERMS FOR INSTRUMENTAL BROADENING
@@ -847,9 +749,9 @@ def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift):
             if i < 10 and noplot == 0:
                 plt_str = 'inst = %0.6f\nsize = %0.6f\n comb = %0.6f'
                 print(plt_str % (Bi[i],Bs[i],Bm))
-                plot_diff(twthG,intBi,'instrument') 
-                plot_diff(twthG,intBs,'size')
-                plot_diff(twthG,intBm,'comb.')
+#    #            plot_diff(twthG,intBi,'instrument') 
+#    #            plot_diff(twthG,intBs,'size')
+#    #            plot_diff(twthG,intBm,'comb.')
                 #plt.legend()
                 #plt.show()
             
@@ -860,7 +762,7 @@ def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift):
             shift2th = find_max(twthG,new_intensity)
             twthG = twthG - (B-shift2th)
 
-            qG = convert2th_q(twthG,LAMBDA)
+            qG = calc_2th_to_q(twthG,LAMBDA)
                         
             nintensity = find_y(q,qG,new_intensity)        
         
@@ -871,7 +773,7 @@ def size_broadening(pkqlist,q,u,v,w,nsize,pk_shift):
 
             if i < 10 and noplot == 0:
                 print('2theda shift is %0.4f' %(B-shift2th))
-                plot_diff(twthG,new_intensity,'conv.')
+#    #            plot_diff(twthG,new_intensity,'conv.')
                 plt.legend()
                 plt.show()
                 
@@ -917,145 +819,6 @@ def find_max(q,intensity):
  
     return(max_q)
 ##########################################################################
-def checkparameter(args):
-
-    ## Check to make sure LAMBDA is postitive and .dat file exists
-    if LAMBDA <= 0:
-        raise IOError('Wavelength has to be a positive number.')
-    if not os.path.exists(DATfile):
-        raise IOError('File %s does not exist.' % DATfile)
-    if args.csvfile and not os.path.exists(args.csvfile):
-        raise IOError('File %s does not exist.' % args.csvfile)    
-    if PEAKfile and not os.path.exists(PEAKfile):
-        raise IOError('File %s does not exist.' % PEAKfile)
-        
-    return(args)
-##########################################################################
-def plot_patterns(args):
-
-    ## Plot diffraction pattern and data.
-    if args.skip:
-        print('Skipping diffraction data plot.')
-    else:
-        print('\nPlotting:')
-        letint = ord('a')
-        fit_str = ''
-        plt.figure()
-        
-        fit_str = '%s\nSpecimen: %s' % (fit_str,DATfile)
-        fit_str = '%s\nWavelength: %0.4f A' % (fit_str,LAMBDA)
-        if abs((PKshift-1))*10000 > 1:
-            fit_str = '%s (shift: %0.4f per.)' % (fit_str,(PKshift-1)*100)
-        else:
-            fit_str = '%s (no shift)' % (fit_str)
-
-        ytext = 0.2*(np.max(DATA_INT)-np.min(DATA_INT))+np.min(DATA_INT)        
-        xtext = 0.6*(np.max(DATA_Q)-np.min(DATA_Q))+np.min(DATA_Q)
-        
-        ## i. DATA
- 
-        try:
-            plot_diff(DATA_Q,RAW_INT,'Raw data')
-            print '  %s. RAW DATA' % chr(letint)
-            plot_diff(DATA_Q,DATA_INT,'Data, no Kapton') 
-            print '  %s. DATA, NO KAPTON' % chr(letint)
-            plot_diff(DATA_Q,KAPT_INT,'Kapton') 
-            print '  %s. KAPTON' % chr(letint)
-        except:
-            plot_diff(DATA_Q,DATA_INT,'Data')
-            print '  %s. RAW DATA' % chr(letint)        
-        
-
-        letint = letint + 1
-
-        ## ii. STANDARD (broadened)
-        if NPsize and PEAKfile:
-            ## a. both INTRUMENT + SIZE BROADENING
-            plot_diff(DATA_Q,CALC_INT,'Calculated pattern')
-            print '  %s. CALCULATED: both INTRUMENT + SIZE BROADENING' % chr(letint)
-            letint = letint + 1
-            diff_int = DATA_INT-CALC_INT
-            fit_str = '%s\n\nParticle size: %0.2f nm\n\nInstrument:\nU = %0.4f\nV = %0.4f\nW = %0.4f' % (fit_str,NPsize,instrU,instrV,instrW)
-        elif PEAKfile:
-            ## b. just INTRUMENT BROADENING
-            plot_diff(DATA_Q,CALC_INT,'Calculated pattern')
-            print '  %s. CALCULATED: just INTRUMENT BROADENING' % chr(letint)
-            letint = letint + 1
-            diff_int = DATA_INT-CALC_INT
-            fit_str = '%s\n\nInstrument:\nU = %f\nV = %f\nW = %f' % (fit_str,instrU,instrV,instrW)
-        
-        ## ii. DIFFERENCE
-        try:
-            diff_int
-        except:
-            junk = 5
-        else:
-            print '  %s. DIFFERENCE between DATA and CALCULATED' % chr(letint)
-            letint = letint + 1
-            plot_diff(DATA_Q,diff_int,'Difference')
-
-        ## iv. BACKGROUND
-        if args.back:
-            print '  %s. BACKGROUND' % chr(letint)
-            letint = letint + 1
-            plot_diff(DATA_Q,BKGD_INT,'Background')
-            fit_str = '%s\n\nBackground:' % (fit_str)
-            if args.bkfit:
-                fit_str = '%s (Fitted values.)' % (fit_str)
-            fit_str = '%s\na = %0.4f\nb = %0.4f\nc = %0.4f' % (fit_str,bkgdA,bkgdB,bkgdC)
-
-            
-        ## v. STANDARD (delta)
-        if PEAKfile:
-            print '  %s. IDEAL STANDARD' % chr(letint)
-            letint = letint + 1
-            plot_diff(args.peak_q,args.peak_int*0.85,'Standard')
-
-        ## vi. CSV data
-        if args.csvfile:
-            ## c. CSV file
-            #(stand_d,stand_int) = read_csvfile(args.csvfile)
-            (stand_d,stand_int) = xy_file_reader(args.csvfile,char=',')
-            stand_q = convertd_q(stand_d,LAMBDA)
-            ## Trim
-            (stand_q,stand_int) = trim_range(stand_q,stand_int,MINq,MAXq)
-            ## Normalize
-            stand_int = find_y(DATA_Q,stand_q,norm_pattern(stand_int,DATA_INT))
-            
-            #plot_diff(stand_q,stand_int,'Standard')
-            plot_diff(DATA_Q,stand_int,'CSV file')
-            print '  %s. CSV file' % chr(letint)
-            letint = letint + 1
-            fit_str = '%s\n\nCSV file: %s' % (fit_str,args.csvfile)
-            
-        ##plot_diff(DATA_Q[:-1],np.diff(signal.savgol_filter(DATA_INT, 51, 3))*100,'Derivative')
-
-
-        plt.xlabel('q (1/A)')
-        plt.xlim(MINq,MAXq)
-        plt.ylim(-15,105)
-        
-        try:
-            CALC_INT
-        except:
-            junk = 7
-        else:
-            fit_str = '%s\n\nR^2 = %0.4f' % (fit_str,calcRsqu(DATA_INT,CALC_INT))
-        if args.bkfit:
-            fit_str = '%s\n\nMethod: %s' % (fit_str,fitMETHOD)
-        
-        plt.text(xtext,ytext,fit_str)
-        plt.legend()
-        print
-        if args.save:
-            pngfile = '%s.png' % DATfile.split('.')[0]
-            plb.savefig(pngfile, bbox_inches='tight')
-            print('Saved diffraction data: %s' % pngfile)
-        else:
-            plt.show()
-
-    return()
-##########################################################################    
 def calcRsqu(y,ycalc):
     
     ss_res = 0
@@ -1072,22 +835,18 @@ def calcRsqu(y,ycalc):
     return(Rsqu)
 
 #########################################################################
-def remove_kapton(data_q,data_int):
+def remove_kapton(data_q,data_int,kaptfile):
 
-    global KAPT_INT
-
-    #kapton_q,kapton_int = read_datfile(KAPTfile)
-    kapton_q,kapton_int = xy_file_reader(KAPTfile)
+    kapton_q,kapton_int = xy_file_reader(kaptfile)
 
     ##min_index, min_ value = min(enumerate(kapton_int), key=operator.itemgetter(1))
     max_index, max_value = max(enumerate(kapton_int), key=operator.itemgetter(1))
    
-    KAPT_INT = kapton_int*(data_int[max_index]/kapton_int[max_index])
-    data_int = data_int - KAPT_INT
+    kapt_int = kapton_int*(data_int[max_index]/kapton_int[max_index])
+    data_int = data_int - kapt_int
     data_int = scale_100(data_int)
     
     return data_int
-    #return
     
 ##########################################################################    
 def patternbroadening(data_q,nsize,pk_shift):
