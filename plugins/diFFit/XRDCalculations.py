@@ -307,14 +307,10 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
 
     
     wvlgth = 0.6525
-    
     HW = 40
-    if verbose: 
-        print('Total number of peaks: %i' % pkct)
+
     for i in range(pkct):
         j = ilist[i]
-        if verbose: 
-            print('Fitting peak #%i' % (i+1))
         if j > HW and (np.shape(q)-j) > HW:
             minval = int(j - HW)
             maxval = int(j + HW)
@@ -329,8 +325,6 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
                     fitdata += data_gaussian_fit(xdata,ydata,fittype='double')
                 except:
                     pass
-
-    print fitdata
 
     pkct = len(fitdata)/2
     fit_2th  = np.zeros(pkct)
