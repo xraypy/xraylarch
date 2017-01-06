@@ -938,7 +938,7 @@ class Fitting1DXRD(wx.Panel):
                                        halfwidth=self.halfwidth,
                                        fittype='double',
                                        verbose=True)
-        print 'Peaks fit at:'
+        print '\nFit results:'
         for i,twth in enumerate(peaktwth):
             print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,peakFWHM[i])
         print
