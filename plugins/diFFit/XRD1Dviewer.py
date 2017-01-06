@@ -223,7 +223,7 @@ class diFFit1DFrame(wx.Frame):
 
     def reset_fitting(self,name=None,min=0,max=1):
 
-        #print '[reset_fitting]'
+
         self.xrd1Dfitting.name = name
         self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % min)
         self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % max)
@@ -522,6 +522,7 @@ class Fitting1DXRD(wx.Panel):
         # Peak fitting defaults
         self.iregions = 50
         self.gapthrsh = 5
+        self.halfwidth = 40
         
         # Background fitting defaults
         self.exponent   = 20
@@ -721,7 +722,6 @@ class Fitting1DXRD(wx.Panel):
 #### DATA CALCULATIONS FUNCTIONS
 
     def plot_data(self,event=None):
-        #print '[plot_data]'
         
         if self.trim:
             self.plot1D.plot(*self.raw_data, title=self.name, 
@@ -740,7 +740,6 @@ class Fitting1DXRD(wx.Panel):
 #### RANGE FUNCTIONS
 
     def set_range(self,event=None):
-        #print '[set_range]'
         
         if float(self.val_qmax.GetValue()) < float(self.val_qmin.GetValue()):
             min = float(self.val_qmax.GetValue())
@@ -761,7 +760,6 @@ class Fitting1DXRD(wx.Panel):
             self.plot_peaks()
     
     def check_range(self,event=None):
-        #print '[check_range]'
 
         self.trim = True
         if float(self.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
@@ -782,7 +780,6 @@ class Fitting1DXRD(wx.Panel):
     
             
     def reset_range(self,event=None):
-        #print '[reset_range]'
         
         self.xmin = np.min(self.raw_data[0])
         self.xmax = np.max(self.raw_data[0])
@@ -803,7 +800,6 @@ class Fitting1DXRD(wx.Panel):
             self.plot_peaks()
 
     def trim_data(self):
-        #print '[trim_data]'
 
         if self.trim:
             indicies = [i for i,value in enumerate(self.raw_data[0]) if value>=self.xmin and value<=self.xmax]
@@ -829,7 +825,6 @@ class Fitting1DXRD(wx.Panel):
         self.plot_background()
 
     def fit_background(self,event=None):
-        #print '[fit_background]'
         
         self.delete_background()
         
@@ -844,7 +839,6 @@ class Fitting1DXRD(wx.Panel):
         self.btn_rbkgd.Enable()
   
     def remove_background(self,event=None):
-        #print '[remove_background]'
 
         self.delete_background()
         self.plot_data()
@@ -858,13 +852,12 @@ class Fitting1DXRD(wx.Panel):
 
         
     def delete_background(self,event=None):
-        #print '[delete_background]'    
+
         self.bgr_data = None
         self.bgr = None
         self.bgr_info = None
 
     def plot_background(self,event=None):
-        #print '[plot_background]'
 
         if self.bgr is not None:
             self.plot1D.oplot(*self.bgr_data, title=self.name, 
@@ -872,8 +865,7 @@ class Fitting1DXRD(wx.Panel):
                               show_legend=True)
 
     def background_options(self,event=None):
-        #print '[background_options]'
-    
+
         myDlg = BackgroundOptions(self)
         
         fit = False
@@ -888,7 +880,6 @@ class Fitting1DXRD(wx.Panel):
             self.background_fit()
 
     def subtract_background(self,event=None):
-        #print '[subtract_background]'
 
         if self.ck_bkgd.GetValue() == True:
             if np.shape(self.plt_data)[1] != np.shape(self.bgr_data)[1]:
@@ -941,16 +932,20 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Enable()
 
     def fit_peaks(self,event=None):
-        #print '[fit_peaks]'
 
         peaktwth,peakFWHM = peakfitter(self.ipeaks,*self.plt_data,
                                        wavelength=self.wavelength,
-                                       halfwidth=40,fittype='double',
+                                       halfwidth=self.halfwidth,
+                                       fittype='double',
                                        verbose=True)
+        print 'Peaks fit at:'
+        for i,twth in enumerate(peaktwth):
+            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,peakFWHM[i])
+        print
+        
 #         instrumental_fit_uvw(self.ipeaks,*self.plt_data)
 
     def plot_peaks(self):
-        #print '[plot_peaks]'
         self.plot1D.scatterplot(*self.plt_peaks,
                           color='red',edge_color='yellow', selectcolor='green',size=12,
                           show_legend=True)
@@ -962,7 +957,6 @@ class Fitting1DXRD(wx.Panel):
 # # #           callback=None, **kw):
 
     def remove_peaks(self,event=None):
-        #print '[remove_peaks]'
 
         self.delete_peaks()
         self.plot_data()
@@ -972,22 +966,23 @@ class Fitting1DXRD(wx.Panel):
         self.btn_spks.Disable()
 
     def delete_peaks(self,event=None):
-        #print '[delete_peaks]'
+
         self.peaks = None
         self.ipeaks = None
 
     def edit_peaks(self,event=None):
-        #print '[edit_peaks]'
+
         print 'this will pop up a list of peaks for removing (and adding?)'
 
     def peak_options(self,event=None):
-        #print '[peak_options]'
+
         myDlg = PeakOptions(self)
 
         fit = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.iregions = int(myDlg.val_regions.GetValue())
-            self.gapthrsh = int(myDlg.val_gapthr.GetValue())
+            self.iregions  = int(myDlg.val_regions.GetValue())
+            self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
+            self.halfwidth = int(myDlg.val_hw.GetValue())
             fit = True
         myDlg.Destroy()
         
@@ -1156,6 +1151,7 @@ class PeakOptions(wx.Dialog):
         ## Set defaults
         self.val_regions.SetValue(str(self.parent.iregions))
         self.val_gapthr.SetValue(str(self.parent.gapthrsh))
+        self.val_hw.SetValue(str(self.parent.halfwidth))
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
@@ -1177,6 +1173,15 @@ class PeakOptions(wx.Dialog):
         fitsizer.Add(ttl_fit,  flag=wx.RIGHT, border=5)
         fitsizer.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
         
+         ## Regions
+        hwsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_hw = wx.StaticText(self.panel, label='Number of data points in half width')
+        self.val_hw = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+
+        hwsizer.Add(ttl_hw,  flag=wx.RIGHT, border=5)
+        hwsizer.Add(self.val_hw,  flag=wx.RIGHT, border=5)
+ 
         ## Regions
         rgnsizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -1216,6 +1221,8 @@ class PeakOptions(wx.Dialog):
         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8)
 
         mainsizer.Add(fitsizer,   flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(hwsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
