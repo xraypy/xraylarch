@@ -197,11 +197,13 @@ def peaklocater(ipeaks,x,y):
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
     '''
+#     xypeaks = []
+#     xypeaks += [[x[i],y[i]] for i in ipeaks]
+#     xypeaks = zip(*xypeaks)
     xypeaks = np.zeros((2,len(ipeaks)))
-    for i,j in enumerate(ipeaks):
-        xypeaks[0,i] = x[j]
-        xypeaks[1,i] = y[j]
-        
+    xypeaks[0,:] = [x[i] for i in ipeaks]
+    xypeaks[1,:] = [y[i] for i in ipeaks]
+
     return xypeaks
 
 ##########################################################################
@@ -280,7 +282,7 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
         plt.title(title_str)
         plt.show()
     
-    return(pkpos,pkfwhm)
+    return pkpos,pkfwhm
     
 ##########################################################################
 def gaussian(x,a,b,c):
@@ -289,55 +291,42 @@ def gaussian(x,a,b,c):
 ##########################################################################
 def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
-
-
 ##########################################################################
-def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
+def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
+               fittype='single'):
 
-    print '\nFitting instrumental broadening parameters...'
-    
-    xypeaks = peaklocater(ipeaks,q,I)
+    peaktwth = []
+    peakFWHM = []
+    for j in ipeaks:
+        if j > halfwidth and (np.shape(q)-j) > halfwidth:
+            minval = int(j - halfwidth)
+            maxval = int(j + halfwidth)
 
-
-    pkct = len(ipeaks)
-    ilist = ipeaks
-    qlist = xypeaks[0,:]
-
-    fitdata = []
-
-    
-    wvlgth = 0.6525
-    HW = 40
-
-    for i in range(pkct):
-        j = ilist[i]
-        if j > HW and (np.shape(q)-j) > HW:
-            minval = int(j - HW)
-            maxval = int(j + HW)
-
-            if xypeaks[1,i] > I[minval] and xypeaks[1,i] > I[maxval]:
+            if I[j] > I[minval] and I[j] > I[maxval]:
                 
                 xdata = q[minval:maxval]
                 ydata = I[minval:maxval]
 
-                xdata = calc_q_to_2th(xdata,wvlgth)
+                xdata = calc_q_to_2th(xdata,wavelength)
                 try:
-                    fitdata += data_gaussian_fit(xdata,ydata,fittype='double')
+                    twth,fwhm = data_gaussian_fit(xdata,ydata,fittype=fittype)
+                    peaktwth += [twth]
+                    peakFWHM += [fwhm]
                 except:
                     pass
+        
+    return np.array(peaktwth),np.array(peakFWHM)
+##########################################################################
+def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
+                         verbose=True):
 
-    pkct = len(fitdata)/2
-    fit_2th  = np.zeros(pkct)
-    tanth    = np.zeros(pkct)
-    fit_FWHM = np.zeros(pkct)
-    sqFWHM   = np.zeros(pkct)
-    for i in range(pkct):
-        fit_2th[i]  = fitdata[2*i]
-        fit_FWHM[i] = fitdata[2*i+1]
-        tanth[i]    = math.tan(math.radians(fit_2th[i]/2))
-        sqFWHM[i]    = fit_FWHM[i]**2
+    twth,FWHM = peakfitter(ipeaks,q,I,wavelength=wavelength,halfwidth=halfwidth,
+                           fittype='double',verbose=verbose)
 
-    (u,v,w) = data_poly_fit(tanth,sqFWHM)
+    tanth = np.tan(np.radians(twth/2))
+    sqFWHM  = FWHM**2
+
+    (u,v,w) = data_poly_fit(tanth,sqFWHM,verbose=verbose)
     
     if verbose:
         print '\nInstrumental broadening parameters:'
@@ -346,7 +335,7 @@ def instrumental_fit_uvw(ipeaks,q,I,verbose=True):
         print '---  W',w
         print
 
-    #return(u,v,w)
+    return(u,v,w)
 
 ##########################################################################
 ##########################################################################
@@ -354,7 +343,7 @@ def poly_func(x,a,b,c):
     return a*x**2 + b*x + c
     
 ##########################################################################
-def data_poly_fit(x,y,plot=False):
+def data_poly_fit(x,y,plot=False,verbose=False):
     '''
     Fits a set of data with to a second order polynomial function.
     '''
@@ -374,12 +363,13 @@ def data_poly_fit(x,y,plot=False):
         rsqu_n = (y[i] - poly_func(x[i],*popt))**2 + rsqu_n
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
-    print '---Polynomial Fit'
-    print '---  U',popt[0]
-    print '---  V',popt[1]
-    print '---  W',popt[2]
-    print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
-    print
+    if verbose:
+        print '---Polynomial Fit'
+        print '---  U',popt[0]
+        print '---  V',popt[1]
+        print '---  W',popt[2]
+        print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
+        print
     
     if plot:
         plx =  0.05*(max(x)-min(x)) + min(x)

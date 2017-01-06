@@ -24,7 +24,7 @@ from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,instrumental_fit_uvw
 from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
-from larch_plugins.diFFit.XRDCalculations import data_gaussian_fit
+from larch_plugins.diFFit.XRDCalculations import data_gaussian_fit,peakfitter
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
 
@@ -943,7 +943,11 @@ class Fitting1DXRD(wx.Panel):
     def fit_peaks(self,event=None):
         #print '[fit_peaks]'
 
-        instrumental_fit_uvw(self.ipeaks,*self.plt_data,verbose=True)
+        peaktwth,peakFWHM = peakfitter(self.ipeaks,*self.plt_data,
+                                       wavelength=self.wavelength,
+                                       halfwidth=40,fittype='double',
+                                       verbose=True)
+#         instrumental_fit_uvw(self.ipeaks,*self.plt_data)
 
     def plot_peaks(self):
         #print '[plot_peaks]'

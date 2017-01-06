@@ -6,6 +6,6 @@ from .XRD1Dviewer import diFFit1D,Calc1DPopup
 from .ImageControlsFrame import ImageToolboxFrame
 from .XRDCalculations import integrate_xrd,xy_file_reader,peakfinder,peaklocater
 from .XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl,instrumental_fit_uvw
-from .XRDCalculations import data_gaussian_fit
+from .XRDCalculations import data_gaussian_fit,peakfitter
 from .XRDCalibrationFrame import CalibrationPopup
 from .XRDMaskFrame import MaskToolsPopup
