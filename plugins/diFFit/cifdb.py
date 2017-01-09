@@ -723,7 +723,7 @@ class cifDB(object):
 
    
         ## generate hkl list
-        hkllist = generate_hkl(maxhkl=3)
+        hkllist = generate_hkl(maxval=27)
 
         energy = 8048 # units eV
 

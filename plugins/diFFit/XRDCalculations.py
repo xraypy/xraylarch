@@ -59,7 +59,7 @@ hc = constants.value(u'Planck constant in eV s')*constants.c*1e7 ## units: keV-A
 
 ##########################################################################
 ##########################################################################
-#####               BRAGG DIFFRACTION CALCULATIONS                  ######
+#####               X-RAY/DIFFRACTION CALCULATIONS                  ######
 ##########################################################################
 ##########################################################################
 def d_from_q(q):
@@ -258,6 +258,68 @@ def calculate_ai(AI):
                                     pixel1 = pixel_1, pixel2 = pixel_2,
                                     splineFile = spline, detector = detname,
                                     wavelength = xraylambda)
+#########################################################################
+
+
+
+##########################################################################
+##########################################################################
+#####          XRAYUTILITIES-DEPENDENT RELATED FUNCTIONS            ######
+##########################################################################
+##########################################################################
+
+def structurefactor_from_cif(ciffile,wavelength,qmax=10):
+    '''
+    Calculate structure factor, F from cif
+    mkak 2016.09.22
+    '''
+
+    ## Calculate the wavelength/energy
+    energy = E_from_lambda(wavelength,E_units='eV') ## check to make sure these are the proper units
+    
+    ## Generate hkl list
+    hkllist = generate_hkl()
+
+    try:
+        ## Open CIF using xu functions
+        cif_strc = xu.materials.Crystal.fromCIF(ciffile)
+    except:
+        print('xrayutilities failed to read %s' % os.path.split(ciffile)[-1])
+        return
+        
+    ## For each hkl, calculate q and F
+    q_cif, F_cif = [],[]
+    qlist, Flist = [],[]
+    for hkl in hkllist:
+        qvec = cif_strc.Q(hkl) ## 
+        q = np.linalg.norm(qvec)
+        if q < qmax:
+            F = cif_strc.StructureFactor(qvec,energy)
+            if np.abs(F) > 0.01 and np.linalg.norm(qvec) > 0:
+                q_cif += [q,q,q]
+                F_cif += [0,np.abs(F),0]
+                qlist += [q]
+                Flist += [np.abs(F)]
+
+    if F_cif and max(F_cif) > 0:
+        q_cif = np.array(q_cif)
+    else:
+        print('Could not calculate any structure factors.')
+        return
+    
+    return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
+
+#########################################################################
+def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
+    '''
+    Dependence of F on E for single hkl for one cif
+    mkak 2016.09.22
+    '''
+    E = np.linspace(emin,emax,esteps)
+    F = cry_strc.StructureFactorForEnergy(cry_strc.Q(hkl), E)
+
+    return E,F
+#########################################################################
 
 
 ##########################################################################
@@ -537,16 +599,70 @@ def read_peakfile(peakfile):
 ##########################################################################
 ##########################################################################
 
-def generate_hkl(maxhkl=8,symmetry=None):
+                                                            ## h^2+k^2+l^2 <= 50
+allhkl = [[0,0,1],[0,1,0],[1,0,0],                          ##  1
+          [0,1,1],[1,0,1],[1,1,0],                          ##  2
+          [1,1,1],                                          ##  3
+          [0,0,2],[0,2,0],[2,0,0],                          ##  4
+          [2,0,1],[2,1,0],[1,2,0],[1,0,2],[0,2,1],[0,1,2],  ##  5
+          [2,1,1],[1,2,1],[1,1,2],                          ##  6
+          [2,2,0],[2,0,2],[0,2,2],                          ##  8
+          [2,2,1],[2,1,2],[1,2,2],[0,0,3],[0,3,0],[3,0,0],  ##  9
+          [3,1,0],[3,0,1],[1,0,3],[1,3,0],[0,1,3],[0,3,1],  ## 10
+          [3,1,1],[1,3,1],[1,1,3],                          ## 11
+          [2,2,2],                                          ## 12
+          [3,2,0],[3,0,2],[2,0,3],[2,3,0],[0,3,2],[0,2,3],  ## 13
+          [3,2,1],[3,1,2],[2,1,3],[2,3,1],[1,3,2],[1,2,3],  ## 14
+          [0,0,4],[0,4,0],[4,0,0],                          ## 16
+          [1,0,4],[1,4,0],[4,0,1],[4,1,0],[0,4,1],[0,1,4],  ## 17
+          [2,2,3],[2,3,2],[3,2,2],
+          [1,1,4],[1,4,1],[4,1,1],[0,3,3],[3,3,0],[3,0,3],  ## 18
+          [3,3,1],[3,1,3],[1,3,3],                          ## 19
+          [0,2,4],[0,4,2],[4,2,0],[4,0,2],[2,4,0],[2,0,4],  ## 20
+          [1,2,4],[1,4,2],[4,2,1],[4,1,2],[2,4,1],[2,1,4],  ## 21
+          [3,3,2],[3,2,3],[2,3,3],                          ## 22
+          [2,2,4],[2,4,2],[4,2,2],                          ## 24
+          [3,0,4],[3,4,0],[4,0,3],[4,3,0],[0,4,3],[0,3,4],  ## 25
+          [0,0,5],[0,5,0],[5,0,0],
+          [1,0,5],[1,5,0],[5,0,1],[5,1,0],[0,5,1],[0,1,5],  ## 26
+          [3,1,4],[3,4,1],[4,1,3],[4,3,1],[1,4,3],[1,3,4],
+          [3,3,3],[1,1,5],[1,5,1],[5,1,1],                  ## 27
+          [2,0,5],[2,5,0],[5,0,2],[5,2,0],[0,2,5],[0,5,2],  ## 29
+          [3,2,4],[3,4,2],[4,2,3],[4,3,2],[2,4,3],[2,3,4],
+          [2,1,5],[2,5,1],[5,1,2],[5,2,1],[1,2,5],[1,5,2],  ## 30
+          [4,4,0],[4,0,4],[0,4,4],                          ## 32
+          [4,4,1],[4,1,4],[1,4,4],[2,2,5],[2,5,2],[5,2,2],  ## 33
+          [3,0,5],[3,5,0],[5,0,3],[5,3,0],[0,3,5],[0,5,3],  ## 34
+          [3,3,4],[3,4,3],[4,3,3],
+          [3,1,5],[3,5,1],[5,1,3],[5,3,1],[1,3,5],[1,5,3],  ## 35
+          [4,4,2],[4,2,4],[2,4,4],[0,0,6],[0,6,0],[6,0,0],  ## 36
+          [1,0,6],[0,6,1],[6,1,0],[0,1,6],[1,6,0],[6,0,1],  ## 37
+          [3,2,5],[3,5,2],[5,2,3],[5,3,2],[2,5,3],[2,3,5],  ## 38
+          [1,1,6],[1,6,1],[6,1,1],
+          [6,2,0],[6,0,2],[0,2,6],[0,6,2],[2,0,6],[2,6,0],  ## 40
+          [6,2,1],[6,1,2],[1,2,6],[1,6,2],[2,1,6],[2,6,1],  ## 41
+          [0,4,5],[0,5,4],[5,4,0],[5,0,4],[4,5,0],[4,0,5],
+          [4,4,3],[4,3,4],[3,4,4],
+          [1,4,5],[1,5,4],[5,4,1],[5,1,4],[4,5,1],[4,1,5],  ## 42
+          [3,3,5],[3,5,3],[5,3,3],                          ## 43
+          [2,2,6],[2,6,2],[6,2,2],                          ## 44
+          [6,3,0],[6,0,3],[0,3,6],[0,6,3],[3,0,6],[3,6,0],  ## 45
+          [2,4,5],[2,5,4],[5,4,2],[5,2,4],[4,5,2],[4,2,5],
+          [6,3,1],[6,1,3],[1,3,6],[1,6,3],[3,1,6],[3,6,1],  ## 46
+          [4,4,4],                                          ## 48
+          [6,3,2],[6,2,3],[2,3,6],[2,6,3],[3,2,6],[3,6,2],  ## 49
+          [0,0,7],[0,7,0],[7,0,0],
+          [3,4,5],[3,5,4],[5,4,3],[5,3,4],[4,5,3],[4,3,5],  ## 50
+          [7,0,1],[7,1,0],[1,0,7],[1,7,0],[0,7,1],[0,1,7],
+          [5,5,0],[5,0,5],[0,5,5],
+          ]
 
-    ## Generate hkl list
-    maxhkl = 8
+def generate_hkl(maxval=50,symmetry=None):
+
     hkllist = []
-    for i in range(maxhkl):
-        for j in range(maxhkl):
-            for k in range(maxhkl):
-                hkllist.append([i,j,k])
-
+    for hkl in allhkl:
+        if maxval >= (hkl[0]**2 + hkl[1]**2 + hkl[2]**2):
+            hkllist += [hkl]
     return hkllist
 
 
@@ -958,72 +1074,7 @@ def fit_with_minimization():
     PKshift  = result.params['pk_shift'].value
         
     return
-#########################################################################
-def struc_from_cif(ciffile,verbose=True):
 
-    if verbose:
-        print('Reading: %s' % ciffile)
-
-    try:
-        ## Open CIF using xu functions
-        cif_strc = xu.materials.Crystal.fromCIF(ciffile)
-    except:
-        print('xrayutilities error: Could not read %s' % os.path.split(ciffile)[-1])
-        return
-        
-    return cif_strc 
-#########################################################################
-def structurefactor_from_cif(ciffile,wavelength,qmax=10):
-    '''
-    Calculate structure factor, F from cif
-    mkak 2016.09.22
-    '''
-
-    ## Calculate the wavelength/energy
-    energy = E_from_lambda(wavelength,E_units='eV') ## check to make sure these are the proper units
-    
-    ## Generate hkl list
-    hkllist = generate_hkl()
-
-    try:
-        ## Open CIF using xu functions
-        cif_strc = xu.materials.Crystal.fromCIF(ciffile)
-    except:
-        print('xrayutilities error: Could not read %s' % os.path.split(ciffile)[-1])
-        return
-        
-    ## For each hkl, calculate q and F
-    q_cif, F_cif = [],[]
-    qlist, Flist = [],[]
-    for hkl in hkllist:
-        qvec = cif_strc.Q(hkl) ## 
-        q = np.linalg.norm(qvec)
-        if q < qmax:
-            F = cif_strc.StructureFactor(qvec,energy)
-            if np.abs(F) > 0.01 and np.linalg.norm(qvec) > 0:
-                q_cif += [q,q,q]
-                F_cif += [0,np.abs(F),0]
-                qlist += [q]
-                Flist += [np.abs(F)]
-
-    if F_cif and max(F_cif) > 0:
-        q_cif = np.array(q_cif)
-    else:
-        print('Could not calculate any structure factors.')
-        return
-    
-    return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
-
-#########################################################################
-def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
-    '''
-    Dependence of F on E for single hkl for one cif
-    mkak 2016.09.22
-    '''
-    E = np.linspace(emin,emax,esteps)
-    F = cry_strc.StructureFactorForEnergy(cry_strc.Q(hkl), E)
-
-    return E,F
 
 
 def registerLarchPlugin():

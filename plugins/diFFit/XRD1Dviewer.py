@@ -1854,7 +1854,7 @@ class Viewer1DXRD(wx.Panel):
                 return
 
             ## generate hkl list
-            hkllist = generate_hkl(maxhkl=8)
+            hkllist = generate_hkl()
             
             if self.wavelength is not None:
                 qlist = cif.Q(hkllist)
