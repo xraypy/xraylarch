@@ -21,9 +21,13 @@ from wxutils import MenuItem,pack
 from larch_plugins.diFFit.cifdb import cifDB
 
 from larch_plugins.io import tifffile
+
+from larch_plugins.diFFit.XRDCalculations import d_from_q,twth_from_q
+from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
+
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,instrumental_fit_uvw
-from larch_plugins.diFFit.XRDCalculations import calc_q_to_d,calc_q_to_2th,generate_hkl
+from larch_plugins.diFFit.XRDCalculations import generate_hkl
 from larch_plugins.diFFit.XRDCalculations import data_gaussian_fit,peakfitter
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
@@ -60,9 +64,6 @@ VERSION = '0 (30-November-2016)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
-HC = constants.value(u'Planck constant in eV s') * \
-           constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
 
 FIT_METHODS = ['scipy.signal.find_peaks_cwt']
 
@@ -105,7 +106,7 @@ class diFFit1DFrame(wx.Frame):
         self.XRD1DMenuBar()
         
         self.energy = 19.0 ## keV
-        self.wavelength = HC/(self.energy)*1e10 ## A
+        self.wavelength = lambda_from_E(self.energy)
 
 
     def XRD1DMenuBar(self):
@@ -300,7 +301,7 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dviewer.addLAMBDA(ai._wavelength,units='m')
             
-            energy = HC/(ai._wavelength)
+            energy = E_from_lambda(ai._wavelength,lambda_units='m')
             self.setELvalues(energy,(ai._wavelength*1e10))
 
     def setLAMBDA(self,event=None):
@@ -312,10 +313,10 @@ class diFFit1DFrame(wx.Frame):
             okay = True
             if dlg.ch_EorL.GetSelection() == 0:
                 energy = float(dlg.entr_EorL.GetValue()) ## units keV
-                wavelength = HC/(energy)*1e10 ## units: A
+                wavelength = lambda_from_E(energy) ## units: A
             elif dlg.ch_EorL.GetSelection() == 1:
                 wavelength = float(dlg.entr_EorL.GetValue()) ## units: A
-                energy = HC/(wavelength*1e-10) ## units: keV
+                energy = E_from_lambda(wavelength) ## units: keV
         dlg.Destroy()
         
         if okay:
@@ -517,7 +518,7 @@ class Fitting1DXRD(wx.Panel):
 
         self.name       = ''
         self.energy     = 19.0   ## keV
-        self.wavelength = HC/(self.energy)*1e10 ## A
+        self.wavelength = lambda_from_E(self.energy) ## A
         
         # Peak fitting defaults
         self.iregions = 50
@@ -1266,7 +1267,7 @@ class Viewer1DXRD(wx.Panel):
         self.x_for_zoom = None
         
         self.energy = 19.0   ## keV
-        self.wavelength = HC/(self.energy)*1e10 ## A
+        self.wavelength = lambda_from_E(self.energy) ## A
 
         self.Panel1DViewer()
 
@@ -1609,7 +1610,7 @@ class Viewer1DXRD(wx.Panel):
         else: ## units 'A'        
             self.wavelength = wavelength
 
-        self.energy = HC/(wavelength*(1e-10))*1e3
+        self.energy = E_from_lambda(wavelength) ## units keV 
 
     def normalize1Ddata(self,event=None,cif=False):
     
@@ -1672,15 +1673,15 @@ class Viewer1DXRD(wx.Panel):
         if self.ch_xaxis.GetSelection() == 2:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
             for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = calc_q_to_2th(np.array(self.xy_data[plt_no][0]),self.wavelength)
+                self.xy_plot[plt_no][0] = twth_from_q(np.array(self.xy_data[plt_no][0]),self.wavelength)
             for plt_no in range(len(self.plotted_cif)):
-                self.cif_plot[plt_no][0] = calc_q_to_2th(np.array(self.cif_data[plt_no][0]),self.wavelength)
+                self.cif_plot[plt_no][0] = twth_from_q(np.array(self.cif_data[plt_no][0]),self.wavelength)
         elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = 'd ($\AA$)'
             for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = calc_q_to_d(np.array(self.xy_data[plt_no][0]))
+                self.xy_plot[plt_no][0] = d_from_q(np.array(self.xy_data[plt_no][0]))
             for plt_no in range(len(self.plotted_cif)):
-                self.cif_plot[plt_no][0] = calc_q_to_d(np.array(self.cif_data[plt_no][0]))
+                self.cif_plot[plt_no][0] = d_from_q(np.array(self.cif_data[plt_no][0]))
         else:
             self.xlabel = 'q (1/$\AA$)'
             for plt_no in range(len(self.plotted_data)):
@@ -1857,7 +1858,7 @@ class Viewer1DXRD(wx.Panel):
             
             if self.wavelength is not None:
                 qlist = cif.Q(hkllist)
-                Flist = cif.StructureFactorForQ(qlist,(HC/(self.wavelength*(1e-10))*1e3))
+                Flist = cif.StructureFactorForQ(qlist,E_from_lambda(self.wavelength))
             
                 Fall = []
                 qall = []
@@ -2132,11 +2133,11 @@ class Calc1DPopup(wx.Dialog):
 # 
 #         if self.slctEorL.GetSelection() == 1:
 #             energy = float(self.EorL.GetValue()) ## units keV
-#             wavelength = HC/(energy)*1e10 ## units: A
+#             wavelength = lambda_from_E(energy) ## units: A
 #             self.EorL.SetValue(str(wavelength))
 #         else:
-#             wavelength = float(self.EorL.GetValue())*1e-10 ## units: m
-#             energy = HC/(wavelength) ## units: keV
+#             wavelength = float(self.EorL.GetValue()) ## units: A
+#             energy = E_from_lambda(wavelength) ## units: keV
 #             self.EorL.SetValue(str(energy))
 
     def onSPIN(self,event=None):
@@ -2195,7 +2196,7 @@ class SetLambdaDialog(wx.Dialog):
         
         ## set default
         self.energy = energy      
-        self.wavelength = HC/(self.energy)*1e10 ## units: A
+        self.wavelength = lambda_from_E(self.energy) ## units: A
         self.ch_EorL.SetSelection(0)
         self.entr_EorL.SetValue('%0.3f' % self.energy)
         self.pre_sel = 0
@@ -2210,20 +2211,234 @@ class SetLambdaDialog(wx.Dialog):
         if self.pre_sel == self.ch_EorL.GetSelection():
             if self.ch_EorL.GetSelection() == 0:
                 self.energy = float(self.entr_EorL.GetValue()) ## units keV
-                self.wavelength = HC/(self.energy)*1e10 ## units: A
+                self.wavelength = lambda_from_E(self.energy) ## units: A
             else:
                 self.wavelength = float(self.entr_EorL.GetValue()) ## units: A
-                self.energy = HC/(self.wavelength*1e-10) ## units: keV
+                self.energy = E_from_lambda(self.wavelength) ## units: keV
         else:
             if self.ch_EorL.GetSelection() == 0:
                 self.wavelength = float(self.entr_EorL.GetValue()) ## units: A
-                self.energy = HC/(self.wavelength*1e-10) ## units: keV
+                self.energy = E_from_lambda(self.wavelength) ## units: keV
                 self.entr_EorL.SetValue('%0.3f' % self.energy)
             else:
                 self.energy = float(self.entr_EorL.GetValue()) ## units keV
-                self.wavelength = HC/(self.energy)*1e10 ## units: A
+                self.wavelength = lambda_from_E(self.energy) ## units: A
                 self.entr_EorL.SetValue('%0.4f' % self.wavelength)
             self.pre_sel = self.ch_EorL.GetSelection()
+
+#########################################################################
+class XRDSearchGUI(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(500, 440))
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Mineral search
+        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
+        self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
+        #mineral_list = [] #['None']
+        #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
+
+        ## Author search
+        lbl_Author  = wx.StaticText(self.panel, label='Author:' )
+        self.Author = wx.TextCtrl(self.panel,   size=(270, -1))
+
+        ## Chemistry search
+        lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
+        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.chmslct  = wx.Button(self.panel,     label='Specify...')
+        
+        ## Cell parameter symmetry search
+        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
+        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.symslct  = wx.Button(self.panel,     label='Specify...')
+        
+        ## General search
+        lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
+        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
+
+
+        ## Define buttons
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        ## Bind buttons for functionality
+        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
+        self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
+        self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
+
+        self.sizer = wx.GridBagSizer( 5, 6)
+
+        self.sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
+        self.sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
+
+        self.sizer.Add(lbl_Author,     pos = ( 2,1)               )
+        self.sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
+
+        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
+        self.sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
+        self.sizer.Add(self.chmslct,   pos = ( 3,4)               )
+
+        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
+        self.sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
+        self.sizer.Add(self.symslct,   pos = ( 4,4)               )
+
+        self.sizer.Add(lbl_Search,     pos = ( 5,1)               )
+        self.sizer.Add(self.Search,    pos = ( 5,2), span = (1,3) )
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)                )
+        self.sizer.Add(canBtn,        pos = (11,2)                )
+        self.sizer.Add(self.rstBtn,   pos = (11,3)                )
+        self.sizer.Add(okBtn,         pos = (11,4)                )
+        
+        self.panel.SetSizer(self.sizer)
+
+        self.Show()
+#########################################################################
+    def onChemistry(self,event=None):
+        print('Will eventually show Periodic Table...')
+#########################################################################
+    def onSymmetry(self,event=None):
+        XRDSymmetrySearch()
+#########################################################################
+    def onReset(self,event=None):
+        self.Mineral.Clear()
+        self.Author.Clear()
+        self.Chemistry.Clear()
+        self.Symmetry.Clear()
+        self.Search.Clear()
+#########################################################################            
+class XRDSymmetrySearch(wx.Dialog):
+    """"""
+
+    def __init__(self):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+
+
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Lattice parameters
+        lbl_a = wx.StaticText(self.panel,    label='a (A)' )
+        self.min_a = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_a = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_b = wx.StaticText(self.panel,    label='b (A)' )
+        self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_c = wx.StaticText(self.panel,    label='a (A)' )
+        self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_alpha = wx.StaticText(self.panel,    label='alpha (deg)' )
+        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_beta = wx.StaticText(self.panel,    label='beta (deg)' )
+        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1))
+
+        lbl_gamma = wx.StaticText(self.panel,    label='gamma (deg)' )
+        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+
+        SG_list = ['']
+        sgfile = 'space_groups.txt'
+        if not os.path.exists(sgfile):
+            parent, child = os.path.split(__file__)
+            sgfile = os.path.join(parent, sgfile)
+            if not os.path.exists(sgfile):
+                raise IOError("Space group file '%s' not found!" % sgfile)
+        sg = open(sgfile,'r')
+        for sgno,line in enumerate(sg):
+            try:
+                sgno = sgno+1
+                SG_list.append('%3d  %s' % (sgno,line))
+            except:
+                sg.close()
+                break
+
+        
+        lbl_SG = wx.StaticText(self.panel, label='Space group:')
+        self.SG = wx.Choice(self.panel,    choices=SG_list)
+
+        ## Define buttons
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        ## Bind buttons for functionality
+        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
+
+        self.sizer = wx.GridBagSizer( 5, 6)
+
+        self.sizer.Add(lbl_a,          pos = ( 1,1) )
+        self.sizer.Add(self.min_a,     pos = ( 1,2) )
+        self.sizer.Add(self.max_a,     pos = ( 1,3) )
+
+        self.sizer.Add(lbl_b,          pos = ( 2,1) )
+        self.sizer.Add(self.min_b,     pos = ( 2,2) )
+        self.sizer.Add(self.max_b,     pos = ( 2,3) )
+
+        self.sizer.Add(lbl_c,          pos = ( 3,1) )
+        self.sizer.Add(self.min_c,     pos = ( 3,2) )
+        self.sizer.Add(self.max_c,     pos = ( 3,3) )
+
+        self.sizer.Add(lbl_alpha,      pos = ( 4,1) )
+        self.sizer.Add(self.min_alpha, pos = ( 4,2) )
+        self.sizer.Add(self.max_alpha, pos = ( 4,3) )
+
+        self.sizer.Add(lbl_beta,       pos = ( 5,1) )
+        self.sizer.Add(self.min_beta,  pos = ( 5,2) )
+        self.sizer.Add(self.max_beta,  pos = ( 5,3) )
+
+        self.sizer.Add(lbl_gamma,      pos = ( 6,1) )
+        self.sizer.Add(self.min_gamma, pos = ( 6,2) )
+        self.sizer.Add(self.max_gamma, pos = ( 6,3) )
+
+        self.sizer.Add(lbl_SG,         pos = ( 7,1) )
+        self.sizer.Add(self.SG,        pos = ( 7,2) )
+
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)  )
+        self.sizer.Add(canBtn,        pos = (11,2)  )
+        self.sizer.Add(self.rstBtn,   pos = (11,3)  )
+        self.sizer.Add(okBtn,         pos = (11,4)  )
+
+        self.panel.SetSizer(self.sizer)
+
+        self.Show()
+#########################################################################
+    def onReset(self,event=None):
+        self.min_a.Clear()
+        self.max_a.Clear()
+        self.min_b.Clear()
+        self.max_b.Clear()
+        self.min_c.Clear()
+        self.max_c.Clear()
+        self.min_alpha.Clear()
+        self.max_alpha.Clear()
+        self.min_beta.Clear()
+        self.max_beta.Clear()
+        self.min_gamma.Clear()
+        self.max_gamma.Clear()
+        self.SG.SetSelection(0)
+
+
       
 class diFFit1D(wx.App):
     def __init__(self):

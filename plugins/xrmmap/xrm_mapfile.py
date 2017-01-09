@@ -5,7 +5,6 @@ import time
 import datetime
 import h5py
 import numpy as np
-from scipy import constants
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import json
@@ -21,6 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   readEnvironFile, parseEnviron,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
 from larch_plugins.diFFit.xrd import XRD
+from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
 
 HAS_pyFAI = False
 try:
@@ -776,10 +776,7 @@ class GSEXRM_MapFile(object):
             xrdgrp.attrs['rot2']       = ai._rot2
             xrdgrp.attrs['rot3']       = ai._rot3
             xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+            xrdgrp.attrs['energy']     = E_from_lambda(ai._wavelength,lambda_units='m') ## units: keV
 
         print('')
         self.h5root.flush()

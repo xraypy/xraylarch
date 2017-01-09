@@ -5,7 +5,6 @@ popup for 2D XRD calibration
 '''
 import os
 import numpy as np
-from scipy import constants
 
 import matplotlib.pyplot as plt
 
@@ -13,6 +12,7 @@ import wx
 
 from wxmplot.imagepanel import ImagePanel
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
 
 HAS_pyFAI = False
 try:
@@ -274,15 +274,14 @@ class CalibrationPopup(wx.Frame):
 
 
     def onEorLSel(self,event=None): 
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+
         if self.ch_EorL.GetSelection() == 1:
             energy = float(self.entr_EorL.GetValue()) ## units keV
-            wavelength = hc/(energy)*1e10 ## units: A
+            wavelength = lambda_from_E(energy) ## units: A
             self.entr_EorL.SetValue(str(wavelength))
         else:
             wavelength = float(self.entr_EorL.GetValue())*1e-10 ## units: m
-            energy = hc/(wavelength) ## units: keV
+            energy = E_from_lambda(wavelength) ## units: keV
             self.entr_EorL.SetValue(str(energy))
 
     def onDorPSel(self,event=None): 

@@ -6,7 +6,6 @@ GUI for displaying 2D XRD images
 
 import os
 import numpy as np
-from scipy import constants
 
 #import h5py
 import matplotlib.cm as colormap
@@ -18,7 +17,10 @@ from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai #,fabioOPEN
+
+from larch_plugins.diFFit.XRDCalculations import integrate_xrd
+from larch_plugins.diFFit.XRDCalculations import E_from_lambda
+
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
@@ -459,9 +461,7 @@ class Viewer2DXRD(wx.Frame):
             prt_str = 'Detector tilts: %0.5f, %0.5f %0.5f'
             print prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3)
             prt_str = 'Incident energy, wavelegth: %0.2f keV, %0.4f A'
-            hc = constants.value(u'Planck constant in eV s') * \
-                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            E = hc/(self.ai._wavelength) ## units: keV
+            E = E_from_lambda(self.ai._wavelength) ## units: keV
             print prt_str % (E,self.ai._wavelength*1.e10)
 
 

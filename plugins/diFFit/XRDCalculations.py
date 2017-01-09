@@ -27,6 +27,7 @@ import wx
 import numpy as np
 from scipy import optimize
 from scipy import signal
+from scipy import constants
 
 import matplotlib.pyplot as plt
 import pylab as plb
@@ -48,6 +49,76 @@ try:
     HAS_pyFAI = True
 except ImportError:
     pass
+
+##########################################################################
+# GLOBAL CONSTANTS
+
+hc = constants.value(u'Planck constant in eV s')*constants.c*1e7 ## units: keV-A
+
+
+
+##########################################################################
+##########################################################################
+#####               BRAGG DIFFRACTION CALCULATIONS                  ######
+##########################################################################
+##########################################################################
+def d_from_q(q):
+    return (2.*math.pi)/q
+##########################################################################
+def d_from_twth(twth,wavelength,ang_units='degrees'):
+    if not ang_units.startswith('rad'):
+        twth = np.radians(twth)
+    return wavelength/(2*np.sin(twth/2.))
+##########################################################################
+def twth_from_d(d,wavelength,ang_units='degrees'):
+    twth = 2.*np.arcsin(wavelength/(2.*d))
+    if ang_units.startswith('rad'):
+        return twth
+    else:
+        return np.degrees(twth)
+##########################################################################
+def twth_from_q(q,wavelength,ang_units='degrees'):
+    twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
+    if ang_units.startswith('rad'):
+        return twth
+    else:
+        return np.degrees(twth)
+##########################################################################
+def q_from_d(d):
+    return (2.*math.pi)/d
+##########################################################################
+def q_from_twth(twth,wavelength,ang_units='degrees'):
+    if not ang_units.startswith('rad'):
+        twth = np.radians(twth)
+    return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
+##########################################################################
+def E_from_lambda(wavelength,E_units='keV',lambda_units='A'):
+    '''
+    E = hf ; E = hc/lambda
+    '''
+    if lambda_units == 'm':
+        wavelength = wavelength*1e10
+    elif lambda_units == 'nm':
+        wavelength = wavelength*1e1
+    if E_units == 'keV':
+        return hc/wavelength
+    else:
+        return (hc/wavelength)*1e3 # eV
+##########################################################################
+def lambda_from_E(E,E_units='keV',lambda_units='A'):
+    '''
+    E = hf ; E = hc/lambda
+    '''
+    if E_units != 'keV':
+        E = E*1e-3 # keV
+    if lambda_units == 'm':
+        return (hc/E)*1e-10
+    elif lambda_units == 'nm':
+        return (hc/E)*1e-1
+    else:
+        return hc/E # A
+##########################################################################
+
 
 
 
@@ -309,7 +380,7 @@ def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
                 xdata = q[minval:maxval]
                 ydata = I[minval:maxval]
 
-                xdata = calc_q_to_2th(xdata,wavelength)
+                xdata = twth_from_q(xdata,wavelength)
                 try:
                     twth,fwhm = data_gaussian_fit(xdata,ydata,fittype=fittype)
                     peaktwth += [twth]
@@ -394,31 +465,6 @@ def data_poly_fit(x,y,plot=False,verbose=False):
 
 ##########################################################################
 ##########################################################################
-#####               BRAGG DIFFRACTION CALCULATIONS                  ######
-##########################################################################
-##########################################################################
-def calc_q_to_d(q):
-    return (2.*math.pi)/q
-##########################################################################
-def calc_q_to_2th(q,wavelength,units='degrees'):
-    twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
-    if units == 'radians':
-        return twth
-    else:
-        return np.degrees(twth)
-##########################################################################
-def calc_d_to_q(d):
-    return (2.*math.pi)/d
-##########################################################################
-def calc_2th_to_q(twth,wavelength,units='degrees'):
-    if units == 'degrees':
-        twth = np.radians(twth)
-    return ((4.*math.pi)/wavelength)*np.sin(twth/2.)
-
-
-
-##########################################################################
-##########################################################################
 #####                   FILE READING FUNCTIONS                      ######
 ##########################################################################
 ##########################################################################
@@ -451,7 +497,7 @@ def read_peakfile(peakfile):
         if val <= 0:
             d = np.delete(d,i)
             I = np.delete(I,i)
-    q = calc_d_to_q(d)
+    q = q_from_d(d)
 
     pkqlist = [q,I]
    
@@ -503,58 +549,6 @@ def generate_hkl(maxhkl=8,symmetry=None):
 
     return hkllist
 
-
-def calculate_peaks(ciffile,wavelength):
-    '''
-    Calculate structure factor, F from cif
-    mkak 2016.09.22
-    '''
-
-    ## Calculate the wavelength/energy
-    try:
-        energy = xu.utilities.lam2en(wavelength)
-    except:
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-        energy = hc/(wavelength*(1e-10))*1e3
-    
-    ## Generate hkl list
-    hkllist = generate_hkl()
-
-    ## Set an upper bound on calculations
-    qmax=10
-    #qmax = ((4*math.pi)/wvlgth)*np.sin(np.radians(twthmax/2))
-    twthmax = 2*np.degrees(np.arcsin((wvlgth*qmax)/(4*math.pi)))
-
-
-    try:
-        ## Open CIF using xu functions
-        cif_strc = xu.materials.Crystal.fromCIF(ciffile)
-    except:
-        print('xrayutilities error: Could not read %s' % os.path.split(ciffile)[-1])
-        return
-        
-    ## For each hkl, calculate q and F
-    q_cif, F_cif = [],[]
-    qlist, Flist = [],[]
-    for hkl in hkllist:
-        qvec = cif_strc.Q(hkl)
-        q = np.linalg.norm(qvec)
-        if q < qmax:
-            F = cif_strc.StructureFactor(qvec,energy)
-            if np.abs(F) > 0.01 and np.linalg.norm(qvec) > 0:
-                q_cif += [q,q,q]
-                F_cif += [0,np.abs(F),0]
-                qlist += [q]
-                Flist += [np.abs(F)]
-
-    if F_cif and max(F_cif) > 0:
-        q_cif = np.array(q_cif)
-    else:
-        print('Could not calculate any structure factors.')
-        return
-    
-    return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
 
 ##########################################################################
 def write_rawfile(a,b,filename):
@@ -630,8 +624,8 @@ def calc_peak(q1,int1): # inputs: q, intensity
 def instr_broadening(pkqlist,q,intensity,u,v,w): 
 
     ## Broadening calculation performed in 2theta - not q
-    twthlist = calc_q_to_2th(pkqlist[0],LAMBDA)
-    twth = calc_q_to_2th(q,LAMBDA)
+    twthlist = twth_from_q(pkqlist[0],LAMBDA)
+    twth = twth_from_q(q,LAMBDA)
 
     ## TERMS FOR INSTRUMENTAL BROADENING
     Bi = np.zeros(np.shape(pkqlist)[1])
@@ -660,7 +654,7 @@ def instr_broadening(pkqlist,q,intensity,u,v,w):
         min2th = B-2*width
         max2th = B+2*width        
         twthG = np.arange(max2th,min2th,-width/200)
-        qG = calc_2th_to_q(twthG,LAMBDA)
+        qG = q_from_twth(twthG,LAMBDA)
 
         ## Calculate peak for corresponding width
         intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
@@ -685,9 +679,9 @@ def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298):
     #pk_shift = 1.00307298
     
     ## Broadening calculation performed in 2theta - not q
-    twth = calc_q_to_2th(q,LAMBDA)
-##    twthlist = calc_q_to_2th(pkqlist[0],0.3917)
-    twthlist = calc_q_to_2th(pkqlist[0],LAMBDA*pk_shift)
+    twth = twth_from_q(q,LAMBDA)
+##    twthlist = twth_from_q(pkqlist[0],0.3917)
+    twthlist = twth_from_q(pkqlist[0],LAMBDA*pk_shift)
 
 
     ## TERMS FOR INSTRUMENTAL BROADENING
@@ -762,7 +756,7 @@ def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298):
             shift2th = find_max(twthG,new_intensity)
             twthG = twthG - (B-shift2th)
 
-            qG = calc_2th_to_q(twthG,LAMBDA)
+            qG = q_from_twth(twthG,LAMBDA)
                         
             nintensity = find_y(q,qG,new_intensity)        
         
@@ -979,52 +973,47 @@ def struc_from_cif(ciffile,verbose=True):
         
     return cif_strc 
 #########################################################################
-def calc_all_F(cry_strc,energy,maxhkl=10,qmax=10,twthmax=None,verbose=True):
+def structurefactor_from_cif(ciffile,wavelength,qmax=10):
     '''
-    Calculate F for one energy for range of hkl for one structure
+    Calculate structure factor, F from cif
     mkak 2016.09.22
     '''
+
+    ## Calculate the wavelength/energy
+    energy = E_from_lambda(wavelength,E_units='eV') ## check to make sure these are the proper units
+    
     ## Generate hkl list
-    hkllist = []
-    for i in range(maxhkl):
-        for j in range(maxhkl):
-            for k in range(maxhkl):
-                hkllist.append([i,j,k])
+    hkllist = generate_hkl()
 
-    ## Calculate the wavelength
-    wvlgth = xu.utilities.en2lam(energy)
-    if twthmax:
-        qmax = ((4*math.pi)/wvlgth)*np.sin(np.radians(twthmax/2))
-    else:
-        twthmax = 2*np.degrees(np.arcsin((wvlgth*qmax)/(4*math.pi)))
-
-    q = []
-    F_norm = []
-
-    if verbose:
-        print('Calculating XRD pattern for: %s' % cry_strc.name)
+    try:
+        ## Open CIF using xu functions
+        cif_strc = xu.materials.Crystal.fromCIF(ciffile)
+    except:
+        print('xrayutilities error: Could not read %s' % os.path.split(ciffile)[-1])
+        return
         
     ## For each hkl, calculate q and F
+    q_cif, F_cif = [],[]
+    qlist, Flist = [],[]
     for hkl in hkllist:
-        qvec = cry_strc.Q(hkl)
-        qnorm = np.linalg.norm(qvec)
-        if qnorm < qmax:
-            F = cry_strc.StructureFactor(qvec,energy)
+        qvec = cif_strc.Q(hkl) ## 
+        q = np.linalg.norm(qvec)
+        if q < qmax:
+            F = cif_strc.StructureFactor(qvec,energy)
             if np.abs(F) > 0.01 and np.linalg.norm(qvec) > 0:
+                q_cif += [q,q,q]
+                F_cif += [0,np.abs(F),0]
+                qlist += [q]
+                Flist += [np.abs(F)]
 
-                q.append(qnorm)
-                q.append(qnorm)
-                q.append(qnorm)
+    if F_cif and max(F_cif) > 0:
+        q_cif = np.array(q_cif)
+    else:
+        print('Could not calculate any structure factors.')
+        return
+    
+    return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
 
-                F_norm.append(0)
-                F_norm.append(np.abs(F))
-                F_norm.append(0)
-
-    if F_norm and max(F_norm) > 0:
-        q = np.array(q)
-        F_norm = np.array(F_norm)/max(F_norm)
-        return q,F_norm
-    return
 #########################################################################
 def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
     '''
@@ -1035,217 +1024,6 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
     F = cry_strc.StructureFactorForEnergy(cry_strc.Q(hkl), E)
 
     return E,F
-#########################################################################
-class XRDSearchGUI(wx.Dialog):
-    """"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-    
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(500, 440))
-        ## remember: size=(width,height)
-        self.panel = wx.Panel(self)
-
-        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-        
-        ## Mineral search
-        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
-        self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
-        #mineral_list = [] #['None']
-        #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
-
-        ## Author search
-        lbl_Author  = wx.StaticText(self.panel, label='Author:' )
-        self.Author = wx.TextCtrl(self.panel,   size=(270, -1))
-
-        ## Chemistry search
-        lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
-        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1))
-        self.chmslct  = wx.Button(self.panel,     label='Specify...')
-        
-        ## Cell parameter symmetry search
-        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
-        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
-        self.symslct  = wx.Button(self.panel,     label='Specify...')
-        
-        ## General search
-        lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
-        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
-
-
-        ## Define buttons
-        self.rstBtn = wx.Button(self.panel, label='Reset' )
-        hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
-        okBtn  = wx.Button(self.panel, wx.ID_OK      )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
-
-        ## Bind buttons for functionality
-        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
-        self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
-        self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
-
-        self.sizer = wx.GridBagSizer( 5, 6)
-
-        self.sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
-        self.sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
-
-        self.sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        self.sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
-
-        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
-        self.sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
-        self.sizer.Add(self.chmslct,   pos = ( 3,4)               )
-
-        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
-        self.sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
-        self.sizer.Add(self.symslct,   pos = ( 4,4)               )
-
-        self.sizer.Add(lbl_Search,     pos = ( 5,1)               )
-        self.sizer.Add(self.Search,    pos = ( 5,2), span = (1,3) )
-
-        self.sizer.Add(hlpBtn,        pos = (11,1)                )
-        self.sizer.Add(canBtn,        pos = (11,2)                )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)                )
-        self.sizer.Add(okBtn,         pos = (11,4)                )
-        
-        self.panel.SetSizer(self.sizer)
-
-        self.Show()
-#########################################################################
-    def onChemistry(self,event=None):
-        print('Will eventually show Periodic Table...')
-#########################################################################
-    def onSymmetry(self,event=None):
-        XRDSymmetrySearch()
-#########################################################################
-    def onReset(self,event=None):
-        self.Mineral.Clear()
-        self.Author.Clear()
-        self.Chemistry.Clear()
-        self.Symmetry.Clear()
-        self.Search.Clear()
-#########################################################################            
-class XRDSymmetrySearch(wx.Dialog):
-    """"""
-
-    def __init__(self):
-    
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
-        ## remember: size=(width,height)
-        self.panel = wx.Panel(self)
-
-
-        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-        
-        ## Lattice parameters
-        lbl_a = wx.StaticText(self.panel,    label='a (A)' )
-        self.min_a = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_a = wx.TextCtrl(self.panel, size=(100, -1))
-
-        lbl_b = wx.StaticText(self.panel,    label='b (A)' )
-        self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
-
-        lbl_c = wx.StaticText(self.panel,    label='a (A)' )
-        self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
-
-        lbl_alpha = wx.StaticText(self.panel,    label='alpha (deg)' )
-        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1))
-
-        lbl_beta = wx.StaticText(self.panel,    label='beta (deg)' )
-        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1))
-
-        lbl_gamma = wx.StaticText(self.panel,    label='gamma (deg)' )
-        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
-
-        SG_list = ['']
-        sgfile = 'space_groups.txt'
-        if not os.path.exists(sgfile):
-            parent, child = os.path.split(__file__)
-            sgfile = os.path.join(parent, sgfile)
-            if not os.path.exists(sgfile):
-                raise IOError("Space group file '%s' not found!" % sgfile)
-        sg = open(sgfile,'r')
-        for sgno,line in enumerate(sg):
-            try:
-                sgno = sgno+1
-                SG_list.append('%3d  %s' % (sgno,line))
-            except:
-                sg.close()
-                break
-
-        
-        lbl_SG = wx.StaticText(self.panel, label='Space group:')
-        self.SG = wx.Choice(self.panel,    choices=SG_list)
-
-        ## Define buttons
-        self.rstBtn = wx.Button(self.panel, label='Reset' )
-        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
-        okBtn  = wx.Button(self.panel, wx.ID_OK     )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
-
-        ## Bind buttons for functionality
-        self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
-
-        self.sizer = wx.GridBagSizer( 5, 6)
-
-        self.sizer.Add(lbl_a,          pos = ( 1,1) )
-        self.sizer.Add(self.min_a,     pos = ( 1,2) )
-        self.sizer.Add(self.max_a,     pos = ( 1,3) )
-
-        self.sizer.Add(lbl_b,          pos = ( 2,1) )
-        self.sizer.Add(self.min_b,     pos = ( 2,2) )
-        self.sizer.Add(self.max_b,     pos = ( 2,3) )
-
-        self.sizer.Add(lbl_c,          pos = ( 3,1) )
-        self.sizer.Add(self.min_c,     pos = ( 3,2) )
-        self.sizer.Add(self.max_c,     pos = ( 3,3) )
-
-        self.sizer.Add(lbl_alpha,      pos = ( 4,1) )
-        self.sizer.Add(self.min_alpha, pos = ( 4,2) )
-        self.sizer.Add(self.max_alpha, pos = ( 4,3) )
-
-        self.sizer.Add(lbl_beta,       pos = ( 5,1) )
-        self.sizer.Add(self.min_beta,  pos = ( 5,2) )
-        self.sizer.Add(self.max_beta,  pos = ( 5,3) )
-
-        self.sizer.Add(lbl_gamma,      pos = ( 6,1) )
-        self.sizer.Add(self.min_gamma, pos = ( 6,2) )
-        self.sizer.Add(self.max_gamma, pos = ( 6,3) )
-
-        self.sizer.Add(lbl_SG,         pos = ( 7,1) )
-        self.sizer.Add(self.SG,        pos = ( 7,2) )
-
-
-        self.sizer.Add(hlpBtn,        pos = (11,1)  )
-        self.sizer.Add(canBtn,        pos = (11,2)  )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)  )
-        self.sizer.Add(okBtn,         pos = (11,4)  )
-
-        self.panel.SetSizer(self.sizer)
-
-        self.Show()
-#########################################################################
-    def onReset(self,event=None):
-        self.min_a.Clear()
-        self.max_a.Clear()
-        self.min_b.Clear()
-        self.max_b.Clear()
-        self.min_c.Clear()
-        self.max_c.Clear()
-        self.min_alpha.Clear()
-        self.max_alpha.Clear()
-        self.min_beta.Clear()
-        self.max_beta.Clear()
-        self.min_gamma.Clear()
-        self.max_gamma.Clear()
-        self.SG.SetSelection(0)
 
 
 def registerLarchPlugin():

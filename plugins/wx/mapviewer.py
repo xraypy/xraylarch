@@ -57,7 +57,6 @@ except:
 import h5py
 import numpy as np
 import scipy.stats as stats
-from scipy import constants
 
 from matplotlib.widgets import Slider, Button, RadioButtons
 
@@ -85,7 +84,7 @@ from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
-
+from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
@@ -1983,15 +1982,12 @@ class MapViewerFrame(wx.Frame):
 
                 usr_calimg = myDlg.CaliPath
 
-                ## E = hf ; E = hc/lambda
-                hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
                 if myDlg.slctEorL.GetSelection() == 1:
                     usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
-                    usr_E = hc/(usr_lambda) ## units: keV
+                    usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
                 else:
                     usr_E = float(myDlg.EorL.GetValue()) ## units keV
-                    usr_lambda = hc/(usr_E) ## units: m
+                    usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
 
                 if myDlg.slctDorP.GetSelection() == 1:
                     usr_pixel = float(myDlg.pixel.GetValue())*1e-6
@@ -2511,15 +2507,14 @@ class CalXRD(wx.Dialog):
             self.FindWindowById(wx.ID_OK).Disable()
 
     def onEorLSel(self,event=None):
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+
         if self.slctEorL.GetSelection() == 1:
             energy = float(self.EorL.GetValue()) ## units keV
-            wavelength = hc/(energy)*1e10 ## units: A
+            wavelength = lambda_from_E(energy) ## units: A
             self.EorL.SetValue(str(wavelength))
         else:
-            wavelength = float(self.EorL.GetValue())*1e-10 ## units: m
-            energy = hc/(wavelength) ## units: keV
+            wavelength = float(self.EorL.GetValue()) ## units: A
+            energy = E_from_lambda(wavelength) ## units: keV
             self.EorL.SetValue(str(energy))
 
         self.checkOK()
