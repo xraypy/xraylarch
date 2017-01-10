@@ -16,6 +16,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from wxmplot import PlotPanel
+from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack
 
 from larch_plugins.diFFit.cifdb import cifDB
@@ -484,7 +485,8 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
     def GetListCtrl(self):
         return self.list
 
-class Fitting1DXRD(wx.Panel):
+# class Fitting1DXRD(wx.Panel):
+class Fitting1DXRD(BasePanel):
     '''
     Panel for housing 1D XRD fitting
     '''
