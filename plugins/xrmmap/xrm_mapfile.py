@@ -719,7 +719,7 @@ class GSEXRM_MapFile(object):
         edffile = self.xrmmap['xrd'].attrs[keyword]
         print('Reading %s file: %s' % (name,edffile))
 
-        rawdata = plt.imread(edffile)
+        rawdata = plt.imread(edffile) ## or? tifffile.imread(edffile)
 #         try:
 #             import fabio
 #             rawdata = fabio.open(edffile).data

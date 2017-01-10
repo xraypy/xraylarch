@@ -20,7 +20,6 @@ from larch_plugins.io import tifffile
 
 from larch_plugins.diFFit.XRDCalculations import integrate_xrd
 from larch_plugins.diFFit.XRDCalculations import E_from_lambda
-
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
@@ -109,7 +108,9 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            newimg = plt.imread(path)
+#            newimg = plt.imread(path)
+            print('Reading file: %s' % path)
+            newimg = tifffile.imread(path)
             #newimg = fabioOPEN(path)
             
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
@@ -203,17 +204,18 @@ class Viewer2DXRD(wx.Frame):
             self.ch_msk.Enable()
         
         ## Enables background slider and sets range.
+        print 'SHOWING BKGD_PXLS',bkgd_pxls
         if bkgd_pxls == 0:
             self.entr_scale.SetLabel('')
             
             self.sldr_bkgd.Disable()
             self.entr_scale.Disable()
-            self.btn_scale.Disable()
+#             self.btn_scale.Disable()
             
             self.use_bkgd = False
             self.entr_scale.SetLabel('0')
         else:
-            self.btn_scale.Enable()
+#             self.btn_scale.Enable()
             self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
 
@@ -460,7 +462,7 @@ class Viewer2DXRD(wx.Frame):
                              self.ai._poni2/self.ai.detector.pixel2)
             prt_str = 'Detector tilts: %0.5f, %0.5f %0.5f'
             print prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3)
-            prt_str = 'Incident energy, wavelegth: %0.2f keV, %0.4f A'
+            prt_str = 'Incident energy, wavelength: %0.2f keV, %0.4f A'
             E = E_from_lambda(self.ai._wavelength) ## units: keV
             print prt_str % (E,self.ai._wavelength*1.e10)
 
@@ -485,7 +487,8 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            self.bkgd = plt.imread(path)
+#             self.bkgd = plt.imread(path)
+            self.bkgd = tifffile.imread(path)
             #self.bkgd = fabioOPEN(path)
             self.checkIMAGE()
 
@@ -505,7 +508,8 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            raw_mask = plt.imread(path)
+#             raw_mask = plt.imread(path)
+            raw_mask = tifffile.imread(path)
             #raw_mask = fabioOPEN(path)
             self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
@@ -660,9 +664,10 @@ class Viewer2DXRD(wx.Frame):
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_min = wx.StaticText(self.panel, label='min')
         self.sldr_min = wx.Slider(self.panel)
-        self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.entr_min = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
 
         self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+        self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
             
         hbox_ct2.Add(self.ttl_min,  flag=wx.RIGHT,         border=6)
         hbox_ct2.Add(self.sldr_min, flag=wx.RIGHT,         border=6)
@@ -672,9 +677,10 @@ class Viewer2DXRD(wx.Frame):
         hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_max = wx.StaticText(self.panel, label='max')
         self.sldr_max = wx.Slider(self.panel)
-        self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.entr_max = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
 
         self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+        self.entr_max.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
         
         hbox_ct3.Add(self.ttl_max,  flag=wx.RIGHT,         border=6)
         hbox_ct3.Add(self.sldr_max, flag=wx.RIGHT,         border=6)
@@ -683,13 +689,13 @@ class Viewer2DXRD(wx.Frame):
 
         hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_ct1 = wx.Button(self.panel,label='reset range')
-        self.btn_ct2 = wx.Button(self.panel,label='set range')
+#         self.btn_ct2 = wx.Button(self.panel,label='set range')
 
         self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
-        self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
+#         self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
 
         hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
-        hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT,              border=6)
+#         hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT,              border=6)
         vbox_ct.Add(hbox_ct4,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
         vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
 
@@ -748,19 +754,20 @@ class Viewer2DXRD(wx.Frame):
 
 
         hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_scale = wx.Button(self.panel,label='set scaling')
-        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         self.btn_scale = wx.Button(self.panel,label='set scaling')
+        self.entr_scale = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
         
-        self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
-        
-        hbox_bkgd2.Add(self.btn_scale,  flag=wx.RIGHT,                        border=6)
+#         self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
+        self.entr_scale.Bind(wx.EVT_TEXT_ENTER,self.onChangeBkgdScale)
+              
+#         hbox_bkgd2.Add(self.btn_scale,  flag=wx.RIGHT,                        border=6)
         hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT,                        border=6)
         vbox.Add(hbox_bkgd2,            flag=wx.TOP|wx.BOTTOM|wx.ALIGN_RIGHT, border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         self.sldr_bkgd.Disable()
         self.entr_scale.Disable()
-        self.btn_scale.Disable()
+#         self.btn_scale.Disable()
 
         ###########################
         ## Set defaults  

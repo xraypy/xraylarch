@@ -24,11 +24,10 @@ from larch_plugins.io import tifffile
 
 from larch_plugins.diFFit.XRDCalculations import d_from_q,twth_from_q
 from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
-
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,instrumental_fit_uvw
+from larch_plugins.diFFit.XRDCalculations import xy_file_reader
+from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter
 from larch_plugins.diFFit.XRDCalculations import generate_hkl
-from larch_plugins.diFFit.XRDCalculations import data_gaussian_fit,peakfitter
+# from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
 
@@ -567,22 +566,24 @@ class Fitting1DXRD(wx.Panel):
         ttl_rng = wx.StaticText(self, label='Q-RANGE (1/A)')
         
         ttl_qmin = wx.StaticText(self, label='minimum') 
-        self.val_qmin = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_qmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.set_range)
         hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
         hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
         
         ttl_qmax= wx.StaticText(self, label='maximum') 
-        self.val_qmax = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_qmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.set_range)
         hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
         hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
 
         btn_rngreset = wx.Button(self,label='reset')
         btn_rngreset.Bind(wx.EVT_BUTTON, self.reset_range)
-        btn_rngset = wx.Button(self,label='set')
-        btn_rngset.Bind(wx.EVT_BUTTON, self.set_range)
+#         btn_rngset = wx.Button(self,label='set')
+#         btn_rngset.Bind(wx.EVT_BUTTON, self.set_range)
         
         hbox_qset.Add(btn_rngreset, flag=wx.RIGHT, border=8)
-        hbox_qset.Add(btn_rngset, flag=wx.RIGHT, border=8)
+#         hbox_qset.Add(btn_rngset, flag=wx.RIGHT, border=8)
         
         vbox_rng.Add(ttl_rng,   flag=wx.BOTTOM, border=8)
         vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
@@ -943,8 +944,6 @@ class Fitting1DXRD(wx.Panel):
         for i,twth in enumerate(peaktwth):
             print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,peakFWHM[i])
         print
-        
-#         instrumental_fit_uvw(self.ipeaks,*self.plt_data)
 
     def plot_peaks(self):
         self.plot1D.scatterplot(*self.plt_peaks,
@@ -1369,14 +1368,18 @@ class Viewer1DXRD(wx.Panel):
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
-        self.val_scale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
-        btn_scale = wx.Button(self,label='set')
+        self.val_scale = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+#         btn_scale = wx.Button(self,label='set')
+        btn_reset = wx.Button(self,label='reset')
 
-        btn_scale.Bind(wx.EVT_BUTTON, self.normalize1Ddata)
+        self.val_scale.Bind(wx.EVT_TEXT_ENTER, self.normalize1Ddata)
+#         btn_scale.Bind(wx.EVT_BUTTON, self.normalize1Ddata)
+        btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.val_scale, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
+#         hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(btn_reset, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
@@ -1385,17 +1388,17 @@ class Viewer1DXRD(wx.Panel):
         hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_hide  = wx.Button(self,label='hide')
-        btn_reset = wx.Button(self,label='reset')
+#         btn_reset = wx.Button(self,label='reset')
         btn_rmv   = wx.Button(self,label='remove')
         
         btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-        btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
+#         btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
 
         btn_hide.Disable()
         btn_rmv.Disable()
         
-        hbox_btns.Add(btn_reset, flag=wx.ALL, border=10)
+#         hbox_btns.Add(btn_reset, flag=wx.ALL, border=10)
         hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
         hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
@@ -1421,14 +1424,15 @@ class Viewer1DXRD(wx.Panel):
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
-        self.val_cifscale = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
-        btn_scale = wx.Button(self,label='set')
+        self.val_cifscale = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+#         btn_scale = wx.Button(self,label='set')
 
-        btn_scale.Bind(wx.EVT_BUTTON, partial(self.normalize1Ddata,cif=True))
+        self.val_cifscale.Bind(wx.EVT_TEXT_ENTER, partial(self.normalize1Ddata,cif=True))
+#         btn_scale.Bind(wx.EVT_BUTTON, partial(self.normalize1Ddata,cif=True))
         
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.val_cifscale, flag=wx.RIGHT, border=8)
-        hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
+#         hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 

@@ -25,14 +25,13 @@ import time
 import wx
 
 import numpy as np
-from scipy import optimize
-from scipy import signal
-from scipy import constants
+from scipy import optimize,signal,constants
+from scipy import interpolate
 
 import matplotlib.pyplot as plt
 import pylab as plb
 
-from lmfit import minimize, Parameters, Parameter, report_fit
+from lmfit import minimize,Parameters,Parameter,report_fit
 
 HAS_XRAYUTIL = False
 try:
@@ -355,6 +354,31 @@ def peakfinder(x, y, regions=50, gapthrsh=5):
 
     return peak_indices
 ##########################################################################
+def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
+               fittype='single'):
+
+    peaktwth = []
+    peakFWHM = []
+    for j in ipeaks:
+        if j > halfwidth and (np.shape(q)-j) > halfwidth:
+            minval = int(j - halfwidth)
+            maxval = int(j + halfwidth)
+
+            if I[j] > I[minval] and I[j] > I[maxval]:
+                
+                xdata = q[minval:maxval]
+                ydata = I[minval:maxval]
+
+                xdata = twth_from_q(xdata,wavelength)
+                try:
+                    twth,fwhm = data_gaussian_fit(xdata,ydata,fittype=fittype)
+                    peaktwth += [twth]
+                    peakFWHM += [fwhm]
+                except:
+                    pass
+        
+    return np.array(peaktwth),np.array(peakFWHM)
+##########################################################################
 def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
     '''
     Fits a single or double Gaussian functions.
@@ -426,31 +450,6 @@ def gaussian(x,a,b,c):
 ##########################################################################
 def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
-##########################################################################
-def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
-               fittype='single'):
-
-    peaktwth = []
-    peakFWHM = []
-    for j in ipeaks:
-        if j > halfwidth and (np.shape(q)-j) > halfwidth:
-            minval = int(j - halfwidth)
-            maxval = int(j + halfwidth)
-
-            if I[j] > I[minval] and I[j] > I[maxval]:
-                
-                xdata = q[minval:maxval]
-                ydata = I[minval:maxval]
-
-                xdata = twth_from_q(xdata,wavelength)
-                try:
-                    twth,fwhm = data_gaussian_fit(xdata,ydata,fittype=fittype)
-                    peaktwth += [twth]
-                    peakFWHM += [fwhm]
-                except:
-                    pass
-        
-    return np.array(peaktwth),np.array(peakFWHM)
 ##########################################################################
 def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
                          verbose=True):
@@ -551,51 +550,24 @@ def xy_file_reader(xyfile,char=None):
             y += [float(fields[1])]
 
     return np.array(x),np.array(y)
+
 ##########################################################################
-def read_peakfile(peakfile):
+def xy_file_writer(a,b,filename,char=None):
 
-    (d,I) = xy_file_reader(peakfile,char=',')
-    for i,val in enumerate(d):
-        if val <= 0:
-            d = np.delete(d,i)
-            I = np.delete(I,i)
-    q = q_from_d(d)
+    if char:
+        str = '%s' + char + '%s\n'
+    else:
+        str = '%s %s\n'
 
-    pkqlist = [q,I]
-   
-    qmin = np.min([MINq,np.min(q)])
-    qmax = np.max([MAXq,np.max(q)])
+    with open(filename,'w') as f:
+        for i,ai in a:
+            f.write(str % (ai,b[i]))
 
-    q1 = int((qmax-qmin)/STEPq)+1
-    q2 = np.shape(q)[0]
-    q3 = q1 + q2
-   
-    newq   = np.zeros(q3)
-    newint = np.zeros(q3)
-    
-    newq[0]   = qmax
-    newint[0] = 0
-
-    j = 0
-    for k in range(q3-1):
-        if j < q2:
-            if newq[k] > q[j]:
-                newq[k+1]   = newq[k] - STEPq
-                newint[k+1] = 0
-            else:
-                newq[k+1]   = q[j]
-                newint[k+1] = I[j]
-                j = j + 1
-        else:
-            newq[k+1]   = newq[k] - STEPq
-            newint[k+1] = 0
-            
-    return np.array(pkqlist),np.array(newq),np.array(newint)
-
+    return()
 
 ##########################################################################
 ##########################################################################
-#####                   TO BE EDITED AND SORTED                     ######
+#####                  HKL DEPENDENT FUNCTIONS                      ######
 ##########################################################################
 ##########################################################################
 
@@ -667,55 +639,29 @@ def generate_hkl(maxval=50,symmetry=None):
 
 
 ##########################################################################
-def write_rawfile(a,b,filename):
-
-    ##########################################################################
-    ## Open .raw file for writing
-    ##
-    open(filename,'w')
-
-    ##########################################################################
-    ## Write values to file
-    ##
-    for i in range(a.shape[0]):
-        f.write('%s %s\n' % (a[i],b[i]))
-
-    ##########################################################################
-    ## Close file
-    ##    
-    f.close()
-    print('\nCreated file %s.' % filename)
-
-    return()
+##########################################################################
+#####                        ETC                                    ######
+##########################################################################
+##########################################################################
 
 ##########################################################################
-def find_y(x,stdx,stdy):
-
-    len_x   = x.shape[0]
-    len_std = stdx.shape[0]
-    
-    y = np.zeros(len_x)
-     
-    for i in range(1,len_x):
-        for j in range(1,len_std):
-            if x[i] > stdx[j] and x[i] < stdx[j-1]:
-                y[i] = stdy[j] + ((stdy[j-1]-stdy[j])/(stdx[j-1]-stdx[j]))*(x[i]-stdx[j])
-                
-    return y
+def interpolate_for_y(x,x0,y0):
+    t = interpolate.splrep(x0,y0,s=0)
+    return interpolate.splev(x,t,der=0)
 
 ##########################################################################
-def trim_range(x,y,xmin,xmax):
+def trim_range(data,min,max,axis=0):
 
     maxi = -1
     mini = 0
-    for i,val in enumerate(x):
-        mini = i if val < xmin else mini
-        maxi = i if val < xmax else maxi
+    for i,val in enumerate(data[axis]):
+        mini = i if val < min else mini
+        maxi = i if val < max else maxi
    
-    return x[mini:maxi],y[mini:maxi]
+    return data[:,mini:maxi]
 
 ##########################################################################
-def calc_peak(q1,int1): # inputs: q, intensity
+def calc_peak(): 
 
     x = np.arange(-2,2,0.001)
    
@@ -737,95 +683,88 @@ def calc_peak(q1,int1): # inputs: q, intensity
     ## newx,d - 'Voigt'
 
 ##########################################################################
-def instr_broadening(pkqlist,q,intensity,u,v,w): 
+def norm_pattern(intensity,scale_int):
 
-    ## Broadening calculation performed in 2theta - not q
-    twthlist = twth_from_q(pkqlist[0],LAMBDA)
-    twth = twth_from_q(q,LAMBDA)
-
-    ## TERMS FOR INSTRUMENTAL BROADENING
-    Bi = np.zeros(np.shape(pkqlist)[1])
-    for i in range(np.shape(pkqlist)[1]):
-        thrad = math.radians(twthlist[i]/2)
-        Bi[i] = np.sqrt(u*(math.tan(thrad))**2+v*math.tan(thrad)+w)
-        
-    ## Define intensity array for broadened peaks
-    intenB = np.zeros(np.shape(q)[0])
+    max_int = np.max(intensity)
+    scale = np.max(scale_int)
+    intensity = intensity/max_int*scale
     
-    ## Loop through all peaks
-    for i in range(np.shape(pkqlist)[1]):
-
-        ## Create Gaussian of correct width
-        A = pkqlist[1][i]   ## intensity
-        B = twthlist[i]     ## position (in 2theta)
-        
-        ## FWHM = abs(2*np.sqrt(2*math.log1p(2))*c)
-        
-        ## INSTRUMENT contribution
-        c_i = Bi[i]/abs(2*np.sqrt(2*math.log1p(2)))      
-        
-        width = Bi[i]
-
-        ## Define 2th axis for calculation
-        min2th = B-2*width
-        max2th = B+2*width        
-        twthG = np.arange(max2th,min2th,-width/200)
-        qG = q_from_twth(twthG,LAMBDA)
-
-        ## Calculate peak for corresponding width
-        intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
-        ## Normalize to correct intensity
-        intBi = norm_pattern(intBi,A)
-
-        ## Interpolate peak onto q scale and add
-        nintensity = find_y(q,qG,intBi)        
-        for j in range(np.shape(intenB)[0]):
-            intenB[j] = nintensity[j] + intenB[j]
-            
-    intenB = norm_pattern(intenB,intensity)
-
-    return(intenB)
+    return(intensity)
 
 ##########################################################################
+def scale_100(intensity):
+
+    intensity = norm_pattern(intensity,100)
+    
+    return(intensity)
+
 
 ##########################################################################
-def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298): 
+def find_max(x,y):
+    return [x[i] for i,yi in enumerate(y) if yi == np.max(y)]
 
-    #global LAMBDA
-    #pk_shift = 1.00307298
+##########################################################################
+def calcRsqu(y,ycalc):
+    
+    ss_res = 0
+    ss_tot = 0
+    
+    ymean = np.mean(y) #sum(y)/float(len(y))
+    
+    for i,yi in enumerate(y):
+        ss_res = ss_res + (yi - ycalc[i])**2
+        ss_tot = ss_tot + (yi - ymean)**2
+       
+    return (1 - (ss_res/ss_tot))
+
+##########################################################################    
+def patternbroadening(data_q,nsize):
+
+    ## Particle size broadening and instrumental broadening
+    calc_int = size_broadening(pkQlist,data_q,instrU,instrV,instrW,nsize)
+
+    ## Instrumental broadening
+#     calc_int = instr_broadening(pkQlist,data_q,DATA_INT,instrU,instrV,instrW)
+
+    return calc_int
+
+##########################################################################
+def size_broadening(pkqlist, q, wavelength,
+                    instr_u=1.0, instr_v=1.0, instr_w=1.0,
+                    C=1.0, D=None):
+    '''
+    pkqlist - location of peaks in range
+    q - axis
+    wavelength - in units A
+    
+    u,v,w - instrumental broadening parameters
+    C - shape factor (1 for sphere)
+    D - particle size in units A (if D is None, no size broadening)
+    '''
+
+    lenlist = np.shape(pkqlist)[1]
     
     ## Broadening calculation performed in 2theta - not q
-    twth = twth_from_q(q,LAMBDA)
-##    twthlist = twth_from_q(pkqlist[0],0.3917)
-    twthlist = twth_from_q(pkqlist[0],LAMBDA*pk_shift)
-
+    twth = twth_from_q(q,wavelength)
+    twthlist = twth_from_q(pkqlist[0],wavelength)
 
     ## TERMS FOR INSTRUMENTAL BROADENING
-    Bi = np.zeros(np.shape(pkqlist)[1])
-    for i in range(np.shape(pkqlist)[1]):
-##    len_list = len(pkqlist[0])
-##    Bi = pkqlist[0]
-##    for i in range(len_list):
-        thrad = math.radians(twthlist[i]/2)
-        Bi[i] = np.sqrt(u*(math.tan(thrad))**2+v*math.tan(thrad)+w)
-
+    thrad = np.radians(twthlist/2)
+    Bi = np.sqrt( u*(np.tan(thrad))**2 + v*pn.tan(thrad) + w )
 
     ## TERMS FOR SIZE BROADENING
-    ## FWHM(2th) = (C*LAMBDA)/(D*math.cos(math.radians(twth/2)))
-    ## FWHM(q)   = (C*LAMBDA)/D*(1/np.sqrt(1-termB))
-
-    D = nsize/10 # convert size from nm to A
-    C = 1.1 # shape factor?
-    #C = 1.0 # shape factor (1 for sphere)
-    termB = ((LAMBDA*pkqlist[0])/(2*math.pi))**2
-    Bs = (C*LAMBDA)/D*(1/np.sqrt(1-termB))
+    ## FWHM(2th) = (C*wavelength)/(D*math.cos(math.radians(twth/2)))
+    ## FWHM(q)   = (C*wavelength)/D*(1/np.sqrt(1-termB))
+    
+    termB = ((wavelength*pkqlist[0])/(2*math.pi))**2
+    Bs = (C*wavelength)/D*(1/np.sqrt(1-termB))
     
         
     ## Define intensity array for broadened peaks
     intenB = np.zeros(np.shape(q)[0])
     
     ## Loop through all peaks
-    for i in range(np.shape(pkqlist)[1]):
+    for i in range(lenlist):
     
         if pkqlist[0][i] > np.min(q) and pkqlist[0][i] < np.max(q):
 
@@ -859,11 +798,6 @@ def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298):
             if i < 10 and noplot == 0:
                 plt_str = 'inst = %0.6f\nsize = %0.6f\n comb = %0.6f'
                 print(plt_str % (Bi[i],Bs[i],Bm))
-#    #            plot_diff(twthG,intBi,'instrument') 
-#    #            plot_diff(twthG,intBs,'size')
-#    #            plot_diff(twthG,intBm,'comb.')
-                #plt.legend()
-                #plt.show()
             
             new_intensity = np.convolve(intBs,intBi,'same')
             ## Normalize to correct intensity
@@ -872,20 +806,16 @@ def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298):
             shift2th = find_max(twthG,new_intensity)
             twthG = twthG - (B-shift2th)
 
-            qG = q_from_twth(twthG,LAMBDA)
+            qG = q_from_twth(twthG,wavelength)
                         
-            nintensity = find_y(q,qG,new_intensity)        
+            nintensity = interpolate_for_y(q,qG,new_intensity)        
         
             ## Interpolate peak onto q scale and add
             for j in range(np.shape(intenB)[0]):
                 intenB[j] = nintensity[j] + intenB[j]
 
 
-            if i < 10 and noplot == 0:
-                print('2theda shift is %0.4f' %(B-shift2th))
-#    #            plot_diff(twthG,new_intensity,'conv.')
-                plt.legend()
-                plt.show()
+            print('2theda shift is %0.4f' %(B-shift2th))
                 
     intenB = scale_100(intenB)
             
@@ -893,185 +823,89 @@ def size_broadening(pkqlist,q,wavelength,u,v,w,nsize,pk_shift=1.00307298):
     return(intenB)
 
 ##########################################################################
-def norm_pattern(intensity,scale_int):
+def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w): 
 
-    max_int = np.max(intensity)
-    scale = np.max(scale_int)
-    intensity = intensity/max_int*scale
+    lenlist = np.shape(pkqlist)[1]
     
-    return(intensity)
+    ## Broadening calculation performed in 2theta - not q
+    twthlist = twth_from_q(pkqlist[0],wavelength)
+    twth = twth_from_q(q,wavelength)
 
-##########################################################################
-def scale_100(intensity):
-
-    intensity = norm_pattern(intensity,100)
-    
-    return(intensity)
-
-##########################################################################
-def calc_fraction(intensity,fraction):
-
-## THIS NEEDS TO BE INCORPORATED.
-    
-    return intensity*fraction
-
-
-##########################################################################
-def find_max(q,intensity):
-
-    max_int = np.max(intensity)
-
-    if intensity.shape[0] != intensity.shape[0]:
-        raise IOError('Array lengths do not match.')
-    for i in range(intensity.shape[0]):
-        if intensity[i] == max_int:
-            max_q = q[i]
- 
-    return(max_q)
-##########################################################################
-def calcRsqu(y,ycalc):
-    
-    ss_res = 0
-    ss_tot = 0
-    
-    ymean = sum(y)/float(len(y))
-    
-    for i in range(ycalc.shape[0]):
-        ss_res = ss_res + (y[i] - ycalc[i])**2
-        ss_tot = ss_tot + (y[i] - ymean)**2
-       
-    Rsqu = 1 - (ss_res/ss_tot)
-
-    return(Rsqu)
-
-#########################################################################
-def remove_kapton(data_q,data_int,kaptfile):
-
-    kapton_q,kapton_int = xy_file_reader(kaptfile)
-
-    ##min_index, min_ value = min(enumerate(kapton_int), key=operator.itemgetter(1))
-    max_index, max_value = max(enumerate(kapton_int), key=operator.itemgetter(1))
-   
-    kapt_int = kapton_int*(data_int[max_index]/kapton_int[max_index])
-    data_int = data_int - kapt_int
-    data_int = scale_100(data_int)
-    
-    return data_int
-    
-##########################################################################    
-def patternbroadening(data_q,nsize,pk_shift):
-
-    ## Particle size broadening and instrumental broadening
-    if NPsize and PEAKfile:
-        calc_int = size_broadening(pkQlist,data_q,instrU,instrV,instrW,nsize,pk_shift)
-
-    ## Instrumental broadening
-    elif PEAKfile:
-        calc_int = instr_broadening(pkQlist,data_q,DATA_INT,instrU,instrV,instrW)
-
-    return calc_int
-
-##########################################################################    
-def background(q,a,b,c):
-
-    return a*q**2 + b*q + c
-
-##########################################################################
-def fit_background(my_pars, data_q, data_int):
-
-    a = my_pars['a'].value
-    b = my_pars['b'].value
-    c = my_pars['c'].value
-    
-    if ERRORcheck == 1:
-        print(a,b,c)
-    
-    calc_int = background(data_q,a,b,c)
-
-    return calc_int - data_int # minimize difference between data and calculated
-
-##########################################################################
-def fit_pattern(my_pars, data_q, data_int):
-
-    nsize = my_pars['nsize'].value
-    a = my_pars['a'].value
-    b = my_pars['b'].value
-    c = my_pars['c'].value
-    pk_shift = my_pars['pk_shift'].value
-    
-    if ERRORcheck == 1:
-        print(nsize,a,b,c,pk_shift)
-    
-    calc_int = patternbroadening(data_q,nsize,pk_shift)+background(data_q,a,b,c)
-
-    return calc_int - data_int # minimize difference between data and calculated
-
-#########################################################################
-def fit_with_minimization():
-
-    global bkgdA,bkgdB,bkgdC
-    global instrU,instrV,instrW
-    global NPsize, PKshift
-    
-    ## Create a set of Parameters
-    my_pars = Parameters()
-
-    ##my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0)
-    my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0,vary=False)
-    my_pars.add('pk_shift',  value=PKshift,  min=0.98, max=1.02,vary=False)
-    
-    if bkgdA == 0:
-        minA = -100
-        maxA =  100
-    else:
-        minA = -1.2*abs(bkgdA)
-        maxA =  1.2*abs(bkgdA)
-
-    if bkgdB == 0:
-        minB = -100
-        maxB =  100        
-    else:
-        minB = -1.2*abs(bkgdB)
-        maxB =  1.2*abs(bkgdB)
-    if bkgdC == 0:
-        minC = 0
-        maxC = max(DATA_INT)
-    else:
-        minC =  0.8*bkgdC
-        maxC =  1.2*bkgdC
+    ## TERMS FOR INSTRUMENTAL BROADENING
+    Bi = np.zeros(lenlist)
+    for i in range(lenlist):
+        thrad = math.radians(twthlist[i]/2)
+        Bi[i] = np.sqrt(u*(math.tan(thrad))**2+v*math.tan(thrad)+w)
         
-    print(minA,minB,minC,maxA,maxB,maxC)
+    ## Define intensity array for broadened peaks
+    intenB = np.zeros(np.shape(q)[0])
+    
+    ## Loop through all peaks
+    for i in range(lenlist):
 
+        ## Create Gaussian of correct width
+        A = pkqlist[1][i]   ## intensity
+        B = twthlist[i]     ## position (in 2theta)
+        
+        ## FWHM = abs(2*np.sqrt(2*math.log1p(2))*c)
+        
+        ## INSTRUMENT contribution
+        c_i = Bi[i]/abs(2*np.sqrt(2*math.log1p(2)))      
+        
+        width = Bi[i]
+
+        ## Define 2th axis for calculation
+        min2th = B-2*width
+        max2th = B+2*width        
+        twthG = np.arange(max2th,min2th,-width/200)
+        qG = q_from_twth(twthG,wavelength)
+
+        ## Calculate peak for corresponding width
+        intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
+        ## Normalize to correct intensity
+        intBi = norm_pattern(intBi,A)
+
+        ## Interpolate peak onto q scale and add
+        nintensity = interpolate_for_y(q,qG,intBi)        
+        for j in range(np.shape(intenB)[0]):
+            intenB[j] = nintensity[j] + intenB[j]
+            
+    intenB = norm_pattern(intenB,intensity)
+
+    return(intenB)
+
+##########################################################################
+
+
+##########################################################################
+def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
+    '''
+    fit_method options: 'leastsq','cobyla','slsqp','nelder'
+    
+    parameters of type Parameters(): needs a,b,c,nsize,pkshift?
+
+    my_pars = Parameters()
+    my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0,vary=False)
     my_pars.add('a', value=bkgdA, min=minA, max=maxA)
     my_pars.add('b', value=bkgdB, min=minB, max=maxB)
     my_pars.add('c', value=bkgdC, min=minC, max=maxC)
+    '''
     
-    print
-    # Do fit
-    
-    ## First, fit background alone:
-    result = minimize(fit_background, my_pars, args=(DATA_Q,DATA_INT),method=fitMETHOD)
-    
-    my_pars.add('a',  value=result.params['a'].value)
-    my_pars.add('b',  value=result.params['b'].value)
-    my_pars.add('c',  value=result.params['c'].value)
-    
-    ## Now, include more fitting...    
-    result = minimize(fit_pattern, my_pars, args=(DATA_Q,DATA_INT),method=fitMETHOD)
 
-    ## Default: method='leastsq'
-    ## method='nelder'
-    ## didn't quit, more or less landed on parameters:
-    ## 6.43477783086 0.609120604191 -9.76760647538 56.4337260003
+#     ## First, fit background alone:
+#     result = minimize(BACKGROUND_FUNCTION, my_pars, args=(q,I),method=fit_method)
+#     ## Second, add fitted parameters into parameter set
+#     my_pars.add('?',  value=result.params['?'].value)
+#     ## Third, fit peaks on top of background   
+#     result = minimize(BACKGROUND_FUNCTION+PEAKS_FUNCTION, my_pars, args=(q,I),method=fit_method)
+#     ## Fourth, view error report
+#     report_fit(result)
+#     ## Fifth, return results 
+#     NPsize = result.params['nsize'].value
+#     bkgdA  = result.params['a'].value
+#     bkgdB  = result.params['b'].value
+#     bkgdC  = result.params['c'].value
 
-#    # write error report
-#    report_fit(result)
-    
-    NPsize = result.params['nsize'].value
-    bkgdA  = result.params['a'].value
-    bkgdB  = result.params['b'].value
-    bkgdC  = result.params['c'].value
-    PKshift  = result.params['pk_shift'].value
         
     return
 

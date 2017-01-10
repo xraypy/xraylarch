@@ -15,6 +15,8 @@ import wx
 from wxmplot.imagepanel import ImagePanel
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
+from larch_plugins.io import tifffile
+
 # HAS_pyFAI = False
 # try:
 #     import pyFAI
@@ -173,7 +175,8 @@ class MaskToolsPopup(wx.Frame):
         
         if read:
             try:
-                self.raw_img = plt.imread(path)
+#                 self.raw_img = plt.imread(path)
+                self.raw_img = tifffile.imread(path)
                 #self.raw_img = fabio.open(path).data
             except:
                 print('Image not properly opened.')
