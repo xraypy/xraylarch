@@ -2164,7 +2164,8 @@ class PeakToolsPanel(wx.Panel):
 
         self.owner.peaklistbox = EditableListBox(self, self.owner.select_peak,
                                         remove_action=self.owner.remove_single_peak,
-                                        size=(250, -1)
+                                        size=(250, -1),
+                                        style =  wx.LB_MULTIPLE
                                         )
         
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
