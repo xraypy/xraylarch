@@ -14,10 +14,11 @@ import matplotlib.cm as colormap
 
 import wx
 import wx.lib.scrolledpanel as scrolled
+import wx.lib.agw.flatnotebook as flat_nb
 
 from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
-from wxutils import MenuItem,pack
+from wxutils import MenuItem,pack,EditableListBox
 
 from larch_plugins.diFFit.cifdb import cifDB
 
@@ -59,14 +60,20 @@ except ImportError:
 
 ###################################
 
-VERSION = '0 (30-November-2016)'
+VERSION = '0 (9-January-2017)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
 FIT_METHODS = ['scipy.signal.find_peaks_cwt']
 
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
+CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
+LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+ALL_CEN =  wx.ALL|CEN
+ALL_LEFT =  wx.ALL|LEFT
+ALL_RIGHT =  wx.ALL|RIGHT
 ###################################
 
 def YesNo(parent, question, caption = 'Yes or no?'):
@@ -88,9 +95,9 @@ class diFFit1DFrame(wx.Frame):
         self.nb = wx.Notebook(panel)
 
         # create the page windows as children of the notebook
-        self.xrd1Dviewer = Viewer1DXRD(self.nb,owner=self)
+        self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
-        self.xrddatabase = DatabaseXRD(self.nb)
+        self.xrddatabase  = DatabaseXRD(self.nb)
         
         # add the pages to the notebook with the label to show on the tab
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
@@ -236,7 +243,7 @@ class diFFit1DFrame(wx.Frame):
         self.xrd1Dfitting.btn_fpks.Enable()
         self.xrd1Dfitting.btn_opks.Enable()    
    
-        self.xrd1Dfitting.delete_peaks()
+        self.xrd1Dfitting.delete_all_peaks()
         self.xrd1Dfitting.delete_background()  
         
         self.xrd1Dfitting.trim       = False
@@ -508,6 +515,7 @@ class Fitting1DXRD(BasePanel):
         
         self.ipeaks     = None
         self.plt_peaks  = None  
+        self.peaklist   = []
         
         self.trim       = False
         self.indicies   = None    
@@ -560,6 +568,18 @@ class Fitting1DXRD(BasePanel):
 
         ###########################
         ## Range tools
+        vbox_a = wx.BoxSizer(wx.VERTICAL)
+        ttl_a = wx.StaticText(self, label='To be completed...')
+        vbox_a.Add(ttl_a,   flag=wx.BOTTOM, border=8)
+
+        vbox.Add(vbox_a, flag=wx.ALL, border=8)
+
+        return vbox
+
+    def RangeTools(self):
+    
+        ###########################
+        ## Range tools
         vbox_rng = wx.BoxSizer(wx.VERTICAL)
         hbox_qmin = wx.BoxSizer(wx.HORIZONTAL)
         hbox_qmax = wx.BoxSizer(wx.HORIZONTAL)
@@ -591,9 +611,11 @@ class Fitting1DXRD(BasePanel):
         vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
         vbox_rng.Add(hbox_qmax, flag=wx.BOTTOM, border=8)
         vbox_rng.Add(hbox_qset,   flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
-
-        vbox.Add(vbox_rng, flag=wx.ALL, border=8)
-
+        
+        return vbox_rng
+    
+    def BackgroundTools(self):
+    
         ###########################
         ## Background tools
         vbox_bkgd = wx.BoxSizer(wx.VERTICAL)        
@@ -620,8 +642,10 @@ class Fitting1DXRD(BasePanel):
         self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.subtract_background)
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
         
-        vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
+        return vbox_bkgd
 
+    def PeakTools(self):
+    
         ###########################
         ## Peak tools
         vbox_pks = wx.BoxSizer(wx.VERTICAL)        
@@ -641,24 +665,51 @@ class Fitting1DXRD(BasePanel):
         hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
 
         self.btn_rpks = wx.Button(self,label='Remove all')
-        self.btn_rpks.Bind(wx.EVT_BUTTON,   self.remove_peaks)
+        self.btn_rpks.Bind(wx.EVT_BUTTON,   self.remove_all_peaks)
         hbox2_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
 
-        self.btn_spks = wx.Button(self,label='Select to remove')
-        self.btn_spks.Bind(wx.EVT_BUTTON,   self.edit_peaks)
-        hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
+#         self.btn_spks = wx.Button(self,label='Select peaks manually')
+#         self.btn_spks.Bind(wx.EVT_BUTTON,self.DeleteSinglePeak)
+#         hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
         
         self.btn_fitpks = wx.Button(self,label='Fit peaks')
         self.btn_fitpks.Bind(wx.EVT_BUTTON,   self.fit_peaks)
         hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
 
-#         self.btn_opks = wx.Button(self,label='Options')
-#         self.btn_opks.Bind(wx.EVT_BUTTON,   self.peak_options)
-#         hbox3_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
+        self.peaklistbox = EditableListBox(self, self.select_peak,
+                                        remove_action=self.remove_single_peak,
+                                        size=(250, -1)
+                                        )
         
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(self.peaklistbox, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox3_pks, flag=wx.BOTTOM, border=8)
+        
+        
+        return vbox_pks    
+
+    def PatternTools(self,panel):
+        '''
+        Frame for visual toolbox
+        '''
+        
+        tlbx = wx.StaticBox(self,label='PATTERN TOOLS')
+        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+
+        ###########################
+        ## Range tools
+        vbox_rng = self.RangeTools()
+        vbox.Add(vbox_rng, flag=wx.ALL, border=8)
+
+        ###########################
+        ## Background tools        
+        vbox_bkgd = self.BackgroundTools()
+        vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
+
+        ###########################
+        ## Peak tools
+        vbox_pks = self.PeakTools()
         vbox.Add(vbox_pks, flag=wx.ALL, border=10)
 
         self.btn_fbkgd.Disable()
@@ -669,9 +720,11 @@ class Fitting1DXRD(BasePanel):
         self.btn_fpks.Disable()
         self.btn_opks.Disable()
         self.btn_rpks.Disable()        
-        self.btn_spks.Disable()
+#         self.btn_spks.Disable()
+        self.btn_fitpks.Disable()
 
         return vbox
+
 
     def LeftSidePanel(self,panel):
         
@@ -679,6 +732,9 @@ class Fitting1DXRD(BasePanel):
 
         settings = self.SettingsPanel(self)
         vbox.Add(settings,flag=wx.ALL,border=10)
+        
+        pattools = self.PatternTools(self)
+        vbox.Add(pattools,flag=wx.ALL,border=10)
         
         fittools = self.FittingTools(self)
         vbox.Add(fittools,flag=wx.ALL,border=10)
@@ -926,14 +982,23 @@ class Fitting1DXRD(BasePanel):
 
     def find_peaks(self,event=None):
         ## clears previous searches
-        self.delete_peaks()
+        self.remove_all_peaks()
         
         self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,gapthrsh=self.gapthrsh)
         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
 
+        
+        str = 'Peak %2d (%2.3f, %6d)'
+        for i,ii in enumerate(self.ipeaks):
+            peakname = str % ((i+1),self.plt_peaks[0,i],self.plt_peaks[1,i])
+            self.peaklist += [peakname]
+            self.peaklistbox.Append(peakname)
+        
         self.plot_peaks()
+        
         self.btn_rpks.Enable()        
-        self.btn_spks.Enable()
+#         self.btn_spks.Enable()
+        self.btn_fitpks.Enable()
 
     def fit_peaks(self,event=None):
 
@@ -958,19 +1023,23 @@ class Fitting1DXRD(BasePanel):
 # # #           xmin=None, xmax=None, ymin=None, ymax=None, title=None, grid=None,
 # # #           callback=None, **kw):
 
-    def remove_peaks(self,event=None):
+    def remove_all_peaks(self,event=None):
 
-        self.delete_peaks()
+        self.delete_all_peaks()
         self.plot_data()
         self.plot_background()
 
         self.btn_rpks.Disable()        
-        self.btn_spks.Disable()
+#         self.btn_spks.Disable()
+        self.btn_fitpks.Disable()
 
-    def delete_peaks(self,event=None):
+    def delete_all_peaks(self,event=None):
 
-        self.peaks = None
+        self.plt_peaks = None
         self.ipeaks = None
+        # self.peaklistbox.Destroy()
+        self.peaklist = []
+        self.peaklistbox.Clear()
 
     def edit_peaks(self,event=None):
 
@@ -990,6 +1059,28 @@ class Fitting1DXRD(BasePanel):
         
         if fit:
             self.find_peaks()
+
+    def select_peak(self, evt=None, peakname=None,  **kws):
+        ## should this highlight the peak on the plot??
+        ## how to do that? can two scatter plots exist?
+
+        if peakname is None and evt is not None:
+            peakname = evt.GetString()
+
+    
+    def remove_single_peak(self, peakname, event=None):
+
+        if peakname in self.peaklist:
+            
+            pki = self.peaklist.index(peakname)
+            
+            self.peaklist.pop(pki)
+            self.ipeaks.pop(pki)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            
+            self.plot_data()
+            self.plot_background()
+            self.plot_peaks()
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
