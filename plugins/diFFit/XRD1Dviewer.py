@@ -18,7 +18,7 @@ import wx.lib.agw.flatnotebook as flat_nb
 
 from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
-from wxutils import MenuItem,pack,EditableListBox
+from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 from larch_plugins.diFFit.cifdb import cifDB
 
@@ -233,15 +233,15 @@ class diFFit1DFrame(wx.Frame):
 
 
         self.xrd1Dfitting.name = name
-        self.xrd1Dfitting.val_qmin.SetValue('%0.3f' % min)
-        self.xrd1Dfitting.val_qmax.SetValue('%0.3f' % max)
-        self.xrd1Dfitting.ck_bkgd.SetValue(False)
-        self.xrd1Dfitting.btn_fbkgd.Enable()
-        self.xrd1Dfitting.btn_rbkgd.Disable()
-        self.xrd1Dfitting.ck_bkgd.Disable()
-        self.xrd1Dfitting.btn_obkgd.Enable()
-        self.xrd1Dfitting.btn_fpks.Enable()
-        self.xrd1Dfitting.btn_opks.Enable()    
+        self.xrd1Dfitting.rngpl.val_qmin.SetValue('%0.3f' % min)
+        self.xrd1Dfitting.rngpl.val_qmax.SetValue('%0.3f' % max)
+        self.xrd1Dfitting.bkgdpl.ck_bkgd.SetValue(False)
+        self.xrd1Dfitting.bkgdpl.btn_fbkgd.Enable()
+        self.xrd1Dfitting.bkgdpl.btn_rbkgd.Disable()
+        self.xrd1Dfitting.bkgdpl.ck_bkgd.Disable()
+        self.xrd1Dfitting.bkgdpl.btn_obkgd.Enable()
+        self.xrd1Dfitting.pkpl.btn_fpks.Enable()
+        self.xrd1Dfitting.pkpl.btn_opks.Enable()    
    
         self.xrd1Dfitting.delete_all_peaks()
         self.xrd1Dfitting.delete_background()  
@@ -557,171 +557,83 @@ class Fitting1DXRD(BasePanel):
         panel1D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
 
         self.SetSizer(panel1D)
+
+
+    def createFittingPanels(self,parent):
+        
+        pattern_title    = SimpleText(parent, 'FITTING TOOLS', size=(200, -1))
+        #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.pnb = wx.Notebook(parent)
+        self.pnbpanels = []
+        for creator in (DatabasePanel, RefinementPanel, ResultsPanel):
+            #p = creator(parent, owner=self)
+            p = creator(self.pnb, owner=self)
+            self.pnb.AddPage(p,p.label.title(),True)
+            self.pnbpanels.append(p)
+            p.SetSize((300,600))
+
+        self.pnb.SetSelection(0)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(pattern_title, 0, ALL_CEN)
+        sizer.Add(self.pnb,1, wx.ALL|wx.EXPAND)
+        parent.SetSize((300,600))
+        pack(parent,sizer)
+
     
     def FittingTools(self,panel):
         '''
         Frame for visual toolbox
         '''
         
-        tlbx = wx.StaticBox(self,label='FITTING TOOLS')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
-        ###########################
-        ## Range tools
-        vbox_a = wx.BoxSizer(wx.VERTICAL)
-        ttl_a = wx.StaticText(self, label='To be completed...')
-        vbox_a.Add(ttl_a,   flag=wx.BOTTOM, border=8)
-
-        vbox.Add(vbox_a, flag=wx.ALL, border=8)
+        fitting_panel = wx.Panel(panel)
+        self.createFittingPanels(fitting_panel)
+        vbox.Add(fitting_panel, flag=wx.ALL, border=10) 
 
         return vbox
 
-    def RangeTools(self):
-    
-        ###########################
-        ## Range tools
-        vbox_rng = wx.BoxSizer(wx.VERTICAL)
-        hbox_qmin = wx.BoxSizer(wx.HORIZONTAL)
-        hbox_qmax = wx.BoxSizer(wx.HORIZONTAL)
-        hbox_qset = wx.BoxSizer(wx.HORIZONTAL)
 
-        ttl_rng = wx.StaticText(self, label='Q-RANGE (1/A)')
+    def createPatternPanels(self,parent):
         
-        ttl_qmin = wx.StaticText(self, label='minimum') 
-        self.val_qmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.set_range)
-        hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
-        hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
+        pattern_title    = SimpleText(parent, 'PATTERN TOOLS', size=(200, -1))
+        #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.pnb = wx.Notebook(parent)
+        self.pnbpanels = []
         
-        ttl_qmax= wx.StaticText(self, label='maximum') 
-        self.val_qmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.set_range)
-        hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
-        hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
+#         for creator in (RangeToolsPanel, BackgroundToolsPanel, PeakToolsPanel):
+#             #p = creator(parent, owner=self)
+#             p = creator(self.pnb, owner=self)
+#             self.pnb.AddPage(p,p.label.title(),True)
+#             self.pnbpanels.append(p)
+#             p.SetSize((300,600))
+        self.rngpl = RangeToolsPanel(self.pnb, owner=self)
+        self.bkgdpl = BackgroundToolsPanel(self.pnb, owner=self)
+        self.pkpl = PeakToolsPanel(self.pnb, owner=self)
+        for p in (self.rngpl, self.bkgdpl, self.pkpl):
+            self.pnb.AddPage(p,p.label.title(),True)
+            self.pnbpanels.append(p)
+            p.SetSize((300,600))
 
-        btn_rngreset = wx.Button(self,label='reset')
-        btn_rngreset.Bind(wx.EVT_BUTTON, self.reset_range)
-#         btn_rngset = wx.Button(self,label='set')
-#         btn_rngset.Bind(wx.EVT_BUTTON, self.set_range)
-        
-        hbox_qset.Add(btn_rngreset, flag=wx.RIGHT, border=8)
-#         hbox_qset.Add(btn_rngset, flag=wx.RIGHT, border=8)
-        
-        vbox_rng.Add(ttl_rng,   flag=wx.BOTTOM, border=8)
-        vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
-        vbox_rng.Add(hbox_qmax, flag=wx.BOTTOM, border=8)
-        vbox_rng.Add(hbox_qset,   flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
-        
-        return vbox_rng
-    
-    def BackgroundTools(self):
-    
-        ###########################
-        ## Background tools
-        vbox_bkgd = wx.BoxSizer(wx.VERTICAL)        
-        hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
-        
-        ttl_bkgd = wx.StaticText(self, label='BACKGROUND')
-        vbox_bkgd.Add(ttl_bkgd, flag=wx.BOTTOM, border=8)
 
-        self.btn_fbkgd = wx.Button(self,label='Fit')
-        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.background_fit)
-        hbox_bkgd.Add(self.btn_fbkgd, flag=wx.RIGHT, border=8)
-
-        self.btn_obkgd = wx.Button(self,label='Options')
-        self.btn_obkgd.Bind(wx.EVT_BUTTON,   self.background_options)
-        hbox_bkgd.Add(self.btn_obkgd, flag=wx.RIGHT, border=8)
-
-        self.btn_rbkgd = wx.Button(self,label='Remove')
-        self.btn_rbkgd.Bind(wx.EVT_BUTTON,   self.remove_background)
-      
-        vbox_bkgd.Add(hbox_bkgd, flag=wx.BOTTOM, border=8)
-        vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
-
-        self.ck_bkgd = wx.CheckBox(self,label='Subtract')
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.subtract_background)
-        vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
-        
-        return vbox_bkgd
-
-    def PeakTools(self):
-    
-        ###########################
-        ## Peak tools
-        vbox_pks = wx.BoxSizer(wx.VERTICAL)        
-        hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
-        hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
-
-        ttl_pks = wx.StaticText(self, label='PEAKS')
-        vbox_pks.Add(ttl_pks, flag=wx.BOTTOM, border=8)
-
-        self.btn_fpks = wx.Button(self,label='Find peaks')
-        self.btn_fpks.Bind(wx.EVT_BUTTON,   self.find_peaks)
-        hbox1_pks.Add(self.btn_fpks, flag=wx.RIGHT, border=8)
-
-        self.btn_opks = wx.Button(self,label='Options')
-        self.btn_opks.Bind(wx.EVT_BUTTON,   self.peak_options)
-        hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
-
-        self.btn_rpks = wx.Button(self,label='Remove all')
-        self.btn_rpks.Bind(wx.EVT_BUTTON,   self.remove_all_peaks)
-        hbox2_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
-
-#         self.btn_spks = wx.Button(self,label='Select peaks manually')
-#         self.btn_spks.Bind(wx.EVT_BUTTON,self.DeleteSinglePeak)
-#         hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
-        
-        self.btn_fitpks = wx.Button(self,label='Fit peaks')
-        self.btn_fitpks.Bind(wx.EVT_BUTTON,   self.fit_peaks)
-        hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
-
-        self.peaklistbox = EditableListBox(self, self.select_peak,
-                                        remove_action=self.remove_single_peak,
-                                        size=(250, -1)
-                                        )
-        
-        vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
-        vbox_pks.Add(self.peaklistbox, flag=wx.BOTTOM, border=8)
-        vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
-        vbox_pks.Add(hbox3_pks, flag=wx.BOTTOM, border=8)
+        self.pnb.SetSelection(0)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(pattern_title, 0, ALL_CEN)
+        sizer.Add(self.pnb,1, wx.ALL|wx.EXPAND)
+        parent.SetSize((300,600))
+        pack(parent,sizer)
         
         
-        return vbox_pks    
-
     def PatternTools(self,panel):
         '''
         Frame for visual toolbox
         '''
-        
-        tlbx = wx.StaticBox(self,label='PATTERN TOOLS')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
-        ###########################
-        ## Range tools
-        vbox_rng = self.RangeTools()
-        vbox.Add(vbox_rng, flag=wx.ALL, border=8)
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
-        ###########################
-        ## Background tools        
-        vbox_bkgd = self.BackgroundTools()
-        vbox.Add(vbox_bkgd, flag=wx.ALL, border=10)
-
-        ###########################
-        ## Peak tools
-        vbox_pks = self.PeakTools()
-        vbox.Add(vbox_pks, flag=wx.ALL, border=10)
-
-        self.btn_fbkgd.Disable()
-        self.btn_rbkgd.Disable()
-        self.ck_bkgd.Disable()
-        self.btn_obkgd.Disable()
-        
-        self.btn_fpks.Disable()
-        self.btn_opks.Disable()
-        self.btn_rpks.Disable()        
-#         self.btn_spks.Disable()
-        self.btn_fitpks.Disable()
+        pattern_panel = wx.Panel(panel)
+        self.createPatternPanels(pattern_panel)
+        vbox.Add(pattern_panel, flag=wx.ALL, border=10) 
 
         return vbox
 
@@ -801,11 +713,11 @@ class Fitting1DXRD(BasePanel):
 
     def set_range(self,event=None):
         
-        if float(self.val_qmax.GetValue()) < float(self.val_qmin.GetValue()):
-            min = float(self.val_qmax.GetValue())
-            max = float(self.val_qmin.GetValue())
-            self.val_qmin.SetValue('%0.3f' % min)
-            self.val_qmax.SetValue('%0.3f' % max)        
+        if float(self.rngpl.val_qmax.GetValue()) < float(self.rngpl.val_qmin.GetValue()):
+            min = float(self.rngpl.val_qmax.GetValue())
+            max = float(self.rngpl.val_qmin.GetValue())
+            self.rngpl.val_qmin.SetValue('%0.3f' % min)
+            self.rngpl.val_qmax.SetValue('%0.3f' % max)        
         
         self.check_range()
         self.trim_data()
@@ -822,18 +734,18 @@ class Fitting1DXRD(BasePanel):
     def check_range(self,event=None):
 
         self.trim = True
-        if float(self.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
-            self.xmin = float(self.val_qmin.GetValue())
+        if float(self.rngpl.val_qmin.GetValue()) - np.min(self.raw_data[0]) > 0.005:
+            self.xmin = float(self.rngpl.val_qmin.GetValue())
         else:
             self.xmin = np.min(self.raw_data[0])
             
-        if np.max(self.raw_data[0]) - float(self.val_qmax.GetValue()) > 0.005:
-            self.xmax = float(self.val_qmax.GetValue())
+        if np.max(self.raw_data[0]) - float(self.rngpl.val_qmax.GetValue()) > 0.005:
+            self.xmax = float(self.rngpl.val_qmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[0])
 
-        self.val_qmin.SetValue('%0.3f' % self.xmin)
-        self.val_qmax.SetValue('%0.3f' % self.xmax)
+        self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
+        self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
             
         if np.max(self.raw_data[0])-self.xmax < 0.005 and self.xmin-np.min(self.raw_data[0]) < 0.005:
             self.trim = False
@@ -844,8 +756,8 @@ class Fitting1DXRD(BasePanel):
         self.xmin = np.min(self.raw_data[0])
         self.xmax = np.max(self.raw_data[0])
         
-        self.val_qmin.SetValue('%0.3f' % self.xmin)
-        self.val_qmax.SetValue('%0.3f' % self.xmax)
+        self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
+        self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
         
         self.trim = False
         self.trim_data()
@@ -895,8 +807,8 @@ class Fitting1DXRD(BasePanel):
         self.bgr_data    = np.copy(self.plt_data[:,:np.shape(self.bgr)[0]])
         self.bgr_data[1] = self.bgr
         
-        self.ck_bkgd.Enable()
-        self.btn_rbkgd.Enable()
+        self.bkgdpl.ck_bkgd.Enable()
+        self.bkgdpl.btn_rbkgd.Enable()
   
     def remove_background(self,event=None):
 
@@ -906,9 +818,9 @@ class Fitting1DXRD(BasePanel):
             self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
         
-        self.ck_bkgd.SetValue(False)
-        self.ck_bkgd.Disable()
-        self.btn_rbkgd.Disable()
+        self.bkgdpl.ck_bkgd.SetValue(False)
+        self.bkgdpl.ck_bkgd.Disable()
+        self.bkgdpl.btn_rbkgd.Disable()
 
         
     def delete_background(self,event=None):
@@ -941,7 +853,7 @@ class Fitting1DXRD(BasePanel):
 
     def subtract_background(self,event=None):
 
-        if self.ck_bkgd.GetValue() == True:
+        if self.bkgdpl.ck_bkgd.GetValue() == True:
             if np.shape(self.plt_data)[1] != np.shape(self.bgr_data)[1]:
                 if (np.shape(self.plt_data)[1] - np.shape(self.bgr_data)[1]) > 2:
                     print '**** refitting background from subtract button'
@@ -954,18 +866,18 @@ class Fitting1DXRD(BasePanel):
                              color='blue', label='Background subtracted',
                              show_legend=True)
 
-            self.btn_rbkgd.Disable()
-            self.btn_fbkgd.Disable()
-            self.btn_obkgd.Disable()
+            self.bkgdpl.btn_rbkgd.Disable()
+            self.bkgdpl.btn_fbkgd.Disable()
+            self.bkgdpl.btn_obkgd.Disable()
         
         else:
             if self.subtracted:
                 self.plt_data[1] = self.plt_data[1] + self.bgr_data[1]
                 self.subtracted = False
 
-            self.btn_rbkgd.Enable()
-            self.btn_fbkgd.Enable()
-            self.btn_obkgd.Enable()
+            self.bkgdpl.btn_rbkgd.Enable()
+            self.bkgdpl.btn_fbkgd.Enable()
+            self.bkgdpl.btn_obkgd.Enable()
             
             self.plot_data()
             self.plot_background()
@@ -996,9 +908,9 @@ class Fitting1DXRD(BasePanel):
         
         self.plot_peaks()
         
-        self.btn_rpks.Enable()        
+        self.pkpl.btn_rpks.Enable()        
 #         self.btn_spks.Enable()
-        self.btn_fitpks.Enable()
+        self.pkpl.btn_fitpks.Enable()
 
     def fit_peaks(self,event=None):
 
@@ -1029,9 +941,9 @@ class Fitting1DXRD(BasePanel):
         self.plot_data()
         self.plot_background()
 
-        self.btn_rpks.Disable()        
+        self.pkpl.btn_rpks.Disable()        
 #         self.btn_spks.Disable()
-        self.btn_fitpks.Disable()
+        self.pkpl.btn_fitpks.Disable()
 
     def delete_all_peaks(self,event=None):
 
@@ -2053,6 +1965,321 @@ class Viewer1DXRD(wx.Panel):
 #     def show(self):
 #         plt.show()
 
+class RangeToolsPanel(wx.Panel):
+    '''
+    Panel for housing range tools in fitting panel
+    '''
+    label='Range'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+        
+        # Peak fitting defaults
+        self.iregions = 50
+        self.gapthrsh = 5
+        self.halfwidth = 40
+        
+        # Background fitting defaults
+        self.exponent   = 20
+        self.compress   = 2
+        self.width      = 4
+
+        rangepanel = self.RangeTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(rangepanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+
+    def RangeTools(self):
+    
+        ###########################
+        ## Range tools
+        vbox_rng = wx.BoxSizer(wx.VERTICAL)
+        hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_qmin = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_qmax = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_qset = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ###########################
+        ## X-Scale
+
+        ttl_xaxis = wx.StaticText(self, label='X-SCALE')
+        xunits = ['q','d',u'2\u03B8']
+        self.ch_xaxis = wx.Choice(self,choices=xunits)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, None)
+        hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
+        hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
+        
+        ###########################
+        ## X-Range        
+        ttl_qmin = wx.StaticText(self, label='minimum') 
+        self.val_qmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.owner.set_range)
+        hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
+        hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
+        
+        ttl_qmax= wx.StaticText(self, label='maximum') 
+        self.val_qmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.owner.set_range)
+        hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
+        hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
+
+        btn_rngreset = wx.Button(self,label='reset')
+        btn_rngreset.Bind(wx.EVT_BUTTON, self.owner.reset_range)
+        
+        hbox_qset.Add(btn_rngreset, flag=wx.RIGHT, border=8)
+        
+        vbox_rng.Add(hbox_xaxis, flag=wx.ALL, border=10)
+        vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_qmax, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_qset, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
+        
+        return vbox_rng
+
+
+class BackgroundToolsPanel(wx.Panel):
+    '''
+    Panel for housing background tools in fitting panel
+    '''
+    label='Background'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+        
+        # Peak fitting defaults
+        self.iregions = 50
+        self.gapthrsh = 5
+        self.halfwidth = 40
+        
+        # Background fitting defaults
+        self.exponent   = 20
+        self.compress   = 2
+        self.width      = 4
+
+        bkgdpanel = self.BackgroundTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(bkgdpanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+
+    def BackgroundTools(self):
+    
+        ###########################
+        ## Background tools
+        vbox_bkgd = wx.BoxSizer(wx.VERTICAL)        
+        hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.btn_fbkgd = wx.Button(self,label='Fit')
+        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.owner.background_fit)
+        hbox_bkgd.Add(self.btn_fbkgd, flag=wx.RIGHT, border=8)
+
+        self.btn_obkgd = wx.Button(self,label='Options')
+        self.btn_obkgd.Bind(wx.EVT_BUTTON,   self.owner.background_options)
+        hbox_bkgd.Add(self.btn_obkgd, flag=wx.RIGHT, border=8)
+
+        self.btn_rbkgd = wx.Button(self,label='Remove')
+        self.btn_rbkgd.Bind(wx.EVT_BUTTON,   self.owner.remove_background)
+      
+        vbox_bkgd.Add(hbox_bkgd, flag=wx.BOTTOM, border=8)
+        vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
+
+        self.ck_bkgd = wx.CheckBox(self,label='Subtract')
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.owner.subtract_background)
+        vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)        
+        
+        return vbox_bkgd
+
+
+class PeakToolsPanel(wx.Panel):
+    '''
+    Panel for housing background tools in fitting panel
+    '''
+    label='Peaks'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+        
+        # Peak fitting defaults
+        self.iregions = 50
+        self.gapthrsh = 5
+        self.halfwidth = 40
+        
+        # Background fitting defaults
+        self.exponent   = 20
+        self.compress   = 2
+        self.width      = 4
+
+        pkspanel = self.PeakTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(pkspanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+
+    def PeakTools(self):
+    
+        ###########################
+        ## Peak tools
+        vbox_pks = wx.BoxSizer(wx.VERTICAL)        
+        hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
+        hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
+        hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.btn_fpks = wx.Button(self,label='Find peaks')
+        self.btn_fpks.Bind(wx.EVT_BUTTON,   self.owner.find_peaks)
+        hbox1_pks.Add(self.btn_fpks, flag=wx.RIGHT, border=8)
+
+        self.btn_opks = wx.Button(self,label='Options')
+        self.btn_opks.Bind(wx.EVT_BUTTON,   self.owner.peak_options)
+        hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
+
+        self.btn_rpks = wx.Button(self,label='Remove all')
+        self.btn_rpks.Bind(wx.EVT_BUTTON,   self.owner.remove_all_peaks)
+        hbox2_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
+
+#         self.btn_spks = wx.Button(self,label='Select peaks manually')
+#         self.btn_spks.Bind(wx.EVT_BUTTON,self.owner.DeleteSinglePeak)
+#         hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
+        
+        self.btn_fitpks = wx.Button(self,label='Fit peaks')
+        self.btn_fitpks.Bind(wx.EVT_BUTTON,   self.owner.fit_peaks)
+        hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
+
+        self.owner.peaklistbox = EditableListBox(self, self.owner.select_peak,
+                                        remove_action=self.owner.remove_single_peak,
+                                        size=(250, -1)
+                                        )
+        
+        vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(self.owner.peaklistbox, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(hbox3_pks, flag=wx.BOTTOM, border=8)
+        
+        
+        return vbox_pks  
+
+class DatabasePanel(wx.Panel):
+    '''
+    Panel for housing range tools in fitting panel
+    '''
+    label='Database'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+
+        newpanel = self.NewPanelTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(newpanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+    
+    def NewPanelTools(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        btn_1 = wx.Button(self,label='Button 1')
+        btn_2 = wx.Button(self,label='Button 2')
+        hbox.Add(btn_1, flag=wx.RIGHT, border=20)
+        hbox.Add(btn_2, flag=wx.RIGHT, border=20)
+        
+        vbox.Add(hbox,flag=wx.ALL,border=10)
+        
+        return vbox
+        
+
+
+
+
+class RefinementPanel(wx.Panel):
+    '''
+    Panel for housing background tools in fitting panel
+    '''
+    label='Refinement'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+
+        newpanel = self.NewPanelTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(newpanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+    
+    def NewPanelTools(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        btn_1 = wx.Button(self,label='Button 3')
+        btn_2 = wx.Button(self,label='Button 4')
+        hbox.Add(btn_1, flag=wx.RIGHT, border=20)
+        hbox.Add(btn_2, flag=wx.RIGHT, border=20)
+        
+        vbox.Add(hbox,flag=wx.ALL,border=10)
+        
+        return vbox
+
+class ResultsPanel(wx.Panel):
+    '''
+    Panel for housing background tools in fitting panel
+    '''
+    label='Results'
+    def __init__(self,parent,owner=None,_larch=None):
+        
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        ## Default information
+        
+
+        newpanel = self.NewPanelTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(newpanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+    
+    def NewPanelTools(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        btn_1 = wx.Button(self,label='Button 5')
+        btn_2 = wx.Button(self,label='Button 6')
+        hbox.Add(btn_1, flag=wx.RIGHT, border=20)
+        hbox.Add(btn_2, flag=wx.RIGHT, border=20)
+        
+        vbox.Add(hbox,flag=wx.ALL,border=10)
+        
+        return vbox
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
