@@ -976,23 +976,46 @@ class Fitting1DXRD(BasePanel):
         ## should this highlight the peak on the plot??
         ## how to do that? can two scatter plots exist?
 
+        ### self.peaklistbox.GetSelections()
+        
+#         print 'selected: ',self.peaklistbox.GetSelections()
+        
         if peakname is None and evt is not None:
             peakname = evt.GetString()
+        print 'in select:',peakname
 
+# #         if pki is None and evt is not None:
+# #             pki = self.peaklistbox.GetSelections()
     
-    def remove_single_peak(self, peakname, event=None):
+    def rm_sel_peaks(self, peakname, event=None):
 
-        if peakname in self.peaklist:
-            
-            pki = self.peaklist.index(peakname)
-            
+        print 'in remove:',peakname
+        for pki in reversed(self.peaklistbox.GetSelections()):
+            print 'removing pki: ',pki
             self.peaklist.pop(pki)
             self.ipeaks.pop(pki)
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
-            
-            self.plot_data()
-            self.plot_background()
-            self.plot_peaks()
+        self.peaklistbox.Clear()
+        for name in self.peaklist:
+            self.peaklistbox.Append(name)
+        print 'what is left: ',self.ipeaks
+        print np.shape(self.plt_peaks)
+        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+        print np.shape(self.plt_peaks)    
+        self.plot_data()
+        self.plot_background()
+        self.plot_peaks()
+
+#         if peakname in self.peaklist:
+#             
+#             pki = self.peaklist.index(peakname)
+#             
+#             self.peaklist.pop(pki)
+#             self.ipeaks.pop(pki)
+#             self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+#             
+#             self.plot_data()
+#             self.plot_background()
+#             self.plot_peaks()
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -2163,7 +2186,7 @@ class PeakToolsPanel(wx.Panel):
         hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
 
         self.owner.peaklistbox = EditableListBox(self, self.owner.select_peak,
-                                        remove_action=self.owner.remove_single_peak,
+                                        remove_action=self.owner.rm_sel_peaks,
                                         size=(250, -1),
                                         style =  wx.LB_MULTIPLE
                                         )
