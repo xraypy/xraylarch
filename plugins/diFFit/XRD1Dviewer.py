@@ -695,17 +695,23 @@ class Fitting1DXRD(BasePanel):
 
     def plot_data(self,event=None):
         
-        if self.trim:
-            self.plot1D.plot(*self.raw_data, title=self.name, 
-                             color='grey', label='Raw data',
-                             show_legend=True)
-            self.plot1D.oplot(*self.plt_data, title=self.name, 
-                              color='blue', label='Trimmed data',
+        if self.subtracted:
+            self.plot1D.plot(*self.plt_data, title=self.name, 
+                              color='blue', label='Data',
                               show_legend=True)
         else:
-            self.plot1D.plot(*self.raw_data, title=self.name, 
-                             color='blue', label='Raw data',
-                             show_legend=True)
+            if self.trim:
+                self.plot1D.plot(*self.raw_data, title=self.name, 
+                                 color='grey', label='Raw data',
+                                 show_legend=True)
+                self.plot1D.oplot(*self.plt_data, title=self.name, 
+                                  color='blue', label='Trimmed data',
+                                  show_legend=True)
+            else:
+                self.plot1D.plot(*self.raw_data, title=self.name, 
+                                 color='blue', label='Raw data',
+                                 show_legend=True)
+            self.plot_background()
 
         
 ##############################################
@@ -768,8 +774,9 @@ class Fitting1DXRD(BasePanel):
         self.plot_background()
 
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
-            self.plot_peaks()
+            self.ipeaks     = None
+            self.plt_peaks  = None  
+            self.peaklist   = []
 
     def trim_data(self):
 
@@ -821,6 +828,7 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
         self.bkgdpl.btn_rbkgd.Disable()
+        self.bkgdpl.btn_fbkgd.Enable()
 
         
     def delete_background(self,event=None):
@@ -831,7 +839,7 @@ class Fitting1DXRD(BasePanel):
 
     def plot_background(self,event=None):
 
-        if self.bgr is not None:
+        if self.bgr is not None and self.subtracted is False:
             self.plot1D.oplot(*self.bgr_data, title=self.name, 
                               color='red', label='Background',
                               show_legend=True)
@@ -856,7 +864,7 @@ class Fitting1DXRD(BasePanel):
         if self.bkgdpl.ck_bkgd.GetValue() == True:
             if np.shape(self.plt_data)[1] != np.shape(self.bgr_data)[1]:
                 if (np.shape(self.plt_data)[1] - np.shape(self.bgr_data)[1]) > 2:
-                    print '**** refitting background from subtract button'
+                    #print '**** refitting background from subtract button'
                     self.fit_background()
                 self.plt_data = self.plt_data[:,:np.shape(self.bgr_data)[1]]
             self.plt_data[1] = self.plt_data[1] - self.bgr_data[1]
@@ -906,6 +914,9 @@ class Fitting1DXRD(BasePanel):
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
         
+        #self.plot_peaks()
+        self.plot_data()
+#         self.plot_background()
         self.plot_peaks()
         
         self.pkpl.btn_rpks.Enable()        
@@ -939,7 +950,6 @@ class Fitting1DXRD(BasePanel):
 
         self.delete_all_peaks()
         self.plot_data()
-        self.plot_background()
 
         self.pkpl.btn_rpks.Disable()        
 #         self.btn_spks.Disable()
@@ -973,19 +983,12 @@ class Fitting1DXRD(BasePanel):
             self.find_peaks()
 
     def select_peak(self, evt=None, peakname=None,  **kws):
-        ## should this highlight the peak on the plot??
-        ## how to do that? can two scatter plots exist?
 
-        ### self.peaklistbox.GetSelections()
-        
-#         print 'selected: ',self.peaklistbox.GetSelections()
-        
+
         if peakname is None and evt is not None:
             peakname = evt.GetString()
-#         print 'in select:',peakname
-
-# #         if pki is None and evt is not None:
-# #             pki = self.peaklistbox.GetSelections()
+##      if pki is None and evt is not None:
+##          pki = self.peaklistbox.GetSelections()
     
     def rm_sel_peaks(self, peakname, event=None):
 
