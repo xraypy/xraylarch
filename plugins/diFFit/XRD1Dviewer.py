@@ -27,7 +27,7 @@ from larch_plugins.io import tifffile
 from larch_plugins.diFFit.XRDCalculations import d_from_q,twth_from_q
 from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
 from larch_plugins.diFFit.XRDCalculations import xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter
+from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
 from larch_plugins.diFFit.XRDCalculations import generate_hkl
 from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
@@ -737,7 +737,8 @@ class Fitting1DXRD(BasePanel):
         #self.plot_background()
 
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+
             self.plot_peaks()
     
     def check_range(self,event=None):
@@ -801,7 +802,7 @@ class Fitting1DXRD(BasePanel):
         if self.bgr is not None:
             self.plot_data()
             if self.ipeaks is not None:
-                self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+                self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
                 self.plot_peaks()
         self.fit_background()
         self.plot_background()
@@ -825,7 +826,7 @@ class Fitting1DXRD(BasePanel):
         self.delete_background()
         self.plot_data()
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
         
         self.bkgdpl.ck_bkgd.SetValue(False)
@@ -894,7 +895,7 @@ class Fitting1DXRD(BasePanel):
             #self.plot_background()
 
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
 
            
@@ -903,15 +904,15 @@ class Fitting1DXRD(BasePanel):
 ##############################################
 #### PEAK FUNCTIONS
 
-    def find_peaks(self,event=None):
+    def find_peaks(self,event=None,filter=False):
         ## clears previous searches
         self.remove_all_peaks()
         
         self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,
                                  gapthrsh=self.gapthrsh)
-        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,
-                                     intthrsh=self.intthrsh)
-
+        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+        if filter:
+            self.ipeaks,self.plt_data = peakfilter(self.intthrsh,self.ipeaks,*self.plt_data)
         
         str = 'Peak %2d (%2.3f, %6d)'
         for i,ii in enumerate(self.ipeaks):
@@ -994,7 +995,7 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
         
         if fit:
-            self.find_peaks()
+            self.find_peaks(filter=True)
 
     def select_peak(self, evt=None, peakname=None,  **kws):
 
@@ -1013,7 +1014,7 @@ class Fitting1DXRD(BasePanel):
 #         for name in self.peaklist:
 #             self.peaklistbox.Append(name)
 #         print np.shape(self.plt_peaks)
-#         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+#         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
 #         print np.shape(self.plt_peaks)    
 #         self.plot_data()
 #         #self.plot_background()
@@ -1025,7 +1026,7 @@ class Fitting1DXRD(BasePanel):
             
             self.peaklist.pop(pki)
             self.ipeaks.pop(pki)
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             
             self.plot_data()
             #self.plot_background()

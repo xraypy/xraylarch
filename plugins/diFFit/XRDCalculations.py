@@ -326,19 +326,32 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
-def peaklocater(ipeaks,x,y,intthrsh=0):
+def peakfilter(intthrsh,ipeaks,x,y):
+    '''
+    Returns x and y for data set corresponding to peak indices solution
+    from peakfilter() with the option of setting a minimum intensity
+    threshold for filtering peaks
+    '''
+    ipks = []
+    xypks = []
+    
+    xypks += [[x[i],y[i]] for i in ipeaks if y[i] > intthrsh]
+    xypks = zip(*xypks)
+    ipks += [i    for i in ipeaks if y[i] > intthrsh]
+
+    return ipks,xypks
+
+##########################################################################
+def peaklocater(ipeaks,x,y):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
     '''
-#     xypeaks = []
-#     xypeaks += [[x[i],y[i]] for i in ipeaks]
-#     xypeaks = zip(*xypeaks)
     xypeaks = np.zeros((2,len(ipeaks)))
-    xypeaks[0,:] = [x[i] for i in ipeaks if y[i] > intthrsh]
-    xypeaks[1,:] = [y[i] for i in ipeaks if y[i] > intthrsh]
+    xypeaks[0,:] = [x[i] for i in ipeaks]
+    xypeaks[1,:] = [y[i] for i in ipeaks]
 
-    return xypeaks
+    return np.array(xypeaks)
 
 ##########################################################################
 def peakfinder(x, y, regions=50, gapthrsh=5):
