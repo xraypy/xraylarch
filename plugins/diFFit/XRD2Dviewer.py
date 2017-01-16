@@ -192,7 +192,7 @@ class Viewer2DXRD(wx.Frame):
             self.bkgd_img = np.zeros(np.shape(self.raw_img))
 
         ## Calculates the number of pixels in image, masked pixels, and background pixels
-        img_pxls  = len(self.raw_img)
+        img_pxls  = np.shape(self.raw_img)[0]*np.shape(self.raw_img)[1]
         msk_pxls  = img_pxls - int(sum(sum(self.msk_img)))
         bkgd_pxls = int(sum(sum(self.bkgd_img)))
 
@@ -204,7 +204,6 @@ class Viewer2DXRD(wx.Frame):
             self.ch_msk.Enable()
         
         ## Enables background slider and sets range.
-        print 'SHOWING BKGD_PXLS',bkgd_pxls
         if bkgd_pxls == 0:
             self.entr_scale.SetLabel('')
             
@@ -310,12 +309,15 @@ class Viewer2DXRD(wx.Frame):
             
 
     def onSlider(self,event=None):
+    
+        print 'in slider!',self.sldr_min.GetValue(),self.sldr_max.GetValue()
+        
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
         if self.minCURRENT > self.maxCURRENT:
             self.sldr_min.SetValue(self.maxCURRENT)
-            self.sldr_max.SetValue(self.minCURRENT)
+            self.sldr_max.SetValue(self.minCURRENT)       
 
         self.setContrast()
 
