@@ -108,10 +108,8 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-#            newimg = plt.imread(path)
             print('Reading file: %s' % path)
             newimg = tifffile.imread(path)
-            #newimg = fabioOPEN(path)
             
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
