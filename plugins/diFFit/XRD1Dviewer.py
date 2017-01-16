@@ -29,7 +29,7 @@ from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
 from larch_plugins.diFFit.XRDCalculations import xy_file_reader
 from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter
 from larch_plugins.diFFit.XRDCalculations import generate_hkl
-# from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.xrd_bgr import xrd_background
 
@@ -150,6 +150,8 @@ class diFFit1DFrame(wx.Frame):
         AnalyzeMenu = wx.Menu()
         
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
+        AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
 
         menubar.Append(AnalyzeMenu, '&Analyze')
 
@@ -533,6 +535,7 @@ class Fitting1DXRD(BasePanel):
         self.iregions = 50
         self.gapthrsh = 5
         self.halfwidth = 40
+        self.intthrsh = 100
         
         # Background fitting defaults
         self.exponent   = 20
@@ -731,10 +734,10 @@ class Fitting1DXRD(BasePanel):
             self.fit_background()
 
         self.plot_data()
-        self.plot_background()
+        #self.plot_background()
 
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
             self.plot_peaks()
     
     def check_range(self,event=None):
@@ -771,7 +774,7 @@ class Fitting1DXRD(BasePanel):
             self.fit_background()
                     
         self.plot_data()
-        self.plot_background()
+        #self.plot_background()
 
         if self.ipeaks is not None:
             self.ipeaks     = None
@@ -798,7 +801,7 @@ class Fitting1DXRD(BasePanel):
         if self.bgr is not None:
             self.plot_data()
             if self.ipeaks is not None:
-                self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+                self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
                 self.plot_peaks()
         self.fit_background()
         self.plot_background()
@@ -822,7 +825,7 @@ class Fitting1DXRD(BasePanel):
         self.delete_background()
         self.plot_data()
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
             self.plot_peaks()
         
         self.bkgdpl.ck_bkgd.SetValue(False)
@@ -888,10 +891,10 @@ class Fitting1DXRD(BasePanel):
             self.bkgdpl.btn_obkgd.Enable()
             
             self.plot_data()
-            self.plot_background()
+            #self.plot_background()
 
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
             self.plot_peaks()
 
            
@@ -904,8 +907,10 @@ class Fitting1DXRD(BasePanel):
         ## clears previous searches
         self.remove_all_peaks()
         
-        self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,gapthrsh=self.gapthrsh)
-        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+        self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,
+                                 gapthrsh=self.gapthrsh)
+        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,
+                                     intthrsh=self.intthrsh)
 
         
         str = 'Peak %2d (%2.3f, %6d)'
@@ -916,15 +921,23 @@ class Fitting1DXRD(BasePanel):
         
         #self.plot_peaks()
         self.plot_data()
-#         self.plot_background()
+        #self.plot_background()
         self.plot_peaks()
         
         self.pkpl.btn_rpks.Enable()        
 #         self.btn_spks.Enable()
         self.pkpl.btn_fitpks.Enable()
 
+    def fit_instrumental(self,event=None):
+
+        u,v,w = instrumental_fit_uvw(self.ipeaks,*self.plt_data,
+                                       wavelength=self.wavelength,
+                                       halfwidth=self.halfwidth,
+                                       verbose=True)
+
     def fit_peaks(self,event=None):
 
+        print 'threshold',self.intthrsh
         peaktwth,peakFWHM = peakfitter(self.ipeaks,*self.plt_data,
                                        wavelength=self.wavelength,
                                        halfwidth=self.halfwidth,
@@ -976,6 +989,7 @@ class Fitting1DXRD(BasePanel):
             self.iregions  = int(myDlg.val_regions.GetValue())
             self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
             self.halfwidth = int(myDlg.val_hw.GetValue())
+            self.intthrsh  = int(myDlg.val_intthr.GetValue())
             fit = True
         myDlg.Destroy()
         
@@ -999,10 +1013,10 @@ class Fitting1DXRD(BasePanel):
 #         for name in self.peaklist:
 #             self.peaklistbox.Append(name)
 #         print np.shape(self.plt_peaks)
-#         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+#         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
 #         print np.shape(self.plt_peaks)    
 #         self.plot_data()
-#         self.plot_background()
+#         #self.plot_background()
 #         self.plot_peaks()
 
         if peakname in self.peaklist:
@@ -1011,10 +1025,10 @@ class Fitting1DXRD(BasePanel):
             
             self.peaklist.pop(pki)
             self.ipeaks.pop(pki)
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data,intthrsh=self.intthrsh)
             
             self.plot_data()
-            self.plot_background()
+            #self.plot_background()
             self.plot_peaks()
 
 ##############################################
@@ -1180,6 +1194,7 @@ class PeakOptions(wx.Dialog):
         self.val_regions.SetValue(str(self.parent.iregions))
         self.val_gapthr.SetValue(str(self.parent.gapthrsh))
         self.val_hw.SetValue(str(self.parent.halfwidth))
+        self.val_intthr.SetValue(str(self.parent.intthrsh))
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
@@ -1228,6 +1243,15 @@ class PeakOptions(wx.Dialog):
         gpthrsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
         gpthrsizer.Add(self.val_gapthr,  flag=wx.RIGHT, border=5)
         
+        ## Intensity threshold
+        intthrsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_intthr = wx.StaticText(self.panel, label='Intensity threshold')
+
+        self.val_intthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        intthrsizer.Add(ttl_intthr,  flag=wx.RIGHT, border=5)
+        intthrsizer.Add(self.val_intthr,  flag=wx.RIGHT, border=5)
+
 
         #####
         ## OKAY!
@@ -1249,13 +1273,15 @@ class PeakOptions(wx.Dialog):
         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8)
 
         mainsizer.Add(fitsizer,   flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
+        mainsizer.AddSpacer(10)
         mainsizer.Add(hwsizer,   flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
+        mainsizer.AddSpacer(10)
         mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
+        mainsizer.AddSpacer(10)
         mainsizer.Add(gpthrsizer, flag=wx.ALL, border=5)        
-        mainsizer.AddSpacer(15)
+        mainsizer.AddSpacer(10)
+        mainsizer.Add(intthrsizer, flag=wx.ALL, border=5)        
+        mainsizer.AddSpacer(10)
         mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
 
@@ -2007,6 +2033,7 @@ class RangeToolsPanel(wx.Panel):
         self.iregions = 50
         self.gapthrsh = 5
         self.halfwidth = 40
+        self.intthrsh = 100
         
         # Background fitting defaults
         self.exponent   = 20
@@ -2085,6 +2112,7 @@ class BackgroundToolsPanel(wx.Panel):
         self.iregions = 50
         self.gapthrsh = 5
         self.halfwidth = 40
+        self.intthrsh = 100
         
         # Background fitting defaults
         self.exponent   = 20
@@ -2144,6 +2172,7 @@ class PeakToolsPanel(wx.Panel):
         self.iregions = 50
         self.gapthrsh = 5
         self.halfwidth = 40
+        self.intthrsh = 100
         
         # Background fitting defaults
         self.exponent   = 20

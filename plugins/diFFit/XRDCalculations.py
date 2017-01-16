@@ -326,7 +326,7 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
-def peaklocater(ipeaks,x,y):
+def peaklocater(ipeaks,x,y,intthrsh=0):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
@@ -335,8 +335,8 @@ def peaklocater(ipeaks,x,y):
 #     xypeaks += [[x[i],y[i]] for i in ipeaks]
 #     xypeaks = zip(*xypeaks)
     xypeaks = np.zeros((2,len(ipeaks)))
-    xypeaks[0,:] = [x[i] for i in ipeaks]
-    xypeaks[1,:] = [y[i] for i in ipeaks]
+    xypeaks[0,:] = [x[i] for i in ipeaks if y[i] > intthrsh]
+    xypeaks[1,:] = [y[i] for i in ipeaks if y[i] > intthrsh]
 
     return xypeaks
 
@@ -463,6 +463,10 @@ def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
     (u,v,w) = data_poly_fit(tanth,sqFWHM,verbose=verbose)
     
     if verbose:
+        print '\nFit results:'
+        for i,twth in enumerate(twth):
+            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,FWHM[i])
+        print
         print '\nInstrumental broadening parameters:'
         print '---  U',u
         print '---  V',v
