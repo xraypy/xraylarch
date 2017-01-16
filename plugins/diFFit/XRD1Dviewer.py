@@ -564,7 +564,7 @@ class Fitting1DXRD(BasePanel):
 
     def createFittingPanels(self,parent):
         
-        pattern_title    = SimpleText(parent, 'FITTING TOOLS', size=(200, -1))
+        pattern_title    = SimpleText(parent, 'DATA FITTING', size=(200, -1))
         #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.pnb = wx.Notebook(parent)
         self.pnbpanels = []
@@ -599,7 +599,7 @@ class Fitting1DXRD(BasePanel):
 
     def createPatternPanels(self,parent):
         
-        pattern_title    = SimpleText(parent, 'PATTERN TOOLS', size=(200, -1))
+        pattern_title    = SimpleText(parent, 'PATTERN PROCESSING', size=(200, -1))
         #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.pnb = wx.Notebook(parent)
         self.pnbpanels = []
