@@ -57,8 +57,6 @@ class Viewer2DXRD(wx.Frame):
         ## Default image information
         self.name_images = []
         self.data_images = []
-#         self.min_images  = []
-#         self.max_images  = []
         self.raw_img  = None
         self.flp_img = None
         self.plt_img = None
@@ -120,8 +118,6 @@ class Viewer2DXRD(wx.Frame):
         img_no = np.shape(self.data_images)[0]
         self.name_images.append(iname)
         self.data_images.append(img)
-#         self.min_images.append(int(np.min(img)))
-#         self.max_images.append(int(np.max(img)))
         
         self.ch_img.Set(self.name_images)
         self.ch_img.SetStringSelection(iname)
@@ -204,12 +200,10 @@ class Viewer2DXRD(wx.Frame):
             
             self.sldr_bkgd.Disable()
             self.entr_scale.Disable()
-#             self.btn_scale.Disable()
             
             self.use_bkgd = False
             self.entr_scale.SetLabel('0')
         else:
-#             self.btn_scale.Enable()
             self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
 
@@ -221,7 +215,6 @@ class Viewer2DXRD(wx.Frame):
 
     def colorIMAGE(self):
         self.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-#         self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2D.display(self.plt_img)
 
     def setCOLOR(self,event=None):
@@ -254,10 +247,7 @@ class Viewer2DXRD(wx.Frame):
 
         self.bkgd_scale = float(self.entr_scale.GetValue())
         self.bkgdMAX = (float(self.entr_scale.GetValue()) * 2) / SLIDER_SCALE
-        
-        #self.bkgd_scale = float(self.entr_scale.GetValue())
-        #self.bkgdMAX = self.sldr_bkgd.GetValue()/SLIDER_SCALE
-        
+
         self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         
@@ -283,8 +273,6 @@ class Viewer2DXRD(wx.Frame):
             self.maxCURRENT = self.maxINT
 
         img_no = self.ch_img.GetSelection()
-#         self.min_images[img_no] = self.minCURRENT
-#         self.max_images[img_no] = self.maxCURRENT
 
         self.setContrast()  
 
@@ -294,8 +282,6 @@ class Viewer2DXRD(wx.Frame):
         newMAX = int(self.entr_max.GetValue())
         
         img_no = self.ch_img.GetSelection()
-#         self.min_images[img_no] = newMIN
-#         self.max_images[img_no] = newMAX
 
         self.sldr_min.SetRange(newMIN,newMAX)
         self.sldr_max.SetRange(newMIN,newMAX)
@@ -304,9 +290,7 @@ class Viewer2DXRD(wx.Frame):
             
 
     def onSlider(self,event=None):
-    
-        print 'in slider!',self.sldr_min.GetValue(),self.sldr_max.GetValue()
-        
+
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
@@ -319,8 +303,6 @@ class Viewer2DXRD(wx.Frame):
     def setContrast(self):
 
         img_no = self.ch_img.GetSelection()
-#         self.minCURRENT = int(self.min_images[img_no])
-#         self.maxCURRENT = int(self.max_images[img_no])
 
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
@@ -328,8 +310,6 @@ class Viewer2DXRD(wx.Frame):
         self.plot2D.conf.auto_intensity = False        
         self.plot2D.conf.int_lo[0] = self.minCURRENT
         self.plot2D.conf.int_hi[0] = self.maxCURRENT
-#         self.plot2D.conf.int_lo['int'] = self.minCURRENT
-#         self.plot2D.conf.int_hi['int'] = self.maxCURRENT
         
         self.plot2D.redraw()
             
@@ -484,9 +464,7 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-#             self.bkgd = plt.imread(path)
             self.bkgd = tifffile.imread(path)
-            #self.bkgd = fabioOPEN(path)
             self.checkIMAGE()
 
 ##############################################
@@ -505,9 +483,7 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-#             raw_mask = plt.imread(path)
             raw_mask = tifffile.imread(path)
-            #raw_mask = fabioOPEN(path)
             self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
             self.checkIMAGE()
@@ -686,13 +662,10 @@ class Viewer2DXRD(wx.Frame):
 
         hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_ct1 = wx.Button(self.panel,label='reset range')
-#         self.btn_ct2 = wx.Button(self.panel,label='set range')
 
         self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
-#         self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
 
         hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
-#         hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT,              border=6)
         vbox_ct.Add(hbox_ct4,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
         vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
 
@@ -751,20 +724,16 @@ class Viewer2DXRD(wx.Frame):
 
 
         hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
-#         self.btn_scale = wx.Button(self.panel,label='set scaling')
         self.entr_scale = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
         
-#         self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
         self.entr_scale.Bind(wx.EVT_TEXT_ENTER,self.onChangeBkgdScale)
               
-#         hbox_bkgd2.Add(self.btn_scale,  flag=wx.RIGHT,                        border=6)
         hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT,                        border=6)
         vbox.Add(hbox_bkgd2,            flag=wx.TOP|wx.BOTTOM|wx.ALIGN_RIGHT, border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         self.sldr_bkgd.Disable()
         self.entr_scale.Disable()
-#         self.btn_scale.Disable()
 
         ###########################
         ## Set defaults  
@@ -815,7 +784,6 @@ class diFFit2D(wx.App):
 
     def createApp(self):
         frame = Viewer2DXRD()
-        # frame.loadIMAGE()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -831,9 +799,7 @@ class DebugViewer(diFFit2D):
         diFFit2D.__init__(self, **kws)
 
     def OnInit(self):
-        #self.Init()
         self.createApp()
-        #self.ShowInspectionTool()
         return True
 
 if __name__ == '__main__':
