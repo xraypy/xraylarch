@@ -423,19 +423,6 @@ class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
-class Viewer1DXRD(wx.Panel):
-    '''
-    Panel for housing 1D XRD viewer
-    '''
-    label='Viewer'
-    def __init__(self,parent,owner=None,_larch=None):
-        
-        wx.Panel.__init__(self, parent)
-
-        self.parent = parent
-        self.owner = owner
-
-
 class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
     """
     This will be the second notebook tab
