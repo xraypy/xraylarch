@@ -62,6 +62,12 @@ class AllParamsPanel(wx.Panel):
         print( "del parameter ", param)
 
 
+class FitController(object):
+    def __init__(self, **kws):
+        self.components = OrderedDict()
+
+/usr/share/X11/fonts
+
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
@@ -170,7 +176,7 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        curmodels = ["p%i_" % (i+1) for i in range(1+len(self.fit_components))]
+        curmodels = ["c%i_" % (i+1) for i in range(1+len(self.fit_components))]
         for comp in self.fit_components:
             if comp in curmodels:
                 curmodels.remove(comp)
@@ -305,16 +311,17 @@ class XYFitPanel(wx.Panel):
 
 
     def onPick2EraseTimer(self, evt=None):
-        print("Pick 2 Erase !! ", self.pick2erase_panel)
+        """erases line trace showing automated 'Pick 2' guess """
         self.pick2erase_timer.Stop()
-
         panel = self.pick2erase_panel
         ntrace = panel.conf.ntrace - 1
         panel.conf.get_mpl_line(ntrace).set_data(np.array([]), np.array([]))
         panel.draw()
 
-
     def onPick2Timer(self, evt=None):
+        """checks for 'Pick 2' events, and initiates 'Pick 2' guess
+        for a model from the selected data range
+        """
         try:
             plotframe = self.controller.get_display(stacked=False)
             curhist = plotframe.cursor_hist[:]
