@@ -93,11 +93,13 @@ class diFFit1DFrame(wx.Frame):
         
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
+        
+        self.cifdatabase = cifDB(dbname='whole_cif.db')
 
         # create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
-        self.xrddatabase  = DatabaseXRD(self.nb)
+        self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
         
         # add the pages to the notebook with the label to show on the tab
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
@@ -420,23 +422,38 @@ class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
+
+class Viewer1DXRD(wx.Panel):
+    '''
+    Panel for housing 1D XRD viewer
+    '''
+    label='Viewer'
+    def __init__(self,parent,owner=None,_larch=None):
         
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+
 class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
     """
     This will be the second notebook tab
     """
     #----------------------------------------------------------------------
-    def __init__(self, parent):
+    def __init__(self,parent,owner=None,_larch=None):
         """"""
-        wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
         self.createAndLayout()
         
-    def createDATABASEarray(self,file='amscd_cif.db'):
+    def createDATABASEarray(self):
     
-        mycifdatabase = cifDB(dbname=file)
-        display_array = mycifdatabase.create_array()
+        return self.owner.cifdatabase.create_array(maxrows=50)
 
-        return display_array
     
     def createAndLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1096,6 +1113,41 @@ class Fitting1DXRD(BasePanel):
    
         return xmin,xmax
 #######  END  #######
+
+
+##############################################
+#### DATABASE FUNCTIONS
+    def search_database(self,event=None):
+
+        myDlg = XRDSearchGUI()
+        
+        fit = False
+        if myDlg.ShowModal() == wx.ID_OK:
+#             self.exponent = int(myDlg.val_exp.GetValue())
+#             self.compress = int(myDlg.val_comp.GetValue())
+#             self.width    = int(myDlg.val_wid.GetValue())
+            fit = True
+        myDlg.Destroy()
+
+        if fit:
+            self.background_fit()
+            
+    def quick_check(self,event=None):
+    
+#         self.owner.cifdatabase.find_by_q([2.01])
+#         self.owner.cifdatabase.find_q_for_cif(11686)
+#         self.owner.cifdatabase.find_q_for_cif(42)
+        import time
+        a = time.time()
+        #all_peaks = [2.31,3.27,2.0,4.01]
+        all_peaks = [2.00,2.31,3.27,3.85,4.01]#,4.65,5.06,5.19]
+
+        all_matches = self.owner.cifdatabase.find_by_q(all_peaks)
+        b = time.time()
+
+        print
+        print 'worked! : %0.3f ms' % ((b-a)* 1e3)
+
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
@@ -2252,14 +2304,18 @@ class DatabasePanel(wx.Panel):
     
     def NewPanelTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+#         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_1 = wx.Button(self,label='Button 1')
-        btn_2 = wx.Button(self,label='Button 2')
-        hbox.Add(btn_1, flag=wx.RIGHT, border=20)
-        hbox.Add(btn_2, flag=wx.RIGHT, border=20)
+        btn_1 = wx.Button(self,label='Filter database')
+        btn_2 = wx.Button(self,label='Quick button - check q')
         
-        vbox.Add(hbox,flag=wx.ALL,border=10)
+        btn_1.Bind(wx.EVT_BUTTON,   self.owner.search_database)
+        btn_2.Bind(wx.EVT_BUTTON,   self.owner.quick_check)
+        
+        vbox.Add(btn_1, flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_2, flag=wx.RIGHT,  border=20)
+        
+#         vbox.Add(hbox,flag=wx.ALL,border=10)
         
         return vbox
         
@@ -2734,20 +2790,23 @@ class XRDSymmetrySearch(wx.Dialog):
         self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
 
         SG_list = ['']
-        sgfile = 'space_groups.txt'
-        if not os.path.exists(sgfile):
-            parent, child = os.path.split(__file__)
-            sgfile = os.path.join(parent, sgfile)
-            if not os.path.exists(sgfile):
-                raise IOError("Space group file '%s' not found!" % sgfile)
-        sg = open(sgfile,'r')
-        for sgno,line in enumerate(sg):
-            try:
-                sgno = sgno+1
-                SG_list.append('%3d  %s' % (sgno,line))
-            except:
-                sg.close()
-                break
+        for sgno in np.arange(230):
+            SG_list.append('%3d' % (sgno+1))
+
+#         sgfile = 'space_groups.txt'
+#         if not os.path.exists(sgfile):
+#             parent, child = os.path.split(__file__)
+#             sgfile = os.path.join(parent, sgfile)
+#             if not os.path.exists(sgfile):
+#                 raise IOError("Space group file '%s' not found!" % sgfile)
+#         sg = open(sgfile,'r')
+#         for sgno,line in enumerate(sg):
+#             try:
+#                 sgno = sgno+1
+#                 SG_list.append('%3d  %s' % (sgno,line))
+#             except:
+#                 sg.close()
+#                 break
 
         
         lbl_SG = wx.StaticText(self.panel, label='Space group:')
