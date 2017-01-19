@@ -1130,9 +1130,9 @@ class Fitting1DXRD(BasePanel):
         import time
         a = time.time()
 
-        peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-        matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
-#         matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
+#         peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+#         matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
+        matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
         
         goodness = np.zeros(np.shape(count))
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
