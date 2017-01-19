@@ -94,7 +94,7 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.cifdatabase = cifDB(dbname='whole_cif.db')
+        self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
         # create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
@@ -1122,18 +1122,53 @@ class Fitting1DXRD(BasePanel):
     def quick_check(self,event=None):
     
 #         self.owner.cifdatabase.find_by_q([2.01])
-#         self.owner.cifdatabase.find_q_for_cif(11686)
+#         self.owner.cifdatabase.find_q_for_cif(11686,verbose=True)
+#         self.owner.cifdatabase.find_q_for_cif(11684,verbose=True)
 #         self.owner.cifdatabase.find_q_for_cif(42)
+        
+        print 'scipy fit: ',
         import time
         a = time.time()
-        #all_peaks = [2.31,3.27,2.0,4.01]
-        all_peaks = [2.00,2.31,3.27,3.85,4.01]#,4.65,5.06,5.19]
+        all_peaks = [2.010,2.321,3.285,3.851,4.023,4.647,5.064,5.195]
+        print all_peaks
 
-        all_matches = self.owner.cifdatabase.find_by_q(all_peaks)
+        matches,count = self.owner.cifdatabase.find_by_q(all_peaks)
         b = time.time()
+        
+        goodness = np.zeros(np.shape(count))
+        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+            qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
+            goodness[i] = cnt/float(len(qlist))
 
-        print
-        print 'worked! : %0.3f ms' % ((b-a)* 1e3)
+        matches  = [x for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+        count    = [y for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+        goodness = [t for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+
+#         print
+        print matches
+        print 'worked! %d matched patterns in %0.3f ms' % (len(matches),((b-a)* 1e3))
+
+
+        print '\nfrom 11686 peaks: ',
+        a = time.time()
+        all_peaks = [2.31,3.27,2.0,4.01]
+        print all_peaks
+
+        matches,count = self.owner.cifdatabase.find_by_q(all_peaks)
+        b = time.time()
+        
+        goodness = np.zeros(np.shape(count))
+        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+            qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
+            goodness[i] = cnt/float(len(qlist))
+
+        matches  = [x for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+        count    = [y for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+        goodness = [t for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
+
+#         print
+        print matches
+        print 'worked! %d matched patterns in %0.3f ms' % (len(matches),((b-a)* 1e3))
 
 
 class BackgroundOptions(wx.Dialog):

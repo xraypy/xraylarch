@@ -322,8 +322,8 @@ CATEGORIES = ['soil',
               'salt',
               'clay']
 
-QMIN = 0.3
-QMAX = 8.0
+QMIN = 0.2
+QMAX = 10.0
 QSTEP = 0.01
 
 def make_engine(dbname):
@@ -473,7 +473,7 @@ class cifDB(object):
     def build_new_database(self,name=None):
 
         if name is None:
-            self.dbname = 'amscd%02d.db'
+            self.dbname = 'amcsd%02d.db'
             counter = 0
             while os.path.exists(self.dbname % counter):
                 counter += 1
@@ -904,9 +904,10 @@ class cifDB(object):
         
         self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
 
-    def find_q_for_cif(self,amcsd_id):
+    def find_q_for_cif(self,amcsd_id,verbose=False):
     
-        self.find_by_amcsd(amcsd_id)
+        if verbose:
+            self.find_by_amcsd(amcsd_id)
 
         self.load_database()
 
@@ -915,7 +916,8 @@ class cifDB(object):
         for row in search_qpeaks.execute():
             peaks += [row.q_id]
         peaks=sorted(peaks)
-        print 'IDs : ',peaks
+        if verbose:
+            print 'IDs : ',peaks
         
         qpeaks = []
         for peak in peaks:
@@ -923,13 +925,14 @@ class cifDB(object):
             for row in search_q.execute():
                 qpeaks += [float(row.q)]
         qpeaks=sorted(qpeaks)
-        print 'q = ',qpeaks
-        print
+        if verbose:
+            print 'q = ',qpeaks
+            print
         
         return qpeaks
     
 
-    def find_by_q(self,qpeaks,range=0.05):
+    def find_by_q(self,qpeaks):
 
         self.load_database()
         all_matches = []
@@ -939,7 +942,6 @@ class cifDB(object):
             search_qrange = self.qrange.select(self.qrange.c.q == q0)
             for row in search_qrange.execute():
                 q_id = row.q_id
-#                 print q_id
                 search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
                 for row in search_amcsd.execute():
                     if row.amcsd_id not in q_matches:
@@ -947,49 +949,22 @@ class cifDB(object):
                             
             all_matches += [q_matches]
 
-#         self.load_database()
-#         all_matches = []
-#         for q in qpeaks:
-#             q_matches = []
-#             q0  = round(q,2)
-#             search_qrange = self.qrange.select(self.qrange.c.q == q0)
-#             for row in search_qrange.execute():
-#                 q_id = row.q_id
-#                 print q_id
-#                 if q_id > 2 and q_id < 769:
-#                     qrange = [(q_id - 2),(q_id + 2)]
-#                     for qi in qrange:
-#                         search_amcsd = self.qpeak.select(self.qpeak.c.q_id == qi)
-#                         for row in search_amcsd.execute():
-#                             if row.amcsd_id not in q_matches:
-#                                 q_matches += [row.amcsd_id]
-#                             
-#             all_matches += [q_matches]
+###     set(a).intersection(b, c)
+        matches = []
+        count = []
+        for i,listI in enumerate(all_matches):
+            for j,item in enumerate(listI):
+                if item not in matches:
+                    matches += [item]
+                    count += [1]
+                else:
+                    idx = matches.index(item)
+                    count[idx] = count[idx]+1
         
-#         for i,j in enumerate(all_matches):
-#             for ii,ji in enumerate(j):
-#                 print i,ii
-#                 self.find_by_amcsd(ji)
-#         
-        if len(qpeaks) > 1:
-            print
-            print 'try one'
-            for element in all_matches[0]:
-                if element in all_matches[1]:
-                    print element
-            print
-            print 'try two'
-            print list(set(all_matches[0]).intersection(all_matches[1]))
-            print set(all_matches[0]).intersection(all_matches[1])            
-#             set(a).intersection(b, c)
-#             print
-#             print 'try three'
-#             print set(all_matches[0]).intersection(all_matches[:])
-            print
-            print 'try three'
-            print set(all_matches[0]).intersection(all_matches[1],all_matches[2])
-            
-        return all_matches
+        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > 2]
+        count_matches = [y for y, x in sorted(zip(count,matches)) if y > 2]
+        
+        return amcsd_matches,count_matches
 
     def create_array(self,maxrows=None):
     
