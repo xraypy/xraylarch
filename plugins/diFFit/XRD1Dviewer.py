@@ -918,9 +918,9 @@ class Fitting1DXRD(BasePanel):
         if filter:
             self.ipeaks,self.plt_data = peakfilter(self.intthrsh,self.ipeaks,*self.plt_data)
         
-        str = 'Peak %2d (%2.3f, %6d)'
+        str = 'Peak (%2.3f, %6d)'
         for i,ii in enumerate(self.ipeaks):
-            peakname = str % ((i+1),self.plt_peaks[0,i],self.plt_peaks[1,i])
+            peakname = str % (self.plt_peaks[0,i],self.plt_peaks[1,i])
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
         
@@ -943,14 +943,14 @@ class Fitting1DXRD(BasePanel):
     def fit_peaks(self,event=None):
 
         print 'threshold',self.intthrsh
-        peaktwth,peakFWHM = peakfitter(self.ipeaks,*self.plt_data,
+        peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,*self.plt_data,
                                        wavelength=self.wavelength,
                                        halfwidth=self.halfwidth,
                                        fittype='double',
                                        verbose=True)
         print '\nFit results:'
-        for i,twth in enumerate(peaktwth):
-            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,peakFWHM[i])
+        for i,(twthi,fwhmi,inteni) in enumerate(zip(peaktwth,peakFWHM,peakinty)):
+            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni)
         print
 
     def plot_peaks(self):
@@ -1119,57 +1119,32 @@ class Fitting1DXRD(BasePanel):
         if fit:
             self.background_fit()
             
-    def quick_check(self,event=None):
+    def quick_check(self,event=None,minpeaks=2,minfrac=0.5):
     
 #         self.owner.cifdatabase.find_by_q([2.01])
 #         self.owner.cifdatabase.find_q_for_cif(11686,verbose=True)
 #         self.owner.cifdatabase.find_q_for_cif(11684,verbose=True)
 #         self.owner.cifdatabase.find_q_for_cif(42)
         
-        print 'scipy fit: ',
+        
         import time
         a = time.time()
-        all_peaks = [2.010,2.321,3.285,3.851,4.023,4.647,5.064,5.195]
-        print all_peaks
 
-        matches,count = self.owner.cifdatabase.find_by_q(all_peaks)
-        b = time.time()
+        peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
+#         matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
         
         goodness = np.zeros(np.shape(count))
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
             qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
             goodness[i] = cnt/float(len(qlist))
 
-        matches  = [x for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-        count    = [y for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-        goodness = [t for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-
-#         print
-        print matches
-        print 'worked! %d matched patterns in %0.3f ms' % (len(matches),((b-a)* 1e3))
+        matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfrac])
 
 
-        print '\nfrom 11686 peaks: ',
-        a = time.time()
-        all_peaks = [2.31,3.27,2.0,4.01]
-        print all_peaks
-
-        matches,count = self.owner.cifdatabase.find_by_q(all_peaks)
         b = time.time()
-        
-        goodness = np.zeros(np.shape(count))
-        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
-            goodness[i] = cnt/float(len(qlist))
-
-        matches  = [x for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-        count    = [y for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-        goodness = [t for t,x,y in sorted(zip(goodness,matches,count)) if t > 0.5]
-
-#         print
+        print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
         print matches
-        print 'worked! %d matched patterns in %0.3f ms' % (len(matches),((b-a)* 1e3))
-
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):

@@ -746,27 +746,30 @@ class cifDB(object):
             for i,hkl in enumerate(hkllist):
                 if np.abs(Flist[i]) > 0.01:
                     qid = int((np.linalg.norm(qlist[i])-QMIN)/QSTEP)
-                    if qid not in all_qid:
-                        all_qid.append(qid)
+#                     if (qid) not in all_qid:
+#                         all_qid.append(qid)
+                    for qii in np.arange(qid-3,qid+3,1):
+                        if (qii) not in all_qid:
+                            all_qid.append(qii)
         except:
             
             print 'Could not import : %s' % cifile
             
-            path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
-            if not os.path.exists(path):
-                command = 'mkdir %s' % path
-                os.system(command)
-            
-            if url:
-                i = int(cifile.split('=')[-2].split('.')[0])
-                file = 'amcsd%05d.cif' % i
-                r = requests.get(cifile)
-                f = open(file,'w')
-                f.write(r.text)
-            else:
-                command = 'cp %s %s/.' % (cifile,path)
-                os.system(command)
-            return
+#             path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
+#             if not os.path.exists(path):
+#                 command = 'mkdir %s' % path
+#                 os.system(command)
+#             
+#             if url:
+#                 i = int(cifile.split('=')[-2].split('.')[0])
+#                 file = 'amcsd%05d.cif' % i
+#                 r = requests.get(cifile)
+#                 f = open(file,'w')
+#                 f.write(r.text)
+#             else:
+#                 command = 'cp %s %s/.' % (cifile,path)
+#                 os.system(command)
+#             return
 
        
         self.load_database()
@@ -932,13 +935,29 @@ class cifDB(object):
         return qpeaks
     
 
-    def find_by_q(self,qpeaks):
+    def find_by_q(self,qpeaks,minpeaks=2):
 
         self.load_database()
         all_matches = []
+        
+        print qpeaks
         for q in qpeaks:
+
             q_matches = []
-            q0  = round(q,2)
+            q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
+            
+#             minq = q0-2*QSTEP
+#             maxq = q0+2*QSTEP
+# 
+#             for q0i in np.arange(minq,maxq,QSTEP):
+#                 search_qrange = self.qrange.select(self.qrange.c.q == q0i)
+#                 for row in search_qrange.execute():
+#                     q_id = row.q_id
+#                     search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+#                     for row in search_amcsd.execute():
+#                         if row.amcsd_id not in q_matches:
+#                             q_matches += [row.amcsd_id]
+
             search_qrange = self.qrange.select(self.qrange.c.q == q0)
             for row in search_qrange.execute():
                 q_id = row.q_id
@@ -961,8 +980,8 @@ class cifDB(object):
                     idx = matches.index(item)
                     count[idx] = count[idx]+1
         
-        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > 2]
-        count_matches = [y for y, x in sorted(zip(count,matches)) if y > 2]
+        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
+        count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
         
         return amcsd_matches,count_matches
 

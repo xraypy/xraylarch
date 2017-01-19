@@ -372,6 +372,7 @@ def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
 
     peaktwth = []
     peakFWHM = []
+    peakinty = []
     for j in ipeaks:
         if j > halfwidth and (np.shape(q)-j) > halfwidth:
             minval = int(j - halfwidth)
@@ -384,13 +385,14 @@ def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
 
                 xdata = twth_from_q(xdata,wavelength)
                 try:
-                    twth,fwhm = data_gaussian_fit(xdata,ydata,fittype=fittype)
+                    twth,fwhm,pkint = data_gaussian_fit(xdata,ydata,fittype=fittype)
                     peaktwth += [twth]
                     peakFWHM += [fwhm]
+                    peakinty += [pkint]
                 except:
                     pass
         
-    return np.array(peaktwth),np.array(peakFWHM)
+    return np.array(peaktwth),np.array(peakFWHM),np.array(peakinty)
 ##########################################################################
 def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
     '''
@@ -433,9 +435,11 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
     if fittype == 'double':
         pkpos = popt2[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
+        pkint  = np.max(doublegaussian(x,*popt2))
     else:
         pkpos = popt[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
+        pkint  = np.max(gaussian(x,*popt2))
 
     if plot:
         title_str = 'Gaussian fit for Peak %i' % (pknum+1)
@@ -454,7 +458,7 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
         plt.title(title_str)
         plt.show()
     
-    return pkpos,pkfwhm
+    return pkpos,pkfwhm,pkint
     
 ##########################################################################
 def gaussian(x,a,b,c):
@@ -467,7 +471,7 @@ def doublegaussian(x,a1,b1,c1,a2,b2,c2):
 def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
                          verbose=True):
 
-    twth,FWHM = peakfitter(ipeaks,q,I,wavelength=wavelength,halfwidth=halfwidth,
+    twth,FWHM,inten = peakfitter(ipeaks,q,I,wavelength=wavelength,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
 
     tanth = np.tan(np.radians(twth/2))
@@ -477,8 +481,8 @@ def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
     
     if verbose:
         print '\nFit results:'
-        for i,twth in enumerate(twth):
-            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg)' % (i,twth,FWHM[i])
+        for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
+            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni)
         print
         print '\nInstrumental broadening parameters:'
         print '---  U',u
