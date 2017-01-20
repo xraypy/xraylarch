@@ -935,7 +935,7 @@ class cifDB(object):
         return qpeaks
     
 
-    def find_by_q(self,qpeaks,minpeaks=2):
+    def find_by_q(self,qpeaks,minpeaks=2,option=1):
 
         self.load_database()
         all_matches = []
@@ -945,28 +945,48 @@ class cifDB(object):
 
             q_matches = []
             q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
-            
-#             minq = q0-2*QSTEP
-#             maxq = q0+2*QSTEP
-# 
-#             for q0i in np.arange(minq,maxq,QSTEP):
-#                 search_qrange = self.qrange.select(self.qrange.c.q == q0i)
-#                 for row in search_qrange.execute():
-#                     q_id = row.q_id
-#                     search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
-#                     for row in search_amcsd.execute():
-#                         if row.amcsd_id not in q_matches:
-#                             q_matches += [row.amcsd_id]
 
-            search_qrange = self.qrange.select(self.qrange.c.q == q0)
-            for row in search_qrange.execute():
-                q_id = row.q_id
-                search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
-                for row in search_amcsd.execute():
-                    if row.amcsd_id not in q_matches:
-                        q_matches += [row.amcsd_id]
-                            
+            import time
+            a0 = time.time()            
+            if option == 1:
+            
+                minq = q0-2*QSTEP
+                maxq = q0+2*QSTEP
+
+                for q0i in np.arange(minq,maxq,QSTEP):
+                    search_qrange = self.qrange.select(self.qrange.c.q == q0i)
+                    for row in search_qrange.execute():
+                        q_id = row.q_id
+                        search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+                        for row in search_amcsd.execute():
+                            if row.amcsd_id not in q_matches:
+                            q_matches += [row.amcsd_id]
+
+
+            elif option == 2:
+                search_qrange = self.qrange.select(self.qrange.c.q == q0)
+                for row in search_qrange.execute():
+                    q_id = row.q_id
+                    search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+                    for row in search_amcsd.execute():
+                        if row.amcsd_id not in q_matches:
+                            q_matches += [row.amcsd_id]
+
+            elif option == 3:
+
+                search_qrange = self.qrange.select((self.qrange.c.q - q0) < 0.04)
+                for row in search_qrange.execute():
+                    q_id = row.q_id
+                    search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+                    for row in search_amcsd.execute():
+                        if row.amcsd_id not in q_matches:
+                            q_matches += [row.amcsd_id]
+
+            c0 = time.time()
             all_matches += [q_matches]
+            print 'time'
+            print c0-a0
+
 
 ###     set(a).intersection(b, c)
         matches = []

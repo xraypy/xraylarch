@@ -483,7 +483,9 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            raw_mask = tifffile.imread(path)
+            #raw_mask = tifffile.imread(path)
+            import fabio
+            raw_mask = fabio.open(path).data
             self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
             self.checkIMAGE()
