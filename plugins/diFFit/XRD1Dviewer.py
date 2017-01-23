@@ -1119,34 +1119,23 @@ class Fitting1DXRD(BasePanel):
         if fit:
             self.background_fit()
             
-    def quick_check(self,event=None,minpeaks=2,minfrac=0.5):
+    def quick_check(self,event=None,minpeaks=2,minfrac=0.8):
     
-#         self.owner.cifdatabase.find_by_q([2.01])
-        self.owner.cifdatabase.find_q_for_cif(11686,verbose=True)
-#         self.owner.cifdatabase.find_q_for_cif(11684,verbose=True)
-#         self.owner.cifdatabase.find_q_for_cif(42)
-        
         
         import time
         a = time.time()
-        peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-        #peaks = [2.010197, 2.321101]
-        print peaks
-        
-        matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
-        #matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
+#         peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+#         matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
+        matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
     
         goodness = np.zeros(np.shape(count))
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
             qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
-            qsublist = [q for q in qlist if ((q-np.min(peaks))>-0.1) and ((np.max(peaks)-q)>-0.1)]
-            #qsublist = [q for q in qlist if ((q-np.min(self.plt_peaks[0]))>-0.1) and ((np.max(self.plt_peaks[0])-q)>-0.1)]
+#             qsublist = [q for q in qlist if ((q-np.min(peaks))>-0.1) and ((np.max(peaks)-q)>-0.1)]
+            qsublist = [q for q in qlist if ((q-np.min(self.plt_peaks[0]))>-0.1) and ((np.max(self.plt_peaks[0])-q)>-0.1)]
 
-            goodness[i] = cnt/float(len(qsublist))
+            goodness[i] = cnt/float(len(qsublist)/6) # 6 represents the broadening of peaks in database
 
-        print 'and?'
-        print matches,count,goodness
-        print
         try:
             matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfrac])
         except:

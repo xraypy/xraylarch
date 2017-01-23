@@ -949,15 +949,19 @@ class cifDB(object):
             search_qrange = self.qrange.select(self.qrange.c.q == q0)
             for row in search_qrange.execute():
                 q_id = row.q_id
-                print 'q0 and q_id: ',q0,q_id
                 search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
                 for row in search_amcsd.execute():
                     if row.amcsd_id not in q_matches:
                         q_matches += [row.amcsd_id]
-
+                    if row.amcsd_id not in matches:
+                        matches += [row.amcsd_id]
+                        count += [1]
+                    else:
+                        idx = matches.index(row.amcsd_id)
+                        count[idx] = count[idx]+1
 
             all_matches += [q_matches]
-
+        
         amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
         count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
         
