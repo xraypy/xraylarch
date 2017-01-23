@@ -722,7 +722,7 @@ class cifDB(object):
 
    
         ## generate hkl list
-        hkllist = generate_hkl(maxval=27)
+        hkllist = generate_hkl(maxval=50)
 
         energy = 8048 # units eV
 
@@ -1067,8 +1067,8 @@ class cifDB(object):
 #             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
             url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
 
-        for i in range(13600,13605):
-#         for i in range(99999):
+#         for i in range(13600,13605):
+        for i in range(99999):
         #for i in range(100,200):
             url_to_scrape = url % i
             try:

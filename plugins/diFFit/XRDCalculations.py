@@ -652,11 +652,14 @@ allhkl = [[0,0,1],[0,1,0],[1,0,0],                          ##  1
 
 def generate_hkl(maxval=50,symmetry=None):
 
-    hkllist = []
-    for hkl in allhkl:
-        if maxval >= (hkl[0]**2 + hkl[1]**2 + hkl[2]**2):
-            hkllist += [hkl]
-    return hkllist
+    if maxval == 50:
+        return allhkl
+    else:
+        hkllist = []
+        for hkl in allhkl:
+            if maxval >= (hkl[0]**2 + hkl[1]**2 + hkl[2]**2):
+                hkllist += [hkl]
+        return hkllist
 
 
 ##########################################################################

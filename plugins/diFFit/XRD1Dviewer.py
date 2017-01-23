@@ -2087,7 +2087,7 @@ class RangeToolsPanel(wx.Panel):
         
         
         # Peak fitting defaults
-        self.iregions = 50
+        self.iregions = 20
         self.gapthrsh = 5
         self.halfwidth = 40
         self.intthrsh = 100
