@@ -884,7 +884,7 @@ class cifDB(object):
             cifstr = row.cif
             mineral_id = row.mineral_id
             iuc_id = row.iuc_id
-
+        
         search_mineralname = self.allminerals.select(self.allminerals.c.mineral_id == mineral_id)
         for row in search_mineralname.execute():
             mineral_name = row.mineral_name
@@ -935,75 +935,58 @@ class cifDB(object):
         return qpeaks
     
 
-    def find_by_q(self,qpeaks,minpeaks=2,option=1):
+    def find_by_q(self,qpeaks,minpeaks=2):
 
         self.load_database()
         all_matches = []
-        
-        print qpeaks
-        for q in qpeaks:
-
-            q_matches = []
-            q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
-
-            import time
-            a0 = time.time()            
-            if option == 1:
-            
-                minq = q0-2*QSTEP
-                maxq = q0+2*QSTEP
-
-                for q0i in np.arange(minq,maxq,QSTEP):
-                    search_qrange = self.qrange.select(self.qrange.c.q == q0i)
-                    for row in search_qrange.execute():
-                        q_id = row.q_id
-                        search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
-                        for row in search_amcsd.execute():
-                            if row.amcsd_id not in q_matches:
-                            q_matches += [row.amcsd_id]
-
-
-            elif option == 2:
-                search_qrange = self.qrange.select(self.qrange.c.q == q0)
-                for row in search_qrange.execute():
-                    q_id = row.q_id
-                    search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
-                    for row in search_amcsd.execute():
-                        if row.amcsd_id not in q_matches:
-                            q_matches += [row.amcsd_id]
-
-            elif option == 3:
-
-                search_qrange = self.qrange.select((self.qrange.c.q - q0) < 0.04)
-                for row in search_qrange.execute():
-                    q_id = row.q_id
-                    search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
-                    for row in search_amcsd.execute():
-                        if row.amcsd_id not in q_matches:
-                            q_matches += [row.amcsd_id]
-
-            c0 = time.time()
-            all_matches += [q_matches]
-            print 'time'
-            print c0-a0
-
-
-###     set(a).intersection(b, c)
         matches = []
         count = []
-        for i,listI in enumerate(all_matches):
-            for j,item in enumerate(listI):
-                if item not in matches:
-                    matches += [item]
-                    count += [1]
-                else:
-                    idx = matches.index(item)
-                    count[idx] = count[idx]+1
-        
+
+        for q in qpeaks:
+            q_matches = []
+            q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
+           
+            search_qrange = self.qrange.select(self.qrange.c.q == q0)
+            for row in search_qrange.execute():
+                q_id = row.q_id
+                print 'q0 and q_id: ',q0,q_id
+                search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+                for row in search_amcsd.execute():
+                    if row.amcsd_id not in q_matches:
+                        q_matches += [row.amcsd_id]
+
+
+            all_matches += [q_matches]
+
         amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
         count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
         
         return amcsd_matches,count_matches
+        
+#             search_qrange = self.qrange.select(self.qrange.c.q == q0)
+#             for row in search_qrange.execute():
+#                 q_id = row.q_id
+#                 search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+#                 for row in search_amcsd.execute():
+#                     if row.amcsd_id not in q_matches:
+#                         q_matches += [row.amcsd_id]
+# 
+# ###     set(a).intersection(b, c)
+#         matches = []
+#         count = []
+#         for i,listI in enumerate(all_matches):
+#             for j,item in enumerate(listI):
+#                 if item not in matches:
+#                     matches += [item]
+#                     count += [1]
+#                 else:
+#                     idx = matches.index(item)
+#                     count[idx] = count[idx]+1
+#         
+#         amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
+#         count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
+#         
+#         return amcsd_matches,count_matches
 
     def create_array(self,maxrows=None):
     
@@ -1077,9 +1060,11 @@ class cifDB(object):
     def mine_for_cif(self,verbose=False,save=False,addDB=True,url=None):
     
         if url is None:
-            url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
+#             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
+            url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
 
-        for i in range(99999):
+        for i in range(13600,13605):
+#         for i in range(99999):
         #for i in range(100,200):
             url_to_scrape = url % i
             try:
@@ -1088,9 +1073,11 @@ class cifDB(object):
                 if r.text.split()[0] == "Can't" or '':
                     if verbose:
                         print('\t---> ERROR on amcsd%05d.cif' % i)
+                        print '\t\t',r.text.split()[0]
                 else:
                     if verbose:
                         print('Reading %s' % url_to_scrape)
+                        print '\t\t',r.text.split()[0]
 
                     if save:
                         file = 'amcsd%05d.cif' % i
