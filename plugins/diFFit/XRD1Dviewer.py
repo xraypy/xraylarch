@@ -1134,7 +1134,7 @@ class Fitting1DXRD(BasePanel):
 #             qsublist = [q for q in qlist if ((q-np.min(peaks))>-0.1) and ((np.max(peaks)-q)>-0.1)]
             qsublist = [q for q in qlist if ((q-np.min(self.plt_peaks[0]))>-0.1) and ((np.max(self.plt_peaks[0])-q)>-0.1)]
 
-            goodness[i] = cnt/float(len(qsublist)/6) # 6 represents the broadening of peaks in database
+            goodness[i] = cnt/float(len(qsublist)/5) # 5 represents the broadening of peaks in database ---> soft code mkak 2017.01.23
 
         try:
             matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfrac])

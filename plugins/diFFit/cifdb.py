@@ -325,6 +325,7 @@ CATEGORIES = ['soil',
 QMIN = 0.2
 QMAX = 10.0
 QSTEP = 0.01
+QWIDTH = 0.05
 
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
@@ -649,7 +650,7 @@ class cifDB(object):
         self.qpeak = Table('qpeaks', self.metadata)
         self.category = Table('category', self.metadata)
 
-    def add_cif_to_db(self,cifile,verbose=True,url=False):
+    def add_cif_to_db(self,cifile,verbose=True,url=False,ijklm=1):
         '''
             ## Adds cifile into database
             When reading in new CIF:
@@ -726,50 +727,42 @@ class cifDB(object):
 
         energy = 8048 # units eV
 
-        if url:
-            cifstr = requests.get(cifile).text
-        else:
-            with open(cifile,'r') as file:
-                cifstr = str(file.read())
-
-        try:
+        if 1 == 1:
             if url:
+                cifstr = requests.get(cifile).text
+                testfile = '/Users/koker/Data/XRMMappingCode/cif_test_%05d.txt' % ijklm
+                print '\t ACTUALLY : ',testfile
+                with open(testfile,'r') as file:
+                    cifstr = str(file.read())
                 cif = xu.materials.Crystal.fromCIF('/fromweb/file.cif',fid=cStringIO.StringIO(cifstr))
             else:
+                with open(cifile,'r') as file:
+                    cifstr = str(file.read())
                 cif = xu.materials.Crystal.fromCIF(cifile)
-    
+ 
             qlist = cif.Q(hkllist)
             Flist = cif.StructureFactorForQ(qlist,energy)
-
+            print qlist,Flist
 
             all_qid = []
+            q_wid = int((QWIDTH/QSTEP)/2)
+            q_wpk = (q_wid*2)+1
             for i,hkl in enumerate(hkllist):
                 if np.abs(Flist[i]) > 0.01:
                     qid = int((np.linalg.norm(qlist[i])-QMIN)/QSTEP)
 #                     if (qid) not in all_qid:
 #                         all_qid.append(qid)
-                    for qii in np.arange(qid-3,qid+3,1):
+                    for qii in np.arange(qid-q_wid,qid+q_wid_1,1):
                         if (qii) not in all_qid:
                             all_qid.append(qii)
-        except:
-            
-            print 'Could not import : %s' % cifile
-            
-#             path = '%s/CIF_Errant/' % os.path.split(__file__)[0]
-#             if not os.path.exists(path):
-#                 command = 'mkdir %s' % path
-#                 os.system(command)
+            print 'Successfully imported : %s' % cifile
+
+#         except:
 #             
-#             if url:
-#                 i = int(cifile.split('=')[-2].split('.')[0])
-#                 file = 'amcsd%05d.cif' % i
-#                 r = requests.get(cifile)
-#                 f = open(file,'w')
-#                 f.write(r.text)
-#             else:
-#                 command = 'cp %s %s/.' % (cifile,path)
-#                 os.system(command)
+#             print 'Could not import : %s\n\n' % cifile
 #             return
+
+
 
        
         self.load_database()
@@ -1067,8 +1060,9 @@ class cifDB(object):
 #             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
             url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
 
+        for i in range(4,6):
 #         for i in range(13600,13605):
-        for i in range(99999):
+#         for i in range(99999):
         #for i in range(100,200):
             url_to_scrape = url % i
             try:
@@ -1077,11 +1071,10 @@ class cifDB(object):
                 if r.text.split()[0] == "Can't" or '':
                     if verbose:
                         print('\t---> ERROR on amcsd%05d.cif' % i)
-                        print '\t\t',r.text.split()[0]
+
                 else:
                     if verbose:
                         print('Reading %s' % url_to_scrape)
-                        print '\t\t',r.text.split()[0]
 
                     if save:
                         file = 'amcsd%05d.cif' % i
@@ -1091,7 +1084,7 @@ class cifDB(object):
                         if verbose:
                             print 'Saved %s' % file
                     if addDB:
-                        self.add_cif_to_db(url_to_scrape,url=True,verbose=verbose)
+                        self.add_cif_to_db(url_to_scrape,url=True,verbose=verbose,ijklm=i)
             except:
                 pass
 
