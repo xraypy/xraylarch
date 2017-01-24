@@ -1119,22 +1119,52 @@ class Fitting1DXRD(BasePanel):
         if fit:
             self.background_fit()
             
-    def quick_check(self,event=None,minpeaks=2,minfrac=0.8):
+    def quick_check(self,event=None,minpeaks=2,minfrac=0.75,pk_wid=0.05):
     
         
+        #pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        self.xmin = 1.75
+        self.xmax = 5.25
+        #pks_0 = self.plt_peaks[0]
+        print '\n',pks_0,'\n range: ',self.xmin,self.xmax
+
+        qstep = 0.01 ## read this from cifdb.py; mkak 2017.01.24
+        qmin  = 0.2  ## read this from cifdb.py; mkak 2017.01.24
+        
+        peaks = []
+        p_ids = []
+
+        for pk0 in pks_0:
+            pk=pk0
+            pk_id = int((pk0-qmin)/qstep)
+            
+            ## performs peak broadening here
+            if pk_wid > 0:    
+                st = int(pk_wid/qstep/2)
+                for p in np.arange(-1*st,st+1):
+                    peaks += [pk+p*qstep]
+                    p_ids += [pk_id+p]
+            else:
+                peaks += [pk]
+                p_ids += [pk_id]
+
         import time
         a = time.time()
-#         peaks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-#         matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
-        matches,count = self.owner.cifdatabase.find_by_q(self.plt_peaks[0],minpeaks=minpeaks)
-    
-        goodness = np.zeros(np.shape(count))
-        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            qlist = self.owner.cifdatabase.find_q_for_cif(amcsd)
-#             qsublist = [q for q in qlist if ((q-np.min(peaks))>-0.1) and ((np.max(peaks)-q)>-0.1)]
-            qsublist = [q for q in qlist if ((q-np.min(self.plt_peaks[0]))>-0.1) and ((np.max(self.plt_peaks[0])-q)>-0.1)]
 
-            goodness[i] = cnt/float(len(qsublist)/5) # 5 represents the broadening of peaks in database ---> soft code mkak 2017.01.23
+        matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
+
+        b = time.time()
+        if (b-a) > 1:
+            print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
+        else:
+            print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
+
+        goodness = np.zeros(np.shape(count))       
+        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+            goodness[i] = self.owner.cifdatabase.fraction_in_range(amcsd,cnt,
+                                                                qmin=self.xmin,
+                                                                qmax=self.xmax)
 
         try:
             matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfrac])
@@ -1142,13 +1172,19 @@ class Fitting1DXRD(BasePanel):
             matches,count,goodness = [],[],[]
 
 
-        b = time.time()
-        if (b-a) > 1:
-            print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
+        c = time.time()
+        if (c-a) > 1:
+            print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((c-a)* 1e0)))
+            print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
         else:
-            print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
+            print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((c-a)* 1e3)))
+            print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
         if len(matches) > 0:
-            print matches
+            for i,amcsd in enumerate(matches):
+                str = 'AMCSD %i (matched %0.3f or %i out of %i): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
+                print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=self.xmin,qmax=self.xmax)
+
+            
         print
 
 
@@ -2166,7 +2202,7 @@ class BackgroundToolsPanel(wx.Panel):
         
         
         # Peak fitting defaults
-        self.iregions = 50
+        self.iregions = 20
         self.gapthrsh = 5
         self.halfwidth = 40
         self.intthrsh = 100
@@ -2311,7 +2347,7 @@ class DatabasePanel(wx.Panel):
 #         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_1 = wx.Button(self,label='Filter database')
-        btn_2 = wx.Button(self,label='Quick button - check q')
+        btn_2 = wx.Button(self,label='Find matches')
         
         btn_1.Bind(wx.EVT_BUTTON,   self.owner.search_database)
         btn_2.Bind(wx.EVT_BUTTON,   self.owner.quick_check)
