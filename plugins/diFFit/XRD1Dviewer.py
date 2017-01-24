@@ -1119,14 +1119,13 @@ class Fitting1DXRD(BasePanel):
         if fit:
             self.background_fit()
             
-    def quick_check(self,event=None,minpeaks=2,minfrac=0.75,pk_wid=0.05):
+    def match_database(self,event=None,minpeaks=2,minfrac=0.75,pk_wid=0.05):
     
-        
-        #pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        #pks_0 = self.plt_peaks[0        
+
         pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
         self.xmin = 1.75
         self.xmax = 5.25
-        #pks_0 = self.plt_peaks[0]
         print '\n',pks_0,'\n range: ',self.xmin,self.xmax
 
         qstep = 0.01 ## read this from cifdb.py; mkak 2017.01.24
@@ -2350,7 +2349,7 @@ class DatabasePanel(wx.Panel):
         btn_2 = wx.Button(self,label='Find matches')
         
         btn_1.Bind(wx.EVT_BUTTON,   self.owner.search_database)
-        btn_2.Bind(wx.EVT_BUTTON,   self.owner.quick_check)
+        btn_2.Bind(wx.EVT_BUTTON,   self.owner.match_database)
         
         vbox.Add(btn_1, flag=wx.BOTTOM, border=8)
         vbox.Add(btn_2, flag=wx.RIGHT,  border=20)
