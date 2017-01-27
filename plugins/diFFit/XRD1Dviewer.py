@@ -2323,21 +2323,25 @@ class DatabasePanel(wx.Panel):
     
     def NewPanelTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-#         hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_1 = wx.Button(self,label='Select database file')
+        btn_1 = wx.Button(self,label='Change database')
         btn_2 = wx.Button(self,label='Filter database')
-        btn_3 = wx.Button(self,label='Find matches')
+        btn_3 = wx.Button(self,label='Search options')
+        btn_4 = wx.Button(self,label='Find matches')
         
         btn_1.Bind(wx.EVT_BUTTON,   None)
         btn_2.Bind(wx.EVT_BUTTON,   self.owner.search_database)
-        btn_3.Bind(wx.EVT_BUTTON,   self.owner.match_database)
+        btn_3.Bind(wx.EVT_BUTTON,   None)
+        btn_4.Bind(wx.EVT_BUTTON,   self.owner.match_database)
         
-        vbox.Add(btn_1, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_2, flag=wx.BOTTOM, border=8)
+        hbox.Add(btn_1, flag=wx.RIGHT,  border=8)
+        hbox.Add(btn_2, flag=wx.RIGHT,  border=8)
+        vbox.Add(hbox,  flag=wx.BOTTOM, border=8)
         vbox.Add(btn_3, flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_4, flag=wx.BOTTOM, border=8)
         
-#         vbox.Add(hbox,flag=wx.ALL,border=10)
+
         
         return vbox
         
