@@ -326,20 +326,19 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
-def peakfilter(intthrsh,ipeaks,x,y):
+def peakfilter(intthrsh,ipeaks,y,verbose=False):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfilter() with the option of setting a minimum intensity
     threshold for filtering peaks
     '''
     ipks = []
-    xypks = []
-    
-    xypks += [[x[i],y[i]] for i in ipeaks if y[i] > intthrsh]
-    xypks = zip(*xypks)
-    ipks += [i    for i in ipeaks if y[i] > intthrsh]
+    ipks += [i for i in ipeaks if y[i] > intthrsh]
 
-    return ipks,xypks
+    if verbose:
+        print('Peaks under intensity %i filtered out.' % intthrsh)
+    
+    return ipks
 
 ##########################################################################
 def peaklocater(ipeaks,x,y):
@@ -652,11 +651,14 @@ allhkl = [[0,0,1],[0,1,0],[1,0,0],                          ##  1
 
 def generate_hkl(maxval=50,symmetry=None):
 
-    hkllist = []
-    for hkl in allhkl:
-        if maxval >= (hkl[0]**2 + hkl[1]**2 + hkl[2]**2):
-            hkllist += [hkl]
-    return hkllist
+    if maxval == 50:
+        return allhkl
+    else:
+        hkllist = []
+        for hkl in allhkl:
+            if maxval >= (hkl[0]**2 + hkl[1]**2 + hkl[2]**2):
+                hkllist += [hkl]
+        return hkllist
 
 
 ##########################################################################
