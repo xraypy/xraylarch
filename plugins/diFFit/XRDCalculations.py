@@ -326,20 +326,19 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
-def peakfilter(intthrsh,ipeaks,x,y):
+def peakfilter(intthrsh,ipeaks,y,verbose=False):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfilter() with the option of setting a minimum intensity
     threshold for filtering peaks
     '''
     ipks = []
-    xypks = []
-    
-    xypks += [[x[i],y[i]] for i in ipeaks if y[i] > intthrsh]
-    xypks = zip(*xypks)
-    ipks += [i    for i in ipeaks if y[i] > intthrsh]
+    ipks += [i for i in ipeaks if y[i] > intthrsh]
 
-    return ipks,xypks
+    if verbose:
+        print('Peaks under intensity %i filtered out.' % intthrsh)
+    
+    return ipks
 
 ##########################################################################
 def peaklocater(ipeaks,x,y):

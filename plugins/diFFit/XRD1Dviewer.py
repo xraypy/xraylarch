@@ -255,15 +255,8 @@ class diFFit1DFrame(wx.Frame):
 
         self.xrd1Dfitting.xmin       = min
         self.xrd1Dfitting.xmax       = max
-        
-        # Peak fitting defaults
-        self.xrd1Dfitting.iregions = 50
-        self.xrd1Dfitting.gapthrsh = 5
-        
-        # Background fitting defaults
-        self.xrd1Dfitting.exponent   = 20
-        self.xrd1Dfitting.compress   = 2
-        self.xrd1Dfitting.width      = 4
+
+        self.xrd1Dfitting.SetFittingDefaults()
    
 
     def loadXYFILE(self,event=None):
@@ -535,8 +528,13 @@ class Fitting1DXRD(BasePanel):
         self.energy     = 19.0   ## keV
         self.wavelength = lambda_from_E(self.energy) ## A
         
+        self.SetFittingDefaults()
+        self.Panel1DFitting()
+    
+    def SetFittingDefaults(self):
+
         # Peak fitting defaults
-        self.iregions = 50
+        self.iregions = 20
         self.gapthrsh = 5
         self.halfwidth = 40
         self.intthrsh = 100
@@ -545,8 +543,7 @@ class Fitting1DXRD(BasePanel):
         self.exponent   = 20
         self.compress   = 2
         self.width      = 4
-
-        self.Panel1DFitting()
+            
     
 
      
@@ -726,24 +723,21 @@ class Fitting1DXRD(BasePanel):
 
     def set_range(self,event=None):
         
-        if float(self.rngpl.val_qmax.GetValue()) < float(self.rngpl.val_qmin.GetValue()):
-            min = float(self.rngpl.val_qmax.GetValue())
-            max = float(self.rngpl.val_qmin.GetValue())
-            self.rngpl.val_qmin.SetValue('%0.3f' % min)
-            self.rngpl.val_qmax.SetValue('%0.3f' % max)        
+        if self.xmax != float(self.rngpl.val_qmax.GetValue()) or self.xmin != float(self.rngpl.val_qmin.GetValue()):
+
+            if float(self.rngpl.val_qmax.GetValue()) < float(self.rngpl.val_qmin.GetValue()):
+                min = float(self.rngpl.val_qmax.GetValue())
+                max = float(self.rngpl.val_qmin.GetValue())
+                self.rngpl.val_qmin.SetValue('%0.3f' % min)
+                self.rngpl.val_qmax.SetValue('%0.3f' % max)
         
-        self.check_range()
-        self.trim_data()
-        if self.bgr is not None:
-            self.fit_background()
-
-        self.plot_data()
-        #self.plot_background()
-
-        if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
-
-            self.plot_peaks()
+            self.check_range()
+            self.trim_data()
+        
+            self.delete_background()
+            self.remove_all_peaks()
+        
+            self.plot_data()
     
     def check_range(self,event=None):
 
@@ -779,7 +773,6 @@ class Fitting1DXRD(BasePanel):
             self.fit_background()
                     
         self.plot_data()
-        #self.plot_background()
 
         if self.ipeaks is not None:
             self.ipeaks     = None
@@ -833,17 +826,20 @@ class Fitting1DXRD(BasePanel):
             self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             self.plot_peaks()
         
-        self.bkgdpl.ck_bkgd.SetValue(False)
-        self.bkgdpl.ck_bkgd.Disable()
-        self.bkgdpl.btn_rbkgd.Disable()
-        self.bkgdpl.btn_fbkgd.Enable()
-
-        
     def delete_background(self,event=None):
 
         self.bgr_data = None
         self.bgr = None
         self.bgr_info = None
+        self.subtracted = False
+        
+        try:
+            self.bkgdpl.ck_bkgd.SetValue(False)
+            self.bkgdpl.ck_bkgd.Disable()
+            self.bkgdpl.btn_rbkgd.Disable()
+            self.bkgdpl.btn_fbkgd.Enable()
+        except:
+            pass
 
     def plot_background(self,event=None):
 
@@ -882,7 +878,7 @@ class Fitting1DXRD(BasePanel):
                              color='blue', label='Background subtracted',
                              show_legend=True)
 
-            self.bkgdpl.btn_rbkgd.Disable()
+#             self.bkgdpl.btn_rbkgd.Disable()
             self.bkgdpl.btn_fbkgd.Disable()
             self.bkgdpl.btn_obkgd.Disable()
         
@@ -911,18 +907,22 @@ class Fitting1DXRD(BasePanel):
     def find_peaks(self,event=None,filter=False):
         ## clears previous searches
         self.remove_all_peaks()
-        
+
         self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,
                                  gapthrsh=self.gapthrsh)
-        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+        
+        
         if filter:
-            self.ipeaks,self.plt_data = peakfilter(self.intthrsh,self.ipeaks,*self.plt_data)
+            self.intthrsh = int(self.pkpl.val_intthr.GetValue())
+            self.ipeaks = peakfilter(self.intthrsh,self.ipeaks,self.plt_data[1])
+        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
         
         str = 'Peak (%2.3f, %6d)'
         for i,ii in enumerate(self.ipeaks):
             peakname = str % (self.plt_peaks[0,i],self.plt_peaks[1,i])
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
+        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
         
         #self.plot_peaks()
         self.plot_data()
@@ -980,6 +980,7 @@ class Fitting1DXRD(BasePanel):
         # self.peaklistbox.Destroy()
         self.peaklist = []
         self.peaklistbox.Clear()
+        self.pkpl.ttl_cntpks.SetLabel('Total: 0 peaks')
 
     def edit_peaks(self,event=None):
 
@@ -994,7 +995,7 @@ class Fitting1DXRD(BasePanel):
             self.iregions  = int(myDlg.val_regions.GetValue())
             self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
             self.halfwidth = int(myDlg.val_hw.GetValue())
-            self.intthrsh  = int(myDlg.val_intthr.GetValue())
+#             self.intthrsh  = int(myDlg.val_intthr.GetValue())
             fit = True
         myDlg.Destroy()
         
@@ -1003,26 +1004,12 @@ class Fitting1DXRD(BasePanel):
 
     def select_peak(self, evt=None, peakname=None,  **kws):
 
-
         if peakname is None and evt is not None:
             peakname = evt.GetString()
 ##      if pki is None and evt is not None:
 ##          pki = self.peaklistbox.GetSelections()
     
     def rm_sel_peaks(self, peakname, event=None):
-
-#         for pki in reversed(self.peaklistbox.GetSelections()):
-#             self.peaklist.pop(pki)
-#             self.ipeaks.pop(pki)
-#         self.peaklistbox.Clear()
-#         for name in self.peaklist:
-#             self.peaklistbox.Append(name)
-#         print np.shape(self.plt_peaks)
-#         self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
-#         print np.shape(self.plt_peaks)    
-#         self.plot_data()
-#         #self.plot_background()
-#         self.plot_peaks()
 
         if peakname in self.peaklist:
             
@@ -1033,8 +1020,9 @@ class Fitting1DXRD(BasePanel):
             self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
             
             self.plot_data()
-            #self.plot_background()
             self.plot_peaks()
+            
+        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -1175,6 +1163,10 @@ class Fitting1DXRD(BasePanel):
         if (c-a) > 1:
             print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((c-a)* 1e0)))
             print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
+        elif (c-a) > 120:
+            print('\n%d matched pattern(s) in %0.2f min' % (len(matches),((c-a)/60)))
+            print('\t(%0.3f s and %0.2f min)' % (((b-a)* 1e0),((c-b)/60)))
+        
         else:
             print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((c-a)* 1e3)))
             print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
@@ -1286,7 +1278,7 @@ class PeakOptions(wx.Dialog):
         self.val_regions.SetValue(str(self.parent.iregions))
         self.val_gapthr.SetValue(str(self.parent.gapthrsh))
         self.val_hw.SetValue(str(self.parent.halfwidth))
-        self.val_intthr.SetValue(str(self.parent.intthrsh))
+#         self.val_intthr.SetValue(str(self.parent.intthrsh))
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
@@ -1335,14 +1327,14 @@ class PeakOptions(wx.Dialog):
         gpthrsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
         gpthrsizer.Add(self.val_gapthr,  flag=wx.RIGHT, border=5)
         
-        ## Intensity threshold
-        intthrsizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_intthr = wx.StaticText(self.panel, label='Intensity threshold')
-
-        self.val_intthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        intthrsizer.Add(ttl_intthr,  flag=wx.RIGHT, border=5)
-        intthrsizer.Add(self.val_intthr,  flag=wx.RIGHT, border=5)
+#         ## Intensity threshold
+#         intthrsizer = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ttl_intthr = wx.StaticText(self.panel, label='Intensity threshold')
+# 
+#         self.val_intthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         intthrsizer.Add(ttl_intthr,  flag=wx.RIGHT, border=5)
+#         intthrsizer.Add(self.val_intthr,  flag=wx.RIGHT, border=5)
 
 
         #####
@@ -1371,8 +1363,8 @@ class PeakOptions(wx.Dialog):
         mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(10)
         mainsizer.Add(gpthrsizer, flag=wx.ALL, border=5)        
-        mainsizer.AddSpacer(10)
-        mainsizer.Add(intthrsizer, flag=wx.ALL, border=5)        
+#         mainsizer.AddSpacer(10)
+#         mainsizer.Add(intthrsizer, flag=wx.ALL, border=5)        
         mainsizer.AddSpacer(10)
         mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
@@ -2119,18 +2111,7 @@ class RangeToolsPanel(wx.Panel):
         self.owner = owner
 
         ## Default information
-        
-        
-        # Peak fitting defaults
-        self.iregions = 20
-        self.gapthrsh = 5
-        self.halfwidth = 40
-        self.intthrsh = 100
-        
-        # Background fitting defaults
-        self.exponent   = 20
-        self.compress   = 2
-        self.width      = 4
+
 
         rangepanel = self.RangeTools()
 
@@ -2199,17 +2180,7 @@ class BackgroundToolsPanel(wx.Panel):
 
         ## Default information
         
-        
-        # Peak fitting defaults
-        self.iregions = 20
-        self.gapthrsh = 5
-        self.halfwidth = 40
-        self.intthrsh = 100
-        
-        # Background fitting defaults
-        self.exponent   = 20
-        self.compress   = 2
-        self.width      = 4
+
 
         bkgdpanel = self.BackgroundTools()
 
@@ -2259,17 +2230,6 @@ class PeakToolsPanel(wx.Panel):
 
         ## Default information
         
-        
-        # Peak fitting defaults
-        self.iregions = 50
-        self.gapthrsh = 5
-        self.halfwidth = 40
-        self.intthrsh = 100
-        
-        # Background fitting defaults
-        self.exponent   = 20
-        self.compress   = 2
-        self.width      = 4
 
         pkspanel = self.PeakTools()
 
@@ -2285,37 +2245,56 @@ class PeakToolsPanel(wx.Panel):
         hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
+        hbox4_pks = wx.BoxSizer(wx.HORIZONTAL)
 
         self.btn_fpks = wx.Button(self,label='Find peaks')
-        self.btn_fpks.Bind(wx.EVT_BUTTON,   self.owner.find_peaks)
+        #self.btn_fpks.Bind(wx.EVT_BUTTON, self.owner.find_peaks)
+        self.btn_fpks.Bind(wx.EVT_BUTTON, partial(self.owner.find_peaks, filter=True))
         hbox1_pks.Add(self.btn_fpks, flag=wx.RIGHT, border=8)
 
-        self.btn_opks = wx.Button(self,label='Options')
-        self.btn_opks.Bind(wx.EVT_BUTTON,   self.owner.peak_options)
+        self.btn_opks = wx.Button(self,label='Search options')
+        self.btn_opks.Bind(wx.EVT_BUTTON, self.owner.peak_options)
         hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
 
-        self.btn_rpks = wx.Button(self,label='Remove all')
-        self.btn_rpks.Bind(wx.EVT_BUTTON,   self.owner.remove_all_peaks)
-        hbox2_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
 
-#         self.btn_spks = wx.Button(self,label='Select peaks manually')
-#         self.btn_spks.Bind(wx.EVT_BUTTON,self.owner.DeleteSinglePeak)
-#         hbox2_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
-        
-        self.btn_fitpks = wx.Button(self,label='Fit peaks')
-        self.btn_fitpks.Bind(wx.EVT_BUTTON,   self.owner.fit_peaks)
-        hbox3_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
+        intthrsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ttl_intthr = wx.StaticText(self, label='Intensity threshold')
+        self.val_intthr = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_intthr.Bind(wx.EVT_TEXT_ENTER, partial(self.owner.find_peaks, filter=True))
+        hbox2_pks.Add(ttl_intthr,  flag=wx.RIGHT, border=8)
+        hbox2_pks.Add(self.val_intthr,  flag=wx.RIGHT, border=8)
 
         self.owner.peaklistbox = EditableListBox(self, self.owner.select_peak,
                                         remove_action=self.owner.rm_sel_peaks,
-                                        size=(250, -1),
-#                                         style =  wx.LB_MULTIPLE
+                                        size=(250, -1) #, style =  wx.LB_MULTIPLE
                                         )
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.ttl_cntpks = wx.StaticText(self, label=('Total: 0 peaks'))
+        hbox3_pks.Add(self.ttl_cntpks, flag=wx.EXPAND|wx.ALL, border=8)
+
+
+        self.btn_rpks = wx.Button(self,label='Remove all')
+        self.btn_rpks.Bind(wx.EVT_BUTTON, self.owner.remove_all_peaks)
+        hbox4_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
+
+#         self.btn_spks = wx.Button(self,label='Select peaks manually')
+#         self.btn_spks.Bind(wx.EVT_BUTTON,self.owner.DeleteSinglePeak)
+#         hbox4_pks.Add(self.btn_spks, flag=wx.RIGHT, border=8)
+        
+        self.btn_fitpks = wx.Button(self,label='Fit peaks')
+        self.btn_fitpks.Bind(wx.EVT_BUTTON, self.owner.fit_peaks)
+        hbox4_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
+
         
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
-        vbox_pks.Add(self.owner.peaklistbox, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(self.owner.peaklistbox, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox3_pks, flag=wx.BOTTOM, border=8)
+        vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
+        
+        self.val_intthr.SetValue(str(self.owner.intthrsh))
         
         
         return vbox_pks  
