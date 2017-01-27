@@ -1040,7 +1040,7 @@ class cifDB(object):
                 pass
         print(authorstr)
         print(' ===================== ')
-        print()
+        print('')
 
     def mine_for_cif(self,verbose=False,save=False,addDB=True,url=None):
     
@@ -1048,8 +1048,10 @@ class cifDB(object):
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
             #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
  
-        ftrack = open('/Users/koker/Data/XRMMappingCode/Search_and_Match/trouble_cif.txt','a+')
-        for i in range(99999): # for i in [4,5,13603]:
+        #ftrack = open('/Users/koker/Data/XRMMappingCode/Search_and_Match/trouble_cif.txt','a+')
+        
+        for i in np.arange(13600,13700):
+        #for i in range(99999): # for i in [4,5,13603]:
             url_to_scrape = url % i
             r = requests.get(url_to_scrape)
             if r.text.split()[0] == "Can't" or '':
@@ -1070,8 +1072,10 @@ class cifDB(object):
                     try:
                         self.add_cif_to_db(url_to_scrape,url=True,verbose=verbose,ijklm=i)
                     except:
-                        ftrack.write('%s\n' % url_to_scrape)
-        ftrack.close()
+                        #ftrack.write('%s\n' % url_to_scrape)
+                        pass
+
+        #ftrack.close()
                     
 
 
