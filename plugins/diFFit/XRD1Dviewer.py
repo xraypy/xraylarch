@@ -1109,11 +1109,11 @@ class Fitting1DXRD(BasePanel):
             
     def match_database(self,event=None,minpeaks=2,minfrac=0.75,pk_wid=0.05):
     
-        #pks_0 = self.plt_peaks[0        
+        pks_0 = self.plt_peaks[0]
 
-        pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-        self.xmin = 1.75
-        self.xmax = 5.25
+        #pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        #self.xmin = 1.75
+        #self.xmax = 5.25
         print '\n',pks_0,'\n range: ',self.xmin,self.xmax
 
         qstep = 0.01 ## read this from cifdb.py; mkak 2017.01.24
@@ -2325,14 +2325,17 @@ class DatabasePanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
 #         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_1 = wx.Button(self,label='Filter database')
-        btn_2 = wx.Button(self,label='Find matches')
+        btn_1 = wx.Button(self,label='Select database file')
+        btn_2 = wx.Button(self,label='Filter database')
+        btn_3 = wx.Button(self,label='Find matches')
         
-        btn_1.Bind(wx.EVT_BUTTON,   self.owner.search_database)
-        btn_2.Bind(wx.EVT_BUTTON,   self.owner.match_database)
+        btn_1.Bind(wx.EVT_BUTTON,   None)
+        btn_2.Bind(wx.EVT_BUTTON,   self.owner.search_database)
+        btn_3.Bind(wx.EVT_BUTTON,   self.owner.match_database)
         
         vbox.Add(btn_1, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_2, flag=wx.RIGHT,  border=20)
+        vbox.Add(btn_2, flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_3, flag=wx.BOTTOM, border=8)
         
 #         vbox.Add(hbox,flag=wx.ALL,border=10)
         
