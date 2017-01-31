@@ -2180,7 +2180,7 @@ class GSEXRM_MapFile(object):
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
         work_names = self.work_array_names()
         dat = 'roimap/sum_raw'
-        no_hotcols = no_hocols and self.scan_version < 1.36
+        no_hotcols = no_hotcols and self.scan_version < 1.36
         # scaler, non-roi data
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())
