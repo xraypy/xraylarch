@@ -928,33 +928,39 @@ class Fitting1DXRD(BasePanel):
 #### PEAK FUNCTIONS
 
     def find_peaks(self,event=None,filter=False):
-        ## clears previous searches
-        self.remove_all_peaks()
 
-        self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,
-                                 gapthrsh=self.gapthrsh)
+        newpeaks = True
+        if self.ipeaks is not None:
+            question = 'Are you sure you want to remove current peaks and search again?'
+            newpeaks = YesNo(self,question,caption='Replace peaks warning')
+        
+        if newpeaks:
+
+            ## clears previous searches
+            self.remove_all_peaks()
+
+            self.ipeaks = peakfinder(*self.plt_data,regions=self.iregions,
+                                     gapthrsh=self.gapthrsh)
         
         
-        if filter:
-            self.intthrsh = int(self.pkpl.val_intthr.GetValue())
-            self.ipeaks = peakfilter(self.intthrsh,self.ipeaks,self.plt_data[1])
-        self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            if filter:
+                self.intthrsh = int(self.pkpl.val_intthr.GetValue())
+                self.ipeaks = peakfilter(self.intthrsh,self.ipeaks,self.plt_data[1])
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
         
-        str = 'Peak (%2.3f, %6d)'
-        for i,ii in enumerate(self.ipeaks):
-            peakname = str % (self.plt_peaks[0,i],self.plt_peaks[1,i])
-            self.peaklist += [peakname]
-            self.peaklistbox.Append(peakname)
-        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
+            str = 'Peak (%2.3f, %6d)'
+            for i,ii in enumerate(self.ipeaks):
+                peakname = str % (self.plt_peaks[0,i],self.plt_peaks[1,i])
+                self.peaklist += [peakname]
+                self.peaklistbox.Append(peakname)
+            self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
         
-        #self.plot_peaks()
-        self.plot_data()
-        #self.plot_background()
-        self.plot_peaks()
+
+            self.plot_data()
+            self.plot_peaks()
         
-        self.pkpl.btn_rpks.Enable()        
-#         self.btn_spks.Enable()
-        self.pkpl.btn_fitpks.Enable()
+            self.pkpl.btn_rpks.Enable()        
+            self.pkpl.btn_fitpks.Enable()
 
     def fit_instrumental(self,event=None):
 
