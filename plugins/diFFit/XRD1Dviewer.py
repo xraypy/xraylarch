@@ -1930,13 +1930,10 @@ class Viewer1DXRD(wx.Panel):
         if len(self.plotted_data) > 0:
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
-               
-            print 'axis: ',self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
-            print 'limits?',
+
 #             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
             self.plot1D.set_viewlimits([xmin, xmax, ymin, ymax])
-            print xmin, xmax
-            print
+
 
 
     def reset1Dscale(self,event=None):
@@ -1960,9 +1957,6 @@ class Viewer1DXRD(wx.Panel):
     def unzoom_all(self, event=None):
 
         xmid, xrange, xmin, xmax = self._get1Dlims()
-        print 'xmin, xmax'
-        print xmin, xmax
-        print 
         self._set_xview(xmin, xmax)
         self.xview_range = None
 
@@ -2020,12 +2014,12 @@ class Viewer1DXRD(wx.Panel):
         dlg.Destroy()
         
         if read:
-            if 1==1:
+            try:
                 x,y = xy_file_reader(path)
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
-#             except:
-#                print('incorrect xy file format: %s' % os.path.split(path)[-1])
+            except:
+                print('incorrect xy file format: %s' % os.path.split(path)[-1])
 
 
 
