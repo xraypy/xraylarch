@@ -2304,7 +2304,7 @@ class DatabasePanel(wx.Panel):
     '''
     Panel for housing range tools in fitting panel
     '''
-    label='Database'
+    label='Match search'
     def __init__(self,parent,owner=None,_larch=None):
         
         wx.Panel.__init__(self, parent)
