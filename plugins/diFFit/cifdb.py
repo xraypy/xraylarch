@@ -33,7 +33,7 @@ from larch_plugins.diFFit.XRDCalculations import generate_hkl
 
 from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
 from sqlalchemy import Table,Column,Integer,String
-from sqlalchemy.orm import sessionmaker, mapper
+from sqlalchemy.orm import sessionmaker, mapper,clear_mappers
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
@@ -465,6 +465,7 @@ class cifDB(object):
         "close session"
         self.session.flush()
         self.session.close()
+        clear_mappers()
 
     def query(self, *args, **kws):
         "generic query"
@@ -916,7 +917,7 @@ class cifDB(object):
     
         peak_id = self.id_in_range(amcsd_id,qmin=qmin,qmax=qmax)
         if len(peak_id) > 0:
-            return cnt/len(peak_id)
+            return float(cnt)/len(peak_id)
         else:
             return 0
 

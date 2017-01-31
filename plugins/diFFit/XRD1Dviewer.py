@@ -94,7 +94,8 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.cifdatabase = cifDB(dbname='amcsd_cif.db')
+        self.openDB(dbname='amcsd_cif.db')
+        #self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
         # create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
@@ -117,6 +118,20 @@ class diFFit1DFrame(wx.Frame):
         self.energy = 19.0 ## keV
         self.wavelength = lambda_from_E(self.energy)
 
+    def closeDB(self,event=None):
+    
+        self.cifdatabase.close()
+        del self.cifdatabase
+        
+    def openDB(self,dbname='amcsd_cif.db'):
+    
+        try:
+            self.closeDB()
+        except:
+            pass
+
+        self.cifdatabase = cifDB(dbname=dbname)
+        
 
     def XRD1DMenuBar(self):
 
@@ -530,7 +545,7 @@ class Fitting1DXRD(BasePanel):
         
         self.SetFittingDefaults()
         self.Panel1DFitting()
-    
+        
     def SetFittingDefaults(self):
 
         # Peak fitting defaults
@@ -543,7 +558,7 @@ class Fitting1DXRD(BasePanel):
         self.exponent   = 20
         self.compress   = 2
         self.width      = 4
-            
+        
     
 
      
@@ -645,12 +660,13 @@ class Fitting1DXRD(BasePanel):
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
-
-        settings = self.SettingsPanel(self)
-        vbox.Add(settings,flag=wx.ALL,border=10)
         
         pattools = self.PatternTools(self)
         vbox.Add(pattools,flag=wx.ALL,border=10)
+        
+        btn_db = wx.Button(self,label='Select database file')
+        btn_db.Bind(wx.EVT_BUTTON,   self.open_database)
+        vbox.Add(btn_db, flag=wx.LEFT,  border=25)
         
         fittools = self.FittingTools(self)
         vbox.Add(fittools,flag=wx.ALL,border=10)
@@ -672,10 +688,17 @@ class Fitting1DXRD(BasePanel):
 
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
         self.plot1DXRD(panel)
+        
+        settings = self.SettingsPanel(self)
         btnbox = self.QuickButtons(panel)
+        
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        hbox.Add(settings,flag=wx.RIGHT,border=10)
+        hbox.Add(btnbox,flag=wx.LEFT,border = 1)
+        vbox.Add(hbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
 
     def QuickButtons(self,panel):
@@ -1092,6 +1115,29 @@ class Fitting1DXRD(BasePanel):
 
 ##############################################
 #### DATABASE FUNCTIONS
+
+
+    def open_database(self,event=None):
+    
+        wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose AMCSD database file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            try:
+                self.owner.openDB(dbname=path)
+                print('Now using database: %s' % os.path.split(path)[-1])
+            except:
+               print('Failed to import file as database: %s' % path)
+
+
     def search_database(self,event=None):
 
         myDlg = XRDSearchGUI()
@@ -1107,14 +1153,20 @@ class Fitting1DXRD(BasePanel):
         if fit:
             self.background_fit()
             
-    def match_database(self,event=None,minpeaks=2,minfrac=0.75,pk_wid=0.05):
+    def match_database(self,event=None,fracq=0.75,pk_wid=0.05):
     
-        pks_0 = self.plt_peaks[0]
+#         pks_0 = self.plt_peaks[0]
 
-        #pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-        #self.xmin = 1.75
-        #self.xmax = 5.25
-        print '\n',pks_0,'\n range: ',self.xmin,self.xmax
+        try:
+            minfracq = float(self.val_gdnss.GetValue())
+        except:
+            minfracq = fracq
+            
+
+        pks_0 = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+        self.xmin = 1.75
+        self.xmax = 5.25
+        print '\n',pks_0,'\n range: ',self.xmin,self.xmax,'\n fraction: ',minfracq
 
         qstep = 0.01 ## read this from cifdb.py; mkak 2017.01.24
         qmin  = 0.2  ## read this from cifdb.py; mkak 2017.01.24
@@ -1139,7 +1191,7 @@ class Fitting1DXRD(BasePanel):
         import time
         a = time.time()
 
-        matches,count = self.owner.cifdatabase.find_by_q(peaks,minpeaks=minpeaks)
+        matches,count = self.owner.cifdatabase.find_by_q(peaks)
 
         b = time.time()
         if (b-a) > 1:
@@ -1155,21 +1207,21 @@ class Fitting1DXRD(BasePanel):
                                                                 qmax=self.xmax)
 
         try:
-            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfrac])
+            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
         except:
             matches,count,goodness = [],[],[]
 
 
         c = time.time()
         if (c-a) > 1:
-            print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((c-a)* 1e0)))
+            print('\n%d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
             print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
         elif (c-a) > 120:
-            print('\n%d matched pattern(s) in %0.2f min' % (len(matches),((c-a)/60)))
+            print('\n%d matched pattern(s) for goodness %0.2f in %0.2f min' % (len(matches),minfraq,((c-a)/60)))
             print('\t(%0.3f s and %0.2f min)' % (((b-a)* 1e0),((c-b)/60)))
         
         else:
-            print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((c-a)* 1e3)))
+            print('\n%d matched pattern(s) for goodness %0.2f in %0.3f ms' % (len(matches),minfracq,((c-a)* 1e3)))
             print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
@@ -1428,13 +1480,11 @@ class Viewer1DXRD(wx.Panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        settings = self.SettingsPanel(self)        
         plttools = self.Toolbox(self)
         addbtns = self.AddPanel(self)
         dattools = self.DataBox(self)
         ciftools = self.CIFBox(self)
         
-        vbox.Add(settings,flag=wx.ALL,border=10)
         vbox.Add(plttools,flag=wx.ALL,border=10)
         vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
@@ -1443,10 +1493,17 @@ class Viewer1DXRD(wx.Panel):
 
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
         self.plot1DXRD(panel)
+        
+        settings = self.SettingsPanel(self)
         btnbox = self.QuickButtons(panel)
+        
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        hbox.Add(settings,flag=wx.RIGHT,border=10)
+        hbox.Add(btnbox,flag=wx.LEFT,border = 1)
+        vbox.Add(hbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
 
 
@@ -1812,6 +1869,10 @@ class Viewer1DXRD(wx.Panel):
         self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
 
     def checkXaxis(self,event=None):
+    
+        print 'selection happened.'
+        
+#         self.unzoom_all()
         
         if self.ch_xaxis.GetSelection() == 2:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
@@ -1839,7 +1900,6 @@ class Viewer1DXRD(wx.Panel):
     def rescale1Daxis(self):
 
         xmax,xmin,ymax,ymin = None,0,None,0
-        
 
         for i,plt_no in enumerate(self.icif):
             x = np.array(self.cif_plot[i][0])
@@ -1847,6 +1907,9 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
+        print np.shape(self.xy_plot)
+
+        
         for i,plt_no in enumerate(self.idata):
             x = np.array(self.xy_plot[i][0])
             y = np.array(self.xy_plot[i][1])
@@ -1862,13 +1925,19 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
-        self.unzoom_all()
         self.plot1D.canvas.draw()
 
         if len(self.plotted_data) > 0:
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
-            self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
+               
+            print 'axis: ',self.ch_xaxis.GetString(self.ch_xaxis.GetSelection())
+            print 'limits?',
+#             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
+            self.plot1D.set_viewlimits([xmin, xmax, ymin, ymax])
+            print xmin, xmax
+            print
+
 
     def reset1Dscale(self,event=None):
 
@@ -1891,6 +1960,9 @@ class Viewer1DXRD(wx.Panel):
     def unzoom_all(self, event=None):
 
         xmid, xrange, xmin, xmax = self._get1Dlims()
+        print 'xmin, xmax'
+        print xmin, xmax
+        print 
         self._set_xview(xmin, xmax)
         self.xview_range = None
 
@@ -1948,12 +2020,12 @@ class Viewer1DXRD(wx.Panel):
         dlg.Destroy()
         
         if read:
-            try:
+            if 1==1:
                 x,y = xy_file_reader(path)
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
-            except:
-               print('incorrect xy file format: %s' % os.path.split(path)[-1])
+#             except:
+#                print('incorrect xy file format: %s' % os.path.split(path)[-1])
 
 
 
@@ -2304,7 +2376,7 @@ class DatabasePanel(wx.Panel):
     '''
     Panel for housing range tools in fitting panel
     '''
-    label='Match search'
+    label='Search'
     def __init__(self,parent,owner=None,_larch=None):
         
         wx.Panel.__init__(self, parent)
@@ -2325,29 +2397,30 @@ class DatabasePanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_1 = wx.Button(self,label='Change database')
-        btn_2 = wx.Button(self,label='Filter database')
-        btn_3 = wx.Button(self,label='Search options')
-        btn_4 = wx.Button(self,label='Find matches')
-        
-        btn_1.Bind(wx.EVT_BUTTON,   None)
-        btn_2.Bind(wx.EVT_BUTTON,   self.owner.search_database)
-        btn_3.Bind(wx.EVT_BUTTON,   None)
-        btn_4.Bind(wx.EVT_BUTTON,   self.owner.match_database)
-        
-        hbox.Add(btn_1, flag=wx.RIGHT,  border=8)
-        hbox.Add(btn_2, flag=wx.RIGHT,  border=8)
-        vbox.Add(hbox,  flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_3, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_4, flag=wx.BOTTOM, border=8)
-        
+        btn_srch = wx.Button(self,label='Search parameters')
 
+        ttl_gdnss = wx.StaticText(self, label='min. fraction')
+        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
+        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
+
+        self.owner.val_gdnss.SetValue('0.85')
+
+        btn_mtch = wx.Button(self,label='Find matches')
+        
+        btn_srch.Bind(wx.EVT_BUTTON,   self.owner.search_database)
+        btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.match_database)
+        
+        vbox.Add(btn_srch, flag=wx.BOTTOM,  border=8)
+        vbox.Add(hbox,  flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_mtch, flag=wx.BOTTOM, border=8)
+        
+        
+        
         
         return vbox
         
-
-
-
+    
 
 class RefinementPanel(wx.Panel):
     '''
