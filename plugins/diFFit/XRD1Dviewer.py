@@ -1460,8 +1460,6 @@ class Viewer1DXRD(wx.Panel):
         self.icif         = []
         self.icount       = 0
         
-        self.x_for_zoom = None
-        
         self.energy = 19.0   ## keV
         self.wavelength = lambda_from_E(self.energy) ## A
 
@@ -1571,16 +1569,13 @@ class Viewer1DXRD(wx.Panel):
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
         self.val_scale = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-#         btn_scale = wx.Button(self,label='set')
         btn_reset = wx.Button(self,label='reset')
 
         self.val_scale.Bind(wx.EVT_TEXT_ENTER, self.normalize1Ddata)
-#         btn_scale.Bind(wx.EVT_BUTTON, self.normalize1Ddata)
         btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.val_scale, flag=wx.RIGHT, border=8)
-#         hbox_scl.Add(btn_scale, flag=wx.RIGHT, border=8)
         hbox_scl.Add(btn_reset, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
@@ -1590,17 +1585,14 @@ class Viewer1DXRD(wx.Panel):
         hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_hide  = wx.Button(self,label='hide')
-#         btn_reset = wx.Button(self,label='reset')
         btn_rmv   = wx.Button(self,label='remove')
         
         btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-#         btn_reset.Bind(wx.EVT_BUTTON, self.reset1Dscale)
         btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
 
         btn_hide.Disable()
         btn_rmv.Disable()
         
-#         hbox_btns.Add(btn_reset, flag=wx.ALL, border=10)
         hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
         hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
@@ -1839,6 +1831,7 @@ class Viewer1DXRD(wx.Panel):
                 self.val_scale.SetValue(str(self.xy_scale[plt_no]))
             self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
+        self.plot1D.unzoom_all()
         self.rescale1Daxis()
 
     def remove1Ddata(self,event=None):
@@ -1876,71 +1869,68 @@ class Viewer1DXRD(wx.Panel):
 
     def checkXaxis(self,event=None):
     
-        print 'xlimits', self.plot1D.axes.get_xlim()
-        print 'ylimits', self.plot1D.axes.get_ylim()
-    
-#         self.unzoom_all()
         self.plot1D.unzoom_all()
-        
-        if self.ch_xaxis.GetSelection() == 2:
+
+        ## 2theta
+        if self.ch_xaxis.GetSelection() == 2: 
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = twth_from_q(np.array(self.xy_data[plt_no][0]),self.wavelength)
-            for plt_no in range(len(self.plotted_cif)):
-                self.cif_plot[plt_no][0] = twth_from_q(np.array(self.cif_data[plt_no][0]),self.wavelength)
+            if self.xy_data is not None:
+                for plt_no,xydata in enumerate(self.xy_data):
+                    self.xy_plot[plt_no][0] = twth_from_q(np.array(xydata[0]),self.wavelength)
+            if self.cif_data is not None:
+                for plt_no,cifdata in enumerate(self.cif_data):
+                    self.cif_plot[plt_no][0] = twth_from_q(np.array(cifdata[0]),self.wavelength)
+        ## d
         elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = 'd ($\AA$)'
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = d_from_q(np.array(self.xy_data[plt_no][0]))
-            for plt_no in range(len(self.plotted_cif)):
-                self.cif_plot[plt_no][0] = d_from_q(np.array(self.cif_data[plt_no][0]))
-        else:
+            if self.xy_data is not None:
+                for plt_no,xydata in enumerate(self.xy_data):
+                    self.xy_plot[plt_no][0] = d_from_q(np.array(xydata[0]))
+            if self.cif_data is not None:
+                for plt_no,cifdata in enumerate(self.cif_data):
+                    self.cif_plot[plt_no][0] = d_from_q(np.array(cifdata[0]))
+        ## q
+        else: 
             self.xlabel = 'q (1/$\AA$)'
-            for plt_no in range(len(self.plotted_data)):
-                self.xy_plot[plt_no][0] = np.array(self.xy_data[plt_no][0])
-            for plt_no in range(len(self.plotted_cif)):
-                self.cif_plot[plt_no][0] = np.array(self.cif_data[plt_no][0])
-
+            if self.xy_data is not None:
+                for plt_no,xydata in enumerate(self.xy_data):
+                    self.xy_plot[plt_no][0] = np.array(xydata[0])
+            if self.cif_data is not None:
+                for plt_no,cifdata in enumerate(self.cif_data):
+                    self.cif_plot[plt_no][0] = np.array(cifdata[0])
 
         self.plot1D.set_xlabel(self.xlabel)
-        self.rescale1Daxis()
+        self.rescaleXaxis()
 
-        print '   xlimits', self.plot1D.axes.get_xlim()
-        print '   ylimits', self.plot1D.axes.get_ylim()
-        print
+    def rescaleXaxis(self):
 
-
-    def rescale1Daxis(self):
-
-        xmax,xmin,ymax,ymin = None,0,None,0
-
-        for i,plt_no in enumerate(self.icif):
-            x = np.array(self.cif_plot[i][0])
-            y = np.array(self.cif_plot[i][1])
-
-            self.plot1D.update_line(plt_no,x,y)
+        if len(self.plotted_data+self.plotted_cif) > 0:
         
-        for i,plt_no in enumerate(self.idata):
-            x = np.array(self.xy_plot[i][0])
-            y = np.array(self.xy_plot[i][1])
+            xmax,xmin = 0,10
 
-            if xmax is None or xmax < np.max(x):
-                xmax = np.max(x)
-            if xmin > np.min(x):
-                xmin = np.min(x)
-            if ymax is None or ymax < np.max(y):
-                ymax = np.max(y)
-            if ymin > np.min(y):
-                ymin = np.min(y)
+            for i,plt_no in enumerate(self.icif):
+                x = np.array(self.cif_plot[i][0])
+                y = np.array(self.cif_plot[i][1])
 
-            self.plot1D.update_line(plt_no,x,y)
+                if xmax < np.max(x): xmax = np.max(x)
+                if xmin > np.min(x): xmin = np.min(x)
 
+                self.plot1D.update_line(plt_no,x,y)
+        
+            for i,plt_no in enumerate(self.idata):
+                x = np.array(self.xy_plot[i][0])
+                y = np.array(self.xy_plot[i][1])
 
-        if len(self.plotted_data) > 0:
+                if xmax < np.max(x): xmax = np.max(x)
+                if xmin > np.min(x): xmin = np.min(x)
+
+                self.plot1D.update_line(plt_no,x,y)
+        
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
             self._set_xview(xmin, xmax)
-        #self.plot1D.canvas.draw()
+            ######self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
+            #self.plot1D.canvas.draw()
 
     def reset1Dscale(self,event=None):
 
@@ -1951,58 +1941,36 @@ class Viewer1DXRD(wx.Panel):
                                 np.array(self.xy_plot[plt_no][0]),
                                 np.array(self.xy_plot[plt_no][1]))
         self.plot1D.canvas.draw()
-        self.unzoom_all()
+        self.plot1D.unzoom_all()
         
         self.rescale1Daxis()
         self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
-####### BEGIN #######            
-## THIS IS DIRECTLY FROM XRDDISPLAY.PY
-## mkak 2016.11.11
-    def unzoom_all(self, event=None):
+    def _set_xview(self, x1, x2):
 
-        xmid, xrange, xmin, xmax = self._get1Dlims()
-        self._set_xview(xmin, xmax)
-        self.xview_range = None
-
-    def _get1Dlims(self):
-        xmin, xmax = self.plot1D.axes.get_xlim()
-
-        xrange = xmax-xmin
-        xmid   = (xmax+xmin)/2.0
-
-        if self.x_for_zoom is not None:
-            xmid = self.x_for_zoom
-
-        return (xmid, xrange, xmin, xmax)
-
-    def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
-
-        xmin,xmax = self.abs_limits()
-        xrange = x2-x1
+        if self.xy_plot is not None:
+            xydata = self.xy_plot
+        elif self.cif_plot is not None:
+            xydata = self.cif_plot
+        else:
+            return
+        xmin,xmax = self.abs_limits(xydata,axis=0)
+            
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
-        if pan:
-            if x2 == xmax:
-                x1 = x2-xrange
-            elif x1 == xmin:
-                x2 = x1+xrange
-        if not keep_zoom:
-            self.x_for_zoom = (x1+x2)/2.0
+
         self.plot1D.axes.set_xlim((x1, x2))
-        self.xview_range = [x1, x2]
         self.plot1D.canvas.draw()
 
-    def abs_limits(self):
-        if len(self.data_name) > 0:
-            xmin, xmax = np.min(self.xy_plot[0][0]), np.max(self.xy_plot[0][0])
-        elif len(self.cif_name) > 0:
-            xmin, xmax = np.min(self.cif_plot[0][0]), np.max(self.cif_plot[0][0])
-   
-        return xmin,xmax
-#######  END  #######
-       
+    def abs_limits(self,xydata,axis=0):
+    
+        mini, maxi = 10,0 
+        for axisi in xydata:
+            mini = np.min(axisi[axis]) if np.min(axisi[axis]) < mini else mini
+            maxi = np.max(axisi[axis]) if np.max(axisi[axis]) > maxi else maxi
+  
+        return mini,maxi
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
@@ -2020,12 +1988,12 @@ class Viewer1DXRD(wx.Panel):
         dlg.Destroy()
         
         if read:
-            try:
+            if 1==1: #try:
                 x,y = xy_file_reader(path)
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
-            except:
-                print('incorrect xy file format: %s' % os.path.split(path)[-1])
+#             except:
+#                 print('incorrect xy file format: %s' % os.path.split(path)[-1])
 
 
 
