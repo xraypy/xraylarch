@@ -1856,22 +1856,22 @@ class Viewer1DXRD(wx.Panel):
     
         if cif:
             plt_no = self.ch_cif.GetSelection()
-            y = self.cif_data[plt_no][1]
+            y = self.cif_data[plt_no][3]
         
             self.cif_scale[plt_no] = float(self.val_cifscale.GetValue())
             if self.cif_scale[plt_no] <= 0:
                 self.cif_scale[plt_no] = np.max(y)
                 self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
-            self.cif_plot[plt_no][1] = y/np.max(y) * self.cif_scale[plt_no]
+            self.cif_plot[plt_no][3] = y/np.max(y) * self.cif_scale[plt_no]
         else:
             plt_no = self.ch_data.GetSelection()
-            y = self.xy_data[plt_no][1]
+            y = self.xy_data[plt_no][3]
         
             self.xy_scale[plt_no] = float(self.val_scale.GetValue())
             if self.xy_scale[plt_no] <= 0:
                 self.xy_scale[plt_no] = np.max(y)
                 self.val_scale.SetValue(str(self.xy_scale[plt_no]))
-            self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
+            self.xy_plot[plt_no][3] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.plot1D.unzoom_all()
         self.rescale1Daxis(xaxis=False,yaxis=True)
@@ -1928,57 +1928,49 @@ class Viewer1DXRD(wx.Panel):
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
-        if len(self.plotlist) > 0:
-        
-            xmax,xmin,ymax,ymin = 0,10,0,10
-            xi = self.ch_xaxis.GetSelection()
+        xmax,xmin,ymax,ymin = 0,10,0,10
+        xi = self.ch_xaxis.GetSelection()
 
+        for i,plt_no in enumerate(self.icif):
+            x = np.array(self.cif_plot[i][xi])
+            y = np.array(self.cif_plot[i][3])
 
-            for i,plt_no in enumerate(self.icif):
-                x = np.array(self.cif_plot[i][xi])
-                y = np.array(self.cif_plot[i][3])
+            if xmax < np.max(x): xmax = np.max(x)
+            if xmin > np.min(x): xmin = np.min(x)
+            if ymax < np.max(y): ymax = np.max(y)
+            if ymin > np.min(y): ymin = np.min(y)
 
-                if xmax < np.max(x): xmax = np.max(x)
-                if xmin > np.min(x): xmin = np.min(x)
-                if ymax < np.max(y): ymax = np.max(y)
-                if ymin > np.min(y): ymin = np.min(y)
+            self.plot1D.update_line(plt_no,x,y)
+    
+        for i,plt_no in enumerate(self.idata):
+            x = np.array(self.xy_plot[i][xi])
+            y = np.array(self.xy_plot[i][3])
 
-                self.plot1D.update_line(plt_no,x,y)
-        
-            for i,plt_no in enumerate(self.idata):
-                print 'shape',np.shape(self.xy_plot[i])
-                x = np.array(self.xy_plot[i][xi])
-                y = np.array(self.xy_plot[i][3])
+            if xmax < np.max(x): xmax = np.max(x)
+            if xmin > np.min(x): xmin = np.min(x)
+            if ymax < np.max(y): ymax = np.max(y)
+            if ymin > np.min(y): ymin = np.min(y)
 
-                if xmax < np.max(x): xmax = np.max(x)
-                if xmin > np.min(x): xmin = np.min(x)
-                if ymax < np.max(y): ymax = np.max(y)
-                if ymin > np.min(y): ymin = np.min(y)
-
-                self.plot1D.update_line(plt_no,x,y)
-        
-            if self.ch_xaxis.GetSelection() == 1:
-                xmax = 5
-            if xaxis:
-                self.set_xview(xmin, xmax)
-            if yaxis:
-                self.set_yview(ymin, ymax)
-            ######self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
-            #self.plot1D.canvas.draw()
+            self.plot1D.update_line(plt_no,x,y)
+    
+        if xi == 1: xmax = 5
+        if xaxis: self.set_xview(xmin, xmax)
+        if yaxis: self.set_yview(ymin, ymax)
 
     def reset1Dscale(self,event=None):
 
-        plt_no = self.ch_data.GetSelection()        
+        plt_no = self.ch_data.GetSelection()
+        xi = self.ch_xaxis.GetSelection()        
        
-        self.xy_plot[plt_no][1] = self.xy_data[plt_no][1]
+        self.xy_plot[plt_no][3] = self.xy_data[plt_no][3]
         self.plot1D.update_line(int(self.idata[plt_no]),
-                                np.array(self.xy_plot[plt_no][0]),
-                                np.array(self.xy_plot[plt_no][1]))
+                                np.array(self.xy_plot[plt_no][xi]),
+                                np.array(self.xy_plot[plt_no][3]))
         self.plot1D.canvas.draw()
         self.plot1D.unzoom_all()
         
         self.rescale1Daxis(xaxis=False,yaxis=True)
-        self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
+        self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][3])
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
     def set_xview(self, x1, x2):
@@ -1989,7 +1981,8 @@ class Viewer1DXRD(wx.Panel):
             xydata = self.cif_plot
         else:
             return
-        xmin,xmax = self.abs_limits(xydata,axis=0)
+        xi = self.ch_xaxis.GetSelection()
+        xmin,xmax = self.abs_limits(xydata,axis=xi)
             
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
@@ -2005,7 +1998,7 @@ class Viewer1DXRD(wx.Panel):
             xydata = self.cif_plot
         else:
             return
-        ymin,ymax = self.abs_limits(xydata,axis=1)
+        ymin,ymax = self.abs_limits(xydata,axis=3)
             
         y1 = max(ymin,y1)
         y2 = min(ymax,y2)
