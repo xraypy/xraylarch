@@ -224,7 +224,7 @@ class diFFit1DFrame(wx.Frame):
                 self.xrd1Dviewer.xy_plot.append([[x],[y]])
 
             ## Add to plot       
-            self.xrd1Dviewer.plotted_data.append(self.xrd1Dviewer.plot1D.oplot(x,y,label=name,show_legend=True))
+            self.xrd1Dviewer.plotlist.append(self.xrd1Dviewer.plot1D.oplot(x,y,label=name,show_legend=True))
 
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
@@ -1430,15 +1430,6 @@ class PeakOptions(wx.Dialog):
         gpthrsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
         gpthrsizer.Add(self.val_gapthr,  flag=wx.RIGHT, border=5)
         
-#         ## Intensity threshold
-#         intthrsizer = wx.BoxSizer(wx.VERTICAL)
-# 
-#         ttl_intthr = wx.StaticText(self.panel, label='Intensity threshold')
-# 
-#         self.val_intthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-#         intthrsizer.Add(ttl_intthr,  flag=wx.RIGHT, border=5)
-#         intthrsizer.Add(self.val_intthr,  flag=wx.RIGHT, border=5)
-
 
         #####
         ## OKAY!
@@ -1466,8 +1457,6 @@ class PeakOptions(wx.Dialog):
         mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(10)
         mainsizer.Add(gpthrsizer, flag=wx.ALL, border=5)        
-#         mainsizer.AddSpacer(10)
-#         mainsizer.Add(intthrsizer, flag=wx.ALL, border=5)        
         mainsizer.AddSpacer(10)
         mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10) 
 
@@ -1487,22 +1476,20 @@ class Viewer1DXRD(wx.Panel):
         self.owner = owner
 
         ## Default information
-        self.data_name    = []
-        self.xy_data      = None #[]
-        self.xy_plot      = None #[]
-        self.plotted_data = []
-        self.xy_scale     = []
+        self.plotlist     = []
         self.xlabel       = 'q (A^-1)'
         
-        self.cif_name     = []
-        self.cif_data     = None #[]
-        self.cif_plot     = None #[]
-        self.plotted_cif  = []
-        self.cif_scale    = []
-
+        self.data_name    = []
+        self.xy_data      = [] #None #[]
+        self.xy_plot      = [] #None #[]
+        self.xy_scale     = []
         self.idata        = []
+        
+        self.cif_name     = []
+        self.cif_data     = [] #None #[]
+        self.cif_plot     = [] #None #[]
+        self.cif_scale    = []
         self.icif         = []
-        self.icount       = 0
         
         self.energy = 19.0   ## keV
         self.wavelength = lambda_from_E(self.energy) ## A
@@ -1763,8 +1750,7 @@ class Viewer1DXRD(wx.Panel):
 
         ## Add 'raw' data to array
         self.cif_name.append(name)
-        self.icif.append(self.icount)
-        self.icount = self.icount+1
+        self.icif.append(len(self.plotlist))
         self.cif_scale.append(cifscale)
         if self.cif_data is None:
             self.cif_data = [[x,y]]
@@ -1778,7 +1764,7 @@ class Viewer1DXRD(wx.Panel):
             self.cif_plot.append([[x],[y]])
         
         ## Plot data (x,y) 
-        self.plotted_cif.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+        self.plotlist.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1806,22 +1792,34 @@ class Viewer1DXRD(wx.Panel):
 
         ## Add 'raw' data to array
         self.data_name.append(name)
-        self.idata.append(self.icount)
-        self.icount = self.icount+1
+        self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(y))
-        if self.xy_data is None:
-            self.xy_data = [[x,y]]
-        else:
-            self.xy_data.append([[x],[y]])
+
+########################### CHANGING SHAPE OF xy_data,xy_plot ####### mkak 2017.02.01
+#         if self.xy_data is None:
+#             self.xy_data = [[x,y]]
+#         else:
+#             self.xy_data.append([[x],[y]])
+#         
+#         ## Add 'as plotted' data to array
+#         if self.xy_plot is None:
+#             self.xy_plot = [[x,y]]
+#         else:
+#             self.xy_plot.append([[x],[y]])
+#         
+#         ## Plot data (x,y) 
+#         self.plotlist.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+
+        q    = x
+        twth = twth_from_q(q,self.wavelength)
+        d    = d_from_q(q)
+        self.xy_data.append([q,d,twth,y])
+        self.xy_plot.append([q,d,twth,y])
         
-        ## Add 'as plotted' data to array
-        if self.xy_plot is None:
-            self.xy_plot = [[x,y]]
-        else:
-            self.xy_plot.append([[x],[y]])
-        
-        ## Plot data (x,y) 
-        self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+        ## Plot data (x,y)
+        i = self.ch_xaxis.GetSelection()
+        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][i],self.xy_plot[-1][3],label=name,show_legend=True))
+###########################
 
         ## Use correct x-axis units
         self.check1Daxis(yaxis=True)
@@ -1918,43 +1916,27 @@ class Viewer1DXRD(wx.Panel):
         ## 2theta
         if self.ch_xaxis.GetSelection() == 2: 
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-            if self.xy_data is not None:
-                for plt_no,xydata in enumerate(self.xy_data):
-                    self.xy_plot[plt_no][0] = twth_from_q(np.array(xydata[0]),self.wavelength)
-            if self.cif_data is not None:
-                for plt_no,cifdata in enumerate(self.cif_data):
-                    self.cif_plot[plt_no][0] = twth_from_q(np.array(cifdata[0]),self.wavelength)
         ## d
         elif self.ch_xaxis.GetSelection() == 1:
             self.xlabel = 'd ($\AA$)'
-            if self.xy_data is not None:
-                for plt_no,xydata in enumerate(self.xy_data):
-                    self.xy_plot[plt_no][0] = d_from_q(np.array(xydata[0]))
-            if self.cif_data is not None:
-                for plt_no,cifdata in enumerate(self.cif_data):
-                    self.cif_plot[plt_no][0] = d_from_q(np.array(cifdata[0]))
         ## q
         else: 
             self.xlabel = 'q (1/$\AA$)'
-            if self.xy_data is not None:
-                for plt_no,xydata in enumerate(self.xy_data):
-                    self.xy_plot[plt_no][0] = np.array(xydata[0])
-            if self.cif_data is not None:
-                for plt_no,cifdata in enumerate(self.cif_data):
-                    self.cif_plot[plt_no][0] = np.array(cifdata[0])
 
         self.plot1D.set_xlabel(self.xlabel)
         self.rescale1Daxis(xaxis=True,yaxis=yaxis)
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
-        if len(self.plotted_data+self.plotted_cif) > 0:
+        if len(self.plotlist) > 0:
         
             xmax,xmin,ymax,ymin = 0,10,0,10
+            xi = self.ch_xaxis.GetSelection()
+
 
             for i,plt_no in enumerate(self.icif):
-                x = np.array(self.cif_plot[i][0])
-                y = np.array(self.cif_plot[i][1])
+                x = np.array(self.cif_plot[i][xi])
+                y = np.array(self.cif_plot[i][3])
 
                 if xmax < np.max(x): xmax = np.max(x)
                 if xmin > np.min(x): xmin = np.min(x)
@@ -1964,8 +1946,9 @@ class Viewer1DXRD(wx.Panel):
                 self.plot1D.update_line(plt_no,x,y)
         
             for i,plt_no in enumerate(self.idata):
-                x = np.array(self.xy_plot[i][0])
-                y = np.array(self.xy_plot[i][1])
+                print 'shape',np.shape(self.xy_plot[i])
+                x = np.array(self.xy_plot[i][xi])
+                y = np.array(self.xy_plot[i][3])
 
                 if xmax < np.max(x): xmax = np.max(x)
                 if xmin > np.min(x): xmin = np.min(x)
