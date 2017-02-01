@@ -1526,7 +1526,7 @@ class Viewer1DXRD(wx.Panel):
         xunits = ['q','d',u'2\u03B8']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
 
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.check1Daxis)
     
         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
@@ -1737,7 +1737,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_cif.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
-        self.checkXaxis()
+        self.check1Daxis()
 
         self.ch_cif.Set(self.cif_name)
         self.ch_cif.SetStringSelection(name)
@@ -1780,7 +1780,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
-        self.checkXaxis(yaxis=True)
+        self.check1Daxis(yaxis=True)
 
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
@@ -1867,7 +1867,7 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_cif.GetSelection()
         self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
 
-    def checkXaxis(self,event=None,yaxis=False):
+    def check1Daxis(self,event=None,yaxis=False):
     
         self.plot1D.unzoom_all()
 
