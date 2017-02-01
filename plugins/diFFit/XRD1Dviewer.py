@@ -1699,7 +1699,7 @@ class Viewer1DXRD(wx.Panel):
     def onLogLinear(self, event=None):
 
         self.plot1D.axes.set_yscale(self.ch_yaxis.GetString(self.ch_yaxis.GetSelection()))
-        self.rescale1Daxis()
+        self.rescale1Daxis(xaxis=False,yaxis=True)
 
 
 ##############################################
@@ -1780,7 +1780,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
-        self.checkXaxis()
+        self.checkXaxis(yaxis=True)
 
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
@@ -1832,7 +1832,7 @@ class Viewer1DXRD(wx.Panel):
             self.xy_plot[plt_no][1] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.plot1D.unzoom_all()
-        self.rescale1Daxis()
+        self.rescale1Daxis(xaxis=False,yaxis=True)
 
     def remove1Ddata(self,event=None):
         
@@ -1867,7 +1867,7 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_cif.GetSelection()
         self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
 
-    def checkXaxis(self,event=None):
+    def checkXaxis(self,event=None,yaxis=False):
     
         self.plot1D.unzoom_all()
 
@@ -1900,13 +1900,13 @@ class Viewer1DXRD(wx.Panel):
                     self.cif_plot[plt_no][0] = np.array(cifdata[0])
 
         self.plot1D.set_xlabel(self.xlabel)
-        self.rescaleXaxis()
+        self.rescale1Daxis(xaxis=True,yaxis=yaxis)
 
-    def rescaleXaxis(self):
+    def rescale1Daxis(self,xaxis=True,yaxis=False):
 
         if len(self.plotted_data+self.plotted_cif) > 0:
         
-            xmax,xmin = 0,10
+            xmax,xmin,ymax,ymin = 0,10,0,10
 
             for i,plt_no in enumerate(self.icif):
                 x = np.array(self.cif_plot[i][0])
@@ -1914,6 +1914,8 @@ class Viewer1DXRD(wx.Panel):
 
                 if xmax < np.max(x): xmax = np.max(x)
                 if xmin > np.min(x): xmin = np.min(x)
+                if ymax < np.max(y): ymax = np.max(y)
+                if ymin > np.min(y): ymin = np.min(y)
 
                 self.plot1D.update_line(plt_no,x,y)
         
@@ -1923,12 +1925,17 @@ class Viewer1DXRD(wx.Panel):
 
                 if xmax < np.max(x): xmax = np.max(x)
                 if xmin > np.min(x): xmin = np.min(x)
+                if ymax < np.max(y): ymax = np.max(y)
+                if ymin > np.min(y): ymin = np.min(y)
 
                 self.plot1D.update_line(plt_no,x,y)
         
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
-            self._set_xview(xmin, xmax)
+            if xaxis:
+                self.set_xview(xmin, xmax)
+            if yaxis:
+                self.set_yview(ymin, ymax)
             ######self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
             #self.plot1D.canvas.draw()
 
@@ -1943,11 +1950,11 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.canvas.draw()
         self.plot1D.unzoom_all()
         
-        self.rescale1Daxis()
+        self.rescale1Daxis(xaxis=False,yaxis=True)
         self.xy_scale[plt_no] = np.max(self.xy_data[plt_no][1])
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
 
-    def _set_xview(self, x1, x2):
+    def set_xview(self, x1, x2):
 
         if self.xy_plot is not None:
             xydata = self.xy_plot
@@ -1962,6 +1969,23 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D.axes.set_xlim((x1, x2))
         self.plot1D.canvas.draw()
+
+    def set_yview(self, y1, y2):
+
+        if self.xy_plot is not None:
+            xydata = self.xy_plot
+        elif self.cif_plot is not None:
+            xydata = self.cif_plot
+        else:
+            return
+        ymin,ymax = self.abs_limits(xydata,axis=1)
+            
+        y1 = max(ymin,y1)
+        y2 = min(ymax,y2)
+
+        self.plot1D.axes.set_ylim((y1, y2))
+        self.plot1D.canvas.draw()
+
 
     def abs_limits(self,xydata,axis=0):
     
@@ -1988,12 +2012,12 @@ class Viewer1DXRD(wx.Panel):
         dlg.Destroy()
         
         if read:
-            if 1==1: #try:
+            try:
                 x,y = xy_file_reader(path)
 
                 self.add1Ddata(x,y,name=os.path.split(path)[-1])
-#             except:
-#                 print('incorrect xy file format: %s' % os.path.split(path)[-1])
+            except:
+                print('incorrect xy file format: %s' % os.path.split(path)[-1])
 
 
 
