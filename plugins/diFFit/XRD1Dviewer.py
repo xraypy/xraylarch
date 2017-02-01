@@ -1876,9 +1876,11 @@ class Viewer1DXRD(wx.Panel):
 
     def checkXaxis(self,event=None):
     
-        print 'selection happened.'
-        
+        print 'xlimits', self.plot1D.axes.get_xlim()
+        print 'ylimits', self.plot1D.axes.get_ylim()
+    
 #         self.unzoom_all()
+        self.plot1D.unzoom_all()
         
         if self.ch_xaxis.GetSelection() == 2:
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
@@ -1899,8 +1901,13 @@ class Viewer1DXRD(wx.Panel):
             for plt_no in range(len(self.plotted_cif)):
                 self.cif_plot[plt_no][0] = np.array(self.cif_data[plt_no][0])
 
+
         self.plot1D.set_xlabel(self.xlabel)
         self.rescale1Daxis()
+
+        print '   xlimits', self.plot1D.axes.get_xlim()
+        print '   ylimits', self.plot1D.axes.get_ylim()
+        print
 
 
     def rescale1Daxis(self):
@@ -1912,9 +1919,6 @@ class Viewer1DXRD(wx.Panel):
             y = np.array(self.cif_plot[i][1])
 
             self.plot1D.update_line(plt_no,x,y)
-
-        print np.shape(self.xy_plot)
-
         
         for i,plt_no in enumerate(self.idata):
             x = np.array(self.xy_plot[i][0])
@@ -1931,16 +1935,12 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
-        self.plot1D.canvas.draw()
 
         if len(self.plotted_data) > 0:
             if self.ch_xaxis.GetSelection() == 1:
                 xmax = 5
-
-#             self.plot1D.set_xylims([xmin, xmax, ymin, ymax])
-            self.plot1D.set_viewlimits([xmin, xmax, ymin, ymax])
-
-
+            self._set_xview(xmin, xmax)
+        #self.plot1D.canvas.draw()
 
     def reset1Dscale(self,event=None):
 
