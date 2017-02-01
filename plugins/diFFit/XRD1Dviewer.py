@@ -183,10 +183,13 @@ class diFFit1DFrame(wx.Frame):
     def fit1Dxrd(self,event=None):
     
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
-
+        index = 0
+        
         if len(indicies) > 0:
             self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
             self.all_data = self.xrd1Dviewer.xy_data
+            
+            print 'shape!',np.shape(self.all_data)
             
             dlg = SelectFittingData(self.list,self.all_data)
 
@@ -202,7 +205,6 @@ class diFFit1DFrame(wx.Frame):
                 x = np.array(self.all_data[index][0]).flatten()
                 y = np.array(self.all_data[index][1]).flatten()
                 
-                
         else:
             x,y,name = self.loadXYFILE()
             index = 1
@@ -212,25 +214,25 @@ class diFFit1DFrame(wx.Frame):
             ## Add 'raw' data to array
             self.xrd1Dviewer.data_name.append(name)
             self.xrd1Dviewer.xy_scale.append(np.max(y))
-            if self.xrd1Dviewer.xy_data is None:
-                self.xrd1Dviewer.xy_data = [[x,y]]
-            else:
-                self.xrd1Dviewer.xy_data.append([[x],[y]])
-        
-            ## Add 'as plotted' data to array
-            if self.xrd1Dviewer.xy_plot is None:
-                self.xrd1Dviewer.xy_plot = [[x,y]]
-            else:
-                self.xrd1Dviewer.xy_plot.append([[x],[y]])
-
+            
+            q    = x
+            twth = twth_from_q(q,self.wavelength)
+            d    = d_from_q(q)
+            self.xrd1Dviewer.xy_data.append([q,d,twth,y])
+            self.xrd1Dviewer.xy_plot.append([q,d,twth,y])
+            
             ## Add to plot       
             self.xrd1Dviewer.plotlist.append(self.xrd1Dviewer.plot1D.oplot(x,y,label=name,show_legend=True))
+            xi = self.xrd1Dviewer.ch_xaxis.GetSelection()
+            self.xrd1Dviewer.plotlist.append(self.plot1D.oplot(self.xrd1Dviewer.xy_plot[-1][i],self.xrd1Dviewer.xy_plot[-1][3],label=name,show_legend=True))
+
+
 
             self.xrd1Dviewer.ch_data.Set(self.xrd1Dviewer.data_name)
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
             self.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
         
-        self.nb.SetSelection(1)
+        self.nb.SetSelection(1) ## switches to fitting panel
 
         adddata = True
         if self.xrd1Dfitting.raw_data is not None:
@@ -1817,8 +1819,8 @@ class Viewer1DXRD(wx.Panel):
         self.xy_plot.append([q,d,twth,y])
         
         ## Plot data (x,y)
-        i = self.ch_xaxis.GetSelection()
-        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][i],self.xy_plot[-1][3],label=name,show_legend=True))
+        xi = self.ch_xaxis.GetSelection()
+        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],self.xy_plot[-1][3],label=name,show_legend=True))
 ###########################
 
         ## Use correct x-axis units
