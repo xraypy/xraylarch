@@ -241,38 +241,13 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dfitting.raw_data = np.array([x,y])
             self.xrd1Dfitting.plt_data = np.array([x,y])
+            self.xrd1Dfitting.qaxis    = np.array(x)
             self.xrd1Dfitting.xmin     = np.min(x)
             self.xrd1Dfitting.xmax     = np.max(x)
 
             self.xrd1Dfitting.plot1D.plot(x,y, title=name, color='blue', label='Raw data',
                                           show_legend=True)
-            self.reset_fitting(name=name,min=np.min(x),max=np.max(x))
-
-    def reset_fitting(self,name=None,min=0,max=1):
-
-
-        self.xrd1Dfitting.name = name
-        self.xrd1Dfitting.rngpl.val_qmin.SetValue('%0.3f' % min)
-        self.xrd1Dfitting.rngpl.val_qmax.SetValue('%0.3f' % max)
-        self.xrd1Dfitting.bkgdpl.ck_bkgd.SetValue(False)
-        self.xrd1Dfitting.bkgdpl.btn_fbkgd.Enable()
-        self.xrd1Dfitting.bkgdpl.btn_rbkgd.Disable()
-        self.xrd1Dfitting.bkgdpl.ck_bkgd.Disable()
-        self.xrd1Dfitting.bkgdpl.btn_obkgd.Enable()
-        self.xrd1Dfitting.pkpl.btn_fpks.Enable()
-        self.xrd1Dfitting.pkpl.btn_opks.Enable()    
-   
-        self.xrd1Dfitting.delete_all_peaks()
-        self.xrd1Dfitting.delete_background()  
-        
-        self.xrd1Dfitting.trim       = False
-        self.xrd1Dfitting.indicies   = None      
-
-        self.xrd1Dfitting.xmin       = min
-        self.xrd1Dfitting.xmax       = max
-
-        self.xrd1Dfitting.SetFittingDefaults()
-   
+            self.xrd1Dfitting.reset_fitting(name=name,min=np.min(x),max=np.max(x))
 
     def loadXYFILE(self,event=None):
     
@@ -506,7 +481,6 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
     def GetListCtrl(self):
         return self.list
 
-# class Fitting1DXRD(wx.Panel):
 class Fitting1DXRD(BasePanel):
     '''
     Panel for housing 1D XRD fitting
@@ -523,6 +497,7 @@ class Fitting1DXRD(BasePanel):
         self.raw_data   = None
         self.plt_data   = None
         self.bgr_data   = None
+        self.qaxis      = None
         
         self.bgr        = None
         self.bgr_info   = None
@@ -558,8 +533,6 @@ class Fitting1DXRD(BasePanel):
         self.exponent   = 20
         self.compress   = 2
         self.width      = 4
-        
-    
 
      
 ##############################################
@@ -743,6 +716,34 @@ class Fitting1DXRD(BasePanel):
         
 ##############################################
 #### RANGE FUNCTIONS
+
+    def reset_fitting(self,name=None,min=0,max=1):
+
+
+        self.name = name
+        self.rngpl.val_qmin.SetValue('%0.3f' % min)
+        self.rngpl.val_qmax.SetValue('%0.3f' % max)
+        self.rngpl.ch_xaxis.SetSelection(0)
+        self.bkgdpl.ck_bkgd.SetValue(False)
+        self.bkgdpl.btn_fbkgd.Enable()
+        self.bkgdpl.btn_rbkgd.Disable()
+        self.bkgdpl.ck_bkgd.Disable()
+        self.bkgdpl.btn_obkgd.Enable()
+        self.pkpl.btn_fpks.Enable()
+        self.pkpl.btn_opks.Enable()    
+   
+        self.delete_all_peaks()
+        self.delete_background()  
+        
+        self.trim       = False
+        self.indicies   = None      
+
+        self.xmin       = min
+        self.xmax       = max
+
+        self.SetFittingDefaults()
+        
+        self.check1Daxis()
 
     def set_range(self,event=None):
         
@@ -983,6 +984,7 @@ class Fitting1DXRD(BasePanel):
         print
 
     def plot_peaks(self):
+        
         self.plot1D.scatterplot(*self.plt_peaks,
                           color='red',edge_color='yellow', selectcolor='green',size=12,
                           show_legend=True)
@@ -1075,48 +1077,90 @@ class Fitting1DXRD(BasePanel):
     def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
-####### BEGIN #######            
-## THIS IS DIRECTLY FROM XRDDISPLAY.PY
-## mkak 2016.11.11
-    def unzoom_all(self, event=None):
 
-        xmid, xrange, xmin, xmax = self._get1Dlims()
+    def check1Daxis(self,event=None,yaxis=False):
+    
+        self.plot1D.unzoom_all()
+        
+        ## 2theta
+        if self.rngpl.ch_xaxis.GetSelection() == 2: 
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
 
-        self._set_xview(xmin, xmax)
-        self.xview_range = None
+            self.raw_data[0] = twth_from_q(self.qaxis,self.wavelength)
 
-    def _get1Dlims(self):
-        xmin, xmax = self.plot1D.axes.get_xlim()
-        xrange = xmax-xmin
-        xmid   = (xmax+xmin)/2.0
-        if self.x_for_zoom is not None:
-            xmid = self.x_for_zoom
-        return (xmid, xrange, xmin, xmax)
+        ## d
+        elif self.rngpl.ch_xaxis.GetSelection() == 1:
+            self.xlabel = 'd ($\AA$)'
 
-    def _set_xview(self, x1, x2, keep_zoom=False, pan=False):
+            self.raw_data[0] = d_from_q(self.qaxis)
 
-        xmin,xmax = self.abs_limits()
-        xrange = x2-x1
-        x1 = np.max(xmin,x1)
-        x2 = np.min(xmax,x2)
+        ## q
+        else: 
+            self.xlabel = 'q (1/$\AA$)'
+            
+            self.raw_data[0] = self.qaxis
+ 
+        self.plot_data()
+        if self.ipeaks:
+            self.plt_peaks = peaklocater(self.ipeaks,*self.plt_data)
+            self.plot_peaks()
 
-        if pan:
-            if x2 == xmax:
-                x1 = x2-xrange
-            elif x1 == xmin:
-                x2 = x1+xrange
-        if not keep_zoom:
-            self.x_for_zoom = (x1+x2)/2.0
+        self.plot1D.set_xlabel(self.xlabel)
+        self.rescale1Daxis(xaxis=True,yaxis=yaxis)
+
+
+
+    def rescale1Daxis(self,xaxis=True,yaxis=False):
+
+        if self.trim:
+            x = self.plt_data[0]
+            y = self.plt_data[1]        
+        else:
+            x = self.raw_data[0]
+            y = self.raw_data[1]
+        
+#         self.plot1D.update_line(plt_no,x,y)
+
+        if xaxis:
+            xmax = np.max(x)
+            xmin = np.min(x)
+            self.set_xview(xmin, xmax)
+        if yaxis:
+            ymax = np.max(y)
+            ymin = np.min(y)
+            self.set_yview(ymin, ymax)
+            
+    def set_xview(self, x1, x2):
+
+        if self.trim:
+            xydata = self.plt_data
+        else:
+            xydata = self.raw_data
+        xmin,xmax = np.min(xydata[0]),np.max(xydata[0])
+            
+        x1 = max(xmin,x1)
+        x2 = min(xmax,x2)
+        
+        if self.rngpl.ch_xaxis.GetSelection() == 1: x2 = 5
+
         self.plot1D.axes.set_xlim((x1, x2))
-        self.xview_range = [x1, x2]
         self.plot1D.canvas.draw()
 
-    def abs_limits(self):
-        if len(self.data_name) > 0:
-            xmin, xmax = np.min(self.xy_plot[0][0]), np.max(self.xy_plot[0][0])
-   
-        return xmin,xmax
-#######  END  #######
+    def set_yview(self, y1, y2):
+
+        if self.trim:
+            xydata = self.plt_data
+        else:
+            xydata = self.raw_data
+        ymin,ymax = np.min(xydata[1]),np.max(xydata[1])
+            
+        y1 = max(ymin,y1)
+        y2 = min(ymax,y2)
+
+        self.plot1D.axes.set_ylim((y1, y2))
+        self.plot1D.canvas.draw()
+
+
 
 
 ##############################################
@@ -1526,7 +1570,7 @@ class Viewer1DXRD(wx.Panel):
         xunits = ['q','d',u'2\u03B8']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
 
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.checkXaxis)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.check1Daxis)
     
         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
@@ -1737,7 +1781,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_cif.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
-        self.checkXaxis()
+        self.check1Daxis()
 
         self.ch_cif.Set(self.cif_name)
         self.ch_cif.SetStringSelection(name)
@@ -1780,7 +1824,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotted_data.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
 
         ## Use correct x-axis units
-        self.checkXaxis(yaxis=True)
+        self.check1Daxis(yaxis=True)
 
         self.ch_data.Set(self.data_name)
         self.ch_data.SetStringSelection(name)
@@ -1867,7 +1911,7 @@ class Viewer1DXRD(wx.Panel):
         plt_no = self.ch_cif.GetSelection()
         self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
 
-    def checkXaxis(self,event=None,yaxis=False):
+    def check1Daxis(self,event=None,yaxis=False):
     
         self.plot1D.unzoom_all()
 
@@ -2200,7 +2244,7 @@ class RangeToolsPanel(wx.Panel):
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
         xunits = ['q','d',u'2\u03B8']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, None)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.owner.check1Daxis)
         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
         
