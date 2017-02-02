@@ -237,6 +237,10 @@ class diFFit1DFrame(wx.Frame):
             adddata = YesNo(self,question,caption='Overwrite warning')
         
         if adddata:
+        
+            self.xrd1Dfitting.counter = 0
+            self.xrd1Dfitting.counter = self.xrd1Dfitting.counter + 1
+            print '\nStep %i: %s' % (self.xrd1Dfitting.counter,'fit1Dxrd')
 
             self.xrd1Dfitting.raw_data = np.array([q,d,twth,I])
             self.xrd1Dfitting.plt_data = np.array([q,d,twth,I])
@@ -524,8 +528,17 @@ class Fitting1DXRD(BasePanel):
         self.energy     = 19.0   ## keV
         self.wavelength = lambda_from_E(self.energy) ## A
         
+        self.xlabel     = 'q (1/$\AA$)' #'q (A^-1)'
+        self.ylabel     = 'Intensity (a.u.)'
+        self.dlimit     = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
+        
+        self.counter = 0
+        ## mkak removed after error checking 2017.02.02
+        
         self.SetFittingDefaults()
         self.Panel1DFitting()
+        
+        
         
     def SetFittingDefaults(self):
 
@@ -700,6 +713,9 @@ class Fitting1DXRD(BasePanel):
 #### DATA CALCULATIONS FUNCTIONS
 
     def plot_data(self,event=None):
+    
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'plot_data()')
         
         xi = self.rngpl.ch_xaxis.GetSelection()
         if self.subtracted:
@@ -724,13 +740,17 @@ class Fitting1DXRD(BasePanel):
                                  show_legend=True)
             self.plot_background()
 
+#         self.plot1D.set_xlabel(self.xlabel)
+
         
 ##############################################
 #### RANGE FUNCTIONS
 
     def reset_fitting(self,name=None,min=0,max=1):
 
-
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'reset_fitting')
+        
         self.name = name
         self.rngpl.val_qmin.SetValue('%0.3f' % min)
         self.rngpl.val_qmax.SetValue('%0.3f' % max)
@@ -756,7 +776,18 @@ class Fitting1DXRD(BasePanel):
         
         self.check1Daxis()
 
+    def onChangeRange(self,event=None):
+        
+        self.counter = 0
+        self.counter = self.counter + 1
+        print '\nStep %i: %s' % (self.counter,'onChangeRange')    
+        
+        self.set_range()
+
     def set_range(self,event=None):
+    
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'set_range')
         
         if self.xmax != float(self.rngpl.val_qmax.GetValue()) or self.xmin != float(self.rngpl.val_qmin.GetValue()):
 
@@ -776,6 +807,9 @@ class Fitting1DXRD(BasePanel):
     
     def check_range(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'check_range')
+
         xi = self.rngpl.ch_xaxis.GetSelection()
         self.trim = True
         if float(self.rngpl.val_qmin.GetValue()) - np.min(self.raw_data[xi]) > 0.005:
@@ -787,7 +821,7 @@ class Fitting1DXRD(BasePanel):
             self.xmax = float(self.rngpl.val_qmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,5)
+        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -798,10 +832,13 @@ class Fitting1DXRD(BasePanel):
             
     def reset_range(self,event=None):
         
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'reset_range')
+        
         xi = self.rngpl.ch_xaxis.GetSelection()
         self.xmin = np.min(self.raw_data[xi])
         self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,5)
+        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
         
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -819,6 +856,9 @@ class Fitting1DXRD(BasePanel):
             self.peaklist   = []
 
     def trim_data(self):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'trim_data')
 
         if self.trim:
             xi = self.rngpl.ch_xaxis.GetSelection()
@@ -841,6 +881,9 @@ class Fitting1DXRD(BasePanel):
 
     def background_fit(self,event=None):        
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'background_fit')
+
         if self.bgr is not None:
             self.plot_data()
             if self.ipeaks is not None:
@@ -851,7 +894,10 @@ class Fitting1DXRD(BasePanel):
         self.plot_background()
 
     def fit_background(self,event=None):
-        
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'fit_background')
+
         self.delete_background()
         
         ## this creates self.bgr and self.bgr_info
@@ -868,6 +914,9 @@ class Fitting1DXRD(BasePanel):
   
     def remove_background(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'remove_background')
+
         self.delete_background()
         self.plot_data()
         if self.ipeaks is not None:
@@ -876,6 +925,9 @@ class Fitting1DXRD(BasePanel):
             self.plot_peaks()
         
     def delete_background(self,event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'delete_background')
 
         self.bgr_data = None
         self.bgr = None
@@ -892,6 +944,9 @@ class Fitting1DXRD(BasePanel):
 
     def plot_background(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'plot_background')
+
         if self.bgr is not None and self.subtracted is False:
             xi = self.rngpl.ch_xaxis.GetSelection()
             self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],
@@ -900,6 +955,9 @@ class Fitting1DXRD(BasePanel):
                               show_legend=True)
 
     def background_options(self,event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'background_options')
 
         myDlg = BackgroundOptions(self)
         
@@ -915,6 +973,9 @@ class Fitting1DXRD(BasePanel):
             self.background_fit()
 
     def subtract_background(self,event=None):
+    
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'subtract_background')
 
         xi = self.rngpl.ch_xaxis.GetSelection()
         if self.bkgdpl.ck_bkgd.GetValue() == True:
@@ -958,6 +1019,9 @@ class Fitting1DXRD(BasePanel):
 
     def find_peaks(self,event=None,filter=False):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'find_peaks')
+
         newpeaks = True
         if self.ipeaks is not None:
             question = 'Are you sure you want to remove current peaks and search again?'
@@ -989,6 +1053,9 @@ class Fitting1DXRD(BasePanel):
             
     def peak_display(self):
     
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'peak_display')
+    
         xi = self.rngpl.ch_xaxis.GetSelection()
         self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
         
@@ -1004,6 +1071,9 @@ class Fitting1DXRD(BasePanel):
 
     def fit_instrumental(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'fit_instrumental')
+
         xi = self.rngpl.ch_xaxis.GetSelection()
         u,v,w = instrumental_fit_uvw(self.ipeaks,
                                      self.plt_data[xi],self.plt_data[3],
@@ -1012,6 +1082,9 @@ class Fitting1DXRD(BasePanel):
                                      verbose=True)
 
     def fit_peaks(self,event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'fit_peaks')
 
         peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
                                                 self.plt_data[0],self.plt_data[3],
@@ -1026,6 +1099,9 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
         
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'plot_peaks')
+        
         self.plot1D.scatterplot(*self.plt_peaks,
                           color='red',edge_color='yellow', selectcolor='green',size=12,
                           show_legend=True)
@@ -1038,6 +1114,9 @@ class Fitting1DXRD(BasePanel):
 
     def remove_all_peaks(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'remove_all_peaks')
+
         self.delete_all_peaks()
         self.plot_data()
 
@@ -1046,6 +1125,9 @@ class Fitting1DXRD(BasePanel):
         self.pkpl.btn_fitpks.Disable()
 
     def delete_all_peaks(self,event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'delete_all_peaks')
 
         self.plt_peaks = None
         self.ipeaks = None
@@ -1056,9 +1138,15 @@ class Fitting1DXRD(BasePanel):
 
     def edit_peaks(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'edit_peaks')
+
         print 'this will pop up a list of peaks for removing (and adding?)'
 
     def peak_options(self,event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'peak_options')
 
         myDlg = PeakOptions(self)
 
@@ -1076,12 +1164,18 @@ class Fitting1DXRD(BasePanel):
 
     def select_peak(self, evt=None, peakname=None,  **kws):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'select_peaks')
+
         if peakname is None and evt is not None:
             peakname = evt.GetString()
 ##      if pki is None and evt is not None:
 ##          pki = self.peaklistbox.GetSelections()
     
     def rm_sel_peaks(self, peakname, event=None):
+
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'rm_sel_peaks')
 
         if peakname in self.peaklist:
             
@@ -1101,13 +1195,16 @@ class Fitting1DXRD(BasePanel):
 #### PLOTPANEL FUNCTIONS
     def plot1DXRD(self,panel):
     
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'plot1DXRD')
+    
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.owner.write_message
         
 
         ## Set defaults for plotting  
-        self.plot1D.set_ylabel('Intensity (a.u.)')
-        self.plot1D.set_xlabel('q (1/$\AA$)')  #'q (1/A)')
+        self.plot1D.set_ylabel(self.ylabel)
+        self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.cursor_mode = 'zoom'
 
     def onSAVEfig(self,event=None):
@@ -1119,8 +1216,19 @@ class Fitting1DXRD(BasePanel):
     def onRESETplot(self,event=None):
         self.plot1D.reset_config()
 
+    def onChangeXscale(self,event=None):
+    
+        self.counter = 0
+        self.counter = self.counter + 1
+        print '\nStep %i: %s' % (self.counter,'onChangeXscale')
+
+        self.check1Daxis()
+
 
     def check1Daxis(self,event=None,yaxis=False):
+    
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'check1Daxis')
     
         self.plot1D.unzoom_all()
         xi = self.rngpl.ch_xaxis.GetSelection()
@@ -1128,33 +1236,47 @@ class Fitting1DXRD(BasePanel):
         ## 2theta
         if xi == 2: 
             self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+            xunit = 'deg.' #'$(^\circ)$'
         ## d
         elif xi == 1:
             self.xlabel = 'd ($\AA$)'
+            xunit = 'A' #'$\AA$'
         ## q
         else: 
             self.xlabel = 'q (1/$\AA$)'
+            xunit = '1/A' #'1/$\AA$'
 
-        self.xmin = np.min(self.raw_data[xi])
-        self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,5)
-        self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
-        self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
- 
+
+        if self.trim:
+            minx = np.min(self.plt_data[xi])
+            maxx = np.max(self.plt_data[xi])
+        else:
+            minx = np.min(self.raw_data[xi])
+            maxx = np.max(self.raw_data[xi])
+        if xi == 1: maxx = min(maxx,self.dlimit)
+        self.rngpl.val_qmin.SetValue('%0.3f' % minx)
+        self.rngpl.val_qmax.SetValue('%0.3f' % maxx)
+
+        self.rngpl.unit_qmin.SetLabel(xunit)
+        self.rngpl.unit_qmax.SetLabel(xunit)
+        self.plot1D.set_xlabel(self.xlabel)
+        self.plot1D.set_ylabel(self.ylabel)         
+
+
         self.plot_data()
         if self.ipeaks:
             self.peak_display()
             self.plot_peaks()
 
-        self.plot1D.set_xlabel(self.xlabel)
         self.rescale1Daxis(xaxis=True,yaxis=yaxis)
-
-
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'rescale1Daxis')
+
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.trim:
+        if self.subtracted:
             x = self.plt_data[xi]
             y = self.plt_data[3]        
         else:
@@ -1165,15 +1287,20 @@ class Fitting1DXRD(BasePanel):
             xmax = np.max(x)
             xmin = np.min(x)
             self.set_xview(xmin, xmax)
+                    
         if yaxis:
             ymax = np.max(y)
             ymin = np.min(y)
             self.set_yview(ymin, ymax)
             
+            
     def set_xview(self, x1, x2):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'set_xview')
+
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.trim:
+        if self.subtracted:
             xydata = self.plt_data
         else:
             xydata = self.raw_data
@@ -1182,14 +1309,18 @@ class Fitting1DXRD(BasePanel):
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
         
-        if xi == 1: x2 = 5
+        if xi == 1: x2 = min(x2,self.dlimit)
 
         self.plot1D.axes.set_xlim((x1, x2))
+
         self.plot1D.canvas.draw()
 
     def set_yview(self, y1, y2):
 
-        if self.trim:
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'set_yview')
+
+        if self.subtracted:
             xydata = self.plt_data
         else:
             xydata = self.raw_data
@@ -1199,6 +1330,7 @@ class Fitting1DXRD(BasePanel):
         y2 = min(ymax,y2)
 
         self.plot1D.axes.set_ylim((y1, y2))
+
         self.plot1D.canvas.draw()
 
 
@@ -1207,9 +1339,11 @@ class Fitting1DXRD(BasePanel):
 ##############################################
 #### DATABASE FUNCTIONS
 
-
     def open_database(self,event=None):
     
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'open_database')
+
         wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose AMCSD database file',
                            defaultDir=os.getcwd(),
@@ -1231,6 +1365,9 @@ class Fitting1DXRD(BasePanel):
 
     def search_database(self,event=None):
 
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'search_database')
+
         myDlg = XRDSearchGUI()
         
         fit = False
@@ -1245,6 +1382,9 @@ class Fitting1DXRD(BasePanel):
             self.background_fit()
             
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05):
+    
+        self.counter = self.counter + 1
+        print 'Step %i: %s' % (self.counter,'match_database')
     
 #         pks_0 = self.plt_peaks[0]
 
@@ -1518,7 +1658,8 @@ class Viewer1DXRD(wx.Panel):
 
         ## Default information
         self.plotlist     = []
-        self.xlabel       = 'q (A^-1)'
+        self.xlabel       = 'q (1/$\AA$)' #'q (A^-1)'
+        self.ylabel       = 'Intensity (a.u.)'
         
         self.data_name    = []
         self.xy_data      = [] #None #[]
@@ -1752,7 +1893,8 @@ class Viewer1DXRD(wx.Panel):
         
 
         ## Set defaults for plotting  
-        self.plot1D.set_ylabel('Intensity (a.u.)')
+        self.plot1D.set_ylabel(self.ylabel)
+        self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.cursor_mode = 'zoom'
   
         ## trying to get this functionality into our gui
@@ -1777,7 +1919,7 @@ class Viewer1DXRD(wx.Panel):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
 
-    def addCIFdata(self,x,y,name=None):
+    def addCIFdata(self,x,y,name=None,cifscale=1000):
         
         plt_no = len(self.cif_name)
         
@@ -1786,26 +1928,26 @@ class Viewer1DXRD(wx.Panel):
         else:
             name = 'cif: %s' % name
             
-        cifscale = 1000
         y = y/np.max(y)*cifscale
+        
+        q    = x
+        d    = d_from_q(q)
+        twth = twth_from_q(q,self.wavelength)
+        I    = y
 
         ## Add 'raw' data to array
         self.cif_name.append(name)
         self.icif.append(len(self.plotlist))
         self.cif_scale.append(cifscale)
-        if self.cif_data is None:
-            self.cif_data = [[x,y]]
-        else:
-            self.cif_data.append([[x],[y]])
         
-        ## Add 'as plotted' data to array
-        if self.cif_plot is None:
-            self.cif_plot = [[x,y]]
-        else:
-            self.cif_plot.append([[x],[y]])
+        self.cif_data.append([q,d,twth,I])
+        self.cif_plot.append([q,d,twth,I])
         
         ## Plot data (x,y) 
-        self.plotlist.append(self.plot1D.oplot(x,y,label=name,show_legend=True))
+        xi = self.ch_xaxis.GetSelection()
+        self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
+                                               self.cif_plot[-1][3],
+                                               label=name,show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1832,8 +1974,10 @@ class Viewer1DXRD(wx.Panel):
         q    = x
         d    = d_from_q(q)
         twth = twth_from_q(q,self.wavelength)
-        self.xy_data.append([q,d,twth,y])
-        self.xy_plot.append([q,d,twth,y])
+        I    = y
+        
+        self.xy_data.append([q,d,twth,I])
+        self.xy_plot.append([q,d,twth,I])
         
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
@@ -1939,7 +2083,6 @@ class Viewer1DXRD(wx.Panel):
         else: 
             self.xlabel = 'q (1/$\AA$)'
 
-        self.plot1D.set_xlabel(self.xlabel)
         self.rescale1Daxis(xaxis=True,yaxis=yaxis)
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
@@ -2004,6 +2147,7 @@ class Viewer1DXRD(wx.Panel):
         x2 = min(xmax,x2)
 
         self.plot1D.axes.set_xlim((x1, x2))
+        self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.canvas.draw()
 
     def set_yview(self, y1, y2):
@@ -2020,6 +2164,7 @@ class Viewer1DXRD(wx.Panel):
         y2 = min(ymax,y2)
 
         self.plot1D.axes.set_ylim((y1, y2))
+        self.plot1D.set_ylabel(self.ylabel)
         self.plot1D.canvas.draw()
 
 
@@ -2235,7 +2380,7 @@ class RangeToolsPanel(wx.Panel):
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
         xunits = ['q','d',u'2\u03B8']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
-        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.owner.check1Daxis)
+        self.ch_xaxis.Bind(wx.EVT_CHOICE, self.owner.onChangeXscale)
         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
         hbox_xaxis.Add(self.ch_xaxis, flag=wx.EXPAND, border=8)
         
@@ -2243,15 +2388,19 @@ class RangeToolsPanel(wx.Panel):
         ## X-Range        
         ttl_qmin = wx.StaticText(self, label='minimum') 
         self.val_qmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.owner.set_range)
+        self.unit_qmin = wx.StaticText(self, label='A^-1')
+        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.owner.onChangeRange)
         hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
         hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
+        hbox_qmin.Add(self.unit_qmin, flag=wx.RIGHT, border=8)
         
         ttl_qmax= wx.StaticText(self, label='maximum') 
         self.val_qmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.owner.set_range)
+        self.unit_qmax = wx.StaticText(self, label='A^-1')
+        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.owner.onChangeRange)
         hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
         hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
+        hbox_qmax.Add(self.unit_qmax, flag=wx.RIGHT, border=8)
 
         btn_rngreset = wx.Button(self,label='reset')
         btn_rngreset.Bind(wx.EVT_BUTTON, self.owner.reset_range)
