@@ -184,6 +184,7 @@ class diFFit1DFrame(wx.Frame):
     
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
         index = 0
+        okay = False
 
         xi = self.xrd1Dviewer.ch_xaxis.GetSelection()
         self.xrd1Dfitting.rngpl.ch_xaxis.SetSelection(xi)
@@ -194,7 +195,6 @@ class diFFit1DFrame(wx.Frame):
             
             dlg = SelectFittingData(self.list,self.all_data)
 
-            okay = False
             if dlg.ShowModal() == wx.ID_OK:
                 okay = True
                 self.list = dlg.list
@@ -209,7 +209,11 @@ class diFFit1DFrame(wx.Frame):
                 I    = np.array(self.all_data[index][3]).flatten()
                 
         else:
-            x,y,name = self.loadXYFILE()
+            try:
+                x,y,name = self.loadXYFILE()
+                okay = True
+            except:
+                return
 
             ## Add 'raw' data to array
             self.xrd1Dviewer.data_name.append(name)
@@ -234,38 +238,26 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dviewer.ch_data.SetStringSelection(name)
             self.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
         
-        self.nb.SetSelection(1) ## switches to fitting panel
+        if okay:
+            self.nb.SetSelection(1) ## switches to fitting panel
 
-        adddata = True
-        if self.xrd1Dfitting.raw_data is not None:
-            question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.name,name)
-            adddata = YesNo(self,question,caption='Overwrite warning')
+            adddata = True
+            if self.xrd1Dfitting.raw_data is not None:
+                question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.name,name)
+                adddata = YesNo(self,question,caption='Overwrite warning')
         
-        if adddata:
+            if adddata:
 
-            self.xrd1Dfitting.raw_data = np.array([q,d,twth,I])
-            self.xrd1Dfitting.plt_data = np.array([q,d,twth,I])
+                if self.xrd1Dfitting.raw_data is not None:
+                    self.xrd1Dfitting.reset_fitting()
             
-            self.xrd1Dfitting.xmin     = np.min(self.xrd1Dfitting.plt_data[xi])
-            self.xrd1Dfitting.xmax     = np.max(self.xrd1Dfitting.plt_data[xi])
+                self.xrd1Dfitting.raw_data = np.array([q,d,twth,I])
+                self.xrd1Dfitting.plt_data = np.array([q,d,twth,I])
             
-            self.xrd1Dfitting.check1Daxis()
+                self.xrd1Dfitting.xmin     = np.min(self.xrd1Dfitting.plt_data[xi])
+                self.xrd1Dfitting.xmax     = np.max(self.xrd1Dfitting.plt_data[xi])
             
-#             self.xrd1Dfitting.plot_data()
-# 
-#             self.xrd1Dfitting.rngpl.val_qmin.SetValue('%0.3f' % self.xrd1Dfitting.xmin)
-#             self.xrd1Dfitting.rngpl.val_qmax.SetValue('%0.3f' % self.xrd1Dfitting.xmax)
-            
-
-#             self.xrd1Dfitting.plot1D.plot(self.xrd1Dfitting.plt_data[xi],
-#                                           self.xrd1Dfitting.plt_data[3],
-#                                           title=name, color='blue', label='Raw data',
-#                                           xlabel=self.xrd1Dfitting.xlabel,
-#                                           ylabel=self.xrd1Dfitting.ylabel,
-#                                           show_legend=True)
-#             minx = np.min(self.xrd1Dfitting.plt_data[xi])
-#             maxx = np.max(self.xrd1Dfitting.plt_data[xi])
-#             self.xrd1Dfitting.reset_fitting(name=name,min=minx,max=maxx)
+                self.xrd1Dfitting.check1Daxis()
 
     def loadXYFILE(self,event=None):
     
