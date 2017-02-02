@@ -98,8 +98,9 @@ class diFFit1DFrame(wx.Frame):
         #self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
         # create the page windows as children of the notebook
-        self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
-        self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
+        E_default = 19.0 # keV
+        self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self,energy=E_default)
+        self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self,energy=E_default)
         self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
         
         # add the pages to the notebook with the label to show on the tab
@@ -243,7 +244,7 @@ class diFFit1DFrame(wx.Frame):
 
             adddata = True
             if self.xrd1Dfitting.raw_data is not None:
-                question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.name,name)
+                question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.plttitle,name)
                 adddata = YesNo(self,question,caption='Overwrite warning')
         
             if adddata:
@@ -251,6 +252,7 @@ class diFFit1DFrame(wx.Frame):
                 if self.xrd1Dfitting.raw_data is not None:
                     self.xrd1Dfitting.reset_fitting()
             
+                self.xrd1Dfitting.plttitle = name
                 self.xrd1Dfitting.raw_data = np.array([q,d,twth,I])
                 self.xrd1Dfitting.plt_data = np.array([q,d,twth,I])
             
@@ -339,6 +341,61 @@ class diFFit1DFrame(wx.Frame):
 
             self.xrd1Dviewer.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
             self.xrd1Dfitting.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
+            
+            self.rescale_data(wavelength)
+#             datalist = []
+#             if len(self.xrd1Dviewer.data_name) > 0:
+#                 datalist.append(self.xrd1Dviewer.xy_data)
+#                 datalist.append(self.xrd1Dviewer.xy_plot)
+#             if len(self.xrd1Dviewer.cif_name) > 0:
+#                 datalist.append(self.xrd1Dviewer.cif_data)
+#                 datalist.append(self.xrd1Dviewer.cif_plot)
+#                 
+#                 
+#             if self.xrd1Dfitting.raw_data is not None:
+#                 datalist.append(self.xrd1Dfitting.raw_data)
+#                 datalist.append(self.xrd1Dfitting.plt_data)
+#             if self.xrd1Dfitting.bgr_data is not None:
+#                 datalist.append(self.xrd1Dfitting.bgr_data)
+#             print np.shape(datalist)
+#             for i,dataset in enumerate(datalist):
+#                 if len(np.shape(dataset)) > 2:
+#                     for j,data in enumerate(dataset):
+#                         print i,j,np.shape(data)
+#                 else:
+#                     print i,np.shape(dataset)
+
+
+    def rescale_data(self,wavelength):
+    
+        viewerdata = False
+        fitterdata = False
+        
+        for plt_no,name in enumerate(self.xrd1Dviewer.data_name):
+            self.xrd1Dviewer.xy_data[plt_no][2] = twth_from_q(self.xrd1Dviewer.xy_data[plt_no][0],wavelength)
+            self.xrd1Dviewer.xy_plot[plt_no][2] = twth_from_q(self.xrd1Dviewer.xy_plot[plt_no][0],wavelength)
+            viewerdata = True
+
+        for plt_no,name in enumerate(self.xrd1Dviewer.cif_name):
+            self.xrd1Dviewer.cif_data[plt_no][2] = twth_from_q(self.xrd1Dviewer.cif_data[plt_no][0],wavelength)
+            self.xrd1Dviewer.cif_plot[plt_no][2] = twth_from_q(self.xrd1Dviewer.cif_plot[plt_no][0],wavelength)
+            viewerdata = True
+             
+        if self.xrd1Dfitting.raw_data is not None:
+            self.xrd1Dfitting.raw_data[2] = twth_from_q(self.xrd1Dfitting.raw_data[0],wavelength)
+            self.xrd1Dfitting.plt_data[2] = twth_from_q(self.xrd1Dfitting.plt_data[0],wavelength)
+            fitterdata = True
+
+        if self.xrd1Dfitting.bgr_data is not None:
+            self.xrd1Dfitting.bgr_data[2] = twth_from_q(self.xrd1Dfitting.bgr_data[0],wavelength)
+            fitterdata = True
+            
+        if viewerdata and self.xrd1Dviewer.ch_xaxis.GetSelection() == 2:
+            self.xrd1Dviewer.check1Daxis()
+            
+        if fitterdata and self.xrd1Dfitting.rngpl.ch_xaxis.GetSelection() == 2:
+            self.xrd1Dfitting.check1Daxis()
+
 
 class SelectFittingData(wx.Dialog):
     def __init__(self,list,all_data):
@@ -498,7 +555,7 @@ class Fitting1DXRD(BasePanel):
     Panel for housing 1D XRD fitting
     '''
     label='Fitting'
-    def __init__(self,parent,owner=None,_larch=None):
+    def __init__(self,parent,owner=None,_larch=None,energy=19.0):
         
         wx.Panel.__init__(self, parent)
 
@@ -525,7 +582,11 @@ class Fitting1DXRD(BasePanel):
         self.xmin       = None
         self.xmax       = None
 
-        self.name       = ''
+        self.plttitle   = ''
+
+        self.energy       = energy   ## keV
+        self.wavelength   = lambda_from_E(self.energy) ## A
+        
         self.energy     = 19.0   ## keV
         self.wavelength = lambda_from_E(self.energy) ## A
         
@@ -716,25 +777,25 @@ class Fitting1DXRD(BasePanel):
         xi = self.rngpl.ch_xaxis.GetSelection()
         if self.subtracted:
             self.plot1D.plot(self.plt_data[xi],self.plt_data[3],
-                             title=self.name, 
+                             title=self.plttitle, 
                              color='blue', label='Data',
                              xlabel=self.xlabel,ylabel=self.ylabel,
                              show_legend=True)
         else:
             if self.trim:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.name,
+                                 title=self.plttitle,
                                  color='grey', label='Raw data',
                                  xlabel=self.xlabel,ylabel=self.ylabel,
                                  show_legend=True)
                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],
-                                  title=self.name, 
+                                  title=self.plttitle, 
                                   color='blue', label='Trimmed data',
                                   xlabel=self.xlabel,ylabel=self.ylabel,
                                   show_legend=True)
             else:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.name, 
+                                 title=self.plttitle, 
                                  color='blue', label='Raw data',
                                  xlabel=self.xlabel,ylabel=self.ylabel,
                                  show_legend=True)
@@ -747,7 +808,7 @@ class Fitting1DXRD(BasePanel):
 
     def reset_fitting(self,name=None,min=0,max=1):
         
-        self.name = name
+        self.plttitle = name
         self.rngpl.val_qmin.SetValue('%0.3f' % min)
         self.rngpl.val_qmax.SetValue('%0.3f' % max)
         self.rngpl.ch_xaxis.SetSelection(0)
@@ -938,7 +999,7 @@ class Fitting1DXRD(BasePanel):
         if self.bgr is not None and self.subtracted is False:
             xi = self.rngpl.ch_xaxis.GetSelection()
             self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],
-                              title=self.name, 
+                              title=self.plttitle, 
                               color='red', label='Background',
                               xlabel=self.xlabel,ylabel=self.ylabel,
                               show_legend=True)
@@ -969,7 +1030,7 @@ class Fitting1DXRD(BasePanel):
             self.plt_data[3] = self.plt_data[3] - self.bgr_data[3]
             self.subtracted = True
             
-            self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.name,
+            self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.plttitle,
                              color='blue', label='Background subtracted',
                              xlabel=self.xlabel,ylabel=self.ylabel,
                              show_legend=True)
@@ -1595,7 +1656,7 @@ class Viewer1DXRD(wx.Panel):
     Panel for housing 1D XRD viewer
     '''
     label='Viewer'
-    def __init__(self,parent,owner=None,_larch=None):
+    def __init__(self,parent,owner=None,_larch=None,energy=19.0):
         
         wx.Panel.__init__(self, parent)
 
@@ -1619,8 +1680,8 @@ class Viewer1DXRD(wx.Panel):
         self.cif_scale    = []
         self.icif         = []
         
-        self.energy = 19.0   ## keV
-        self.wavelength = lambda_from_E(self.energy) ## A
+        self.energy       = energy   ## keV
+        self.wavelength   = lambda_from_E(self.energy) ## A
 
         self.Panel1DViewer()
 
@@ -2030,7 +2091,7 @@ class Viewer1DXRD(wx.Panel):
         ## q
         else: 
             self.xlabel = 'q (1/$\AA$)'
-
+            
         self.rescale1Daxis(xaxis=True,yaxis=yaxis)
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
@@ -2059,7 +2120,7 @@ class Viewer1DXRD(wx.Panel):
             if ymin > np.min(y): ymin = np.min(y)
 
             self.plot1D.update_line(plt_no,x,y)
-    
+            
         if xi == 1: xmax = 5
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
@@ -2096,7 +2157,7 @@ class Viewer1DXRD(wx.Panel):
         x2 = min(xmax,x2)
 
         self.plot1D.axes.set_xlim((x1, x2))
-#         self.plot1D.set_xlabel(self.xlabel)
+        self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.canvas.draw()
 
     def set_yview(self, y1, y2):
@@ -2113,7 +2174,7 @@ class Viewer1DXRD(wx.Panel):
         y2 = min(ymax,y2)
 
         self.plot1D.axes.set_ylim((y1, y2))
-#         self.plot1D.set_ylabel(self.ylabel)
+        self.plot1D.set_ylabel(self.ylabel)
         self.plot1D.canvas.draw()
 
 
