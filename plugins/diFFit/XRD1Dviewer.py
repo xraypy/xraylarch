@@ -1388,6 +1388,11 @@ class Fitting1DXRD(BasePanel):
             
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
                        data=None,ipks=None,cifdatabase=None):
+        '''
+        fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+        pk_wid - maximum range in q which qualifies as a match between fitted and ideal
+        data,ipks,cifdatabase - all read from gui but possible to alter
+        '''
         
         if data is None:
             data = self.plt_data
@@ -1401,7 +1406,7 @@ class Fitting1DXRD(BasePanel):
             minq = np.min(data[0])
             maxq = np.max(data[0])
         except:
-            print '\nUSING DEFAULTS FOR q',
+            print '\n**** USING DEFAULTS FOR q  - NOT FROM FITTER *****',
             q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
             minq = 1.75
             maxq = 5.25            
@@ -1409,14 +1414,14 @@ class Fitting1DXRD(BasePanel):
         try:
             minfracq = float(self.val_gdnss.GetValue())
         except:
-            print '\nUSING DEFAULTS FOR fracq',
             minfracq = fracq
 
+        ## error checking print-out. to be removed.
+        ## mkak 2017.02.03
         print '\nPeaks for matching:'
         print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
 
-        ## uses step size and range for q from cifdb.py
-        qstep = QSTEP
+        qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
         
         peaks = []
@@ -1435,6 +1440,9 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
+
+        ## error checking timing and print-out. to be removed.
+        ## mkak 2017.02.03
         import time
         a = time.time()
 
@@ -1458,7 +1466,8 @@ class Fitting1DXRD(BasePanel):
         except:
             matches,count,goodness = [],[],[]
 
-
+        ## error checking timing and print-out. to be removed.
+        ## mkak 2017.02.03
         c = time.time()
         if (c-a) > 1:
             print('\n%d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
