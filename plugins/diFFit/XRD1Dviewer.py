@@ -12,6 +12,8 @@ import sys
 #import h5py
 import matplotlib.cm as colormap
 
+from threading import Thread
+
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
@@ -20,7 +22,7 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.diFFit.cifdb import cifDB
+from larch_plugins.diFFit.cifdb import cifDB,QSTEP,QMIN
 
 from larch_plugins.io import tifffile
 
@@ -1361,7 +1363,13 @@ class Fitting1DXRD(BasePanel):
 
     def onMatch(self,event=None):
         
-        self.match_database()
+        #self.match_database()
+        
+        self.owner.write_message('Searching database for matches...')
+        db_thread = Thread(target=self.match_database)
+        db_thread.start()
+        #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
+        db_thread.join()
 
     def database_settings(self,event=None):
 
@@ -1393,7 +1401,7 @@ class Fitting1DXRD(BasePanel):
             minq = np.min(data[0])
             maxq = np.max(data[0])
         except:
-            print 'using defaults for q'
+            print '\nUSING DEFAULTS FOR q',
             q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
             minq = 1.75
             maxq = 5.25            
@@ -1401,14 +1409,15 @@ class Fitting1DXRD(BasePanel):
         try:
             minfracq = float(self.val_gdnss.GetValue())
         except:
-            print 'using defaults for fracq'
+            print '\nUSING DEFAULTS FOR fracq',
             minfracq = fracq
 
         print '\nPeaks for matching:'
         print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
 
-        qstep = 0.01 ## read this from cifdb.py; mkak 2017.01.24
-        qmin  = 0.2  ## read this from cifdb.py; mkak 2017.01.24
+        ## uses step size and range for q from cifdb.py
+        qstep = QSTEP
+        qmin  = QMIN
         
         peaks = []
         p_ids = []

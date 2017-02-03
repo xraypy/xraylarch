@@ -1,6 +1,6 @@
 from .xrd import XRD
 from .xrd_bgr import xrd_background
-from .cifdb import cifDB
+from .cifdb import cifDB,QSTEP,QMIN
 from .XRD2Dviewer import diFFit2D
 from .XRD1Dviewer import diFFit1D,Calc1DPopup
 from .ImageControlsFrame import ImageToolboxFrame
