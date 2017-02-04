@@ -171,6 +171,8 @@ class diFFit1DFrame(wx.Frame):
         
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
         AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Change database', '', self.xrd1Dfitting.open_database)
+        AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
 
         menubar.Append(AnalyzeMenu, '&Analyze')
@@ -1440,6 +1442,78 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
+        matches,count = cifdatabase.find_by_q_subset(peaks)
+        goodness = np.zeros(np.shape(count))       
+        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+            goodness[i] = cifdatabase.fraction_in_range(amcsd,cnt,
+                                                                qmin=minq,
+                                                                qmax=maxq)
+        try:
+            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
+        except:
+            matches,count,goodness = [],[],[]
+
+        if len(matches) > 0:
+            for i,amcsd in enumerate(matches):
+                str = 'AMCSD %i (matched %0.3f or %i out of %i): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
+                print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq)
+        print
+
+
+    def orig_match_database(self,event=None,fracq=0.75,pk_wid=0.05,
+                       data=None,ipks=None,cifdatabase=None):
+        '''
+        fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+        pk_wid - maximum range in q which qualifies as a match between fitted and ideal
+        data,ipks,cifdatabase - all read from gui but possible to alter
+        '''
+        
+        if data is None:
+            data = self.plt_data
+        if cifdatabase is None:
+            cifdatabase = self.owner.cifdatabase
+        if ipks is None:
+            ipks = self.ipeaks
+    
+        try:
+            q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
+            minq = np.min(data[0])
+            maxq = np.max(data[0])
+        except:
+            print '\n**** USING DEFAULTS FOR q  - NOT FROM FITTER *****',
+            q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+            minq = 1.75
+            maxq = 5.25            
+
+        try:
+            minfracq = float(self.val_gdnss.GetValue())
+        except:
+            minfracq = fracq
+
+        ## error checking print-out. to be removed.
+        ## mkak 2017.02.03
+        print '\nPeaks for matching:'
+        print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
+
+        qstep = QSTEP ## these quantities come from cifdb.py
+        qmin  = QMIN
+        
+        peaks = []
+        p_ids = []
+
+        for pk_q in q_pks:
+            pk_id = int((pk_q-qmin)/qstep)
+            
+            ## performs peak broadening here
+            if pk_wid > 0:    
+                st = int(pk_wid/qstep/2)
+                for p in np.arange(-1*st,st+1):
+                    peaks += [pk_q+p*qstep]
+                    p_ids += [pk_id+p]
+            else:
+                peaks += [pk_q]
+                p_ids += [pk_id]
+
 
         ## error checking timing and print-out. to be removed.
         ## mkak 2017.02.03
@@ -1824,15 +1898,19 @@ class Viewer1DXRD(wx.Panel):
         
         btn_hide  = wx.Button(self,label='hide')
         btn_rmv   = wx.Button(self,label='remove')
+        btn_fit   = wx.Button(self,label='fit data')
         
         btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
         btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
+#         btn_fit.Bind(wx.EVT_BUTTON,   self.owner.xrd1Dfitting.open_database)
+        btn_fit.Bind(wx.EVT_BUTTON,   None)
 
         btn_hide.Disable()
         btn_rmv.Disable()
         
-        hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
-        hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
+        hbox_btns.Add(btn_hide,  flag=wx.RIGHT, border=8)
+        hbox_btns.Add(btn_rmv,   flag=wx.RIGHT, border=8)
+        hbox_btns.Add(btn_fit,   flag=wx.RIGHT, border=6)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox   
         
