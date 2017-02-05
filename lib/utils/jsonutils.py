@@ -53,7 +53,10 @@ def encode4js(obj):
         for key, val in obj.items():
             out[encode4js(key)] = encode4js(val)
         return out
-    return obj
+    elif callable(obj):
+        return {'__class__': 'Method', '__name__': repr(obj)}
+
+    return repr(obj)
 
 def decode4js(obj):
     """
