@@ -655,6 +655,9 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append('='*len(topline))
     return '\n'.join(out)
 
+def registereLarchGroups():
+    return (TransformGroup, FeffitDataSet)
+
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,

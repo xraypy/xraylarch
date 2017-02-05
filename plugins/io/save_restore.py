@@ -1,9 +1,12 @@
+import inspect
 import json
+import time
 import numpy as np
 import h5py
 from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
+from larch.utils.jsonutils import encode4js, decode4js
 from larch_plugins.io import fix_varname
 
 
@@ -117,7 +120,7 @@ class H5PySaveFile(object):
         self.fh.close()
 
 @ValidateLarchPlugin
-def save(fname,  *args, **kws):
+def save_h5(fname,  *args, **kws):
     """save groups and data into a portable, hdf5 file
 
     save(fname, arg1, arg2, ....)
@@ -135,7 +138,7 @@ def save(fname,  *args, **kws):
     saver.save(*args)
 
 @ValidateLarchPlugin
-def restore(fname,  group=None, _larch=None):
+def restore_h5(fname,  group=None, _larch=None):
     """restore groups and data from an hdf5 Larch Save file
 
     restore(fname, group=None)
@@ -210,5 +213,64 @@ def restore(fname,  group=None, _larch=None):
     fh.close()
     return group
 
+@ValidateLarchPlugin
+def save(fname,  *args, **kws):
+    """save groups and data into a portable json file
+
+    save(fname, arg1, arg2, ....)
+
+    Parameters
+    ----------
+       fname   name of output save file.
+       args    list of groups, data items to be saved.
+]
+   See Also:  restore()
+    """
+    _larch = kws.get('_larch', None)
+    isgroup =  _larch.symtable.isgroup
+
+    expr = getattr(_larch, 'this_expr', '_unknown_')
+
+    buff = ["#Larch Save File: v1.0",
+            "#save.date: %s" % time.strftime('%Y-%m-%d %H:%M:%S'),
+            "#save.command: %s" % expr,
+            "#save.nitems:  %i" % len(args)]
+
+    names = []
+    print expr
+    if expr.startswith('save('):
+        names = [a.strip() for a in expr[5:-1].split(',')]
+    names.pop(0)
+    print names
+
+    if len(names) < len(args):
+        names.extend(["_unknown_"]*(len(args) - len(names)))
+
+    for key, arg in zip(names, args):
+        print(" --> ", key, arg, type(arg) )
+
+        buff.append("# %s " % key)
+        jsready =  encode4js(arg)
+        for key, val in jsready.items():
+            print key, ' : ', val
+        # print(" --> " , arg, isgroup(arg), encode4js(arg))
+
+        buff.append(json.dumps(encode4js(arg)))
+    buff.append("")
+
+
+
+    with open(fname, "w") as fh:
+        fh.write("\n".join(buff))
+
+
+@ValidateLarchPlugin
+def restore(fname,  group=None, _larch=None):
+    """restore groups and data from a json Larch Save file
+    """
+
+    with open(fname, "w") as fh:
+        fh.write("\n".join(buff))
+
 def registerLarchPlugin():
-    return ('_io', {'save': save, 'restore': restore})
+    return ('_io', { 'save': save})
