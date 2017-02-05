@@ -223,13 +223,13 @@ def save(fname,  *args, **kws):
     ----------
        fname   name of output save file.
        args    list of groups, data items to be saved.
-]
+
    See Also:  restore()
     """
     _larch = kws.get('_larch', None)
     isgroup =  _larch.symtable.isgroup
 
-    expr = getattr(_larch, 'this_expr', '_unknown_')
+    expr = getattr(_larch, 'this_expr', 'save(foo)')
 
     buff = ["#Larch Save File: v1.0",
             "#save.date: %s" % time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -237,29 +237,16 @@ def save(fname,  *args, **kws):
             "#save.nitems:  %i" % len(args)]
 
     names = []
-    print expr
     if expr.startswith('save('):
         names = [a.strip() for a in expr[5:-1].split(',')]
     names.pop(0)
-    print names
-
     if len(names) < len(args):
         names.extend(["_unknown_"]*(len(args) - len(names)))
 
     for key, arg in zip(names, args):
-        print(" --> ", key, arg, type(arg) )
-
         buff.append("# %s " % key)
-        jsready =  encode4js(arg)
-        for key, val in jsready.items():
-            print key, ' : ', val
-        # print(" --> " , arg, isgroup(arg), encode4js(arg))
-
         buff.append(json.dumps(encode4js(arg)))
     buff.append("")
-
-
-
     with open(fname, "w") as fh:
         fh.write("\n".join(buff))
 
