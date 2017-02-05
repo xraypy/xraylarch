@@ -149,7 +149,7 @@ class SymbolTable(Group):
         self._sys.moduleGroup = self
         self._sys.paramGroup = None
         self._sys.__cache__  = [None]*5
-
+        self._sys.saverestore_classes = []
         for g in self.core_groups:
             self._sys.searchGroups.append(g)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
@@ -471,6 +471,12 @@ class SymbolTable(Group):
         """
         if not isinstance(plugin, types.ModuleType):
             on_error("%s is not a valid larch plugin" % repr(plugin))
+
+        group_registrar = getattr(plugin, 'registerLarchGroups', None)
+        if callable(group_registrar):
+            savegroups = group_registrar()
+            for group in savegroups:
+                self._sys.saverestore_classes.append(group)
 
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
