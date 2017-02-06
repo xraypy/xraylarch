@@ -79,7 +79,6 @@ class diFFit1DFrame(wx.Frame):
         self.nb = wx.Notebook(panel)
         
         self.openDB(dbname='amcsd_cif.db')
-        #self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
         # create the page windows as children of the notebook
         E_default = 19.0 # keV
@@ -116,6 +115,23 @@ class diFFit1DFrame(wx.Frame):
             pass
 
         self.cifdatabase = cifDB(dbname=dbname)
+
+    def onExit(self, event=None):
+        try:
+            if hasattr(self.exit_callback, '__call__'):
+                self.exit_callback()
+        except:
+            pass
+        try:
+            self.closeDB()
+        except:
+            pass
+
+
+        try:
+            self.Destroy()
+        except:
+            pass
         
 
     def XRD1DMenuBar(self):
@@ -127,10 +143,11 @@ class diFFit1DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.loadXYFILE)
-        MenuItem(self, diFFitMenu, '&Open CIFile', '', self.xrd1Dviewer.loadCIF)
+        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
-        
+        MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
+
         menubar.Append(diFFitMenu, '&diFFit1D')
 
 
@@ -162,6 +179,7 @@ class diFFit1DFrame(wx.Frame):
         ###########################
         ## Create Menu Bar
         self.SetMenuBar(menubar)
+        self.Bind(wx.EVT_CLOSE, self.onExit)
 
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''

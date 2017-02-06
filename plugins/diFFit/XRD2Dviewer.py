@@ -9,6 +9,10 @@ import numpy as np
 import matplotlib.cm as colormap
 
 import wx
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
 
 from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
@@ -373,8 +377,14 @@ class diFFit2DFrame(wx.Frame):
                     except:
                         pass
                 label = self.name_images[self.ch_img.GetSelection()]
-                self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
-                self.xrddisplay1D.Show()
+                try:
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.Show()
+                except PyDeadObjectError:
+                    self.xrddisplay1D = diFFit1DFrame()
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.Show()
+
             
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -503,6 +513,19 @@ class diFFit2DFrame(wx.Frame):
 
 ##############################################
 #### PANEL DEFINITIONS
+    def onExit(self, event=None):
+        try:
+            if hasattr(self.exit_callback, '__call__'):
+                self.exit_callback()
+        except:
+            pass
+
+        try:
+            self.Destroy()
+        except:
+            pass
+        
+
     def XRD2DMenuBar(self):
 
         menubar = wx.MenuBar()
@@ -516,7 +539,8 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, '&Save settings', '', None)
         MenuItem(self, diFFitMenu, '&Load settings', '', None)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
-       
+        MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
+
         menubar.Append(diFFitMenu, '&diFFit2D')
 
         ###########################
@@ -547,6 +571,7 @@ class diFFit2DFrame(wx.Frame):
         ###########################
         ## Create Menu Bar
         self.SetMenuBar(menubar)
+        self.Bind(wx.EVT_CLOSE, self.onExit)
 
     def LeftSidePanel(self,panel):
         

@@ -1303,8 +1303,8 @@ class XRFDisplayFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,event):
-        self.Destroy()
+#     def onClose(self,event):
+#         self.Destroy()
 
     def onReadFile(self, event=None):
         dlg = wx.FileDialog(self, message="Read MCA File",

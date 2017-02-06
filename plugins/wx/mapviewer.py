@@ -1648,7 +1648,7 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
         except PyDeadObjectError:
-            self.xrddisplay1D = diFFit2DFrame(_larch=self.larch)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch)
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
 
