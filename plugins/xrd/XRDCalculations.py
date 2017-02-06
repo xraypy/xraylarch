@@ -22,8 +22,6 @@ import os
 import textwrap
 import time
 
-import wx
-
 import numpy as np
 from scipy import optimize,signal,constants
 from scipy import interpolate

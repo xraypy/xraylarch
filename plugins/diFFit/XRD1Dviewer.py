@@ -22,18 +22,19 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.diFFit.cifdb import cifDB,QSTEP,QMIN
+from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.diFFit.XRDCalculations import d_from_q,twth_from_q
-from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
-from larch_plugins.diFFit.XRDCalculations import xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
-from larch_plugins.diFFit.XRDCalculations import generate_hkl
-from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.xrd.XRDCalculations import d_from_q,twth_from_q
+from larch_plugins.xrd.XRDCalculations import lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalculations import xy_file_reader
+from larch_plugins.xrd.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
+from larch_plugins.xrd.XRDCalculations import generate_hkl
+from larch_plugins.xrd.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.xrd.xrd_bgr import xrd_background
+
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.diFFit.xrd_bgr import xrd_background
 
 from functools import partial
 
@@ -170,6 +171,8 @@ class diFFit1DFrame(wx.Frame):
         AnalyzeMenu = wx.Menu()
         
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
+        AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Change database', '', self.xrd1Dfitting.open_database)
         AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
 
@@ -1388,6 +1391,11 @@ class Fitting1DXRD(BasePanel):
             
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
                        data=None,ipks=None,cifdatabase=None):
+        '''
+        fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+        pk_wid - maximum range in q which qualifies as a match between fitted and ideal
+        data,ipks,cifdatabase - all read from gui but possible to alter
+        '''
         
         if data is None:
             data = self.plt_data
@@ -1401,7 +1409,7 @@ class Fitting1DXRD(BasePanel):
             minq = np.min(data[0])
             maxq = np.max(data[0])
         except:
-            print '\nUSING DEFAULTS FOR q',
+            print '\n**** USING DEFAULTS FOR q  - NOT FROM FITTER *****',
             q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
             minq = 1.75
             maxq = 5.25            
@@ -1409,14 +1417,14 @@ class Fitting1DXRD(BasePanel):
         try:
             minfracq = float(self.val_gdnss.GetValue())
         except:
-            print '\nUSING DEFAULTS FOR fracq',
             minfracq = fracq
 
+        ## error checking print-out. to be removed.
+        ## mkak 2017.02.03
         print '\nPeaks for matching:'
         print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
 
-        ## uses step size and range for q from cifdb.py
-        qstep = QSTEP
+        qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
         
         peaks = []
@@ -1435,6 +1443,81 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
+        matches,count = cifdatabase.find_by_q_subset(peaks)
+        goodness = np.zeros(np.shape(count))       
+        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+            goodness[i] = cifdatabase.fraction_in_range(amcsd,cnt,
+                                                                qmin=minq,
+                                                                qmax=maxq)
+        try:
+            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
+        except:
+            matches,count,goodness = [],[],[]
+
+        if len(matches) > 0:
+            for i,amcsd in enumerate(matches):
+                str = 'AMCSD %i (matched %0.3f or %i out of %i): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
+                print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq)
+        print
+
+
+    def orig_match_database(self,event=None,fracq=0.75,pk_wid=0.05,
+                       data=None,ipks=None,cifdatabase=None):
+        '''
+        fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+        pk_wid - maximum range in q which qualifies as a match between fitted and ideal
+        data,ipks,cifdatabase - all read from gui but possible to alter
+        '''
+        
+        if data is None:
+            data = self.plt_data
+        if cifdatabase is None:
+            cifdatabase = self.owner.cifdatabase
+        if ipks is None:
+            ipks = self.ipeaks
+    
+        try:
+            q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
+            minq = np.min(data[0])
+            maxq = np.max(data[0])
+        except:
+            print '\n**** USING DEFAULTS FOR q  - NOT FROM FITTER *****',
+            q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
+            minq = 1.75
+            maxq = 5.25            
+
+        try:
+            minfracq = float(self.val_gdnss.GetValue())
+        except:
+            minfracq = fracq
+
+        ## error checking print-out. to be removed.
+        ## mkak 2017.02.03
+        print '\nPeaks for matching:'
+        print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
+
+        qstep = QSTEP ## these quantities come from cifdb.py
+        qmin  = QMIN
+        
+        peaks = []
+        p_ids = []
+
+        for pk_q in q_pks:
+            pk_id = int((pk_q-qmin)/qstep)
+            
+            ## performs peak broadening here
+            if pk_wid > 0:    
+                st = int(pk_wid/qstep/2)
+                for p in np.arange(-1*st,st+1):
+                    peaks += [pk_q+p*qstep]
+                    p_ids += [pk_id+p]
+            else:
+                peaks += [pk_q]
+                p_ids += [pk_id]
+
+
+        ## error checking timing and print-out. to be removed.
+        ## mkak 2017.02.03
         import time
         a = time.time()
 
@@ -1458,7 +1541,8 @@ class Fitting1DXRD(BasePanel):
         except:
             matches,count,goodness = [],[],[]
 
-
+        ## error checking timing and print-out. to be removed.
+        ## mkak 2017.02.03
         c = time.time()
         if (c-a) > 1:
             print('\n%d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
@@ -1815,15 +1899,19 @@ class Viewer1DXRD(wx.Panel):
         
         btn_hide  = wx.Button(self,label='hide')
         btn_rmv   = wx.Button(self,label='remove')
+        btn_fit   = wx.Button(self,label='fit data')
         
         btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
         btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
+#         btn_fit.Bind(wx.EVT_BUTTON,   self.owner.xrd1Dfitting.open_database)
+        btn_fit.Bind(wx.EVT_BUTTON,   None)
 
         btn_hide.Disable()
         btn_rmv.Disable()
         
-        hbox_btns.Add(btn_hide,  flag=wx.ALL, border=10)
-        hbox_btns.Add(btn_rmv,   flag=wx.ALL, border=10)
+        hbox_btns.Add(btn_hide,  flag=wx.RIGHT, border=8)
+        hbox_btns.Add(btn_rmv,   flag=wx.RIGHT, border=8)
+        hbox_btns.Add(btn_fit,   flag=wx.RIGHT, border=6)
         vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         return vbox   
         

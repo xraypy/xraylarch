@@ -18,8 +18,8 @@ from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd
-from larch_plugins.diFFit.XRDCalculations import E_from_lambda
+from larch_plugins.xrd.XRDCalculations import integrate_xrd
+from larch_plugins.xrd.XRDCalculations import E_from_lambda
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup

@@ -29,7 +29,7 @@ except ImportError:
 
 import numpy as np
 
-from larch_plugins.diFFit.XRDCalculations import generate_hkl
+from larch_plugins.xrd.XRDCalculations import generate_hkl
 
 from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
 from sqlalchemy import Table,Column,Integer,String
@@ -939,6 +939,44 @@ class cifDB(object):
         peak_id = self.id_in_range(amcsd_id,qmin=qmin,qmax=qmax)
         peak_q  = ((np.array(peak_id)-1)*QSTEP) + QMIN
         return peak_q
+#######
+    def find_by_q_subset(self,broadened_pks,minpeaks=2):
+        print '\n\n TESTING:\n USING ALTERNATIVE METHOD!!\n'
+        self.load_database()
+                
+        self.allcif = Table('allcif', self.metadata)
+        #self.somecif = self.allcif.select(self.allcif.c.amcsd_id == 11686)
+        
+        self.some_qpeak = self.qpeak.select(self.qpeak.c.amcsd_id >= 11684)
+        
+        all_matches = []
+        matches = []
+        count = []
+        
+        for q in broadened_pks:
+            q_matches = []
+            q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
+            search_qrange = self.qrange.select(self.qrange.c.q == q0)
+            for row in search_qrange.execute():
+                q_id = row.q_id
+                search_amcsd = self.qpeak.select(self.qpeak.c.q_id == q_id)
+                for row in search_amcsd.execute():
+                    if row.amcsd_id not in q_matches:
+                        q_matches += [row.amcsd_id]
+                    if row.amcsd_id not in matches:
+                        matches += [row.amcsd_id]
+                        count += [1]
+                    else:
+                        idx = matches.index(row.amcsd_id)
+                        count[idx] = count[idx]+1
+
+            all_matches += [q_matches]
+
+        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
+        count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
+       
+        return amcsd_matches,count_matches
+
 
     def find_by_q(self,broadened_pks,minpeaks=2):
 
