@@ -52,10 +52,24 @@ def save(fname,  *args, **kws):
 
 
 @ValidateLarchPlugin
-def restore(fname, _larch=None):
-    """restore data from a json Larch Save file
-    returns a group of data
+def restore(fname, top_level=True, _larch=None):
+    """restore data from a json Larch save file
+
+    Arguments
+    ---------
+    top_level  bool  whether to restore to _main [True]
+
+
+    Returns
+    -------
+    None   with `top_level=True` or group with `top_level=False`
+
+    Notes
+    -----
+    1.  With top_level=False, a new group containing the
+        recovered data will be returned.
     """
+
     grouplist = _larch.symtable._sys.saverestore_groups
 
     datalines = open(fname, 'r').readlines()
@@ -86,7 +100,13 @@ def restore(fname, _larch=None):
         else:
             val = decode4js(json.loads(line), grouplist)
             setattr(out, varnames[-1], val)
-    setattr(out, '_restore_data_', header)
+    setattr(out, '_restore_metadata_', header)
+
+    if top_level:
+        _main = _larch.symtable
+        for objname in dir(out):
+            setattr(_main, objname, getattr(out, objname))
+        return
     return out
 
 def registerLarchPlugin():
