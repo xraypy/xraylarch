@@ -29,7 +29,7 @@ except ImportError:
 
 import numpy as np
 
-from larch_plugins.diFFit.XRDCalculations import generate_hkl
+from larch_plugins.xrd.XRDCalculations import generate_hkl
 
 from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
 from sqlalchemy import Table,Column,Integer,String

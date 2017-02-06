@@ -22,18 +22,19 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.diFFit.cifdb import cifDB,QSTEP,QMIN
+from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.diFFit.XRDCalculations import d_from_q,twth_from_q
-from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
-from larch_plugins.diFFit.XRDCalculations import xy_file_reader
-from larch_plugins.diFFit.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
-from larch_plugins.diFFit.XRDCalculations import generate_hkl
-from larch_plugins.diFFit.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.xrd.XRDCalculations import d_from_q,twth_from_q
+from larch_plugins.xrd.XRDCalculations import lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalculations import xy_file_reader
+from larch_plugins.xrd.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
+from larch_plugins.xrd.XRDCalculations import generate_hkl
+from larch_plugins.xrd.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.xrd.xrd_bgr import xrd_background
+
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.diFFit.xrd_bgr import xrd_background
 
 from functools import partial
 

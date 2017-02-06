@@ -83,8 +83,8 @@ from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
-from larch_plugins.diFFit.XRDCalculations import lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalculations import integrate_xrd,calculate_ai
+from larch_plugins.xrd.XRDCalculations import lambda_from_E,E_from_lambda
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
