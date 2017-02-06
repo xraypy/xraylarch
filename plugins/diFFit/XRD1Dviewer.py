@@ -2676,6 +2676,7 @@ class DatabasePanel(wx.Panel):
         btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
         self.btn_srch.Bind(wx.EVT_BUTTON,   self.owner.onSettings)
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+        btn_debug.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
         
         vbox.Add(btn_db,        flag=wx.BOTTOM, border=8)
         vbox.Add(self.btn_srch, flag=wx.BOTTOM, border=8)
