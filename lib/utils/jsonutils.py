@@ -66,7 +66,7 @@ def encode4js(obj, grouplist=None):
     elif callable(obj):
         return {'__class__': 'Method', '__name__': repr(obj)}
 
-    return repr(obj)
+    return obj
 
 def decode4js(obj, grouplist=None):
     """
