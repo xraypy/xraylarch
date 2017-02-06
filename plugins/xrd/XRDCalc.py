@@ -2,34 +2,18 @@
 '''
 Diffraction functions require for fitting and analyzing data.
 
-mkak 2016.10.04 (originally written spring 2016)
+mkak 2017.02.06 (originally written spring 2016)
 '''
-
-## TO DO:
-##  - remove global variables
-##  - provide better commenting
-##  - work into gui
-## mkak 2016.10.26
 
 ##########################################################################
 # IMPORT PYTHON PACKAGES
 
 import math
-import operator
 import re
 import os
-# import argparse
-import textwrap
-import time
 
 import numpy as np
-from scipy import optimize,signal,constants
-from scipy import interpolate
-
-import matplotlib.pyplot as plt
-import pylab as plb
-
-from lmfit import minimize,Parameters,Parameter,report_fit
+from scipy import optimize,signal,constants,interpolate
 
 HAS_XRAYUTIL = False
 try:
@@ -417,16 +401,16 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
             rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
-    if plot:
-        print('---Single Gaussian')
-        print('---Peak @  %0.2f' % (popt[1]))
-        print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt[2])))
-        print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d))
-        if fittype == 'double':
-            print('---Double Gaussian')
-            print('---Peak @  %0.2f' % (popt2[1]))
-            print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt2[2])))
-            print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n2/rsqu_d))
+#     if plot:
+#         print('---Single Gaussian')
+#         print('---Peak @  %0.2f' % (popt[1]))
+#         print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt[2])))
+#         print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n1/rsqu_d))
+#         if fittype == 'double':
+#             print('---Double Gaussian')
+#             print('---Peak @  %0.2f' % (popt2[1]))
+#             print('---FWHM %0.2f' % (abs(2*np.sqrt(2*math.log1p(2))*popt2[2])))
+#             print('Goodness of fit, R^2: %0.4f' % (1-rsqu_n2/rsqu_d))
 
     
     if fittype == 'double':
@@ -438,22 +422,23 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single',plot=False):
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
         pkint  = np.max(gaussian(x,*popt2))
 
-    if plot:
-        title_str = 'Gaussian fit for Peak %i' % (pknum+1)
-        fit_str =  '2th = %0.2f deg.\nFWHM = %0.4f deg.\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
-        plx =  0.05*(max(x)-min(x)) + min(x)
-        ply = -0.2*(max(y)-min(y)) + max(y)
-        
-        plt.plot(x,y,'r+',label='Data')
-        plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
-        if fittype == 'double':
-            plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
-        plt.legend()
-        plt.xlabel('2th (deg.)')
-        plt.ylabel('Intensity')
-        plt.text(plx,ply,fit_str)
-        plt.title(title_str)
-        plt.show()
+#     if plot:
+#         import matplotlib.pyplot as plt
+#         title_str = 'Gaussian fit for Peak %i' % (pknum+1)
+#         fit_str =  '2th = %0.2f deg.\nFWHM = %0.4f deg.\nR^2=%0.4f' % (pkpos,pkfwhm,1-rsqu_n2/rsqu_d)
+#         plx =  0.05*(max(x)-min(x)) + min(x)
+#         ply = -0.2*(max(y)-min(y)) + max(y)
+#         
+#         plt.plot(x,y,'r+',label='Data')
+#         plt.plot(x,gaussian(x,*popt),'b-',label='Fit: 1 Gaussian')
+#         if fittype == 'double':
+#             plt.plot(x,doublegaussian(x,*popt2),'g-',label='Fit: 2 Guassians')
+#         plt.legend()
+#         plt.xlabel('2th (deg.)')
+#         plt.ylabel('Intensity')
+#         plt.text(plx,ply,fit_str)
+#         plt.title(title_str)
+#         plt.show()
     
     return pkpos,pkfwhm,pkint
     
@@ -523,18 +508,19 @@ def data_poly_fit(x,y,plot=False,verbose=False):
         print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
         print
     
-    if plot:
-        plx =  0.05*(max(x)-min(x)) + min(x)
-        ply = -0.25*(max(y)-min(y)) + max(y)
-        fit_str = 'B^2 = U [tan(TH)]^2 + V tan(TH) + W\n\nU = %f\nV = %f\nW = %f\n\nR^2 = %0.4f'
-
-        plt.plot(x,y,'r+',label='Data')
-        plt.plot(x,poly_func(x,*popt),'b-',label='Poly. Fit')
-        plt.legend()
-        plt.xlabel('tan(TH)')
-        plt.ylabel('FWHM^2 (degrees)')
-        plt.text(plx,ply,fit_str % (popt[0],popt[1],popt[2],1-rsqu_n/rsqu_d))
-        plt.show()
+#     if plot:
+#         import matplotlib.pyplot as plt
+#         plx =  0.05*(max(x)-min(x)) + min(x)
+#         ply = -0.25*(max(y)-min(y)) + max(y)
+#         fit_str = 'B^2 = U [tan(TH)]^2 + V tan(TH) + W\n\nU = %f\nV = %f\nW = %f\n\nR^2 = %0.4f'
+# 
+#         plt.plot(x,y,'r+',label='Data')
+#         plt.plot(x,poly_func(x,*popt),'b-',label='Poly. Fit')
+#         plt.legend()
+#         plt.xlabel('tan(TH)')
+#         plt.ylabel('FWHM^2 (degrees)')
+#         plt.text(plx,ply,fit_str % (popt[0],popt[1],popt[2],1-rsqu_n/rsqu_d))
+#         plt.show()
     
     return popt
 
@@ -899,36 +885,37 @@ def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w):
 
 
 ##########################################################################
-def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
-    '''
-    fit_method options: 'leastsq','cobyla','slsqp','nelder'
-    
-    parameters of type Parameters(): needs a,b,c,nsize,pkshift?
-
-    my_pars = Parameters()
-    my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0,vary=False)
-    my_pars.add('a', value=bkgdA, min=minA, max=maxA)
-    my_pars.add('b', value=bkgdB, min=minB, max=maxB)
-    my_pars.add('c', value=bkgdC, min=minC, max=maxC)
-    '''
-    
-
-#     ## First, fit background alone:
-#     result = minimize(BACKGROUND_FUNCTION, my_pars, args=(q,I),method=fit_method)
-#     ## Second, add fitted parameters into parameter set
-#     my_pars.add('?',  value=result.params['?'].value)
-#     ## Third, fit peaks on top of background   
-#     result = minimize(BACKGROUND_FUNCTION+PEAKS_FUNCTION, my_pars, args=(q,I),method=fit_method)
-#     ## Fourth, view error report
-#     report_fit(result)
-#     ## Fifth, return results 
-#     NPsize = result.params['nsize'].value
-#     bkgdA  = result.params['a'].value
-#     bkgdB  = result.params['b'].value
-#     bkgdC  = result.params['c'].value
-
-        
-    return
+# def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
+#     '''
+#     fit_method options: 'leastsq','cobyla','slsqp','nelder'
+#     
+#     parameters of type Parameters(): needs a,b,c,nsize,pkshift?
+# 
+#     my_pars = Parameters()
+#     my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0,vary=False)
+#     my_pars.add('a', value=bkgdA, min=minA, max=maxA)
+#     my_pars.add('b', value=bkgdB, min=minB, max=maxB)
+#     my_pars.add('c', value=bkgdC, min=minC, max=maxC)
+#     '''
+# 
+#     from lmfit import minimize,Parameters,report_fit
+# 
+# #     ## First, fit background alone:
+# #     result = minimize(BACKGROUND_FUNCTION, my_pars, args=(q,I),method=fit_method)
+# #     ## Second, add fitted parameters into parameter set
+# #     my_pars.add('?',  value=result.params['?'].value)
+# #     ## Third, fit peaks on top of background   
+# #     result = minimize(BACKGROUND_FUNCTION+PEAKS_FUNCTION, my_pars, args=(q,I),method=fit_method)
+# #     ## Fourth, view error report
+# #     report_fit(result)
+# #     ## Fifth, return results 
+# #     NPsize = result.params['nsize'].value
+# #     bkgdA  = result.params['a'].value
+# #     bkgdB  = result.params['b'].value
+# #     bkgdC  = result.params['c'].value
+# 
+#         
+#     return
 
 
 

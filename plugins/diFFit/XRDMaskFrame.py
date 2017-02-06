@@ -6,9 +6,6 @@ popup for 2D XRD mask file
 
 import os
 import numpy as np
-from scipy import constants
-
-import matplotlib.pyplot as plt
 
 import wx
 

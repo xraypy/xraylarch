@@ -6,8 +6,6 @@ popup for 2D XRD calibration
 import os
 import numpy as np
 
-import matplotlib.pyplot as plt
-
 import wx
 
 from wxmplot.imagepanel import ImagePanel
@@ -24,13 +22,7 @@ try:
     HAS_pyFAI = True
 except ImportError:
     pass
-    
-# HAS_fabio = False
-# try:
-#     import fabio
-#     HAS_fabio = True
-# except ImportError:
-#     pass
+
 
 ###################################
 

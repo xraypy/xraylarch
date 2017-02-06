@@ -23,7 +23,6 @@ import os
 import sys
 import time
 import json
-import glob
 import socket
 import datetime
 from functools import partial
@@ -54,11 +53,11 @@ try:
 except:
     pass
 
-import h5py
+#import h5py
 import numpy as np
 import scipy.stats as stats
 
-from matplotlib.widgets import Slider, Button, RadioButtons
+#from matplotlib.widgets import Slider, Button, RadioButtons
 
 HAS_pyFAI = False
 try:
@@ -82,13 +81,12 @@ from larch.wxlib import larchframe
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
-from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
-from larch_plugins.xrd.XRDCalc import integrate_xrd,calculate_ai
-from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
+from larch_plugins.diFFit.XRD2Dviewer import diFFit2DFrame
+from larch_plugins.xrd.XRDCalc import (integrate_xrd,calculate_ai,
+                                       lambda_from_E,E_from_lambda)
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
-from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
-                                  GSEXRM_Exception, GSEXRM_NotOwner, h5str)
+from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -127,12 +125,11 @@ has already been read.
 
 DETCHOICES = ['sum', '1', '2', '3', '4']
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+DBCONN = None
+
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
-
-DBCONN = None
-
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -1640,15 +1637,20 @@ class MapViewerFrame(wx.Frame):
         'displays 2D XRD pattern in diFFit viewer'
 
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = Viewer2DXRD(_larch=self.larch)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch)
             try:
                 AI = calculate_ai(self.current_file.xrmmap['xrd'])
                 self.xrddisplay2D.setPONI(AI)
             except:
                 pass
-        self.xrddisplay2D.plot2Dxrd(map,title)
-
-        self.xrddisplay2D.Show()
+        
+        try:
+            self.xrddisplay2D.plot2Dxrd(map,title)
+            self.xrddisplay2D.Show()
+        except PyDeadObjectError:
+            self.xrddisplay1D = diFFit2DFrame(_larch=self.larch)
+            self.xrddisplay2D.plot2Dxrd(map,title)
+            self.xrddisplay2D.Show()
 
     def display_1Dxrd(self, xy, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
@@ -1660,8 +1662,14 @@ class MapViewerFrame(wx.Frame):
                 self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
             except:
                 pass
-        self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
-        self.xrddisplay1D.Show()
+
+        try:
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.Show()
+        except PyDeadObjectError:
+            self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.Show()
 
     def init_larch(self):
         if self.larch is None:

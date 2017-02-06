@@ -3,13 +3,10 @@
 GUI for displaying 2D XRD images
 
 '''
-
 import os
 import numpy as np
 
-#import h5py
 import matplotlib.cm as colormap
-import matplotlib.pyplot as plt
 
 import wx
 
@@ -18,9 +15,7 @@ from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd.XRDCalc import integrate_xrd
-from larch_plugins.xrd.XRDCalc import E_from_lambda
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.xrd.XRDCalc import integrate_xrd,E_from_lambda
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -34,15 +29,14 @@ try:
 except ImportError:
     pass
 
-
 ###################################
 
-VERSION = '0 (18-October-2016)'
+VERSION = '0 (6-February-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
 
-class Viewer2DXRD(wx.Frame):
+class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
@@ -785,7 +779,7 @@ class diFFit2D(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = Viewer2DXRD()
+        frame = diFFit2DFrame()
         frame.Show()
         self.SetTopWindow(frame)
 

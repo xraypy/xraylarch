@@ -3,44 +3,27 @@
 GUI for displaying 1D XRD images
 
 '''
-
 import os
 import numpy as np
-from scipy import constants,signal
 import sys
-
-#import h5py
-import matplotlib.cm as colormap
-import matplotlib.pyplot as plt
+import time
 
 from threading import Thread
+from functools import partial
 
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
-
 
 from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
-
-from larch_plugins.io import tifffile
-
-from larch_plugins.xrd.XRDCalc import d_from_q,twth_from_q,lambda_from_E,E_from_lambda
-from larch_plugins.xrd.XRDCalc import xy_file_reader,generate_hkl,instrumental_fit_uvw
-from larch_plugins.xrd.XRDCalc import peakfinder,peaklocater,peakfitter,peakfilter
-
+from larch_plugins.xrd.XRDCalc import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
+                                       xy_file_reader,generate_hkl,instrumental_fit_uvw,
+                                       peakfinder,peaklocater,peakfitter,peakfilter)
 from larch_plugins.xrd.xrd_bgr import xrd_background
-
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-
-from functools import partial
-
-
-
 
 HAS_pyFAI = False
 try:
@@ -61,7 +44,7 @@ except ImportError:
 
 ###################################
 
-VERSION = '0 (9-January-2017)'
+VERSION = '0 (6-February-2017)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
@@ -505,7 +488,9 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
                                  | wx.LC_SORT_ASCENDING)
         sizer.Add(self.list, 1, wx.EXPAND)
         
-        self.database_info = self.createDATABASEarray()
+        #self.database_info = self.createDATABASEarray()
+        ## removed so database not loaded upon start up
+        self.database_info = {}
         
         self.populateList()
         
@@ -1407,7 +1392,7 @@ class Fitting1DXRD(BasePanel):
             minq = np.min(data[0])
             maxq = np.max(data[0])
         except:
-            print '\n**** USING DEFAULTS FOR q  - NOT FROM FITTER *****',
+            print '\n**** DEBUGGING OPTION - NOT FROM FITTER *****'
             q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
             minq = 1.75
             maxq = 5.25            
@@ -1419,8 +1404,8 @@ class Fitting1DXRD(BasePanel):
 
         ## error checking print-out. to be removed.
         ## mkak 2017.02.03
-        print '\nPeaks for matching:'
-        print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq
+        print '\nPeaks for matching:' 
+        print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq 
 
         qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
@@ -1444,7 +1429,6 @@ class Fitting1DXRD(BasePanel):
 
         ## error checking timing and print-out. to be removed.
         ## mkak 2017.02.03
-        import time
         a = time.time()
 
         matches,count = cifdatabase.find_by_q(peaks)
@@ -2300,6 +2284,7 @@ class Viewer1DXRD(wx.Panel):
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
 
+#import matplotlib.pyplot as plt
 # def interactive_legend(ax=None):
 #     if ax is None:
 #         ax = plt.gca()

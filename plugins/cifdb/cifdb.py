@@ -10,18 +10,16 @@ import cStringIO
 
 import numpy as np
 
+import larch
 from larch_plugins.xrd.XRDCalc import generate_hkl
 
 from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
 from sqlalchemy import Table,Column,Integer,String
-from sqlalchemy.orm import sessionmaker, mapper,clear_mappers
+from sqlalchemy.orm import sessionmaker,mapper,clear_mappers
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
 #import sqlalchemy.dialects.sqlite
-
-import larch
-from larch_plugins.math import as_ndarray
 
 HAS_CifFile = False
 try:
@@ -1040,7 +1038,7 @@ class cifDB(object):
         print(' ===================== ')
         print('')
 
-    def mine_for_cif(self,verbose=False,save=False,addDB=True,url=None):
+    def mine_for_cif(self,verbose=False,save=False,addDB=True,url=None,all=False):
     
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
@@ -1048,8 +1046,13 @@ class cifDB(object):
  
         #ftrack = open('/Users/koker/Data/XRMMappingCode/Search_and_Match/trouble_cif.txt','a+')
         
-        for i in np.arange(13600,13700):
-        #for i in range(99999): # for i in [4,5,13603]:
+        ## Defines url range for searching and adding to cif database
+        if all == True:
+            iindex = range(99999)
+        else:
+            iindex = np.arange(13600,13700)
+        
+        for i in iindex:
             url_to_scrape = url % i
             r = requests.get(url_to_scrape)
             if r.text.split()[0] == "Can't" or '':

@@ -1,4 +1,3 @@
-import sys
 import os
 import socket
 import time
@@ -6,7 +5,6 @@ import datetime
 import h5py
 import numpy as np
 import scipy.stats as stats
-import matplotlib.pyplot as plt
 import json
 import larch
 from larch.utils.debugtime import debugtime
@@ -14,13 +12,12 @@ from larch.utils.debugtime import debugtime
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 
-from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
-                                  read_xsp3_hdf5, readASCII,
-                                  readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf) #, read_xrd_hdf5)
+from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
+                                  readASCII, readMasterFile, readROIFile,
+                                  readEnvironFile, parseEnviron, read_xrd_netcdf)
+                                  #, read_xrd_hdf5)
 from larch_plugins.xrd.xrd import XRD
-from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalc import E_from_lambda
 
 HAS_pyFAI = False
 try:
@@ -722,6 +719,7 @@ class GSEXRM_MapFile(object):
         edffile = self.xrmmap['xrd'].attrs[keyword]
         print('Reading %s file: %s' % (name,edffile))
 
+        import matplotlib.pyplot as plt
         rawdata = plt.imread(edffile) ## or? tifffile.imread(edffile)
 #         try:
 #             import fabio
