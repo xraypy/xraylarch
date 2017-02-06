@@ -11,12 +11,15 @@ import sys
 
 #import h5py
 import matplotlib.cm as colormap
+import matplotlib.pyplot as plt
 
 from threading import Thread
 
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.mixins.listctrl  as listmix
+
 
 from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
@@ -26,22 +29,17 @@ from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd.XRDCalculations import d_from_q,twth_from_q
-from larch_plugins.xrd.XRDCalculations import lambda_from_E,E_from_lambda
-from larch_plugins.xrd.XRDCalculations import xy_file_reader
-from larch_plugins.xrd.XRDCalculations import peakfinder,peaklocater,peakfitter,peakfilter
-from larch_plugins.xrd.XRDCalculations import generate_hkl
-from larch_plugins.xrd.XRDCalculations import instrumental_fit_uvw
+from larch_plugins.xrd.XRDCalc import d_from_q,twth_from_q,lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalc import xy_file_reader,generate_hkl,instrumental_fit_uvw
+from larch_plugins.xrd.XRDCalc import peakfinder,peaklocater,peakfitter,peakfilter
+
 from larch_plugins.xrd.xrd_bgr import xrd_background
 
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
 
 from functools import partial
 
-import matplotlib.pyplot as plt
 
-import wx.lib.agw.flatnotebook as flat_nb
-import wx.lib.mixins.listctrl  as listmix
 
 
 HAS_pyFAI = False

@@ -4,14 +4,24 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 '''
 
 import os
-import glob
 import re
-import math
-import time
-import six
 import requests
-
 import cStringIO
+
+import numpy as np
+
+from larch_plugins.xrd.XRDCalc import generate_hkl
+
+from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
+from sqlalchemy import Table,Column,Integer,String
+from sqlalchemy.orm import sessionmaker, mapper,clear_mappers
+from sqlalchemy.pool import SingletonThreadPool
+
+# needed for py2exe?
+#import sqlalchemy.dialects.sqlite
+
+import larch
+from larch_plugins.math import as_ndarray
 
 HAS_CifFile = False
 try:
@@ -27,19 +37,6 @@ try:
 except ImportError:
     pass
 
-import numpy as np
-
-from larch_plugins.xrd.XRDCalculations import generate_hkl
-
-from sqlalchemy import create_engine,MetaData,PrimaryKeyConstraint,ForeignKey
-from sqlalchemy import Table,Column,Integer,String
-from sqlalchemy.orm import sessionmaker, mapper,clear_mappers
-from sqlalchemy.pool import SingletonThreadPool
-
-# needed for py2exe?
-import sqlalchemy.dialects.sqlite
-import larch
-from larch_plugins.math import as_ndarray
 
 SYMMETRIES = ['triclinic',
               'monoclinic',

@@ -20,7 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
                                   readEnvironFile, parseEnviron,
                                   read_xrd_netcdf) #, read_xrd_hdf5)
 from larch_plugins.xrd.xrd import XRD
-from larch_plugins.xrd.XRDCalculations import lambda_from_E,E_from_lambda
+from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
 
 HAS_pyFAI = False
 try:
