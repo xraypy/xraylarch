@@ -728,10 +728,6 @@ class Fitting1DXRD(BasePanel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-#         btn_chc = wx.Button(panel,label='Select data to fit')
-#         btn_chc.Bind(wx.EVT_BUTTON,   None) ## ---> need a way to point to parent's function, mkak 2016.12.02
-#         vbox.Add(btn_chc, flag=wx.EXPAND|wx.ALL, border=8)
-
         self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (self.energy,self.wavelength)))
         vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
         
@@ -2289,7 +2285,7 @@ class Viewer1DXRD(wx.Panel):
         
         if save:
             ## mkak 2016.11.16
-            print('need to write something to save data - like pyFAI does?')
+            print('Not yet capable of saving data. Function yet to be written.')
 
     def loadCIF(self,event=None):
     
