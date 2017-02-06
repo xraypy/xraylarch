@@ -941,7 +941,7 @@ class cifDB(object):
         return peak_q
 #######
     def find_by_q_subset(self,broadened_pks,minpeaks=2):
-        print '\n\nUSING ALTERNATIVE METHOD?!?!\n'
+        print '\n\n TESTING:\n USING ALTERNATIVE METHOD!!\n'
         self.load_database()
                 
         self.allcif = Table('allcif', self.metadata)
