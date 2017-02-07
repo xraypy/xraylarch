@@ -57,8 +57,6 @@ class MaskToolsPopup(wx.Frame):
 #        wx.GetBestSize(self)
 
         
-        
-        
     def Init(self):    
 
         self.panel = wx.Panel(self)
