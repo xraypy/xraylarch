@@ -876,7 +876,58 @@ class cifDB(object):
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
-    def find_by_amcsd(self,amcsd_id):
+    def composition_search(self,elist,minel=None,verbose=False):
+        '''
+        elist - list of elements, e.g. ['Ce','O']
+        
+        '''
+
+        self.load_database()
+        print elist
+
+        amcsd_list = []
+        matches    = []
+        
+        count_el = 0
+        
+        for i,elem in enumerate(elist):
+            atomic_no = 0
+            element_list = self.allelements.select(self.allelements.c.element_symbol == elem)
+            for row in element_list.execute():
+                atomic_no = row.atomic_no
+                elem_name = row.element_symbol
+                count_el = count_el + 1
+            if atomic_no == 0:
+                element_list = self.allelements.select(self.allelements.c.element_name == elem)
+                for row in element_list.execute():
+                    atomic_no = row.atomic_no
+                    elem_name = row.element_symbol
+                    count_el = count_el + 1
+            if atomic_no == 0:    
+                print 'No match to %s.' % elem
+            else:
+                complist = self.composition.select(self.composition.c.atomic_no == atomic_no)
+                for row in complist.execute():
+                    if row.amcsd_id not in amcsd_list:
+                        amcsd_list += [row.amcsd_id]
+                        matches += [1]
+                    else:
+                        idx = amcsd_list.index(row.amcsd_id)
+                        matches[idx] = matches[idx]+1
+               
+        if verbose:
+            print '%i of %i elements in database' % (count_el,np.shape(elist)[0])
+        if minel is None:
+            minel = count_el
+        #count_matches = [x for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
+        amcsd_matches = [y for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
+        if verbose:
+            print '%i entries contain minimum of %i specified element(s)' % (np.shape(amcsd_matches)[0], minel)
+
+        return amcsd_matches
+
+
+    def amcsd_search(self,amcsd_id):
 
         self.load_database()
 
