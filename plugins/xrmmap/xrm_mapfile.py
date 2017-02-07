@@ -14,8 +14,8 @@ from larch_plugins.xrf import MCA, ROI
 
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron, read_xrd_netcdf)
-                                  #, read_xrd_hdf5)
+                                  readEnvironFile, parseEnviron, read_xrd_netcdf,
+                                  read_xrd_hdf5)
 from larch_plugins.xrd.xrd import XRD
 from larch_plugins.xrd.XRDCalc import E_from_lambda
 
@@ -248,8 +248,8 @@ class GSEXRM_MapRow:
             xrd_reader = read_xrd_netcdf
             ## not yet implemented for hdf5 files
             ## mkak 2016.07.27
-            #if not xrdfile.endswith('nc'):
-            #    xrd_reader = read_xrd_hdf5
+            if not xrdfile.endswith('nc'):
+                xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
