@@ -1314,6 +1314,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
         print
+        if flag1D:
+            kwargs = {'steps':5001,
+                      'save':save,
+                      'AI':xrmfile.xrmmap['xrd']}
+            if save:
+                counter = 1
+                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
+                    counter += 1
+                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
+                kwargs.update({'file':file})
+            self._xrd.data1D = integrate_xrd(map,**kwargs)
+            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
+            if show:
+                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
         if flag2D:
             if save:
                 counter = 1
@@ -1326,25 +1340,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             if show:
                 title = '%s: %s' % (fname, label)
                 self.owner.display_2Dxrd(map, title=title, xrmfile=xrmfile)
-        if flag1D:
-            kwargs = {'steps':5001,
-                      'save':save,
-                      'AI':xrmfile.xrmmap['xrd']}
-            if save:
-                counter = 1
-                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
-                    counter += 1
-                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
-                kwargs.update({'file':file})
-#                 self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file, AI=xrmfile.xrmmap['xrd'])
-#             else:
-#                 self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
-
-            self._xrd.data1D = integrate_xrd(map,**kwargs)
-
-            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
-            if show:
-                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1637,18 +1632,12 @@ class MapViewerFrame(wx.Frame):
         'displays 2D XRD pattern in diFFit viewer'
 
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch)
-            try:
-                AI = calculate_ai(self.current_file.xrmmap['xrd'])
-                self.xrddisplay2D.setPONI(AI)
-            except:
-                pass
-        
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
         except PyDeadObjectError:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
 
@@ -1657,12 +1646,6 @@ class MapViewerFrame(wx.Frame):
 
         if self.xrddisplay1D is None:
             self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
-            try:
-                AI = calculate_ai(self.current_file.xrmmap['xrd'])
-                self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
-            except:
-                pass
-
         try:
             self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
             self.xrddisplay1D.Show()
@@ -1821,6 +1804,11 @@ class MapViewerFrame(wx.Frame):
 
         try:
             self.xrddisplay1D.Destroy()
+        except:
+            pass
+
+        try:
+            self.xrddisplay2D.Destroy()
         except:
             pass
 

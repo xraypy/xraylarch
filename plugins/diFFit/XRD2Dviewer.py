@@ -44,7 +44,7 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None,title='', *args, **kw):
+    def __init__(self, _larch=None,title='', xrd1Dviewer=None, *args, **kw):
         label = 'diFFit : 2D XRD Data Analysis Software'
         wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
         
@@ -68,7 +68,7 @@ class diFFit2DFrame(wx.Frame):
         self.use_mask = False
         self.use_bkgd = False
         
-        self.xrddisplay1D = None
+        self.xrddisplay1D = xrd1Dviewer
         
         self.color = 'bone'
         self.flip = 'none'

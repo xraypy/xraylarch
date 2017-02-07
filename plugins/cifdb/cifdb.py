@@ -935,6 +935,22 @@ class cifDB(object):
         peak_q  = ((np.array(peak_id)-1)*QSTEP) + QMIN
         return peak_q
 
+    def find_mineral_name(self,amcsd_id):
+
+        self.load_database()
+
+        search_cif = self.allcif.select(self.allcif.c.amcsd_id == amcsd_id)
+        for row in search_cif.execute():
+            cifstr = row.cif
+            mineral_id = row.mineral_id
+            iuc_id = row.iuc_id
+        
+        search_mineralname = self.allminerals.select(self.allminerals.c.mineral_id == mineral_id)
+        for row in search_mineralname.execute():
+            mineral_name = row.mineral_name
+            
+        return mineral_name
+
     def find_by_q(self,broadened_pks,minpeaks=2):
 
         self.load_database()
@@ -1038,7 +1054,7 @@ class cifDB(object):
         print(' ===================== ')
         print('')
 
-    def mine_for_cif(self,verbose=False,save=False,addDB=True,url=None,all=False):
+    def mine_for_cif(self,verbose=False,savecif=False,addDB=True,url=None,all=False):
     
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
@@ -1062,7 +1078,7 @@ class cifDB(object):
             else:
                 if verbose:
                     print('Reading %s' % url_to_scrape)
-                if save:
+                if savecif:
                     file = 'amcsd%05d.cif' % i
                     f = open(file,'w')
                     f.write(r.text)

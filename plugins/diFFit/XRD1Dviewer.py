@@ -1469,9 +1469,9 @@ class Fitting1DXRD(BasePanel):
 
         b = time.time()
         if (b-a) > 1:
-            print('\n%d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
+            print('\nFirst pass: %d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
         else:
-            print('\n%d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
+            print('\nFirst pass: %d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
 
         goodness = np.zeros(np.shape(count))       
 
@@ -1489,18 +1489,19 @@ class Fitting1DXRD(BasePanel):
         ## mkak 2017.02.03
         c = time.time()
         if (c-a) > 1:
-            print('\n%d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
+            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
             print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
         elif (c-a) > 120:
-            print('\n%d matched pattern(s) for goodness %0.2f in %0.2f min' % (len(matches),minfraq,((c-a)/60)))
+            print('\n%Final: d matched pattern(s) for goodness %0.2f in %0.2f min' % (len(matches),minfraq,((c-a)/60)))
             print('\t(%0.3f s and %0.2f min)' % (((b-a)* 1e0),((c-b)/60)))
         
         else:
-            print('\n%d matched pattern(s) for goodness %0.2f in %0.3f ms' % (len(matches),minfracq,((c-a)* 1e3)))
+            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f ms' % (len(matches),minfracq,((c-a)* 1e3)))
             print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
-                str = 'AMCSD %i (matched %0.3f or %i out of %i): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
+                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
+                      self.owner.cifdatabase.find_mineral_name(amcsd),goodness[i],count[i],count[i]/goodness[i])
                 print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq)
 
             
@@ -2059,6 +2060,8 @@ class Viewer1DXRD(wx.Panel):
         ## Update toolbox panel
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
         self.optionsON(data=True,cif=False)
+        
+        self.owner.nb.SetSelection(0) ## switches to viewer panel
 
 
     def addLAMBDA(self,wavelength,units='m'):
