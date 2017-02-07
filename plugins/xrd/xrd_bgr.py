@@ -277,7 +277,7 @@ def xrd_background(xdata, ydata, group=None, width=4,
     
     group     group for outputs
 
-    width      full width (in keV) of the concave down polynomials
+    width      full width of the concave down polynomials
                for when its full width is 100 counts. default = 4
 
     compress   compression factor to apply to spectra. Default is 2.
