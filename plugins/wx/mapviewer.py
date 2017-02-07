@@ -1824,6 +1824,11 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
+        try:
+            self.xrddisplay2D.Destroy()
+        except:
+            pass
+
         if self.larch_buffer is not None:
             try:
                 self.larch_buffer.onClose()

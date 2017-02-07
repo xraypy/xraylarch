@@ -1500,7 +1500,7 @@ class Fitting1DXRD(BasePanel):
             print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
-                str = 'AMCSD %i (matched %0.3f or %i out of %i): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
+                str = 'AMCSD %i - %s (%0.3f --> %i out of %i peaks): ' % (amcsd,goodness[i],count[i],count[i]/goodness[i])
                 print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq)
 
             
@@ -2059,6 +2059,8 @@ class Viewer1DXRD(wx.Panel):
         ## Update toolbox panel
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
         self.optionsON(data=True,cif=False)
+        
+        self.owner.nb.SetSelection(0) ## switches to viewer panel
 
 
     def addLAMBDA(self,wavelength,units='m'):
