@@ -27,8 +27,12 @@ def encode4js(obj, grouplist=None):
         out = {'__class__': 'Array', '__shape__': obj.shape,
                '__dtype__': obj.dtype.name}
         out['value'] = obj.flatten().tolist()
+
         if 'complex' in obj.dtype.name:
             out['value'] = [(obj.real).tolist(), (obj.imag).tolist()]
+        elif obj.dtype.name == 'object':
+            out['value'] = [encode4js(i, grouplist=grouplist) for i in out['value']]
+
         return out
     elif isinstance(obj, (np.float, np.int)):
         return float(obj)
@@ -98,6 +102,10 @@ def decode4js(obj, grouplist=None):
             re = np.fromiter(obj['value'][0], dtype='double')
             im = np.fromiter(obj['value'][1], dtype='double')
             out = re + 1j*im
+        elif obj['__dtype__'].startswith('object'):
+            val = [decode4js(v, grouplist=grouplist) for v in obj['value']]
+            out = np.array(val,  dtype=obj['__dtype__'])
+
         else:
             out = np.fromiter(obj['value'], dtype=obj['__dtype__'])
         out.shape = obj['__shape__']
