@@ -21,7 +21,7 @@ def save(fname,  *args, **kws):
        fname   name of output save file.
        args    list of groups, data items to be saved.
 
-   See Also:  restore()
+    See Also:  restore()
     """
     _larch = kws.get('_larch', None)
     isgroup =  _larch.symtable.isgroup
@@ -39,7 +39,10 @@ def save(fname,  *args, **kws):
     names = []
     if expr.startswith('save('):
         names = [a.strip() for a in expr[5:-1].split(',')]
-    names.pop(0)
+    try:
+        names.pop(0)
+    except:
+        pass
     if len(names) < len(args):
         names.extend(["_unknown_"]*(len(args) - len(names)))
 
