@@ -462,15 +462,15 @@ def instrumental_fit_uvw(ipeaks,q,I,wavelength=0.6525,halfwidth=40,
     (u,v,w) = data_poly_fit(tanth,sqFWHM,verbose=verbose)
     
     if verbose:
-        print '\nFit results:'
+        print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
-            print 'Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni)
-        print
-        print '\nInstrumental broadening parameters:'
-        print '---  U',u
-        print '---  V',v
-        print '---  W',w
-        print
+            print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
+        print(                                         )
+        print( '\nInstrumental broadening parameters:' )
+        print( '---  U',u                              )
+        print( '---  V',v                              )
+        print( '---  W',w                              )
+        print(                                         )
 
     return(u,v,w)
 
@@ -488,7 +488,7 @@ def data_poly_fit(x,y,plot=False,verbose=False):
     try:
         popt,pcov = optimize.curve_fit(poly_func,x,y,p0=[1,1,1])
     except:
-        print 'WARNING: scipy.optimize.curve_fit was unsuccessful.'
+        print( 'WARNING: scipy.optimize.curve_fit was unsuccessful.' )
         return [1,1,1]
     
     n = len(x)
@@ -501,13 +501,13 @@ def data_poly_fit(x,y,plot=False,verbose=False):
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
     if verbose:
-        print '---Polynomial Fit'
-        print '---  U',popt[0]
-        print '---  V',popt[1]
-        print '---  W',popt[2]
-        print 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d
-        print
-    
+        print( '---Polynomial Fit'                      ) 
+        print( '---  U',popt[0]                         ) 
+        print( '---  V',popt[1]                         ) 
+        print( '---  W',popt[2]                         ) 
+        print( 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d  ) 
+        print(                                          ) 
+                                                        
 #     if plot:
 #         import matplotlib.pyplot as plt
 #         plx =  0.05*(max(x)-min(x)) + min(x)

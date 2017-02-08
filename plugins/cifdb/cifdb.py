@@ -6,7 +6,11 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 import os
 import re
 import requests
-import cStringIO
+
+try:
+    from cStringIO import StringIO #python 2
+except:
+    from io import StringIO #python 3
 
 import numpy as np
 
@@ -738,7 +742,7 @@ class cifDB(object):
 
         if url:
             cifstr = requests.get(cifile).text
-            cif = xu.materials.Crystal.fromCIF('/fromweb/file.cif',fid=cStringIO.StringIO(cifstr))
+            cif = xu.materials.Crystal.fromCIF('/fromweb/file.cif',fid=StringIO(cifstr))
         else:
             with open(cifile,'r') as file:
                 cifstr = str(file.read())
@@ -1154,6 +1158,6 @@ class cifDB(object):
 ##         search_cif = self.allcif.select(self.allcif.c.amcsd_id == amcsd_id)
 ##         for row in search_cif.execute():
 ##             cifstr = row.cif
-##         cif = xu.materials.Crystal.fromCIF('/fromdatabase/file.cif',fid=cStringIO.StringIO(cifstr))
+##         cif = xu.materials.Crystal.fromCIF('/fromdatabase/file.cif',fid=StringIO(cifstr))
 ##
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
