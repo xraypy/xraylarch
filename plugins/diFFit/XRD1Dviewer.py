@@ -142,7 +142,7 @@ class diFFit1DFrame(wx.Frame):
         ## diFFit1D
         diFFitMenu = wx.Menu()
         
-        MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.loadXYFILE)
+        MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
         MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
@@ -197,13 +197,11 @@ class diFFit1DFrame(wx.Frame):
         if len(indicies) > 0:
             self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
             self.all_data = self.xrd1Dviewer.xy_data
-            
-            dlg = SelectFittingData(self.list,self.all_data)
+
+            dlg = SelectFittingData(self)
 
             if dlg.ShowModal() == wx.ID_OK:
                 okay = True
-                self.list = dlg.list
-                self.all_data = dlg.all_data
                 index = dlg.slct_1Ddata.GetSelection()
             dlg.Destroy()
             if okay:
@@ -215,7 +213,8 @@ class diFFit1DFrame(wx.Frame):
                 
         else:
             try:
-                x,y,name = self.loadXYFILE()
+                x,y,path = loadXYFILE(self,verbose=True)
+                name = os.path.split(path)[-1]
                 okay = True
             except:
                 return
@@ -229,8 +228,8 @@ class diFFit1DFrame(wx.Frame):
             d    = d_from_q(q)
             twth = twth_from_q(q,self.wavelength)
             I    = y
-            self.xrd1Dviewer.xy_data.append([q,d,twth,y])
-            self.xrd1Dviewer.xy_plot.append([q,d,twth,y])
+            self.xrd1Dviewer.xy_data.append([q,d,twth,I])
+            self.xrd1Dviewer.xy_plot.append([q,d,twth,I])
             
             ## Add to plot       
             self.xrd1Dviewer.plotlist.append(self.xrd1Dviewer.plot1D.oplot(self.xrd1Dviewer.xy_plot[-1][xi],
@@ -266,29 +265,6 @@ class diFFit1DFrame(wx.Frame):
                 self.xrd1Dfitting.optionsON()
                 self.xrd1Dviewer.optionsON()
                 self.xrd1Dfitting.check1Daxis()
-
-    def loadXYFILE(self,event=None):
-    
-        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            print '\nData file for fitting: %s\n' % os.path.split(path)[-1]
-            try:
-                x,y = xy_file_reader(path)
-            except:
-               print('incorrect xy file format: %s' % os.path.split(path)[-1])
-               return
-
-            return x,y,os.path.split(path)[-1]
 
     def openPONI(self,event=None):
              
@@ -349,30 +325,13 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dfitting.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (energy,wavelength))
             
             self.rescale_data(wavelength)
-#             datalist = []
-#             if len(self.xrd1Dviewer.data_name) > 0:
-#                 datalist.append(self.xrd1Dviewer.xy_data)
-#                 datalist.append(self.xrd1Dviewer.xy_plot)
-#             if len(self.xrd1Dviewer.cif_name) > 0:
-#                 datalist.append(self.xrd1Dviewer.cif_data)
-#                 datalist.append(self.xrd1Dviewer.cif_plot)
-#                 
-#                 
-#             if self.xrd1Dfitting.raw_data is not None:
-#                 datalist.append(self.xrd1Dfitting.raw_data)
-#                 datalist.append(self.xrd1Dfitting.plt_data)
-#             if self.xrd1Dfitting.bgr_data is not None:
-#                 datalist.append(self.xrd1Dfitting.bgr_data)
-#             print np.shape(datalist)
-#             for i,dataset in enumerate(datalist):
-#                 if len(np.shape(dataset)) > 2:
-#                     for j,data in enumerate(dataset):
-#                         print i,j,np.shape(data)
-#                 else:
-#                     print i,np.shape(dataset)
-
 
     def rescale_data(self,wavelength):
+        '''
+        This function is called if the user changes the energy. q values are assumed
+        fixed, so 2th adjusts.
+        mkak 2017.02
+        '''
     
         viewerdata = False
         fitterdata = False
@@ -404,15 +363,16 @@ class diFFit1DFrame(wx.Frame):
 
 
 class SelectFittingData(wx.Dialog):
-    def __init__(self,list,all_data):
+    def __init__(self,parent):
     
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Select data for fitting',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
                                     size = (210,410))
-        self.list = list
-        self.all_data = all_data
-        self.energy = 19.0
+        self.parent = parent
+#         self.list = list
+#         self.all_data = all_data
+#         self.energy = 19.0
         
         self.Init()
         
@@ -426,11 +386,11 @@ class SelectFittingData(wx.Dialog):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         
         ## Add things 
-        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130), self.list, wx.LB_SINGLE)
+        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130), self.parent.list, wx.LB_SINGLE)
 
         btn_new = wx.Button(self.panel,label='Load data from file')
         
-        btn_new.Bind(wx.EVT_BUTTON, self.loadXYFILE)
+        btn_new.Bind(wx.EVT_BUTTON, self.load_file)
 
         #####
         ## OKAY!
@@ -451,29 +411,21 @@ class SelectFittingData(wx.Dialog):
 
         self.panel.SetSizer(mainsizer)
 
-    def loadXYFILE(self,event=None):
+    def load_file(self,event=None):
     
-        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
+        x,y,path = loadXYFILE(self,verbose=True)
+        if 1==1: #try:
+            q    = x
+            d    = d_from_q(q)
+            twth = twth_from_q(q,self.parent.wavelength)
+            I    = y
+            self.parent.all_data.append([q,d,twth,I])
+            self.parent.list.append(os.path.split(path)[-1])
+            self.slct_1Ddata.Set(self.parent.list)
+            self.slct_1Ddata.SetSelection(-1)
+#         except:
+#             pass
 
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-        
-        if read:
-            print '\nData file for fitting: %s\n' % os.path.split(path)[-1]
-            try:
-                self.all_data.append(xy_file_reader(path))
-                self.list.append(os.path.split(path)[-1])
-                self.slct_1Ddata.Set(self.list)
-                self.slct_1Ddata.SetSelection(-1)
-            except:
-               print('incorrect xy file format: %s' % os.path.split(path)[-1])
-               return
 
 class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
@@ -1168,7 +1120,7 @@ class Fitting1DXRD(BasePanel):
 
     def edit_peaks(self,event=None):
 
-        print 'this will pop up a list of peaks for removing (and adding?)'
+        print('Not implemented: edit_peaks function')
 
     def peak_options(self,event=None):
 
@@ -1426,7 +1378,7 @@ class Fitting1DXRD(BasePanel):
             minq = np.min(data[0])
             maxq = np.max(data[0])
         except:
-            print '\n**** DEBUGGING OPTION - NOT FROM FITTER *****'
+            print('\n**** DEBUGGING OPTION - NOT FROM FITTER *****')
             q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
             minq = 1.75
             maxq = 5.25            
@@ -1438,8 +1390,8 @@ class Fitting1DXRD(BasePanel):
 
         ## error checking print-out. to be removed.
         ## mkak 2017.02.03
-        print '\nPeaks for matching:' 
-        print ' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq 
+        print('\nPeaks for matching:')
+        print(' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq)
 
         qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
@@ -1502,7 +1454,7 @@ class Fitting1DXRD(BasePanel):
             for i,amcsd in enumerate(matches):
                 str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
                       self.owner.cifdatabase.find_mineral_name(amcsd),goodness[i],count[i],count[i]/goodness[i])
-                print str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq)
+                print(str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
 
             
         print
@@ -1904,7 +1856,7 @@ class Viewer1DXRD(wx.Panel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_data = wx.Button(panel,label='ADD NEW DATA SET')
-        btn_data.Bind(wx.EVT_BUTTON, self.loadXYFILE)
+        btn_data.Bind(wx.EVT_BUTTON, self.load_file)
 
         btn_cif = wx.Button(panel,label='ADD NEW CIF')
         btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
@@ -2250,28 +2202,14 @@ class Viewer1DXRD(wx.Panel):
 
 ##############################################
 #### XRD FILE OPENING/SAVING 
-    def loadXYFILE(self,event=None):
+    def load_file(self,event=None):
     
-        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
+        x,y,path = loadXYFILE(self,verbose=True)
         
-        if read:
-            try:
-                x,y = xy_file_reader(path)
-
-                self.add1Ddata(x,y,name=os.path.split(path)[-1])
-            except:
-                print('incorrect xy file format: %s' % os.path.split(path)[-1])
-
-
+        try:
+            self.add1Ddata(x,y,name=os.path.split(path)[-1])
+        except:
+            pass
 
     def saveXYFILE(self,event=None):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
@@ -3227,6 +3165,30 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma.Clear()
         self.max_gamma.Clear()
         self.SG.SetSelection(0)
+
+def loadXYFILE(self,event=None,verbose=False):
+
+    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+    dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
+                       defaultDir=os.getcwd(),
+                       wildcard=wildcards, style=wx.FD_OPEN)
+
+    path, read = None, False
+    if dlg.ShowModal() == wx.ID_OK:
+        read = True
+        path = dlg.GetPath().replace('\\', '/')
+    dlg.Destroy()
+    
+    if read:
+        if verbose:
+            print('Opening file: %s\n' % os.path.split(path)[-1])
+        try:
+            x,y = xy_file_reader(path)
+        except:
+           print('incorrect xy file format: %s' % os.path.split(path)[-1])
+           return
+
+        return x,y,path
 
 
       

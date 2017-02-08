@@ -14,8 +14,8 @@ from larch_plugins.xrf import MCA, ROI
 
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron, read_xrd_netcdf)
-                                  #, read_xrd_hdf5)
+                                  readEnvironFile, parseEnviron, read_xrd_netcdf,
+                                  read_xrd_hdf5)
 from larch_plugins.xrd.xrd import XRD
 from larch_plugins.xrd.XRDCalc import E_from_lambda
 
@@ -248,8 +248,8 @@ class GSEXRM_MapRow:
             xrd_reader = read_xrd_netcdf
             ## not yet implemented for hdf5 files
             ## mkak 2016.07.27
-            #if not xrdfile.endswith('nc'):
-            #    xrd_reader = read_xrd_hdf5
+            if not xrdfile.endswith('nc'):
+                xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -328,13 +328,17 @@ class GSEXRM_MapRow:
             self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
 
         ## SPECIFIC TO XRD data
+        ## is this the correct way to handle collected number of frames per row?
+        ## mkak 2017.02.08
         if FLAGxrd:
-            if self.npts - xrddat.shape[0] == 0:
+            if self.npts == xrddat.shape[0]:
                 self.xrd2d     = xrddat
-            else:
-                # print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+            elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat
+                self.xrd2d[0:xrddat.shape[0]] = xrddat 
+                ## should change to [1:...] if skipping first frame
+            else:
+                self.xrd2d = xrddat[0:self.npts]
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
