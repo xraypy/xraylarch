@@ -346,7 +346,6 @@ def iscifDB(dbname):
                'symmetry',
                'composition',
                'author',
-#                'qmatches',
                'qpeaks',
                'category')
     result = False
@@ -397,9 +396,6 @@ class CompositionTable(_BaseTable):
 
 class AuthorTable(_BaseTable):
     (author_id,amcsd_id) = [None]*2
-
-class QMatchesTable(_BaseTable):
-    (q_id,amcsd_id) = [None]*2
 
 class QPeaksTable(_BaseTable):
     (q_id,amcsd_id) = [None]*2
@@ -456,7 +452,6 @@ class cifDB(object):
         mapper(SymmetryTable,            tables['symmetry'])
         mapper(CompositionTable,         tables['composition'])
         mapper(AuthorTable,              tables['author'])
-#         mapper(QMatchesTable,            tables['qmatches'])
         mapper(QPeaksTable,              tables['qpeaks'])
         mapper(CategoryTable,            tables['category'])
 
@@ -539,11 +534,6 @@ class cifDB(object):
                 Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
                 PrimaryKeyConstraint('author_id', 'amcsd_id')
                 )
-#         qmatch_table = Table('qmatches', self.metadata,
-#                 Column('q_id', None, ForeignKey('qrange.q_id')),
-#                 Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
-#                 PrimaryKeyConstraint('q_id', 'amcsd_id')
-#                 )
         qpeak_table = Table('qpeaks', self.metadata,
                 Column('q_id', None, ForeignKey('qrange.q_id')),
                 Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
@@ -583,7 +573,6 @@ class cifDB(object):
 
         self.cif_composition = composition_table.insert()
         self.cif_author      = author_table.insert()
-#         self.cif_qmatches    = qmatch_table.insert()
         self.cif_qpeaks      = qpeak_table.insert()
         # self.cif_category    = category_table.insert()
 
@@ -658,7 +647,6 @@ class cifDB(object):
         self.symmetry    = Table('symmetry', self.metadata)
         self.composition = Table('composition', self.metadata)
         self.author      = Table('author', self.metadata)
-#         self.qmatch      = Table('qmatches', self.metadata)
         self.qpeak       = Table('qpeaks', self.metadata)
         self.category    = Table('category', self.metadata)
 
@@ -787,7 +775,6 @@ class cifDB(object):
 
         self.cif_composition = self.composition.insert()
         self.cif_author      = self.author.insert()
-#         self.cif_qmatches    = self.qmatch.insert()   
         self.cif_qpeaks      = self.qpeak.insert()   
         # self.cif_category    = self.category.insert()
         
@@ -854,13 +841,6 @@ class cifDB(object):
                                    amcsd_id=int(amcsd_id))
 
 
-#         for calc_q_id in peak_qid:
-#             search_q = self.qrange.select(self.qrange.c.q_id == calc_q_id)
-#             for row in search_q.execute():
-#                 q_id = row.q_id
-
-#         for calc_q_id in match_qid:
-#             self.cif_qmatches.execute(q_id=calc_q_id,amcsd_id=int(amcsd_id))
         for calc_q_id in peak_qid:
             self.cif_qpeaks.execute(q_id=calc_q_id,amcsd_id=int(amcsd_id))
             
@@ -894,18 +874,23 @@ class cifDB(object):
         count_el = 0
         
         for i,elem in enumerate(elist):
+
+            ## Finds atomic number for given element symbol or name
+            qry_elem = self.allelements.c.element_symbol == elem
             atomic_no = 0
-            element_list = self.allelements.select(self.allelements.c.element_symbol == elem)
+            element_list = self.allelements.select(qry_elem)
             for row in element_list.execute():
                 atomic_no = row.atomic_no
                 elem_name = row.element_symbol
                 count_el = count_el + 1
             if atomic_no == 0:
-                element_list = self.allelements.select(self.allelements.c.element_name == elem)
+                element_list = self.allelements.select(qry_elem)
                 for row in element_list.execute():
                     atomic_no = row.atomic_no
                     elem_name = row.element_symbol
                     count_el = count_el + 1
+
+
             if atomic_no == 0:    
                 print('No match to %s.' % elem)
             else:
@@ -1147,6 +1132,49 @@ class cifDB(object):
                         pass
 
         #ftrack.close()
+        
+    def comp_search(self,elist,minel=None,verbose=False):
+        '''
+        mydb.load_database()
+        x = mydb.allelements.c.atomic_no == 8
+        stmt = mydb.allelements.select(x)
+        print stmt.execute().fetchall()
+        '''
+
+        self.load_database()
+       
+        qry_atno = None
+        for i,elem in enumerate(elist):
+            
+            ## Finds atomic number for given element symbol or name
+            qry_elem = self.allelements.c.element_symbol == elem
+            atomic_no = 0
+            element_list = self.allelements.select(qry_elem)
+            for row in element_list.execute():
+                atomic_no = row.atomic_no
+                elem_name = row.element_symbol
+            if atomic_no == 0:
+                element_list = self.allelements.select(qry_elem)
+                for row in element_list.execute():
+                    atomic_no = row.atomic_no
+                    elem_name = row.element_symbol
+            
+            
+            if atomic_no == 0:    
+                print('No match to %s.' % elem)
+            else:
+                if qry_atno is None:
+                    qry_atno = self.composition.c.atomic_no == atomic_no
+                else:
+                    qry_atno = and_(qry_atno,
+                                   self.composition.c.atomic_no == atomic_no)
+                
+        if qry_atno is not None:
+            
+            complist = self.composition.select(qry_atno).execute().fetchall()
+            print 'first',self.composition.select(qry_atno).execute().fetchone()
+            print 'now',np.shape(complist)
+
                     
 
 
