@@ -328,13 +328,17 @@ class GSEXRM_MapRow:
             self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
 
         ## SPECIFIC TO XRD data
+        ## is this the correct way to handle collected number of frames per row?
+        ## mkak 2017.02.08
         if FLAGxrd:
-            if self.npts - xrddat.shape[0] == 0:
+            if self.npts == xrddat.shape[0]:
                 self.xrd2d     = xrddat
-            else:
-                # print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+            elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat
+                self.xrd2d[0:xrddat.shape[0]] = xrddat 
+                ## should change to [1:...] if skipping first frame
+            else:
+                self.xrd2d = xrddat[0:self.npts]
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
