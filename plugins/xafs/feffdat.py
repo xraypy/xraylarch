@@ -489,6 +489,9 @@ def feffpath(filename=None, _larch=None, label=None, s02=None,
                          sigma2=sigma2, third=third, fourth=fourth,
                          _larch=_larch)
 
+def registerLarchGroups():
+    return (FeffDatFile, FeffPathGroup)
+
 def registerLarchPlugin():
     return ('_xafs', {'feffpath': feffpath,
                       'path2chi': _path2chi,

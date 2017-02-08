@@ -12,8 +12,7 @@ from glob import glob
 
 import numpy as np
 from larch import Group
-from larch.utils.strutils import bytes2str
-from larch_plugins.io import fix_varname
+from larch.utils.strutils import bytes2str, fix_varname
 
 if sys.version[0] == '2':
     from string import maketrans
@@ -106,7 +105,7 @@ def read_athena(filename, match=None, do_preedge=True,
         raise ValueError("%s '%s': file is too old to read" % (ERR_MSG, filename))
 
     for t in lines:
-        if t.startswith('#') or len(t) < 2:
+        if t.startswith('#') or len(t) < 2 or 'undef' in t:
             continue
         key = t.split(' ')[0].strip()
         key = key.replace('$', '').replace('@', '')
@@ -126,7 +125,7 @@ def read_athena(filename, match=None, do_preedge=True,
     out = Group()
     out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
     for dat in athenagroups:
-        label = dat['name']
+        label = dat.get('name', 'unknown')
         this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
                      bkg_params=Group(), fft_params = Group(),
                      athena_params=Group())
