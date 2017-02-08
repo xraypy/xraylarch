@@ -252,15 +252,14 @@ class MaskToolsPopup(wx.Frame):
     
         print('The shape you choose: %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection()))
         
-        print
-        print 'trying this new thing...'
-        print 'eventually trigger this by actually drawing'
+        print()
+        print('Not implemented: ShapeChoice')
         self.addAREA()
 
         
     def OnPaint(self, event=None):
         
-        print 'Shape : %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection())
+        print('Shape : %s' %  self.ch_shp.GetString(self.ch_shp.GetSelection()))
 #         dc = wx.PaintDC(self)
 #         dc.Clear()
 #         dc.SetPen(wx.Pen(wx.BLACK, 4))
@@ -269,7 +268,7 @@ class MaskToolsPopup(wx.Frame):
     def clearMask(self,event=None):
         
         print('Clearing the mask...')
-        print 'show we provide a warning message?'
+        ## provide a warning message?
         self.area_list = []
         self.slct_area.Set(self.area_list)
         

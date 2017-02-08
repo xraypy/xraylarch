@@ -887,7 +887,6 @@ class cifDB(object):
         '''
 
         self.load_database()
-        print elist
 
         amcsd_list = []
         matches    = []
@@ -908,7 +907,7 @@ class cifDB(object):
                     elem_name = row.element_symbol
                     count_el = count_el + 1
             if atomic_no == 0:    
-                print 'No match to %s.' % elem
+                print('No match to %s.' % elem)
             else:
                 complist = self.composition.select(self.composition.c.atomic_no == atomic_no)
                 for row in complist.execute():
@@ -920,13 +919,13 @@ class cifDB(object):
                         matches[idx] = matches[idx]+1
                
         if verbose:
-            print '%i of %i elements in database' % (count_el,np.shape(elist)[0])
+            print('%i of %i elements in database' % (count_el,np.shape(elist)[0]))
         if minel is None:
             minel = count_el
         #count_matches = [x for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
         amcsd_matches = [y for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
         if verbose:
-            print '%i entries contain minimum of %i specified element(s)' % (np.shape(amcsd_matches)[0], minel)
+            print('%i entries contain minimum of %i specified element(s)' % (np.shape(amcsd_matches)[0], minel))
 
         return amcsd_matches
 

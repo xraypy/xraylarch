@@ -424,28 +424,28 @@ class diFFit2DFrame(wx.Frame):
         if self.ai is None:
             print(' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx ')
         else:
-            print
-            print
-            print ' ====== CURRENT CALIBRATION INFORMATION ====== '
-            print
+            print()
+            print()
+            print(' ====== CURRENT CALIBRATION INFORMATION ====== ')
+            print()
             try:
-                print 'Detector name: %s' % self.ai.detector.name
+                print('Detector name: %s' % self.ai.detector.name)
                 #ai.detector.splineFile
             except:
                 pass
             prt_str = 'Detector distance: %.1f mm'
-            print prt_str % (self.ai._dist*1000.)
+            print(prt_str % (self.ai._dist*1000.))
             prt_str = 'Pixel size (x,y): %.1f um, %.1f um'
-            print prt_str % (self.ai.detector.pixel1*1000000.,
-                             self.ai.detector.pixel2*1000000.)
+            print(prt_str % (self.ai.detector.pixel1*1000000.,
+                             self.ai.detector.pixel2*1000000.))
             prt_str = 'Detector center (x,y): %i pixels, %i pixels'
-            print prt_str % (self.ai._poni1/self.ai.detector.pixel1,
-                             self.ai._poni2/self.ai.detector.pixel2)
+            print(prt_str % (self.ai._poni1/self.ai.detector.pixel1,
+                             self.ai._poni2/self.ai.detector.pixel2))
             prt_str = 'Detector tilts: %0.5f, %0.5f %0.5f'
-            print prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3)
+            print(prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3))
             prt_str = 'Incident energy, wavelength: %0.2f keV, %0.4f A'
             E = E_from_lambda(self.ai._wavelength) ## units: keV
-            print prt_str % (E,self.ai._wavelength*1.e10)
+            print(prt_str % (E,self.ai._wavelength*1.e10))
 
 
 ##############################################
