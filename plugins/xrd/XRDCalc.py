@@ -507,7 +507,7 @@ def data_poly_fit(x,y,plot=False,verbose=False):
         print( '---  W',popt[2]                         ) 
         print( 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d  ) 
         print(                                          ) 
-                                                        ) 
+                                                        
 #     if plot:
 #         import matplotlib.pyplot as plt
 #         plx =  0.05*(max(x)-min(x)) + min(x)
