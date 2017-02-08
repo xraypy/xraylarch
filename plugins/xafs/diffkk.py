@@ -320,6 +320,8 @@ def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, 
     """
     return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws, _larch=_larch)
 
+def registerLarchGroups():
+    return (diffKKGroup,)
 
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'diffkk': diffkk })

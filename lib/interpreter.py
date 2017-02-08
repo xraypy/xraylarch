@@ -275,6 +275,7 @@ class Interpreter:
         self.fname = fname
         self.lineno = lineno
         self.error = []
+        self.this_expr = expr
         try:
             node = self.parse(expr, fname=fname, lineno=lineno)
         except RuntimeError:
