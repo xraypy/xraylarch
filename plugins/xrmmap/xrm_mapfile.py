@@ -949,6 +949,15 @@ class GSEXRM_MapFile(object):
 
         if self.scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+            if xrff.startswith('None'):
+                xrff = xrff.replace('None', 'xsp3')
+            if sisf.startswith('None'):
+                sisf = sisf.replace('None', 'struck')
+            if xpsf.startswith('None'):
+                xpsf = xpsf.replace('None', 'xps')
+            if xrdf.startswith('None'):
+                xrdf = xrdf.replace('None', 'pexrd')
+
         elif self.flag_xrf:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
             xrdf = ''
