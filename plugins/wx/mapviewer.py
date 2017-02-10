@@ -473,7 +473,7 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
@@ -517,7 +517,7 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
 
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         self.owner.no_hotcols = no_hotcols
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -655,13 +655,13 @@ class TriColorMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         self.owner.no_hotcols = no_hotcols
         r = self.rcol.GetStringSelection()
         g = self.gcol.GetStringSelection()
         b = self.bcol.GetStringSelection()
         i0 = self.i0col.GetStringSelection()
-        mapshape= datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
+        mapshape = datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
         if no_hotcols:
             mapshape = mapshape[0], mapshape[1]-2
 
@@ -686,7 +686,6 @@ class TriColorMapPanel(GridPanel):
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
         i0map = 1.0 * i0map / i0map.max()
-        # print( 'I0 map : ', i0map.min(), i0map.max(), i0map.mean())
 
         pref, fname = os.path.split(datafile.filename)
         # title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
@@ -1313,7 +1312,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
-        print
         if flag1D:
             kwargs = {'steps':5001,
                       'save':save,
@@ -1669,10 +1667,9 @@ class MapViewerFrame(wx.Frame):
 
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
-            try:
-                sys.path.insert(0, '//cars5/Data/xas_user/bin/python')
-                from scan_credentials import conn as DBCONN
-                import scan_credentials
+            if True: # try:
+                sys.path.insert(0, '//cars5/Data/xas_user/pylib')
+                from escan_credentials import conn as DBCONN
 
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
@@ -1682,7 +1679,7 @@ class MapViewerFrame(wx.Frame):
                 self.inst_name = 'IDE_SampleStage'
                 print(" Connected to scandb='%s' on server at '%s'" %
                       (DBCONN['dbname'], DBCONN['host']))
-            except:
+            else: # except:
                 print('Could not connect to ScanDB')
                 self.use_scandb = False
 
