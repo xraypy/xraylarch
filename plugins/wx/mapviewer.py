@@ -1667,7 +1667,7 @@ class MapViewerFrame(wx.Frame):
 
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
-            if True: # try:
+            try:
                 sys.path.insert(0, '//cars5/Data/xas_user/pylib')
                 from escan_credentials import conn as DBCONN
 
@@ -1679,7 +1679,7 @@ class MapViewerFrame(wx.Frame):
                 self.inst_name = 'IDE_SampleStage'
                 print(" Connected to scandb='%s' on server at '%s'" %
                       (DBCONN['dbname'], DBCONN['host']))
-            else: # except:
+            except:
                 print('Could not connect to ScanDB')
                 self.use_scandb = False
 
