@@ -368,7 +368,7 @@ class CIFTable(_BaseTable):
     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
 
 class AllElementsTable(_BaseTable):
-    (atomic_no, name, symbol) = [None]*3
+    (z, name, symbol) = [None]*3
 
 class AllMineralsTable(_BaseTable):
     (id,name) = [None]*2
@@ -392,7 +392,7 @@ class SymmetryTable(_BaseTable):
     (iuc_id,symmetry_id) = [None]*2
     
 class CompositionTable(_BaseTable):
-    (atomic_no,amcsd_id) = [None]*2
+    (z,amcsd_id) = [None]*2
 
 class AuthorTable(_BaseTable):
     (author_id,amcsd_id) = [None]*2
@@ -487,7 +487,7 @@ class cifDB(object):
         ###################################################
         ## Look up tables
         element_table = Table('allelements', self.metadata,
-                Column('atomic_no', Integer, primary_key=True),
+                Column('z', Integer, primary_key=True),
                 Column('element_name', String(40), unique=True, nullable=True),
                 Column('element_symbol', String(2), unique=True, nullable=False)
                 )
@@ -525,9 +525,9 @@ class cifDB(object):
                 PrimaryKeyConstraint('iuc_id', 'symmetry_id')
                 )
         composition_table = Table('composition', self.metadata,
-                Column('atomic_no', None, ForeignKey('allelements.atomic_no')),
+                Column('z', None, ForeignKey('allelements.z')),
                 Column('amcsd_id', None, ForeignKey('allcif.amcsd_id')),
-                PrimaryKeyConstraint('atomic_no', 'amcsd_id')
+                PrimaryKeyConstraint('z', 'amcsd_id')
                 )
         author_table = Table('author', self.metadata,
                 Column('author_id', None, ForeignKey('allauthors.author_id')),
@@ -582,8 +582,8 @@ class cifDB(object):
 
         ## Adds all elements into database
         for element in ELEMENTS:
-            atomic_no, name, symbol = element
-            self.populate_elements.execute(atomic_no=int(atomic_no),
+            z, name, symbol = element
+            self.populate_elements.execute(z=int(z),
                                            element_name=name,
                                            element_symbol=symbol)
 
@@ -659,7 +659,7 @@ class cifDB(object):
             -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'cif data'
             -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'cif data'
             -->  read author name(s) - find/add in 'authorlist' - write 'author_id','amcsd_id' to 'author'
-            -->  read _chemical_formula_sum - write 'atomic_no','amcsd_id' to 'composition'
+            -->  read _chemical_formula_sum - write 'z' (atomic no.),'amcsd_id' to 'composition'
             -->  calculate q - find each corresponding 'q_id' for all peaks - in write 'q_id','amcsd_id' to 'qpeak'
         '''
 
@@ -814,9 +814,9 @@ class cifDB(object):
         for element in ALLelements:
             search_elements = self.allelements.select(self.allelements.c.element_symbol == element)
             for row in search_elements.execute():
-                atomic_no = row.atomic_no
+                z = row.z
             try:
-                self.cif_composition.execute(atomic_no=atomic_no,
+                self.cif_composition.execute(z=z,
                                         amcsd_id=int(amcsd_id))
             except:
                 print('could not find element: %s (amcsd: %i)' % (element,int(amcsd_id)))
@@ -877,24 +877,24 @@ class cifDB(object):
 
             ## Finds atomic number for given element symbol or name
             qry_elem = self.allelements.c.element_symbol == elem
-            atomic_no = 0
+            z = 0
             element_list = self.allelements.select(qry_elem)
             for row in element_list.execute():
-                atomic_no = row.atomic_no
+                z = row.z
                 elem_name = row.element_symbol
                 count_el = count_el + 1
-            if atomic_no == 0:
+            if z == 0:
                 element_list = self.allelements.select(qry_elem)
                 for row in element_list.execute():
-                    atomic_no = row.atomic_no
+                    z = row.z
                     elem_name = row.element_symbol
                     count_el = count_el + 1
 
 
-            if atomic_no == 0:    
+            if z == 0:    
                 print('No match to %s.' % elem)
             else:
-                complist = self.composition.select(self.composition.c.atomic_no == atomic_no)
+                complist = self.composition.select(self.composition.c.z == z)
                 for row in complist.execute():
                     if row.amcsd_id not in amcsd_list:
                         amcsd_list += [row.amcsd_id]
@@ -932,8 +932,8 @@ class cifDB(object):
         search_composition = self.composition.select(self.composition.c.amcsd_id == amcsd_id)
         ALLelements = []
         for row in search_composition.execute():
-            atomic_no = row.atomic_no
-            search_periodic = self.allelements.select(self.allelements.c.atomic_no == atomic_no)
+            z = row.z
+            search_periodic = self.allelements.select(self.allelements.c.z == z)
             for block in search_periodic.execute():
                 ALLelements.append(block.element_symbol)
 
@@ -1042,8 +1042,8 @@ class cifDB(object):
             search_composition = self.composition.select(self.composition.c.amcsd_id == amcsd_id)
             composition = ''
             for cmprow in search_composition.execute():
-                atomic_no = cmprow.atomic_no
-                search_periodic = self.allelements.select(self.allelements.c.atomic_no == atomic_no)
+                z = cmprow.z
+                search_periodic = self.allelements.select(self.allelements.c.z == z)
                 for elmtrow in search_periodic.execute():
                     composition = '%s %s' % (composition,elmtrow.element_symbol)
                     
@@ -1136,7 +1136,7 @@ class cifDB(object):
     def comp_search(self,elist,minel=None,verbose=False):
         '''
         mydb.load_database()
-        x = mydb.allelements.c.atomic_no == 8
+        x = mydb.allelements.c.z == 8
         stmt = mydb.allelements.select(x)
         print stmt.execute().fetchall()
         '''
@@ -1148,26 +1148,26 @@ class cifDB(object):
             
             ## Finds atomic number for given element symbol or name
             qry_elem = self.allelements.c.element_symbol == elem
-            atomic_no = 0
+            z = 0
             element_list = self.allelements.select(qry_elem)
             for row in element_list.execute():
-                atomic_no = row.atomic_no
+                z = row.z
                 elem_name = row.element_symbol
-            if atomic_no == 0:
+            if z == 0:
                 element_list = self.allelements.select(qry_elem)
                 for row in element_list.execute():
-                    atomic_no = row.atomic_no
+                    z = row.z
                     elem_name = row.element_symbol
             
             
-            if atomic_no == 0:    
+            if z == 0:    
                 print('No match to %s.' % elem)
             else:
                 if qry_atno is None:
-                    qry_atno = self.composition.c.atomic_no == atomic_no
+                    qry_atno = self.composition.c.z == z
                 else:
                     qry_atno = and_(qry_atno,
-                                   self.composition.c.atomic_no == atomic_no)
+                                   self.composition.c.z == z)
                 
         if qry_atno is not None:
             
