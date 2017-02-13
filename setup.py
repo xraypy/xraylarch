@@ -16,7 +16,7 @@ cmdline_args = sys.argv[1:]
 
 required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six', 'PIL']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
-xrd_modules = ['fabio','pyFAI','xrayutilities','CifFile', 'requests']
+xrd_modules = ['pyFAI','xrayutilities','CifFile', 'requests'] # 'fabio',
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,

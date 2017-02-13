@@ -30,7 +30,7 @@ requirements:
     - termcolor
     - pyepics
     - lmfit
-    - fabio
+#    - fabio
 
   run:
     - python
@@ -55,7 +55,7 @@ requirements:
     - termcolor
     - pyepics
     - lmfit
-    - fabio
+#    - fabio
 
 test:
   imports:

@@ -1,11 +1,9 @@
-import sys
 import os
 import socket
 import time
 import datetime
 import h5py
 import numpy as np
-from scipy import constants
 import scipy.stats as stats
 import json
 import larch
@@ -14,13 +12,12 @@ from larch.utils.debugtime import debugtime
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 
-from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
-                                  read_xsp3_hdf5, readASCII,
-                                  readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf) #, read_xrd_hdf5)
-
-from larch_plugins.diFFit.xrd import XRD
+from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
+                                  readASCII, readMasterFile, readROIFile,
+                                  readEnvironFile, parseEnviron, read_xrd_netcdf,
+                                  read_xrd_hdf5)
+from larch_plugins.xrd.xrd import XRD
+from larch_plugins.xrd.XRDCalc import E_from_lambda
 
 HAS_pyFAI = False
 try:
@@ -222,7 +219,7 @@ class GSEXRM_MapRow:
     read one row worth of data:
     """
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
-                 reverse=False, ixaddr=0, dimension=2,
+                 reverse=False, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  FLAGxrf = True, FLAGxrd = False):
 
@@ -232,7 +229,7 @@ class GSEXRM_MapRow:
         self.read_ok = False
         self.nrows_expected = nrows_expected
 
-        npts_offset = 0
+        ioff = ioffset
 
         self.npts = npts
         self.irow = irow
@@ -251,8 +248,8 @@ class GSEXRM_MapRow:
             xrd_reader = read_xrd_netcdf
             ## not yet implemented for hdf5 files
             ## mkak 2016.07.27
-            #if not xrdfile.endswith('nc'):
-            #    xrd_reader = read_xrd_hdf5
+            if not xrdfile.endswith('nc'):
+                xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -270,6 +267,8 @@ class GSEXRM_MapRow:
                 time.sleep(0.25)
             try:
                 shead, sdata = readASCII(os.path.join(folder, sisfile))
+                if ioff > 0:
+                    sdata = sdata[ioff:]
                 sis_ok = len(sdata) > 1
             except IOError:
                 if (time.time() - t0) > 5.0:
@@ -315,33 +314,38 @@ class GSEXRM_MapRow:
 
         ## SPECIFIC TO XRF data
         if FLAGxrf:
-            self.counts    = xrfdat.counts # [:]
-            self.inpcounts = xrfdat.inputCounts[:]
-            self.outcounts = xrfdat.outputCounts[:]
+            self.counts    = xrfdat.counts[ioff:]
+            self.inpcounts = xrfdat.inputCounts[ioff:]
+            self.outcounts = xrfdat.outputCounts[ioff:]
 
             # times are extracted from the netcdf file as floats of ms
             # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrfdat.liveTime[:]).astype('int')
-            self.realtime  = (xrfdat.realTime[:]).astype('int')
+            self.livetime  = (xrfdat.liveTime[ioff:]).astype('int')
+            self.realtime  = (xrfdat.realTime[ioff:]).astype('int')
 
-            dt_denom = xrfdat.outputCounts*xrfdat.liveTime
+            dt_denom = xrfdat.outputCounts[ioff:]*xrfdat.liveTime[ioff:]
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrfdat.inputCounts*xrfdat.realTime/dt_denom
+            self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
 
         ## SPECIFIC TO XRD data
+        ## is this the correct way to handle collected number of frames per row?
+        ## mkak 2017.02.08
         if FLAGxrd:
-            if self.npts - xrddat.shape[0] == 0:
+            if self.npts == xrddat.shape[0]:
                 self.xrd2d     = xrddat
-            else:
-                # print 'XRD row has %i points, but it requires %i points.' % (xrddat.shape[0],self.npts)
+            elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat
+                self.xrd2d[0:xrddat.shape[0]] = xrddat 
+                ## should change to [1:...] if skipping first frame
+            else:
+                self.xrd2d = xrddat[0:self.npts]
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
+        # print(" Row ", gnpts, ngather, snpts, xnpts, self.npts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -719,11 +723,13 @@ class GSEXRM_MapFile(object):
         edffile = self.xrmmap['xrd'].attrs[keyword]
         print('Reading %s file: %s' % (name,edffile))
 
-        try:
-            import fabio
-            rawdata = fabio.open(edffile).data
-        except:
-            print('File must be .edf format; user must have fabio installed.')
+        import matplotlib.pyplot as plt
+        rawdata = plt.imread(edffile) ## or? tifffile.imread(edffile)
+#         try:
+#             import fabio
+#             rawdata = fabio.open(edffile).data
+#         except:
+#             print('File must be .edf format; user must have fabio installed.')
         print('\t Shape: %s' % str(np.shape(rawdata)))
 
         try:
@@ -775,10 +781,7 @@ class GSEXRM_MapFile(object):
             xrdgrp.attrs['rot2']       = ai._rot2
             xrdgrp.attrs['rot3']       = ai._rot3
             xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgrp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
+            xrdgrp.attrs['energy']     = E_from_lambda(ai._wavelength,lambda_units='m') ## units: keV
 
         print('')
         self.h5root.flush()
@@ -944,8 +947,17 @@ class GSEXRM_MapFile(object):
         if self.folder is None or irow >= len(self.rowdata):
             return
 
-        if self.flag_xrf and self.flag_xrd:
+        if self.scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+            if xrff.startswith('None'):
+                xrff = xrff.replace('None', 'xsp3')
+            if sisf.startswith('None'):
+                sisf = sisf.replace('None', 'struck')
+            if xpsf.startswith('None'):
+                xpsf = xpsf.replace('None', 'xps')
+            if xrdf.startswith('None'):
+                xrdf = xrdf.replace('None', 'pexrd')
+
         elif self.flag_xrf:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
             xrdf = ''
@@ -954,10 +966,13 @@ class GSEXRM_MapFile(object):
             return
         reverse = (irow % 2 != 0)
 
+        ioffset = 0
+        if self.scan_version > 1.35:
+            ioffset = 1
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse,
+                             npts=self.npts, reverse=reverse, ioffset=ioffset,
                              FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
 
 
@@ -1578,7 +1593,7 @@ class GSEXRM_MapFile(object):
                 self.scan_version = words[1].strip()
             elif 'scan.nrows_expected' in words[0].lower():
                 self.nrows_expected = int(words[1].strip())
-
+        self.scan_version = float(self.scan_version)
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
 
@@ -2174,7 +2189,7 @@ class GSEXRM_MapFile(object):
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
         work_names = self.work_array_names()
         dat = 'roimap/sum_raw'
-
+        no_hotcols = no_hotcols and self.scan_version < 1.36
         # scaler, non-roi data
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())
@@ -2313,7 +2328,7 @@ class GSEXRM_MapFile(object):
 def read_xrfmap(filename, root=None):
     """read GSE XRF FastMap data from HDF5 file or raw map folder"""
     key = 'filename'
-    if os.path.isdir(filename):
+    if os.path.isd<ir(filename):
         key = 'folder'
     kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)

@@ -23,7 +23,6 @@ import os
 import sys
 import time
 import json
-import glob
 import socket
 import datetime
 from functools import partial
@@ -54,12 +53,11 @@ try:
 except:
     pass
 
-import h5py
+#import h5py
 import numpy as np
 import scipy.stats as stats
-from scipy import constants
 
-from matplotlib.widgets import Slider, Button, RadioButtons
+#from matplotlib.widgets import Slider, Button, RadioButtons
 
 HAS_pyFAI = False
 try:
@@ -83,13 +81,12 @@ from larch.wxlib import larchframe
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
-from larch_plugins.diFFit.XRD2Dviewer import Viewer2DXRD
-from larch_plugins.diFFit.XRDCalculations import integrate_xrd,calculate_ai
-
+from larch_plugins.diFFit.XRD2Dviewer import diFFit2DFrame
+from larch_plugins.xrd.XRDCalc import (integrate_xrd,calculate_ai,
+                                       lambda_from_E,E_from_lambda)
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
-from larch_plugins.xrmmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
-                                  GSEXRM_Exception, GSEXRM_NotOwner, h5str)
+from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -128,12 +125,11 @@ has already been read.
 
 DETCHOICES = ['sum', '1', '2', '3', '4']
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+DBCONN = None
+
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
-
-DBCONN = None
-
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -477,7 +473,7 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
@@ -521,7 +517,7 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
 
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         self.owner.no_hotcols = no_hotcols
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -659,13 +655,13 @@ class TriColorMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
         self.owner.no_hotcols = no_hotcols
         r = self.rcol.GetStringSelection()
         g = self.gcol.GetStringSelection()
         b = self.bcol.GetStringSelection()
         i0 = self.i0col.GetStringSelection()
-        mapshape= datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
+        mapshape = datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
         if no_hotcols:
             mapshape = mapshape[0], mapshape[1]-2
 
@@ -690,7 +686,6 @@ class TriColorMapPanel(GridPanel):
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
         i0map = 1.0 * i0map / i0map.max()
-        # print( 'I0 map : ', i0map.min(), i0map.max(), i0map.mean())
 
         pref, fname = os.path.split(datafile.filename)
         # title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
@@ -1317,7 +1312,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
-        print
+        if flag1D:
+            kwargs = {'steps':5001,
+                      'save':save,
+                      'AI':xrmfile.xrmmap['xrd']}
+            if save:
+                counter = 1
+                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
+                    counter += 1
+                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
+                kwargs.update({'file':file})
+            self._xrd.data1D = integrate_xrd(map,**kwargs)
+            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
+            if show:
+                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
         if flag2D:
             if save:
                 counter = 1
@@ -1330,25 +1338,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             if show:
                 title = '%s: %s' % (fname, label)
                 self.owner.display_2Dxrd(map, title=title, xrmfile=xrmfile)
-        if flag1D:
-            kwargs = {'steps':5001,
-                      'save':save,
-                      'AI':xrmfile.xrmmap['xrd']}
-            if save:
-                counter = 1
-                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
-                    counter += 1
-                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
-                kwargs.update({'file':file})
-#                 self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, file=file, AI=xrmfile.xrmmap['xrd'])
-#             else:
-#                 self._xrd.data1D = integrate_xrd(map, steps=5001, save=save, AI=xrmfile.xrmmap['xrd'])
-
-            self._xrd.data1D = integrate_xrd(map,**kwargs)
-
-            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
-            if show:
-                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1641,28 +1630,27 @@ class MapViewerFrame(wx.Frame):
         'displays 2D XRD pattern in diFFit viewer'
 
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = Viewer2DXRD(_larch=self.larch)
-            try:
-                AI = calculate_ai(self.current_file.xrmmap['xrd'])
-                self.xrddisplay2D.setPONI(AI)
-            except:
-                pass
-        self.xrddisplay2D.plot2Dxrd(map,title)
-
-        self.xrddisplay2D.Show()
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
+        try:
+            self.xrddisplay2D.plot2Dxrd(map,title)
+            self.xrddisplay2D.Show()
+        except PyDeadObjectError:
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D.plot2Dxrd(map,title)
+            self.xrddisplay2D.Show()
 
     def display_1Dxrd(self, xy, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
 
         if self.xrddisplay1D is None:
             self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
-            try:
-                AI = calculate_ai(self.current_file.xrmmap['xrd'])
-                self.xrddisplay1D.xrd1Dviewer.addLAMBDA(AI._wavelength,units='m')
-            except:
-                pass
-        self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
-        self.xrddisplay1D.Show()
+        try:
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.Show()
+        except PyDeadObjectError:
+            self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.Show()
 
     def init_larch(self):
         if self.larch is None:
@@ -1680,9 +1668,8 @@ class MapViewerFrame(wx.Frame):
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
             try:
-                sys.path.insert(0, '//cars5/Data/xas_user/bin/python')
-                from scan_credentials import conn as DBCONN
-                import scan_credentials
+                sys.path.insert(0, '//cars5/Data/xas_user/pylib')
+                from escan_credentials import conn as DBCONN
 
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
@@ -1814,6 +1801,11 @@ class MapViewerFrame(wx.Frame):
 
         try:
             self.xrddisplay1D.Destroy()
+        except:
+            pass
+
+        try:
+            self.xrddisplay2D.Destroy()
         except:
             pass
 
@@ -1983,15 +1975,12 @@ class MapViewerFrame(wx.Frame):
 
                 usr_calimg = myDlg.CaliPath
 
-                ## E = hf ; E = hc/lambda
-                hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
                 if myDlg.slctEorL.GetSelection() == 1:
                     usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
-                    usr_E = hc/(usr_lambda) ## units: keV
+                    usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
                 else:
                     usr_E = float(myDlg.EorL.GetValue()) ## units keV
-                    usr_lambda = hc/(usr_E) ## units: m
+                    usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
 
                 if myDlg.slctDorP.GetSelection() == 1:
                     usr_pixel = float(myDlg.pixel.GetValue())*1e-6
@@ -2098,7 +2087,7 @@ class MapViewerFrame(wx.Frame):
                                            args=(filename,))
             self.h5convert_thread.start()
 
-    def onTimer(self, event):
+    def onTimer(self,event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
         self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
@@ -2231,17 +2220,17 @@ class OpenMapFolder(wx.Dialog):
         else:
                 self.FindWindowById(wx.ID_OK).Disable()
 
-    def onXRFcheck(self, event):
+    def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
 
         self.checkOK()
 
-    def onXRDcheck(self, event):
+    def onXRDcheck(self,event=None):
         self.FLAGxrd = event.GetEventObject().GetValue()
 
         self.checkOK()
 
-    def onBROWSE(self, event):
+    def onBROWSE(self,event=None):
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
@@ -2318,15 +2307,15 @@ class AddToMapFolder(wx.Dialog):
         sizer.AddGrowableCol(2)
         panel.SetSizer(sizer)
 
-    def onXRFcheck(self, event):
+    def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
         self.checkOK()
 
-    def onXRDcheck(self, event):
+    def onXRDcheck(self,event=None):
         self.FLAGxrd = event.GetEventObject().GetValue()
         self.checkOK()
 
-    def onBROWSEfldr(self, event):
+    def onBROWSEfldr(self,event=None):
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
                            style=wx.FD_OPEN)
@@ -2344,7 +2333,7 @@ class AddToMapFolder(wx.Dialog):
 
         self.checkOK()
 
-    def onBROWSEfile(self, event):
+    def onBROWSEfile(self,event=None):
         wildcards = 'XRM map file (*.h5)|*.h5|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Read XRM Map File',
                            defaultDir=os.getcwd(),
@@ -2481,21 +2470,21 @@ class CalXRD(wx.Dialog):
         self.panel.SetSizer(self.sizer)
 
 
-    def onCalSel(self,event):
+    def onCalSel(self,event=None):
         #if self.calslct.GetSelection() == 0:
         #    self.FlagCalibrant = False
         #else:
         #    self.FlagCalibrant = True
         self.checkOK()
 
-    def onDetSel(self,event):
+    def onDetSel(self,event=None):
         #if self.detslct.GetSelection() == 0:
         #    self.FlagDetector = False
         #else:
         #    self.FlagDetector = True
         self.checkOK()
 
-    def onCheckOK(self,event):
+    def onCheckOK(self,event=None):
         self.checkOK()
 
     def checkOK(self):
@@ -2510,21 +2499,20 @@ class CalXRD(wx.Dialog):
         else:
             self.FindWindowById(wx.ID_OK).Disable()
 
-    def onEorLSel(self,event):
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+    def onEorLSel(self,event=None):
+
         if self.slctEorL.GetSelection() == 1:
             energy = float(self.EorL.GetValue()) ## units keV
-            wavelength = hc/(energy)*1e10 ## units: A
+            wavelength = lambda_from_E(energy) ## units: A
             self.EorL.SetValue(str(wavelength))
         else:
-            wavelength = float(self.EorL.GetValue())*1e-10 ## units: m
-            energy = hc/(wavelength) ## units: keV
+            wavelength = float(self.EorL.GetValue()) ## units: A
+            energy = E_from_lambda(wavelength) ## units: keV
             self.EorL.SetValue(str(energy))
 
         self.checkOK()
 
-    def onDorPSel(self,event):
+    def onDorPSel(self,event=None):
         if self.slctDorP.GetSelection() == 0:
             self.sizer.Hide(self.pixel)
             self.sizer.Show(self.detslct)
@@ -2534,7 +2522,7 @@ class CalXRD(wx.Dialog):
 
         self.checkOK()
 
-    def onBROWSE1(self, event):
+    def onBROWSE1(self,event=None):
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=os.getcwd(),

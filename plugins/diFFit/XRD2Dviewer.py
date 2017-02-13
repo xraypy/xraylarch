@@ -3,22 +3,23 @@
 GUI for displaying 2D XRD images
 
 '''
-
 import os
 import numpy as np
-from scipy import constants
 
-#import h5py
 import matplotlib.cm as colormap
 
 import wx
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
 
 from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
-from larch_plugins.diFFit.XRDCalculations import fabioOPEN,integrate_xrd,calculate_ai
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+
+from larch_plugins.xrd.XRDCalc import integrate_xrd,E_from_lambda
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -32,19 +33,18 @@ try:
 except ImportError:
     pass
 
-
 ###################################
 
-VERSION = '0 (18-October-2016)'
+VERSION = '0 (6-February-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
 
-class Viewer2DXRD(wx.Frame):
+class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None,title='', *args, **kw):
+    def __init__(self, _larch=None,title='', xrd1Dviewer=None, *args, **kw):
         label = 'diFFit : 2D XRD Data Analysis Software'
         wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
         
@@ -68,7 +68,7 @@ class Viewer2DXRD(wx.Frame):
         self.use_mask = False
         self.use_bkgd = False
         
-        self.xrddisplay1D = None
+        self.xrddisplay1D = xrd1Dviewer
         
         self.color = 'bone'
         self.flip = 'none'
@@ -104,7 +104,9 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            newimg = fabioOPEN(path)
+            print('Reading file: %s' % path)
+            newimg = tifffile.imread(path)
+            
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
     def plot2Dxrd(self,img,iname):
@@ -119,15 +121,15 @@ class Viewer2DXRD(wx.Frame):
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.data_images[img_no]
-        self.displayIMAGE()
+        self.displayIMAGE(reset=True)
            
-    def displayIMAGE(self):
+    def displayIMAGE(self,reset=False):
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
         
         self.plot2D.display(self.plt_img)       
-        self.autoContrast()        
+        self.autoContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
                          (np.min(self.plt_img),np.max(self.plt_img))) 
@@ -179,7 +181,7 @@ class Viewer2DXRD(wx.Frame):
             self.bkgd_img = np.zeros(np.shape(self.raw_img))
 
         ## Calculates the number of pixels in image, masked pixels, and background pixels
-        img_pxls  = len(self.raw_img)
+        img_pxls  = np.shape(self.raw_img)[0]*np.shape(self.raw_img)[1]
         msk_pxls  = img_pxls - int(sum(sum(self.msk_img)))
         bkgd_pxls = int(sum(sum(self.bkgd_img)))
 
@@ -196,12 +198,10 @@ class Viewer2DXRD(wx.Frame):
             
             self.sldr_bkgd.Disable()
             self.entr_scale.Disable()
-            self.btn_scale.Disable()
             
             self.use_bkgd = False
             self.entr_scale.SetLabel('0')
         else:
-            self.btn_scale.Enable()
             self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
 
@@ -213,7 +213,6 @@ class Viewer2DXRD(wx.Frame):
 
     def colorIMAGE(self):
         self.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-#         self.plot2D.conf.cmap['int'] = getattr(colormap, self.color)
         self.plot2D.display(self.plt_img)
 
     def setCOLOR(self,event=None):
@@ -246,10 +245,7 @@ class Viewer2DXRD(wx.Frame):
 
         self.bkgd_scale = float(self.entr_scale.GetValue())
         self.bkgdMAX = (float(self.entr_scale.GetValue()) * 2) / SLIDER_SCALE
-        
-        #self.bkgd_scale = float(self.entr_scale.GetValue())
-        #self.bkgdMAX = self.sldr_bkgd.GetValue()/SLIDER_SCALE
-        
+
         self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         
@@ -273,15 +269,17 @@ class Viewer2DXRD(wx.Frame):
         self.maxCURRENT = self.maxINT
         if self.maxCURRENT > self.maxINT:
             self.maxCURRENT = self.maxINT
-        self.setContrast()    
+
+        img_no = self.ch_img.GetSelection()
+
+        self.setContrast()  
 
     def onContrastRange(self,event=None):
     
         newMIN = int(self.entr_min.GetValue())
         newMAX = int(self.entr_max.GetValue())
         
-        self.minCURRENT = newMIN
-        self.maxCURRENT = newMAX
+        img_no = self.ch_img.GetSelection()
 
         self.sldr_min.SetRange(newMIN,newMAX)
         self.sldr_max.SetRange(newMIN,newMAX)
@@ -290,29 +288,32 @@ class Viewer2DXRD(wx.Frame):
             
 
     def onSlider(self,event=None):
+
         self.minCURRENT = self.sldr_min.GetValue()
         self.maxCURRENT = self.sldr_max.GetValue()
 
         if self.minCURRENT > self.maxCURRENT:
             self.sldr_min.SetValue(self.maxCURRENT)
-            self.sldr_max.SetValue(self.minCURRENT)
+            self.sldr_max.SetValue(self.minCURRENT)       
 
         self.setContrast()
 
     def setContrast(self):
+
+        img_no = self.ch_img.GetSelection()
+
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
 
         self.plot2D.conf.auto_intensity = False        
         self.plot2D.conf.int_lo[0] = self.minCURRENT
         self.plot2D.conf.int_hi[0] = self.maxCURRENT
-#         self.plot2D.conf.int_lo['int'] = self.minCURRENT
-#         self.plot2D.conf.int_hi['int'] = self.maxCURRENT
         
         self.plot2D.redraw()
             
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
+
 
 ##############################################
 #### XRD MANIPULATION FUNTIONS 
@@ -376,8 +377,14 @@ class Viewer2DXRD(wx.Frame):
                     except:
                         pass
                 label = self.name_images[self.ch_img.GetSelection()]
-                self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
-                self.xrddisplay1D.Show()
+                try:
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.Show()
+                except PyDeadObjectError:
+                    self.xrddisplay1D = diFFit1DFrame()
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.Show()
+
             
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -417,30 +424,28 @@ class Viewer2DXRD(wx.Frame):
         if self.ai is None:
             print(' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx ')
         else:
-            print
-            print
-            print ' ====== CURRENT CALIBRATION INFORMATION ====== '
-            print
+            print()
+            print()
+            print(' ====== CURRENT CALIBRATION INFORMATION ====== ')
+            print()
             try:
-                print 'Detector name: %s' % self.ai.detector.name
+                print('Detector name: %s' % self.ai.detector.name)
                 #ai.detector.splineFile
             except:
                 pass
             prt_str = 'Detector distance: %.1f mm'
-            print prt_str % (self.ai._dist*1000.)
+            print(prt_str % (self.ai._dist*1000.))
             prt_str = 'Pixel size (x,y): %.1f um, %.1f um'
-            print prt_str % (self.ai.detector.pixel1*1000000.,
-                             self.ai.detector.pixel2*1000000.)
+            print(prt_str % (self.ai.detector.pixel1*1000000.,
+                             self.ai.detector.pixel2*1000000.))
             prt_str = 'Detector center (x,y): %i pixels, %i pixels'
-            print prt_str % (self.ai._poni1/self.ai.detector.pixel1,
-                             self.ai._poni2/self.ai.detector.pixel2)
+            print(prt_str % (self.ai._poni1/self.ai.detector.pixel1,
+                             self.ai._poni2/self.ai.detector.pixel2))
             prt_str = 'Detector tilts: %0.5f, %0.5f %0.5f'
-            print prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3)
-            prt_str = 'Incident energy, wavelegth: %0.2f keV, %0.4f A'
-            hc = constants.value(u'Planck constant in eV s') * \
-                    constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            E = hc/(self.ai._wavelength) ## units: keV
-            print prt_str % (E,self.ai._wavelength*1.e10)
+            print(prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3))
+            prt_str = 'Incident energy, wavelength: %0.2f keV, %0.4f A'
+            E = E_from_lambda(self.ai._wavelength) ## units: keV
+            print(prt_str % (E,self.ai._wavelength*1.e10))
 
 
 ##############################################
@@ -463,7 +468,7 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            self.bkgd = fabioOPEN(path)
+            self.bkgd = tifffile.imread(path)
             self.checkIMAGE()
 
 ##############################################
@@ -482,7 +487,9 @@ class Viewer2DXRD(wx.Frame):
         dlg.Destroy()
         
         if read:
-            raw_mask = fabioOPEN(path)
+            #raw_mask = tifffile.imread(path)
+            import fabio
+            raw_mask = fabio.open(path).data
             self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
 
             self.checkIMAGE()
@@ -506,6 +513,19 @@ class Viewer2DXRD(wx.Frame):
 
 ##############################################
 #### PANEL DEFINITIONS
+    def onExit(self, event=None):
+        try:
+            if hasattr(self.exit_callback, '__call__'):
+                self.exit_callback()
+        except:
+            pass
+
+        try:
+            self.Destroy()
+        except:
+            pass
+        
+
     def XRD2DMenuBar(self):
 
         menubar = wx.MenuBar()
@@ -519,7 +539,8 @@ class Viewer2DXRD(wx.Frame):
         MenuItem(self, diFFitMenu, '&Save settings', '', None)
         MenuItem(self, diFFitMenu, '&Load settings', '', None)
         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
-       
+        MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
+
         menubar.Append(diFFitMenu, '&diFFit2D')
 
         ###########################
@@ -550,6 +571,7 @@ class Viewer2DXRD(wx.Frame):
         ###########################
         ## Create Menu Bar
         self.SetMenuBar(menubar)
+        self.Bind(wx.EVT_CLOSE, self.onExit)
 
     def LeftSidePanel(self,panel):
         
@@ -636,9 +658,10 @@ class Viewer2DXRD(wx.Frame):
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_min = wx.StaticText(self.panel, label='min')
         self.sldr_min = wx.Slider(self.panel)
-        self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.entr_min = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
 
         self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
+        self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
             
         hbox_ct2.Add(self.ttl_min,  flag=wx.RIGHT,         border=6)
         hbox_ct2.Add(self.sldr_min, flag=wx.RIGHT,         border=6)
@@ -648,9 +671,10 @@ class Viewer2DXRD(wx.Frame):
         hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_max = wx.StaticText(self.panel, label='max')
         self.sldr_max = wx.Slider(self.panel)
-        self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.entr_max = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
 
         self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
+        self.entr_max.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
         
         hbox_ct3.Add(self.ttl_max,  flag=wx.RIGHT,         border=6)
         hbox_ct3.Add(self.sldr_max, flag=wx.RIGHT,         border=6)
@@ -659,13 +683,10 @@ class Viewer2DXRD(wx.Frame):
 
         hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_ct1 = wx.Button(self.panel,label='reset range')
-        self.btn_ct2 = wx.Button(self.panel,label='set range')
 
         self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
-        self.btn_ct2.Bind(wx.EVT_BUTTON,self.onContrastRange)
 
         hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
-        hbox_ct4.Add(self.btn_ct2, flag=wx.RIGHT,              border=6)
         vbox_ct.Add(hbox_ct4,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
         vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
 
@@ -724,19 +745,16 @@ class Viewer2DXRD(wx.Frame):
 
 
         hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_scale = wx.Button(self.panel,label='set scaling')
-        self.entr_scale = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.entr_scale = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
         
-        self.btn_scale.Bind(wx.EVT_BUTTON,self.onChangeBkgdScale)
-        
-        hbox_bkgd2.Add(self.btn_scale,  flag=wx.RIGHT,                        border=6)
+        self.entr_scale.Bind(wx.EVT_TEXT_ENTER,self.onChangeBkgdScale)
+              
         hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT,                        border=6)
         vbox.Add(hbox_bkgd2,            flag=wx.TOP|wx.BOTTOM|wx.ALIGN_RIGHT, border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
         self.sldr_bkgd.Disable()
         self.entr_scale.Disable()
-        self.btn_scale.Disable()
 
         ###########################
         ## Set defaults  
@@ -786,8 +804,7 @@ class diFFit2D(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = Viewer2DXRD()
-        # frame.loadIMAGE()
+        frame = diFFit2DFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -803,9 +820,7 @@ class DebugViewer(diFFit2D):
         diFFit2D.__init__(self, **kws)
 
     def OnInit(self):
-        #self.Init()
         self.createApp()
-        #self.ShowInspectionTool()
         return True
 
 if __name__ == '__main__':

@@ -5,12 +5,14 @@ popup for 2D XRD calibration
 '''
 import os
 import numpy as np
-from scipy import constants
 
 import wx
 
 from wxmplot.imagepanel import ImagePanel
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
+
+from larch_plugins.io import tifffile
 
 HAS_pyFAI = False
 try:
@@ -20,13 +22,7 @@ try:
     HAS_pyFAI = True
 except ImportError:
     pass
-    
-HAS_fabio = False
-try:
-    import fabio
-    HAS_fabio = True
-except ImportError:
-    pass
+
 
 ###################################
 
@@ -95,7 +91,7 @@ class CalibrationPopup(wx.Frame):
         self.entr_cntrx.SetValue(str(int(self.raw_img.shape[0]/2))) ## x-position of beam
         self.entr_cntry.SetValue(str(int(self.raw_img.shape[1]/2))) ## y-position of beam
         
-        self.onDorPSel(None)
+        self.onDorPSel()
 
     def DirectionsSizer(self):
 
@@ -264,26 +260,25 @@ class CalibrationPopup(wx.Frame):
         self.parbox.Add(hbox_cal8,   flag=wx.BOTTOM, border=8) 
 
 
-    def onCalSel(self,event):
+    def onCalSel(self,event=None):
         print('Selected calibrant: %s' % self.ch_cal.GetString(self.ch_cal.GetSelection()))
 
-    def onDetSel(self,event):
+    def onDetSel(self,event=None):
         print('Selected detector: %s' % self.ch_det.GetString(self.ch_det.GetSelection()))
 
 
-    def onEorLSel(self,event): 
-        hc = constants.value(u'Planck constant in eV s') * \
-                       constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
+    def onEorLSel(self,event=None): 
+
         if self.ch_EorL.GetSelection() == 1:
             energy = float(self.entr_EorL.GetValue()) ## units keV
-            wavelength = hc/(energy)*1e10 ## units: A
+            wavelength = lambda_from_E(energy) ## units: A
             self.entr_EorL.SetValue(str(wavelength))
         else:
             wavelength = float(self.entr_EorL.GetValue())*1e-10 ## units: m
-            energy = hc/(wavelength) ## units: keV
+            energy = E_from_lambda(wavelength) ## units: keV
             self.entr_EorL.SetValue(str(energy))
 
-    def onDorPSel(self,event): 
+    def onDorPSel(self,event=None): 
         if self.ch_DorP.GetSelection() == 0:
             self.entr_pix.Hide()
             self.ch_det.Show()
@@ -294,7 +289,7 @@ class CalibrationPopup(wx.Frame):
         self.panel.GetSizer().Layout() 
         self.panel.GetParent().Layout()
 
-    def loadIMAGE(self, event): 
+    def loadIMAGE(self,event=None): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=os.getcwd(),
@@ -308,9 +303,11 @@ class CalibrationPopup(wx.Frame):
         
         if read:
             try:
-                self.raw_img = fabio.open(path).data
+#                 self.raw_img = plt.imread(path)
+                self.raw_img = tifffile.imread(path)
+                #self.raw_img = fabio.open(path).data
             except:
-                print('This is not an image openable by fabio.')
+                print('Image not properly opened.')
                 pass
             self.plot2Dimg.display(self.raw_img)       
             self.plot2Dimg.redraw()
@@ -350,7 +347,7 @@ class CalibrationPopup(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onImageTools(self,event):
+    def onImageTools(self,event=None):
         
         self.toolbox = ImageToolboxFrame(self.plot2Dimg,self.raw_img)
 
@@ -403,12 +400,12 @@ class CalibrationPopup(wx.Frame):
         else:
             self.btn_next.Enable()
 
-    def onNEXT(self, event):
+    def onNEXT(self,event=None):
         self.stepno = self.stepno + 1
         self.checkRANGE()
         self.showDirection()
     
-    def onPREVIOUS(self,event):
+    def onPREVIOUS(self,event=None):
         self.stepno = self.stepno - 1
         self.checkRANGE()
         self.showDirection()
@@ -427,7 +424,7 @@ class CalibrationPopup(wx.Frame):
                     
         self.followdir.SetLabel(dirsteps[self.stepno])
 
-    def openPONI(self,event):
+    def openPONI(self,event=None):
              
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
@@ -456,7 +453,7 @@ class CalibrationPopup(wx.Frame):
             self.ch_DorP.SetSelection(1)
             self.entr_EorL.SetValue('%0.4f' % float(self.ai._wavelength*1.e10))
             self.ch_EorL.SetSelection(1)
-            self.onDorPSel(None)
+            self.onDorPSel()
             
             cenx = float(self.ai._poni1)/float(self.ai.detector.pixel1)
             ceny = float(self.ai._poni2)/float(self.ai.detector.pixel2)
@@ -471,7 +468,7 @@ class diFFit_XRDcal(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = CalibrationPopup(None)
+        frame = CalibrationPopup()
         frame.Show()
         self.SetTopWindow(frame)
 
