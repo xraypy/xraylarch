@@ -111,7 +111,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if os.stat(filename).st_size > MAX_FILESIZE:
         raise OSError("File '%s' too big for read_ascii()" % filename)
 
-    with open(filename, 'rw') as fh:
+    with open(filename, 'r') as fh:
         text = fh.read()
 
     text = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
