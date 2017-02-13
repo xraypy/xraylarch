@@ -66,7 +66,6 @@ class FitController(object):
     def __init__(self, **kws):
         self.components = OrderedDict()
 
-/usr/share/X11/fonts
 
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
