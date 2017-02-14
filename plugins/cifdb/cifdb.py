@@ -816,8 +816,7 @@ class cifDB(object):
             for row in search_elements.execute():
                 z = row.z
             try:
-                self.cif_composition.execute(z=z,
-                                        amcsd_id=int(amcsd_id))
+                self.cif_composition.execute(z=z,amcsd_id=int(amcsd_id))
             except:
                 print('could not find element: %s (amcsd: %i)' % (element,int(amcsd_id)))
                 pass
