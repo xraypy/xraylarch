@@ -1158,7 +1158,7 @@ class cifDB(object):
             if r.text.split()[0] == "Can't" or '':
                 if verbose:
                     print('\t---> ERROR on amcsd%05d.cif' % i)
-                    ftrack.write('%s\n' % url_to_scrape)
+                    #ftrack.write('%s\n' % url_to_scrape)
             else:
                 if verbose:
                     print('Reading %s' % url_to_scrape)
