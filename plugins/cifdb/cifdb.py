@@ -391,8 +391,6 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-## this will need a foreign key added here
-## mkak 2017.02.14
 class CIFTable(_BaseTable):
     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
 
@@ -453,28 +451,19 @@ class cifDB(object):
         clear_mappers()
         mapper(ElementTable, elemtbl, properties=dict(
                  a=relationship(ElementTable, secondary=compref,
-                 primaryjoin=(compref.c.z == elemtbl.c.z))))
-#         mapper(ElementTable, elemtbl, properties=dict(
-#                  relationship(ElementTable, secondary=compref,
-#                  primaryjoin=(compref.c.z == elemtbl.c.z),
-#                  secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
+                 primaryjoin=(compref.c.z == elemtbl.c.z),
+                 secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
         mapper(MineralNameTable, nametbl, properties=dict(
                  a=relationship(MineralNameTable, secondary=ciftbl,
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-#         mapper(SpaceGroupTable, spgptbl, properties=dict(
-#                  relationship(SpaceGroupTable, secondary=symref,
-#                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
-#                  secondaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
-                 primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
-#         mapper(CrystalSymmetryTable, symtbl, properties=dict(
-#                  relationship(CrystalSymmetryTable, secondary=symref,
-#                  primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id),
-#                  secondaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
+                 primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
+                 secondaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
         mapper(CrystalSymmetryTable, symtbl, properties=dict(
                  a=relationship(CrystalSymmetryTable, secondary=symref,
-                 primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
+                 primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id),
+                 secondaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
         mapper(AuthorTable, authtbl, properties=dict(
                  a=relationship(AuthorTable, secondary=authref,
                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
@@ -484,22 +473,10 @@ class cifDB(object):
         mapper(CategoryTable, cattbl, properties=dict(
                  a=relationship(CategoryTable, secondary=catref,
                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
-#         mapper(CIFTable, ciftbl, properties=dict(
-#                  relationship(CIFTable, secondary=compref,
-#                  primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
-#                  secondaryjoin=(compref.c.z == elemtbl.c.z))))
         mapper(CIFTable, ciftbl, properties=dict(
                  a=relationship(CIFTable, secondary=compref,
-                 primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
-
-
-
-#   mapper(TABLE1_NAME, table1_name, properties=dict(
-#          cifs=relationship(TABLE1_NAME, secondary=table2_name,
-#          primaryjoin=(table2_name.c.column1 == table1_name.c.column1),
-#          secondaryjoin=(table2_name.c.column2 == table3_name.c.column2))))
-        
-
+                 primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
+                 secondaryjoin=(compref.c.z == elemtbl.c.z))))
 
 
     def close(self):
