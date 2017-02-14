@@ -507,6 +507,7 @@ class XYFitController():
         self.filelist = None
         self.file_groups = {}
         self.proc_opts = {}
+        self.fit_opts = {}
         self.group = None
         self.groupname = None
         self.larch_buffer = None

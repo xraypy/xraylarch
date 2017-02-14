@@ -44,6 +44,8 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
 ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
                'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
+FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
+
 FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
 
 class AllParamsPanel(wx.Panel):
@@ -51,21 +53,35 @@ class AllParamsPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
         self.parent = parent
-        self.parameters = OrderedDict()
+        self.fit_params = OrderedDict()
+        self.user_params = OrderedDict()
 
-    def addParameter(self, param):
+    def add_parameter(self, param):
         """add a parameter"""
         print( "add parameter ", param)
 
-    def delParameter(self, param):
+    def del_parameter(self, param):
         """delete a parameter"""
         print( "del parameter ", param)
+
+    def show_parameters(self, fit_params=None, user_params=None):
+        if fit_params is not None:
+            self.fit_params = OrderedDict()
+            for parname, param in fit_params.items():
+                self.fit_params[parname] = param
+        if user_params is not None:
+            self.user_params = OrderedDict()
+            for parname, param in user_params.items():
+                self.user_params[parname] = param
+        print("Fit Params: ")
+        for p in self.fit_params.values(): print(p)
+        print("User Params: ")
+        for p in self.user_params.values(): print(p)
 
 
 class FitController(object):
     def __init__(self, **kws):
         self.components = OrderedDict()
-
 
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -77,6 +93,7 @@ class XYFitPanel(wx.Panel):
         self.fit_components = OrderedDict()
         self.fit_model = None
         self.fit_params = None
+        self.user_added_params = None
         self.summary = None
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
@@ -98,6 +115,7 @@ class XYFitPanel(wx.Panel):
 
         self.mod_nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.mod_nb.SetActiveTabTextColour(wx.Colour(128,0,0))
+        self.mod_nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
 
         self.param_panel = AllParamsPanel(self, controller=self.controller)
         self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
@@ -167,6 +185,15 @@ class XYFitPanel(wx.Panel):
                        (self.mod_nb,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
+
+    def onNBChanged(self, event=None):
+        idx = self.mod_nb.GetSelection()
+        print(" NB Changed ", idx, self.mod_nb.GetPage(idx), self.param_panel)
+        if self.mod_nb.GetPage(idx) is self.param_panel:
+            self.build_fitmodel()
+            self.param_panel.show_parameters(self.fit_params, self.user_added_params)
+
+
 
 
     def addModel(self, event=None, model=None, is_step=False):
