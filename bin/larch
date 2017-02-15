@@ -80,6 +80,9 @@ else:
 
     # use inputhook to enable wx
     if HAS_WX:
+        import matplotlib
+        matplotlib.use('WXAgg')
+        import matplotlib.pyplot
         from larch.wxlib import inputhook
         app = wx.App(redirect=False, clearSigInt=False)
         shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
