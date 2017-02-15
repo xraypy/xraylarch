@@ -478,6 +478,8 @@ class cifDB(object):
                  primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
                  secondaryjoin=(compref.c.z == elemtbl.c.z))))
 
+        self.load_database()
+
 
     def close(self):
         "close session"
@@ -511,71 +513,71 @@ class cifDB(object):
         ###################################################
         ## Look up tables
         elemtbl = Table('elemtbl', self.metadata,
-                Column('z', Integer, primary_key=True),
-                Column('element_name', String(40), unique=True, nullable=True),
-                Column('element_symbol', String(2), unique=True, nullable=False)
-                )
+                  Column('z', Integer, primary_key=True),
+                  Column('element_name', String(40), unique=True, nullable=True),
+                  Column('element_symbol', String(2), unique=True, nullable=False)
+                  )
         nametbl = Table('nametbl', self.metadata,
-                Column('mineral_id', Integer, primary_key=True),
-                Column('mineral_name', String(30), unique=True, nullable=True)
-                )
+                  Column('mineral_id', Integer, primary_key=True),
+                  Column('mineral_name', String(30), unique=True, nullable=True)
+                  )
         spgptbl = Table('spgptbl', self.metadata,
-                Column('iuc_id', Integer),
-                Column('hm_notation', String(16), unique=True, nullable=True),
-                PrimaryKeyConstraint('iuc_id', 'hm_notation')
-                )
+                  Column('iuc_id', Integer),
+                  Column('hm_notation', String(16), unique=True, nullable=True),
+                  PrimaryKeyConstraint('iuc_id', 'hm_notation')
+                  )
         symtbl = Table('symtbl', self.metadata,
-                Column('symmetry_id', Integer, primary_key=True),
-                Column('symmetry_name', String(16), unique=True, nullable=True)
-                )
+                 Column('symmetry_id', Integer, primary_key=True),
+                 Column('symmetry_name', String(16), unique=True, nullable=True)
+                 )
         authtbl = Table('authtbl', self.metadata,
-                Column('author_id', Integer, primary_key=True),
-                Column('author_name', String(40), unique=True, nullable=True)
-                )
+                  Column('author_id', Integer, primary_key=True),
+                  Column('author_name', String(40), unique=True, nullable=True)
+                  )
         qtbl = Table('qtbl', self.metadata,
-                Column('q_id', Integer, primary_key=True),
-                #Column('q', Float()) ## how to make this work? mkak 2017.02.14
-                Column('q', String())
-                )
+               Column('q_id', Integer, primary_key=True),
+               #Column('q', Float()) ## how to make this work? mkak 2017.02.14
+               Column('q', String())
+               )
         cattbl = Table('cattbl', self.metadata,
-                Column('category_id', Integer, primary_key=True),
-                Column('category_name', String(16), unique=True, nullable=True)
-                )
+                 Column('category_id', Integer, primary_key=True),
+                 Column('category_name', String(16), unique=True, nullable=True)
+                 )
         ###################################################
         ## Cross-reference tables
         symref = Table('symref', self.metadata,
-                Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
-                Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
-                PrimaryKeyConstraint('iuc_id', 'symmetry_id')
-                )
+                 Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
+                 Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
+                 PrimaryKeyConstraint('iuc_id', 'symmetry_id')
+                 )
         compref = Table('compref', self.metadata,
-                Column('z', None, ForeignKey('elemtbl.z')),
-                Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                PrimaryKeyConstraint('z', 'amcsd_id')
-                )
+                  Column('z', None, ForeignKey('elemtbl.z')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('z', 'amcsd_id')
+                  )
         authref = Table('authref', self.metadata,
-                Column('author_id', None, ForeignKey('authtbl.author_id')),
-                Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                PrimaryKeyConstraint('author_id', 'amcsd_id')
-                )
+                  Column('author_id', None, ForeignKey('authtbl.author_id')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('author_id', 'amcsd_id')
+                  )
         qref = Table('qref', self.metadata,
-                Column('q_id', None, ForeignKey('qtbl.q_id')),
-                Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                PrimaryKeyConstraint('q_id', 'amcsd_id')
-                )
+               Column('q_id', None, ForeignKey('qtbl.q_id')),
+               Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+               PrimaryKeyConstraint('q_id', 'amcsd_id')
+               )
         catref = Table('catref', self.metadata,
-                Column('category_id', None, ForeignKey('cattbl.category_id')),
-                Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                PrimaryKeyConstraint('category_id', 'amcsd_id')
-                )
+                 Column('category_id', None, ForeignKey('cattbl.category_id')),
+                 Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                 PrimaryKeyConstraint('category_id', 'amcsd_id')
+                 )
         ###################################################
         ## Main table
         ciftbl = Table('ciftbl', self.metadata,
-                Column('amcsd_id', Integer, primary_key=True),
-                Column('mineral_id', Integer),
-                Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
-                Column('cif', String(25)) ## , nullable=True
-                )
+                 Column('amcsd_id', Integer, primary_key=True),
+                 Column('mineral_id', Integer),
+                 Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
+                 Column('cif', String(25)) ## , nullable=True
+                 )
         ###################################################
         ## Add all to file
         self.metadata.create_all()  ## if not exists function... can call even when already there
@@ -765,7 +767,6 @@ class cifDB(object):
         qnorm = np.linalg.norm(qlist,axis=1)
         Fnorm = np.abs(Flist)
 
-#         match_qid = []
         peak_qid = []
         q_wid = int((QWIDTH/QSTEP)/2)
         q_wpk = (q_wid*2)+1
@@ -775,32 +776,21 @@ class cifDB(object):
                 qid = int((qi-QMIN)/QSTEP)+1
                 if qid not in peak_qid:
                     peak_qid.append(qid)
-#                     for qii in np.arange(qid-q_wid,qid+q_wid+1,1):
-#                         if qii not in match_qid:
-#                             match_qid.append(qii)
 
-        self.load_database()
-        
         ###################################################
-        ## Define 'add/insert' functions for each table
-        def_elem   = self.elemtbl.insert()
-        def_sym = self.symtbl.insert()
-        def_q          = self.qtbl.insert()
-        def_spgp      = self.spgptbl.insert()
-
-        add_sym = self.symref.insert()
-
-        def_name  = self.nametbl.insert()
-        def_auth   = self.authtbl.insert()
-        # def_cat = self.cattbl.insert()
-
-        new_cif = self.ciftbl.insert()
-
+        def_elem = self.elemtbl.insert()
+        def_name = self.nametbl.insert()
+        def_spgp = self.spgptbl.insert()
+        def_sym  = self.symtbl.insert()
+        def_auth = self.authtbl.insert()
+        def_q    = self.qtbl.insert()
+        def_cat  = self.cattbl.insert()
+        add_sym  = self.symref.insert()
         add_comp = self.compref.insert()
-        add_auth      = self.authref.insert()
-        add_q      = self.qref.insert()   
-        # add_cat    = self.catref.insert()
-        
+        add_auth = self.authref.insert()
+        add_q    = self.qref.insert()
+        add_cat  = self.catref.insert()
+        new_cif  = self.ciftbl.insert()
 
         ## Find mineral_name
         match = False
@@ -888,8 +878,6 @@ class cifDB(object):
         
         '''
 
-        self.load_database()
-
         amcsd_list = []
         matches    = []
         
@@ -939,8 +927,6 @@ class cifDB(object):
 
     def amcsd_search(self,amcsd_id):
 
-        self.load_database()
-
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
             cifstr = row.cif
@@ -984,7 +970,6 @@ class cifDB(object):
         min_id = int((qmin-QMIN)/QSTEP)+1
         max_id = int((qmax-QMIN)/QSTEP)+1
 
-        self.load_database()
         search_qpeaks = self.qref.select(self.qref.c.amcsd_id == amcsd_id)
         peak_id = [row.q_id for row in search_qpeaks.execute() if row.q_id >= min_id and row.q_id <= max_id]
         
@@ -997,8 +982,6 @@ class cifDB(object):
         return peak_q
 
     def find_mineral_name(self,amcsd_id):
-
-        self.load_database()
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
@@ -1014,8 +997,6 @@ class cifDB(object):
 
     def find_by_q(self,broadened_pks,minpeaks=2):
 
-        self.load_database()
-        
         all_matches = []
         matches = []
         count = []
@@ -1046,7 +1027,6 @@ class cifDB(object):
 
     def create_array(self,maxrows=None):
     
-        self.load_database()
         cif_array = {}
         
         search_cif = self.ciftbl.select()
@@ -1163,8 +1143,6 @@ class cifDB(object):
         print stmt.execute().fetchall()
         '''
 
-        self.load_database()
-       
         qry_atno = None
         for i,elem in enumerate(elist):
             
@@ -1197,40 +1175,115 @@ class cifDB(object):
             print 'first',self.compref.select(qry_atno).execute().fetchone()
             print 'now',np.shape(complist)
 
-    def search_it(self): #,qry_elements):
-        
-#         rows = self.query(self.elemtbl)
-#         for element in qry_elements:
-#             if isinstance(element, int):
-#                 rows = rows.filter(self.elemtbl.z==element)
-#             else:
-#                 #rows = rows.filter(self.elemtbl.name==element)
-#                 rows = rows.filter(self.elemtbl.symbol==element)
-     
-        self.load_database()
-       
-        
-        A3 = self.query(self.ciftbl,self.elemtbl,self.compref,self.nametbl)\
-                 .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                 .filter(self.compref.c.z == self.elemtbl.c.z)\
-                 .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)
+    def search_database(self,elements=[]):
+                        #,authors=[],space_group=[],
+                        #author=[],verbose=False):
 
-        atomic_nos = [8,58]                 
-        if len(atomic_nos) > 0:
-            A3 = A3.filter(self.compref.c.z.in_(atomic_nos))\
-                   .group_by(self.compref.c.amcsd_id)\
-                   .having(func.count()==len(atomic_nos))
-                   #.having(func.count()>=2)        
-        
-        print '\n --- COUNT : cerium and oxygen --- '
-        print A3
+
+#         usr_qry = self.query(self.ciftbl,
+#                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
+#                              self.authtbl,self.qtbl,self.cattbl,
+#                              self.authref,self.qref,self.compref,self.catref,self.symref)\
+#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
+#                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
+#                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.compref.c.z == self.elemtbl.c.z)\
+#                       .filter(self.catref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.catref.c.category_id == self.cattbl.c.category_id)\
+#                       .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)\
+#                       .filter(self.symref.c.symmetry_id == self.symtbl.c.symmetry_id)\
+#                       .filter(self.symref.c.iuc_id == self.spgptbl.c.iuc_id)\
+#                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
+
+#         print '\nall'
+#         print len(usr_qry.all())     
+# 
+# 
+#         usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
+#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
+# 
+#         print '\nauthor'
+#         print len(usr_qry.all()),
+# 
+#         ##  Searches authors
+#         if len(authors) > 0:
+#             auth_ids = []
+#             for author in authors:
+#                 authrow = self.query(self.authtbl)\
+#                               .filter(self.authtbl.c.author_name.like('%'+author+'%'))
+#                 if len(authrow.all()) == 0:
+#                     print '%s not found in author database.' % author
+#                 else:
+#                     for row in authrow.all():
+#                         if row.author_id not in auth_ids:
+#                             auth_ids += [row.author_id]
+#             if len(auth_ids) > 0:
+#                 usr_qry = usr_qry.filter(self.authref.c.author_id.in_(auth_ids))
+#         print len(usr_qry.all())
+# 
+# #         print '\n --- MATCHES --- '
+# #         print
+# #         print usr_qry        
+# #         print
+# #         for i,row in enumerate(usr_qry.all()):
+# #             if verbose:
+# #                 self.amcsd_search(row.amcsd_id)
+# #             else:
+# #                 print '%i,%i\t%s' % (i,row.amcsd_id,row.mineral_name)
+# 
+# 
+#         usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
+#                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.compref.c.z == self.elemtbl.c.z)
+#            
+#         print '\nelements'
+#         print len(usr_qry.all()),
+
+        ##  Searches composition of database entries
+        if len(elements) > 0:
+            atomic_nos = []
+            for element in elements:
+                element = capitalize_string(element)
+                elemrow = self.query(self.elemtbl)\
+                              .filter(or_(self.elemtbl.c.z == element,
+                                          self.elemtbl.c.element_symbol == element,
+                                          self.elemtbl.c.element_name == element))
+                if len(elemrow.all()) == 0:
+                    print '%s not found in element database.' % element
+                else:
+                    for row in elemrow.all():
+                        if row.z not in atomic_nos:
+                            atomic_nos += [row.z]
+            if len(atomic_nos) > 0:
+                usr_qry = usr_qry.filter(self.compref.c.z.in_(atomic_nos))\
+                                 .group_by(self.ciftbl.c.amcsd_id)\
+                                 .having(func.count()==len(atomic_nos))
+                                 ## currently restricted to find with all elements
+                                 ## would need this to change if only need, e.g., 3 of 4
+                                 ## mkak 2017.02.15
+
+#         print len(usr_qry.all())
+
+        print '\n --- MATCHES --- '
         print
-        for i,row in enumerate(A3.all()):
-            if i == 0:
-                print row.keys()
-                print
-            print '%i\t%s' % (row.amcsd_id,row.mineral_name)             
+        print usr_qry        
+        print
+        for i,row in enumerate(usr_qry.all()):
+            if verbose:
+                self.amcsd_search(row.amcsd_id)
+            else:
+                print '%i,%i\t%s' % (i,row.amcsd_id,row.mineral_name)
+        
+     
+def capitalize_string(s):
 
+    if type(s) == str:
+       return s[0].upper() + s[1:].lower()
+    
+    return s
 
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ##
