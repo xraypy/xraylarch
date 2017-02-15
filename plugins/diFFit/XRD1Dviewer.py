@@ -1012,7 +1012,7 @@ class Fitting1DXRD(BasePanel):
         self.find_peaks(filter=filter)    
         
         if self.ipeaks is not None:
-            self.dbgpl.btn_srch.Enable()
+            self.dbgpl.btn_dbparm.Enable()
             self.dbgpl.owner.val_gdnss.Enable()
             self.dbgpl.btn_mtch.Enable()
 
@@ -1020,7 +1020,7 @@ class Fitting1DXRD(BasePanel):
         
         self.remove_all_peaks()
         
-        self.dbgpl.btn_srch.Disable()
+        self.dbgpl.btn_dbparm.Disable()
         self.dbgpl.owner.val_gdnss.Disable()
         self.dbgpl.btn_mtch.Disable()
 
@@ -1327,6 +1327,15 @@ class Fitting1DXRD(BasePanel):
                 print('Now using database: %s' % os.path.split(path)[-1])
             except:
                print('Failed to import file as database: %s' % path)
+
+
+    def filter_database(self,event=None):
+
+        myDlg = XRDSearchGUI()
+
+        if myDlg.ShowModal() == wx.ID_OK:
+            print 'you pressed okay'
+        myDlg.Destroy()
 
 
     def onSettings(self,event=None):
@@ -2597,8 +2606,8 @@ class DatabasePanel(wx.Panel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_db = wx.Button(self,label='Select database file')
-        
-        self.btn_srch = wx.Button(self,label='Search parameters')
+        btn_srch = wx.Button(self,label='Filter database')
+        self.btn_dbparm = wx.Button(self,label='Search parameters')
 
         ttl_gdnss = wx.StaticText(self, label='min. fraction')
         self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
@@ -2611,18 +2620,20 @@ class DatabasePanel(wx.Panel):
         btn_debug = wx.Button(self,label='Debugging peak test')
         
         btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
-        self.btn_srch.Bind(wx.EVT_BUTTON,   self.owner.onSettings)
+        btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
+#         self.btn_dbparm.Bind(wx.EVT_BUTTON, self.owner.onSettings)
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        btn_debug.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+        btn_debug.Bind(wx.EVT_BUTTON,       self.owner.onMatch)
         
-        vbox.Add(btn_db,        flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_srch, flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_debug,     flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_dbparm, flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_debug,       flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
-        self.btn_srch.Disable()
+        self.btn_dbparm.Disable()
         self.owner.val_gdnss.Disable()
         self.btn_mtch.Disable()
         
