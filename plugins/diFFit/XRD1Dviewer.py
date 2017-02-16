@@ -1905,16 +1905,8 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.owner.write_message
         
-
-        ## Set defaults for plotting  
-#         self.plot1D.set_ylabel(self.ylabel)
-#         self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.cursor_mode = 'zoom'
   
-        ## trying to get this functionality into our gui
-        ## mkak 2016.11.10      
-#         interactive_legend().show()
-
     def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
         
@@ -2284,83 +2276,6 @@ class Viewer1DXRD(wx.Panel):
                     print('Could not calculate real structure factors.')
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
-
-#import matplotlib.pyplot as plt
-# def interactive_legend(ax=None):
-#     if ax is None:
-#         ax = plt.gca()
-#     if ax.legend_ is None:
-#         ax.legend()
-# 
-#     return InteractiveLegend(ax.legend_)
-# 
-# class InteractiveLegend(object):
-#     def __init__(self, legend):
-#         self.legend = legend
-#         self.fig = legend.axes.figure
-# 
-#         self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
-#         self._setup_connections()
-# 
-#         self.update()
-# 
-#     def _setup_connections(self):
-#         for artist in self.legend.texts + self.legend.legendHandles:
-#             artist.set_picker(10) # 10 points tolerance
-# 
-#         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
-#         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-# 
-#     def _build_lookups(self, legend):
-#         labels = [t.get_text() for t in legend.texts]
-#         handles = legend.legendHandles
-#         label2handle = dict(zip(labels, handles))
-#         handle2text = dict(zip(handles, legend.texts))
-# 
-#         lookup_artist = {}
-#         lookup_handle = {}
-#         for artist in legend.axes.get_children():
-#             if artist.get_label() in labels:
-#                 handle = label2handle[artist.get_label()]
-#                 lookup_handle[artist] = handle
-#                 lookup_artist[handle] = artist
-#                 lookup_artist[handle2text[handle]] = artist
-# 
-#         lookup_handle.update(zip(handles, handles))
-#         lookup_handle.update(zip(legend.texts, handles))
-# 
-#         return lookup_artist, lookup_handle
-# 
-#     def on_pick(self,event=None):
-#         handle = event.artist
-#         if handle in self.lookup_artist:
-#             artist = self.lookup_artist[handle]
-#             artist.set_visible(not artist.get_visible())
-#             self.update()
-# 
-#     def on_click(self,event=None):
-#         if event.button == 3:
-#             visible = False
-#         elif event.button == 2:
-#             visible = True
-#         else:
-#             return
-# 
-#         for artist in self.lookup_artist.values():
-#             artist.set_visible(visible)
-#         self.update()
-# 
-#     def update(self):
-#         for artist in self.lookup_artist.values():
-#             handle = self.lookup_handle[artist]
-#             if artist.get_visible():
-#                 handle.set_visible(True)
-#             else:
-#                 handle.set_visible(False)
-#         self.fig.canvas.draw()
-# 
-#     def show(self):
-#         plt.show()
 
 class RangeToolsPanel(wx.Panel):
     '''
