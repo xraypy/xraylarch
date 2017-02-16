@@ -19,11 +19,11 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
-from larch_plugins.xrd.XRDCalc import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
-                                       xy_file_reader,generate_hkl,instrumental_fit_uvw,
-                                       peakfinder,peaklocater,peakfitter,peakfilter)
-from larch_plugins.xrd.xrd_bgr import xrd_background
+from larch_plugins.cifdb import cifDB,QSTEP,QMIN
+from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
+                               xy_file_reader,generate_hkl,instrumental_fit_uvw,
+                               peakfinder,peaklocater,peakfitter,peakfilter,
+                               xrd_background)
 
 HAS_pyFAI = False
 try:
@@ -3042,9 +3042,21 @@ class XRDSearchGUI(wx.Dialog):
 #########################################################################
     def onChemistry(self,event=None):
         print('Will eventually show Periodic Table...')
+        dlg = PeriodicTableSearch(self)
+   
+        if dlg.ShowModal() == wx.ID_OK:
+            pass
+        dlg.Destroy()        
+        
+        
 #########################################################################
     def onSymmetry(self,event=None):
-        XRDSymmetrySearch()
+        
+        dlg = XRDSymmetrySearch(self)
+        if dlg.ShowModal() == wx.ID_OK:
+            pass
+        dlg.Destroy()
+        
 #########################################################################
     def onReset(self,event=None):
         self.Mineral.Clear()
@@ -3053,13 +3065,34 @@ class XRDSearchGUI(wx.Dialog):
         self.Symmetry.Clear()
         self.Search.Clear()
 #########################################################################            
+class PeriodicTableSearch(wx.Dialog):
+
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title='Periodic Table of Elements')
+        
+        ## this eventually to file header - do not belong here but works.
+        ## mkak 2017.02.16
+        from larch_plugins.wx import PeriodicTablePanel
+        
+        panel = wx.Panel(self)
+        ptable = PeriodicTablePanel(panel,title='Select Element(s)')
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(ptable, flag=wx.ALL, border=20)
+#         sizer.Add(ptable)
+        pack(panel, sizer)
+
+
+
+#########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
     """"""
 
-    def __init__(self):
+    def __init__(self,parent):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
+        dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry',size=(460, 440))
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
