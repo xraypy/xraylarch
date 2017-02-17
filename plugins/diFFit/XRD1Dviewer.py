@@ -19,11 +19,11 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
-from larch_plugins.xrd.XRDCalc import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
-                                       xy_file_reader,generate_hkl,instrumental_fit_uvw,
-                                       peakfinder,peaklocater,peakfitter,peakfilter)
-from larch_plugins.xrd.xrd_bgr import xrd_background
+from larch_plugins.cifdb import cifDB,QSTEP,QMIN
+from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
+                               xy_file_reader,generate_hkl,instrumental_fit_uvw,
+                               peakfinder,peaklocater,peakfitter,peakfilter,
+                               xrd_background)
 
 HAS_pyFAI = False
 try:
@@ -1012,7 +1012,6 @@ class Fitting1DXRD(BasePanel):
         self.find_peaks(filter=filter)    
         
         if self.ipeaks is not None:
-            self.dbgpl.btn_srch.Enable()
             self.dbgpl.owner.val_gdnss.Enable()
             self.dbgpl.btn_mtch.Enable()
 
@@ -1020,7 +1019,6 @@ class Fitting1DXRD(BasePanel):
         
         self.remove_all_peaks()
         
-        self.dbgpl.btn_srch.Disable()
         self.dbgpl.owner.val_gdnss.Disable()
         self.dbgpl.btn_mtch.Disable()
 
@@ -1329,9 +1327,19 @@ class Fitting1DXRD(BasePanel):
                print('Failed to import file as database: %s' % path)
 
 
-    def onSettings(self,event=None):
-        
-        self.database_settings()
+    def filter_database(self,event=None):
+
+        myDlg = XRDSearchGUI()
+
+        filter = False
+        if myDlg.ShowModal() == wx.ID_OK:
+            self.elem_include = myDlg.included
+            self.elem_exclude = myDlg.excluded
+            filter = True
+        myDlg.Destroy()
+
+        if filter == True:
+            self.owner.cifdatabase.search_database(elements=self.elem_include)
 
     def onMatch(self,event=None):
         
@@ -1343,21 +1351,6 @@ class Fitting1DXRD(BasePanel):
         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
         db_thread.join()
 
-    def database_settings(self,event=None):
-
-        myDlg = XRDSearchGUI()
-        
-        fit = False
-        if myDlg.ShowModal() == wx.ID_OK:
-#             self.exponent = int(myDlg.val_exp.GetValue())
-#             self.compress = int(myDlg.val_comp.GetValue())
-#             self.width    = int(myDlg.val_wid.GetValue())
-            fit = True
-        myDlg.Destroy()
-
-        if fit:
-            self.background_fit()
-            
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
                        data=None,ipks=None,cifdatabase=None):
         '''
@@ -1614,7 +1607,7 @@ class PeakOptions(wx.Dialog):
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
         hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
-        self.okBtn = wx.Button(self.panel, wx.ID_OK     )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK     , label='Find peaks')
         canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
 
         hlpBtn.Bind(wx.EVT_BUTTON, lambda(evt): wx.TipWindow(
@@ -1896,16 +1889,8 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.owner.write_message
         
-
-        ## Set defaults for plotting  
-#         self.plot1D.set_ylabel(self.ylabel)
-#         self.plot1D.set_xlabel(self.xlabel)
         self.plot1D.cursor_mode = 'zoom'
   
-        ## trying to get this functionality into our gui
-        ## mkak 2016.11.10      
-#         interactive_legend().show()
-
     def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
         
@@ -2276,83 +2261,6 @@ class Viewer1DXRD(wx.Panel):
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
 
-#import matplotlib.pyplot as plt
-# def interactive_legend(ax=None):
-#     if ax is None:
-#         ax = plt.gca()
-#     if ax.legend_ is None:
-#         ax.legend()
-# 
-#     return InteractiveLegend(ax.legend_)
-# 
-# class InteractiveLegend(object):
-#     def __init__(self, legend):
-#         self.legend = legend
-#         self.fig = legend.axes.figure
-# 
-#         self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
-#         self._setup_connections()
-# 
-#         self.update()
-# 
-#     def _setup_connections(self):
-#         for artist in self.legend.texts + self.legend.legendHandles:
-#             artist.set_picker(10) # 10 points tolerance
-# 
-#         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
-#         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-# 
-#     def _build_lookups(self, legend):
-#         labels = [t.get_text() for t in legend.texts]
-#         handles = legend.legendHandles
-#         label2handle = dict(zip(labels, handles))
-#         handle2text = dict(zip(handles, legend.texts))
-# 
-#         lookup_artist = {}
-#         lookup_handle = {}
-#         for artist in legend.axes.get_children():
-#             if artist.get_label() in labels:
-#                 handle = label2handle[artist.get_label()]
-#                 lookup_handle[artist] = handle
-#                 lookup_artist[handle] = artist
-#                 lookup_artist[handle2text[handle]] = artist
-# 
-#         lookup_handle.update(zip(handles, handles))
-#         lookup_handle.update(zip(legend.texts, handles))
-# 
-#         return lookup_artist, lookup_handle
-# 
-#     def on_pick(self,event=None):
-#         handle = event.artist
-#         if handle in self.lookup_artist:
-#             artist = self.lookup_artist[handle]
-#             artist.set_visible(not artist.get_visible())
-#             self.update()
-# 
-#     def on_click(self,event=None):
-#         if event.button == 3:
-#             visible = False
-#         elif event.button == 2:
-#             visible = True
-#         else:
-#             return
-# 
-#         for artist in self.lookup_artist.values():
-#             artist.set_visible(visible)
-#         self.update()
-# 
-#     def update(self):
-#         for artist in self.lookup_artist.values():
-#             handle = self.lookup_handle[artist]
-#             if artist.get_visible():
-#                 handle.set_visible(True)
-#             else:
-#                 handle.set_visible(False)
-#         self.fig.canvas.draw()
-# 
-#     def show(self):
-#         plt.show()
-
 class RangeToolsPanel(wx.Panel):
     '''
     Panel for housing range tools in fitting panel
@@ -2597,8 +2505,7 @@ class DatabasePanel(wx.Panel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_db = wx.Button(self,label='Select database file')
-        
-        self.btn_srch = wx.Button(self,label='Search parameters')
+        btn_srch = wx.Button(self,label='Filter database')
 
         ttl_gdnss = wx.StaticText(self, label='min. fraction')
         self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
@@ -2611,18 +2518,17 @@ class DatabasePanel(wx.Panel):
         btn_debug = wx.Button(self,label='Debugging peak test')
         
         btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
-        self.btn_srch.Bind(wx.EVT_BUTTON,   self.owner.onSettings)
+        btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        btn_debug.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+        btn_debug.Bind(wx.EVT_BUTTON,       self.owner.onMatch)
         
-        vbox.Add(btn_db,        flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_srch, flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_debug,     flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_debug,       flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
-        self.btn_srch.Disable()
         self.owner.val_gdnss.Disable()
         self.btn_mtch.Disable()
         
@@ -2959,7 +2865,7 @@ class XRDSearchGUI(wx.Dialog):
     def __init__(self):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(500, 440))
+        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search')
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
@@ -3026,14 +2932,62 @@ class XRDSearchGUI(wx.Dialog):
         self.sizer.Add(okBtn,         pos = (11,4)                )
         
         self.panel.SetSizer(self.sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
 
         self.Show()
+        
+        self.included = []
+        self.excluded = []        
+        
 #########################################################################
     def onChemistry(self,event=None):
-        print('Will eventually show Periodic Table...')
+        
+        dlg = PeriodicTableSearch(self)
+   
+        update = False
+        if dlg.ShowModal() == wx.ID_OK:
+            self.included = dlg.element_include
+            self.excluded = dlg.element_exclude
+            count = dlg.cnt_elem
+            update = True
+        dlg.Destroy()
+
+        if update:
+            str = ''
+
+            for i,elem in enumerate(self.included):
+                if i==0:
+                    str = '(%s' % elem
+                else:
+                    str = '%s,%s' % (str,elem)
+            if len(self.included) > 0:
+                str = '%s) ' % str 
+
+            if len(self.excluded) > 0:
+                str = '%s- ' % str
+            # if all else excluded, just use - (don't list)
+            if count != (len(self.included)+len(self.excluded)): 
+                for i,elem in enumerate(self.excluded):
+                    if i==0:
+                        str = '%s(%s' % (str,elem)
+                    else:
+                        str = '%s,%s' % (str,elem)
+                if len(self.excluded) > 0:
+                    str = '%s)' % str 
+             
+            self.Chemistry.SetValue(str)
+        
+        
 #########################################################################
     def onSymmetry(self,event=None):
-        XRDSymmetrySearch()
+        
+        dlg = XRDSymmetrySearch(self)
+        if dlg.ShowModal() == wx.ID_OK:
+            pass
+        dlg.Destroy()
+        
 #########################################################################
     def onReset(self,event=None):
         self.Mineral.Clear()
@@ -3042,13 +2996,87 @@ class XRDSearchGUI(wx.Dialog):
         self.Symmetry.Clear()
         self.Search.Clear()
 #########################################################################            
+class PeriodicTableSearch(wx.Dialog):
+
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title='Periodic Table of Elements')
+        
+        ## this eventually to file header - do not belong here but works.
+        ## mkak 2017.02.16
+        from larch_plugins.wx import PeriodicTablePanel
+        
+        panel = wx.Panel(self)
+        self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',
+                                         onselect=self.onSelectElement,
+                                         highlight=True)
+
+
+        okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'   )
+        exBtn  = wx.Button(panel,               label='Exclude all others' )
+        rstBtn = wx.Button(panel,               label='Clear'              )
+        canBtn = wx.Button(panel, wx.ID_CANCEL                             )
+
+        ## Bind buttons for functionality
+        exBtn.Bind(wx.EVT_BUTTON,  self.onExclude )
+        rstBtn.Bind(wx.EVT_BUTTON, self.onClear )
+
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        main_sizer.Add(self.ptable, flag=wx.ALL, border=20)
+
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn_sizer.Add(okBtn,  flag=wx.RIGHT, border=5)
+        btn_sizer.Add(exBtn,  flag=wx.RIGHT, border=5)
+        btn_sizer.Add(rstBtn, flag=wx.RIGHT, border=5)
+        btn_sizer.Add(canBtn, flag=wx.RIGHT, border=5)
+        
+        main_sizer.Add(btn_sizer, flag=wx.ALL, border=20)
+
+        pack(panel, main_sizer)
+        
+        ix,iy = panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+        
+        self.element_include = []
+        self.element_exclude = []
+        
+        self.cnt_elem = len(self.ptable.syms)
+
+        
+    def onSelectElement(self,elem=None, event=None):
+    
+        if elem not in self.element_include and elem not in self.element_exclude:
+            self.element_include += [elem]    
+        elif elem in self.element_include:
+            self.element_exclude += [elem]
+            i = self.element_include.index(elem)
+            self.element_include.pop(i)
+        elif elem in self.element_exclude:
+            i = self.element_exclude.index(elem)
+            self.element_exclude.pop(i)
+        
+    def onClear(self,event=None):
+    
+        self.element_include = []
+        self.element_exclude = []
+        self.ptable.onclear()
+
+    def onExclude(self,event=None):
+    
+        for elem in self.ptable.syms:
+            if elem not in self.element_include and elem not in self.element_exclude:
+                self.element_exclude += [elem]
+        self.ptable.onexclude(selected=self.element_include)
+
+#########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
     """"""
 
-    def __init__(self):
+    def __init__(self,parent):
     
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
+        dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry')
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
@@ -3148,6 +3176,9 @@ class XRDSymmetrySearch(wx.Dialog):
         self.sizer.Add(okBtn,         pos = (11,4)  )
 
         self.panel.SetSizer(self.sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
 
         self.Show()
 #########################################################################

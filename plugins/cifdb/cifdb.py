@@ -1175,7 +1175,7 @@ class cifDB(object):
             print 'first',self.compref.select(qry_atno).execute().fetchone()
             print 'now',np.shape(complist)
 
-    def search_database(self,elements=[]):
+    def search_database(self,elements=[],verbose=False):
                         #,authors=[],space_group=[],
                         #author=[],verbose=False):
 
@@ -1235,12 +1235,10 @@ class cifDB(object):
 # #                 print '%i,%i\t%s' % (i,row.amcsd_id,row.mineral_name)
 # 
 # 
-#         usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
-#                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.compref.c.z == self.elemtbl.c.z)
-#            
-#         print '\nelements'
-#         print len(usr_qry.all()),
+        usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref,self.nametbl)\
+                      .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.compref.c.z == self.elemtbl.c.z)\
+                      .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)
 
         ##  Searches composition of database entries
         if len(elements) > 0:
@@ -1265,12 +1263,10 @@ class cifDB(object):
                                  ## would need this to change if only need, e.g., 3 of 4
                                  ## mkak 2017.02.15
 
-#         print len(usr_qry.all())
-
-        print '\n --- MATCHES --- '
-        print
-        print usr_qry        
-        print
+        if len(usr_qry.all()) > 0:
+            print '\n --- MATCHES --- '
+        else:
+            print '\n no matches. '
         for i,row in enumerate(usr_qry.all()):
             if verbose:
                 self.amcsd_search(row.amcsd_id)
