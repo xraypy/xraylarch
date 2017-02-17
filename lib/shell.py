@@ -4,23 +4,38 @@ import cmd
 import os
 import sys
 import numpy
+import matplotlib
 
+from .symboltable import SymbolTable
 from .interpreter import Interpreter
 from .site_config import history_file, show_site_config
 from .version import __version__, __date__, make_banner
 from .inputText import InputText
 
+HAS_READLINE = False
 try:
     import readline
     HAS_READLINE = True
 except ImportError:
     HAS_READLINE = False
 
+HAS_WXPYTHON = False
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    HAS_WXPYTHON = False
+
+
 class shell(cmd.Cmd):
     ps1    = "larch> "
     ps2    = ".....> "
     def __init__(self,  completekey='tab', debug=False, quiet=False,
-                 stdin=None, stdout=None, banner_msg=None, maxhist=5000):
+                 stdin=None, stdout=None, banner_msg=None,
+                 maxhist=5000, with_wx=False, with_plugins=True):
+
+        with_wx = HAS_WXPYTHON and with_wx
+
         self.maxhist = maxhist
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
@@ -42,9 +57,34 @@ class shell(cmd.Cmd):
 
         if banner_msg is None:
             banner_msg = make_banner()
-        self.larch  = Interpreter()
-        self.input  = InputText(_larch=self.larch)
+
+        if with_wx:
+            matplotlib.use('WXAgg')
+
+        self.larch = Interpreter(with_plugins=with_plugins)
+
+        if with_wx:
+            symtable = self.larch.symtable
+
+            
+            app = wx.App(redirect=False, clearSigInt=False)
+            symtable.set_symbol('_sys.wx.wxapp', app)
+            symtable.set_symbol('_sys.wx.force_wxupdate', False)
+            symtable.set_symbol('_sys.wx.parent', None)
+
+            def onCtrlC(*args, **kws): return 0
+
+            from .wxlib import inputhook
+            symtable.set_symbol('_sys.wx.inputhook', inputhook)
+            symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
+            inputhook.ON_INTERRUPT = onCtrlC
+            inputhook.WXLARCH_SYM = symtable
+
+        self.input = InputText(_larch=self.larch)
         self.prompt = self.ps1
+
+        if with_wx:
+            matplotlib.use('WXAgg')
 
         writer = self.larch.writer
         if not quiet:

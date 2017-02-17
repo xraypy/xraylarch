@@ -14,7 +14,6 @@ import time
 import signal
 from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
-import larch
 
 import wx
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
