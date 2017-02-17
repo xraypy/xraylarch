@@ -1366,25 +1366,15 @@ class Fitting1DXRD(BasePanel):
         if ipks is None:
             ipks = self.ipeaks
     
-        try:
-            q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
-            minq = np.min(data[0])
-            maxq = np.max(data[0])
-        except:
-            print('\n**** DEBUGGING OPTION - NOT FROM FITTER *****')
-            q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-            minq = 1.75
-            maxq = 5.25            
+        q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
+        minq = np.min(data[0])
+        maxq = np.max(data[0])
+          
 
         try:
             minfracq = float(self.val_gdnss.GetValue())
         except:
             minfracq = fracq
-
-        ## error checking print-out. to be removed.
-        ## mkak 2017.02.03
-        print('\nPeaks for matching:')
-        print(' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq)
 
         qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
@@ -1406,17 +1396,7 @@ class Fitting1DXRD(BasePanel):
                 p_ids += [pk_id]
 
 
-        ## error checking timing and print-out. to be removed.
-        ## mkak 2017.02.03
-        a = time.time()
-
         matches,count = cifdatabase.find_by_q(peaks)
-
-        b = time.time()
-        if (b-a) > 1:
-            print('\nFirst pass: %d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
-        else:
-            print('\nFirst pass: %d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
 
         goodness = np.zeros(np.shape(count))       
 
@@ -1424,33 +1404,17 @@ class Fitting1DXRD(BasePanel):
             goodness[i] = cifdatabase.fraction_in_range(amcsd,cnt,
                                                                 qmin=minq,
                                                                 qmax=maxq)
-
         try:
             matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
         except:
             matches,count,goodness = [],[],[]
 
-        ## error checking timing and print-out. to be removed.
-        ## mkak 2017.02.03
-        c = time.time()
-        if (c-a) > 1:
-            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
-            print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
-        elif (c-a) > 120:
-            print('\n%Final: d matched pattern(s) for goodness %0.2f in %0.2f min' % (len(matches),minfraq,((c-a)/60)))
-            print('\t(%0.3f s and %0.2f min)' % (((b-a)* 1e0),((c-b)/60)))
-        
-        else:
-            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f ms' % (len(matches),minfracq,((c-a)* 1e3)))
-            print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
                 str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
                       self.owner.cifdatabase.find_mineral_name(amcsd),goodness[i],count[i],count[i]/goodness[i])
-                print(str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
-
-            
-        print
+                print(str)
+                print(self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
 
 
 
@@ -2515,18 +2479,15 @@ class DatabasePanel(wx.Panel):
         self.owner.val_gdnss.SetValue('0.85')
 
         self.btn_mtch = wx.Button(self,label='Find matches')
-        btn_debug = wx.Button(self,label='Debugging peak test')
         
         btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
         btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        btn_debug.Bind(wx.EVT_BUTTON,       self.owner.onMatch)
         
         vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
         vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
         vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
         vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_debug,       flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
         self.owner.val_gdnss.Disable()
