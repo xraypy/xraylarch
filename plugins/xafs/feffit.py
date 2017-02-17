@@ -12,7 +12,7 @@ from scipy.optimize import leastsq as scipy_leastsq
 from larch import (Group, Parameter, isParameter, Minimizer,
                    ValidateLarchPlugin, isNamedClass)
 
-from larch_plugins.math import index_of, realimag, complex_phase
+from larch.utils import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
                                 set_xafsGroup, FeffPathGroup, _ff2chi)
 

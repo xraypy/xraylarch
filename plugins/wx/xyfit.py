@@ -25,6 +25,8 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
 
 
 from larch import Interpreter, Group
+from larch.utils import index_of, savitzky_golay, smooth, boxcar
+
 from larch.larchlib import read_workdir, save_workdir
 
 from larch.wxlib import (LarchFrame, SelectColumnFrame, ReportFrame,
@@ -33,8 +35,6 @@ from larch.wxlib import (LarchFrame, SelectColumnFrame, ReportFrame,
 from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
-from larch_plugins.math import index_of
-from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
 
 from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
 from larch_plugins.wx.icons import get_icon

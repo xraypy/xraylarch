@@ -7,8 +7,7 @@ from larch import (Group, Parameter, Minimizer, Make_CallArgs,
                    ValidateLarchPlugin, parse_group_args, isgroup)
 
 # import other plugins from std, math, and xafs modules...
-from larch_plugins.math import (index_of, index_nearest,
-                                realimag, remove_dups)
+from larch.utils import (index_of, index_nearest, realimag, remove_dups)
 
 from larch_plugins.xafs import (ETOK, set_xafsGroup, ftwindow, xftf_fast,
                                 find_e0, pre_edge)

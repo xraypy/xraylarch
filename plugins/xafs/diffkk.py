@@ -5,9 +5,10 @@ from scipy.special import erfc
 
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter, Minimizer)
+from larch.utils import interp
 
 from larch_plugins.std  import show
-from larch_plugins.math import _interp
+
 from larch_plugins.xray import xray_edge, xray_line
 from larch_plugins.xafs import mback
 try:
@@ -277,7 +278,7 @@ class diffKKGroup(Group):
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
         npts = int(self.energy[-1] - self.energy[0]) + (int(self.energy[-1] - self.energy[0])%2)
         self.grid = np.linspace(self.energy[0], self.energy[-1], npts)
-        fpp = _interp(self.energy, self.f2-self.fpp, self.grid, fill_value=0.0)
+        fpp = interp(self.energy, self.f2-self.fpp, self.grid, fill_value=0.0)
 
         ## do difference KK
         if repr(how).startswith('sca'):
@@ -286,7 +287,7 @@ class diffKKGroup(Group):
             fp = kkmclr(self.grid, fpp)
 
         ## interpolate back to original grid and add diffKK result to f1 to make fp array
-        self.fp = self.f1 + _interp(self.grid, fp, self.energy, fill_value=0.0)
+        self.fp = self.f1 + interp(self.grid, fp, self.energy, fill_value=0.0)
 
         ## clean up group
         #for att in ('normalization_function', 'weight', 'grid'):

@@ -18,6 +18,7 @@ import lmfit.models as lm_models
 from lmfit import Parameter, Parameters
 
 from larch import Group
+from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
@@ -25,7 +26,6 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
 
 from larch.fitting import fit_report
 from larch_plugins.std import group2dict
-from larch_plugins.math import index_of
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
 

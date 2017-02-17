@@ -2,10 +2,9 @@
 """
 Some common math utilities
 """
-from larch.utils.mathutils import (linregress, polyfit, realimag, as_ndarray,
-                                   complex_phase, deriv, interp, interp1d,
-                                   remove_dups, remove_nans2, index_of,
-                                   index_nearest)
+from larch.utils import (linregress, polyfit, realimag, as_ndarray,
+                         complex_phase, deriv, interp, interp1d, remove_dups,
+                         remove_nans2, index_of, index_nearest)
 
 def registerLarchPlugin():
     return ('_math', dict(linregress=linregress,

@@ -14,7 +14,8 @@ except ImportError:
 from larch_plugins.xrf import isLarchMCAGroup
 from larch_plugins.xrf import split_roiname
 
-from larch_plugins.math import index_of, linregress, fit_peak
+from larch.utils import index_of, linregress
+from larch_plugins.math import fit_peak
 from larch_plugins.xray import xray_line, xray_lines
 
 def xrf_calib_fitrois(mca, _larch=None):

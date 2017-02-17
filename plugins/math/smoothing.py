@@ -2,7 +2,7 @@
 """
 Smoothing routines
 """
-from larch.utils.mathutils import savitzky_golay, smooth, boxcar
+from larch.utils import savitzky_golay, smooth, boxcar
 
 def registerLarchPlugin():
     return ('_math', dict(savitzky_golay=savitzky_golay,
