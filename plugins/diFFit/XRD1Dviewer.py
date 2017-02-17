@@ -3046,12 +3046,10 @@ class PeriodicTableSearch(wx.Dialog):
     
         if elem not in self.element_include and elem not in self.element_exclude:
             self.element_include += [elem]    
-            print('Element %s selected!' % elem)        
         elif elem in self.element_include:
             self.element_exclude += [elem]
             i = self.element_include.index(elem)
             self.element_include.pop(i)
-            print('Element %s deselected.' % elem)
         elif elem in self.element_exclude:
             i = self.element_exclude.index(elem)
             self.element_exclude.pop(i)

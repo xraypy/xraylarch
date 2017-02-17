@@ -65,12 +65,14 @@ class PeriodicTablePanel(wx.Panel):
              'einsteinium', 'fermium', 'mendelevium', 'nobelium',
              'lawrencium']
 
-    FRAME_BG = (253, 253, 250)
-    TITLE_BG = (253, 253, 250)
-    REG_BG   = (253, 253, 250)
-    REG_FG   = ( 20,  20, 120)
-    SEL_BG   = (255, 255, 135)
-    SEL_FG   = (100,   0,   0)
+    FRAME_BG = (253, 253, 250) ## light grey
+    TITLE_BG = (253, 253, 250) ## light grey
+    REG_BG   = (253, 253, 250) ## light grey
+    REG_FG   = ( 20,  20, 120) ## blue
+    SEL_BG   = (255, 255, 135) ## yellow
+    SEL_FG   = (100,   0,   0) ## dark red
+    NEG_BG   = (253, 100,   0) ## light red
+    NEG_FG   = (  0,   0,   0) ## black
 
     def __init__(self, parent, title='Select Element',
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
@@ -141,32 +143,73 @@ class PeriodicTablePanel(wx.Panel):
                     self.onclick(label=newlabel)
         event.Skip()
 
-    def onclick(self, event=None, label=None):
-        textwid = None
-        if (label is None and event is not None and
-            event.Id in self.wids):
-                textwid = self.wids[event.Id]
-                label = textwid.GetLabel()
-        if label is None:
-            return
-        if textwid is None and label is not None:
-            textwid = self.ctrls[label]
+    def onclick(self, event=None, label=None, highlight=True):
 
-        textwid.SetForegroundColour(self.SEL_FG)
-        textwid.SetBackgroundColour(self.SEL_BG)
-        if self.selected is not None and self.selected != textwid:
-            self.selected.SetForegroundColour(self.REG_FG)
-            self.selected.SetBackgroundColour(self.REG_BG)
+#     REG_BG   = (253, 253, 250) ## light grey
+#     REG_FG   = ( 20,  20, 120) ## blue
+#     SEL_BG   = (255, 255, 135) ## yellow
+#     SEL_FG   = (100,   0,   0) ## dark red
+#     NEG_BG   = (253, 100,   0) ## light red
+#     NEG_FG   = (  0,   0,   0) ## black
 
-        self.selected = textwid
-        znum = self.syms.index(label)
-        name = self.names[znum]
+        if highlight:
+            textwid = None
+            if (label is None and event is not None and
+                event.Id in self.wids):
+                    textwid = self.wids[event.Id]
+                    label = textwid.GetLabel()
+            if label is None:
+                return
+            if textwid is None and label is not None:
+                textwid = self.ctrls[label]
+            
+            if textwid.GetBackgroundColour() == self.REG_BG:
+                textwid.SetForegroundColour(self.SEL_FG)
+                textwid.SetBackgroundColour(self.SEL_BG)
+            elif textwid.GetBackgroundColour() == self.SEL_BG:
+                textwid.SetForegroundColour(self.NEG_FG)
+                textwid.SetBackgroundColour(self.NEG_BG)
+            elif textwid.GetBackgroundColour() == self.NEG_BG:
+                textwid.SetForegroundColour(self.REG_FG)
+                textwid.SetBackgroundColour(self.REG_BG)
+                        
+            znum = self.syms.index(label)
+            name = self.names[znum]
 
-        self.tsym.SetLabel(label)
-        self.title.SetLabel(name)
-        self.tznum.SetLabel("{:d}".format(znum+1))
-        if self.onselect is not None:
-            self.onselect(elem=label, event=event)
+            self.tsym.SetLabel(label)
+            self.title.SetLabel(name)
+            self.tznum.SetLabel("{:d}".format(znum+1))
+            if self.onselect is not None:
+                self.onselect(elem=label, event=event)
+
+
+        else:
+        
+            textwid = None
+            if (label is None and event is not None and
+                event.Id in self.wids):
+                    textwid = self.wids[event.Id]
+                    label = textwid.GetLabel()
+            if label is None:
+                return
+            if textwid is None and label is not None:
+                textwid = self.ctrls[label]
+
+            textwid.SetForegroundColour(self.SEL_FG)
+            textwid.SetBackgroundColour(self.SEL_BG)
+            if self.selected is not None and self.selected != textwid:
+                self.selected.SetForegroundColour(self.REG_FG)
+                self.selected.SetBackgroundColour(self.REG_BG)
+
+            self.selected = textwid
+            znum = self.syms.index(label)
+            name = self.names[znum]
+
+            self.tsym.SetLabel(label)
+            self.title.SetLabel(name)
+            self.tznum.SetLabel("{:d}".format(znum+1))
+            if self.onselect is not None:
+                self.onselect(elem=label, event=event)
         self.Refresh()
 
     def BuildPanel(self):
