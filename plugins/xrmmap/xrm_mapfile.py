@@ -253,9 +253,6 @@ class GSEXRM_MapRow:
                 except:
                     FLAGxrd = False
                     print 'Cannot read XRD files.'
-#             xrd_reader = read_xrd_netcdf
-#             if not xrdfile.endswith('nc'):
-#                 xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -1583,7 +1580,17 @@ class GSEXRM_MapFile(object):
                 "cannot read Master file from '%s'" % self.masterfile)
 
         self.master_header = header
-        self.rowdata = rows
+        # carefully read rows to avoid repeated rows due to bad collection 
+        self.rowdata = []
+        _yl, _xl = None, None
+        for row in rows:
+            yval, xrff = row[0], row[1]
+            il = len(self.rowdata)-1
+            if il > -1:
+                _yl, _xl = self.rowdata[il][0], self.rowdata[il][1]
+
+            if yval != _yl and xrff != _xl:  # skip repeated rows in master file
+                self.rowdata.append(row)
         if self.flag_xrd:
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
             for i,addxrd in enumerate(xrd_files):
