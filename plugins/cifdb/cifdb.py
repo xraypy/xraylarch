@@ -1263,7 +1263,10 @@ class cifDB(object):
                                  ## would need this to change if only need, e.g., 3 of 4
                                  ## mkak 2017.02.15
 
-        print '\n --- MATCHES --- '
+        if len(usr_qry.all()) > 0:
+            print '\n --- MATCHES --- '
+        else:
+            print '\n no matches. '
         for i,row in enumerate(usr_qry.all()):
             if verbose:
                 self.amcsd_search(row.amcsd_id)

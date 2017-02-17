@@ -3007,7 +3007,9 @@ class PeriodicTableSearch(wx.Dialog):
         from larch_plugins.wx import PeriodicTablePanel
         
         panel = wx.Panel(self)
-        self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',onselect=self.new_onselect)
+        self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',
+                                         onselect=self.onSelectElement,
+                                         highlight=True)
 
 
         okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'   )
@@ -3042,7 +3044,7 @@ class PeriodicTableSearch(wx.Dialog):
         self.cnt_elem = len(self.ptable.syms)
 
         
-    def new_onselect(self,elem=None, event=None):
+    def onSelectElement(self,elem=None, event=None):
     
         if elem not in self.element_include and elem not in self.element_exclude:
             self.element_include += [elem]    
@@ -3058,12 +3060,14 @@ class PeriodicTableSearch(wx.Dialog):
     
         self.element_include = []
         self.element_exclude = []
+        self.ptable.onclear()
 
     def onExclude(self,event=None):
     
         for elem in self.ptable.syms:
             if elem not in self.element_include and elem not in self.element_exclude:
-                self.element_exclude += [elem]                
+                self.element_exclude += [elem]
+        self.ptable.onexclude(selected=self.element_include)
 
 #########################################################################            
 class XRDSymmetrySearch(wx.Dialog):

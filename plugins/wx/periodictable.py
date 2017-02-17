@@ -74,7 +74,7 @@ class PeriodicTablePanel(wx.Panel):
     NEG_BG   = (253, 100,   0) ## light red
     NEG_FG   = (  0,   0,   0) ## black
 
-    def __init__(self, parent, title='Select Element',
+    def __init__(self, parent, title='Select Element', highlight=None,
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
         wx.Panel.__init__(self, parent, -1, size=size, name='PeriodicTable', **kws)
         self.parent = parent
@@ -84,6 +84,7 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
+        self.highlight = highlight
         self.titlefont    = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
         self.elemfont     = wx.Font( 9,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
         self.subtitlefont = wx.Font( 7,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
@@ -143,16 +144,24 @@ class PeriodicTablePanel(wx.Panel):
                     self.onclick(label=newlabel)
         event.Skip()
 
-    def onclick(self, event=None, label=None, highlight=True):
+    def onexclude(self, event=None, selected=[]):
 
-#     REG_BG   = (253, 253, 250) ## light grey
-#     REG_FG   = ( 20,  20, 120) ## blue
-#     SEL_BG   = (255, 255, 135) ## yellow
-#     SEL_FG   = (100,   0,   0) ## dark red
-#     NEG_BG   = (253, 100,   0) ## light red
-#     NEG_FG   = (  0,   0,   0) ## black
+        for name in self.ctrls:
+            if name not in selected:
+                textwid = self.ctrls[name]
+                textwid.SetForegroundColour(self.NEG_FG)
+                textwid.SetBackgroundColour(self.NEG_BG)
 
-        if highlight:
+    def onclear(self, event=None):
+
+        for name in self.ctrls:
+            textwid = self.ctrls[name]
+            textwid.SetForegroundColour(self.REG_FG)
+            textwid.SetBackgroundColour(self.REG_BG)
+
+    def onclick(self, event=None, label=None):
+
+        if self.highlight:
             textwid = None
             if (label is None and event is not None and
                 event.Id in self.wids):
