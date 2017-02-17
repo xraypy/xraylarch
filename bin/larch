@@ -57,15 +57,6 @@ if options.debug:
 else:
     import larch
 
-# can we, and should we, use wx?
-HAS_WX = False
-if not options.nowx:
-    try:
-        import wx
-        HAS_WX = True
-    except ImportError:
-        HAS_WX = False
-
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
@@ -73,22 +64,9 @@ if options.server_mode:
     server.run()
 
 else:
-    shell = larch.shell(quiet=options.quiet)
-
-    def onCtrlC(*args, **kws):
-        return 0
-
-    # use inputhook to enable wx
-    if HAS_WX:
-        from larch.wxlib import inputhook
-        app = wx.App(redirect=False, clearSigInt=False)
-        shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
-        shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
-        shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-        shell.larch.symtable.set_symbol('_sys.wx.wxapp', app)
-        shell.larch.symtable.set_symbol('_sys.wx.parent',None)
-        inputhook.ON_INTERRUPT = onCtrlC
-        inputhook.WXLARCH_SYM = shell.larch.symtable
+    shell = larch.shell(quiet=options.quiet,
+                        with_wx=(not options.nowx),
+                        with_plugins=True)
 
     # execute scripts listed on command-line
     if len(args)>0:
