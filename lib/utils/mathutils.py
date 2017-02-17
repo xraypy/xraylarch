@@ -36,9 +36,9 @@ def index_of(array, value):
     -------
     integer for index in array at or below value
     """
-    if value < min(arrval):
+    if value < min(array):
         return 0
-    return max(np.where(arrval<=value)[0])
+    return max(np.where(array<=value)[0])
 
 def index_nearest(array, value):
     """
@@ -58,7 +58,7 @@ def index_nearest(array, value):
     """
     return np.abs(array-value).argmin()
 
-def deriv(arr, **kws):
+def deriv(arr):
     return np.gradient(as_ndarray(arr))
 deriv.__doc__ = np.gradient.__doc__
 
@@ -97,7 +97,9 @@ def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
     see also: interp
 
     """
-    kwargs  = {'kind': kind, 'fill_value': fill_value,
+    if '_larch' in kws:
+        kws.pop('_larch')
+    kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
                'copy': False, 'bounds_error': False}
     kwargs.update(kws)
     return  scipy_interp1d(x, y, **kwargs)(xnew)
@@ -121,11 +123,7 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
 
     see also: interp1d
     """
-    kind = kind.lower()
-    kwargs  = {'kind': kind, 'fill_value': fill_value,
-               'copy': False, 'bounds_error': False}
-    kwargs.update(kws)
-    out = interp1d(x, y, **kwargs)(xnew)
+    out = interp1d(x, y, xnew, kind=kind, fill_value=fill_value, **kws)
 
     below = np.where(xnew<x[0])[0]
     above = np.where(xnew>x[-1])[0]

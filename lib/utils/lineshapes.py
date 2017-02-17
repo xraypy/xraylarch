@@ -4,8 +4,13 @@ Some common lineshapes and distribution functions
 """
 from numpy import (pi, log, exp, sqrt, arctan, cos)
 
-from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
-from ..fitting import param_value
+from scipy import special
+
+def param_value(val):
+    "get parameter value"
+    while hasattr(val, 'value'):
+        val = val.value
+    return val
 
 log2 = log(2)
 s2pi = sqrt(2*pi)
@@ -39,7 +44,7 @@ def voigt(x, cen=0, sigma=1, gamma=None):
     gamma = param_value(gamma)
 
     z = (x-cen + 1j*gamma)/ (sigma*s2)
-    return wofz(z).real / (sigma*s2pi)
+    return special.wofz(z).real / (sigma*s2pi)
 
 def pvoigt(x, cen=0, sigma=1, frac=0.5):
     """1 dimensional pseudo-voigt:
@@ -98,9 +103,9 @@ def hypermet(x, amplitude, center, sigma, step=0, tail=0, gamma=0.1):
 
     gaus = exp(-arg**2/2.0) / (s2pi*sigma)
 
-    step = step * erfc(arg/s2) / (2*center)
+    step = step * special.erfc(arg/s2) / (2*center)
 
-    tail = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/(s2*gamma))
+    tail = tail * exp(arg/gamma) * special.erfc(arg/s2 + 1.0/(s2*gamma))
     tail = tail / (2*sigma*gamma*exp(-1.0/(2*gamma**2)))
 
     return amplitude * (gaus + step + tail)
@@ -113,7 +118,8 @@ def pearson7(x, cen=0, sigma=1, expon=0.5):
     cen = param_value(cen)
     sigma = param_value(sigma)
     expon = param_value(expon)
-    scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*spi)
+    scale = special.gamma(expon) * sqrt((2**(1/expon) -1))
+    scale = scale / (special.gamma(expon-0.5)) / (sigma*spi)
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
 
 def breit_wigner(x, cen=0, sigma=1, q=1):
@@ -153,8 +159,8 @@ def students_t(x, cen=0, sigma=1):
 
     """
     s1  = (sigma+1)/2.0
-    denom = (sqrt(sigma*pi)*gamma(sigma/2))
-    return (1 + (x-cen)**2/sigma)**(-s1) * gamma(s1) / denom
+    denom = (sqrt(sigma*pi)*special.gamma(sigma/2))
+    return (1 + (x-cen)**2/sigma)**(-s1) * special.gamma(s1) / denom
 
 
 def exgaussian(x, cen=0, sigma=1.0, gamma=1.0):
@@ -168,7 +174,7 @@ def exgaussian(x, cen=0, sigma=1.0, gamma=1.0):
     gss = gamma*sigma*sigma
     arg1 = gamma*(cen +gss/2.0 - x)
     arg2 = (cen + gss - x)/s2
-    return (gamma/2) * exp(arg1) * erfc(arg2)
+    return (gamma/2) * exp(arg1) * special.erfc(arg2)
 
 def donaich(x, cen=0, sigma=1.0, gamma=0.0):
     """Doniach Sunjic asymmetric lineshape, used for photo-emission
@@ -195,5 +201,25 @@ def skewed_voigt(x, cen=0, sigma=1.0, gamma=None, skew=0.0):
 
     see http://en.wikipedia.org/wiki/Skew_normal_distribution
     """
-    beta = skew/(s2*sigma)
-    return (1 + erf(beta*(x-cen)))*voigt(x, cen=cen, sigma=sigma, gamma=gamma)
+    scale = 1.0 + special.erf((x-cen)*skew/(s2*sigma))
+    return scale*voigt(x, cen=cen, sigma=sigma, gamma=gamma)
+
+def erf(x):
+    """error function.  = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])"""
+    return special.erf(x)
+
+def erfc(x):
+    """complented error function.  = 1 - erf(x)"""
+    return special.erfc(x)
+
+def wofz(x):
+    """fadeeva function for complex argument. = exp(-x**2)*erfc(-i*x)"""
+    return special.wofz(x)
+
+def gamma(x):
+    """gamma function"""
+    return special.gamma(x)
+
+def gammaln(x):
+    """log of absolute value of gamma function"""
+    return special.gammaln(x)
