@@ -1013,14 +1013,14 @@ class Fitting1DXRD(BasePanel):
         
         if self.ipeaks is not None:
             self.dbgpl.owner.val_gdnss.Enable()
-            self.dbgpl.btn_mtch.Enable()
+            self.rfgpl.btn_mtch.Enable()
 
     def onRemoveAll(self,event=None,filter=False):
         
         self.remove_all_peaks()
         
         self.dbgpl.owner.val_gdnss.Disable()
-        self.dbgpl.btn_mtch.Disable()
+        self.rfgpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
 
@@ -2466,32 +2466,16 @@ class DatabasePanel(wx.Panel):
     
     def SearchMatchTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         btn_db = wx.Button(self,label='Select database file')
         btn_srch = wx.Button(self,label='Filter database')
 
-        ttl_gdnss = wx.StaticText(self, label='min. fraction')
-        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
-        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
-
-        self.owner.val_gdnss.SetValue('0.85')
-
-        self.btn_mtch = wx.Button(self,label='Find matches')
-        
         btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
         btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
-        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        
+
         vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
         vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
-        
-        ## until peaks are available to search
-        self.owner.val_gdnss.Disable()
-        self.btn_mtch.Disable()
+
         
         return vbox
         
@@ -2520,6 +2504,24 @@ class RefinementPanel(wx.Panel):
     
     def RefinementTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ttl_gdnss = wx.StaticText(self, label='min. fraction')
+        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
+        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
+
+        self.owner.val_gdnss.SetValue('0.85')
+
+        self.btn_mtch = wx.Button(self,label='Search based on q')
+        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+        
+        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
+        
+        ## until peaks are available to search
+        self.owner.val_gdnss.Disable()
+        self.btn_mtch.Disable()
         
         return vbox
 
