@@ -1208,7 +1208,7 @@ class cifDB(object):
         
         if len(include) > 0:
             for element in include:
-                z = self.return_atno(element)
+                z = self.search_for_atomic_no(element)
                 if z is not None and z not in z_incld:
                     z_incld += [z]
         if isinstance(exclude,bool):
@@ -1221,7 +1221,7 @@ class cifDB(object):
         else:
             if len(exclude) > 0:
                 for element in exclude:
-                    z = self.return_atno(element)
+                    z = self.search_for_atomic_no(element)
                     if z is not None and z not in z_excld:
                         z_excld += [z] 
 
@@ -1261,7 +1261,7 @@ class cifDB(object):
         return amcsd_incld
         
      
-    def return_atno(self,element):
+    def search_for_atomic_no(self,element):
         element = capitalize_string(element)
         elemrow = self.query(self.elemtbl)\
                       .filter(or_(self.elemtbl.c.z == element,
