@@ -925,7 +925,7 @@ class cifDB(object):
         return amcsd_matches
 
 
-    def amcsd_search(self,amcsd_id):
+    def search_by_amcsd(self,amcsd_id,verbose=True):
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
@@ -953,7 +953,10 @@ class cifDB(object):
             for block in search_alist.execute():
                 authors.append(block.author_name)
         
-        self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
+        if verbose:
+            self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
+        else:
+            return amcsd_id,ALLelements,mineral_name,iuc_id,authors
 
     def fraction_in_range(self,amcsd_id,cnt,qmin=None,qmax=None):
     
@@ -1175,9 +1178,6 @@ class cifDB(object):
             print 'first',self.compref.select(qry_atno).execute().fetchone()
             print 'now',np.shape(complist)
 
-    def search_database(self,elements=[],verbose=False):
-                        #,authors=[],space_group=[],
-                        #author=[],verbose=False):
 
 
 #         usr_qry = self.query(self.ciftbl,
@@ -1197,82 +1197,83 @@ class cifDB(object):
 #                       .filter(self.symref.c.iuc_id == self.spgptbl.c.iuc_id)\
 #                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
 
-#         print '\nall'
-#         print len(usr_qry.all())     
-# 
-# 
-#         usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
-#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
-# 
-#         print '\nauthor'
-#         print len(usr_qry.all()),
-# 
-#         ##  Searches authors
-#         if len(authors) > 0:
-#             auth_ids = []
-#             for author in authors:
-#                 authrow = self.query(self.authtbl)\
-#                               .filter(self.authtbl.c.author_name.like('%'+author+'%'))
-#                 if len(authrow.all()) == 0:
-#                     print '%s not found in author database.' % author
-#                 else:
-#                     for row in authrow.all():
-#                         if row.author_id not in auth_ids:
-#                             auth_ids += [row.author_id]
-#             if len(auth_ids) > 0:
-#                 usr_qry = usr_qry.filter(self.authref.c.author_id.in_(auth_ids))
-#         print len(usr_qry.all())
-# 
-# #         print '\n --- MATCHES --- '
-# #         print
-# #         print usr_qry        
-# #         print
-# #         for i,row in enumerate(usr_qry.all()):
-# #             if verbose:
-# #                 self.amcsd_search(row.amcsd_id)
-# #             else:
-# #                 print '%i,%i\t%s' % (i,row.amcsd_id,row.mineral_name)
-# 
-# 
-        usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref,self.nametbl)\
+
+
+    def search_by_chemistry(self,include=[],exclude=[],verbose=False):
+
+        amcsd_incld = []
+        amcsd_excld = []
+        z_incld = []
+        z_excld = []
+        
+        if len(include) > 0:
+            for element in include:
+                z = self.return_atno(element)
+                if z is not None and z not in z_incld:
+                    z_incld += [z]
+        if isinstance(exclude,bool):
+            if exclude:
+                for element in ELEMENTS:
+                    z, name, symbol = element
+                    z = int(z)
+                    if z not in z_incld:
+                        z_excld += [z]
+        else:
+            if len(exclude) > 0:
+                for element in exclude:
+                    z = self.return_atno(element)
+                    if z is not None and z not in z_excld:
+                        z_excld += [z] 
+
+
+                        
+        usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.compref.c.z == self.elemtbl.c.z)\
-                      .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)
+                      .filter(self.compref.c.z == self.elemtbl.c.z)
+
+
 
         ##  Searches composition of database entries
-        if len(elements) > 0:
-            atomic_nos = []
-            for element in elements:
-                element = capitalize_string(element)
-                elemrow = self.query(self.elemtbl)\
-                              .filter(or_(self.elemtbl.c.z == element,
-                                          self.elemtbl.c.element_symbol == element,
-                                          self.elemtbl.c.element_name == element))
-                if len(elemrow.all()) == 0:
-                    print '%s not found in element database.' % element
-                else:
-                    for row in elemrow.all():
-                        if row.z not in atomic_nos:
-                            atomic_nos += [row.z]
-            if len(atomic_nos) > 0:
-                usr_qry = usr_qry.filter(self.compref.c.z.in_(atomic_nos))\
-                                 .group_by(self.ciftbl.c.amcsd_id)\
-                                 .having(func.count()==len(atomic_nos))
-                                 ## currently restricted to find with all elements
-                                 ## would need this to change if only need, e.g., 3 of 4
-                                 ## mkak 2017.02.15
+        if len(z_excld) > 0:
+            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_excld))
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_excld:
+                    amcsd_excld += [row.amcsd_id]
 
-        if len(usr_qry.all()) > 0:
-            print '\n --- MATCHES --- '
-        else:
-            print '\n no matches. '
-        for i,row in enumerate(usr_qry.all()):
-            if verbose:
-                self.amcsd_search(row.amcsd_id)
-            else:
-                print '%i,%i\t%s' % (i,row.amcsd_id,row.mineral_name)
+        if len(z_incld) > 0:
+            ## more elegant method but overloads query when too many (e.g. all others)
+            ## used for exclusion
+            ## mkak 2017.02.20
+            #if len(amcsd_excld) > 0:
+            #    usr_qry = usr_qry.filter(not_(self.compref.c.amcsd_id.in_(amcsd_excld)))
+            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_incld))\
+                             .group_by(self.compref.c.amcsd_id)\
+                             .having(func.count()==len(z_incld))
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
+                    amcsd_incld += [row.amcsd_id]
+
+        print '%i ENTRIES MATCH' % len(amcsd_incld)
+        if len(amcsd_incld) < 5:
+            for amcsd in amcsd_incld:
+                self.search_by_amcsd(amcsd)
         
+        return amcsd_incld
+        
+     
+    def return_atno(self,element):
+        element = capitalize_string(element)
+        elemrow = self.query(self.elemtbl)\
+                      .filter(or_(self.elemtbl.c.z == element,
+                                  self.elemtbl.c.element_symbol == element,
+                                  self.elemtbl.c.element_name == element))
+        if len(elemrow.all()) == 0:
+            print '%s not found in element database.' % element
+            return
+        else:
+            for row in elemrow.all():
+                return row.z
+     
      
 def capitalize_string(s):
 

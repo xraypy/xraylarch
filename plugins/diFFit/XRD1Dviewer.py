@@ -1339,7 +1339,7 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
 
         if filter == True:
-            self.owner.cifdatabase.search_database(elements=self.elem_include)
+            self.owner.cifdatabase.search_by_chemistry(include=self.elem_include)
 
     def onMatch(self,event=None):
         
