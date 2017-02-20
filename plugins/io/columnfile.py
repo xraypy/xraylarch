@@ -180,6 +180,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     _labels = None
     _clabels = ['col%i' % (i+1) for i in range(ncols)]
     if labels is not None:
+        labels = labels.replace(',', ' ').replace('\t', ' ')
         _labels = [colname(l) for l in labels.split()]
     elif simple_labels or _labelline is None:
         _labels = _clabels
