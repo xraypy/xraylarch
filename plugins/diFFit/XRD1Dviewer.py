@@ -19,7 +19,7 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb import cifDB,QSTEP,QMIN,CATEGORIES
+from larch_plugins.cifdb import cifDB,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
 from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
                                peakfinder,peaklocater,peakfitter,peakfilter,
@@ -558,8 +558,6 @@ class Fitting1DXRD(BasePanel):
         self.SetFittingDefaults()
         self.Panel1DFitting()
         
-        
-        
     def SetFittingDefaults(self):
 
         # Peak fitting defaults
@@ -592,7 +590,7 @@ class Fitting1DXRD(BasePanel):
 
     def createFittingPanels(self,parent):
         
-        pattern_title    = SimpleText(parent, 'DATA FITTING', size=(200, -1))
+        pattern_title    = SimpleText(parent, 'DATABASE FILTERING', size=(200, -1))
         #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.pnb = wx.Notebook(parent)
         self.pnbpanels = []
@@ -613,7 +611,7 @@ class Fitting1DXRD(BasePanel):
         pack(parent,sizer)
 
     
-    def FittingTools(self,panel):
+    def FilterTools(self,panel):
         '''
         Frame for visual toolbox
         '''
@@ -671,8 +669,8 @@ class Fitting1DXRD(BasePanel):
         pattools = self.PatternTools(self)
         vbox.Add(pattools,flag=wx.ALL,border=10)
         
-        fittools = self.FittingTools(self)
-        vbox.Add(fittools,flag=wx.ALL,border=10)
+        filtools = self.FilterTools(self)
+        vbox.Add(filtools,flag=wx.ALL,border=10)
 
         return vbox
         
@@ -1350,10 +1348,46 @@ class Fitting1DXRD(BasePanel):
             self.elem_include = myDlg.included
             self.elem_exclude = myDlg.excluded
             filter = True
+            
+            
+            print
+            print
+            if myDlg.Mineral.GetSelection() == -1:
+                print 'blah...',     myDlg.Mineral.GetCurrentSelection()                
+            else:
+                print 'mineral: ',   myDlg.Mineral.GetSelection()
+                print 'more...',     myDlg.Mineral.GetString(myDlg.Mineral.GetSelection())
+            print 'author: ',    myDlg.Author.GetValue()
+            print 'chemistry: ', myDlg.Chemistry.GetValue()
+            print 'symmetry: ',  myDlg.Symmetry.GetValue()
+            print 'category: ',  myDlg.Category.GetSelections()
+            if len(myDlg.Category.GetSelections()) > 0:
+                print 'more...',     myDlg.Category.GetString(myDlg.Category.GetSelection())
+            print 'keyword: ',   myDlg.Keyword.GetValue()
+            print
+            print
+            
         myDlg.Destroy()
 
+        list_amcsd = None
         if filter == True:
-            self.owner.cifdatabase.search_by_chemistry(include=self.elem_include)
+            if self.elem_include is not None or self.elem_exclude is not None:
+                list_amcsd = self.owner.cifdatabase.search_by_chemistry(include=self.elem_include,
+                                                                        exclude=self.elem_exclude,
+                                                                        list=list_amcsd)
+                                                                        
+            ## Populates Results Panel with list
+            self.amcsdlistbox.Clear()
+            for amcsd in list_amcsd:
+                no,elem,name,spgp,autr = self.owner.cifdatabase.search_by_amcsd(amcsd,verbose=False)
+                entry = '%i : %s' % (amcsd,name)
+                self.amcsdlistbox.Append(entry)
+            if len(list_amcsd) == 1:
+                self.txt_amcsd_cnt.SetLabel('1 MATCH')
+            elif len(list_amcsd) > 1:
+                self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
+            else:
+                self.txt_amcsd_cnt.SetLabel('')
 
     def onMatch(self,event=None):
         
@@ -2167,9 +2201,8 @@ class Viewer1DXRD(wx.Panel):
 #### XRD FILE OPENING/SAVING 
     def load_file(self,event=None):
     
-        x,y,path = loadXYFILE(self,verbose=True)
-        
         try:
+            x,y,path = loadXYFILE(self,verbose=True)
             self.add1Ddata(x,y,name=os.path.split(path)[-1])
         except:
             pass
@@ -2552,8 +2585,6 @@ class ResultsPanel(wx.Panel):
         self.owner = owner
 
         ## Default information
-        
-
         respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
@@ -2562,6 +2593,12 @@ class ResultsPanel(wx.Panel):
     
     def ResultsTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        self.owner.amcsdlistbox = EditableListBox(self, None,size=(200,-1))
+        self.owner.txt_amcsd_cnt = wx.StaticText(self, label='')
+
+        vbox.Add(self.owner.amcsdlistbox,  flag=wx.ALL, border=10)
+        vbox.Add(self.owner.txt_amcsd_cnt, flag=wx.ALL, border=10)
         
         return vbox
 
@@ -2931,14 +2968,15 @@ class XRDSearchGUI(wx.Dialog):
         LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         
         ## Mineral search
-        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
-        self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
-        #mineral_list = [] #['None']
-        #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
+        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
+#         self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
+        minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.Mineral = wx.ComboBox(self.panel, choices=minerals,  size=(270, -1))
 
         ## Author search
-        lbl_Author  = wx.StaticText(self.panel, label='Author:' )
-        self.Author = wx.TextCtrl(self.panel,   size=(270, -1))
+        lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
+        self.Author  = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.atrslct = wx.Button(self.panel,     label='Select...')
 
         ## Chemistry search
         lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
@@ -2949,6 +2987,9 @@ class XRDSearchGUI(wx.Dialog):
         lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
         self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
         self.symslct  = wx.Button(self.panel,     label='Specify...')
+        ## a=1to1.2 and b=2to2.2 and c=3to3.2 and alpha=90to91 and beta=92to93 and gamma=94to95
+        ## alpha=90to90 and beta=90to90 and gamma=90to90 
+        ## sg=A2/n
         
         ## Category search
         opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
@@ -2977,7 +3018,8 @@ class XRDSearchGUI(wx.Dialog):
         grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
         grd_sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
+        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,2) )
+        grd_sizer.Add(self.atrslct,   pos = ( 2,4)               )
 
         grd_sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
         grd_sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
@@ -3063,13 +3105,14 @@ class XRDSearchGUI(wx.Dialog):
 #########################################################################
     def onReset(self,event=None):
         
-        self.Mineral.Clear()
+        self.Mineral.Select(0)
         self.Author.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
-        self.Keyword.Clear()
         for i,n in enumerate(CATEGORIES):
             self.Category.Deselect(i)
+        self.Keyword.Clear()
+
         
 #########################################################################            
 class PeriodicTableSearch(wx.Dialog):
@@ -3206,9 +3249,20 @@ class XRDSymmetrySearch(wx.Dialog):
 #                 sg.close()
 #                 break
 
+
+        hm_notations = ['']
+        ## Displays all space groups
+        for spgrp in SPACEGROUPS:
+            iuc_id,name = spgrp
+            hm = '%s: %s' % (str(iuc_id),name)
+            hm_notations += [hm]
+
+        lbl_SG    = wx.StaticText(self.panel, label='Space group:')
+        self.SG   = wx.Choice(self.panel,     choices=SG_list)
+        self.HMsg = wx.Choice(self.panel,     choices=hm_notations)
         
-        lbl_SG = wx.StaticText(self.panel, label='Space group:')
-        self.SG = wx.Choice(self.panel,    choices=SG_list)
+        self.HMsg.Bind(wx.EVT_CHOICE, self.onSpaceGroup)
+
 
         ## Define buttons
         self.rstBtn = wx.Button(self.panel, label='Reset' )
@@ -3245,6 +3299,7 @@ class XRDSymmetrySearch(wx.Dialog):
 
         grd_sizer.Add(lbl_SG,         pos = ( 7,1) )
         grd_sizer.Add(self.SG,        pos = ( 7,2) )
+        grd_sizer.Add(self.HMsg,      pos = ( 7,3) )
 
         
         ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
@@ -3277,6 +3332,17 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma.Clear()
         self.max_gamma.Clear()
         self.SG.SetSelection(0)
+
+    def onSpaceGroup(self,event=None):
+
+        i = self.HMsg.GetSelection()
+        if i > 0:
+            iuc_id, name = SPACEGROUPS[i-1]
+            self.SG.SetSelection(int(iuc_id))
+        else:
+            self.SG.SetSelection(0)
+        
+
 
 def loadXYFILE(self,event=None,verbose=False):
 

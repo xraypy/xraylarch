@@ -1198,8 +1198,7 @@ class cifDB(object):
 #                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
 
 
-
-    def search_by_chemistry(self,include=[],exclude=[],verbose=False):
+    def search_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
 
         amcsd_incld = []
         amcsd_excld = []
@@ -1208,7 +1207,7 @@ class cifDB(object):
         
         if len(include) > 0:
             for element in include:
-                z = self.search_for_atomic_no(element)
+                z = self.search_for_element(element)
                 if z is not None and z not in z_incld:
                     z_incld += [z]
         if isinstance(exclude,bool):
@@ -1221,7 +1220,7 @@ class cifDB(object):
         else:
             if len(exclude) > 0:
                 for element in exclude:
-                    z = self.search_for_atomic_no(element)
+                    z = self.search_for_element(element)
                     if z is not None and z not in z_excld:
                         z_excld += [z] 
 
@@ -1230,8 +1229,8 @@ class cifDB(object):
         usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
                       .filter(self.compref.c.z == self.elemtbl.c.z)
-
-
+        if list is not None:
+            usr_qry = usr_qry.filter(self.compref.c.amcsd_id.in_(list))
 
         ##  Searches composition of database entries
         if len(z_excld) > 0:
@@ -1259,32 +1258,184 @@ class cifDB(object):
                 self.search_by_amcsd(amcsd)
         
         return amcsd_incld
+
+
+    def search_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
+
+        amcsd_incld = []
+        amcsd_excld = []
+        z_incld = []
+        z_excld = []
+        
+        if len(include) > 0:
+            for element in include:
+                z = self.search_for_element(element)
+                if z is not None and z not in z_incld:
+                    z_incld += [z]
+        if isinstance(exclude,bool):
+            if exclude:
+                for element in ELEMENTS:
+                    z, name, symbol = element
+                    z = int(z)
+                    if z not in z_incld:
+                        z_excld += [z]
+        else:
+            if len(exclude) > 0:
+                for element in exclude:
+                    z = self.search_for_element(element)
+                    if z is not None and z not in z_excld:
+                        z_excld += [z] 
+
+
+                        
+        usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
+                      .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.compref.c.z == self.elemtbl.c.z)
+        if list is not None:
+            usr_qry = usr_qry.filter(self.compref.c.amcsd_id.in_(list))
+
+        ##  Searches composition of database entries
+        if len(z_excld) > 0:
+            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_excld))
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_excld:
+                    amcsd_excld += [row.amcsd_id]
+
+        if len(z_incld) > 0:
+            ## more elegant method but overloads query when too many (e.g. all others)
+            ## used for exclusion
+            ## mkak 2017.02.20
+            #if len(amcsd_excld) > 0:
+            #    usr_qry = usr_qry.filter(not_(self.compref.c.amcsd_id.in_(amcsd_excld)))
+            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_incld))\
+                             .group_by(self.compref.c.amcsd_id)\
+                             .having(func.count()==len(z_incld))
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
+                    amcsd_incld += [row.amcsd_id]
+        
+        return amcsd_incld
         
      
-    def search_for_atomic_no(self,element):
+    def search_for_element(self,element,id_no=True,verbose=False):
+        '''
+        searches elements for match in symbol, name, or atomic number; match must be 
+        exact.
+        '''
         element = capitalize_string(element)
         elemrow = self.query(self.elemtbl)\
                       .filter(or_(self.elemtbl.c.z == element,
                                   self.elemtbl.c.element_symbol == element,
                                   self.elemtbl.c.element_name == element))
         if len(elemrow.all()) == 0:
-            print '%s not found in element database.' % element
+            if verbose: print '%s not found in element database.' % element
             return
         else:
             for row in elemrow.all():
-                return row.z
+                if id_no: return row.z
+                else: return row
+
+    def search_for_author(self,name,exact=False,id_no=True,verbose=False):
+        '''
+        searches database for author matching criteria given in 'name'
+           - if name is a string:
+                  - will match author name containing text
+                  - will match id number if integer given in string
+                  - will only look for exact match if exact flag is given
+           - if name is an integer, will only match id number from database
+        id_no: if True, will only return the id number of match(es)
+               if False, returns name and id number
+        e.g.   as INTEGER
+               >>> cif.search_for_author(6,id_no=False)
+                    ([u'Chao G Y'], [6])
+               as STRING
+               >>> cif.search_for_author('6',id_no=False)
+                    ([u'Chao G Y', u'Geology Team 654'], [6, 7770])
+        '''
+    
+        authname = []
+        authid   = []
+
+        id,name = filter_int_and_str(name,exact=exact)
+        authrow = self.query(self.authtbl)\
+                      .filter(or_(self.authtbl.c.author_name.like(name),
+                                  self.authtbl.c.author_id  == id))
+        if len(authrow.all()) == 0:
+            if verbose: print '%s not found in author database.' % name
+        else:
+            for row in authrow.all():
+                authname += [row.author_name]
+                authid   += [row.author_id]
+                
+        if id_no: return authid
+        else: return authname,authid
+     
+    def search_for_mineral(self,name,exact=False,id_no=True,verbose=False):
+        '''
+        searches database for mineral matching criteria given in 'name'
+           - if name is a string:
+                  - will match mineral name containing text
+                  - will match id number if integer given in string
+                  - will only look for exact match if exact flag is given
+           - if name is an integer, will only match id number from database
+        id_no: if True, will only return the id number of match(es)
+               if False, returns name and id number
+        e.g.   as INTEGER
+               >>> newcif.search_for_mineral(884,id_no=False)
+                    ([u'Mg8(Mg2Al2)Al8Si12(O,OH)56'], [884])
+               as STRING
+               >>> newcif.search_for_mineral('884',id_no=False)
+                    ([u'Mg8(Mg2Al2)Al8Si12(O,OH)56', u'Co3 Ge2.884 Tb0.624'], [884, 5973])
+        
+        '''
+        mrlname = []
+        mrlid   = []
+
+        id,name = filter_int_and_str(name,exact=exact)
+        mnrlrow = self.query(self.nametbl)\
+                      .filter(or_(self.nametbl.c.mineral_name.like(name),
+                                  self.nametbl.c.mineral_id  == id))
+        if len(mnrlrow.all()) == 0:
+            if verbose: print '%s not found in mineral name database.' % name
+        else:
+            for row in mnrlrow.all():
+                mrlname += [row.mineral_name]
+                mrlid   += [row.mineral_id]
+                
+        if id_no: return mrlid
+        else: return mrlname,mrlid
      
     def return_no_of_cif(self):
         
         lines = len(self.query(self.ciftbl).all())
         return lines
 
+    def return_mineral_names(self):
+        
+        mineralqry = self.query(self.nametbl)
+        names = ['']
+        for row in mineralqry.all():
+            names += [row.mineral_name]
+        
+        return sorted(names)
+
 def capitalize_string(s):
 
     if type(s) == str:
        return s[0].upper() + s[1:].lower()
-    
     return s
+    
+def filter_int_and_str(s,exact=False):
+
+        try: i = int(s)
+        except: i = 0
+        if not exact:
+            try: s = '%'+s+'%'
+            except: pass
+        
+        return i,s
+
+    
 
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ##
