@@ -1277,10 +1277,8 @@ class cifDB(object):
     def return_no_of_cif(self):
         
         lines = len(self.query(self.ciftbl).all())
-        print lines
-     
-         
-     
+        return lines
+
 def capitalize_string(s):
 
     if type(s) == str:

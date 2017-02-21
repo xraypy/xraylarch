@@ -19,7 +19,7 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb import cifDB,QSTEP,QMIN
+from larch_plugins.cifdb import cifDB,QSTEP,QMIN,CATEGORIES
 from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
                                peakfinder,peaklocater,peakfitter,peakfilter,
@@ -78,7 +78,7 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.openDB(dbname='amcsd_cif.db')
+        self.openDB()
 
         # create the page windows as children of the notebook
         E_default = 19.0 # keV
@@ -295,7 +295,7 @@ class diFFit1DFrame(wx.Frame):
 
     def setLAMBDA(self,event=None):
 
-        dlg = SetLambdaDialog(energy=self.energy)
+        dlg = SetLambdaDialog(self,energy=self.energy)
 
         path, okay = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -366,7 +366,7 @@ class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Select data for fitting',
+        dialog = wx.Dialog.__init__(self, parent, title='Select data for fitting',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
                                     size = (210,410))
         self.parent = parent
@@ -1306,6 +1306,18 @@ class Fitting1DXRD(BasePanel):
 ##############################################
 #### DATABASE FUNCTIONS
 
+    def database_info(self,event=None):
+
+        
+        myDlg = DatabaseInfoGUI(self)
+
+        change = False
+        if myDlg.ShowModal() == wx.ID_OK:
+#             self.elem_include = myDlg.included
+#             self.elem_exclude = myDlg.excluded
+            change = True
+        myDlg.Destroy()        
+
     def open_database(self,event=None):
 
         wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
@@ -1325,11 +1337,13 @@ class Fitting1DXRD(BasePanel):
                 print('Now using database: %s' % os.path.split(path)[-1])
             except:
                print('Failed to import file as database: %s' % path)
+               
+        return path
 
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI()
+        myDlg = XRDSearchGUI(self)
 
         filter = False
         if myDlg.ShowModal() == wx.ID_OK:
@@ -1422,7 +1436,7 @@ class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Background fitting options',
+        dialog = wx.Dialog.__init__(self, parent, title='Background fitting options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
@@ -1505,7 +1519,7 @@ class PeakOptions(wx.Dialog):
     def __init__(self,parent):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Peak searching options',
+        dialog = wx.Dialog.__init__(self, parent, title='Peak searching options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
@@ -2467,10 +2481,10 @@ class DatabasePanel(wx.Panel):
     def SearchMatchTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
         
-        btn_db = wx.Button(self,label='Select database file')
+        btn_db = wx.Button(self,label='Database info')
         btn_srch = wx.Button(self,label='Filter database')
 
-        btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
+        btn_db.Bind(wx.EVT_BUTTON,          self.owner.database_info)
         btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
 
         vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
@@ -2553,13 +2567,13 @@ class ResultsPanel(wx.Panel):
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
-    def __init__(self,xrd2Ddata,ai):
+    def __init__(self,parent,xrd2Ddata,ai):
     
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options',
+        dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
-        
+        self.parent = parent
         self.data2D = xrd2Ddata
         self.ai = ai
         self.steps = 5001
@@ -2746,10 +2760,9 @@ class SetLambdaDialog(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self,energy=19.0):
-    
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Define wavelength/energy')#,size=(500, 440))
+    def __init__(self,parent,energy=19.0):
+        
+        wx.Dialog.__init__(self, parent, title='Define wavelength/energy')#,size=(500, 440))
         ## remember: size=(width,height)
         
         panel = wx.Panel(self)
@@ -2820,17 +2833,100 @@ class SetLambdaDialog(wx.Dialog):
                 self.entr_EorL.SetValue('%0.4f' % self.wavelength)
             self.pre_sel = self.ch_EorL.GetSelection()
 
+
+class DatabaseInfoGUI(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, title='Database Information')
+        ## remember: size=(width,height)
+        self.parent = parent
+        self.panel = wx.Panel(self)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Database info
+        self.txt_dbname = wx.StaticText(self.panel, label='Current file : ')
+        self.txt_nocif  = wx.StaticText(self.panel, label='Number of cif entries : ')
+
+        ## Database buttons
+        db_sizer = wx.BoxSizer(wx.HORIZONTAL)
+       
+        dbBtn  = wx.Button(self.panel, label='Load new database' )
+        rstBtn = wx.Button(self.panel, label='Reset to default database')
+        
+        dbBtn.Bind(wx.EVT_BUTTON, self.onNewFile  )
+        rstBtn.Bind(wx.EVT_BUTTON, self.onResetFile  )
+        
+        db_sizer.Add(dbBtn,  flag=wx.RIGHT, border=10)
+        db_sizer.Add(rstBtn, flag=wx.RIGHT, border=10)
+        
+        ## Okay, etc. buttons
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        okBtn  = wx.Button(self.panel, wx.ID_OK,    label='Close')
+        #canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        #ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)
+        
+        sizer.Add(self.txt_dbname, flag=wx.ALL, border=10)
+        sizer.Add(self.txt_nocif,  flag=wx.ALL, border=10)
+        sizer.Add(db_sizer,        flag=wx.ALL, border=10)
+        sizer.AddSpacer(5)
+        sizer.Add(ok_sizer,        flag=wx.ALIGN_RIGHT|wx.ALL, border=10)
+        self.panel.SetSizer(sizer)
+        
+        self.onUpdateText()
+        
+    def onNewFile(self,event=None):
+    
+        path = self.parent.open_database()
+        self.onUpdateText()
+        
+    def onResetFile(self,event=None):
+    
+        self.parent.owner.openDB()
+        self.onUpdateText()
+
+    def onUpdateText(self,event=None):
+        
+        try:
+            filename = self.parent.owner.cifdatabase.dbname
+        except:
+            return
+        #filename = os.path.split(filename)[-1]
+        nocif = self.parent.owner.cifdatabase.return_no_of_cif()
+
+        self.txt_dbname.SetLabel('Current file : %s' % filename)
+        self.txt_nocif.SetLabel('Number of cif entries : %i' % nocif)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
+        self.Show()
+
 #########################################################################
 class XRDSearchGUI(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
-    
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search')
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
         ## remember: size=(width,height)
+        self.parent = parent
         self.panel = wx.Panel(self)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        grd_sizer = wx.GridBagSizer( 5, 6)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         
@@ -2855,12 +2951,13 @@ class XRDSearchGUI(wx.Dialog):
         self.symslct  = wx.Button(self.panel,     label='Specify...')
         
         ## Category search
-        lbl_Search  = wx.StaticText(self.panel,  label='Category:' )
-        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
+        opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
+        lbl_Category  = wx.StaticText(self.panel,  label='Category:' )
+        self.Category = wx.ListBox(self.panel, style=opts, choices=CATEGORIES, size=(270, -1))
         
         ## General search
-        lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
-        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
+        lbl_Keyword  = wx.StaticText(self.panel,  label='Keyword search:' )
+        self.Keyword = wx.TextCtrl(self.panel, size=(270, -1))
 
 
         ## Define buttons
@@ -2874,31 +2971,39 @@ class XRDSearchGUI(wx.Dialog):
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
-        self.sizer = wx.GridBagSizer( 5, 6)
 
-        self.sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
-        self.sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        self.sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
+        grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
+        grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
-        self.sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
-        self.sizer.Add(self.chmslct,   pos = ( 3,4)               )
+        grd_sizer.Add(lbl_Author,     pos = ( 2,1)               )
+        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
-        self.sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
-        self.sizer.Add(self.symslct,   pos = ( 4,4)               )
+        grd_sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
+        grd_sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
+        grd_sizer.Add(self.chmslct,   pos = ( 3,4)               )
 
-        self.sizer.Add(lbl_Search,     pos = ( 5,1)               )
-        self.sizer.Add(self.Search,    pos = ( 5,2), span = (1,3) )
+        grd_sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
+        grd_sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
+        grd_sizer.Add(self.symslct,   pos = ( 4,4)               )
 
-        self.sizer.Add(hlpBtn,        pos = (11,1)                )
-        self.sizer.Add(canBtn,        pos = (11,2)                )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)                )
-        self.sizer.Add(okBtn,         pos = (11,4)                )
+        grd_sizer.Add(lbl_Category,   pos = ( 5,1)               )
+        grd_sizer.Add(self.Category,  pos = ( 5,2), span = (1,3) )
+
+        grd_sizer.Add(lbl_Keyword,    pos = ( 6,1)               )
+        grd_sizer.Add(self.Keyword,   pos = ( 6,2), span = (1,3) )
+
         
-        self.panel.SetSizer(self.sizer)
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)        
+        
+
+        sizer.Add(grd_sizer)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+40, iy+40))
@@ -2957,11 +3062,15 @@ class XRDSearchGUI(wx.Dialog):
         
 #########################################################################
     def onReset(self,event=None):
+        
         self.Mineral.Clear()
         self.Author.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
-        self.Search.Clear()
+        self.Keyword.Clear()
+        for i,n in enumerate(CATEGORIES):
+            self.Category.Deselect(i)
+        
 #########################################################################            
 class PeriodicTableSearch(wx.Dialog):
 
@@ -3047,6 +3156,9 @@ class XRDSymmetrySearch(wx.Dialog):
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        grd_sizer = wx.GridBagSizer( 5, 6)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         
@@ -3107,42 +3219,44 @@ class XRDSymmetrySearch(wx.Dialog):
         ## Bind buttons for functionality
         self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
 
-        self.sizer = wx.GridBagSizer( 5, 6)
+        grd_sizer.Add(lbl_a,          pos = ( 1,1) )
+        grd_sizer.Add(self.min_a,     pos = ( 1,2) )
+        grd_sizer.Add(self.max_a,     pos = ( 1,3) )
 
-        self.sizer.Add(lbl_a,          pos = ( 1,1) )
-        self.sizer.Add(self.min_a,     pos = ( 1,2) )
-        self.sizer.Add(self.max_a,     pos = ( 1,3) )
+        grd_sizer.Add(lbl_b,          pos = ( 2,1) )
+        grd_sizer.Add(self.min_b,     pos = ( 2,2) )
+        grd_sizer.Add(self.max_b,     pos = ( 2,3) )
 
-        self.sizer.Add(lbl_b,          pos = ( 2,1) )
-        self.sizer.Add(self.min_b,     pos = ( 2,2) )
-        self.sizer.Add(self.max_b,     pos = ( 2,3) )
+        grd_sizer.Add(lbl_c,          pos = ( 3,1) )
+        grd_sizer.Add(self.min_c,     pos = ( 3,2) )
+        grd_sizer.Add(self.max_c,     pos = ( 3,3) )
 
-        self.sizer.Add(lbl_c,          pos = ( 3,1) )
-        self.sizer.Add(self.min_c,     pos = ( 3,2) )
-        self.sizer.Add(self.max_c,     pos = ( 3,3) )
+        grd_sizer.Add(lbl_alpha,      pos = ( 4,1) )
+        grd_sizer.Add(self.min_alpha, pos = ( 4,2) )
+        grd_sizer.Add(self.max_alpha, pos = ( 4,3) )
 
-        self.sizer.Add(lbl_alpha,      pos = ( 4,1) )
-        self.sizer.Add(self.min_alpha, pos = ( 4,2) )
-        self.sizer.Add(self.max_alpha, pos = ( 4,3) )
+        grd_sizer.Add(lbl_beta,       pos = ( 5,1) )
+        grd_sizer.Add(self.min_beta,  pos = ( 5,2) )
+        grd_sizer.Add(self.max_beta,  pos = ( 5,3) )
 
-        self.sizer.Add(lbl_beta,       pos = ( 5,1) )
-        self.sizer.Add(self.min_beta,  pos = ( 5,2) )
-        self.sizer.Add(self.max_beta,  pos = ( 5,3) )
+        grd_sizer.Add(lbl_gamma,      pos = ( 6,1) )
+        grd_sizer.Add(self.min_gamma, pos = ( 6,2) )
+        grd_sizer.Add(self.max_gamma, pos = ( 6,3) )
 
-        self.sizer.Add(lbl_gamma,      pos = ( 6,1) )
-        self.sizer.Add(self.min_gamma, pos = ( 6,2) )
-        self.sizer.Add(self.max_gamma, pos = ( 6,3) )
+        grd_sizer.Add(lbl_SG,         pos = ( 7,1) )
+        grd_sizer.Add(self.SG,        pos = ( 7,2) )
 
-        self.sizer.Add(lbl_SG,         pos = ( 7,1) )
-        self.sizer.Add(self.SG,        pos = ( 7,2) )
+        
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)      
+        
 
-
-        self.sizer.Add(hlpBtn,        pos = (11,1)  )
-        self.sizer.Add(canBtn,        pos = (11,2)  )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)  )
-        self.sizer.Add(okBtn,         pos = (11,4)  )
-
-        self.panel.SetSizer(self.sizer)
+        sizer.Add(grd_sizer)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+40, iy+40))

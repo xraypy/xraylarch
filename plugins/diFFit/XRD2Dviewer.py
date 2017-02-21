@@ -337,7 +337,7 @@ class diFFit2DFrame(wx.Frame):
 
     def on1DXRD(self,event=None):
         
-        myDlg = Calc1DPopup(self.plt_img,self.ai)
+        myDlg = Calc1DPopup(self,self.plt_img,self.ai)
         
         read, save, plot = False, False, False
         if myDlg.ShowModal() == wx.ID_OK:
