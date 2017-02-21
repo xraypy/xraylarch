@@ -1372,14 +1372,14 @@ class Fitting1DXRD(BasePanel):
         list_amcsd = None
         if filter == True:
             if self.elem_include is not None or self.elem_exclude is not None:
-                list_amcsd = self.owner.cifdatabase.search_by_chemistry(include=self.elem_include,
+                list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
                                                                         exclude=self.elem_exclude,
                                                                         list=list_amcsd)
                                                                         
             ## Populates Results Panel with list
             self.amcsdlistbox.Clear()
             for amcsd in list_amcsd:
-                no,elem,name,spgp,autr = self.owner.cifdatabase.search_by_amcsd(amcsd,verbose=False)
+                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
                 entry = '%i : %s' % (amcsd,name)
                 self.amcsdlistbox.Append(entry)
             if len(list_amcsd) == 1:
@@ -1460,7 +1460,7 @@ class Fitting1DXRD(BasePanel):
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
                 str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
-                      self.owner.cifdatabase.find_mineral_name(amcsd),goodness[i],count[i],count[i]/goodness[i])
+                      self.owner.cifdatabase.mineral_by_amcsd(amcsd),goodness[i],count[i],count[i]/goodness[i])
                 print(str)
                 print(self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
 

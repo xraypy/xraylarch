@@ -863,100 +863,13 @@ class cifDB(object):
 
         if url:
             if verbose:
-                self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors,
-                                     no_qpeaks=len(peak_qid))
+                self.print_amcsd_info(amcsd_id,no_qpeaks=len(peak_qid))
         else:
             if verbose:
-                self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors,
-                                     no_qpeaks=len(peak_qid),cifile=cifile)
+                self.print_amcsd_info(amcsd_id,no_qpeaks=len(peak_qid),cifile=cifile)
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
-    def composition_search(self,elist,minel=None,verbose=False):
-        '''
-        elist - list of elements, e.g. ['Ce','O']
-        
-        '''
-
-        amcsd_list = []
-        matches    = []
-        
-        count_el = 0
-        
-        for i,elem in enumerate(elist):
-
-            ## Finds atomic number for given element symbol or name
-            qry_elem = self.elemtbl.c.element_symbol == elem
-            z = 0
-            element_list = self.elemtbl.select(qry_elem)
-            for row in element_list.execute():
-                z = row.z
-                elem_name = row.element_symbol
-                count_el = count_el + 1
-            if z == 0:
-                element_list = self.elemtbl.select(qry_elem)
-                for row in element_list.execute():
-                    z = row.z
-                    elem_name = row.element_symbol
-                    count_el = count_el + 1
-
-
-            if z == 0:    
-                print('No match to %s.' % elem)
-            else:
-                complist = self.compref.select(self.compref.c.z == z)
-                for row in complist.execute():
-                    if row.amcsd_id not in amcsd_list:
-                        amcsd_list += [row.amcsd_id]
-                        matches += [1]
-                    else:
-                        idx = amcsd_list.index(row.amcsd_id)
-                        matches[idx] = matches[idx]+1
-               
-        if verbose:
-            print('%i of %i elements in database' % (count_el,np.shape(elist)[0]))
-        if minel is None:
-            minel = count_el
-        #count_matches = [x for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
-        amcsd_matches = [y for y, x in sorted(zip(amcsd_list,matches)) if x == minel]
-        if verbose:
-            print('%i entries contain minimum of %i specified element(s)' % (np.shape(amcsd_matches)[0], minel))
-
-        return amcsd_matches
-
-
-    def search_by_amcsd(self,amcsd_id,verbose=True):
-
-        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
-        for row in search_cif.execute():
-            cifstr = row.cif
-            mineral_id = row.mineral_id
-            iuc_id = row.iuc_id
-        
-        search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
-        for row in search_mineralname.execute():
-            mineral_name = row.mineral_name
-
-        search_composition = self.compref.select(self.compref.c.amcsd_id == amcsd_id)
-        ALLelements = []
-        for row in search_composition.execute():
-            z = row.z
-            search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
-            for block in search_periodic.execute():
-                ALLelements.append(block.element_symbol)
-
-        search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
-        authors = []
-        for row in search_authors.execute():
-            author_id = row.author_id
-            search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
-            for block in search_alist.execute():
-                authors.append(block.author_name)
-        
-        if verbose:
-            self.print_cif_entry(amcsd_id,ALLelements,mineral_name,iuc_id,authors)
-        else:
-            return amcsd_id,ALLelements,mineral_name,iuc_id,authors
 
     def fraction_in_range(self,amcsd_id,cnt,qmin=None,qmax=None):
     
@@ -983,20 +896,6 @@ class cifDB(object):
         peak_id = self.id_in_range(amcsd_id,qmin=qmin,qmax=qmax)
         peak_q  = ((np.array(peak_id)-1)*QSTEP) + QMIN
         return peak_q
-
-    def find_mineral_name(self,amcsd_id):
-
-        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
-        for row in search_cif.execute():
-            cifstr = row.cif
-            mineral_id = row.mineral_id
-            iuc_id = row.iuc_id
-        
-        search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
-        for row in search_mineralname.execute():
-            mineral_name = row.mineral_name
-            
-        return mineral_name
 
     def find_by_q(self,broadened_pks,minpeaks=2):
 
@@ -1072,8 +971,10 @@ class cifDB(object):
         return cif_array
 
 
-    def print_cif_entry(self,amcsd_id,ALLelements,mineral_name,iuc_id,authors,no_qpeaks=None,cifile=None):
+    def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
 
+        ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
+        
         if cifile:
             print(' ==== File : %s ====' % os.path.split(cifile)[-1])
         else:
@@ -1179,6 +1080,8 @@ class cifDB(object):
             print 'now',np.shape(complist)
 
 
+##################################################################################
+##################################################################################
 
 #         usr_qry = self.query(self.ciftbl,
 #                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
@@ -1197,8 +1100,64 @@ class cifDB(object):
 #                       .filter(self.symref.c.iuc_id == self.spgptbl.c.iuc_id)\
 #                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
 
+##################################################################################
+##################################################################################
 
-    def search_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
+
+    def all_by_amcsd(self,amcsd_id,verbose=True):
+
+        mineral_id,iuc_id,cifstr = self.cif_by_amcsd(amcsd_id,all=True)
+        
+        #mineral_name = self.mineral_by_amcsd(amcsd_id)
+        mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
+        ALLelements  = self.composition_by_amcsd(amcsd_id)
+        authors      = self.author_by_amcsd(amcsd_id)
+        
+        return ALLelements,mineral_name,iuc_id,authors
+
+    def author_by_amcsd(self,amcsd_id):
+
+        search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
+        authors = []
+        for row in search_authors.execute():
+            authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
+        return authors
+
+    def composition_by_amcsd(self,amcsd_id):
+
+        search_composition = self.compref.select(self.compref.c.amcsd_id == amcsd_id)
+        ALLelements = []
+        for row in search_composition.execute():
+            z = row.z
+            search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
+            for block in search_periodic.execute():
+                ALLelements.append(block.element_symbol)
+                
+        return ALLelements
+
+    def cif_by_amcsd(self,amcsd_id,all=False):
+
+        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
+        for row in search_cif.execute():
+            if all: return row.mineral_id,row.iuc_id,row.cif
+            else: return row.cif
+
+    def mineral_by_amcsd(self,amcsd_id):
+
+        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
+        for row in search_cif.execute():
+            cifstr = row.cif
+            mineral_id = row.mineral_id
+            iuc_id = row.iuc_id
+        
+        search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
+        for row in search_mineralname.execute():
+            mineral_name = row.mineral_name
+        return mineral_name
+
+##################################################################################
+
+    def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
 
         amcsd_incld = []
         amcsd_excld = []
@@ -1252,70 +1211,16 @@ class cifDB(object):
                 if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
                     amcsd_incld += [row.amcsd_id]
 
-        print '%i ENTRIES MATCH' % len(amcsd_incld)
-        if len(amcsd_incld) < 5:
-            for amcsd in amcsd_incld:
-                self.search_by_amcsd(amcsd)
+        errorchecking = True
+        if errorchecking:
+            print '\n%i ENTRIES MATCH' % len(amcsd_incld)
+            if len(amcsd_incld) < 5:
+                for amcsd in amcsd_incld:
+                    self.print_amcsd_info(amcsd)
         
         return amcsd_incld
 
-
-    def search_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
-
-        amcsd_incld = []
-        amcsd_excld = []
-        z_incld = []
-        z_excld = []
-        
-        if len(include) > 0:
-            for element in include:
-                z = self.search_for_element(element)
-                if z is not None and z not in z_incld:
-                    z_incld += [z]
-        if isinstance(exclude,bool):
-            if exclude:
-                for element in ELEMENTS:
-                    z, name, symbol = element
-                    z = int(z)
-                    if z not in z_incld:
-                        z_excld += [z]
-        else:
-            if len(exclude) > 0:
-                for element in exclude:
-                    z = self.search_for_element(element)
-                    if z is not None and z not in z_excld:
-                        z_excld += [z] 
-
-
-                        
-        usr_qry = self.query(self.ciftbl,self.elemtbl,self.compref)\
-                      .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.compref.c.z == self.elemtbl.c.z)
-        if list is not None:
-            usr_qry = usr_qry.filter(self.compref.c.amcsd_id.in_(list))
-
-        ##  Searches composition of database entries
-        if len(z_excld) > 0:
-            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_excld))
-            for row in fnl_qry.all():
-                if row.amcsd_id not in amcsd_excld:
-                    amcsd_excld += [row.amcsd_id]
-
-        if len(z_incld) > 0:
-            ## more elegant method but overloads query when too many (e.g. all others)
-            ## used for exclusion
-            ## mkak 2017.02.20
-            #if len(amcsd_excld) > 0:
-            #    usr_qry = usr_qry.filter(not_(self.compref.c.amcsd_id.in_(amcsd_excld)))
-            fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_incld))\
-                             .group_by(self.compref.c.amcsd_id)\
-                             .having(func.count()==len(z_incld))
-            for row in fnl_qry.all():
-                if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
-                    amcsd_incld += [row.amcsd_id]
-        
-        return amcsd_incld
-        
+##################################################################################        
      
     def search_for_element(self,element,id_no=True,verbose=False):
         '''
@@ -1369,7 +1274,7 @@ class cifDB(object):
                 
         if id_no: return authid
         else: return authname,authid
-     
+
     def search_for_mineral(self,name,exact=False,id_no=True,verbose=False):
         '''
         searches database for mineral matching criteria given in 'name'
