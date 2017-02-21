@@ -410,7 +410,7 @@ class cifDB(object):
             self.dbname = os.path.join(parent, self.dbname)
             if not os.path.exists(self.dbname):
                 print("File '%s' not found; building a new database!" % self.dbname)
-                self.build_new_database(name=self.dbname)
+                self.create_database(name=self.dbname)
             else:
                 if not iscifDB(self.dbname):
                     raise ValueError("'%s' is not a valid cif database file!" % self.dbname)
@@ -481,23 +481,22 @@ class cifDB(object):
         self.load_database()
 
 
-    def close(self):
-        "close session"
-        self.session.flush()
-        self.session.close()
-        clear_mappers()
-
     def query(self, *args, **kws):
         "generic query"
         return self.session.query(*args, **kws)
-
 
     def open_database(self):
 
         print('\nAccessing database: %s' % self.dbname)
         self.metadata = MetaData('sqlite:///%s' % self.dbname)
-    
-    def build_new_database(self,name=None,verbose=False):
+
+    def close_database(self):
+        "close session"
+        self.session.flush()
+        self.session.close()
+        clear_mappers()
+            
+    def create_database(self,name=None,verbose=False):
 
         if name is None:
             self.dbname = 'amcsd%02d.db'
@@ -675,7 +674,7 @@ class cifDB(object):
         self.ciftbl  = Table('ciftbl', self.metadata)
         
         
-    def new_cif_to_db(self,cifile,verbose=True,url=False,ijklm=1):
+    def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1):
         '''
             ## Adds cifile into database
             When reading in new CIF:
@@ -870,6 +869,121 @@ class cifDB(object):
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
+    def url_to_cif(self,verbose=False,savecif=False,trackerr=False,
+                     addDB=True,url=None,all=False):
+    
+        if url is None:
+            url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
+            #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
+ 
+        if trackerr:
+            dir = os.getcwd()
+            ftrack = open('%s/trouble_cif.txt' % dir,'a+')
+            ftrack.write('using URL : %s\n\n' % url)
+        
+        ## Defines url range for searching and adding to cif database
+        if all == True:
+            iindex = range(99999)
+        else:
+            iindex = np.arange(13600,13700)
+        
+        for i in iindex:
+            url_to_scrape = url % i
+            r = requests.get(url_to_scrape)
+            if r.text.split()[0] == "Can't" or '':
+                if verbose:
+                    print('\t---> ERROR on amcsd%05d.cif' % i)
+                    if trackerr:
+                        ftrack.write('%s\n' % url_to_scrape)
+            else:
+                if verbose:
+                    print('Reading %s' % url_to_scrape)
+                if savecif:
+                    file = 'amcsd%05d.cif' % i
+                    f = open(file,'w')
+                    f.write(r.text)
+                    f.close()
+                    if verbose:
+                        print('Saved %s' % file)
+                if addDB:
+                    try:
+                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
+                    except:
+                        if trackerr:
+                            ftrack.write('%s\n' % url_to_scrape)
+                        pass
+
+        if trackerr:
+            ftrack.close()
+
+
+#     def database_array(self,maxrows=None):
+#     
+#         cif_array = {}
+#         
+#         search_cif = self.ciftbl.select()
+#         count = 0
+#         for cifrow in search_cif.execute():
+#             amcsd_id = cifrow.amcsd_id
+#             mineral_id = cifrow.mineral_id
+#             iuc_id = cifrow.iuc_id
+#             
+#             mineral_name = ''
+#             search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
+#             for mnrlrow in search_mineralname.execute():
+#                 mineral_name = mnrlrow.mineral_name
+#         
+#             search_composition = self.compref.select(self.compref.c.amcsd_id == amcsd_id)
+#             composition = ''
+#             for cmprow in search_composition.execute():
+#                 z = cmprow.z
+#                 search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
+#                 for elmtrow in search_periodic.execute():
+#                     composition = '%s %s' % (composition,elmtrow.element_symbol)
+#                     
+#             search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
+#             authors = ''
+#             for atrrow in search_authors.execute():
+#                 author_id = atrrow.author_id
+#                 search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
+#                 for block in search_alist.execute():
+#                     if authors == '':
+#                         authors = '%s' % (block.author_name)
+#                     else:
+#                         authors = '%s; %s' % (authors,block.author_name)
+# 
+#             count = count + 1
+#             cif_array.update({count:(str(amcsd_id),str(mineral_name),str(iuc_id),str(composition),str(authors))})
+#             if maxrows is not None:
+#                  if count >= maxrows:
+#                      return cif_array
+#        
+#         return cif_array
+
+
+
+##################################################################################
+##################################################################################
+
+#         usr_qry = self.query(self.ciftbl,
+#                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
+#                              self.authtbl,self.qtbl,self.cattbl,
+#                              self.authref,self.qref,self.compref,self.catref,self.symref)\
+#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
+#                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
+#                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.compref.c.z == self.elemtbl.c.z)\
+#                       .filter(self.catref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.catref.c.category_id == self.cattbl.c.category_id)\
+#                       .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)\
+#                       .filter(self.symref.c.symmetry_id == self.symtbl.c.symmetry_id)\
+#                       .filter(self.symref.c.iuc_id == self.spgptbl.c.iuc_id)\
+#                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
+
+##################################################################################
+##################################################################################
 
     def fraction_in_range(self,amcsd_id,cnt,qmin=None,qmax=None):
     
@@ -927,49 +1041,7 @@ class cifDB(object):
        
         return amcsd_matches,count_matches
 
-    def create_array(self,maxrows=None):
-    
-        cif_array = {}
-        
-        search_cif = self.ciftbl.select()
-        count = 0
-        for cifrow in search_cif.execute():
-            amcsd_id = cifrow.amcsd_id
-            mineral_id = cifrow.mineral_id
-            iuc_id = cifrow.iuc_id
-            
-            mineral_name = ''
-            search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
-            for mnrlrow in search_mineralname.execute():
-                mineral_name = mnrlrow.mineral_name
-        
-            search_composition = self.compref.select(self.compref.c.amcsd_id == amcsd_id)
-            composition = ''
-            for cmprow in search_composition.execute():
-                z = cmprow.z
-                search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
-                for elmtrow in search_periodic.execute():
-                    composition = '%s %s' % (composition,elmtrow.element_symbol)
-                    
-            search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
-            authors = ''
-            for atrrow in search_authors.execute():
-                author_id = atrrow.author_id
-                search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
-                for block in search_alist.execute():
-                    if authors == '':
-                        authors = '%s' % (block.author_name)
-                    else:
-                        authors = '%s; %s' % (authors,block.author_name)
-
-            count = count + 1
-            cif_array.update({count:(str(amcsd_id),str(mineral_name),str(iuc_id),str(composition),str(authors))})
-            if maxrows is not None:
-                 if count >= maxrows:
-                     return cif_array
-       
-        return cif_array
-
+##################################################################################
 
     def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
 
@@ -999,110 +1071,7 @@ class cifDB(object):
         print(' ===================== ')
         print('')
 
-    def mine_for_cif(self,verbose=False,savecif=False,addDB=True,url=None,all=False):
-    
-        if url is None:
-            url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
-            #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
- 
-        #ftrack = open('/Users/koker/Data/XRMMappingCode/Search_and_Match/trouble_cif.txt','a+')
-        
-        ## Defines url range for searching and adding to cif database
-        if all == True:
-            iindex = range(99999)
-        else:
-            iindex = np.arange(13600,13700)
-        
-        for i in iindex:
-            url_to_scrape = url % i
-            r = requests.get(url_to_scrape)
-            if r.text.split()[0] == "Can't" or '':
-                if verbose:
-                    print('\t---> ERROR on amcsd%05d.cif' % i)
-                    #ftrack.write('%s\n' % url_to_scrape)
-            else:
-                if verbose:
-                    print('Reading %s' % url_to_scrape)
-                if savecif:
-                    file = 'amcsd%05d.cif' % i
-                    f = open(file,'w')
-                    f.write(r.text)
-                    f.close()
-                    if verbose:
-                        print('Saved %s' % file)
-                if addDB:
-                    try:
-                        self.new_cif_to_db(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-                    except:
-                        #ftrack.write('%s\n' % url_to_scrape)
-                        pass
-
-        #ftrack.close()
-        
-    def comp_search(self,elist,minel=None,verbose=False):
-        '''
-        mydb.load_database()
-        x = mydb.allelements.c.z == 8
-        stmt = mydb.allelements.select(x)
-        print stmt.execute().fetchall()
-        '''
-
-        qry_atno = None
-        for i,elem in enumerate(elist):
-            
-            ## Finds atomic number for given element symbol or name
-            qry_elem = self.elemtbl.c.element_symbol == elem
-            z = 0
-            element_list = self.elemtbl.select(qry_elem)
-            for row in element_list.execute():
-                z = row.z
-                elem_name = row.element_symbol
-            if z == 0:
-                element_list = self.elemtbl.select(qry_elem)
-                for row in element_list.execute():
-                    z = row.z
-                    elem_name = row.element_symbol
-            
-            
-            if z == 0:    
-                print('No match to %s.' % elem)
-            else:
-                if qry_atno is None:
-                    qry_atno = self.compref.c.z == z
-                else:
-                    qry_atno = and_(qry_atno,
-                                   self.compref.c.z == z)
-                
-        if qry_atno is not None:
-            
-            complist = self.compref.select(qry_atno).execute().fetchall()
-            print 'first',self.compref.select(qry_atno).execute().fetchone()
-            print 'now',np.shape(complist)
-
-
 ##################################################################################
-##################################################################################
-
-#         usr_qry = self.query(self.ciftbl,
-#                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
-#                              self.authtbl,self.qtbl,self.cattbl,
-#                              self.authref,self.qref,self.compref,self.catref,self.symref)\
-#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
-#                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
-#                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.compref.c.z == self.elemtbl.c.z)\
-#                       .filter(self.catref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.catref.c.category_id == self.cattbl.c.category_id)\
-#                       .filter(self.nametbl.c.mineral_id == self.ciftbl.c.mineral_id)\
-#                       .filter(self.symref.c.symmetry_id == self.symtbl.c.symmetry_id)\
-#                       .filter(self.symref.c.iuc_id == self.spgptbl.c.iuc_id)\
-#                       .filter(self.spgptbl.c.iuc_id == self.ciftbl.c.iuc_id)
-
-##################################################################################
-##################################################################################
-
 
     def all_by_amcsd(self,amcsd_id,verbose=True):
 

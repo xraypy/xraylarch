@@ -104,7 +104,7 @@ class diFFit1DFrame(wx.Frame):
 
     def closeDB(self,event=None):
     
-        self.cifdatabase.close()
+        self.cifdatabase.close_database()
         del self.cifdatabase
         
     def openDB(self,dbname='amcsd_cif.db'):
@@ -447,9 +447,9 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
 
         self.createAndLayout()
         
-    def createDATABASEarray(self):
-    
-        return self.owner.cifdatabase.create_array(maxrows=50)
+#     def createDATABASEarray(self):
+#     
+#         return self.owner.cifdatabase.database_array(maxrows=50)
 
     
     def createAndLayout(self):
