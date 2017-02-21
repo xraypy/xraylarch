@@ -1274,6 +1274,12 @@ class cifDB(object):
             for row in elemrow.all():
                 return row.z
      
+    def return_no_of_cif(self):
+        
+        lines = len(self.query(self.ciftbl).all())
+        print lines
+     
+         
      
 def capitalize_string(s):
 
@@ -1292,3 +1298,13 @@ def capitalize_string(s):
 ##         cif = xu.materials.Crystal.fromCIF('/fromdatabase/file.cif',fid=StringIO(cifstr))
 ##
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+
+
+

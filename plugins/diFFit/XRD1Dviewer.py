@@ -2854,6 +2854,10 @@ class XRDSearchGUI(wx.Dialog):
         self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
         self.symslct  = wx.Button(self.panel,     label='Specify...')
         
+        ## Category search
+        lbl_Search  = wx.StaticText(self.panel,  label='Category:' )
+        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
+        
         ## General search
         lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
         self.Search = wx.TextCtrl(self.panel, size=(270, -1))
