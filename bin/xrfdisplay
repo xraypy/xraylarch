@@ -2,6 +2,9 @@
 """
 GSECARS XRF Display App
 """
+import wx
+import matplotlib
+matplotlib.use('WXAgg')
 import larch
 from larch_plugins.wx import XRFApp
 
