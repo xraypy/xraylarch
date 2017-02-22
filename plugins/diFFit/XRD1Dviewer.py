@@ -7,6 +7,7 @@ import os
 import numpy as np
 import sys
 import time
+import re
 
 from threading import Thread
 from functools import partial
@@ -2982,7 +2983,7 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Chemistry search
         lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
-        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.chmslct  = wx.Button(self.panel,     label='Specify...')
         
         ## Cell parameter symmetry search
@@ -3011,9 +3012,11 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Bind buttons for functionality
         self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
+        
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
+        self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
 
 
         grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
@@ -3054,46 +3057,101 @@ class XRDSearchGUI(wx.Dialog):
 
         self.Show()
         
-        self.included = []
-        self.excluded = []        
+        self.included,self.excluded = [],[]
+        self.elem_cnt = 103      
         
 #########################################################################
+    def entrChemistry(self,event=None):
+    
+        ## This needs to be imported from periodic table.. not defined here.
+        ## mkak 2017.02.22
+        syms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
+                'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V',
+                'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se',
+                'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh',
+                'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba',
+                'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho',
+                'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
+                'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac',
+                'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
+                'Md', 'No', 'Lr']
+
+        chemstr = self.Chemistry.GetValue()
+        chemstr = re.sub('[( )]', '', chemstr)
+        
+        ii = -1
+        for i,s in enumerate(chemstr):
+            if s == '-':
+                ii = i
+
+        chem_incl, chem_excl = [], []
+        if ii > 0:
+            chem_incl = chemstr[0:ii].split(',')
+    
+            if len(chemstr)-ii == 1:
+                for elem in syms:
+                    if elem not in chem_incl:
+                        chem_excl += [elem]
+            elif ii < len(chemstr)-1:
+                chem_excl = chemstr[ii+1:].split(',')
+        else:
+            chem_incl = chemstr.split(',')
+
+        self.included,self.excluded = [],[]
+        for elem in chem_incl:
+            if elem in syms and elem not in self.included:
+                self.included += [elem]
+        for elem in chem_excl:
+            if elem in syms and elem not in self.excluded and elem not in self.included:
+                self.excluded += [elem]    
+        #self.included = chem_incl
+        #self.excluded = chem_excl
+        self.updateChemistry()
+
+    def updateChemistry(self):
+   
+        str = ''
+
+        for i,elem in enumerate(self.included):
+            if i==0:
+                str = '(%s' % elem
+            else:
+                str = '%s,%s' % (str,elem)
+        if len(self.included) > 0:
+            str = '%s) ' % str 
+
+        if len(self.excluded) > 0:
+            str = '%s- ' % str
+        # if all else excluded, just use - (don't list)
+        if self.elem_cnt != (len(self.included)+len(self.excluded)): 
+            for i,elem in enumerate(self.excluded):
+                if i==0:
+                    str = '%s(%s' % (str,elem)
+                else:
+                    str = '%s,%s' % (str,elem)
+            if len(self.excluded) > 0:
+                str = '%s)' % str 
+         
+        self.Chemistry.SetValue(str) 
+    
+
+
     def onChemistry(self,event=None):
         
-        dlg = PeriodicTableSearch(self)
+        dlg = PeriodicTableSearch(self,include=self.included,exclude=self.excluded)
    
         update = False
         if dlg.ShowModal() == wx.ID_OK:
-            self.included = dlg.element_include
-            self.excluded = dlg.element_exclude
-            count = dlg.cnt_elem
+            incl = dlg.element_include
+            excl = dlg.element_exclude
+            self.elem_cnt = dlg.cnt_elem
             update = True
         dlg.Destroy()
 
         if update:
-            str = ''
-
-            for i,elem in enumerate(self.included):
-                if i==0:
-                    str = '(%s' % elem
-                else:
-                    str = '%s,%s' % (str,elem)
-            if len(self.included) > 0:
-                str = '%s) ' % str 
-
-            if len(self.excluded) > 0:
-                str = '%s- ' % str
-            # if all else excluded, just use - (don't list)
-            if count != (len(self.included)+len(self.excluded)): 
-                for i,elem in enumerate(self.excluded):
-                    if i==0:
-                        str = '%s(%s' % (str,elem)
-                    else:
-                        str = '%s,%s' % (str,elem)
-                if len(self.excluded) > 0:
-                    str = '%s)' % str 
-             
-            self.Chemistry.SetValue(str)
+            self.included = incl
+            self.excluded = excl
+            self.updateChemistry()
         
         
 #########################################################################
@@ -3119,7 +3177,7 @@ class XRDSearchGUI(wx.Dialog):
 #########################################################################            
 class PeriodicTableSearch(wx.Dialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent,include=[],exclude=[]):
         
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title='Periodic Table of Elements')
         
@@ -3131,7 +3189,6 @@ class PeriodicTableSearch(wx.Dialog):
         self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',
                                          onselect=self.onSelectElement,
                                          highlight=True)
-
 
         okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'   )
         exBtn  = wx.Button(panel,               label='Exclude all others' )
@@ -3159,11 +3216,30 @@ class PeriodicTableSearch(wx.Dialog):
         ix,iy = panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
         
-        self.element_include = []
-        self.element_exclude = []
+        self.element_include = include
+        self.element_exclude = exclude
+        self.setDefault()
+        
         
         self.cnt_elem = len(self.ptable.syms)
 
+    def setDefault(self):
+    
+        for name in self.ptable.ctrls:
+            if name in self.element_include:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.SEL_FG)
+                textwid.SetBackgroundColour(self.ptable.SEL_BG)
+            elif name in self.element_exclude:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.NEG_FG)
+                textwid.SetBackgroundColour(self.ptable.NEG_BG)            
+            else:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.REG_FG)
+                textwid.SetBackgroundColour(self.ptable.REG_BG) 
+        
+        #self.ptable.onexclude(selected=self.element_include)
         
     def onSelectElement(self,elem=None, event=None):
     
