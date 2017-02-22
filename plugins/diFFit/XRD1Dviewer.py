@@ -1803,24 +1803,18 @@ class Viewer1DXRD(wx.Panel):
 
         ###########################
         ## Hide/show and reset
-        hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
+        #hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_hide  = wx.Button(self,label='hide')
-        btn_rmv   = wx.Button(self,label='remove')
-        
-        btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-        btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
+        #self.btn_rmv   = wx.Button(self,label='remove')
+        #self.btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
 
-        btn_hide.Disable()
-        btn_rmv.Disable()
-        
-        hbox_btns.Add(btn_hide,  flag=wx.RIGHT, border=8)
-        hbox_btns.Add(btn_rmv,   flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_btns, flag=wx.ALL, border=10)
+        #hbox_btns.Add(self.btn_rmv,   flag=wx.RIGHT, border=8)
+        #vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         
         ## Disable until data
         self.btn_reset.Disable()
         self.val_scale.Disable()
+        #self.btn_rmv.Disable()
         
         return vbox   
         
@@ -1972,6 +1966,7 @@ class Viewer1DXRD(wx.Panel):
         if data:
             self.val_scale.Enable()
             self.btn_reset.Enable()
+            #self.btn_rmv.Enable()
         if cif:
             self.val_cifscale.Enable()
 
@@ -2058,24 +2053,19 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.unzoom_all()
         self.rescale1Daxis(xaxis=False,yaxis=True)
 
-    def remove1Ddata(self,event=None):
-        
-        ## Needs pop up warning: "Do you really want to delete this data set from plotter?
-        ## Current settings will not be saved."
-        ## mkak 2016.11.10
-        
-        plt_no = self.ch_data.GetSelection()        
-        print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
-
-        ## removing name from list works... do not activate till rest is working
-        ## mkak 2016.11.10
-#         self.data_name.remove(self.data_name[plt_no])
-#         self.ch_data.Set(self.data_name)
-
-    def hide1Ddata(self,event=None):
-
-        plt_no = self.ch_data.GetSelection()        
-        print('EVENTUALLY, button will hide plot: %s' % self.data_name[plt_no])
+#     def remove1Ddata(self,event=None):
+#         
+#         ## Needs pop up warning: "Do you really want to delete this data set from plotter?
+#         ## Current settings will not be saved."
+#         ## mkak 2016.11.10
+#         
+#         plt_no = self.ch_data.GetSelection()        
+#         print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
+# 
+#         ## removing name from list works... do not activate till rest is working
+#         ## mkak 2016.11.10
+# #         self.data_name.remove(self.data_name[plt_no])
+# #         self.ch_data.Set(self.data_name)
 
     def onSELECT(self,event=None):
     
