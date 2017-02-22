@@ -1352,8 +1352,10 @@ class Fitting1DXRD(BasePanel):
             
             print
             print
+            print 'mineral:',myDlg.Mineral.GetStringSelection()
+            print myDlg.Mineral.IsTextEmpty()
             if myDlg.Mineral.GetSelection() == -1:
-                print 'blah...',     myDlg.Mineral.GetCurrentSelection()                
+                print 'mineral...',     myDlg.Mineral.GetCurrentSelection()                
             else:
                 print 'mineral: ',   myDlg.Mineral.GetSelection()
                 print 'more...',     myDlg.Mineral.GetString(myDlg.Mineral.GetSelection())

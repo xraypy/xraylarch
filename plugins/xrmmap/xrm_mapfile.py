@@ -121,7 +121,7 @@ def isGSEXRM_XRDMapFolder(fname):
         return False
     flist = os.listdir(fname)
     has_xrddata = False
-    for f in ('xrd_001.nc','xrd_001.h5'):
+    for f in ('xrd_001.nc','xrd_001.h5','pexrd.0001'):
         if f in flist: has_xrddata = True
     return has_xrddata
 
@@ -1592,6 +1592,10 @@ class GSEXRM_MapFile(object):
             if yval != _yl and xrff != _xl:  # skip repeated rows in master file
                 self.rowdata.append(row)
         if self.flag_xrd:
+            ## this is reading only nc files, not taking files from list. 
+            ## needs updating to read files from Master.dat
+            ## how to restructure to get correct files/format?
+            ## mkak 2017.02.22
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
             for i,addxrd in enumerate(xrd_files):
                 self.rowdata[i].insert(4,addxrd)
