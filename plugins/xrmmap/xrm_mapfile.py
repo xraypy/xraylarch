@@ -219,7 +219,7 @@ class GSEXRM_MapRow:
     read one row worth of data:
     """
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
-                 reverse=False, ixaddr=0, dimension=2, ioffset=0,
+                 reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  FLAGxrf = True, FLAGxrd = False):
 
@@ -335,7 +335,7 @@ class GSEXRM_MapRow:
                 self.xrd2d     = xrddat
             elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat 
+                self.xrd2d[0:xrddat.shape[0]] = xrddat
                 ## should change to [1:...] if skipping first frame
             else:
                 self.xrd2d = xrddat[0:self.npts]
@@ -355,7 +355,7 @@ class GSEXRM_MapRow:
             sdata = np.array(sdata)
             snpts = self.npts
         self.sisdata = sdata[:self.npts]
-        
+
         if xnpts > self.npts:
             if FLAGxrf:
                 self.counts    = self.counts[:self.npts]
@@ -368,6 +368,12 @@ class GSEXRM_MapRow:
                 self.xrd2d = self.xrd2d[:self.npts]
 
         points = range(1, self.npts+1)
+        # auto-reverse: counter-intuitively (because stage is upside-down and so
+        # backwards wrt optical view), left-to-right scans from high to low value
+        # so reverse those that go from low to high value
+        if reverse is None:
+            reverse = gdata[0, 0] < gdata[-1, 0]
+
         if reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]
@@ -964,7 +970,7 @@ class GSEXRM_MapFile(object):
         else:
             raise IOError('No XRF or XRD flags provided.')
             return
-        reverse = (irow % 2 != 0)
+        reverse = None # (irow % 2 != 0)
 
         ioffset = 0
         if self.scan_version > 1.35:
@@ -1577,7 +1583,7 @@ class GSEXRM_MapFile(object):
                 "cannot read Master file from '%s'" % self.masterfile)
 
         self.master_header = header
-        # carefully read rows to avoid repeated rows due to bad collection 
+        # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
         _yl, _xl = None, None
         for row in rows:
@@ -2338,7 +2344,7 @@ class GSEXRM_MapFile(object):
 def read_xrfmap(filename, root=None):
     """read GSE XRF FastMap data from HDF5 file or raw map folder"""
     key = 'filename'
-    if os.path.isd<ir(filename):
+    if os.path.isdir(filename):
         key = 'folder'
     kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)
