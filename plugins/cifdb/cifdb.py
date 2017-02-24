@@ -1010,6 +1010,53 @@ class cifDB(object):
         peak_q  = ((np.array(peak_id)-1)*QSTEP) + QMIN
         return peak_q
 
+    def amcsd_by_q(self,include=[],list=None,verbose=False):
+
+        amcsd_incld = []
+        q_incld  = []
+        id_incld = []
+
+        all_matches = []
+        matches = []
+        count = []
+
+        
+        if len(include) > 0:
+            for q in include:
+                q  = round_value(q,base=QSTEP)
+                id = self.search_for_q(q)
+                if id is not None and id not in id_incld:
+                    id_incld += [id]
+                        
+        usr_qry = self.query(self.ciftbl,self.qtbl,self.qref)\
+                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)
+        if list is not None:
+            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+
+        ##  Searches composition of database entries
+
+        if len(id_incld) > 0:
+            fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))\
+                             .group_by(self.qref.c.amcsd_id)\
+                             .having(func.count()>2)## having at least two in range is important
+            for row in fnl_qry.all():
+#                 if row.amcsd_id not in amcsd_incld:
+#                     amcsd_incld += [row.amcsd_id]
+
+                    if row.amcsd_id not in matches:
+                        matches += [row.amcsd_id]
+                        count += [1]
+                    else:
+                        idx = matches.index(row.amcsd_id)
+                        count[idx] = count[idx]+1
+
+        amcsd_matches = [x for y, x in sorted(zip(count,matches))]
+        count_matches = [y for y, x in sorted(zip(count,matches))]
+       
+        return amcsd_matches,count_matches
+
+
     def find_by_q(self,broadened_pks,minpeaks=2):
 
         all_matches = []
@@ -1158,7 +1205,7 @@ class cifDB(object):
                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
                       .filter(self.compref.c.z == self.elemtbl.c.z)
         if list is not None:
-            usr_qry = usr_qry.filter(self.compref.c.amcsd_id.in_(list))
+            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
 
         ##  Searches composition of database entries
         if len(z_excld) > 0:

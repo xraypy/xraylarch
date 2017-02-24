@@ -1423,12 +1423,17 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
         
         #self.match_database()
+        fracq = float(self.val_gdnss.GetValue())
+
+                  
+#         self.owner.write_message('Searching database for matches...')
+#         db_thread = Thread(target=partial(self.match_database,fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
+#         db_thread.start()
+#         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
+#         db_thread.join()
+#         self.owner.write_message('')
         
-        self.owner.write_message('Searching database for matches...')
-        db_thread = Thread(target=self.match_database)
-        db_thread.start()
-        #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
-        db_thread.join()
+        self.match_database(fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
 
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
                        data=None,ipks=None,cifdatabase=None):
@@ -1437,23 +1442,17 @@ class Fitting1DXRD(BasePanel):
         pk_wid - maximum range in q which qualifies as a match between fitted and ideal
         data,ipks,cifdatabase - all read from gui but possible to alter
         '''
-        
-        if data is None:
-            data = self.plt_data
-        if cifdatabase is None:
-            cifdatabase = self.owner.cifdatabase
-        if ipks is None:
-            ipks = self.ipeaks
+#         
+#         if data is None:
+#             data = self.plt_data
+#         if cifdatabase is None:
+#             cifdatabase = self.owner.cifdatabase
+#         if ipks is None:
+#             ipks = self.ipeaks
     
         q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
         minq = np.min(data[0])
         maxq = np.max(data[0])
-          
-
-        try:
-            minfracq = float(self.val_gdnss.GetValue())
-        except:
-            minfracq = fracq
 
         qstep = QSTEP ## these quantities come from cifdb.py
         qmin  = QMIN
@@ -1462,7 +1461,7 @@ class Fitting1DXRD(BasePanel):
         p_ids = []
 
         for pk_q in q_pks:
-            pk_id = int((pk_q-qmin)/qstep)
+            pk_id = cifdatabase.search_for_q(pk_q)
             
             ## performs peak broadening here
             if pk_wid > 0:    
@@ -1474,9 +1473,21 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
-
+        print 'peaks!',len(q_pks),len(peaks)
         matches,count = cifdatabase.find_by_q(peaks)
-
+        print 'matches...',len(matches)
+        print zip(matches,count)
+        print
+        print
+        
+        print 'TRY TWO'
+        print 'peaks!',len(q_pks),len(peaks)
+        matches,count = cifdatabase.amcsd_by_q(peaks)
+        print 'matches...',len(matches)
+        print zip(matches,count)
+        print
+        print
+        
         goodness = np.zeros(np.shape(count))       
 
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
@@ -1488,12 +1499,15 @@ class Fitting1DXRD(BasePanel):
         except:
             matches,count,goodness = [],[],[]
 
+        print 'matches?',len(matches)
         if len(matches) > 0:
             for i,amcsd in enumerate(matches):
+                print 'a'
                 str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
-                      self.owner.cifdatabase.mineral_by_amcsd(amcsd),goodness[i],count[i],count[i]/goodness[i])
+                      cifdatabase.mineral_by_amcsd(amcsd),goodness[i],count[i],count[i]/goodness[i])
+                print 'b'
                 print(str)
-                print(self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
+                print(cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
 
 
 
