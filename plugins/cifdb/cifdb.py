@@ -1125,6 +1125,7 @@ class cifDB(object):
         return mineral_name
 
 ##################################################################################
+##################################################################################
 
     def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
 
@@ -1182,7 +1183,6 @@ class cifDB(object):
         
         return amcsd_incld
 
-##################################################################################
 
     def amcsd_by_mineral(self,include='',list=None,verbose=True):
 
@@ -1203,7 +1203,42 @@ class cifDB(object):
 
         return amcsd_incld
 
-##################################################################################        
+
+    def amcsd_by_author(self,include=[''],list=None,verbose=True):
+
+        amcsd_incld = []
+        auth_id = []
+        
+        for author in include:
+            print author
+            id = self.search_for_author(author)
+            auth_id += id
+        print auth_id
+
+        ##  Searches mineral name for database entries
+        usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
+                      .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.authref.c.author_id == self.authtbl.c.author_id)
+        if list is not None:
+            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+
+        ##  Searches author name in database entries
+        if len(auth_id) > 0:
+            fnl_qry = usr_qry.filter(self.authref.c.author_id.in_(auth_id))
+            ## This currently works in an 'or' fashion, as each name in list
+            ## can be matched to multiple auth_id values, so it is simpler to
+            ## consider them all separately. Making a 2D list and restructuring
+            ## query could improve this
+            ## mkak 2017.02.24
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_incld:
+                    amcsd_incld += [row.amcsd_id]
+        
+        return amcsd_incld
+
+
+##################################################################################
+##################################################################################
      
     def search_for_element(self,element,id_no=True,verbose=False):
         '''

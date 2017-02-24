@@ -1355,7 +1355,11 @@ class Fitting1DXRD(BasePanel):
                 self.mnrl_include = None
             else: 
                 self.mnrl_include = myDlg.Mineral.GetStringSelection()
-            self.auth_include = myDlg.Author.GetValue().split(',')
+            if myDlg.Author.GetValue() == '':
+                self.auth_include = None
+            else: 
+                self.auth_include = myDlg.Author.GetValue().split(',')
+
 
             if errorchecking:
                 print 'mineral: ',self.mnrl_include
@@ -1375,17 +1379,24 @@ class Fitting1DXRD(BasePanel):
         if filter == True:
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
                 list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
-                                                                        exclude=self.elem_exclude,
-                                                                        list=list_amcsd)
+                                                                       exclude=self.elem_exclude,
+                                                                       list=list_amcsd)
                 if errorchecking:
                     print 'element search - possible matches: ',len(list_amcsd)
             if self.mnrl_include is not None:
                 list_amcsd = self.owner.cifdatabase.amcsd_by_mineral(include=self.mnrl_include,
-                                                                        list=list_amcsd)
+                                                                     list=list_amcsd)
                 if errorchecking:
                     print 'mineral search - possible matches: ',len(list_amcsd)
 
-                                                                        
+            if self.auth_include is not None:
+                list_amcsd = self.owner.cifdatabase.amcsd_by_author(include=self.auth_include,
+                                                                    list=list_amcsd)
+                if errorchecking:
+                    print 'author search - possible matches: ',len(list_amcsd)
+
+
+
             ## Populates Results Panel with list
             self.amcsdlistbox.Clear()
             if list_amcsd is not None:
