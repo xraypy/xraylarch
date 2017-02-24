@@ -1179,14 +1179,28 @@ class cifDB(object):
             for row in fnl_qry.all():
                 if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
                     amcsd_incld += [row.amcsd_id]
-
-        errorchecking = True
-        if errorchecking:
-            print '\n%i ENTRIES MATCH' % len(amcsd_incld)
-            if len(amcsd_incld) < 5:
-                for amcsd in amcsd_incld:
-                    self.print_amcsd_info(amcsd)
         
+        return amcsd_incld
+
+##################################################################################
+
+    def amcsd_by_mineral(self,include='',list=None,verbose=True):
+
+        amcsd_incld = []
+        mnrl_id = self.search_for_mineral(include)
+
+        usr_qry = self.query(self.ciftbl)
+        if list is not None:
+            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+
+ 
+        ##  Searches mineral name for database entries
+        if len(mnrl_id) > 0:
+            fnl_qry = usr_qry.filter(self.ciftbl.c.mineral_id.in_(mnrl_id))
+            for row in fnl_qry.all():
+                if row.amcsd_id not in amcsd_incld:
+                    amcsd_incld += [row.amcsd_id]
+
         return amcsd_incld
 
 ##################################################################################        
@@ -1290,6 +1304,15 @@ class cifDB(object):
         names = ['']
         for row in mineralqry.all():
             names += [row.mineral_name]
+        
+        return sorted(names)
+
+    def return_author_names(self):
+        
+        authorqry = self.query(self.authtbl)
+        names = []
+        for row in authorqry.all():
+            names += [row.author_name]
         
         return sorted(names)
 

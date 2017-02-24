@@ -1312,8 +1312,8 @@ class Fitting1DXRD(BasePanel):
 
         change = False
         if myDlg.ShowModal() == wx.ID_OK:
-#             self.elem_include = myDlg.included
-#             self.elem_exclude = myDlg.excluded
+#             self.elem_include = myDlg.incl_elm
+#             self.elem_exclude = myDlg.excl_elm
             change = True
         myDlg.Destroy()        
 
@@ -1342,55 +1342,72 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
+        errorchecking = True
+
         myDlg = XRDSearchGUI(self)
 
         filter = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.elem_include = myDlg.included
-            self.elem_exclude = myDlg.excluded
+            self.elem_include = myDlg.incl_elm
+            self.elem_exclude = myDlg.excl_elm
             filter = True
-            
-            
-            print
-            print
-            print 'mineral:',myDlg.Mineral.GetStringSelection()
-            print myDlg.Mineral.IsTextEmpty()
-            if myDlg.Mineral.GetSelection() == -1:
-                print 'mineral...',     myDlg.Mineral.GetCurrentSelection()                
-            else:
-                print 'mineral: ',   myDlg.Mineral.GetSelection()
-                print 'more...',     myDlg.Mineral.GetString(myDlg.Mineral.GetSelection())
-            print 'author: ',    myDlg.Author.GetValue()
-            print 'chemistry: ', myDlg.Chemistry.GetValue()
-            print 'symmetry: ',  myDlg.Symmetry.GetValue()
-            print 'category: ',  myDlg.Category.GetSelections()
-            if len(myDlg.Category.GetSelections()) > 0:
-                print 'more...',     myDlg.Category.GetString(myDlg.Category.GetSelection())
-            print 'keyword: ',   myDlg.Keyword.GetValue()
-            print
-            print
+            if myDlg.Mineral.IsTextEmpty():
+                self.mnrl_include = None
+            else: 
+                self.mnrl_include = myDlg.Mineral.GetStringSelection()
+            self.auth_include = myDlg.Author.GetValue().split(',')
+
+            if errorchecking:
+                print 'mineral: ',self.mnrl_include
+                print 'author: ',self.auth_include
+                print 'chemistry: ',self.elem_include,' but not ',self.elem_exclude
+                print 'symmetry: ',myDlg.Symmetry.GetValue()
+                print 'category: ',myDlg.Category.GetSelections()
+                if len(myDlg.Category.GetSelections()) > 0:
+                    print 'more...',     myDlg.Category.GetString(myDlg.Category.GetSelection())
+                print 'keyword: ',   myDlg.Keyword.GetValue()
+                print
+                print
             
         myDlg.Destroy()
 
         list_amcsd = None
         if filter == True:
-            if self.elem_include is not None or self.elem_exclude is not None:
+            if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
                 list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
                                                                         exclude=self.elem_exclude,
                                                                         list=list_amcsd)
+                if errorchecking:
+                    print 'element search - possible matches: ',len(list_amcsd)
+            if self.mnrl_include is not None:
+                list_amcsd = self.owner.cifdatabase.amcsd_by_mineral(include=self.mnrl_include,
+                                                                        list=list_amcsd)
+                if errorchecking:
+                    print 'mineral search - possible matches: ',len(list_amcsd)
+
                                                                         
             ## Populates Results Panel with list
             self.amcsdlistbox.Clear()
-            for amcsd in list_amcsd:
-                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
-                entry = '%i : %s' % (amcsd,name)
-                self.amcsdlistbox.Append(entry)
-            if len(list_amcsd) == 1:
-                self.txt_amcsd_cnt.SetLabel('1 MATCH')
-            elif len(list_amcsd) > 1:
-                self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
-            else:
-                self.txt_amcsd_cnt.SetLabel('')
+            if list_amcsd is not None:
+                for amcsd in list_amcsd:
+                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
+                    entry = '%i : %s' % (amcsd,name)
+                    self.amcsdlistbox.Append(entry)
+                if len(list_amcsd) == 1:
+                    self.txt_amcsd_cnt.SetLabel('1 MATCH')
+                elif len(list_amcsd) > 1:
+                    self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
+                else:
+                    self.txt_amcsd_cnt.SetLabel('')
+
+
+
+        if errorchecking and list_amcsd is not None:
+            print '\n%i ENTRIES MATCH' % len(list_amcsd)
+            if len(list_amcsd) < 5:
+                for amcsd in list_amcsd:
+                    self.owner.cifdatabase.print_amcsd_info(amcsd)
+
 
     def onMatch(self,event=None):
         
@@ -2963,8 +2980,8 @@ class XRDSearchGUI(wx.Dialog):
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
 #         self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
-        minerals = self.parent.owner.cifdatabase.return_mineral_names()
-        self.Mineral = wx.ComboBox(self.panel, choices=minerals,  size=(270, -1))
+        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals,  size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## Author search
         lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
@@ -3004,9 +3021,11 @@ class XRDSearchGUI(wx.Dialog):
         self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
         
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
+        self.atrslct.Bind(wx.EVT_BUTTON, self.onAuthor    )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
         self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
+        self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral )
 
 
         grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
@@ -3047,10 +3066,18 @@ class XRDSearchGUI(wx.Dialog):
 
         self.Show()
         
-        self.included,self.excluded = [],[]
+        self.incl_elm,self.excl_elm = [],[]
+        self.incl_auth = []
         self.elem_cnt = 103      
         
 #########################################################################
+    def entrMineral(self,event=None):
+    
+        if event.GetString() not in self.minerals:
+            self.minerals.insert(1,event.GetString())
+            self.Mineral.Set(self.minerals)
+            self.Mineral.SetSelection(1)
+
     def entrChemistry(self,event=None):
     
         ## This needs to be imported from periodic table.. not defined here.
@@ -3087,48 +3114,47 @@ class XRDSearchGUI(wx.Dialog):
         else:
             chem_incl = chemstr.split(',')
 
-        self.included,self.excluded = [],[]
+        self.incl_elm,self.excl_elm = [],[]
         for elem in chem_incl:
-            if elem in syms and elem not in self.included:
-                self.included += [elem]
+            if elem in syms and elem not in self.incl_elm:
+                self.incl_elm += [elem]
         for elem in chem_excl:
-            if elem in syms and elem not in self.excluded and elem not in self.included:
-                self.excluded += [elem]    
-        #self.included = chem_incl
-        #self.excluded = chem_excl
+            if elem in syms and elem not in self.excl_elm and elem not in self.incl_elm:
+                self.excl_elm += [elem]    
+        #self.incl_elm = chem_incl
+        #self.excl_elm = chem_excl
         self.updateChemistry()
 
     def updateChemistry(self):
    
         str = ''
 
-        for i,elem in enumerate(self.included):
+        for i,elem in enumerate(self.incl_elm):
             if i==0:
                 str = '(%s' % elem
             else:
                 str = '%s,%s' % (str,elem)
-        if len(self.included) > 0:
+        if len(self.incl_elm) > 0:
             str = '%s) ' % str 
 
-        if len(self.excluded) > 0:
+        if len(self.excl_elm) > 0:
             str = '%s- ' % str
         # if all else excluded, just use - (don't list)
-        if self.elem_cnt != (len(self.included)+len(self.excluded)): 
-            for i,elem in enumerate(self.excluded):
+        if self.elem_cnt != (len(self.incl_elm)+len(self.excl_elm)): 
+            for i,elem in enumerate(self.excl_elm):
                 if i==0:
                     str = '%s(%s' % (str,elem)
                 else:
                     str = '%s,%s' % (str,elem)
-            if len(self.excluded) > 0:
+            if len(self.excl_elm) > 0:
                 str = '%s)' % str 
          
         self.Chemistry.SetValue(str) 
-    
 
 
     def onChemistry(self,event=None):
         
-        dlg = PeriodicTableSearch(self,include=self.included,exclude=self.excluded)
+        dlg = PeriodicTableSearch(self,include=self.incl_elm,exclude=self.excl_elm)
    
         update = False
         if dlg.ShowModal() == wx.ID_OK:
@@ -3139,10 +3165,42 @@ class XRDSearchGUI(wx.Dialog):
         dlg.Destroy()
 
         if update:
-            self.included = incl
-            self.excluded = excl
+            self.incl_elm = incl
+            self.excl_elm = excl
             self.updateChemistry()
+
+
+#########################################################################
+
+    def onAuthor(self,event=None):
         
+        authorlist = self.parent.owner.cifdatabase.return_author_names()
+        dlg = AuthorListTable(self,authorlist,include=self.incl_auth)
+   
+        update = False
+        if dlg.ShowModal() == wx.ID_OK:
+            incl = []
+            ii = dlg.authlist.GetSelections()
+            for i in ii:
+                incl +=[authorlist[i]]
+            update = True
+        dlg.Destroy()
+
+        if update:
+            self.incl_auth = incl
+            self.updateAuthor()
+
+    def updateAuthor(self):
+   
+        str = ''
+
+        for i,auth in enumerate(self.incl_auth):
+            if i==0:
+                str = '%s' % auth
+            else:
+                str = '%s,%s' % (str,auth)
+
+        self.Author.SetValue(str)
         
 #########################################################################
     def onSymmetry(self,event=None):
@@ -3155,6 +3213,8 @@ class XRDSearchGUI(wx.Dialog):
 #########################################################################
     def onReset(self,event=None):
         
+        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
         self.Chemistry.Clear()
@@ -3255,6 +3315,65 @@ class PeriodicTableSearch(wx.Dialog):
             if elem not in self.element_include and elem not in self.element_exclude:
                 self.element_exclude += [elem]
         self.ptable.onexclude(selected=self.element_include)
+
+#########################################################################            
+class AuthorListTable(wx.Dialog):
+    """"""
+
+    def __init__(self,parent,authorlist,include=[]):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry')
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+        self.list = authorlist
+        self.include = include
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.authlist = wx.ListBox(self.panel, size=(170, 130), style= wx.LB_MULTIPLE)
+        self.authlist.Set(self.list)
+
+        ## Define buttons
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        ## Bind buttons for functionality
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)      
+        
+
+        sizer.Add(self.authlist)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
+
+        self.Show()
+        self.onSet()
+
+    def onReset(self,event=None):
+        
+        for i,n in enumerate(self.list):
+            self.authlist.Deselect(i)
+        
+        
+    def onSet(self,event=None):
+        
+        for i,n in enumerate(self.list):
+            if n in self.include:
+                self.authlist.Select(i)
+            else:
+                self.authlist.Deselect(i)
+            
+
 
 #########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
