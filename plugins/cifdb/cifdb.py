@@ -767,12 +767,10 @@ class cifDB(object):
         Fnorm = np.abs(Flist)
 
         peak_qid = []
-        q_wid = int((QWIDTH/QSTEP)/2)
-        q_wpk = (q_wid*2)+1
-
         for i,qi in enumerate(qnorm):
             if Fnorm[i] > 0.01:
-                qid = int((qi-QMIN)/QSTEP)+1
+                #qid = int((qi-QMIN)/QSTEP)+1
+                qid = self.search_for_q(qi)
                 if qid not in peak_qid:
                     peak_qid.append(qid)
 
@@ -995,10 +993,11 @@ class cifDB(object):
 
     def id_in_range(self,amcsd_id,qmin=None,qmax=None):
     
-        if qmin is None: qmin = QMIN
-        if qmax is None: qmax = QMAX
-        min_id = int((qmin-QMIN)/QSTEP)+1
-        max_id = int((qmax-QMIN)/QSTEP)+1
+        if qmin is None: qmin = np.min(self.search_for_q)
+        if qmax is None: qmax = np.max(self.search_for_q)
+
+        min_id = self.search_for_q(qmin)
+        max_id = self.search_for_q(qmax)
 
         search_qpeaks = self.qref.select(self.qref.c.amcsd_id == amcsd_id)
         peak_id = [row.q_id for row in search_qpeaks.execute() if row.q_id >= min_id and row.q_id <= max_id]
@@ -1019,7 +1018,7 @@ class cifDB(object):
         
         for q in broadened_pks:
             q_matches = []
-            q0  = round(q*(1/QSTEP))*QSTEP ## rounds to closest step in q-range
+            q0  = round_value(q,base=QSTEP) ## rounds to closest step in q-range
             search_qrange = self.qtbl.select(self.qtbl.c.q == q0)
             for row in search_qrange.execute():
                 q_id = row.q_id
@@ -1239,6 +1238,25 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
+
+    def search_for_q(self,q,qstep=None):
+        '''
+        searches q-reference table for match q value.
+        '''
+        if qstep is None:
+            q1 = self.query(self.qtbl).filter(self.qtbl.c.q_id == 1)
+            q2 = self.query(self.qtbl).filter(self.qtbl.c.q_id == 2)
+            for qi,qj in zip(q1.all(),q2.all()):
+                qstep = float(qj.q)-float(qi.q)
+            
+        q = round_value(q,base=qstep) 
+     
+        qrow = self.query(self.qtbl).filter(self.qtbl.c.q == q)
+        if len(qrow.all()) == 1:
+            for q0 in qrow.all():
+                q_id = q0.q_id
+                return q_id
+        return
      
     def search_for_element(self,element,id_no=True,verbose=False):
         '''
@@ -1333,6 +1351,13 @@ class cifDB(object):
         lines = len(self.query(self.ciftbl).all())
         return lines
 
+    def return_q(self):
+        
+        qqry = self.query(self.qtbl)
+        q = [float(row.q) for row in qqry.all()]
+
+        return np.array(q)
+
     def return_mineral_names(self):
         
         mineralqry = self.query(self.nametbl)
@@ -1350,6 +1375,9 @@ class cifDB(object):
             names += [row.author_name]
         
         return sorted(names)
+
+def round_value(x, prec=2, base=0.05):
+  return round(base * round(float(x)/base),prec)
 
 def capitalize_string(s):
 
