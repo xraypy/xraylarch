@@ -117,7 +117,7 @@ class EditColumnFrame(wx.Frame) :
         for i, name in enumerate(group.array_labels):
             newname = self.wids["ret_%i" % i].GetLabel()
             array_labels.append(newname)
-            setattr(group, newname, group.data[i, :])
+            # setattr(group, newname, group.data[i, :])
 
         group.array_labels = array_labels
         if callable(self.on_ok):
@@ -134,33 +134,38 @@ class SelectColumnFrame(wx.Frame) :
         self.parent = parent
         self.larch = _larch
         self.rawgroup = group
+
+
         self.subframes = {}
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
+
+        arr_labels = [l.lower() for l in self.rawgroup.array_labels]
         if self.outgroup.datatype is None:
             self.outgroup.datatype = 'raw'
-            if ('energ' in self.rawgroup.array_labels[0].lower() or
-                'energ' in self.rawgroup.array_labels[1].lower()):
+            if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
                 self.outgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-
-        self.array_sel = {'xpop': '', 'xarr': None,
-                          'ypop': '', 'yop': '/',
-                          'yarr1': None, 'yarr2': None,
+        self.array_sel = {'xpop': '',
+                          'xarr': None,
+                          'ypop': '',
+                          'yop': '/',
+                          'yarr1': None,
+                          'yarr2': None,
                           'use_deriv': False}
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
-        if self.array_sel['yarr2'] is None and 'i0' in self.rawgroup.array_labels:
+        if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
             self.array_sel['yarr2'] = 'i0'
 
         if self.array_sel['yarr1'] is None:
-            if 'itrans' in self.rawgroup.array_labels:
+            if 'itrans' in arr_labels:
                 self.array_sel['yarr1'] = 'itrans'
-            elif 'i1' in self.rawgroup.array_labels:
+            elif 'i1' in arr_labels:
                 self.array_sel['yarr1'] = 'i1'
         message = "Data Columns for %s" % self.rawgroup.filename
         wx.Frame.__init__(self, None, -1,
@@ -179,9 +184,8 @@ class SelectColumnFrame(wx.Frame) :
 
         opts = dict(action=self.onUpdate, size=(120, -1))
 
-        arr_labels = self.rawgroup.array_labels
-        yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = arr_labels + ['<index>']
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
 
         self.xarr   = Choice(panel, choices=xarr_labels, **opts)
         self.yarr1  = Choice(panel, choices= arr_labels, **opts)
@@ -272,12 +276,12 @@ class SelectColumnFrame(wx.Frame) :
 
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
-                                         size=(120, -1))
+                                         size=(240, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
         sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.wid_groupname,               (ir, 1), (1, 1), LCEN, 0)
+        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LCEN, 0)
 
 
         ir += 1
@@ -343,10 +347,9 @@ class SelectColumnFrame(wx.Frame) :
                            on_ok=self.set_array_labels,
                            _larch=self.larch)
 
-    def set_array_labels(self, array_labels):
-        arr_labels = self.rawgroup.array_labels
-        yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = arr_labels + ['<index>']
+    def set_array_labels(self, arr_labels):
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
 
         def update(wid, choices):
             curstr = wid.GetStringSelection()
@@ -397,20 +400,25 @@ class SelectColumnFrame(wx.Frame) :
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
         # dtcorr = self.dtcorr.IsChecked()
+        # print("Column Frame on Update ")
+
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
         rawgroup = self.rawgroup
         outgroup = self.outgroup
-
+        rdata = rawgroup.data
+        # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
-        if xname.startswith('<index'):
-            xname = self.rawgroup.array_labels[0]
-            rawgroup._index = 1.0*np.arange(len(getattr(rawgroup, xname)))
+
+        ncol, npts = rdata.shape
+        if xname.startswith('<index') or ix >= ncol:
+            outgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
+        else:
+            outgroup.xdat = rdata[ix, :]
 
         outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
-        outgroup.xdat = getattr(rawgroup, xname)
 
         def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
@@ -434,14 +442,10 @@ class SelectColumnFrame(wx.Frame) :
         except:
             xlabel = xname
 
-
-        def get_data(grp, arrayname, correct=False):
-            if hasattr(grp, 'get_data'):
-                return grp.get_data(arrayname, correct=correct)
-            return getattr(grp, arrayname, None)
-
         yname1  = self.yarr1.GetStringSelection().strip()
         yname2  = self.yarr2.GetStringSelection().strip()
+        iy1    = self.yarr1.GetSelection()
+        iy2    = self.yarr2.GetSelection()
         yop = self.yop.GetStringSelection().strip()
 
         ylabel = yname1
@@ -450,13 +454,19 @@ class SelectColumnFrame(wx.Frame) :
         else:
             ylabel = "%s%s%s" % (ylabel, yop, yname2)
 
-        yarr1 = get_data(rawgroup, yname1, correct=dtcorr)
-
-        if yname2 in ('0.0', '1.0'):
-            yarr2 = float(yname2)
-            if yop == '/': yarr2 = 1.0
+        if yname1 == '0.0':
+            yarr1 = np.zeros(npts)*1.0
+        elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
+            yarr1 = np.ones(npts)*1.0
         else:
-            yarr2 = get_data(rawgroup, yname2, correct=dtcorr)
+            yarr1 = rdata[iy1, :]
+
+        if yname2 == '0.0':
+            yarr2 = np.zeros(npts)*1.0
+        elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
+            yarr2 = np.ones(npts)*1.0
+        else:
+            yarr2 = rdata[iy2, :]
 
         outgroup.ydat = yarr1
         if yop == '+':
@@ -472,11 +482,10 @@ class SelectColumnFrame(wx.Frame) :
         if yerr_op.startswith('const'):
             yerr = self.yerr_const.GetValue()
         elif yerr_op.startswith('array'):
-            yerr = self.yerr_arr.GetStringSelection().strip()
-            yerr = get_data(rawgroup, yerr)
+            iyerr = self.yerr_arr.GetSelection()
+            yerr = rdata[iyerr, :]
         elif yerr_op.startswith('sqrt'):
             yerr = np.sqrt(outgroup.ydat)
-
 
         ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
         self.ysuf.SetLabel(ysuf)
