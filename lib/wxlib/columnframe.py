@@ -18,7 +18,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button,
 
 import larch
 from larch import Group
-from larch_plugins.io import fix_varname
+from larch.utils.strutils import fix_varname
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
