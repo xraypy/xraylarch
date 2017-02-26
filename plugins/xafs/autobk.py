@@ -3,14 +3,18 @@ import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
 from scipy.special import erf
-from larch import (Group, Parameter, Minimizer, Make_CallArgs,
-                   ValidateLarchPlugin, parse_group_args, isgroup)
+
+from lmfit import Parameter, Parameters, minimize
+
+from larch import (Group, Make_CallArgs, ValidateLarchPlugin,
+                   parse_group_args, isgroup)
 
 # import other plugins from std, math, and xafs modules...
 from larch.utils import (index_of, index_nearest, realimag, remove_dups)
 
 from larch_plugins.xafs import (ETOK, set_xafsGroup, ftwindow, xftf_fast,
                                 find_e0, pre_edge)
+
 
 # check for uncertainties package
 HAS_UNCERTAIN = False
@@ -20,7 +24,7 @@ try:
 except ImportError:
     pass
 
-FMT_COEF = 'c%2.2i'
+FMT_COEF = 'coef_%2.2i'
 
 def spline_eval(kraw, mu, knots, coefs, order, kout):
     """eval bkg(kraw) and chi(k) for knots, coefs, order"""
@@ -32,7 +36,8 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
             kraw=None, mu=None, kout=None, ftwin=1, kweight=1, chi_std=None,
             nclamp=0, clamp_lo=1, clamp_hi=1, **kws):
 
-    coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
+    # coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
+    coefs = [pars[FMT_COEF % i].value for i in range(ncoefs)]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
         chi = chi - chi_std
@@ -165,29 +170,26 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     knots, coefs, order = splrep(spl_k, spl_y)
 
     # set fit parameters from initial coefficients
-    params = Group()
+    params = Parameters()
     for i in range(len(coefs)):
-        name = FMT_COEF % i
-        p = Parameter(coefs[i], name=name, vary=i<len(spl_y))
-        p._getval()
-        setattr(params, name, p)
+        params.add(name = FMT_COEF % i, value=coefs[i], vary=i<len(spl_y))
 
     initbkg, initchi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                                    knots, coefs, order, kout)
 
     # do fit
-    fit = Minimizer(__resid, params, _larch=_larch, toler=1.e-4,
-                    fcn_kws = dict(ncoefs=len(coefs), chi_std=chi_std,
-                                   knots=knots, order=order,
-                                   kraw=kraw[:iemax-ie0+1],
-                                   mu=mu[ie0:iemax+1], irbkg=irbkg, kout=kout,
-                                   ftwin=ftwin, kweight=kweight,
-                                   nfft=nfft, nclamp=nclamp,
-                                   clamp_lo=clamp_lo, clamp_hi=clamp_hi))
-    fit.leastsq()
+    result = minimize(__resid, params, method='leastsq',
+                      gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                      kws = dict(ncoefs=len(coefs), chi_std=chi_std,
+                                 knots=knots, order=order,
+                                 kraw=kraw[:iemax-ie0+1],
+                                 mu=mu[ie0:iemax+1], irbkg=irbkg, kout=kout,
+                                 ftwin=ftwin, kweight=kweight,
+                                 nfft=nfft, nclamp=nclamp,
+                                 clamp_lo=clamp_lo, clamp_hi=clamp_hi))
 
     # write final results
-    coefs = [getattr(params, FMT_COEF % i) for i in range(len(coefs))]
+    coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
     bkg, chi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                            knots, coefs, order, kout)
     obkg = np.copy(mu)
@@ -201,29 +203,31 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     group.chi  = chi/edge_step
 
     # now fill in 'autobk_details' group
-    params.init_bkg = np.copy(mu)
-    params.init_bkg[ie0:ie0+len(bkg)] = initbkg
-    params.init_chi = initchi/edge_step
-    params.knots_e  = spl_e
-    params.knots_y  = np.array([coefs[i] for i in range(nspl)])
-    params.init_knots_y = spl_y
-    params.nfev = params.fit_details.nfev
-    params.kmin = kmin
-    params.kmax = kmax
-    group.autobk_details = params
+    details = Group(params=result.params)
+
+    details.init_bkg = np.copy(mu)
+    details.init_bkg[ie0:ie0+len(bkg)] = initbkg
+    details.init_chi = initchi/edge_step
+    details.knots_e  = spl_e
+    details.knots_y  = np.array([coefs[i] for i in range(nspl)])
+    details.init_knots_y = spl_y
+    details.nfev = result.nfev
+    details.kmin = kmin
+    details.kmax = kmax
+    group.autobk_details = details
 
     # uncertainties in mu0 and chi: can be fairly slow.
     if calc_uncertainties:
         nchi = len(chi)
         nmue = iemax-ie0 + 1
-        redchi = params.chi_reduced
-        covar = params.covar / redchi
+        redchi = result.redchi
+        covar  = result.covar / redchi
         jac_chi = np.zeros(nchi*nspl).reshape((nspl, nchi))
         jac_bkg = np.zeros(nmue*nspl).reshape((nspl, nmue))
 
         cvals, cerrs = [], []
         for i in range(len(coefs)):
-             par = getattr(params, FMT_COEF % i)
+             par = result.params[FMT_COEF % i]
              cvals.append(getattr(par, 'value', 0.0))
              cdel = getattr(par, 'stderr', 0.0)
              if cdel is None:
