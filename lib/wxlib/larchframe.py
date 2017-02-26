@@ -138,6 +138,82 @@ class LarchWxShell(object):
             complete = self.inptext.run(writer=self)
         self.SetPrompt(complete)
 
+class LarchPanel(wx.Panel):
+    """Larch Input/Output Panel + Data Viewer as a wx.Panel,
+    suitable for embedding into apps
+    """
+    def __init__(self,  parent=None, _larch=None,
+                 histfile='history_larchgui.lar', **kwds):
+        self.parent = parent
+        self.histfile = histfile
+
+        wx.Panel.__init__(self, parent, -1, size=(750, 725))
+
+        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        self.splitter = splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(150)
+        self.SetBackgroundColour('#E9EEE0')
+
+        self.objtree = Filling(splitter,  rootLabel='_main')
+
+        self.output = wx.TextCtrl(splitter, -1,  '',
+                                  style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+
+        self.output.CanCopy()
+        self.output.SetInsertionPointEnd()
+        self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
+
+        splitter.SplitHorizontally(self.objtree, self.output, 0.5)
+
+        ipanel = wx.Panel(self, -1)
+
+        self.prompt = wx.StaticText(ipanel, -1, 'Larch>', size=(65,-1),
+                                    style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
+
+        histFile= os.path.join(larch.site_config.larchdir, self.histfile)
+
+        self.input = ReadlineTextCtrl(ipanel, -1,  '', size=(525,-1),
+                                      historyfile=histFile, mode='emacs',
+                                      style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
+
+        self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
+        isizer = wx.BoxSizer(wx.HORIZONTAL)
+        isizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
+        isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.ALIGN_CENTER|wx.EXPAND)
+
+        ipanel.SetSizer(isizer)
+        isizer.Fit(ipanel)
+
+
+        opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(splitter,  1, **opts)
+        sizer.Add(ipanel, 0, **opts)
+
+        self.SetSizer(sizer)
+
+        self.larchshell = LarchWxShell(wxparent=self,
+                                       _larch = _larch,
+                                       prompt = self.prompt,
+                                       output = self.output,
+                                       input  = self.input)
+
+        self.objtree.SetRootObject(self.larchshell.symtable)
+
+        self.larchshell.write(larch.make_banner(), color='blue', bold=True)
+        root = self.objtree.tree.GetRootItem()
+        self.objtree.tree.Expand(root)
+
+    def onText(self, event=None):
+        text =  event.GetString()
+        self.larchshell.write(">%s\n" % text)
+        self.input.Clear()
+        if text.lower() in ('quit', 'exit'):
+            self.onExit()
+        else:
+            self.input.AddToHistory(text)
+            wx.CallAfter(self.larchshell.execute, text)
+
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
                  histfile='history_larchgui.lar',

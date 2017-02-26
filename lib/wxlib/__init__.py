@@ -8,7 +8,7 @@ from . import readlinetextctrl
 from . import utils
 from .utils import BitmapButton, FileCheckList, FileDropTarget, SetTip
 
-from .larchframe import LarchFrame
+from .larchframe import LarchFrame, LarchPanel
 from .columnframe import SelectColumnFrame, EditColumnFrame
 from .reportframe import ReportFrame
 from .floats import make_steps, set_float, FloatCtrl, NumericCombo
