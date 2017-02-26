@@ -36,6 +36,7 @@ except:
     pass
 
 from larch import Interpreter, site_config
+from larch.utils import index_of
 
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -50,7 +51,6 @@ from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
 
 from larch_plugins.wx.xrfdisplay_fitpeaks import FitSpectraFrame
 
-from larch_plugins.math import index_of
 from larch_plugins.io import GSEMCA_File, gsemca_group
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"

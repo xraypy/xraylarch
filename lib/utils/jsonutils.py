@@ -3,8 +3,7 @@
  json utilities for larch objects
 """
 import six
-import larch
-from larch import isParameter, Parameter, isgroup, Group
+from .. import isParameter, Parameter, isgroup, Group
 
 import numpy as np
 

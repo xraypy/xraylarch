@@ -6,6 +6,8 @@ import os
 import numpy as np
 np.seterr(all='ignore')
 
+from functools import partial
+
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
@@ -16,8 +18,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button,
 
 import larch
 from larch import Group
-from larch_plugins.io import fix_varname
-from larch_plugins.math.smoothing import (savitzky_golay, smooth, boxcar)
+from larch.utils.strutils import fix_varname
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -29,47 +30,142 @@ YPRE_OPS = ('', 'log(', '-log(')
 ARR_OPS = ('+', '-', '*', '/')
 
 YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
-SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
 
-
 class EditColumnFrame(wx.Frame) :
+    """Edit Column Labels for a larch grouop"""
+    def __init__(self, parent, group, on_ok=None, _larch=None):
+
+        self.group = group
+        self.on_ok = on_ok
+        self._larch = _larch
+
+        wx.Frame.__init__(self, None, -1, 'Edit Array Names',
+                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
+        self.SetFont(Font(10))
+
+        sizer = wx.GridBagSizer(4, 4)
+        if not hasattr(group, 'orig_array_labels'):
+            group.orig_array_labels = group.array_labels[:]
+
+
+        self.SetMinSize((600, 600))
+        self.colors = GUIColors()
+
+        self.wids = {}
+
+        cind = SimpleText(self, label='Column')
+        cold = SimpleText(self, label='Current Name')
+        cnew = SimpleText(self, label='Enter New Name')
+        cret = SimpleText(self, label='  Result   ', size=(150, -1))
+        cinfo = SimpleText(self, label='   Data Range')
+
+        ir = 0
+        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
+        sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
+        sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
+        sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
+        sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
+
+        for i, name in enumerate(group.array_labels):
+            ir += 1
+            cind = SimpleText(self, label='  %i ' % (i+1))
+            cold = SimpleText(self, label=' %s ' % name)
+            cret = SimpleText(self, label=fix_varname(name), size=(150, -1))
+            cnew = wx.TextCtrl(self,  value=name, size=(150, -1))
+            cnew.Bind(wx.EVT_KILL_FOCUS, partial(self.update, index=i))
+            cnew.Bind(wx.EVT_CHAR, partial(self.update_char, index=i))
+            cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
+
+            # cnew.Bind(wx.EVT_TEXT,       partial(self.update3, index=i))
+
+            arr = getattr(group, name)
+            info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
+            cinfo = SimpleText(self, label=info_str)
+            self.wids[i] = cnew
+            self.wids["ret_%i" % i] = cret
+
+            sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
+            sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
+            sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
+            sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
+            sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
+
+        sizer.Add(Button(self, 'OK', action=self.onOK), (ir+1, 1), (1, 2), LCEN, 3)
+        pack(self, sizer)
+        self.Show()
+        self.Raise()
+
+    def update(self, evt=None, index=-1):
+        newval = fix_varname(self.wids[index].GetValue())
+        self.wids["ret_%i" % index].SetLabel(newval)
+
+    def update_char(self, evt=None, index=-1):
+        if evt.GetKeyCode() == wx.WXK_RETURN:
+            self.update(evt=evt, index=index)
+        evt.Skip()
+
+    def onOK(self, evt=None):
+        group = self.group
+        array_labels = []
+        for name in group.array_labels:
+            delattr(group, name)
+
+        for i, name in enumerate(group.array_labels):
+            newname = self.wids["ret_%i" % i].GetLabel()
+            array_labels.append(newname)
+            # setattr(group, newname, group.data[i, :])
+
+        group.array_labels = array_labels
+        if callable(self.on_ok):
+            self.on_ok(array_labels)
+
+        self.Destroy()
+
+
+class SelectColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
     def __init__(self, parent, group=None, last_array_sel=None,
-                 read_ok_cb=None, edit_groupname=True, with_smooth=False,
+                 read_ok_cb=None, edit_groupname=True,
                  _larch=None):
         self.parent = parent
         self.larch = _larch
         self.rawgroup = group
-        self.with_smooth = with_smooth
+
+
+        self.subframes = {}
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
+
+        arr_labels = [l.lower() for l in self.rawgroup.array_labels]
         if self.outgroup.datatype is None:
             self.outgroup.datatype = 'raw'
-            if ('energ' in self.rawgroup.array_labels[0].lower() or
-                'energ' in self.rawgroup.array_labels[1].lower()):
+            if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
                 self.outgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-
-        self.array_sel = {'xpop': '', 'xarr': None,
-                          'ypop': '', 'yop': '/',
-                          'yarr1': None, 'yarr2': None,
+        self.array_sel = {'xpop': '',
+                          'xarr': None,
+                          'ypop': '',
+                          'yop': '/',
+                          'yarr1': None,
+                          'yarr2': None,
                           'use_deriv': False}
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
-        if self.array_sel['yarr2'] is None and 'i0' in self.rawgroup.array_labels:
+        if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
             self.array_sel['yarr2'] = 'i0'
 
         if self.array_sel['yarr1'] is None:
-            if 'itrans' in self.rawgroup.array_labels:
+            if 'itrans' in arr_labels:
                 self.array_sel['yarr1'] = 'itrans'
-            elif 'i1' in self.rawgroup.array_labels:
+            elif 'i1' in arr_labels:
                 self.array_sel['yarr1'] = 'i1'
         message = "Data Columns for %s" % self.rawgroup.filename
         wx.Frame.__init__(self, None, -1,
@@ -88,9 +184,8 @@ class EditColumnFrame(wx.Frame) :
 
         opts = dict(action=self.onUpdate, size=(120, -1))
 
-        arr_labels = self.rawgroup.array_labels
-        yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = arr_labels + ['<index>']
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
 
         self.xarr   = Choice(panel, choices=xarr_labels, **opts)
         self.yarr1  = Choice(panel, choices= arr_labels, **opts)
@@ -118,29 +213,6 @@ class EditColumnFrame(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-
-        if with_smooth:
-            opts['action'] = self.onSmoothChoice
-            self.smooth_op = Choice(panel, choices=SMOOTH_OPS, **opts)
-            self.smooth_op.SetSelection(0)
-
-            opts['size'] = (100, -1)
-
-            opts['action'] = self.onUpdate
-            smooth_panel = wx.Panel(panel)
-            smooth_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.smooth_conv = Choice(smooth_panel, choices=CONV_OPS, **opts)
-            opts['size'] =  (30, -1)
-            self.smooth_c0 = FloatCtrl(smooth_panel, value=3, precision=0, **opts)
-            self.smooth_c1 = FloatCtrl(smooth_panel, value=1, precision=0, **opts)
-            opts['size'] =  (75, -1)
-            self.smooth_sig = FloatCtrl(smooth_panel, value=1, precision=4, **opts)
-            self.smooth_c0.Disable()
-            self.smooth_c1.Disable()
-            self.smooth_sig.Disable()
-            self.smooth_conv.SetSelection(0)
-            self.smooth_conv.Disable()
-
 
         ylab = SimpleText(panel, 'Y = ')
         xlab = SimpleText(panel, 'X = ')
@@ -170,6 +242,7 @@ class EditColumnFrame(wx.Frame) :
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(Button(bpanel, 'OK', action=self.onOK), 4)
         bsizer.Add(Button(bpanel, 'Cancel', action=self.onCancel), 4)
+        bsizer.Add(Button(bpanel, 'Edit Array Names', action=self.onEditNames), 4)
         pack(bpanel, bsizer)
 
         sizer = wx.GridBagSizer(4, 8)
@@ -197,35 +270,18 @@ class EditColumnFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
 
-        if with_smooth:
-            ir += 1
-            sizer.Add(SimpleText(panel, 'Smoothing:'), (ir, 0), (1, 1), LCEN, 0)
-            sizer.Add(self.smooth_op,  (ir, 1), (1, 1), CEN, 0)
-
-            smooth_sizer.Add(SimpleText(smooth_panel, ' n='), 0, LCEN, 1)
-            smooth_sizer.Add(self.smooth_c0,  0, LCEN, 1)
-            smooth_sizer.Add(SimpleText(smooth_panel, ' order='), 0, LCEN, 1)
-            smooth_sizer.Add(self.smooth_c1,  0, LCEN, 1)
-            smooth_sizer.Add(SimpleText(smooth_panel, ' form='), 0, LCEN, 1)
-            smooth_sizer.Add(self.smooth_conv,  0, LCEN, 1)
-            smooth_sizer.Add(SimpleText(smooth_panel, ' sigma='), 0, LCEN, 1)
-            smooth_sizer.Add(self.smooth_sig,  0, LCEN, 1)
-            pack(smooth_panel, smooth_sizer)
-
-            sizer.Add(smooth_panel,  (ir, 2), (1, 5), LCEN, 1)
-
         ir += 1
         sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LCEN, 0)
         sizer.Add(self.datatype,                    (ir, 1), (1, 2), LCEN, 0)
 
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
-                                         size=(120, -1))
+                                         size=(240, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
         sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.wid_groupname,               (ir, 1), (1, 1), LCEN, 0)
+        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LCEN, 0)
 
 
         ir += 1
@@ -270,10 +326,44 @@ class EditColumnFrame(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-
         self.Show()
         self.Raise()
         self.onUpdate(self)
+
+    def show_subframe(self, name, frameclass, **opts):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self, **opts)
+
+    def onEditNames(self, evt=None):
+        self.show_subframe('editcol', EditColumnFrame,
+                           group=self.rawgroup,
+                           on_ok=self.set_array_labels,
+                           _larch=self.larch)
+
+    def set_array_labels(self, arr_labels):
+        yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
+        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
+
+        def update(wid, choices):
+            curstr = wid.GetStringSelection()
+            curind = wid.GetSelection()
+            wid.SetChoices(choices)
+            if curstr in choices:
+                wid.SetStringSelection(curstr)
+            else:
+                wid.SetSelection(curind)
+        update(self.xarr,  xarr_labels)
+        update(self.yarr1, yarr_labels)
+        update(self.yarr2, yarr_labels)
+        update(self.yerr_arr, yarr_labels)
+        self.onUpdate()
 
     def onOK(self, event=None):
         """ build arrays according to selection """
@@ -307,41 +397,28 @@ class EditColumnFrame(wx.Frame) :
             self.yerr_arr.Enable()
         self.onUpdate()
 
-    def onSmoothChoice(self, evt=None):
-        choice = self.smooth_op.GetStringSelection().lower()
-        conv  = self.smooth_conv.GetStringSelection()
-        self.smooth_c0.Disable()
-        self.smooth_c1.Disable()
-        self.smooth_conv.Disable()
-        self.smooth_sig.Disable()
-
-        if choice.startswith('box'):
-            self.smooth_c0.Enable()
-        elif choice.startswith('savi'):
-            self.smooth_c0.Enable()
-            self.smooth_c1.Enable()
-        elif choice.startswith('conv'):
-            self.smooth_conv.Enable()
-            self.smooth_sig.Enable()
-        self.onUpdate()
-
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
         # dtcorr = self.dtcorr.IsChecked()
+        # print("Column Frame on Update ")
+
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
         rawgroup = self.rawgroup
         outgroup = self.outgroup
-
+        rdata = rawgroup.data
+        # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
-        if xname == '<index>':
-            xname = self.rawgroup.array_labels[0]
-            outgroup._index = 1.0*np.arange(len(getattr(rawgroup, xname)))
+
+        ncol, npts = rdata.shape
+        if xname.startswith('<index') or ix >= ncol:
+            outgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
+        else:
+            outgroup.xdat = rdata[ix, :]
 
         outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
-        outgroup.xdat = getattr(rawgroup, xname)
 
         def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
@@ -365,14 +442,10 @@ class EditColumnFrame(wx.Frame) :
         except:
             xlabel = xname
 
-
-        def get_data(grp, arrayname, correct=False):
-            if hasattr(grp, 'get_data'):
-                return grp.get_data(arrayname, correct=correct)
-            return getattr(grp, arrayname, None)
-
         yname1  = self.yarr1.GetStringSelection().strip()
         yname2  = self.yarr2.GetStringSelection().strip()
+        iy1    = self.yarr1.GetSelection()
+        iy2    = self.yarr2.GetSelection()
         yop = self.yop.GetStringSelection().strip()
 
         ylabel = yname1
@@ -381,13 +454,19 @@ class EditColumnFrame(wx.Frame) :
         else:
             ylabel = "%s%s%s" % (ylabel, yop, yname2)
 
-        yarr1 = get_data(rawgroup, yname1, correct=dtcorr)
-
-        if yname2 in ('0.0', '1.0'):
-            yarr2 = float(yname2)
-            if yop == '/': yarr2 = 1.0
+        if yname1 == '0.0':
+            yarr1 = np.zeros(npts)*1.0
+        elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
+            yarr1 = np.ones(npts)*1.0
         else:
-            yarr2 = get_data(rawgroup, yname2, correct=dtcorr)
+            yarr1 = rdata[iy1, :]
+
+        if yname2 == '0.0':
+            yarr2 = np.zeros(npts)*1.0
+        elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
+            yarr2 = np.ones(npts)*1.0
+        else:
+            yarr2 = rdata[iy2, :]
 
         outgroup.ydat = yarr1
         if yop == '+':
@@ -403,11 +482,10 @@ class EditColumnFrame(wx.Frame) :
         if yerr_op.startswith('const'):
             yerr = self.yerr_const.GetValue()
         elif yerr_op.startswith('array'):
-            yerr = self.yerr_arr.GetStringSelection().strip()
-            yerr = get_data(rawgroup, yerr)
+            iyerr = self.yerr_arr.GetSelection()
+            yerr = rdata[iyerr, :]
         elif yerr_op.startswith('sqrt'):
             yerr = np.sqrt(outgroup.ydat)
-
 
         ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
         self.ysuf.SetLabel(ysuf)
@@ -418,23 +496,6 @@ class EditColumnFrame(wx.Frame) :
                                  np.gradient(outgroup.xdat))
             except:
                 pass
-
-        # apply smoothhing here
-        if self.with_smooth:
-            smoother = self.smooth_op.GetStringSelection().lower()
-            if smoother.startswith('box'):
-                n = int(self.smooth_c0.GetValue())
-                outgroup.ydat = boxcar(outgroup.ydat, n)
-            elif smoother.startswith('savit'):
-                n = int(self.smooth_c0.GetValue())
-                win_size = 2*n + 1
-                order = int(self.smooth_c1.GetValue())
-                outgroup.ydat = savitzky_golay(outgroup.ydat, win_size, order)
-            elif smoother.startswith('conv'):
-                sigma = float(self.smooth_sig.GetValue())
-                form  = str(self.smooth_conv.GetStringSelection()).lower()
-                outgroup.ydat = smooth(outgroup.xdat, outgroup.ydat,
-                                       sigma=sigma, form=form)
 
         self.array_sel = {'xpop': xpop, 'xarr': xname,
                      'ypop': ypop, 'yop': yop,
@@ -461,12 +522,10 @@ class EditColumnFrame(wx.Frame) :
             outgroup.energy = outgroup.xdat
             outgroup.mu     = outgroup.ydat
 
-        popts = {}
         path, fname = os.path.split(outgroup.filename)
-        popts['label'] = "%s: %s" % (fname, outgroup.plot_ylabel)
-        popts['title']  = fname
-        popts['ylabel'] = outgroup.plot_ylabel
-        popts['xlabel'] = outgroup.plot_xlabel
+        popts = dict(marker='o', markersize=4, linewidth=1.5,
+                     title=fname, ylabel=ylabel, xlabel=xlabel,
+                     label="%s: %s" % (fname, outgroup.plot_ylabel))
 
         self.plotpanel.plot(outgroup.xdat, outgroup.ydat, **popts)
 
