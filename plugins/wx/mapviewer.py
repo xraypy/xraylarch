@@ -133,7 +133,7 @@ def isGSECARS_Domain():
 
 def suppress_hotcols(hotcols_wid, datafile):
     """returns whether to suppress hot columns"""
-    scanversion = geattr(datafile, 'scan_version', 1.00)
+    scanversion = getattr(datafile, 'scan_version', 1.00)
     return hotcols_wid.IsChecked() and scanversion < 1.36
 
 
