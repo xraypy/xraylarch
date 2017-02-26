@@ -29,7 +29,7 @@ from larch.utils import index_of, savitzky_golay, smooth, boxcar
 
 from larch.larchlib import read_workdir, save_workdir
 
-from larch.wxlib import (LarchFrame, SelectColumnFrame, ReportFrame,
+from larch.wxlib import (LarchPanel, SelectColumnFrame, ReportFrame,
                          BitmapButton, FileCheckList, FloatCtrl, SetTip)
 
 from larch.fitting import fit_report
@@ -510,18 +510,10 @@ class XYFitController():
         self.fit_opts = {}
         self.group = None
         self.groupname = None
-        self.larch_buffer = None
         self.report_frame = None
         self.symtable = self.larch.symtable
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', self)
-
-    def show_larch_buffer(self):
-        if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(parent=self.wxparent,
-                                           _larch=self.larch)
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
 
     def show_report(self, text, evt=None):
         shown = False
@@ -708,7 +700,6 @@ class XYFitFrame(wx.Frame):
         title = "Larch XYFit: XY Data Viewing & Curve Fitting"
         self.controller = XYFitController(wxparent=self, _larch=_larch)
         self.larch = self.controller.larch
-        self.larch_buffer = self.controller.larch_buffer
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -783,9 +774,11 @@ class XYFitFrame(wx.Frame):
 
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
+        self.larch_panel =  LarchPanel(_larch=self.larch, **panel_opts)
 
-        self.nb.AddPage(self.proc_panel, ' Data Processing ',   True)
-        self.nb.AddPage(self.fit_panel,  ' Curve Fitting ',  True)
+        self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
+        self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
+        self.nb.AddPage(self.larch_panel, ' Larch Shell ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.SetSelection(0)
@@ -847,9 +840,6 @@ class XYFitFrame(wx.Frame):
         self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
         self.Raise()
 
-    def onShowLarchBuffer(self, evt=None):
-        self.controller.show_larch_buffer()
-
     def ShowFile(self, evt=None, groupname=None, **kws):
         filename = None
         if evt is not None:
@@ -877,10 +867,6 @@ class XYFitFrame(wx.Frame):
         fmenu = wx.Menu()
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
-
-        MenuItem(self, fmenu, "Show Larch Buffer\tCtrl+L",
-                  "Show Larch Programming Buffer",
-                  self.onShowLarchBuffer)
 
         MenuItem(self, fmenu, "Re-select Data Columns\tCtrl+R",
                  "Change which data columns used for this file",
@@ -923,12 +909,6 @@ class XYFitFrame(wx.Frame):
     def onClose(self, evt):
         save_workdir('scanviewer.dat')
         self.proc_panel.proc_timer.Stop()
-
-        if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.onClose()
-            except:
-                pass
 
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
@@ -1029,11 +1009,12 @@ class XYFitFrame(wx.Frame):
         editing a datagroup
 
         """
+        print("xyfit onRead OK " , datagroup, array_sel)
         if array_sel is not None:
             self.last_array_sel = array_sel
         filename = datagroup.filename
         groupname = datagroup.groupname
-        # print("READ OK  storing datagroup ", datagroup, groupname, filename)
+        print("READ OK  storing datagroup ", datagroup, groupname, filename)
         # file /group may already exist in list
         if filename in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
