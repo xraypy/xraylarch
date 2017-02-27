@@ -983,107 +983,23 @@ class cifDB(object):
 ##################################################################################
 ##################################################################################
 
-    def fraction_in_range(self,amcsd_id,cnt,qmin=None,qmax=None):
-    
-        peak_id = self.id_in_range(amcsd_id,qmin=qmin,qmax=qmax)
-        if len(peak_id) > 0:
-            return float(cnt)/len(peak_id)
-        else:
-            return 0
+    def qid_in_range(self,amcsd,qmin=QMIN,qmax=QMAX):
 
-    def id_in_range(self,amcsd_id,qmin=None,qmax=None):
-    
-        if qmin is None: qmin = np.min(self.search_for_q)
-        if qmax is None: qmax = np.max(self.search_for_q)
-
-        min_id = self.search_for_q(qmin)
-        max_id = self.search_for_q(qmax)
-
-        search_qpeaks = self.qref.select(self.qref.c.amcsd_id == amcsd_id)
-        peak_id = [row.q_id for row in search_qpeaks.execute() if row.q_id >= min_id and row.q_id <= max_id]
-        
-        return peak_id        
-
-    def q_in_range(self,amcsd_id,qmin=None,qmax=None):
-
-        peak_id = self.id_in_range(amcsd_id,qmin=qmin,qmax=qmax)
-        peak_q  = ((np.array(peak_id)-1)*QSTEP) + QMIN
-        return peak_q
-
-    def amcsd_by_q(self,include=[],list=None,verbose=False):
-
-        q_incld  = []
-        id_incld = []
-
-        all_matches = []
-        matches = []
-        count = []
-
-        
-        if len(include) > 0:
-            for q in include:
-                q  = round_value(q,base=QSTEP)
-                id = self.search_for_q(q)
-                if id is not None and id not in id_incld:
-                    id_incld += [id]
-                        
-        usr_qry = self.query(self.ciftbl,self.qtbl,self.qref)\
+        usr_qry = self.query(self.ciftbl,self.qref,self.qtbl)\
                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)
-        if list is not None:
-            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
+                      .filter(self.qref.c.amcsd_id == amcsd)\
+                      .filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
+        return [row.q_id for row in usr_qry.all()]
 
-        ##  Searches composition of database entries
+    def q_in_range(self,amcsd,qmin=QMIN,qmax=QMAX):
 
-        if len(id_incld) > 0:
-            fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))
-#             fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))\
-#                              .group_by(self.qref.c.amcsd_id)\
-#                              .having(func.count()>2)## having at least two in range is important
-            for row in fnl_qry.all():
-
-                if row.amcsd_id not in matches:
-                    matches += [row.amcsd_id]
-                    count += [1]
-                else:
-                    idx = matches.index(row.amcsd_id)
-                    count[idx] = count[idx]+1
-
-        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > 2]
-        count_matches = [y for y, x in sorted(zip(count,matches)) if y > 2]
-       
-        return amcsd_matches,count_matches
-
-
-    def find_by_q(self,broadened_pks,minpeaks=2):
-
-        all_matches = []
-        matches = []
-        count = []
-        
-        for q in broadened_pks:
-            q_matches = []
-            q0  = round_value(q,base=QSTEP) ## rounds to closest step in q-range
-            search_qrange = self.qtbl.select(self.qtbl.c.q == q0)
-            for row in search_qrange.execute():
-                q_id = row.q_id
-                search_amcsd = self.qref.select(self.qref.c.q_id == q_id)
-                for row in search_amcsd.execute():
-                    if row.amcsd_id not in q_matches:
-                        q_matches += [row.amcsd_id]
-                    if row.amcsd_id not in matches:
-                        matches += [row.amcsd_id]
-                        count += [1]
-                    else:
-                        idx = matches.index(row.amcsd_id)
-                        count[idx] = count[idx]+1
-
-            all_matches += [q_matches]
-
-        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
-        count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
-       
-        return amcsd_matches,count_matches
+        usr_qry = self.query(self.ciftbl,self.qref,self.qtbl)\
+                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
+                      .filter(self.qref.c.amcsd_id == amcsd)\
+                      .filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
+        return [float(row.q) for row in usr_qry.all()]
 
 ##################################################################################
 
@@ -1170,6 +1086,51 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
+
+    def amcsd_by_q(self,include=[],list=None,verbose=False,minpeaks=2):
+
+        q_incld  = []
+        id_incld = []
+
+        all_matches = []
+        matches = []
+        count = []
+
+        
+        if len(include) > 0:
+            for q in include:
+                q  = round_value(q,base=QSTEP)
+                id = self.search_for_q(q)
+                if id is not None and id not in id_incld:
+                    id_incld += [id]
+                        
+        usr_qry = self.query(self.ciftbl,self.qtbl,self.qref)\
+                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)
+        if list is not None:
+            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+
+        ##  Searches composition of database entries
+
+        if len(id_incld) > 0:
+            fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))
+#             fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))\
+#                              .group_by(self.qref.c.amcsd_id)\
+#                              .having(func.count()>2)## having at least two in range is important
+            for row in fnl_qry.all():
+
+                if row.amcsd_id not in matches:
+                    matches += [row.amcsd_id]
+                    count += [1]
+                else:
+                    idx = matches.index(row.amcsd_id)
+                    count[idx] = count[idx]+1
+
+        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
+        count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
+       
+        return amcsd_matches,count_matches
+
 
     def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
 

@@ -71,8 +71,8 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-#         wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
-        wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
+        wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
+#         wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
         
@@ -1422,9 +1422,8 @@ class Fitting1DXRD(BasePanel):
 
     def onMatch(self,event=None):
         
-        #self.match_database()
         fracq = float(self.val_gdnss.GetValue())
-
+        self.match_database(fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
                   
 #         self.owner.write_message('Searching database for matches...')
 #         db_thread = Thread(target=partial(self.match_database,fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
@@ -1432,23 +1431,24 @@ class Fitting1DXRD(BasePanel):
 #         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
 #         db_thread.join()
 #         self.owner.write_message('')
-        
-        self.match_database(fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
+
 
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
-                       data=None,ipks=None,cifdatabase=None):
+                       data=None,ipks=None,cifdatabase=None,
+                       verbose=False):
         '''
         fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
         pk_wid - maximum range in q which qualifies as a match between fitted and ideal
         data,ipks,cifdatabase - all read from gui but possible to alter
         '''
+        errorchecking = True # mkak 2017.02.27 to be removed
+    
     
         q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
         minq = np.min(data[0])
         maxq = np.max(data[0])
 
         qstep = QSTEP ## these quantities come from cifdb.py
-        qmin  = QMIN
         
         peaks = []
         p_ids = []
@@ -1466,43 +1466,33 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
-        print 'peaks!',len(q_pks),len(peaks)
-        matches,count = cifdatabase.find_by_q(peaks)
-        print 'matches...',len(matches)
-        print zip(matches,count)
-        print
-        print
-        
-        print 'TRY TWO'
-        print q_pks
-        print 'peaks!',len(q_pks),len(peaks)
         matches,count = cifdatabase.amcsd_by_q(peaks)
-        print 'matches...',len(matches)
-        print zip(matches,count)
-        print
-        print
-        
         goodness = np.zeros(np.shape(count))       
-
+           
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            goodness[i] = cifdatabase.fraction_in_range(amcsd,cnt,
-                                                                qmin=minq,
-                                                                qmax=maxq)
+            peak_id = sorted(cifdatabase.qid_in_range(amcsd,qmin=minq,qmax=maxq))
+            if len(peak_id) > 0:
+                goodness[i] = float(cnt)/len(peak_id)
+
         try:
-            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
+            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
         except:
             matches,count,goodness = [],[],[]
 
-        print 'matches?',len(matches)
-        if len(matches) > 0:
-            for i,amcsd in enumerate(matches):
-                print 'a'
-                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
-                      cifdatabase.mineral_by_amcsd(amcsd),goodness[i],count[i],count[i]/goodness[i])
-                print 'b'
+        
+        for i,amcsd in enumerate(matches):
+            if verbose:
+                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
+                         cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
+                         count[i],count[i]/goodness[i])
                 print(str)
-                print(cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
+                #print(cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
 
+        if errorchecking and len(matches) > 0:
+            print '\n%i ENTRIES MATCH' % len(matches)
+            if len(matches) < 5:
+                for amcsd in matches:
+                    self.owner.cifdatabase.print_amcsd_info(amcsd)
 
 
 class BackgroundOptions(wx.Dialog):
