@@ -1470,7 +1470,7 @@ class Fitting1DXRD(BasePanel):
         goodness = np.zeros(np.shape(count))       
            
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            peak_id = sorted(cifdatabase.qid_in_range(amcsd,qmin=minq,qmax=maxq))
+            peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
             if len(peak_id) > 0:
                 goodness[i] = float(cnt)/len(peak_id)
 
@@ -1486,7 +1486,7 @@ class Fitting1DXRD(BasePanel):
                          cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
                          count[i],count[i]/goodness[i])
                 print(str)
-                #print(cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
+                #print(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
 
         if errorchecking and len(matches) > 0:
             print '\n%i ENTRIES MATCH' % len(matches)

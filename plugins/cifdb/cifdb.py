@@ -659,14 +659,14 @@ class cifDB(object):
         self.nametbl = Table('nametbl', self.metadata)
         self.spgptbl = Table('spgptbl', self.metadata)
         self.symtbl  = Table('symtbl',  self.metadata)
-        self.authtbl = Table('authtbl', self.metadata)
+        self.authorstbl = Table('authtbl', self.metadata)
         self.qtbl    = Table('qtbl',    self.metadata)
         self.cattbl  = Table('cattbl',  self.metadata)
         ###################################################
         ## Cross-reference tables
         self.symref  = Table('symref', self.metadata)
         self.compref = Table('compref', self.metadata)
-        self.authref = Table('authref', self.metadata)
+        self.authorsref = Table('authref', self.metadata)
         self.qref    = Table('qref', self.metadata)
         self.catref  = Table('catref', self.metadata)
         ###################################################
@@ -779,12 +779,12 @@ class cifDB(object):
         def_name = self.nametbl.insert()
         def_spgp = self.spgptbl.insert()
         def_sym  = self.symtbl.insert()
-        def_auth = self.authtbl.insert()
+        def_auth = self.authorstbl.insert()
         def_q    = self.qtbl.insert()
         def_cat  = self.cattbl.insert()
         add_sym  = self.symref.insert()
         add_comp = self.compref.insert()
-        add_auth = self.authref.insert()
+        add_auth = self.authorsref.insert()
         add_q    = self.qref.insert()
         add_cat  = self.catref.insert()
         new_cif  = self.ciftbl.insert()
@@ -835,13 +835,13 @@ class cifDB(object):
         ## Find author_name
         for author_name in authors:
             match = False
-            search_author = self.authtbl.select(self.authtbl.c.author_name == author_name)
+            search_author = self.authorstbl.select(self.authorstbl.c.author_name == author_name)
             for row in search_author.execute():
                 author_id = row.author_id
                 match = True
             if match is False:
                 def_auth.execute(author_name=author_name)
-                search_author = self.authtbl.select(self.authtbl.c.author_name == author_name)
+                search_author = self.authorstbl.select(self.authorstbl.c.author_name == author_name)
                 for row in search_author.execute():
                     author_id = row.author_id
                     match = True
@@ -939,11 +939,11 @@ class cifDB(object):
 #                 for elmtrow in search_periodic.execute():
 #                     composition = '%s %s' % (composition,elmtrow.element_symbol)
 #                     
-#             search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
+#             search_authors = self.authorsref.select(self.authorsref.c.amcsd_id == amcsd_id)
 #             authors = ''
 #             for atrrow in search_authors.execute():
 #                 author_id = atrrow.author_id
-#                 search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
+#                 search_alist = self.authorstbl.select(self.authorstbl.c.author_id == author_id)
 #                 for block in search_alist.execute():
 #                     if authors == '':
 #                         authors = '%s' % (block.author_name)
@@ -965,10 +965,10 @@ class cifDB(object):
 
 #         usr_qry = self.query(self.ciftbl,
 #                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
-#                              self.authtbl,self.qtbl,self.cattbl,
-#                              self.authref,self.qref,self.compref,self.catref,self.symref)\
-#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
+#                              self.authorstbl,self.qtbl,self.cattbl,
+#                              self.authorsref,self.qref,self.compref,self.catref,self.symref)\
+#                       .filter(self.authorsref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.authorstbl.c.author_id == self.authorsref.c.author_id)\
 #                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
 #                       .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
 #                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
@@ -983,23 +983,6 @@ class cifDB(object):
 ##################################################################################
 ##################################################################################
 
-    def qid_in_range(self,amcsd,qmin=QMIN,qmax=QMAX):
-
-        usr_qry = self.query(self.ciftbl,self.qref,self.qtbl)\
-                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
-                      .filter(self.qref.c.amcsd_id == amcsd)\
-                      .filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
-        return [row.q_id for row in usr_qry.all()]
-
-    def q_in_range(self,amcsd,qmin=QMIN,qmax=QMAX):
-
-        usr_qry = self.query(self.ciftbl,self.qref,self.qtbl)\
-                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
-                      .filter(self.qref.c.amcsd_id == amcsd)\
-                      .filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
-        return [float(row.q) for row in usr_qry.all()]
 
 ##################################################################################
 
@@ -1040,13 +1023,28 @@ class cifDB(object):
         #mineral_name = self.mineral_by_amcsd(amcsd_id)
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         ALLelements  = self.composition_by_amcsd(amcsd_id)
-        authors      = self.author_by_amcsd(amcsd_id)
+        authors      = self.authorsor_by_amcsd(amcsd_id)
         
         return ALLelements,mineral_name,iuc_id,authors
 
+    def q_by_amcsd(self,amcsd,qmin=None,qmax=None):
+
+        usr_qry = self.query(self.ciftbl,self.qref,self.qtbl)\
+                      .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
+                      .filter(self.qref.c.amcsd_id == amcsd)
+        if qmin is not None and qmax is not None:
+            usr_qry = usr_qry.filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
+        elif qmin is not None:
+            usr_qry = usr_qry.filter(self.qtbl.c.q > qmin)        
+        elif qmax is not None:
+            usr_qry = usr_qry.filter(self.qtbl.c.q < qmax)
+            
+        return [float(row.q) for row in usr_qry.all()]
+
     def author_by_amcsd(self,amcsd_id):
 
-        search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
+        search_authors = self.authorsref.select(self.authorsref.c.amcsd_id == amcsd_id)
         authors = []
         for row in search_authors.execute():
             authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
@@ -1221,15 +1219,15 @@ class cifDB(object):
         print auth_id
 
         ##  Searches mineral name for database entries
-        usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
-                      .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.authref.c.author_id == self.authtbl.c.author_id)
+        usr_qry = self.query(self.ciftbl,self.authorstbl,self.authorsref)\
+                      .filter(self.authorsref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.authorsref.c.author_id == self.authorstbl.c.author_id)
         if list is not None:
             usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
 
         ##  Searches author name in database entries
         if len(auth_id) > 0:
-            fnl_qry = usr_qry.filter(self.authref.c.author_id.in_(auth_id))
+            fnl_qry = usr_qry.filter(self.authorsref.c.author_id.in_(auth_id))
             ## This currently works in an 'or' fashion, as each name in list
             ## can be matched to multiple auth_id values, so it is simpler to
             ## consider them all separately. Making a 2D list and restructuring
@@ -1304,9 +1302,9 @@ class cifDB(object):
         authid   = []
 
         id,name = filter_int_and_str(name,exact=exact)
-        authrow = self.query(self.authtbl)\
-                      .filter(or_(self.authtbl.c.author_name.like(name),
-                                  self.authtbl.c.author_id  == id))
+        authrow = self.query(self.authorstbl)\
+                      .filter(or_(self.authorstbl.c.author_name.like(name),
+                                  self.authorstbl.c.author_id  == id))
         if len(authrow.all()) == 0:
             if verbose: print '%s not found in author database.' % name
         else:
@@ -1375,7 +1373,7 @@ class cifDB(object):
 
     def return_author_names(self):
         
-        authorqry = self.query(self.authtbl)
+        authorqry = self.query(self.authorstbl)
         names = []
         for row in authorqry.all():
             names += [row.author_name]
@@ -1414,10 +1412,192 @@ def filter_int_and_str(s,exact=False):
 ##
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+class SearchCIFdb(object):
+    '''
+    interface to the search the cif database
+    '''
+    def __init__(self, verbose=False):
+    
+        self.verbose = verbose
+        
+        ## running list of included amcsd id numbers
+        self.amcsd_id = []
+
+        ## tags for searching
+        self.authors   = []
+        self.mnrlname  = []
+
+        self.elem_incl = []
+        self.elem_excl = []
+        self.allelem   = column(ELEMENTS,2)
+
+        self.spgp      = None
+        self.a1        = None
+        self.a2        = None
+        self.b1        = None
+        self.b2        = None
+        self.c1        = None
+        self.c2        = None
+        self.alpha1    = None
+        self.alpha2    = None
+        self.beta1     = None
+        self.beta2     = None
+        self.gamma1    = None
+        self.gamma2    = None
+
+        self.q_list    = []
 
 
+        self.keywords  = []
+        self.categorys = []
+        
+    def print_author(self):
+
+        str = ''
+        if len(self.authors) > 0:
+            for i,author in enumerate(self.authors):
+                author = author.split()[0]
+                if i == 0:
+                    str = '%s' % (author)
+                else:
+                    str = '%s, %s' % (str,author)
+        return str
+
+        
+    def read_author(self,str,clear=True):
+       
+        if clear:
+            self.authors = []
+        if len(str) > 0:
+            for a in str.split(','):
+                 self.authors += [a.split()[0]]
+        
+    def print_chemistry(self):
+    
+        ## hard code? mkak 2017.02.27
+        self.elem_cnt = 100
+        
+        str = ''
+        for i,elem in enumerate(self.elem_incl):
+            if i==0:
+                str = '(%s' % elem
+            else:
+                str = '%s,%s' % (str,elem)
+        if len(self.elem_incl) > 0:
+            str = '%s) ' % str 
+        if len(self.elem_excl) > 0:
+            str = '%s- ' % str
+        # if all else excluded, don't list
+        if (len(self.allelem)-20) > (len(self.elem_incl)+len(self.elem_excl)): 
+            for i,elem in enumerate(self.elem_excl):
+                if i==0:
+                    str = '%s(%s' % (str,elem)
+                else:
+                    str = '%s,%s' % (str,elem)
+            if len(self.elem_excl) > 0:
+                str = '%s)' % str
+        return str
+                
+    def read_chemistry(self,str,clear=True):
+       
+        if clear:
+            self.elem_incl,self.elem_excl = [],[]
+        chem_incl,chem_excl = [],[]
+
+        chemstr = re.sub('[( )]','',str)
+        ii = -1
+        for i,s in enumerate(chemstr):
+            if s == '-':
+                ii = i
+        if ii > 0:
+            chem_incl = chemstr[0:ii].split(',')
+            if len(chemstr)-ii == 1:
+                for elem in self.allelem:
+                    if elem not in chem_incl:
+                        chem_excl += [elem]
+            elif ii < len(chemstr)-1:
+                chem_excl = chemstr[ii+1:].split(',')
+        else:
+            chem_incl = chemstr.split(',')
+
+        for elem in chem_incl:
+            if elem in self.allelem and elem not in self.elem_incl:
+                self.elem_incl += [elem]
+                if elem in self.elem_excl:
+                    j = self.elem_excl.index(elem)
+                    self.elem_excl.pop(j)
+        for elem in chem_excl:
+            if elem in self.allelem and elem not in self.elem_excl and elem not in self.elem_incl:
+                self.elem_excl += [elem]
+
+#### a=1to1.1 and b=2to2.2 and c=3to3.3 and alpha=4to4.4 and beta=5to5.5 and gamma=6to6.6 and sg=A-1
+
+    def print_geometry(self,unit='A',angle='deg'):
+
+        str = ''
+        
+        if self.spgp is not None:
+             str = '%ssg=%i,' % (str,self.spgp)
+        if self.a1 is not None:
+             if self.a2 is not None:
+                 str = '%sa=%0.3fto%0.3fA,' % (str,self.a1,self.a2)             
+             else:
+                 str = '%sa=%0.3fA,' % (str,self.a1)
+        if self.b1 is not None:
+             if self.b2 is not None:
+                 str = '%sb=%0.3fto%0.3fA,' % (str,self.b1,self.b2)             
+             else:
+                 str = '%sb=%0.3fA,' % (str,self.b1)
+        if self.c1 is not None:
+             if self.c2 is not None:
+                 str = '%sc=%0.3fto%0.3fA,' % (str,self.c1,self.c2)             
+             else:
+                 str = '%sc=%0.3fA,' % (str,self.c1)
+        if angle.lower()[0:3] == 'deg':
+            if self.alpha1 is not None:
+                 if self.alpha2 is not None:
+                     str = '%salpha=%0.1fto%0.1fdeg,' % (str,self.alpha1,self.alpha2)             
+                 else:
+                     str = '%salpha=%0.1fdeg,' % (str,self.alpha1)
+            if self.beta1 is not None:
+                 if self.beta2 is not None:
+                     str = '%sbeta=%0.1fto%0.1fdeg,' % (str,self.beta1,self.beta2)             
+                 else:
+                     str = '%sbeta=%0.1fdeg,' % (str,self.beta1)
+            if self.gamma1 is not None:
+                 if self.gamma2 is not None:
+                     str = '%sgamma=%0.1fto%0.1fdeg,' % (str,self.gamma1,self.gamma2)             
+                 else:
+                     str = '%sgamma=%0.1fdeg,' % (str,self.gamma1)
+        else:
+            if self.alpha1 is not None:
+                 if self.alpha2 is not None:
+                     str = '%salpha=%0.3fto%0.3frad,' % (str,np.radians(self.alpha1),
+                                                             np.radians(self.alpha2))
+                 else:
+                     str = '%salpha=%0.3frad,' % (str,np.radians(self.alpha1))
+            if self.beta1 is not None:
+                 if self.beta2 is not None:
+                     str = '%sbeta=%0.3fto%0.3frad,' % (str,np.radians(self.beta1),
+                                                            np.radians(self.beta2))
+                 else:
+                     str = '%sbeta=%0.3frad,' % (str,np.radians(self.beta1))
+            if self.gamma1 is not None:
+                 if self.gamma2 is not None:
+                     str = '%sgamma=%0.3fto%0.3frad,' % (str,np.radians(self.gamma1),
+                                                             np.radians(self.gamma2))
+                 else:
+                     str = '%sgamma=%0.3frad,' % (str,np.radians(self.gamma1))
 
 
+                 
+        if str[-1] == ',':
+            str = str[:-1]
+        return str
+
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
 
 
 
