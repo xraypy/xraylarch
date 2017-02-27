@@ -66,7 +66,7 @@ class shell(cmd.Cmd):
         if with_wx:
             symtable = self.larch.symtable
 
-            
+
             app = wx.App(redirect=False, clearSigInt=False)
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
@@ -111,8 +111,8 @@ class shell(cmd.Cmd):
     def emptyline(self):
         pass
 
-    def onecmd(self, text):
-        return self.default(text)
+    def onecmd(self, txt):
+        return self.default(txt)
 
     def do_help(self, txt):
         if txt.startswith('(') and txt.endswith(')'):
@@ -126,6 +126,14 @@ class shell(cmd.Cmd):
     def do_shell(self, txt):
         os.system(txt)
 
+    def do_quit(self, text):
+        self.write_history(trim_last=True)
+        sys.exit()
+
+    def do_exit(self, text):
+        self.write_history(trim_last=True)
+        sys.exit()
+
     def larch_execute(self, text):
         self.default(text)
 
@@ -133,7 +141,7 @@ class shell(cmd.Cmd):
         if text.strip() in ('quit', 'exit', 'EOF'):
             trim_last = text.strip() in ('quit', 'exit')
             self.write_history(trim_last=trim_last)
-            return True
+            sys.exit()
 
         self.input.put(text, filename='<stdin>', lineno=0)
         complete = self.input.complete
