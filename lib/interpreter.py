@@ -282,18 +282,14 @@ class Interpreter:
         self.error = []
         self.this_expr = expr
         self.history.add(expr)
+        out = None
         try:
             node = self.parse(expr, fname=fname, lineno=lineno)
+            return self.run(node, expr=expr, fname=fname, lineno=lineno)
         except RuntimeError:
             errmsg = sys.exc_info()[1]
             if len(self.error) > 0:
                 errtype, errmsg = self.error[0].get_error()
-            return
-
-        out = None
-        try:
-            return self.run(node, expr=expr, fname=fname, lineno=lineno)
-        except RuntimeError:
             return
 
     def run_init_scripts(self):
