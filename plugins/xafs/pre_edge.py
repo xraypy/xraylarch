@@ -11,8 +11,8 @@ from larch import (Group, Parameter, ValidateLarchPlugin,
 
 # now we can reliably import other std and xafs modules...
 
-from larch_plugins.math import (index_of, index_nearest,
-                                remove_dups, remove_nans2)
+from larch.utils import (index_of, index_nearest,
+                         remove_dups, remove_nans2)
 from larch_plugins.xafs import set_xafsGroup
 
 MODNAME = '_xafs'

@@ -55,7 +55,7 @@ class EscanData:
         self.env_val     = []
         self.pos         = []
         self.det         = []
-
+        self.data        = []
         self.pos_desc    = []
         self.pos_addr    = []
         self.det_desc    = []
@@ -360,6 +360,7 @@ class EscanData:
             nx = len(self.x)
             self.y = []
 
+        self.data = numpy.vstack((self.pos, self.det))
         tnsums = [len(i) for i in self.sums_list]
         tnsums.sort()
         nsums = tnsums[-1]

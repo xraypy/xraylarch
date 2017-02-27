@@ -956,7 +956,9 @@ class GSEXRM_MapFile(object):
         if self.folder is None or irow >= len(self.rowdata):
             return
 
-        if self.scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
+        scan_version = getattr(self, 'scan_version', 1.00)
+
+        if scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
             if xrff.startswith('None'):
                 xrff = xrff.replace('None', 'xsp3')
@@ -976,7 +978,7 @@ class GSEXRM_MapFile(object):
         reverse = None # (irow % 2 != 0)
 
         ioffset = 0
-        if self.scan_version > 1.35:
+        if scan_version > 1.35:
             ioffset = 1
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
@@ -1605,7 +1607,7 @@ class GSEXRM_MapFile(object):
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
             for i,addxrd in enumerate(xrd_files):
                 self.rowdata[i].insert(4,addxrd)
-        self.scan_version = '1.0'
+        self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
         for line in header:
@@ -2212,7 +2214,8 @@ class GSEXRM_MapFile(object):
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
         work_names = self.work_array_names()
         dat = 'roimap/sum_raw'
-        no_hotcols = no_hotcols and self.scan_version < 1.36
+        scan_version = getattr(self, 'scan_version', 1.00)
+        no_hotcols = no_hotcols and scan_version < 1.36
         # scaler, non-roi data
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())

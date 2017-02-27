@@ -15,7 +15,7 @@ from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
 
 from larch import Group, Parameter, Minimizer, fitting
 from larch.larchlib import Empty
-from larch_plugins.math import index_of, gaussian
+from larch.utils import index_of, gaussian
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)

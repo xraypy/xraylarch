@@ -18,6 +18,7 @@ import lmfit.models as lm_models
 from lmfit import Parameter, Parameters
 
 from larch import Group
+from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
@@ -25,7 +26,6 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
 
 from larch.fitting import fit_report
 from larch_plugins.std import group2dict
-from larch_plugins.math import index_of
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
 
@@ -44,6 +44,8 @@ PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
 ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
                'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
 
+FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
+
 FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
 
 class AllParamsPanel(wx.Panel):
@@ -51,16 +53,35 @@ class AllParamsPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
         self.parent = parent
-        self.parameters = OrderedDict()
+        self.fit_params = OrderedDict()
+        self.user_params = OrderedDict()
 
-    def addParameter(self, param):
+    def add_parameter(self, param):
         """add a parameter"""
         print( "add parameter ", param)
 
-    def delParameter(self, param):
+    def del_parameter(self, param):
         """delete a parameter"""
         print( "del parameter ", param)
 
+    def show_parameters(self, fit_params=None, user_params=None):
+        if fit_params is not None:
+            self.fit_params = OrderedDict()
+            for parname, param in fit_params.items():
+                self.fit_params[parname] = param
+        if user_params is not None:
+            self.user_params = OrderedDict()
+            for parname, param in user_params.items():
+                self.user_params[parname] = param
+        print("Fit Params: ")
+        for p in self.fit_params.values(): print(p)
+        print("User Params: ")
+        for p in self.user_params.values(): print(p)
+
+
+class FitController(object):
+    def __init__(self, **kws):
+        self.components = OrderedDict()
 
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -72,6 +93,7 @@ class XYFitPanel(wx.Panel):
         self.fit_components = OrderedDict()
         self.fit_model = None
         self.fit_params = None
+        self.user_added_params = None
         self.summary = None
         self.sizer = wx.GridBagSizer(10, 6)
         self.build_display()
@@ -81,6 +103,10 @@ class XYFitPanel(wx.Panel):
         self.pick2_t0 = 0.
         self.pick2_timeout = 15.
 
+        self.pick2erase_timer = wx.Timer(self)
+        self.pick2erase_panel = None
+        self.Bind(wx.EVT_TIMER, self.onPick2EraseTimer, self.pick2erase_timer)
+
     def build_display(self):
 
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
@@ -89,6 +115,7 @@ class XYFitPanel(wx.Panel):
 
         self.mod_nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.mod_nb.SetActiveTabTextColour(wx.Colour(128,0,0))
+        self.mod_nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
 
         self.param_panel = AllParamsPanel(self, controller=self.controller)
         self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
@@ -159,6 +186,15 @@ class XYFitPanel(wx.Panel):
 
         pack(self, sizer)
 
+    def onNBChanged(self, event=None):
+        idx = self.mod_nb.GetSelection()
+        print(" NB Changed ", idx, self.mod_nb.GetPage(idx), self.param_panel)
+        if self.mod_nb.GetPage(idx) is self.param_panel:
+            self.build_fitmodel()
+            self.param_panel.show_parameters(self.fit_params, self.user_added_params)
+
+
+
 
     def addModel(self, event=None, model=None, is_step=False):
         if model is None and event is not None:
@@ -166,7 +202,7 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        curmodels = ["p%i_" % (i+1) for i in range(1+len(self.fit_components))]
+        curmodels = ["c%i_" % (i+1) for i in range(1+len(self.fit_components))]
         for comp in self.fit_components:
             if comp in curmodels:
                 curmodels.remove(comp)
@@ -299,14 +335,28 @@ class XYFitPanel(wx.Panel):
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
+
+    def onPick2EraseTimer(self, evt=None):
+        """erases line trace showing automated 'Pick 2' guess """
+        self.pick2erase_timer.Stop()
+        panel = self.pick2erase_panel
+        ntrace = panel.conf.ntrace - 1
+        panel.conf.get_mpl_line(ntrace).set_data(np.array([]), np.array([]))
+        panel.draw()
+
     def onPick2Timer(self, evt=None):
+        """checks for 'Pick 2' events, and initiates 'Pick 2' guess
+        for a model from the selected data range
+        """
         try:
-            curhist = self.larch.symtable._plotter.plot1.cursor_hist[:]
+            plotframe = self.controller.get_display(stacked=False)
+            curhist = plotframe.cursor_hist[:]
         except:
             return
+
         if (time.time() - self.pick2_t0) > self.pick2_timeout:
             msg = self.pick2_group.pick2_msg.SetLabel(" ")
-            self.larch.symtable._plotter.plot1.cursor_hist = []
+            plotframe.cursor_hist = []
             self.pick2_timer.Stop()
             return
 
@@ -339,15 +389,24 @@ class XYFitPanel(wx.Panel):
                 parwids[name].value.SetValue(param.value)
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.x)
-        self.larch.symtable._plotter.plot1.oplot(dgroup.x, dgroup._tmp)
-        self.larch.symtable._plotter.plot1.cursor_hist = []
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.cursor_hist = []
+        plotframe.oplot(dgroup.x, dgroup._tmp)
+        self.pick2erase_panel = plotframe.panel
+
+        self.pick2erase_timer.Start(5000)
+
 
     def onPick2Points(self, evt=None, prefix=None):
         fgroup = self.fit_components.get(prefix, None)
         if fgroup is None:
-                return
-        self.larch.symtable._plotter.plot1.cursor_hist = []
-        fgroup.npts = len(self.larch.symtable._plotter.plot1.cursor_hist)
+            return
+
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.Raise()
+
+        plotframe.cursor_hist = []
+        fgroup.npts = 0
         self.pick2_group = fgroup
 
         if fgroup.pick2_msg is not None:
@@ -438,7 +497,6 @@ class XYFitPanel(wx.Panel):
         self.fit_model = model
         self.fit_params = params
 
-        self.plot1 = self.larch.symtable._plotter.plot1
         if dgroup is not None:
             i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
             xsel = dgroup.x[slice(i1, i2)]
@@ -461,20 +519,38 @@ class XYFitPanel(wx.Panel):
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        self.controller.plot_group(self.controller.groupname, new=True,
-                             xmin=xv1, xmax=xv2, label='data')
+        ysel = dgroup.y[slice(i1, i2)]
 
-        self.plot1.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+        plotframe = self.controller.get_display(stacked=True)
+        plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
+                       xmin=xv1, xmax=xv2, label='data',
+                       xlabel=dgroup.plot_xlabel, ylabel=dgroup.plot_ylabel,
+                       title='Larch XYFit: %s' % dgroup.filename )
+
+        plotframe.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+
+        plotframe.plot(dgroup.xfit, ysel-dgroup.yfit, grid=False,
+                       marker='o', markersize=4, linewidth=1, panel='bot')
+
         if with_components is None:
             with_components = (self.plot_comps.IsChecked() and
                                len(dgroup.ycomps) > 1)
         if with_components:
             for label, _y in dgroup.ycomps.items():
-                self.plot1.oplot(dgroup.xfit, _y, label=label)
+                plotframe.oplot(dgroup.xfit, _y, label=label,
+                                style='short dashed')
 
-        _plotter = self.larch.symtable._plotter
-        _plotter.plot_axvline(dgroup.x[i1], color='#999999')
-        _plotter.plot_axvline(dgroup.x[i2-1], color='#999999')
+        line_opts = dict(color='#AAAAAA', label='_nolegend_',
+                    linewidth=1, zorder=-5)
+        plotframe.panel_bot.axes.axhline(0, **line_opts)
+        axvline = plotframe.panel.axes.axvline
+        if i1 > 0:
+            axvline(dgroup.x[i1], **line_opts)
+
+        if i2 < len(dgroup.x):
+            axvline(dgroup.x[i2-1], **line_opts)
+
+        plotframe.panel.canvas.draw()
 
 
     def onRunFit(self, event=None):

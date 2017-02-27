@@ -3,7 +3,12 @@
 GSECARS Epics XRF Display App
 """
 import os
+import wx
+import matplotlib
+matplotlib.use('WXAgg')
+
 import larch
 from larch_plugins.epics import EpicsXRFApp
 os.chdir(larch.site_config.home_dir)
+
 EpicsXRFApp().MainLoop()

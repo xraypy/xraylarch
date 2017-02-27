@@ -5,6 +5,10 @@ Viewer App for GSE XRF Maps
 import os
 import sys
 from optparse import OptionParser
+import wx
+import matplotlib
+matplotlib.use('WXAgg')
+
 import larch
 from larch_plugins.wx import MapViewer
 
@@ -24,4 +28,5 @@ parser.add_option("-s", "--use_scandb", dest="use_scandb", action="store_true",
 (options, args) = parser.parse_args()
 
 os.chdir(larch.site_config.home_dir)
-MapViewer(use_scandb=options.use_scandb).run()
+viewer = MapViewer(use_scandb=options.use_scandb)
+viewer.MainLoop()

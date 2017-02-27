@@ -76,7 +76,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.wxlib import larchframe
+from larch.wxlib import LarchPanel
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -130,6 +130,11 @@ DBCONN = None
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
+
+def suppress_hotcols(hotcols_wid, datafile):
+    """returns whether to suppress hot columns"""
+    scanversion = getattr(datafile, 'scan_version', 1.00)
+    return hotcols_wid.IsChecked() and scanversion < 1.36
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -459,6 +464,7 @@ class SimpleMapPanel(GridPanel):
             iy, ix = divmod(idx, ny)
             indices.append((ix, iy))
 
+
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -473,7 +479,7 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
+        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
@@ -517,7 +523,7 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
 
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
+        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
         self.owner.no_hotcols = no_hotcols
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -655,7 +661,7 @@ class TriColorMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
-        no_hotcols  = self.hotcols.IsChecked() and datafile.scan_version < 1.36
+        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
         self.owner.no_hotcols = no_hotcols
         r = self.rcol.GetStringSelection()
         g = self.gcol.GetStringSelection()
@@ -1355,10 +1361,13 @@ class MapViewerFrame(wx.Frame):
         self.im_displays = []
         self.plot_displays = []
         self.larch = _larch
+        if self.larch is None:
+            self.larch = larch.Interpreter()
+            self.larch.symtable.set_symbol('_sys.wx.parent', self)
+
         self.xrfdisplay = None
         self.xrddisplay1D = None
         self.xrddisplay2D = None
-        self.larch_buffer = None
         self.watch_files = False
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
@@ -1427,7 +1436,14 @@ class MapViewerFrame(wx.Frame):
             self.nbpanels.append(p)
             p.SetSize((750, 550))
 
+
+
+        p = LarchPanel(_larch=self.larch, parent=self.nb)
+        self.nb.AddPage(p, ' Larch Shell ', True)
+        self.nbpanels.append(p)
+
         self.nb.SetSelection(0)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -1653,9 +1669,6 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay1D.Show()
 
     def init_larch(self):
-        if self.larch is None:
-            self.larch = larch.Interpreter()
-            self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
@@ -1724,9 +1737,6 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Perform XRD &Calibration',
                  'Calibrate XRD Detector',  self.onCalXRD)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
-                  'Show Larch Programming Buffer',
-                  self.onShowLarchBuffer)
 
         mid = wx.NewId()
         fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W',  'Watch HDF5 Files', kind=wx.ITEM_CHECK)
@@ -1745,14 +1755,6 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(hmenu, '&Help')
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-
-
-    def onShowLarchBuffer(self, evt=None):
-        if self.larch_buffer is None:
-            self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
-
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
 
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -1808,12 +1810,6 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.Destroy()
         except:
             pass
-
-        if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.onClose()
-            except:
-                pass
 
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)

@@ -1,7 +1,7 @@
 
 from larch import Group, Parameter, isgroup, Minimizer, parse_group_args
 
-from larch_plugins.math import index_of
+from larch.utils import index_of
 from larch_plugins.xray import xray_edge, xray_line, f1_chantler, f2_chantler, f1f2
 from larch_plugins.xafs import set_xafsGroup, find_e0
 
