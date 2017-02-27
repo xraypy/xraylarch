@@ -1023,7 +1023,7 @@ class cifDB(object):
         #mineral_name = self.mineral_by_amcsd(amcsd_id)
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         ALLelements  = self.composition_by_amcsd(amcsd_id)
-        authors      = self.authorsor_by_amcsd(amcsd_id)
+        authors      = self.author_by_amcsd(amcsd_id)
         
         return ALLelements,mineral_name,iuc_id,authors
 
