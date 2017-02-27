@@ -659,14 +659,14 @@ class cifDB(object):
         self.nametbl = Table('nametbl', self.metadata)
         self.spgptbl = Table('spgptbl', self.metadata)
         self.symtbl  = Table('symtbl',  self.metadata)
-        self.authorstbl = Table('authtbl', self.metadata)
+        self.authtbl = Table('authtbl', self.metadata)
         self.qtbl    = Table('qtbl',    self.metadata)
         self.cattbl  = Table('cattbl',  self.metadata)
         ###################################################
         ## Cross-reference tables
         self.symref  = Table('symref', self.metadata)
         self.compref = Table('compref', self.metadata)
-        self.authorsref = Table('authref', self.metadata)
+        self.authref = Table('authref', self.metadata)
         self.qref    = Table('qref', self.metadata)
         self.catref  = Table('catref', self.metadata)
         ###################################################
@@ -779,12 +779,12 @@ class cifDB(object):
         def_name = self.nametbl.insert()
         def_spgp = self.spgptbl.insert()
         def_sym  = self.symtbl.insert()
-        def_auth = self.authorstbl.insert()
+        def_auth = self.authtbl.insert()
         def_q    = self.qtbl.insert()
         def_cat  = self.cattbl.insert()
         add_sym  = self.symref.insert()
         add_comp = self.compref.insert()
-        add_auth = self.authorsref.insert()
+        add_auth = self.authref.insert()
         add_q    = self.qref.insert()
         add_cat  = self.catref.insert()
         new_cif  = self.ciftbl.insert()
@@ -835,13 +835,13 @@ class cifDB(object):
         ## Find author_name
         for author_name in authors:
             match = False
-            search_author = self.authorstbl.select(self.authorstbl.c.author_name == author_name)
+            search_author = self.authtbl.select(self.authtbl.c.author_name == author_name)
             for row in search_author.execute():
                 author_id = row.author_id
                 match = True
             if match is False:
                 def_auth.execute(author_name=author_name)
-                search_author = self.authorstbl.select(self.authorstbl.c.author_name == author_name)
+                search_author = self.authtbl.select(self.authtbl.c.author_name == author_name)
                 for row in search_author.execute():
                     author_id = row.author_id
                     match = True
@@ -939,11 +939,11 @@ class cifDB(object):
 #                 for elmtrow in search_periodic.execute():
 #                     composition = '%s %s' % (composition,elmtrow.element_symbol)
 #                     
-#             search_authors = self.authorsref.select(self.authorsref.c.amcsd_id == amcsd_id)
+#             search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
 #             authors = ''
 #             for atrrow in search_authors.execute():
 #                 author_id = atrrow.author_id
-#                 search_alist = self.authorstbl.select(self.authorstbl.c.author_id == author_id)
+#                 search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
 #                 for block in search_alist.execute():
 #                     if authors == '':
 #                         authors = '%s' % (block.author_name)
@@ -965,10 +965,10 @@ class cifDB(object):
 
 #         usr_qry = self.query(self.ciftbl,
 #                              self.elemtbl,self.nametbl,self.spgptbl,self.symtbl,
-#                              self.authorstbl,self.qtbl,self.cattbl,
-#                              self.authorsref,self.qref,self.compref,self.catref,self.symref)\
-#                       .filter(self.authorsref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-#                       .filter(self.authorstbl.c.author_id == self.authorsref.c.author_id)\
+#                              self.authtbl,self.qtbl,self.cattbl,
+#                              self.authref,self.qref,self.compref,self.catref,self.symref)\
+#                       .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+#                       .filter(self.authtbl.c.author_id == self.authref.c.author_id)\
 #                       .filter(self.qref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
 #                       .filter(self.qref.c.q_id == self.qtbl.c.q_id)\
 #                       .filter(self.compref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
@@ -1044,7 +1044,7 @@ class cifDB(object):
 
     def author_by_amcsd(self,amcsd_id):
 
-        search_authors = self.authorsref.select(self.authorsref.c.amcsd_id == amcsd_id)
+        search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
         authors = []
         for row in search_authors.execute():
             authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
@@ -1219,15 +1219,15 @@ class cifDB(object):
         print auth_id
 
         ##  Searches mineral name for database entries
-        usr_qry = self.query(self.ciftbl,self.authorstbl,self.authorsref)\
-                      .filter(self.authorsref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
-                      .filter(self.authorsref.c.author_id == self.authorstbl.c.author_id)
+        usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
+                      .filter(self.authref.c.amcsd_id == self.ciftbl.c.amcsd_id)\
+                      .filter(self.authref.c.author_id == self.authtbl.c.author_id)
         if list is not None:
             usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
 
         ##  Searches author name in database entries
         if len(auth_id) > 0:
-            fnl_qry = usr_qry.filter(self.authorsref.c.author_id.in_(auth_id))
+            fnl_qry = usr_qry.filter(self.authref.c.author_id.in_(auth_id))
             ## This currently works in an 'or' fashion, as each name in list
             ## can be matched to multiple auth_id values, so it is simpler to
             ## consider them all separately. Making a 2D list and restructuring
@@ -1302,9 +1302,9 @@ class cifDB(object):
         authid   = []
 
         id,name = filter_int_and_str(name,exact=exact)
-        authrow = self.query(self.authorstbl)\
-                      .filter(or_(self.authorstbl.c.author_name.like(name),
-                                  self.authorstbl.c.author_id  == id))
+        authrow = self.query(self.authtbl)\
+                      .filter(or_(self.authtbl.c.author_name.like(name),
+                                  self.authtbl.c.author_id  == id))
         if len(authrow.all()) == 0:
             if verbose: print '%s not found in author database.' % name
         else:
@@ -1373,7 +1373,7 @@ class cifDB(object):
 
     def return_author_names(self):
         
-        authorqry = self.query(self.authorstbl)
+        authorqry = self.query(self.authtbl)
         names = []
         for row in authorqry.all():
             names += [row.author_name]
