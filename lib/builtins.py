@@ -530,6 +530,17 @@ def my_eval(text, _larch=None):
 def _ufloat(arg, _larch=None):
     return fitting.ufloat(arg)
 
+def save_history(filename, session_only=False, max_lines=5000, _larch=None):
+    """save history of larch commands to a file"""
+    _larch.history.save(filename, session_only=session_only, max_lines=max_lines)
+
+def show_history(max_lines=10000, _larch=None):
+    """show history of larch commands"""
+    nhist = min(max_lines, len(_larch.history.buffer))
+    for hline in _larch.history.buffer[-nhist:]:
+        _larch.writer.write("%s\n" % hline)
+
+
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
                             'which': _which,
@@ -547,7 +558,9 @@ local_funcs = {'_builtin': {'group':_group,
                             'run': _run,
                             'eval': my_eval,
                             'help': _help,
-                            'add_plugin':_addplugin},
+                            'add_plugin':_addplugin,
+                            'save_history': save_history,
+                            'show_history': show_history},
                '_math':{'param': fitting.param,
                         'guess': fitting.guess,
                         'confidence_intervals': fitting.confidence_intervals,

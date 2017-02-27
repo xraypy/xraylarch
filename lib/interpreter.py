@@ -18,7 +18,7 @@ import six
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import (LarchExceptionHolder, ReturnedNone,
+from .larchlib import (LarchExceptionHolder, ReturnedNone, HistoryBuffer,
                        Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
 from .utils import Closure
@@ -91,7 +91,8 @@ class Interpreter:
                        'str', 'subscript', 'try', 'tryexcept', 'tryfinally',
                        'tuple', 'unaryop', 'while')
 
-    def __init__(self, symtable=None, writer=None, with_plugins=True):
+    def __init__(self, symtable=None, writer=None, with_plugins=True,
+                 with_history=True, history_file=None):
         self.writer = writer or StdWriter()
         self.writer._larch = self
 
@@ -137,6 +138,10 @@ class Interpreter:
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
 
+        if with_history:
+            if history_file is None:
+                history_file = self.symtable._sys.config.history_file
+            self.history = HistoryBuffer(history_file)
         if with_plugins: # add all plugins in standard plugins folder
             plugins_dir = os.path.join(site_config.larchdir, 'plugins')
             loaded_plugins = []
@@ -276,6 +281,7 @@ class Interpreter:
         self.lineno = lineno
         self.error = []
         self.this_expr = expr
+        self.history.add(expr)
         try:
             node = self.parse(expr, fname=fname, lineno=lineno)
         except RuntimeError:

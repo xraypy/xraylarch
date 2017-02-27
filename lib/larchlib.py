@@ -3,7 +3,7 @@
 Helper classes for larch interpreter
 """
 from __future__ import division
-import sys, os
+import sys, os, time
 import ast
 import numpy as np
 import traceback
@@ -150,6 +150,55 @@ class LarchExceptionHolder:
 
         out.append("")
         return (exc_name, '\n'.join(out))
+
+
+class HistoryBuffer(object):
+    """ command history buffer
+    """
+    def __init__(self, filename=None, max_lines=5000, title='larch history'):
+        self.filename = filename
+        self.max_lines = max_lines
+        self.title = title
+        self.session_start = 0
+        self.buffer = []
+        if filename is not None:
+            self.load(filename=filename)
+
+    def add(self, text=''):
+        if len(text.strip()) > 0 and not text.startswith('#'):
+            self.buffer.append(text)
+
+    def clear(self):
+        self.buffer = []
+        self.session_start = 0
+
+    def load(self, filename=None):
+        if filename is not None:
+            self.filename = filename
+
+        if os.path.exists(self.filename):
+            self.clear()
+            with open(self.filename, 'r') as fh:
+                lines = fh.readlines()
+                for hline in lines:
+                    self.add(text=hline[:-1])
+            self.session_start = len(self.buffer)
+
+    def save(self, filename=None, session_only=False, max_lines=None):
+        if filename is None:
+            filename = self.filename
+        if max_lines is None:
+            max_lines = self.max_lines
+        start_entry = -max_lines
+        if session_only:
+            start_entry = self.session_start
+
+        fout = open(filename, 'w')
+        fout.write("# %s saved %s\n\n" % (self.title, time.ctime()))
+        fout.write('\n'.join(self.buffer[start_entry:]))
+        fout.write("\n")
+        fout.close()
+
 
 
 class StdWriter(object):
