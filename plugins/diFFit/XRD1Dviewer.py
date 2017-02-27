@@ -71,8 +71,8 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
-#         wx.Frame.__init__(self, None,title=label,size=(900, 500)) #laptop
+#         wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
+        wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
         
@@ -1442,13 +1442,6 @@ class Fitting1DXRD(BasePanel):
         pk_wid - maximum range in q which qualifies as a match between fitted and ideal
         data,ipks,cifdatabase - all read from gui but possible to alter
         '''
-#         
-#         if data is None:
-#             data = self.plt_data
-#         if cifdatabase is None:
-#             cifdatabase = self.owner.cifdatabase
-#         if ipks is None:
-#             ipks = self.ipeaks
     
         q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
         minq = np.min(data[0])
@@ -1481,6 +1474,7 @@ class Fitting1DXRD(BasePanel):
         print
         
         print 'TRY TWO'
+        print q_pks
         print 'peaks!',len(q_pks),len(peaks)
         matches,count = cifdatabase.amcsd_by_q(peaks)
         print 'matches...',len(matches)

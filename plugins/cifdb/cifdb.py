@@ -1012,7 +1012,6 @@ class cifDB(object):
 
     def amcsd_by_q(self,include=[],list=None,verbose=False):
 
-        amcsd_incld = []
         q_incld  = []
         id_incld = []
 
@@ -1037,22 +1036,21 @@ class cifDB(object):
         ##  Searches composition of database entries
 
         if len(id_incld) > 0:
-            fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))\
-                             .group_by(self.qref.c.amcsd_id)\
-                             .having(func.count()>2)## having at least two in range is important
+            fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))
+#             fnl_qry = usr_qry.filter(self.qref.c.q_id.in_(id_incld))\
+#                              .group_by(self.qref.c.amcsd_id)\
+#                              .having(func.count()>2)## having at least two in range is important
             for row in fnl_qry.all():
-#                 if row.amcsd_id not in amcsd_incld:
-#                     amcsd_incld += [row.amcsd_id]
 
-                    if row.amcsd_id not in matches:
-                        matches += [row.amcsd_id]
-                        count += [1]
-                    else:
-                        idx = matches.index(row.amcsd_id)
-                        count[idx] = count[idx]+1
+                if row.amcsd_id not in matches:
+                    matches += [row.amcsd_id]
+                    count += [1]
+                else:
+                    idx = matches.index(row.amcsd_id)
+                    count[idx] = count[idx]+1
 
-        amcsd_matches = [x for y, x in sorted(zip(count,matches))]
-        count_matches = [y for y, x in sorted(zip(count,matches))]
+        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > 2]
+        count_matches = [y for y, x in sorted(zip(count,matches)) if y > 2]
        
         return amcsd_matches,count_matches
 
