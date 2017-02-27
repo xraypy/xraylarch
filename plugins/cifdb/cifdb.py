@@ -1589,12 +1589,36 @@ class SearchCIFdb(object):
                  else:
                      str = '%sgamma=%0.3frad,' % (str,np.radians(self.gamma1))
 
-
-                 
         if str[-1] == ',':
             str = str[:-1]
         return str
 
+    def read_geometry(self,str):
+        
+        
+        geostr = str.split(',')
+        for par in geostr:
+            key = par.split('=')[0]
+            value = par.split('=')[1]  
+            
+            if key == 'a':
+                self.a1 = float(value.split('to')[0].split('A')[0])
+                if len(value.split('to')) > 1:
+                    self.a2 = float(value.split('to')[1].split('A')[0])
+                else:
+                    self.a2 = None
+            if key == 'b':
+                self.b1 = float(value.split('to')[0].split('A')[0])
+                if len(value.split('to')) > 1:
+                    self.b2 = float(value.split('to')[1].split('A')[0])
+                else:
+                    self.b2 = None
+            if key == 'c':
+                self.c1 = float(value.split('to')[0].split('A')[0])
+                if len(value.split('to')) > 1:
+                    self.c2 = float(value.split('to')[1].split('A')[0])
+                else:
+                    self.c2 = None
 
 def column(matrix, i):
     return [row[i] for row in matrix]
