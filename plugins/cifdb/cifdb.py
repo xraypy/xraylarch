@@ -1215,10 +1215,8 @@ class cifDB(object):
         auth_id = []
         
         for author in include:
-            print author
             id = self.search_for_author(author)
             auth_id += id
-        print auth_id
 
         ##  Searches mineral name for database entries
         usr_qry = self.query(self.ciftbl,self.authtbl,self.authref)\
@@ -1275,7 +1273,7 @@ class cifDB(object):
                                   self.elemtbl.c.element_symbol == element,
                                   self.elemtbl.c.element_name == element))
         if len(elemrow.all()) == 0:
-            if verbose: print '%s not found in element database.' % element
+            if verbose: print('%s not found in element database.' % element)
             return
         else:
             for row in elemrow.all():
@@ -1308,7 +1306,7 @@ class cifDB(object):
                       .filter(or_(self.authtbl.c.author_name.like(name),
                                   self.authtbl.c.author_id  == id))
         if len(authrow.all()) == 0:
-            if verbose: print '%s not found in author database.' % name
+            if verbose: print('%s not found in author database.' % name)
         else:
             for row in authrow.all():
                 authname += [row.author_name]
@@ -1343,7 +1341,7 @@ class cifDB(object):
                       .filter(or_(self.nametbl.c.mineral_name.like(name),
                                   self.nametbl.c.mineral_id  == id))
         if len(mnrlrow.all()) == 0:
-            if verbose: print '%s not found in mineral name database.' % name
+            if verbose: print('%s not found in mineral name database.' % name)
         else:
             for row in mnrlrow.all():
                 mrlname += [row.mineral_name]
@@ -1440,10 +1438,10 @@ class SearchCIFdb(object):
         self.amcsd_id = []
 
         ## tags for searching
-        self.authors   = []
-        self.mnrlname  = []
-        self.keywords  = []
-        self.categorys = []
+        self.authors    = []
+        self.mnrlname   = []
+        self.keywords   = []
+        self.categories = []
 
         self.elem_incl = []
         self.elem_excl = []
@@ -1462,6 +1460,13 @@ class SearchCIFdb(object):
         self.q_list    = []
 
 
+    def print_all(self):
+    
+        for key in ['authors','mnrlname','keywords','categories']:
+             print('%s : %s' % (key,self.print_parameter(key=key)))
+        print('chemistry : %s' % self.print_chemistry())
+        print('geometry : %s' % self.print_geometry())
+    
     def print_parameter(self,key='authors'):
 
         s = ''
