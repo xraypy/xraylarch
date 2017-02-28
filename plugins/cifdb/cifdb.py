@@ -14,6 +14,8 @@ except:
 
 import numpy as np
 
+from itertools import groupby
+
 import larch
 from larch_plugins.xrd.XRDCalc import generate_hkl
 
@@ -1431,19 +1433,23 @@ class SearchCIFdb(object):
         self.elem_excl = []
         self.allelem   = column(ELEMENTS,2)
 
-        self.spgp      = None
-        self.a1        = None
+        self.keys = ['sg','a','b','c','alpha','beta','gamma']
+
+        self.sg        = None
+        self.a         = None
         self.a2        = None
-        self.b1        = None
+        self.b         = None
         self.b2        = None
-        self.c1        = None
+        self.c         = None
         self.c2        = None
-        self.alpha1    = None
+        self.alpha     = None
         self.alpha2    = None
-        self.beta1     = None
+        self.beta      = None
         self.beta2     = None
-        self.gamma1    = None
+        self.gamma     = None
         self.gamma2    = None
+        self.unit_ang  = 'deg'
+        self.unit_lat  = 'A'
 
         self.q_list    = []
 
@@ -1453,23 +1459,23 @@ class SearchCIFdb(object):
         
     def print_author(self):
 
-        str = ''
+        s = ''
         if len(self.authors) > 0:
             for i,author in enumerate(self.authors):
                 author = author.split()[0]
                 if i == 0:
-                    str = '%s' % (author)
+                    s = '%s' % (author)
                 else:
-                    str = '%s, %s' % (str,author)
-        return str
+                    s = '%s, %s' % (s,author)
+        return s
 
         
-    def read_author(self,str,clear=True):
+    def read_author(self,s,clear=True):
        
         if clear:
             self.authors = []
-        if len(str) > 0:
-            for a in str.split(','):
+        if len(s) > 0:
+            for a in s.split(','):
                  self.authors += [a.split()[0]]
         
     def print_chemistry(self):
@@ -1477,34 +1483,34 @@ class SearchCIFdb(object):
         ## hard code? mkak 2017.02.27
         self.elem_cnt = 100
         
-        str = ''
+        s = ''
         for i,elem in enumerate(self.elem_incl):
             if i==0:
-                str = '(%s' % elem
+                s = '(%s' % elem
             else:
-                str = '%s,%s' % (str,elem)
+                s = '%s,%s' % (s,elem)
         if len(self.elem_incl) > 0:
-            str = '%s) ' % str 
+            s = '%s) ' % s 
         if len(self.elem_excl) > 0:
-            str = '%s- ' % str
+            s = '%s- ' % s
         # if all else excluded, don't list
         if (len(self.allelem)-20) > (len(self.elem_incl)+len(self.elem_excl)): 
             for i,elem in enumerate(self.elem_excl):
                 if i==0:
-                    str = '%s(%s' % (str,elem)
+                    s = '%s(%s' % (s,elem)
                 else:
-                    str = '%s,%s' % (str,elem)
+                    s = '%s,%s' % (s,elem)
             if len(self.elem_excl) > 0:
-                str = '%s)' % str
-        return str
+                s = '%s)' % s
+        return s
                 
-    def read_chemistry(self,str,clear=True):
+    def read_chemistry(self,s,clear=True):
        
         if clear:
             self.elem_incl,self.elem_excl = [],[]
         chem_incl,chem_excl = [],[]
 
-        chemstr = re.sub('[( )]','',str)
+        chemstr = re.sub('[( )]','',s)
         ii = -1
         for i,s in enumerate(chemstr):
             if s == '-':
@@ -1532,94 +1538,60 @@ class SearchCIFdb(object):
 
 #### a=1to1.1 and b=2to2.2 and c=3to3.3 and alpha=4to4.4 and beta=5to5.5 and gamma=6to6.6 and sg=A-1
 
-    def print_geometry(self,unit='A',angle='deg'):
+    def print_geometry(self,unit='A'):
 
-        str = ''
-        
-        if self.spgp is not None:
-             str = '%ssg=%i,' % (str,self.spgp)
-        if self.a1 is not None:
-             if self.a2 is not None:
-                 str = '%sa=%0.3fto%0.3fA,' % (str,self.a1,self.a2)             
-             else:
-                 str = '%sa=%0.3fA,' % (str,self.a1)
-        if self.b1 is not None:
-             if self.b2 is not None:
-                 str = '%sb=%0.3fto%0.3fA,' % (str,self.b1,self.b2)             
-             else:
-                 str = '%sb=%0.3fA,' % (str,self.b1)
-        if self.c1 is not None:
-             if self.c2 is not None:
-                 str = '%sc=%0.3fto%0.3fA,' % (str,self.c1,self.c2)             
-             else:
-                 str = '%sc=%0.3fA,' % (str,self.c1)
-        if angle.lower()[0:3] == 'deg':
-            if self.alpha1 is not None:
-                 if self.alpha2 is not None:
-                     str = '%salpha=%0.1fto%0.1fdeg,' % (str,self.alpha1,self.alpha2)             
-                 else:
-                     str = '%salpha=%0.1fdeg,' % (str,self.alpha1)
-            if self.beta1 is not None:
-                 if self.beta2 is not None:
-                     str = '%sbeta=%0.1fto%0.1fdeg,' % (str,self.beta1,self.beta2)             
-                 else:
-                     str = '%sbeta=%0.1fdeg,' % (str,self.beta1)
-            if self.gamma1 is not None:
-                 if self.gamma2 is not None:
-                     str = '%sgamma=%0.1fto%0.1fdeg,' % (str,self.gamma1,self.gamma2)             
-                 else:
-                     str = '%sgamma=%0.1fdeg,' % (str,self.gamma1)
-        else:
-            if self.alpha1 is not None:
-                 if self.alpha2 is not None:
-                     str = '%salpha=%0.3fto%0.3frad,' % (str,np.radians(self.alpha1),
-                                                             np.radians(self.alpha2))
-                 else:
-                     str = '%salpha=%0.3frad,' % (str,np.radians(self.alpha1))
-            if self.beta1 is not None:
-                 if self.beta2 is not None:
-                     str = '%sbeta=%0.3fto%0.3frad,' % (str,np.radians(self.beta1),
-                                                            np.radians(self.beta2))
-                 else:
-                     str = '%sbeta=%0.3frad,' % (str,np.radians(self.beta1))
-            if self.gamma1 is not None:
-                 if self.gamma2 is not None:
-                     str = '%sgamma=%0.3fto%0.3frad,' % (str,np.radians(self.gamma1),
-                                                             np.radians(self.gamma2))
-                 else:
-                     str = '%sgamma=%0.3frad,' % (str,np.radians(self.gamma1))
+        s = ''
 
-        if str[-1] == ',':
-            str = str[:-1]
-        return str
+        for i,key in enumerate(self.keys):
+            if self.__dict__[key] is not None:
+                s = '%s%s=%s' % (s,key,self.__dict__[key])
+                if key != 'sg' and self.__dict__[key+'2']:
+                     s = '%sto%s' % (s,self.__dict__[key+'2'])
+            if len(s) > 0 and s[-1] != ',':
+                if i > 0 and i < 4:
+                    s = '%s%s,' % (s,self.unit_lat)
+                elif i >= 4:
+                    s = '%s%s,' % (s,self.unit_ang)
+                else:                
+                    s = '%s,' % s
 
-    def read_geometry(self,str):
+        if len(s) > 1:
+            if s[-1] == ',':
+                s = s[:-1]
+        return s
+
+    def read_geometry(self,s):
+
+        geostr = s.split(',')
         
-        
-        geostr = str.split(',')
+        used = []
+
         for par in geostr:
             key = par.split('=')[0]
-            value = par.split('=')[1]  
+            if key in self.keys:
+                values = [''.join(g) for _, g in groupby(par.split('=')[1], str.isalpha)]
+                self.__dict__[key] = values[0]
+                if len(values) > 2:
+                    self.__dict__[key+'2'] = values[2]
+                else:
+                    self.__dict__[key+'2'] = None
             
-            if key == 'a':
-                self.a1 = float(value.split('to')[0].split('A')[0])
-                if len(value.split('to')) > 1:
-                    self.a2 = float(value.split('to')[1].split('A')[0])
-                else:
-                    self.a2 = None
-            if key == 'b':
-                self.b1 = float(value.split('to')[0].split('A')[0])
-                if len(value.split('to')) > 1:
-                    self.b2 = float(value.split('to')[1].split('A')[0])
-                else:
-                    self.b2 = None
-            if key == 'c':
-                self.c1 = float(value.split('to')[0].split('A')[0])
-                if len(value.split('to')) > 1:
-                    self.c2 = float(value.split('to')[1].split('A')[0])
-                else:
-                    self.c2 = None
+                ## This assumes all length and angles in same units.
+                angles,lattice  = ['deg', 'rad'],['A','nm','m']
+                if values[-1] in angles: self.unit_ang = values[-1]
+                if values[-1] in lattice: self.unit_lat = values[-1]
+                
+                used += [key]
 
+        ## Resets undefined to None
+        for key in self.keys:
+            if key not in used:
+                self.__dict__[key] = None
+            
+                
+                
+                          
+                
 def column(matrix, i):
     return [row[i] for row in matrix]
 

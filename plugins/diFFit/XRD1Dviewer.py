@@ -2999,7 +2999,7 @@ class XRDSearchGUI(wx.Dialog):
         self.chmslct  = wx.Button(self.panel,     label='Specify...')
 
         ## Cell parameter symmetry search
-        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
+        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/unit cell:' )
         self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
         self.symslct  = wx.Button(self.panel,     label='Specify...')
 
