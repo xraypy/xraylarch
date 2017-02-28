@@ -1439,9 +1439,10 @@ class SearchCIFdb(object):
 
         ## tags for searching
         self.authors    = []
-        self.mnrlname   = []
         self.keywords   = []
         self.categories = []
+
+        self.mnrlname   = ''
 
         self.elem_incl = []
         self.elem_excl = []
@@ -1490,6 +1491,28 @@ class SearchCIFdb(object):
                     self.__dict__[key] += [a.split()[0]]
                 except:
                     pass
+
+    def print_mineral(self,list=[]):
+
+        s = ''
+        if len(self.mnrlname) > 0:
+            for name in self.mnrlname:
+                s = '%s' % (name)
+        return s
+
+        
+    def read_mineral(self,s,clear=True):
+       
+        if clear:
+            self.mnrlname = ''
+        if len(s) > 0:
+            a = s.split(',')
+            if len(a) > 0:
+                for b in a:
+                   if len(b) > 0:
+                       self.mnrlname = b.split()
+            else:
+                self.mnrlname = a
 
     def print_chemistry(self):
     

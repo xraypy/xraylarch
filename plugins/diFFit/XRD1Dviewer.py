@@ -20,7 +20,7 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb import cifDB,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
+from larch_plugins.cifdb import cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
 from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
                                peakfinder,peaklocater,peakfitter,peakfilter,
@@ -2990,7 +2990,7 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Author search
         lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
-        self.Author  = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.Author  = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.atrslct = wx.Button(self.panel,     label='Select...')
 
         ## Chemistry search
@@ -3000,7 +3000,7 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Cell parameter symmetry search
         lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/unit cell:' )
-        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.symslct  = wx.Button(self.panel,     label='Specify...')
 
         ## a=1to1.2 and b=2to2.2 and c=3to3.2 and alpha=90to91 and beta=92to93 and gamma=94to95
@@ -3009,12 +3009,12 @@ class XRDSearchGUI(wx.Dialog):
         
         ## Category search
         opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
-        lbl_Category  = wx.StaticText(self.panel,  label='Category:' )
+        lbl_Category  = wx.StaticText(self.panel,  label='Category:', style=wx.TE_PROCESS_ENTER)
         self.Category = wx.ListBox(self.panel, style=opts, choices=CATEGORIES, size=(270, -1))
         
         ## General search
         lbl_Keyword  = wx.StaticText(self.panel,  label='Keyword search:' )
-        self.Keyword = wx.TextCtrl(self.panel, size=(270, -1))
+        self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
 
         ## Define buttons
@@ -3029,10 +3029,14 @@ class XRDSearchGUI(wx.Dialog):
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
         self.atrslct.Bind(wx.EVT_BUTTON, self.onAuthor    )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
+        
 
         self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
-        self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral )
-
+        self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral   )
+        self.Author.Bind(wx.EVT_TEXT_ENTER,    self.entrAuthor    )
+        self.Symmetry.Bind(wx.EVT_TEXT_ENTER,  self.entrSymmetry  )
+        self.Category.Bind(wx.EVT_TEXT_ENTER,  self.entrCategory  )
+        self.Keyword.Bind(wx.EVT_TEXT_ENTER,   self.entrKeyword   )
 
         grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
         grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
@@ -3072,11 +3076,37 @@ class XRDSearchGUI(wx.Dialog):
 
         self.Show()
         
+        self.srch = SearchCIFdb()
+        
         self.incl_elm,self.excl_elm = [],[]
         self.incl_auth = []
-        self.elem_cnt = 103      
         
 #########################################################################
+
+    def entrAuthor(self,event=None):
+    
+        key = 'authors'
+        self.srch.read_parameter(self.Author.GetValue(),key=key)
+        self.Author.SetValue(self.srch.print_parameter(key=key))
+            
+    def entrSymmetry(self,event=None):
+    
+        s = self.Symmetry.GetValue()
+        print s
+            
+    def entrCategory(self,event=None):
+
+        key = 'categories'
+        self.srch.read_parameter(self.Category.GetValue(),key=key)
+        self.Category.SetValue(self.srch.print_parameter(key=key))
+             
+    def entrKeyword(self,event=None):
+
+        key = 'keywords'
+        self.srch.read_parameter(self.Keyword.GetValue(),key=key)
+        self.Keyword.SetValue(self.srch.print_parameter(key=key))
+
+
     def entrMineral(self,event=None):
     
         if event.GetString() not in self.minerals:
@@ -3146,7 +3176,7 @@ class XRDSearchGUI(wx.Dialog):
         if len(self.excl_elm) > 0:
             str = '%s- ' % str
         # if all else excluded, just use - (don't list)
-        if self.elem_cnt != (len(self.incl_elm)+len(self.excl_elm)): 
+        if (len(self.srch.allelem)-20) > (len(self.incl_elm)+len(self.excl_elm)): 
             for i,elem in enumerate(self.excl_elm):
                 if i==0:
                     str = '%s(%s' % (str,elem)
@@ -3166,7 +3196,6 @@ class XRDSearchGUI(wx.Dialog):
         if dlg.ShowModal() == wx.ID_OK:
             incl = dlg.element_include
             excl = dlg.element_exclude
-            self.elem_cnt = dlg.cnt_elem
             update = True
         dlg.Destroy()
 
