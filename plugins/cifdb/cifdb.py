@@ -1401,7 +1401,6 @@ def filter_int_and_str(s,exact=False):
         
         return i,s
 
-    
 
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ##
@@ -1413,6 +1412,21 @@ def filter_int_and_str(s,exact=False):
 ##         cif = xu.materials.Crystal.fromCIF('/fromdatabase/file.cif',fid=StringIO(cifstr))
 ##
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+class RangeParameter(object):
+
+    def __init__(self,min=None,max=None,unit=None):
+
+        self.min   = min
+        self.max   = max
+        self.unit  = unit
+        
+    def set_values(self,min=None,max=None,unit=None):
+
+        self.__init__(min=min,max=max,unit=unit)
 
 class SearchCIFdb(object):
     '''
@@ -1428,61 +1442,52 @@ class SearchCIFdb(object):
         ## tags for searching
         self.authors   = []
         self.mnrlname  = []
+        self.keywords  = []
+        self.categorys = []
 
         self.elem_incl = []
         self.elem_excl = []
         self.allelem   = column(ELEMENTS,2)
 
-        self.keys = ['sg','a','b','c','alpha','beta','gamma']
+        self.lattice_keys = ['a','b','c','alpha','beta','gamma']
 
-        self.sg        = None
-        self.a         = None
-        self.a2        = None
-        self.b         = None
-        self.b2        = None
-        self.c         = None
-        self.c2        = None
-        self.alpha     = None
-        self.alpha2    = None
-        self.beta      = None
-        self.beta2     = None
-        self.gamma     = None
-        self.gamma2    = None
-        self.unit_ang  = 'deg'
-        self.unit_lat  = 'A'
+        self.sg    = None
+        self.a     = RangeParameter()
+        self.b     = RangeParameter()
+        self.c     = RangeParameter()
+        self.alpha = RangeParameter()
+        self.beta  = RangeParameter()
+        self.gamma = RangeParameter()
 
         self.q_list    = []
 
 
-        self.keywords  = []
-        self.categorys = []
-        
-    def print_author(self):
+    def print_parameter(self,key='authors'):
 
         s = ''
-        if len(self.authors) > 0:
-            for i,author in enumerate(self.authors):
-                author = author.split()[0]
+        if len(self.__dict__[key]) > 0:
+            for i,item in enumerate(self.__dict__[key]):
+                item = item.split()[0]
                 if i == 0:
-                    s = '%s' % (author)
+                    s = '%s' % (item)
                 else:
-                    s = '%s, %s' % (s,author)
+                    s = '%s, %s' % (s,item)
         return s
 
         
-    def read_author(self,s,clear=True):
+    def read_parameter(self,s,clear=True,key='authors'):
        
         if clear:
-            self.authors = []
+            self.__dict__[key] = []
         if len(s) > 0:
             for a in s.split(','):
-                 self.authors += [a.split()[0]]
-        
+                try:
+                    self.__dict__[key] += [a.split()[0]]
+                except:
+                    pass
+
     def print_chemistry(self):
     
-        ## hard code? mkak 2017.02.27
-        self.elem_cnt = 100
-        
         s = ''
         for i,elem in enumerate(self.elem_incl):
             if i==0:
@@ -1536,64 +1541,61 @@ class SearchCIFdb(object):
             if elem in self.allelem and elem not in self.elem_excl and elem not in self.elem_incl:
                 self.elem_excl += [elem]
 
-#### a=1to1.1 and b=2to2.2 and c=3to3.3 and alpha=4to4.4 and beta=5to5.5 and gamma=6to6.6 and sg=A-1
-
     def print_geometry(self,unit='A'):
 
         s = ''
 
-        for i,key in enumerate(self.keys):
-            if self.__dict__[key] is not None:
-                s = '%s%s=%s' % (s,key,self.__dict__[key])
-                if key != 'sg' and self.__dict__[key+'2']:
-                     s = '%sto%s' % (s,self.__dict__[key+'2'])
-            if len(s) > 0 and s[-1] != ',':
-                if i > 0 and i < 4:
-                    s = '%s%s,' % (s,self.unit_lat)
-                elif i >= 4:
-                    s = '%s%s,' % (s,self.unit_ang)
-                else:                
-                    s = '%s,' % s
+        key = 'sg'
+        if self.__dict__[key] is not None:
+            s = '%s%s=%s,' % (s,key,self.__dict__[key])
+        for i,key in enumerate(self.lattice_keys):
+            if self.__dict__[key].min is not None:
+                s = '%s%s=%s' % (s,key,self.__dict__[key].min)
+                if self.__dict__[key].max is not None:
+                    s = '%sto%s' % (s,self.__dict__[key].max)
+                s = '%s%s,' % (s,self.__dict__[key].unit)
 
         if len(s) > 1:
             if s[-1] == ',':
                 s = s[:-1]
+
         return s
 
     def read_geometry(self,s):
-
+        
         geostr = s.split(',')
         
         used = []
 
         for par in geostr:
             key = par.split('=')[0]
-            if key in self.keys:
-                values = [''.join(g) for _, g in groupby(par.split('=')[1], str.isalpha)]
-                self.__dict__[key] = values[0]
+            val = par.split('=')[1]
+            if key in 'sg':
+                self.__dict__[key] = val
+                used += [key]            
+            elif key in self.lattice_keys:
+                values = [''.join(g) for _, g in groupby(val, str.isalpha)]
+                self.__dict__[key].min = values[0]
                 if len(values) > 2:
-                    self.__dict__[key+'2'] = values[2]
+                    self.__dict__[key].max = values[2]
                 else:
-                    self.__dict__[key+'2'] = None
-            
-                ## This assumes all length and angles in same units.
-                angles,lattice  = ['deg', 'rad'],['A','nm','m']
-                if values[-1] in angles: self.unit_ang = values[-1]
-                if values[-1] in lattice: self.unit_lat = values[-1]
-                
+                    self.__dict__[key].max = None
+                self.__dict__[key].unit = values[-1]
                 used += [key]
 
         ## Resets undefined to None
-        for key in self.keys:
+        for key in self.lattice_keys:
             if key not in used:
-                self.__dict__[key] = None
+                self.__dict__[key] = RangeParameter()
+        key = 'sg'
+        if key not in used:
+            self.__dict__[key] = None
             
                 
                 
                           
                 
-def column(matrix, i):
-    return [row[i] for row in matrix]
+
 
 
 
