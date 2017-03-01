@@ -71,8 +71,8 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
-#         wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
+#         wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
+        wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
 
 
 
@@ -2966,9 +2966,7 @@ class DatabaseInfoGUI(wx.Dialog):
 
 #########################################################################
 class XRDSearchGUI(wx.Dialog):
-    """"""
 
-    #----------------------------------------------------------------------
     def __init__(self, parent):
         
         wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
@@ -2984,7 +2982,6 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
-#         self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
         self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals,  size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
@@ -3003,10 +3000,6 @@ class XRDSearchGUI(wx.Dialog):
         self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.symslct  = wx.Button(self.panel,     label='Specify...')
 
-        ## a=1to1.2 and b=2to2.2 and c=3to3.2 and alpha=90to91 and beta=92to93 and gamma=94to95
-        ## alpha=90to90 and beta=90to90 and gamma=90to90 
-        ## sg=A2/n
-        
         ## Category search
         opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
         lbl_Category  = wx.StaticText(self.panel,  label='Category:', style=wx.TE_PROCESS_ENTER)
@@ -3015,7 +3008,6 @@ class XRDSearchGUI(wx.Dialog):
         ## General search
         lbl_Keyword  = wx.StaticText(self.panel,  label='Keyword search:' )
         self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
-
 
         ## Define buttons
         self.rstBtn = wx.Button(self.panel, label='Reset' )
@@ -3029,7 +3021,6 @@ class XRDSearchGUI(wx.Dialog):
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
         self.atrslct.Bind(wx.EVT_BUTTON, self.onAuthor    )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
-        
 
         self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
         self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral   )
@@ -3058,13 +3049,11 @@ class XRDSearchGUI(wx.Dialog):
 
         grd_sizer.Add(lbl_Keyword,    pos = ( 6,1)               )
         grd_sizer.Add(self.Keyword,   pos = ( 6,2), span = (1,3) )
-
         
         ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
         ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
         ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
         ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)        
-        
 
         sizer.Add(grd_sizer)
         sizer.AddSpacer(15)
@@ -3075,37 +3064,32 @@ class XRDSearchGUI(wx.Dialog):
         self.SetSize((ix+40, iy+40))
 
         self.Show()
-        
         self.srch = SearchCIFdb()
 
 #########################################################################
 
     def entrAuthor(self,event=None):
-    
         key = 'authors'
         self.srch.read_parameter(self.Author.GetValue(),key=key)
         self.Author.SetValue(self.srch.print_parameter(key=key))
             
     def entrSymmetry(self,event=None):
-    
         self.srch.read_geometry(str(self.Symmetry.GetValue()))
         self.Symmetry.SetValue(self.srch.print_geometry())
+
             
     def entrCategory(self,event=None):
-
         key = 'categories'
         self.srch.read_parameter(self.Category.GetValue(),key=key)
         self.Category.SetValue(self.srch.print_parameter(key=key))
              
     def entrKeyword(self,event=None):
-
         key = 'keywords'
         self.srch.read_parameter(self.Keyword.GetValue(),key=key)
         self.Keyword.SetValue(self.srch.print_parameter(key=key))
 
 
     def entrMineral(self,event=None):
-        
         ## need to integrate with SearchCIFdb somehow...
         ## mkak 2017.03.01
         if event.GetString() not in self.minerals:
@@ -3115,15 +3099,14 @@ class XRDSearchGUI(wx.Dialog):
             self.srch.read_parameter(event.GetString(),key='mnrlname')
 
     def entrChemistry(self,event=None):
-
         self.srch.read_chemistry(self.Chemistry.GetValue())
         self.Chemistry.SetValue(self.srch.print_chemistry())
 
+
+#########################################################################
     def onChemistry(self,event=None):
-        
         dlg = PeriodicTableSearch(self,include=self.srch.elem_incl,
                                        exclude=self.srch.elem_excl)
-
         update = False
         if dlg.ShowModal() == wx.ID_OK:
             incl = dlg.element_include
@@ -3136,10 +3119,8 @@ class XRDSearchGUI(wx.Dialog):
             self.srch.elem_excl = excl
             self.Chemistry.SetValue(self.srch.print_chemistry())
 
-#########################################################################
 
     def onAuthor(self,event=None):
-        
         authorlist = self.parent.owner.cifdatabase.return_author_names()
         dlg = AuthorListTable(self,authorlist,include=self.srch.authors)
    
@@ -3156,11 +3137,7 @@ class XRDSearchGUI(wx.Dialog):
             self.srch.authors = incl
             self.Author.SetValue(self.srch.print_parameter(key='authors'))
 
-
-#########################################################################
     def onSymmetry(self,event=None):
-        
-#         dlg = XRDSymmetrySearch(self)
         dlg = XRDSymmetrySearch(self,search=self.srch)
         update = False
         if dlg.ShowModal() == wx.ID_OK:
@@ -3176,7 +3153,10 @@ class XRDSearchGUI(wx.Dialog):
         
         if update:
             for i,val in enumerate(vals):
-                if val == '' or val == 0: vals[i] = None
+                if val == '' or val == 0:
+                    vals[i] = None
+                elif val != 12:
+                    vals[i] = '%0.3f' % float(val)
                
             self.srch.a.min, self.srch.a.max, self.srch.a.unit = vals[0],vals[1],'A'
             self.srch.b.min, self.srch.b.max, self.srch.b.unit = vals[2],vals[3],'A'
@@ -3190,9 +3170,7 @@ class XRDSearchGUI(wx.Dialog):
 
             self.Symmetry.SetValue(self.srch.print_geometry())
         
-#########################################################################
     def onReset(self,event=None):
-        
         self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
@@ -3202,7 +3180,6 @@ class XRDSearchGUI(wx.Dialog):
         for i,n in enumerate(CATEGORIES):
             self.Category.Deselect(i)
         self.Keyword.Clear()
-        
         self.srch.__init__()
 
         
@@ -3376,47 +3353,32 @@ class XRDSymmetrySearch(wx.Dialog):
 
         ## Lattice parameters
         lbl_a = wx.StaticText(self.panel,    label='a (A)' )
-        self.min_a = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_a = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_a = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_a = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_b = wx.StaticText(self.panel,    label='b (A)' )
-        self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_b = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_b = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_c = wx.StaticText(self.panel,    label='c (A)' )
-        self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_c = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_c = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_alpha = wx.StaticText(self.panel,    label='alpha (deg)' )
-        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_beta = wx.StaticText(self.panel,    label='beta (deg)' )
-        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_gamma = wx.StaticText(self.panel,    label='gamma (deg)' )
-        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         SG_list = ['']
         for sgno in np.arange(230):
             SG_list.append('%3d' % (sgno+1))
-
-#         sgfile = 'space_groups.txt'
-#         if not os.path.exists(sgfile):
-#             parent, child = os.path.split(__file__)
-#             sgfile = os.path.join(parent, sgfile)
-#             if not os.path.exists(sgfile):
-#                 raise IOError("Space group file '%s' not found!" % sgfile)
-#         sg = open(sgfile,'r')
-#         for sgno,line in enumerate(sg):
-#             try:
-#                 sgno = sgno+1
-#                 SG_list.append('%3d  %s' % (sgno,line))
-#             except:
-#                 sg.close()
-#                 break
 
         hm_notations = ['']
         ## Displays all space groups
@@ -3467,7 +3429,19 @@ class XRDSymmetrySearch(wx.Dialog):
         grd_sizer.Add(lbl_SG,         pos = ( 7,1) )
         grd_sizer.Add(self.SG,        pos = ( 7,2) )
         grd_sizer.Add(self.HMsg,      pos = ( 7,3) )
-
+        
+        self.min_a.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_a.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_b.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_b.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_c.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_c.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_alpha.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_alpha.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_beta.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_beta.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_gamma.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_gamma.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
         
         ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
         ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
@@ -3506,23 +3480,34 @@ class XRDSymmetrySearch(wx.Dialog):
         self.SG.SetSelection(0)
         self.HMsg.SetSelection(0)
 
-
-
     def SetSearch(self):
-        self.min_a.SetValue(self.srch.a.min)
-        self.max_a.SetValue(self.srch.a.max)
-        self.min_b.SetValue(self.srch.b.min)
-        self.max_b.SetValue(self.srch.b.max)
-        self.min_c.SetValue(self.srch.c.min)
-        self.max_c.SetValue(self.srch.c.max)
-        self.min_alpha.SetValue(self.srch.alpha.min)
-        self.max_alpha.SetValue(self.srch.alpha.max)
-        self.min_beta.SetValue(self.srch.beta.min)
-        self.max_beta.SetValue(self.srch.beta.max)
-        self.min_gamma.SetValue(self.srch.gamma.min)
-        self.max_gamma.SetValue(self.srch.gamma.max)
-        self.SG.SetSelection(int(self.srch.sg))
-        self.HMsg.SetSelection(0)
+
+        if self.srch.a.min is not None:
+            self.min_a.SetValue(self.srch.a.min)
+        if self.srch.a.max is not None:
+            self.max_a.SetValue(self.srch.a.max)
+        if self.srch.b.min is not None:
+            self.min_b.SetValue(self.srch.b.min)
+        if self.srch.b.max is not None:
+            self.max_b.SetValue(self.srch.b.max)
+        if self.srch.c.min is not None:
+            self.min_c.SetValue(self.srch.c.min)
+        if self.srch.c.max is not None:
+            self.max_c.SetValue(self.srch.c.max)
+        if self.srch.alpha.min is not None:
+            self.min_alpha.SetValue(self.srch.alpha.min)
+        if self.srch.alpha.max is not None:
+            self.max_alpha.SetValue(self.srch.alpha.max)
+        if self.srch.beta.min is not None:
+            self.min_beta.SetValue(self.srch.beta.min)
+        if self.srch.beta.max is not None:
+            self.max_beta.SetValue(self.srch.beta.max)
+        if self.srch.gamma.min is not None:
+            self.min_gamma.SetValue(self.srch.gamma.min)
+        if self.srch.gamma.max is not None:
+            self.max_gamma.SetValue(self.srch.gamma.max)
+        if self.srch.sg is not None:
+            self.SG.SetSelection(int(self.srch.sg))
 
     def onSpaceGroup(self,event=None):
 
@@ -3533,7 +3518,8 @@ class XRDSymmetrySearch(wx.Dialog):
         else:
             self.SG.SetSelection(0)
         
-
+    def formatFloat(self,event):
+        event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
 
 def loadXYFILE(self,event=None,verbose=False):
 
