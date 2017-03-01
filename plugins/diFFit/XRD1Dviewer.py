@@ -3077,10 +3077,7 @@ class XRDSearchGUI(wx.Dialog):
         self.Show()
         
         self.srch = SearchCIFdb()
-        
-        self.incl_elm,self.excl_elm = [],[]
-        self.incl_auth = []
-        
+
 #########################################################################
 
     def entrAuthor(self,event=None):
@@ -3108,90 +3105,26 @@ class XRDSearchGUI(wx.Dialog):
 
 
     def entrMineral(self,event=None):
-    
+        
+        ## need to integrate with SearchCIFdb somehow...
+        ## mkak 2017.03.01
         if event.GetString() not in self.minerals:
             self.minerals.insert(1,event.GetString())
             self.Mineral.Set(self.minerals)
             self.Mineral.SetSelection(1)
+            self.srch.read_parameter(event.GetString(),key='mnrlname')
 
     def entrChemistry(self,event=None):
-    
-        ## This needs to be imported from periodic table.. not defined here.
-        ## mkak 2017.02.22
-        syms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
-                'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V',
-                'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se',
-                'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh',
-                'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba',
-                'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho',
-                'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
-                'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac',
-                'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-                'Md', 'No', 'Lr']
 
-        chemstr = self.Chemistry.GetValue()
-        chemstr = re.sub('[( )]', '', chemstr)
-        
-        ii = -1
-        for i,s in enumerate(chemstr):
-            if s == '-':
-                ii = i
-
-        chem_incl, chem_excl = [], []
-        if ii > 0:
-            chem_incl = chemstr[0:ii].split(',')
-    
-            if len(chemstr)-ii == 1:
-                for elem in syms:
-                    if elem not in chem_incl:
-                        chem_excl += [elem]
-            elif ii < len(chemstr)-1:
-                chem_excl = chemstr[ii+1:].split(',')
-        else:
-            chem_incl = chemstr.split(',')
-
-        self.incl_elm,self.excl_elm = [],[]
-        for elem in chem_incl:
-            if elem in syms and elem not in self.incl_elm:
-                self.incl_elm += [elem]
-        for elem in chem_excl:
-            if elem in syms and elem not in self.excl_elm and elem not in self.incl_elm:
-                self.excl_elm += [elem]    
-        #self.incl_elm = chem_incl
-        #self.excl_elm = chem_excl
-        self.updateChemistry()
-
-    def updateChemistry(self):
-   
-        str = ''
-
-        for i,elem in enumerate(self.incl_elm):
-            if i==0:
-                str = '(%s' % elem
-            else:
-                str = '%s,%s' % (str,elem)
-        if len(self.incl_elm) > 0:
-            str = '%s) ' % str 
-
-        if len(self.excl_elm) > 0:
-            str = '%s- ' % str
-        # if all else excluded, just use - (don't list)
-        if (len(self.srch.allelem)-20) > (len(self.incl_elm)+len(self.excl_elm)): 
-            for i,elem in enumerate(self.excl_elm):
-                if i==0:
-                    str = '%s(%s' % (str,elem)
-                else:
-                    str = '%s,%s' % (str,elem)
-            if len(self.excl_elm) > 0:
-                str = '%s)' % str 
-         
-        self.Chemistry.SetValue(str) 
-
+        self.srch.read_chemistry(self.Chemistry.GetValue())
+        print self.Chemistry.GetValue()
+        self.Chemistry.SetValue(self.srch.print_chemistry())
 
     def onChemistry(self,event=None):
         
-        dlg = PeriodicTableSearch(self,include=self.incl_elm,exclude=self.excl_elm)
-   
+        dlg = PeriodicTableSearch(self,include=self.srch.elem_incl,
+                                       exclude=self.srch.elem_excl)
+
         update = False
         if dlg.ShowModal() == wx.ID_OK:
             incl = dlg.element_include
@@ -3200,17 +3133,16 @@ class XRDSearchGUI(wx.Dialog):
         dlg.Destroy()
 
         if update:
-            self.incl_elm = incl
-            self.excl_elm = excl
-            self.updateChemistry()
-
+            self.srch.elem_incl = incl
+            self.srch.elem_excl = excl
+            self.Chemistry.SetValue(self.srch.print_chemistry())
 
 #########################################################################
 
     def onAuthor(self,event=None):
         
         authorlist = self.parent.owner.cifdatabase.return_author_names()
-        dlg = AuthorListTable(self,authorlist,include=self.incl_auth)
+        dlg = AuthorListTable(self,authorlist,include=self.srch.authors)
    
         update = False
         if dlg.ShowModal() == wx.ID_OK:
@@ -3222,28 +3154,42 @@ class XRDSearchGUI(wx.Dialog):
         dlg.Destroy()
 
         if update:
-            self.incl_auth = incl
-            self.updateAuthor()
+            self.srch.authors = incl
+            self.Author.SetValue(self.srch.print_parameter(key='authors'))
 
-    def updateAuthor(self):
-   
-        str = ''
 
-        for i,auth in enumerate(self.incl_auth):
-            if i==0:
-                str = '%s' % auth
-            else:
-                str = '%s,%s' % (str,auth)
-
-        self.Author.SetValue(str)
-        
 #########################################################################
     def onSymmetry(self,event=None):
         
-        dlg = XRDSymmetrySearch(self)
+        dlg = XRDSymmetrySearch(self,self.srch)
+#         dlg = XRDSymmetrySearch(self,self.srch)
+        update = False
         if dlg.ShowModal() == wx.ID_OK:
-            pass
+#             vals = [dlg.min_a.GetValue(),
+#                     dlg.max_a.GetValue(),
+#                     dlg.min_b.GetValue(),
+#                     dlg.max_b.GetValue(),
+#                     dlg.min_c.GetValue(),
+#                     dlg.max_c.GetValue(),
+#                     dlg.min_alpha.GetValue(),
+#                     dlg.max_alpha.GetValue(),
+#                     dlg.min_beta.GetValue(),
+#                     dlg.max_beta.GetValue(),
+#                     dlg.min_gamma.GetValue(),
+#                     dlg.max_gamma.GetValue(),
+#                     dlg.SG.GetSelection()]
+#             print dlg.__dict__
+            update = True
         dlg.Destroy()
+        
+        if update:
+#             for i,val in enumerate(vals):
+#                 if val == '':
+#                     val = None
+#                 print val
+#                 
+            print 'sym:',self.srch.print_geometry()
+            self.Symmetry.SetValue(self.srch.print_geometry())
         
 #########################################################################
     def onReset(self,event=None):
@@ -3257,6 +3203,8 @@ class XRDSearchGUI(wx.Dialog):
         for i,n in enumerate(CATEGORIES):
             self.Category.Deselect(i)
         self.Keyword.Clear()
+        
+        self.srch.__init__()
 
         
 #########################################################################            
@@ -3436,7 +3384,7 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
         self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
 
-        lbl_c = wx.StaticText(self.panel,    label='a (A)' )
+        lbl_c = wx.StaticText(self.panel,    label='c (A)' )
         self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
         self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
 
@@ -3552,6 +3500,7 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma.Clear()
         self.max_gamma.Clear()
         self.SG.SetSelection(0)
+        self.HMsg.SetSelection(0)
 
     def onSpaceGroup(self,event=None):
 

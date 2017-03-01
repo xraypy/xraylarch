@@ -1385,9 +1385,10 @@ def round_value(x, prec=2, base=0.05):
 
 def capitalize_string(s):
 
-    if type(s) == str:
-       return s[0].upper() + s[1:].lower()
-    return s
+    try:
+        return s[0].upper() + s[1:].lower()
+    except:
+        return s
     
 def filter_int_and_str(s,exact=False):
 
@@ -1492,28 +1493,6 @@ class SearchCIFdb(object):
                 except:
                     pass
 
-    def print_mineral(self,list=[]):
-
-        s = ''
-        if len(self.mnrlname) > 0:
-            for name in self.mnrlname:
-                s = '%s' % (name)
-        return s
-
-        
-    def read_mineral(self,s,clear=True):
-       
-        if clear:
-            self.mnrlname = ''
-        if len(s) > 0:
-            a = s.split(',')
-            if len(a) > 0:
-                for b in a:
-                   if len(b) > 0:
-                       self.mnrlname = b.split()
-            else:
-                self.mnrlname = a
-
     def print_chemistry(self):
     
         s = ''
@@ -1560,12 +1539,14 @@ class SearchCIFdb(object):
             chem_incl = chemstr.split(',')
 
         for elem in chem_incl:
+            elem = capitalize_string(elem)
             if elem in self.allelem and elem not in self.elem_incl:
                 self.elem_incl += [elem]
                 if elem in self.elem_excl:
                     j = self.elem_excl.index(elem)
                     self.elem_excl.pop(j)
         for elem in chem_excl:
+            elem = capitalize_string(elem)
             if elem in self.allelem and elem not in self.elem_excl and elem not in self.elem_incl:
                 self.elem_excl += [elem]
 
