@@ -3088,8 +3088,8 @@ class XRDSearchGUI(wx.Dialog):
             
     def entrSymmetry(self,event=None):
     
-        s = self.Symmetry.GetValue()
-        print s
+        self.srch.read_geometry(str(self.Symmetry.GetValue()))
+        self.Symmetry.SetValue(self.srch.print_geometry())
             
     def entrCategory(self,event=None):
 
@@ -3117,7 +3117,6 @@ class XRDSearchGUI(wx.Dialog):
     def entrChemistry(self,event=None):
 
         self.srch.read_chemistry(self.Chemistry.GetValue())
-        print self.Chemistry.GetValue()
         self.Chemistry.SetValue(self.srch.print_chemistry())
 
     def onChemistry(self,event=None):
@@ -3161,34 +3160,34 @@ class XRDSearchGUI(wx.Dialog):
 #########################################################################
     def onSymmetry(self,event=None):
         
-        dlg = XRDSymmetrySearch(self,self.srch)
-#         dlg = XRDSymmetrySearch(self,self.srch)
+#         dlg = XRDSymmetrySearch(self)
+        dlg = XRDSymmetrySearch(self,search=self.srch)
         update = False
         if dlg.ShowModal() == wx.ID_OK:
-#             vals = [dlg.min_a.GetValue(),
-#                     dlg.max_a.GetValue(),
-#                     dlg.min_b.GetValue(),
-#                     dlg.max_b.GetValue(),
-#                     dlg.min_c.GetValue(),
-#                     dlg.max_c.GetValue(),
-#                     dlg.min_alpha.GetValue(),
-#                     dlg.max_alpha.GetValue(),
-#                     dlg.min_beta.GetValue(),
-#                     dlg.max_beta.GetValue(),
-#                     dlg.min_gamma.GetValue(),
-#                     dlg.max_gamma.GetValue(),
-#                     dlg.SG.GetSelection()]
-#             print dlg.__dict__
+            vals = [dlg.min_a.GetValue(),     dlg.max_a.GetValue(),
+                    dlg.min_b.GetValue(),     dlg.max_b.GetValue(),
+                    dlg.min_c.GetValue(),     dlg.max_c.GetValue(),
+                    dlg.min_alpha.GetValue(), dlg.max_alpha.GetValue(),
+                    dlg.min_beta.GetValue(),  dlg.max_beta.GetValue(),
+                    dlg.min_gamma.GetValue(), dlg.max_gamma.GetValue(),
+                    dlg.SG.GetSelection()]
             update = True
         dlg.Destroy()
         
         if update:
-#             for i,val in enumerate(vals):
-#                 if val == '':
-#                     val = None
-#                 print val
-#                 
-            print 'sym:',self.srch.print_geometry()
+            for i,val in enumerate(vals):
+                if val == '' or val == 0: vals[i] = None
+               
+            self.srch.a.min, self.srch.a.max, self.srch.a.unit = vals[0],vals[1],'A'
+            self.srch.b.min, self.srch.b.max, self.srch.b.unit = vals[2],vals[3],'A'
+            self.srch.c.min, self.srch.c.max, self.srch.c.unit = vals[4],vals[5],'A'
+
+            self.srch.alpha.min, self.srch.alpha.max, self.srch.alpha.unit = vals[6],vals[7],'deg'
+            self.srch.beta.min,  self.srch.beta.max,  self.srch.beta.unit  = vals[8],vals[9],'deg'
+            self.srch.gamma.min, self.srch.gamma.max, self.srch.gamma.unit = vals[10],vals[11],'deg'
+            
+            self.srch.sg = vals[12]
+
             self.Symmetry.SetValue(self.srch.print_geometry())
         
 #########################################################################
@@ -3362,7 +3361,7 @@ class AuthorListTable(wx.Dialog):
 class XRDSymmetrySearch(wx.Dialog):
     """"""
 
-    def __init__(self,parent):
+    def __init__(self,parent,search=None):
     
         ## Constructor
         dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry')
@@ -3485,6 +3484,11 @@ class XRDSymmetrySearch(wx.Dialog):
         self.SetSize((ix+40, iy+40))
 
         self.Show()
+        
+        if search is not None:
+            self.srch = search
+            self.SetSearch()
+        
 #########################################################################
     def onReset(self,event=None):
         self.min_a.Clear()
@@ -3500,6 +3504,24 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma.Clear()
         self.max_gamma.Clear()
         self.SG.SetSelection(0)
+        self.HMsg.SetSelection(0)
+
+
+
+    def SetSearch(self):
+        self.min_a.SetValue(self.srch.a.min)
+        self.max_a.SetValue(self.srch.a.max)
+        self.min_b.SetValue(self.srch.b.min)
+        self.max_b.SetValue(self.srch.b.max)
+        self.min_c.SetValue(self.srch.c.min)
+        self.max_c.SetValue(self.srch.c.max)
+        self.min_alpha.SetValue(self.srch.alpha.min)
+        self.max_alpha.SetValue(self.srch.alpha.max)
+        self.min_beta.SetValue(self.srch.beta.min)
+        self.max_beta.SetValue(self.srch.beta.max)
+        self.min_gamma.SetValue(self.srch.gamma.min)
+        self.max_gamma.SetValue(self.srch.gamma.max)
+        self.SG.SetSelection(int(self.srch.sg))
         self.HMsg.SetSelection(0)
 
     def onSpaceGroup(self,event=None):
