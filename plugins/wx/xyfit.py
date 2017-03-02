@@ -983,33 +983,43 @@ class XYFitFrame(wx.Frame):
         line1 = fh.readline().lower()
         fh.close()
 
-        reader = read_ascii
+        reader = 'read_ascii'
         if 'epics stepscan file' in line1:
-            reader = read_gsexdi
+            reader = 'read_gsexdi'
         elif 'epics scan' in line1:
-            reader = gsescan_group
+            reader = 'read_gsescan'
         elif 'xdi' in line1:
-            reader = read_xdi
+            reader = 'read_xdi'
+        self.last_reader = reader
 
-        dgroup = reader(str(path), _larch=self.larch)
+        self.larch.eval("_tmp_ = %s('%s')" % (reader, str(path)))
+        dgroup = self.larch.symtable.get_symbol("_tmp_")
+
         if reader == gsescan_group:
             assign_gsescan_groups(dgroup)
         dgroup.path = path
         dgroup.filename = filename
         dgroup.groupname = groupname
+        self.larch.eval("del _tmp_")
         self.show_subframe('selectcol', SelectColumnFrame, group=dgroup,
                            last_array_sel=self.last_array_sel,
                            _larch=self.larch,
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=False))
 
-    def onRead_OK(self, datagroup, array_sel=None, overwrite=False, plot=True):
+    def onRead_OK(self, datagroup, array_sel=None, expressions=None,
+                  overwrite=False, plot=True):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
 
         """
         print("xyfit onRead OK " , datagroup, array_sel)
+        print("xyfit onRead OK " , datagroup.filename, datagroup.groupname)
+        print("xyfit onRead OK " , expressions)
+        print("xyfit onRead OK " , self.last_reader)
+
+
         if array_sel is not None:
             self.last_array_sel = array_sel
         filename = datagroup.filename

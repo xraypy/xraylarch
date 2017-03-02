@@ -51,7 +51,6 @@ class EditColumnFrame(wx.Frame) :
         if not hasattr(group, 'orig_array_labels'):
             group.orig_array_labels = group.array_labels[:]
 
-
         self.SetMinSize((600, 600))
         self.colors = GUIColors()
 
@@ -134,7 +133,6 @@ class SelectColumnFrame(wx.Frame) :
         self.parent = parent
         self.larch = _larch
         self.rawgroup = group
-
 
         self.subframes = {}
         self.outgroup  = Group(raw=group)
@@ -380,7 +378,8 @@ class SelectColumnFrame(wx.Frame) :
             self.outgroup.yerr = np.sqrt(outgroup.ydat)
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
+            self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
+                            expressions=self.expressions)
         self.Destroy()
 
     def onCancel(self, event=None):
@@ -407,16 +406,22 @@ class SelectColumnFrame(wx.Frame) :
         rawgroup = self.rawgroup
         outgroup = self.outgroup
         rdata = rawgroup.data
-        # print("onUpdate ", dir(rawgroup))
+
+
+        print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
+
+        exprs = dict(xdat=None, ydat=None, yerr=None)
 
         ncol, npts = rdata.shape
         if xname.startswith('<index') or ix >= ncol:
             outgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
+            exprs['xdat'] = 'arange(%i)' % npts
         else:
             outgroup.xdat = rdata[ix, :]
+            exprs['xdat'] = '%%s.data[%i, : ]' % ix
 
         outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
@@ -434,6 +439,7 @@ class SelectColumnFrame(wx.Frame) :
         try:
             xsuf, xpop, outgroup.xdat = pre_op(self.xpop, outgroup.xdat)
             self.xsuf.SetLabel(xsuf)
+            exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
         except:
             return
         try:
@@ -456,39 +462,53 @@ class SelectColumnFrame(wx.Frame) :
 
         if yname1 == '0.0':
             yarr1 = np.zeros(npts)*1.0
+            yexpr1 = 'zeros(%i)' % npts
         elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
             yarr1 = np.ones(npts)*1.0
+            yexpr1 = 'ones(%i)' % npts
         else:
             yarr1 = rdata[iy1, :]
+            yexpr1 = '%%s.data[%i, : ]' % iy1
 
         if yname2 == '0.0':
             yarr2 = np.zeros(npts)*1.0
+            yexpr2 = 'zeros(%i)' % npts
         elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
             yarr2 = np.ones(npts)*1.0
+            yexpr2 = 'ones(%i)' % npts
         else:
             yarr2 = rdata[iy2, :]
+            yexpr1 = '%%s.data[%i, : ]' % iy2
 
         outgroup.ydat = yarr1
-        if yop == '+':
-            outgroup.ydat = yarr1.__add__(yarr2)
-        elif yop == '-':
-            outgroup.ydat = yarr1.__sub__(yarr2)
-        elif yop == '*':
-            outgroup.ydat = yarr1.__mul__(yarr2)
-        elif yop == '/':
-            outgroup.ydat = yarr1.__truediv__(yarr2)
-
-        yerr_op = self.yerr_op.GetStringSelection().lower()
-        if yerr_op.startswith('const'):
-            yerr = self.yerr_const.GetValue()
-        elif yerr_op.startswith('array'):
-            iyerr = self.yerr_arr.GetSelection()
-            yerr = rdata[iyerr, :]
-        elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(outgroup.ydat)
+        exprs['ydat'] = yexpr1
+        if yop in ('+', '-', '*', '/'):
+            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr1)
+            if yop == '+':
+                outgroup.ydat = yarr1.__add__(yarr2)
+            elif yop == '-':
+                outgroup.ydat = yarr1.__sub__(yarr2)
+            elif yop == '*':
+                outgroup.ydat = yarr1.__mul__(yarr2)
+            elif yop == '/':
+                outgroup.ydat = yarr1.__truediv__(yarr2)
 
         ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
         self.ysuf.SetLabel(ysuf)
+        exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
+
+        yerr_op = self.yerr_op.GetStringSelection().lower()
+        exprs['yerr'] = '1'
+        if yerr_op.startswith('const'):
+            yerr = self.yerr_const.GetValue()
+            exprs['yerr'] = '%f' % yerr
+        elif yerr_op.startswith('array'):
+            iyerr = self.yerr_arr.GetSelection()
+            yerr = rdata[iyerr, :]
+            exprs['yerr'] = '%%s.data[%i, :]' % iyerr
+        elif yerr_op.startswith('sqrt'):
+            yerr = np.sqrt(outgroup.ydat)
+            exprs['yerr'] = 'sqrt(%%s.ydat)'
 
         if use_deriv:
             try:
@@ -497,10 +517,11 @@ class SelectColumnFrame(wx.Frame) :
             except:
                 pass
 
+        self.expressions = exprs
         self.array_sel = {'xpop': xpop, 'xarr': xname,
-                     'ypop': ypop, 'yop': yop,
-                     'yarr1': yname1, 'yarr2': yname2,
-                     'use_deriv': use_deriv}
+                          'ypop': ypop, 'yop': yop,
+                          'yarr1': yname1, 'yarr2': yname2,
+                          'use_deriv': use_deriv}
 
         try:
             npts = min(len(outgroup.xdat), len(outgroup.ydat))
