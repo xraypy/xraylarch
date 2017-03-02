@@ -149,7 +149,9 @@ class LarchPanel(wx.Panel):
 
         wx.Panel.__init__(self, parent, -1, size=(750, 725))
 
-        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        # sfont = self.GetFont() 
+        # ufont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        # print(" Larch Panel fonts ", sfont, ufont)
         self.splitter = splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(150)
         self.SetBackgroundColour('#E9EEE0')
@@ -161,7 +163,7 @@ class LarchPanel(wx.Panel):
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
-        self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
+        # self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
 
         splitter.SplitHorizontally(self.objtree, self.output, 0.5)
 
@@ -203,6 +205,9 @@ class LarchPanel(wx.Panel):
         self.larchshell.write(larch.make_banner(), color='blue', bold=True)
         root = self.objtree.tree.GetRootItem()
         self.objtree.tree.Expand(root)
+    
+    def update(self):
+        self.objtree.onRefresh()
 
     def onText(self, event=None):
         text =  event.GetString()
@@ -272,9 +277,8 @@ class LarchFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=(750, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
-        ofont = self.GetFont()
 
-        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        sfont = Font(10)
         self.SetFont(sfont)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
