@@ -1374,9 +1374,11 @@ class MapViewerFrame(wx.Frame):
         self.files_in_progress = []
         self.no_hotcols = True
         self.SetTitle('GSE XRM MapViewer')
-        self.SetFont(Font(9))
 
         self.createMainPanel()
+
+        self.SetFont(Font(10))
+
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
         self.statusbar.SetStatusWidths([-3, -1])
@@ -1429,21 +1431,18 @@ class MapViewerFrame(wx.Frame):
 
         for creator in (SimpleMapPanel, TriColorMapPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
-
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label.title(), True)
             bgcol = p.GetBackgroundColour()
             self.nbpanels.append(p)
             p.SetSize((750, 550))
 
-
-
-        p = LarchPanel(_larch=self.larch, parent=self.nb)
-        self.nb.AddPage(p, ' Larch Shell ', True)
-        self.nbpanels.append(p)
+        self.larch_panel = LarchPanel(_larch=self.larch, parent=self.nb)
+        self.nb.AddPage(self.larch_panel, ' Larch Shell ', True)
+        self.nbpanels.append(self.larch_panel)
 
         self.nb.SetSelection(0)
-
+        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -1457,6 +1456,11 @@ class MapViewerFrame(wx.Frame):
         #                         style=wx.LI_HORIZONTAL),
         #          0,  wx.ALL|wx.EXPAND)
         # sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
+
+    def onNBChanged(self, event=None):
+        idx = self.nb.GetSelection()
+        if self.nb.GetPage(idx) is self.larch_panel:
+            self.larch_panel.update()
 
     def get_mca_area(self, det, mask, xoff=0, yoff=0, xrmfile=None):
         if xrmfile is None:
