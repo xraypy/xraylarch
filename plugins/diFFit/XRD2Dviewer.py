@@ -270,8 +270,6 @@ class diFFit2DFrame(wx.Frame):
         if self.maxCURRENT > self.maxINT:
             self.maxCURRENT = self.maxINT
 
-        img_no = self.ch_img.GetSelection()
-
         self.setContrast()  
 
     def onContrastRange(self,event=None):
@@ -279,10 +277,13 @@ class diFFit2DFrame(wx.Frame):
         newMIN = int(self.entr_min.GetValue())
         newMAX = int(self.entr_max.GetValue())
         
-        img_no = self.ch_img.GetSelection()
-
         self.sldr_min.SetRange(newMIN,newMAX)
         self.sldr_max.SetRange(newMIN,newMAX)
+        
+        if newMAX < self.maxCURRENT:
+            self.maxCURRENT = newMAX
+        if newMIN < self.minCURRENT:
+            self.minCURRENT = newMIN
         
         self.setContrast()
             
@@ -299,8 +300,6 @@ class diFFit2DFrame(wx.Frame):
         self.setContrast()
 
     def setContrast(self):
-
-        img_no = self.ch_img.GetSelection()
 
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
@@ -665,7 +664,7 @@ class diFFit2DFrame(wx.Frame):
             
         hbox_ct2.Add(self.ttl_min,  flag=wx.RIGHT,         border=6)
         hbox_ct2.Add(self.sldr_min, flag=wx.RIGHT,         border=6)
-        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT,         border=6)
+        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         vbox_ct.Add(hbox_ct2,       flag=wx.TOP|wx.BOTTOM, border=4)        
     
         hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -678,7 +677,7 @@ class diFFit2DFrame(wx.Frame):
         
         hbox_ct3.Add(self.ttl_max,  flag=wx.RIGHT,         border=6)
         hbox_ct3.Add(self.sldr_max, flag=wx.RIGHT,         border=6)
-        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT,         border=6)
+        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         vbox_ct.Add(hbox_ct3,       flag=wx.TOP|wx.BOTTOM, border=4)
 
         hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
@@ -792,10 +791,7 @@ class diFFit2DFrame(wx.Frame):
         buttonbox.Add(self.btn_integ, flag=wx.ALL, border=8)
         
         return buttonbox
-
-
-
-     
+    
 class diFFit2D(wx.App):
     def __init__(self):
         wx.App.__init__(self)

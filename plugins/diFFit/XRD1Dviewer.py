@@ -905,11 +905,10 @@ class Fitting1DXRD(BasePanel):
 
         ## this creates self.bgr and self.bgr_info
         xi = self.rngpl.ch_xaxis.GetSelection()
-        xrd_background(self.plt_data[xi],self.plt_data[3], group=self, exponent=self.exponent,
+        self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3], exponent=self.exponent,
                            compress=self.compress, width=self.width)
 
         self.bgr_data    = np.copy(self.plt_data[:,:np.shape(self.bgr)[0]])
-
         self.bgr_data[3] = self.bgr
 
         self.bkgdpl.ck_bkgd.Enable()

@@ -1442,6 +1442,8 @@ class SearchCIFdb(object):
         self.authors    = []
         self.keywords   = []
         self.categories = []
+        self.amcsd      = []
+        self.qpks       = []
 
         self.mnrlname   = ''
 
@@ -1459,12 +1461,13 @@ class SearchCIFdb(object):
         self.beta  = RangeParameter()
         self.gamma = RangeParameter()
 
-        self.q_list    = []
+
+        
 
 
     def print_all(self):
     
-        for key in ['authors','mnrlname','keywords','categories']:
+        for key in ['authors','mnrlname','keywords','categories','amcsd','qpks']:
              print('%s : %s' % (key,self.print_parameter(key=key)))
         print('chemistry : %s' % self.print_chemistry())
         print('geometry : %s' % self.print_geometry())
@@ -1483,6 +1486,12 @@ class SearchCIFdb(object):
 
         
     def read_parameter(self,s,clear=True,key='authors'):
+        '''
+        This function works for keys: 
+        'authors'
+        'mnrlname
+        keywords','categories','amcsd','qpks'
+        '''
        
         if clear:
             self.__dict__[key] = []
