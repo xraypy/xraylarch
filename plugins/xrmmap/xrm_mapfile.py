@@ -659,6 +659,13 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
+    def __repr__(self):
+        fname = ''
+        if self.filename is not None:
+            fpath, fname = os.path.split(self.filename)
+
+        return "GSEXRM_MapFile('%s')" % fname
+
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)
 
