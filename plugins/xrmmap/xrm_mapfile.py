@@ -245,14 +245,11 @@ class GSEXRM_MapRow:
                 xrf_reader = read_xrf_netcdf
 
         if FLAGxrd:
-            try:
-                read_xrd_hdf5(xrdfile)
-            except:
-                try:
-                    read_xrd_netcdf(xrdfile)
-                except:
-                    FLAGxrd = False
-                    print 'Cannot read XRD files.'
+            xrd_reader = read_xrd_netcdf
+            ## not yet implemented for hdf5 files
+            ## mkak 2016.07.27
+            # if not xrdfile.endswith('nc'):
+            #    xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
