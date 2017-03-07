@@ -56,14 +56,34 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
     for i in range(nmca):
-        ocr = getattr(xdi, 'OutputCounts_mca%i' % (i+1), None)
+        mca = "mca%i" % (i+1)
+        ocr    = getattr(xdi, 'OutputCounts_%s' % mca, None)
+        clock  = getattr(xdi, 'Clock_%s'        % mca, None)
+        icr    = getattr(xdi, 'InputCounts_%s'  % mca, None)
+        dtfact = getattr(xdi, 'DTFactor_%s'     % mca, None)
+        resets = getattr(xdi, 'ResetTicks_%s'   % mca, None)
+        allevt = getattr(xdi, 'AllEvent_%s'     % mca, None)
         if ocr is None:
             ocr = ctime
         ocr = ocr/ctime
-        icr = getattr(xdi, 'InputCounts_mca%i' % (i+1), None)
         if icr is not None:
             icr = icr/ctime
-        else:
+
+        # Get ICR from one of several alternatives:
+        # 1. InputCounts_mca was given
+        # 2. DTFactor_mca was given
+        # 3. ResetTicks_mca and AllEvets_mca were given
+        # 4. Use "known values" for tau
+        if icr is None:
+            if dtfact is not None:
+                icr = ocr * dtfact
+            elif (clock is not None and
+                  resets is not None and
+                  allevt is not None):
+                dtfact = clock/(clock - (6*allevt + resets))
+                icr = ocr * dtfact
+        # finally estimate from measured values of tau:
+        if icr is None:
             icr = 1.0*ocr
             if is_xspress3:
                 tau = group.dtc_taus[i]
