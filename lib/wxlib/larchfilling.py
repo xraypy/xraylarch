@@ -11,7 +11,6 @@ __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
 __cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
 __revision__ = "$Revision: 37633 $"
 
-
 import sys
 import wx
 import numpy
@@ -107,7 +106,6 @@ class FillingTree(wx.TreeCtrl):
 
     def OnItemExpanding(self, event):
         """Add children to the item."""
-        # busy = wx.BusyCursor()
         item = event.GetItem()
         if self.IsExpanded(item):
             return
@@ -116,12 +114,10 @@ class FillingTree(wx.TreeCtrl):
 
     def OnItemCollapsed(self, event):
         """Remove all children from the item."""
-        # busy = wx.BusyCursor()
         item = event.GetItem()
 
     def OnSelChanged(self, event):
         """Display information about the item."""
-		# busy = wx.BusyCursor()
         if hasattr(event, 'GetItem'):
             self.item = event.GetItem()
         self.display()
@@ -146,7 +142,6 @@ class FillingTree(wx.TreeCtrl):
 
     def objGetChildren(self, obj):
         """Return dictionary with attributes or contents of object."""
-        # print 'objGetChildren ', obj
         otype = type(obj)
         d = {}
         if (obj is None or obj is False or obj is True):
@@ -358,7 +353,7 @@ class FillingRST(html.HtmlWindow):
 
 class Filling(wx.SplitterWindow):
     """Filling based on wxSplitterWindow."""
-
+    
     name = 'Filling'
     revision = __revision__
 
@@ -437,6 +432,34 @@ class Filling(wx.SplitterWindow):
         except:
             pass
 
+    def ShowNode(self, name):
+        """show node by name"""
+        def get_node_by_name(node, name):
+            nodecount = self.tree.GetChildrenCount(node)
+            item, cookie = self.tree.GetFirstChild(node)
+            if not item.IsOk() or self.tree.GetItemText(item) == name:
+                return item
+            while nodecount > 1:
+                nodecount -= 1
+                item, cookie = self.tree.GetNextChild(item, cookie)
+                if not item.IsOk() or self.tree.GetItemText(item) == name:
+                    return item
+
+        root = self.tree.GetRootItem()
+        self.tree.Collapse(root)
+        self.tree.Expand(root)
+        node = root
+        parts = name.split('.')
+        parts.reverse()
+        while len(parts) > 0:
+            self.tree.Expand(node)
+            name = parts.pop()
+            node = get_node_by_name(node, name)
+        try:
+            self.tree.Expand(node)
+            self.tree.SelectItem(node)
+        except:
+            pass
 
     def LoadSettings(self, config):
         pos = config.ReadInt('Sash/FillingPos', 200)
@@ -452,7 +475,6 @@ class Filling(wx.SplitterWindow):
 
 class FillingFrame(wx.Frame):
     """Frame containing the namespace tree component."""
-
     name = 'Filling Frame'
     revision = __revision__
     def __init__(self, parent=None, id=-1, title='Larch Data Tree',
@@ -464,8 +486,6 @@ class FillingFrame(wx.Frame):
         intro = 'Larch Data Tree'
         self.CreateStatusBar()
         self.SetStatusText(intro)
-#         import images
-#         self.SetIcon(images.getPyIcon())
         self.filling = Filling(parent=self,
                                rootObject=rootObject,
                                rootLabel=rootLabel,
