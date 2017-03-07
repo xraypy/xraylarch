@@ -41,7 +41,6 @@ class EditColumnFrame(wx.Frame) :
         self.group = group
         self.on_ok = on_ok
         self._larch = _larch
-
         wx.Frame.__init__(self, None, -1, 'Edit Array Names',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
@@ -127,12 +126,13 @@ class EditColumnFrame(wx.Frame) :
 
 class SelectColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
-    def __init__(self, parent, group=None, last_array_sel=None,
+    def __init__(self, parent, group, last_array_sel=None,
                  read_ok_cb=None, edit_groupname=True,
                  _larch=None):
         self.parent = parent
         self._larch = _larch
         self.rawgroup = group
+        self.array_labels = group.array_labels
 
         self.subframes = {}
         self.outgroup  = Group(raw=group)
@@ -140,7 +140,7 @@ class SelectColumnFrame(wx.Frame) :
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
 
-        arr_labels = [l.lower() for l in self.rawgroup.array_labels]
+        arr_labels = [l.lower() for l in self.array_labels]
         if self.outgroup.datatype is None:
             self.outgroup.datatype = 'raw'
             if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
@@ -346,9 +346,9 @@ class SelectColumnFrame(wx.Frame) :
                            _larch=self._larch)
 
     def set_array_labels(self, arr_labels):
+        self.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['<index>']
-
         def update(wid, choices):
             curstr = wid.GetStringSelection()
             curind = wid.GetSelection()
@@ -379,6 +379,7 @@ class SelectColumnFrame(wx.Frame) :
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
+                            array_labels=self.array_labels,
                             expressions=self.expressions)
         self.Destroy()
 
@@ -408,7 +409,7 @@ class SelectColumnFrame(wx.Frame) :
         rdata = rawgroup.data
 
 
-        print("onUpdate ", dir(rawgroup))
+        # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
 
