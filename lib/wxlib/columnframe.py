@@ -131,7 +131,7 @@ class SelectColumnFrame(wx.Frame) :
                  read_ok_cb=None, edit_groupname=True,
                  _larch=None):
         self.parent = parent
-        self.larch = _larch
+        self._larch = _larch
         self.rawgroup = group
 
         self.subframes = {}
@@ -343,7 +343,7 @@ class SelectColumnFrame(wx.Frame) :
         self.show_subframe('editcol', EditColumnFrame,
                            group=self.rawgroup,
                            on_ok=self.set_array_labels,
-                           _larch=self.larch)
+                           _larch=self._larch)
 
     def set_array_labels(self, arr_labels):
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
@@ -472,10 +472,10 @@ class SelectColumnFrame(wx.Frame) :
 
         if yname2 == '0.0':
             yarr2 = np.zeros(npts)*1.0
-            yexpr2 = 'zeros(%i)' % npts
+            yexpr2 = '0.0'
         elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
             yarr2 = np.ones(npts)*1.0
-            yexpr2 = 'ones(%i)' % npts
+            yexpr2 = '1.0'
         else:
             yarr2 = rdata[iy2, :]
             yexpr1 = '%%s.data[%i, : ]' % iy2
@@ -483,7 +483,7 @@ class SelectColumnFrame(wx.Frame) :
         outgroup.ydat = yarr1
         exprs['ydat'] = yexpr1
         if yop in ('+', '-', '*', '/'):
-            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr1)
+            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
             if yop == '+':
                 outgroup.ydat = yarr1.__add__(yarr2)
             elif yop == '-':
@@ -514,6 +514,8 @@ class SelectColumnFrame(wx.Frame) :
             try:
                 outgroup.ydat = (np.gradient(outgroup.ydat) /
                                  np.gradient(outgroup.xdat))
+                exprs['ydat'] = 'deriv(%s)/deriv(%s)' % (exprs['ydat'],
+                                                         exprs['xdat'])
             except:
                 pass
 
