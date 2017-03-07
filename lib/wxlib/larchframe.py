@@ -115,7 +115,6 @@ class LarchWxShell(object):
             pass
         self.output.Refresh()
         self.output.Update()
-        wx.CallAfter(self.objtree.onRefresh)
         self.needs_flush = False
 
     def clear_input(self):
@@ -137,6 +136,7 @@ class LarchWxShell(object):
         if complete:
             complete = self.inptext.run(writer=self)
         self.SetPrompt(complete)
+        wx.CallAfter(self.objtree.onRefresh)
 
 class LarchPanel(wx.Panel):
     """Larch Input/Output Panel + Data Viewer as a wx.Panel,
@@ -214,7 +214,12 @@ class LarchPanel(wx.Panel):
             self.onExit()
         else:
             self.input.AddToHistory(text)
-            wx.CallAfter(self.larchshell.execute, text)
+            if text.startswith('help(') and text.endswith(')'):
+                topic = text[5:-1]
+                parent = self.larchshell.symtable.get_parentpath(topic)
+                self.objtree.ShowNode("%s.%s" % (parent, topic))
+            else:
+                wx.CallAfter(self.larchshell.execute, text)
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
@@ -459,6 +464,7 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onText(self, event=None):
+        print("onTEXT  :%s:" % text)
         text =  event.GetString()
         self.larchshell.write(">%s\n" % text)
         self.input.Clear()
@@ -467,6 +473,7 @@ class LarchFrame(wx.Frame):
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
+
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
