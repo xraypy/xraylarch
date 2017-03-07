@@ -1007,40 +1007,59 @@ class XYFitFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=False))
 
-    def onRead_OK(self, datagroup, array_sel=None, expressions=None,
-                  overwrite=False, plot=True):
+    def onRead_OK(self, datagroup, array_sel=None, array_labels=None, 
+                  expressions=None,  overwrite=False, plot=True):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
-
         """
-        print("xyfit onRead OK " , datagroup, array_sel)
-        print("xyfit onRead OK " , datagroup.filename, datagroup.groupname)
-        print("xyfit onRead OK " , expressions)
-        print("xyfit onRead OK " , self.last_reader)
+        if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
+            array_labels = datagroup.array_labels
 
+        gname = datagroup.groupname
+        fname = datagroup.filename
+        path  = datagroup.path
+        datatype = getattr(datagroup, 'datatype', 'raw')
+        cmd = "'%s'" % path
+        if array_labels is not None:
+            cmd = "%s, labels='%s'" % (cmd, ', '.join(array_labels))
 
+        lexec = self.larch_panel.larchshell.execute
+        lexec("%s = %s(%s)" % (gname, self.last_reader, cmd))
+
+        for attr in ('datatype', 'groupname', 'filename',
+                     'path', 'plot_xlabel', 'plot_ylabel'):
+            val = getattr(datagroup, attr)
+            lexec("%s.%s = '%s'" % (gname, attr, val))
+
+        for aname in ('xdat', 'ydat', 'yerr'):
+            expr = expressions[aname].replace('%s', gname)
+            lexec("%s.%s = %s" % (gname, aname, expr))
+
+        if datatype == 'xas':
+            lexec("%s.energy = %s.xdat" % (gname, gname))
+            lexec("%s.mu = %s.ydat" % (gname, gname))
+
+        
         if array_sel is not None:
             self.last_array_sel = array_sel
-        filename = datagroup.filename
-        groupname = datagroup.groupname
-        print("READ OK  storing datagroup ", datagroup, groupname, filename)
+
+        print("READ OK  storing datagroup ", datagroup, gname, fname)
         # file /group may already exist in list
-        if filename in self.controller.file_groups and not overwrite:
+        if fname in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
-                ftest = "%s (%i)"  % (filename, i)
+                ftest = "%s (%i)"  % (fname, i)
                 if ftest not in self.controller.file_groups:
-                    filename = ftest
+                    fname = ftest
                     break
 
-        if filename not in self.controller.file_groups:
-            self.controller.filelist.Append(filename)
-            self.controller.file_groups[filename] = groupname
+        if fname not in self.controller.file_groups:
+            self.controller.filelist.Append(fname)
+            self.controller.file_groups[fname] = gname
 
-        setattr(self.larch.symtable, groupname, datagroup)
-
+        # setattr(self.larch.symtable, groupname, datagroup)
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname)
+        self.ShowFile(groupname=gname)
 
 class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
