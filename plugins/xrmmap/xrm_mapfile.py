@@ -982,7 +982,7 @@ class GSEXRM_MapFile(object):
         else:
             raise IOError('No XRF or XRD flags provided.')
             return
-        reverse = None # (irow % 2 != 0)
+        reverse = (irow % 2 != 0)
 
         ioffset = 0
         if scan_version > 1.35:
