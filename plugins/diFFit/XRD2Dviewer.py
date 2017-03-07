@@ -298,9 +298,6 @@ class diFFit2DFrame(wx.Frame):
             self.sldr_max.SetValue(self.minCURRENT)       
 
         self.setContrast()
-        
-    def printSLIDER(self,event=None):
-        print 'hi'
 
     def setContrast(self):
 
