@@ -17,6 +17,12 @@ try:
 except ImportError:
     raise ImportError('cannot find scipy netcdf module')
 
+class XRDData(object):
+    def __init__(self,nframes,xpix,ypix):
+        self.xpix = xpix
+        self.ypix = ypix
+        
+
 def read_xrd_netcdf(fname,verbose=False): #npixels=self.nrows_expected
     ## Reads a netCDF file created for XRD mapping
     
