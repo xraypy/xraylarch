@@ -1559,9 +1559,9 @@ class SearchCIFdb(object):
             s = '%s%s=%s,' % (s,key,self.__dict__[key])
         for i,key in enumerate(self.lattice_keys):
             if self.__dict__[key].min is not None:
-                s = '%s%s=%s' % (s,key,self.__dict__[key].min)
+                s = '%s%s=%0.2f' % (s,key,float(self.__dict__[key].min))
                 if self.__dict__[key].max is not None:
-                    s = '%sto%s' % (s,self.__dict__[key].max)
+                    s = '%sto%0.2f' % (s,float(self.__dict__[key].max))
                 s = '%s%s,' % (s,self.__dict__[key].unit)
 
         if len(s) > 1:
@@ -1573,9 +1573,7 @@ class SearchCIFdb(object):
     def read_geometry(self,s):
         
         geostr = s.split(',')
-        
         used = []
-
         for par in geostr:
             key = par.split('=')[0]
             val = par.split('=')[1]
@@ -1585,11 +1583,12 @@ class SearchCIFdb(object):
             elif key in self.lattice_keys:
                 values = [''.join(g) for _, g in groupby(val, str.isalpha)]
                 self.__dict__[key].min = values[0]
+                if len(values) > 1: 
+                    self.__dict__[key].unit = values[-1]
                 if len(values) > 2:
                     self.__dict__[key].max = values[2]
                 else:
                     self.__dict__[key].max = None
-                self.__dict__[key].unit = values[-1]
                 used += [key]
 
         ## Resets undefined to None
