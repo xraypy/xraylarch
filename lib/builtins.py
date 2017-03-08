@@ -257,19 +257,17 @@ def _help(*args, **kws):
     else:
         return helper.getbuffer()
 
-def _addplugin(plugin, _larch=None, **kws):
+def _addplugin(plugin, _larch=None, verbose=False, **kws):
     """add plugin components from plugin directory"""
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
+    symtable = _larch.symtable
     write = _larch.writer.write
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
     path = site_config.plugins_path
-    _sysconf = _larch.symtable._sys.config
-    if not hasattr(_larch.symtable._sys, 'import_ok'):
-        _larch.symtable._sys.import_ok  = True
-    if not _larch.symtable._sys.import_ok:
-        return
+    _sysconf = symtable._sys.config
+    symtable._sys.import_ok  = True
 
     if not hasattr(_sysconf, 'plugins_path'):
         _sysconf.plugins_path = site_config.plugins_path
@@ -280,7 +278,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 False, (fh, modpath, desc) for imported modules
                 None, None for Not Found
         """
-        if not _larch.symtable._sys.import_ok:
+        if not symtable._sys.import_ok:
             return
 
         if plugin == '__init__':
@@ -301,7 +299,7 @@ def _addplugin(plugin, _larch=None, **kws):
 
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
-        _larch.symtable._sys.import_ok = False
+        symtable._sys.import_ok = False
 
     def _check_requirements(ppath):
         """check for requirements.txt, return True only if all
@@ -341,12 +339,12 @@ def _addplugin(plugin, _larch=None, **kws):
         fh = None
         if plugin == '__init__':
             return
-        if not _larch.symtable._sys.import_ok:
+        if not symtable._sys.import_ok:
             return
 
         if path is None:
             try:
-                path = _larch.symtable._sys.config.plugins_path
+                path = symtable._sys.config.plugins_path
             except:
                 path = site_config.plugins_path
 
@@ -360,6 +358,7 @@ def _addplugin(plugin, _larch=None, **kws):
             return False
 
         retval = True
+        out = None
         if is_pkg:
             if _check_requirements(plugin):
                 filelist = []
@@ -382,7 +381,7 @@ def _addplugin(plugin, _larch=None, **kws):
 
                 retvals = []
                 for fname in filelist:
-                    if not _larch.symtable._sys.import_ok:
+                    if not symtable._sys.import_ok:
                         return
                     try:
                         ret =  _plugin_file(fname[:-3], path=[mod])
@@ -392,14 +391,15 @@ def _addplugin(plugin, _larch=None, **kws):
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
                         ret = False
-                        _larch.symtable._sys.import_ok = False
+                        symtable._sys.import_ok = False
                     retvals.append(ret)
                 retval = all(retvals)
         else:
             fh, modpath, desc = mod
             try:
                 out = imp.load_module(plugin, fh, modpath, desc)
-                _larch.symtable.add_plugin(out, on_error, **kws)
+                ret = symtable.add_plugin(out, on_error, **kws)
+                symtable._sys.last_import = ret
             except:
                 err, exc, tback = sys.exc_info()
                 lineno = getattr(exc, 'lineno', 0)
@@ -414,7 +414,7 @@ def _addplugin(plugin, _larch=None, **kws):
   %s %s^
 %s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False
-                _larch.symtable._sys.import_ok = False
+                symtable._sys.import_ok = False
 
         if _larch.error:
             retval = False
@@ -433,7 +433,15 @@ def _addplugin(plugin, _larch=None, **kws):
             fh.close()
         return retval
 
-    return _plugin_file(plugin)
+    _plugin_file(plugin)
+    if verbose:
+        try:
+            groupname, syms = symtable._sys.last_import
+        except ValueError:
+            return
+        out = ', '.join(["%s.%s" % (groupname, i) for i in syms])
+        write('plugin added: %s \n' % out)
+
 
 def _dir(obj=None, _larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
