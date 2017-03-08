@@ -414,7 +414,8 @@ class Filling(wx.SplitterWindow):
         while len(parents) > 0:
             name = parents.pop()
             node = self.get_node_by_name(node, name)
-            self.tree.Expand(node)
+            if node is not None:
+                self.tree.Expand(node)
 
         try:
             self.tree.Expand(node)
@@ -445,7 +446,8 @@ class Filling(wx.SplitterWindow):
         while len(parts) > 0:
             name = parts.pop()
             node = self.get_node_by_name(node, name)
-            self.tree.Expand(node)
+            if node is not None:
+                self.tree.Expand(node)
 
         try:
             self.tree.Expand(node)
