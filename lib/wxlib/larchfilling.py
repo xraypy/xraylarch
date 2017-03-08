@@ -33,7 +33,7 @@ VERSION = '0.9.5(Larch)'
 
 COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
 if sys.version[0] == '2':
-   COMMONTYPES.append(unicode)
+    COMMONTYPES.append(unicode)
 COMMONTYPES =  tuple(COMMONTYPES)
 
 H5TYPES = ()
@@ -353,7 +353,7 @@ class FillingRST(html.HtmlWindow):
 
 class Filling(wx.SplitterWindow):
     """Filling based on wxSplitterWindow."""
-    
+
     name = 'Filling'
     revision = __revision__
 
@@ -411,40 +411,31 @@ class Filling(wx.SplitterWindow):
         self.tree.Expand(root)
         node = root
 
-        def get_node_by_name(node, name):
-            nodecount = self.tree.GetChildrenCount(node)
-            item, cookie = self.tree.GetFirstChild(node)
-            if not item.IsOk() or self.tree.GetItemText(item) == name:
-                return item
-            while nodecount > 1:
-                nodecount -= 1
-                item, cookie = self.tree.GetNextChild(item, cookie)
-                if not item.IsOk() or self.tree.GetItemText(item) == name:
-                    return item
-
         while len(parents) > 0:
-            self.tree.Expand(node)
             name = parents.pop()
-            node = get_node_by_name(node, name)
+            node = self.get_node_by_name(node, name)
+            self.tree.Expand(node)
+
         try:
             self.tree.Expand(node)
             self.tree.SelectItem(node)
         except:
             pass
 
-    def ShowNode(self, name):
-        """show node by name"""
-        def get_node_by_name(node, name):
-            nodecount = self.tree.GetChildrenCount(node)
-            item, cookie = self.tree.GetFirstChild(node)
+    def get_node_by_name(self, node, name):
+        item, cookie = self.tree.GetFirstChild(node)
+        if item.IsOk() and self.tree.GetItemText(item) == name:
+            return item
+
+        nodecount = self.tree.GetChildrenCount(node)
+        while nodecount > 1:
+            nodecount -= 1
+            item, cookie = self.tree.GetNextChild(node, cookie)
             if not item.IsOk() or self.tree.GetItemText(item) == name:
                 return item
-            while nodecount > 1:
-                nodecount -= 1
-                item, cookie = self.tree.GetNextChild(item, cookie)
-                if not item.IsOk() or self.tree.GetItemText(item) == name:
-                    return item
 
+    def ShowNode(self, name):
+        """show node by name"""
         root = self.tree.GetRootItem()
         self.tree.Collapse(root)
         self.tree.Expand(root)
@@ -452,9 +443,10 @@ class Filling(wx.SplitterWindow):
         parts = name.split('.')
         parts.reverse()
         while len(parts) > 0:
-            self.tree.Expand(node)
             name = parts.pop()
-            node = get_node_by_name(node, name)
+            node = self.get_node_by_name(node, name)
+            self.tree.Expand(node)
+
         try:
             self.tree.Expand(node)
             self.tree.SelectItem(node)
