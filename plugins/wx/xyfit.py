@@ -970,24 +970,19 @@ class XYFitFrame(wx.Frame):
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
+        kwargs = dict(filename=path, _larch=self.larch_panel.larchshell
+                      last_array_sel=self.last_array_sel,
+                      read_ok_cb=self.onRead_OK)
+
+
         # check for athena projects
         if is_athena_project(path):
-            self.show_subframe('athena_import', AthenaImporter,
-                               filename=path, _larch=self.larch,
-                               read_ok_cb=partial(self.onRead_OK,
-                                                  overwrite=False))
-            return
+            self.show_subframe('athena_import', AthenaImporter, **kwargs)
+        else:
+            self.show_subframe('selectcol', SelectColumnFrame, **kwargs)
 
-        ## not athena, plain ASCII:
-        self.show_subframe('selectcol', SelectColumnFrame, 
-                           filename=path, 
-                           # group=dgroup,
-                           last_array_sel=self.last_array_sel,
-                           _larch=self.larch_panel.larchshell,
-                           read_ok_cb=partial(self.onRead_OK,
-                                              overwrite=False))
 
-    def onRead_OK(self, datagroup, array_sel=None, array_labels=None, 
+    def onRead_OK(self, datagroup, array_sel=None, array_labels=None,
                   expressions=None,  overwrite=False, plot=True):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
@@ -995,35 +990,12 @@ class XYFitFrame(wx.Frame):
         """
         if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
             array_labels = datagroup.array_labels
-            
+
         gname = datagroup.groupname
         fname = datagroup.filename
         path  = datagroup.path
         datatype = getattr(datagroup, 'datatype', 'raw')
 
-        # commands
-        """ 
-        cmd = "'%s'" % path
-        if array_labels is not None:
-            cmd = "%s, labels='%s'" % (cmd, ', '.join(array_labels))
-
-        lexec = self.larch_panel.larchshell.eval
-        lexec("%s = %s(%s)" % (gname, self.last_reader, cmd))
-
-        for attr in ('datatype', 'groupname', 'filename',
-                     'path', 'plot_xlabel', 'plot_ylabel'):
-            val = getattr(datagroup, attr)
-            lexec("%s.%s = '%s'" % (gname, attr, val))
-
-        for aname in ('xdat', 'ydat', 'yerr'):
-            expr = expressions[aname].replace('%s', gname)
-            lexec("%s.%s = %s" % (gname, aname, expr))
-
-        if datatype == 'xas':
-            lexec("%s.energy = %s.xdat" % (gname, gname))
-            lexec("%s.mu = %s.ydat" % (gname, gname))
-        """
-        
         if array_sel is not None:
             self.last_array_sel = array_sel
 
