@@ -126,17 +126,25 @@ class LarchWxShell(object):
             self.flush()
 
     def execute(self, text=None):
-        if text is not None:
-            if text.startswith('!'):
-                return os.system(text[1:])
-            else:
-                self.inptext.put(text)
+        if text is None:
+            return
+        if text.startswith('!'):
+            return os.system(text[1:])
 
+        self.inptext.put(text)
+        self.write(">%s\n" % text)
+        self.input.AddToHistory(text)
         complete = self.inptext.complete
         if complete:
-            complete = self.inptext.run(writer=self)
+            if text.startswith('help(') and text.endswith(')'):
+                topic = text[5:-1]
+                parent = self.symtable.get_parentpath(topic)
+                self.objtree.ShowNode("%s.%s" % (parent, topic))
+            else:
+                complete = self.inptext.run(writer=self)
+                self.objtree.onRefresh()
         self.SetPrompt(complete)
-        wx.CallAfter(self.objtree.onRefresh)
+
 
 class LarchPanel(wx.Panel):
     """Larch Input/Output Panel + Data Viewer as a wx.Panel,
@@ -208,18 +216,11 @@ class LarchPanel(wx.Panel):
 
     def onText(self, event=None):
         text =  event.GetString()
-        self.larchshell.write(">%s\n" % text)
         self.input.Clear()
         if text.lower() in ('quit', 'exit'):
             self.onExit()
         else:
-            self.input.AddToHistory(text)
-            if text.startswith('help(') and text.endswith(')'):
-                topic = text[5:-1]
-                parent = self.larchshell.symtable.get_parentpath(topic)
-                self.objtree.ShowNode("%s.%s" % (parent, topic))
-            else:
-                wx.CallAfter(self.larchshell.execute, text)
+            wx.CallAfter(self.larchshell.execute, text)
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
@@ -464,7 +465,6 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onText(self, event=None):
-        print("onTEXT  :%s:" % text)
         text =  event.GetString()
         self.larchshell.write(">%s\n" % text)
         self.input.Clear()
