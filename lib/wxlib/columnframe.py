@@ -116,8 +116,8 @@ class EditColumnFrame(wx.Frame) :
 class SelectColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
     def __init__(self, parent, filename=None, groupname=None,
-                 last_array_sel=None, read_ok_cb=None, 
-                 edit_groupname=True, _larch=None): 
+                 last_array_sel=None, read_ok_cb=None,
+                 edit_groupname=True, _larch=None):
         self.parent = parent
         self._larch = _larch
         self.path = filename
@@ -337,10 +337,20 @@ class SelectColumnFrame(wx.Frame) :
         group = self._larch.symtable.get_symbol(tmpname)
         self._larch.symtable.del_symbol(tmpname)
 
+        gname = fix_varname(filename.replace('.', '_'))
+        if len(gname) > 16:
+            gname = gname[:16]
+
+        groupname, count, maxcount = gname, 0, 999
+
+        while hasattr(self._larch.symtable, groupname) and count < maxcount:
+            count += 1
+            groupname = '%s_%3.3i' % (gname, count)
+
         group.text = text
         group.path = path
         group.filename = filename
-        group.groupname = fix_varname(filename.replace('.', '_'))
+        group.groupname = groupname
         return group
 
     def show_subframe(self, name, frameclass, **opts):
