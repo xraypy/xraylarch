@@ -125,26 +125,32 @@ class LarchWxShell(object):
         if self.needs_flush:
             self.flush()
 
-    def execute(self, text=None):
+    def eval(self, text, add_history=True, **kws):
         if text is None:
             return
+
         if text.startswith('!'):
             return os.system(text[1:])
 
-        self.inptext.put(text)
-        self.write(">%s\n" % text)
-        self.input.AddToHistory(text)
-        complete = self.inptext.complete
-        if complete:
-            if text.startswith('help(') and text.endswith(')'):
-                topic = text[5:-1]
-                parent = self.symtable.get_parentpath(topic)
-                self.objtree.ShowNode("%s.%s" % (parent, topic))
-            else:
-                complete = self.inptext.run(writer=self)
-                self.objtree.onRefresh()
-        self.SetPrompt(complete)
-
+        elif text.startswith('help(') and text.endswith(')'):
+            topic = text[5:-1]
+            parent = self.symtable.get_parentpath(topic)
+            self.objtree.ShowNode("%s.%s" % (parent, topic))
+            return 
+        else:
+            self.inptext.put(text)
+            ret = None
+            if add_history:
+                self.input.AddToHistory(text)
+                self.write(">%s\n" % text)
+            if self.inptext.complete:
+                self.inptext.run(writer=self, 
+                                 add_history=add_history)
+                try:
+                    self.objtree.onRefresh()
+                except ValueError:
+                    pass
+            self.SetPrompt(self.inptext.complete)
 
 class LarchPanel(wx.Panel):
     """Larch Input/Output Panel + Data Viewer as a wx.Panel,
@@ -220,7 +226,7 @@ class LarchPanel(wx.Panel):
         if text.lower() in ('quit', 'exit'):
             self.onExit()
         else:
-            wx.CallAfter(self.larchshell.execute, text)
+            wx.CallAfter(self.larchshell.eval, text)
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
@@ -362,7 +368,7 @@ class LarchFrame(wx.Frame):
         wx.GetApp().ShowInspectionTool()
 
     def onXRFviewer(self, event=None):
-        self.larchshell.execute("xrf_plot()")
+        self.larchshell.eval("xrf_plot()")
 
     def onClearInput(self, event=None):
         self.larchshell.clear_input()
@@ -448,7 +454,7 @@ class LarchFrame(wx.Frame):
             text = "run('%s')" % fname
             self.larchshell.write(">%s\n" % text)
             self.input.AddToHistory(text)
-            wx.CallAfter(self.larchshell.execute, text)
+            wx.CallAfter(self.larchshell.eval, text)
         dlg.Destroy()
 
     def onSaveHistory(self, event=None):
@@ -472,7 +478,7 @@ class LarchFrame(wx.Frame):
             self.onExit()
         else:
             self.input.AddToHistory(text)
-            wx.CallAfter(self.larchshell.execute, text)
+            wx.CallAfter(self.larchshell.eval, text)
 
 
     def onChangeDir(self, event=None):

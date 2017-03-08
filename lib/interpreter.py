@@ -106,6 +106,7 @@ class Interpreter:
         self.func       = None
         self.fname      = '<stdin>'
         self.lineno     = 0
+        self.history    = None
         builtingroup = symtable._builtin
         mathgroup    = symtable._math
         setattr(mathgroup, 'j', 1j)
@@ -275,13 +276,14 @@ class Interpreter:
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
 
-    def eval(self, expr, fname=None, lineno=0):
+    def eval(self, expr, fname=None, lineno=0, add_history=True):
         """evaluates a single statement"""
         self.fname = fname
         self.lineno = lineno
         self.error = []
         self.this_expr = expr
-        self.history.add(expr)
+        if add_history and self.history is not None:
+            self.history.add(expr)
         out = None
         try:
             node = self.parse(expr, fname=fname, lineno=lineno)

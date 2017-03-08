@@ -135,7 +135,7 @@ class InputText:
         self._larch = _larch
         self.saved_text = BLANK_TEXT
 
-    def run(self, writer=None):
+    def run(self, writer=None, add_history=True):
         if self._larch is None:
             raise ValueError("need interpreter to run")
 
@@ -167,7 +167,8 @@ class InputText:
 
             larch_call_stack[n_larch_stack-1] = (block, fname, lineno)
             ret = _larch.eval('\n'.join(self.buffer),
-                              fname=fname, lineno=lineno)
+                              fname=fname, lineno=lineno, 
+                              add_history=add_history)
             complete = True
             if len(self.buffer) > 0:
                 self.buffer = []
