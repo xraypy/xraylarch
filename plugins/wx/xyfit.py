@@ -774,7 +774,7 @@ class XYFitFrame(wx.Frame):
 
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
-        self.larch_panel =  LarchPanel(_larch=self.larch, **panel_opts)
+        self.larch_panel = LarchPanel(_larch=self.larch, **panel_opts)
 
         self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
@@ -979,31 +979,11 @@ class XYFitFrame(wx.Frame):
             return
 
         ## not athena, plain ASCII:
-        fh = open(path, 'r')
-        line1 = fh.readline().lower()
-        fh.close()
-
-        reader = 'read_ascii'
-        if 'epics stepscan file' in line1:
-            reader = 'read_gsexdi'
-        elif 'epics scan' in line1:
-            reader = 'read_gsescan'
-        elif 'xdi' in line1:
-            reader = 'read_xdi'
-        self.last_reader = reader
-
-        self.larch.eval("_tmp_ = %s('%s')" % (reader, str(path)))
-        dgroup = self.larch.symtable.get_symbol("_tmp_")
-
-        if reader == gsescan_group:
-            assign_gsescan_groups(dgroup)
-        dgroup.path = path
-        dgroup.filename = filename
-        dgroup.groupname = groupname
-        self.larch.eval("del _tmp_")
-        self.show_subframe('selectcol', SelectColumnFrame, group=dgroup,
+        self.show_subframe('selectcol', SelectColumnFrame, 
+                           filename=path, 
+                           # group=dgroup,
                            last_array_sel=self.last_array_sel,
-                           _larch=self.larch,
+                           _larch=self.larch_panel.larchshell,
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=False))
 
@@ -1015,16 +995,19 @@ class XYFitFrame(wx.Frame):
         """
         if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
             array_labels = datagroup.array_labels
-
+            
         gname = datagroup.groupname
         fname = datagroup.filename
         path  = datagroup.path
         datatype = getattr(datagroup, 'datatype', 'raw')
+
+        # commands
+        """ 
         cmd = "'%s'" % path
         if array_labels is not None:
             cmd = "%s, labels='%s'" % (cmd, ', '.join(array_labels))
 
-        lexec = self.larch_panel.larchshell.execute
+        lexec = self.larch_panel.larchshell.eval
         lexec("%s = %s(%s)" % (gname, self.last_reader, cmd))
 
         for attr in ('datatype', 'groupname', 'filename',
@@ -1039,7 +1022,7 @@ class XYFitFrame(wx.Frame):
         if datatype == 'xas':
             lexec("%s.energy = %s.xdat" % (gname, gname))
             lexec("%s.mu = %s.ydat" % (gname, gname))
-
+        """
         
         if array_sel is not None:
             self.last_array_sel = array_sel
