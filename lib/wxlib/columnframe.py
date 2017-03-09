@@ -393,13 +393,14 @@ class SelectColumnFrame(wx.Frame) :
             groupname = fix_varname(self.wid_groupname.GetValue())
 
         yerr_op = self.yerr_op.GetStringSelection().lower()
+        yerr_expr = '1'
         if yerr_op.startswith('const'):
-            yerr = self.yerr_const.GetValue()
+            yerr_expr = "%f" % self.yerr_const.GetValue()
         elif yerr_op.startswith('array'):
-            yerr = self.yerr_arr.GetStringSelection().strip()
-            yerr = get_data(self.group, yerr)
+            yerr_expr = '%%s.data[%i, :]' % self.yerr_arr.GetSelection()
         elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(outgroup.ydat)
+            yerr_expr = 'sqrt(%s.ydat)'
+        self.expressions['yerr'] = yerr_expr
 
         # if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
         #     array_labels = datagroup.array_labels
@@ -418,6 +419,8 @@ class SelectColumnFrame(wx.Frame) :
             val = getattr(self.outgroup, attr)
             leval("%s.%s = '%s'" % (groupname, attr, val))
 
+        print("--- EXPRESSION ", self.expressions)
+
         for aname in ('xdat', 'ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', groupname)
             leval("%s.%s = %s" % (groupname, aname, expr))
@@ -425,8 +428,6 @@ class SelectColumnFrame(wx.Frame) :
         if getattr(self.outgroup, 'datatype', 'raw') == 'xas':
             leval("%s.energy = %s.xdat" % (gname, gname))
             leval("%s.mu = %s.ydat" % (gname, gname))
-
-
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
@@ -559,7 +560,7 @@ class SelectColumnFrame(wx.Frame) :
             exprs['yerr'] = '%%s.data[%i, :]' % iyerr
         elif yerr_op.startswith('sqrt'):
             yerr = np.sqrt(outgroup.ydat)
-            exprs['yerr'] = 'sqrt(%%s.ydat)'
+            exprs['yerr'] = 'sqrt(%s.ydat)'
 
         if use_deriv:
             try:
