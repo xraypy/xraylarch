@@ -3,6 +3,8 @@
 # InputText for  Larch
 
 from __future__ import print_function
+import os
+import time
 import inspect
 
 from six.moves import queue
@@ -119,12 +121,63 @@ def block_end(text):
 
 BLANK_TEXT = ('', '<incomplete input>', -1)
 
+
+class HistoryBuffer(object):
+    """
+    command history buffer
+    """
+    def __init__(self, filename=None, maxlines=5000, title='larch history'):
+        self.filename = filename
+        self.maxlines = maxlines
+        self.title = title
+        self.session_start = 0
+        self.buffer = []
+        if filename is not None:
+            self.load(filename=filename)
+
+    def add(self, text=''):
+        if len(text.strip()) > 0 and not text.startswith('#'):
+            self.buffer.append(text)
+
+    def clear(self):
+        self.buffer = []
+        self.session_start = 0
+
+    def load(self, filename=None):
+        if filename is not None:
+            self.filename = filename
+        if os.path.exists(self.filename):
+            self.clear()
+            with open(self.filename, 'r') as fh:
+                lines = fh.readlines()
+                for hline in lines:
+                    self.add(text=hline[:-1])
+            self.session_start = len(self.buffer)
+
+    def save(self, filename=None, session_only=False,
+             trim_last=False, maxlines=None):
+        if filename is None:
+            filename = self.filename
+        if maxlines is None:
+            maxlines = self.maxlines
+        start_ = -maxlines
+        if session_only:
+            start_ = self.session_start
+        end_ = None
+        if trim_last:
+            end_ = -1
+
+        fout = open(filename, 'w')
+        fout.write("# %s saved %s\n\n" % (self.title, time.ctime()))
+        fout.write('\n'.join([str(s) for s in self.buffer[start_:end_]]))
+        fout.write("\n")
+        fout.close()
+
 class InputText:
-    """input text for larch"""
-    ps1 = "larch> "
-    ps2 = ".....> "
-    valid_cmds = ('print', 'run', 'show', 'help')
-    def __init__(self, _larch=None, **kws):
+    """input text for larch, with history"""
+    def __init__(self, _larch=None, historyfile=None,
+                 maxhistory=5000,
+                 prompt='larch> ',prompt2 = ".....> "):
         self.queue = queue.Queue()
         self.filename = '<stdin>'
         self.lineno = 0
@@ -132,72 +185,12 @@ class InputText:
         self.curtext = ''
         self.blocks = []
         self.buffer = []
-        self._larch = _larch
+        self.larch = _larch
+        self.prompt = prompt
+        self.prompt2 = prompt2
         self.saved_text = BLANK_TEXT
-
-    def run(self, writer=None, add_history=True):
-        if self._larch is None:
-            raise ValueError("need interpreter to run")
-
-        if self.queue.qsize() == 0:
-            return True
-
-        _larch = self._larch
-        symtable = _larch.symtable
-        if writer is None:
-            writer = _larch.writer
-
-        topts = symtable._builtin.get_termcolor_opts('text')
-        eopts = symtable._builtin.get_termcolor_opts('error')
-
-        if not hasattr(symtable._sys, 'call_stack'):
-            symtable._sys.call_stack = []
-        larch_call_stack = symtable._sys.call_stack
-
-        larch_call_stack.append(None)
-
-        n_larch_stack = len(larch_call_stack)
-
-        complete = False
-        while self.queue.qsize() > 0:
-            block, fname, lineno = self.get()
-            self.buffer.append(block)
-            if len(self.curtext) > 0 or len(self.blocks) > 0:
-                continue
-
-            larch_call_stack[n_larch_stack-1] = (block, fname, lineno)
-            ret = _larch.eval('\n'.join(self.buffer),
-                              fname=fname, lineno=lineno, 
-                              add_history=add_history)
-            complete = True
-            if len(self.buffer) > 0:
-                self.buffer = []
-            if _larch.error:
-                self.clear()
-                writer.write('Traceback (most recent calls last): \n', **eopts)
-                for eblock, efname, elineno in larch_call_stack:
-                    text = "File %s, line %i" % (efname, elineno)
-                    if efname != fname and elineno != lineno:
-                        text =  "%s\n    %s" % (text, eblock.split('\n')[0])
-                    writer.write('   %s\n' % (text), **eopts)
-
-                errors_seen = []
-                for err in _larch.error:
-                    exc_name, errmsg = err.get_error()
-                    file_lineno = errmsg.split('\n')[0].strip()
-                    if file_lineno in errors_seen:
-                        continue
-                    errors_seen.append(file_lineno)
-                    writer.write(errmsg, **eopts)
-
-                _larch.error = []
-            elif ret is not None:
-                writer.write("%s\n" % repr(ret), **topts)
-
-        writer.flush()
-        larch_call_stack.pop()
-        return complete
-
+        self.history = HistoryBuffer(filename=historyfile,
+                                     maxlines=maxhistory)
 
     def __len__(self):
         return self.queue.qsize()
@@ -237,9 +230,9 @@ class InputText:
         if lineno is not None:
             self.lineno = lineno
 
-        if self._larch is not None:
-            getsym = self._larch.symtable.get_symbol
-            self.valid_cmds = getsym('_sys.valid_commands', create=True)
+        if self.larch is not None:
+            getsym = self.larch.symtable.get_symbol
+            self.valid_commands = getsym('_sys.valid_commands', create=True)
 
         for txt in text.split('\n'):
             self.lineno += 1
@@ -277,7 +270,7 @@ class InputText:
                 sindent = ' '*4*ilevel
                 pytext = "%s%s" % (sindent, self.curtext.strip())
                 # look for valid commands
-                if key in self.valid_cmds and '\n' not in self.curtext:
+                if key in self.valid_commands and '\n' not in self.curtext:
                     argtext = self.curtext.strip()[len(key):].strip()
                     if not (argtext.startswith('(') and
                             argtext.endswith(')') ):
@@ -289,3 +282,9 @@ class InputText:
     @property
     def complete(self):
         return len(self.curtext)==0 and len(self.blocks)==0
+
+    @property
+    def next_prompt(self):
+        if len(self.curtext)==0 and len(self.blocks)==0:
+            return self.prompt
+        return self.prompt2
