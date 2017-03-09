@@ -152,61 +152,14 @@ class LarchExceptionHolder:
         return (exc_name, '\n'.join(out))
 
 
-class HistoryBuffer(object):
-    """ command history buffer
-    """
-    def __init__(self, filename=None, max_lines=5000, title='larch history'):
-        self.filename = filename
-        self.max_lines = max_lines
-        self.title = title
-        self.session_start = 0
-        self.buffer = []
-        if filename is not None:
-            self.load(filename=filename)
-
-    def add(self, text=''):
-        if len(text.strip()) > 0 and not text.startswith('#'):
-            self.buffer.append(text)
-
-    def clear(self):
-        self.buffer = []
-        self.session_start = 0
-
-    def load(self, filename=None):
-        if filename is not None:
-            self.filename = filename
-
-        if os.path.exists(self.filename):
-            self.clear()
-            with open(self.filename, 'r') as fh:
-                lines = fh.readlines()
-                for hline in lines:
-                    self.add(text=hline[:-1])
-            self.session_start = len(self.buffer)
-
-    def save(self, filename=None, session_only=False, max_lines=None):
-        if filename is None:
-            filename = self.filename
-        if max_lines is None:
-            max_lines = self.max_lines
-        start_entry = -max_lines
-        if session_only:
-            start_entry = self.session_start
-
-        fout = open(filename, 'w')
-        fout.write("# %s saved %s\n\n" % (self.title, time.ctime()))
-        fout.write('\n'.join(self.buffer[start_entry:]))
-        fout.write("\n")
-        fout.close()
-
-
 
 class StdWriter(object):
     """Standard writer method for Larch,
     to be used in place of sys.stdout
 
     supports methods:
-      write(text, color=None, bkg=None, bold=Fals, reverse=False)
+      set_mode(mode) # one of 'text', 'text2', 'error', 'comment'
+      write(text)
       flush()
     """
     valid_termcolors = ('grey', 'red', 'green', 'yellow',
@@ -219,42 +172,21 @@ class StdWriter(object):
         self.has_color = has_color and HAS_TERMCOLOR
         self.writer = stdout
         self._larch = _larch
-        self.termcolor_opts = None
+        self._colormode = None
 
-    def _getcolor(self, color=None):
-        if self.has_color and color in self.valid_termcolors:
-            return color
-        return None
+    def set_colormode(self, mode='text'):
+        """ set output mode """
+        if not self.has_color:
+            self._colormode = None
+        display_colors = self._larch.symtable._sys.display.colors
+        self._colormode =  display_colors.get(mode, {})
 
-    def write(self, text, color=None, bkg=None, **kws):
+    def write(self, text):
         """write text to writer
-        write('hello', color='red', bkg='grey', bold=True, blink=True)
+        write('hello')
         """
-        attrs = []
-        for key, val in kws.items():
-            if val and (key in self.termcolor_attrs):
-                attrs.append(key)
-        if self.termcolor_opts is None:
-            try:
-                self.termcolor_opts = \
-                       self._larch.symtable._builtin.get_termcolor_opts
-            except:
-                pass
-        if color is None:
-            color_opts = {'color': None}
-            if callable(self.termcolor_opts) and self._larch is not None:
-                color_opts = self.termcolor_opts('text', _larch=self._larch)
-            color = color_opts.pop('color')
-            for key in color_opts.keys():
-                if key in self.termcolor_attrs:
-                    attrs.append('%s' % key)
-
-        color = self._getcolor(color)
-        if color is not None:
-            bkg = self._getcolor(bkg)
-            if bkg is not None:
-                bkg= 'on_%s' % bkg
-            text = colored(text, color, on_color=bkg, attrs=attrs)
+        if self._colormode is not None:
+            text = colored(text, **self._colormode)
         self.writer.write(text)
 
     def flush(self):
