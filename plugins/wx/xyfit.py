@@ -970,7 +970,7 @@ class XYFitFrame(wx.Frame):
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
-        kwargs = dict(filename=path, _larch=self.larch_panel.larchshell
+        kwargs = dict(filename=path, _larch=self.larch_panel.larchshell,
                       last_array_sel=self.last_array_sel,
                       read_ok_cb=self.onRead_OK)
 
