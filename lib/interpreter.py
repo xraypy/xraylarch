@@ -18,7 +18,8 @@ import six
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import (LarchExceptionHolder, ReturnedNone, HistoryBuffer,
+from .inputText import InputText
+from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
 from .utils import Closure
@@ -65,9 +66,10 @@ PYTHON_RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class',
                          'not', 'or', 'pass', 'print', 'raise', 'return',
                          'try', 'while', 'with', 'yield')
 
+
 class Interpreter:
     """larch program compiler and interpreter.
-  This module compiles expressions and statements to AST representation,
+  Thiso module compiles expressions and statements to AST representation,
   using python's ast module, and then executes the AST representation
   using a custom SymbolTable for named object (variable, functions).
   This then gives a restricted version of Python, with slightly modified
@@ -91,14 +93,14 @@ class Interpreter:
                        'str', 'subscript', 'try', 'tryexcept', 'tryfinally',
                        'tuple', 'unaryop', 'while')
 
-    def __init__(self, symtable=None, writer=None, with_plugins=True,
-                 with_history=True, history_file=None):
-        self.writer = writer or StdWriter()
-        self.writer._larch = self
+    def __init__(self, symtable=None, input=None, writer=None,
+                 with_plugins=True, historyfile=None, maxhistory=5000):
 
-        if symtable is None:
-            symtable = SymbolTable(larch=self)
-        self.symtable   = symtable
+        self.symtable   = symtable or SymbolTable(larch=self)
+        self.input      = input or InputText(_larch=self,
+                                             historyfile=historyfile,
+                                             maxhistory=maxhistory)
+        self.writer     = writer or StdWriter()
         self._interrupt = None
         self.error      = []
         self.expr       = None
@@ -106,13 +108,13 @@ class Interpreter:
         self.func       = None
         self.fname      = '<stdin>'
         self.lineno     = 0
-        self.history    = None
-        builtingroup = symtable._builtin
-        mathgroup    = symtable._math
+        builtingroup    = self.symtable._builtin
+        mathgroup       = self.symtable._math
         setattr(mathgroup, 'j', 1j)
 
         # system-specific settings
         enable_plugins()
+
         site_config.system_settings()
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
@@ -129,7 +131,7 @@ class Interpreter:
             setattr(mathgroup, fname, getattr(numpy, sym))
 
         for groupname, entries in builtins.local_funcs.items():
-            group = getattr(symtable, groupname, None)
+            group = getattr(self.symtable, groupname, None)
             if group is not None:
                 for fname, fcn in list(entries.items()):
                     setattr(group, fname,
@@ -139,10 +141,6 @@ class Interpreter:
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
 
-        if with_history:
-            if history_file is None:
-                history_file = self.symtable._sys.config.history_file
-            self.history = HistoryBuffer(history_file)
         if with_plugins: # add all plugins in standard plugins folder
             plugins_dir = os.path.join(site_config.larchdir, 'plugins')
             loaded_plugins = []
@@ -277,28 +275,75 @@ class Interpreter:
         return self.eval(expr, **kw)
 
     def eval(self, expr, fname=None, lineno=0, add_history=True):
-        """evaluates a single statement"""
+        """
+        evaluates a single statement
+        """
+        self.input.put(expr, filename=fname, lineno=lineno)
+        if not self.input.complete or self.input.queue.qsize()==0:
+            return
+
         self.fname = fname
         self.lineno = lineno
         self.error = []
-        self.this_expr = expr
-        if add_history and self.history is not None:
-            self.history.add(expr)
         out = None
-        try:
-            node = self.parse(expr, fname=fname, lineno=lineno)
-            return self.run(node, expr=expr, fname=fname, lineno=lineno)
-        except RuntimeError:
-            errmsg = sys.exc_info()[1]
-            if len(self.error) > 0:
-                errtype, errmsg = self.error[0].get_error()
-            return
+
+        if not hasattr(self.symtable._sys, 'call_stack'):
+            self.symtable._sys.call_stack = []
+        call_stack = self.symtable._sys.call_stack
+        call_stack.append(None)
+        ret = None
+        while self.input.queue.qsize() > 0:
+            block, fname, lineno = self.input.get()
+            self.input.buffer.append(block)
+            if len(self.input.curtext) > 0 or len(self.input.blocks) > 0:
+                continue
+            call_stack[-1] = (block, fname, lineno)
+            cmd = '\n'.join(self.input.buffer)
+            if add_history and self.input.history is not None:
+                self.input.history.add(cmd)
+
+            try:
+                node = self.parse(cmd, fname=fname, lineno=lineno)
+                ret =  self.run(node, expr=cmd, fname=fname, lineno=lineno)
+            except RuntimeError:
+                pass # will handle through self.error
+
+            if len(self.input.buffer) > 0:
+                self.input.buffer = []
+
+        call_stack.pop()
+        return ret
+
+    def show_errors(self):
+        """show errors """
+        if self.error:
+            call_stack = self.symtable._sys.call_stack
+            writer = self.writer
+            fname = self.fname
+            lineno = self.lineno
+
+            writer.write('Traceback (most recent calls last): \n')
+            for eblock, efname, elineno in call_stack:
+                text = "File %s, line %i" % (efname, elineno)
+                if efname != fname and elineno != lineno:
+                    text =  "%s\n    %s" % (text, eblock.split('\n')[0])
+                writer.write('   %s\n' % (text))
+
+            errors_seen = []
+            for err in self.error:
+                exc_name, errmsg = err.get_error()
+                file_lineno = errmsg.split('\n')[0].strip()
+                if file_lineno in errors_seen:
+                    continue
+                errors_seen.append(file_lineno)
+                writer.write(errmsg)
+            self.error = []
 
     def run_init_scripts(self):
         for fname in site_config.init_files:
             if os.path.exists(fname):
                 try:
-                    builtins._run(filename=fname, _larch=self)
+                    self.runfile(fname)
                 except:
                     self.raise_exception(None, exc=RuntimeError,
                                          msg='Initialization Error')
