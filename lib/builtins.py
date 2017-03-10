@@ -138,85 +138,19 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text=None, filename=None, _larch=None, new_module=None):
+def _eval(text, _larch=None):
     """evaluate a string of larch text
     """
     if _larch is None:
         raise Warning("cannot eval string. larch broken?")
+    return _larch.eval(text, fname=filename)
 
-    if text is None:
-        return None
-
-    symtable = _larch.symtable
-    lineno = 0
-    output = None
-
-    inp = inputText.InputText(_larch=_larch)
-    inp.put(text, filename=filename, lineno=0)
-    if not inp.complete:
-        msg = "File '%s' ends with incomplete input" % (filename)
-        text = None
-        if len(inp.blocks) > 0 and filename is not None:
-            blocktype, lineno, text = inp.blocks[0]
-            msg = "File '%s' ends with un-terminated '%s'" % (filename,
-                                                              blocktype)
-        elif inp.saved_text is not None:
-            text, fname, lineno = inp.saved_text
-            msg = "File '%s' ends with incomplete statement" % (filename)
-        while not inp.queue.empty():
-            inp.get()
-        err = LarchExceptionHolder(node=None, exc=SyntaxError, msg=msg,
-                                   expr=text, fname=filename,
-                                   lineno=lineno)
-
-        _larch.error.append(err)
-        symtable._sys.last_error = err
-
-    thismod = None
-    if new_module is not None:
-        # save current module group
-        #  create new group, set as moduleGroup and localGroup
-        symtable.save_frame()
-        thismod = symtable.create_group(name=new_module)
-        symtable._sys.modules[new_module] = thismod
-        symtable.set_frame((thismod, thismod))
-
-    if len(_larch.error) > 0:
-        inp.clear()
-
-    complete = inp.run()
-    # for a "newly created module" (as on import),
-    # the module group is the return value
-    # print('eval End ', new_module, output)
-    if new_module is not None:
-        symtable.restore_frame()
-
-    return thismod
 
 def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
     if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
-
-    text = None
-    if six.PY2:
-        filetype = file
-    else:
-        filetype = io.IOBase
-    if isinstance(filename, filetype):
-        text = filename.read()
-        filename = filename.name
-    elif os.path.exists(filename) and os.path.isfile(filename):
-        try:
-            text = open(filename).read()
-        except IOError:
-            _larch.writer.write("cannot read file '%s'\n" % filename)
-            return
-    else:
-        _larch.writer.write("file not found '%s'\n" % filename)
-        return
-    return  _eval(text=text, filename=filename, _larch=_larch,
-                  new_module=new_module)
+    return _larch.runfile(filename, new_module=new_module)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
@@ -532,9 +466,6 @@ _clock.__doc__ = time.clock.__doc__
 def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
-def my_eval(text, _larch=None):
-    return  _eval(text=text, _larch=_larch, new_module=None)
-
 def _ufloat(arg, _larch=None):
     return fitting.ufloat(arg)
 
@@ -564,7 +495,7 @@ local_funcs = {'_builtin': {'group':_group,
                             'strftime': _strftime,
                             'reload':_reload,
                             'run': _run,
-                            'eval': my_eval,
+                            'eval': _eval,
                             'help': _help,
                             'add_plugin':_addplugin,
                             'save_history': save_history,
