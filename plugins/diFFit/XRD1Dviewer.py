@@ -21,7 +21,8 @@ from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 from larch_plugins.cifdb import cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
-from larch_plugins.xrd import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
+                               lambda_from_E,E_from_lambda,
                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
                                peakfinder,peaklocater,peakfitter,peakfilter,
                                xrd_background)
@@ -217,7 +218,7 @@ class diFFit1DFrame(wx.Frame):
 
         else:
             try:
-                x,y,path = loadXYFILE(self,verbose=True)
+                x,y,unit,path = loadXYFILE(self,verbose=True)
                 name = os.path.split(path)[-1]
                 okay = True
             except:
@@ -228,10 +229,16 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dviewer.idata.append(len(self.xrd1Dviewer.plotlist))
             self.xrd1Dviewer.xy_scale.append(np.max(y))
 
-            q    = x
-            d    = d_from_q(q)
-            twth = twth_from_q(q,self.wavelength)
+            if unit.startswith('2th'):
+                twth = x
+                q    = q_from_twth(twth,self.wavelength)
+                d    = d_from_q(q)
+            else:
+                q    = x
+                d    = d_from_q(q)
+                twth = twth_from_q(q,self.wavelength)
             I    = y
+            
             self.xrd1Dviewer.xy_data.append([q,d,twth,I])
             self.xrd1Dviewer.xy_plot.append([q,d,twth,I])
 
@@ -417,12 +424,18 @@ class SelectFittingData(wx.Dialog):
 
     def load_file(self,event=None):
 
-        x,y,path = loadXYFILE(self,verbose=True)
+        x,y,unit,path = loadXYFILE(self,verbose=True)
         if 1==1: #try:
-            q    = x
-            d    = d_from_q(q)
-            twth = twth_from_q(q,self.parent.wavelength)
+            if unit.startswith('2th'):
+                twth = x
+                q    = q_from_twth(twth,self.wavelength)
+                d    = d_from_q(q)
+            else:
+                q    = x
+                d    = d_from_q(q)
+                twth = twth_from_q(q,self.wavelength)
             I    = y
+
             self.parent.all_data.append([q,d,twth,I])
             self.parent.list.append(os.path.split(path)[-1])
             self.slct_1Ddata.Set(self.parent.list)
@@ -1992,7 +2005,7 @@ class Viewer1DXRD(wx.Panel):
         if cif:
             self.val_cifscale.Enable()
 
-    def add1Ddata(self,x,y,name=None):
+    def add1Ddata(self,x,y,name=None,unit='q'):
 
         plt_no = len(self.data_name)
 
@@ -2005,9 +2018,14 @@ class Viewer1DXRD(wx.Panel):
         self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(y))
 
-        q    = x
-        d    = d_from_q(q)
-        twth = twth_from_q(q,self.wavelength)
+        if unit.startswith('2th'):
+            twth = x
+            q    = q_from_twth(twth,self.wavelength)
+            d    = d_from_q(q)
+        else:
+            q    = x
+            d    = d_from_q(q)
+            twth = twth_from_q(q,self.wavelength)
         I    = y
 
         self.xy_data.append([q,d,twth,I])
@@ -2217,8 +2235,8 @@ class Viewer1DXRD(wx.Panel):
     def load_file(self,event=None):
 
         try:
-            x,y,path = loadXYFILE(self,verbose=True)
-            self.add1Ddata(x,y,name=os.path.split(path)[-1])
+            x,y,unit,path = loadXYFILE(self,verbose=True)
+            self.add1Ddata(x,y,name=os.path.split(path)[-1],unit=unit)
         except:
             pass
 
@@ -3537,12 +3555,12 @@ def loadXYFILE(self,event=None,verbose=False):
         if verbose:
             print('Opening file: %s\n' % os.path.split(path)[-1])
         try:
-            x,y = xy_file_reader(path)
+            x,y,unit = xy_file_reader(path)
         except:
            print('incorrect xy file format: %s' % os.path.split(path)[-1])
            return
 
-        return x,y,path
+        return x,y,unit,path
 
 
 
