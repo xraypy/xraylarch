@@ -248,16 +248,8 @@ class GSEXRM_MapRow:
             xrd_reader = read_xrd_netcdf
             ## not yet implemented for hdf5 files
             ## mkak 2016.07.27
-            #if not xrdfile.endswith('nc'):
-            #   xrd_reader = read_xrd_hdf5
-            ##try:
-            ##    read_xrd_hdf5(xrdfile)
-            ##except:
-            ##    try:
-            ##        read_xrd_netcdf(xrdfile)
-            ##    except:
-            ##        FLAGxrd = False
-            ##        print 'Cannot read XRD files.'
+            # if not xrdfile.endswith('nc'):
+            #    xrd_reader = read_xrd_hdf5
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -987,7 +979,7 @@ class GSEXRM_MapFile(object):
         else:
             raise IOError('No XRF or XRD flags provided.')
             return
-        reverse = (irow % 2 != 0)
+        reverse = None # (irow % 2 != 0)
 
         ioffset = 0
         if scan_version > 1.35:
@@ -1612,10 +1604,6 @@ class GSEXRM_MapFile(object):
             if yval != _yl and xrff != _xl:  # skip repeated rows in master file
                 self.rowdata.append(row)
         if self.flag_xrd:
-            ## this is reading only nc files, not taking files from list. 
-            ## needs updating to read files from Master.dat
-            ## how to restructure to get correct files/format?
-            ## mkak 2017.02.22
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
             for i,addxrd in enumerate(xrd_files):
                 self.rowdata[i].insert(4,addxrd)
