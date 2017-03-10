@@ -5,9 +5,9 @@
 from __future__ import print_function
 import os
 import time
-import inspect
-
-from six.moves import queue
+import six
+from collections import deque
+from copy import copy
 
 OPENS  = '{(['
 CLOSES = '})]'
@@ -25,6 +25,11 @@ BLOCK_FRIENDS = {'if':    ('else', 'elif'),
                  None: ()}
 
 STARTKEYS = ['if', 'for', 'def', 'try', 'while']
+
+if six.PY2:
+    FILETYPE = file
+else:
+    FILETYPE = io.IOBase
 
 def find_eostring(txt, eos, istart):
     """find end of string token for a string"""
@@ -175,10 +180,9 @@ class HistoryBuffer(object):
 
 class InputText:
     """input text for larch, with history"""
-    def __init__(self, _larch=None, historyfile=None,
-                 maxhistory=5000,
+    def __init__(self, _larch=None, historyfile=None, maxhistory=5000,
                  prompt='larch> ',prompt2 = ".....> "):
-        self.queue = queue.Queue()
+        self.deque = deque()
         self.filename = '<stdin>'
         self.lineno = 0
         self.curline = 0
@@ -193,7 +197,7 @@ class InputText:
                                      maxlines=maxhistory)
 
     def __len__(self):
-        return self.queue.qsize()
+        return len(self.deque)
 
     def get(self):
         """get compile-able block of python code"""
@@ -202,7 +206,7 @@ class InputText:
         if self.saved_text != BLANK_TEXT:
             txt, filename, lineno = self.saved_text
             out.append(txt)
-        text, fn, ln, done = self.queue.get()
+        text, fn, ln, done = self.deque.popleft()
         out.append(text)
         if filename is None:
             filename = fn
@@ -210,21 +214,60 @@ class InputText:
             linenumber = ln
 
         while not done:
-            if self.queue.qsize() == 0:
+            if len(self.deque) == 0:
                 self.saved_text = ("\n".join(out), filename, linenumber)
                 return BLANK_TEXT
-            text, fn, ln, done = self.queue.get()
+            text, fn, ln, done = self.deque.popleft()
             out.append(text)
         self.saved_text = BLANK_TEXT
         return ("\n".join(out), filename, linenumber)
 
     def clear(self):
-        while not self.queue.empty():
-            self.queue.get()
+        self.deque.clear()
         self.saved_text = BLANK_TEXT
+        self.curtext = ''
+        self.blocks = []
 
-    def put(self, text, filename=None, lineno=None):
-        """add line of input code text"""
+    def putfile(self, filename):
+        """add the content of a file at the top of the stack
+        that is, to be run next, as for   run('myscript.lar')
+
+        Parameters
+        ----------
+        filename  : file object or string of filename
+
+        Returns
+        -------
+        None on success,
+        (exception, message) on failure
+        """
+
+        text = None
+        try:
+            if isinstance(filename, FILETYPE):
+                text = filename.read()
+                filename = filename.name
+            else:
+                text = open(filename).read()
+        except:
+            errtype, errmsg, errtb = sys.exc_info()
+            return (errtype, errmsg)
+
+
+        if text is None:
+            return (IOError, 'cannot read %s' % filename)
+
+        current = None
+        if len(self.deque) > 0:
+            current = copy(self.deque)
+            self.deque.clear()
+        self.put(text, filename=filename, lineno=0, add_history=False)
+
+        if current is not None:
+            self.deque.extend(current)
+
+    def put(self, text, filename=None, lineno=None, add_history=True):
+        """add a line of input code text"""
         if filename is not None:
             self.filename = filename
         if lineno is not None:
@@ -233,6 +276,9 @@ class InputText:
         if self.larch is not None:
             getsym = self.larch.symtable.get_symbol
             self.valid_commands = getsym('_sys.valid_commands', create=True)
+
+        if self.history is not None and add_history:
+            self.history.add(text)
 
         for txt in text.split('\n'):
             self.lineno += 1
@@ -276,7 +322,9 @@ class InputText:
                             argtext.endswith(')') ):
                         pytext  = "%s%s(%s)" % (sindent, key, argtext)
 
-                self.queue.put((pytext, self.filename, self.curline, 0==len(self.blocks)))
+                self.deque.append((pytext, self.filename,
+                                   self.curline, 0==len(self.blocks)))
+
                 self.curtext = ''
 
     @property
