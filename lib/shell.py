@@ -78,16 +78,16 @@ class shell(cmd.Cmd):
 
         self.prompt = self.larch.input.prompt
         writer = self.larch.writer
-        self.color_writer = hasattr(writer, 'set_colormode')
+        self.color_writer = hasattr(writer, 'set_textstyle')
         if not quiet:
             if banner_msg is None:
                 banner_msg = make_banner()
             if self.color_writer:
-                writer.set_colormode('error')
+                writer.set_textstyle('error')
             writer.write(banner_msg)
             writer.write("\n")
             if self.color_writer:
-                writer.set_colormode('text')
+                writer.set_textstyle('text')
 
         self.larch.run_init_scripts()
 
@@ -133,10 +133,10 @@ class shell(cmd.Cmd):
         if self.larch.error:
             self.larch.input.clear()
             if self.color_writer:
-                self.larch.writer.set_colormode('error')
+                self.larch.writer.set_textstyle('error')
             self.larch.show_errors()
             if self.color_writer:
-                self.larch.writer.set_colormode('text')
+                self.larch.writer.set_textstyle('text')
         if ret is not None:
             self.larch.writer.write("%s\n" % repr(ret))
 

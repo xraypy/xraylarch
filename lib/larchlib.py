@@ -172,21 +172,21 @@ class StdWriter(object):
         self.has_color = has_color and HAS_TERMCOLOR
         self.writer = stdout
         self._larch = _larch
-        self._colormode = None
+        self.textstyle = None
 
-    def set_colormode(self, mode='text'):
-        """ set output mode """
+    def set_textstyle(self, mode='text'):
+        """ set text style for output """
         if not self.has_color:
-            self._colormode = None
+            self.textstyle = None
         display_colors = self._larch.symtable._sys.display.colors
-        self._colormode =  display_colors.get(mode, {})
+        self.textstyle =  display_colors.get(mode, {})
 
     def write(self, text):
         """write text to writer
         write('hello')
         """
-        if self._colormode is not None:
-            text = colored(text, **self._colormode)
+        if self.textstyle is not None:
+            text = colored(text, **self.textstyle)
         self.writer.write(text)
 
     def flush(self):
