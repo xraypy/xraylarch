@@ -98,14 +98,12 @@ class shell(cmd.Cmd):
         self.larch.input.history.save(trim_last=trim_last)
         sys.exit()
 
+
     def do_quit(self, text):
-        self.on_exit(text)
+        self.on_exit(text=text)
 
     def do_exit(self, text):
-        self.on_exit(text)
-
-    def __del__(self, *args):
-        self.on_exit(*args)
+        self.on_exit(text=text)
 
     def emptyline(self):
         pass
