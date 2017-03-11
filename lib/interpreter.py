@@ -100,7 +100,7 @@ class Interpreter:
         self.input      = input or InputText(_larch=self,
                                              historyfile=historyfile,
                                              maxhistory=maxhistory)
-        self.writer     = writer or StdWriter()
+        self.writer     = writer or StdWriter(_larch=self)
         self._interrupt = None
         self.error      = []
         self.expr       = None
