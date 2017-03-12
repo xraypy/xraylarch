@@ -113,6 +113,19 @@ class TestScripts(TestCase):
             self.assertTrue(amp_err < 2.0)
             self.assertTrue(abs(delr) < 0.1)
 
+    def test13_feffit1(self):
+        self.runscript('doc_feffit1.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
+
+        self.isTrue('out.params.fit_details.nfev > 20')
+        self.isTrue('out.params.fit_details.nfev < 100')
+        self.isTrue('out.params.chi_square > 145')
+        self.isTrue('out.params.chi_square < 150')
+        self.isNear('out.params.amp.value',     0.93, places=1)
+        self.isNear('out.params.del_e0.value',  4.364, places=1)
+        self.isNear('out.params.del_e0.stderr', 0.52, places=1)
+        self.isNear('out.params.del_r.value',  -0.006, places=3)
+        self.isNear('out.params.sig2.value',    0.0087, places=3)
 
 
 if __name__ == '__main__':  # pragma: no cover
