@@ -542,6 +542,8 @@ def xy_file_reader(xyfile,char=None):
     '''
     with open(xyfile) as f:
         lines = f.readlines()
+        
+    units = None
 
     x, y = [], []
     for i,line in enumerate(lines):
@@ -552,7 +554,13 @@ def xy_file_reader(xyfile,char=None):
                 fields = lines[i].split()
             x += [float(fields[0])]
             y += [float(fields[1])]
+        else:
+            options = ['2th_deg','q_A^-1']
+            for opt in options: 
+                if opt in line: units = opt
 
+    if units is not None:
+        return np.array(x),np.array(y),units
     return np.array(x),np.array(y)
 
 ##########################################################################

@@ -76,7 +76,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.wxlib import LarchPanel
+from larch.wxlib import LarchPanel, LarchFrame
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -1368,6 +1368,7 @@ class MapViewerFrame(wx.Frame):
         self.xrfdisplay = None
         self.xrddisplay1D = None
         self.xrddisplay2D = None
+        self.larch_buffer = None
         self.watch_files = False
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
@@ -1437,9 +1438,9 @@ class MapViewerFrame(wx.Frame):
             self.nbpanels.append(p)
             p.SetSize((750, 550))
 
-        self.larch_panel = LarchPanel(_larch=self.larch, parent=self.nb)
-        self.nb.AddPage(self.larch_panel, ' Larch Shell ', True)
-        self.nbpanels.append(self.larch_panel)
+        self.larch_panel = None # LarchPanel(_larch=self.larch, parent=self.nb)
+        # self.nb.AddPage(self.larch_panel, ' Larch Shell ', True)
+        # self.nbpanels.append(self.larch_panel)
 
         self.nb.SetSelection(0)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
@@ -1459,8 +1460,8 @@ class MapViewerFrame(wx.Frame):
 
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
-        if self.nb.GetPage(idx) is self.larch_panel:
-            self.larch_panel.update()
+        # if self.nb.GetPage(idx) is self.larch_panel:
+        #     self.larch_panel.update()
 
     def get_mca_area(self, det, mask, xoff=0, yoff=0, xrmfile=None):
         if xrmfile is None:
@@ -1736,6 +1737,10 @@ class MapViewerFrame(wx.Frame):
                   'Choose working directory',
                   self.onFolderSelect)
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+                 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
+
         MenuItem(self, fmenu, '&Load XRD calibration file',
                  'Load XRD calibration file',  self.onReadXRD)
         MenuItem(self, fmenu, 'Perform XRD &Calibration',
@@ -1759,6 +1764,13 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(hmenu, '&Help')
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
+
+    def onShowLarchBuffer(self, evt=None):
+        if self.larch_buffer is None:
+            self.larch_buffer = LarchFrame(_larch=self.larch)
+            
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
 
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -1799,7 +1811,6 @@ class MapViewerFrame(wx.Frame):
                 disp.Destroy()
             except:
                 pass
-
         try:
             self.xrfdisplay.Destroy()
         except:
@@ -1821,6 +1832,13 @@ class MapViewerFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
+
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.onClose()
+            except:
+                pass
+
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             del obj

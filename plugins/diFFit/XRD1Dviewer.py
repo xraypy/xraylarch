@@ -7,6 +7,7 @@ import os
 import numpy as np
 import sys
 import time
+import re
 
 from threading import Thread
 from functools import partial
@@ -19,11 +20,12 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb.cifdb import cifDB,QSTEP,QMIN
-from larch_plugins.xrd.XRDCalc import (d_from_q,twth_from_q,lambda_from_E,E_from_lambda,
-                                       xy_file_reader,generate_hkl,instrumental_fit_uvw,
-                                       peakfinder,peaklocater,peakfitter,peakfilter)
-from larch_plugins.xrd.xrd_bgr import xrd_background
+from larch_plugins.cifdb import cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
+                               lambda_from_E,E_from_lambda,
+                               xy_file_reader,generate_hkl,instrumental_fit_uvw,
+                               peakfinder,peaklocater,peakfitter,peakfilter,
+                               xrd_background)
 
 HAS_pyFAI = False
 try:
@@ -70,14 +72,16 @@ class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
-#         wx.Frame.__init__(self, None,title=label,size=(900, 500)) #laptop
+#         wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
+        wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
+
+
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
-
+        
         self.openDB(dbname='amcsd_cif.db')
 
         # create the page windows as children of the notebook
@@ -104,8 +108,9 @@ class diFFit1DFrame(wx.Frame):
 
     def closeDB(self,event=None):
 
-        self.cifdatabase.close()
-        del self.cifdatabase
+    
+        self.cifdatabase.close_database()
+        #del self.cifdatabase
 
     def openDB(self,dbname='amcsd_cif.db'):
 
@@ -213,7 +218,7 @@ class diFFit1DFrame(wx.Frame):
 
         else:
             try:
-                x,y,path = loadXYFILE(self,verbose=True)
+                x,y,unit,path = loadXYFILE(self,verbose=True)
                 name = os.path.split(path)[-1]
                 okay = True
             except:
@@ -224,10 +229,16 @@ class diFFit1DFrame(wx.Frame):
             self.xrd1Dviewer.idata.append(len(self.xrd1Dviewer.plotlist))
             self.xrd1Dviewer.xy_scale.append(np.max(y))
 
-            q    = x
-            d    = d_from_q(q)
-            twth = twth_from_q(q,self.wavelength)
+            if unit.startswith('2th'):
+                twth = x
+                q    = q_from_twth(twth,self.wavelength)
+                d    = d_from_q(q)
+            else:
+                q    = x
+                d    = d_from_q(q)
+                twth = twth_from_q(q,self.wavelength)
             I    = y
+            
             self.xrd1Dviewer.xy_data.append([q,d,twth,I])
             self.xrd1Dviewer.xy_plot.append([q,d,twth,I])
 
@@ -295,7 +306,7 @@ class diFFit1DFrame(wx.Frame):
 
     def setLAMBDA(self,event=None):
 
-        dlg = SetLambdaDialog(energy=self.energy)
+        dlg = SetLambdaDialog(self,energy=self.energy)
 
         path, okay = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -366,7 +377,7 @@ class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Select data for fitting',
+        dialog = wx.Dialog.__init__(self, parent, title='Select data for fitting',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
                                     size = (210,410))
         self.parent = parent
@@ -413,12 +424,18 @@ class SelectFittingData(wx.Dialog):
 
     def load_file(self,event=None):
 
-        x,y,path = loadXYFILE(self,verbose=True)
+        x,y,unit,path = loadXYFILE(self,verbose=True)
         if 1==1: #try:
-            q    = x
-            d    = d_from_q(q)
-            twth = twth_from_q(q,self.parent.wavelength)
+            if unit.startswith('2th'):
+                twth = x
+                q    = q_from_twth(twth,self.wavelength)
+                d    = d_from_q(q)
+            else:
+                q    = x
+                d    = d_from_q(q)
+                twth = twth_from_q(q,self.wavelength)
             I    = y
+
             self.parent.all_data.append([q,d,twth,I])
             self.parent.list.append(os.path.split(path)[-1])
             self.slct_1Ddata.Set(self.parent.list)
@@ -446,11 +463,6 @@ class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
         self.owner = owner
 
         self.createAndLayout()
-
-    def createDATABASEarray(self):
-
-        return self.owner.cifdatabase.create_array(maxrows=50)
-
 
     def createAndLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -558,8 +570,6 @@ class Fitting1DXRD(BasePanel):
         self.SetFittingDefaults()
         self.Panel1DFitting()
 
-
-
     def SetFittingDefaults(self):
 
         # Peak fitting defaults
@@ -591,8 +601,9 @@ class Fitting1DXRD(BasePanel):
 
 
     def createFittingPanels(self,parent):
+        
+        pattern_title    = SimpleText(parent, 'DATABASE FILTERING', size=(200, -1))
 
-        pattern_title    = SimpleText(parent, 'DATA FITTING', size=(200, -1))
         #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.pnb = wx.Notebook(parent)
         self.pnbpanels = []
@@ -613,7 +624,7 @@ class Fitting1DXRD(BasePanel):
         pack(parent,sizer)
 
 
-    def FittingTools(self,panel):
+    def FilterTools(self,panel):
         '''
         Frame for visual toolbox
         '''
@@ -670,9 +681,9 @@ class Fitting1DXRD(BasePanel):
 
         pattools = self.PatternTools(self)
         vbox.Add(pattools,flag=wx.ALL,border=10)
-
-        fittools = self.FittingTools(self)
-        vbox.Add(fittools,flag=wx.ALL,border=10)
+       
+        filtools = self.FilterTools(self)
+        vbox.Add(filtools,flag=wx.ALL,border=10)
 
         return vbox
 
@@ -907,11 +918,10 @@ class Fitting1DXRD(BasePanel):
 
         ## this creates self.bgr and self.bgr_info
         xi = self.rngpl.ch_xaxis.GetSelection()
-        xrd_background(self.plt_data[xi],self.plt_data[3], group=self, exponent=self.exponent,
+        self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3], exponent=self.exponent,
                            compress=self.compress, width=self.width)
 
         self.bgr_data    = np.copy(self.plt_data[:,:np.shape(self.bgr)[0]])
-
         self.bgr_data[3] = self.bgr
 
         self.bkgdpl.ck_bkgd.Enable()
@@ -1012,17 +1022,14 @@ class Fitting1DXRD(BasePanel):
         self.find_peaks(filter=filter)
 
         if self.ipeaks is not None:
-            self.dbgpl.btn_srch.Enable()
             self.dbgpl.owner.val_gdnss.Enable()
-            self.dbgpl.btn_mtch.Enable()
+            self.rfgpl.btn_mtch.Enable()
 
     def onRemoveAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
-
-        self.dbgpl.btn_srch.Disable()
         self.dbgpl.owner.val_gdnss.Disable()
-        self.dbgpl.btn_mtch.Disable()
+        self.rfgpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
 
@@ -1308,6 +1315,18 @@ class Fitting1DXRD(BasePanel):
 ##############################################
 #### DATABASE FUNCTIONS
 
+    def database_info(self,event=None):
+
+        
+        myDlg = DatabaseInfoGUI(self)
+
+        change = False
+        if myDlg.ShowModal() == wx.ID_OK:
+#             self.elem_include = myDlg.incl_elm
+#             self.elem_exclude = myDlg.excl_elm
+            change = True
+        myDlg.Destroy()        
+
     def open_database(self,event=None):
 
         wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
@@ -1327,80 +1346,125 @@ class Fitting1DXRD(BasePanel):
                 print('Now using database: %s' % os.path.split(path)[-1])
             except:
                print('Failed to import file as database: %s' % path)
+               
+        return path
 
 
-    def onSettings(self,event=None):
+    def filter_database(self,event=None):
 
-        self.database_settings()
+        errorchecking = True
 
-    def onMatch(self,event=None):
+        myDlg = XRDSearchGUI(self)
 
-        #self.match_database()
-
-        self.owner.write_message('Searching database for matches...')
-        db_thread = Thread(target=self.match_database)
-        db_thread.start()
-        #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
-        db_thread.join()
-
-    def database_settings(self,event=None):
-
-        myDlg = XRDSearchGUI()
-
-        fit = False
+        filter = False
         if myDlg.ShowModal() == wx.ID_OK:
-#             self.exponent = int(myDlg.val_exp.GetValue())
-#             self.compress = int(myDlg.val_comp.GetValue())
-#             self.width    = int(myDlg.val_wid.GetValue())
-            fit = True
+            self.elem_include = myDlg.incl_elm
+            self.elem_exclude = myDlg.excl_elm
+            filter = True
+            if myDlg.Mineral.IsTextEmpty():
+                self.mnrl_include = None
+            else: 
+                self.mnrl_include = myDlg.Mineral.GetStringSelection()
+            if myDlg.Author.GetValue() == '':
+                self.auth_include = None
+            else: 
+                self.auth_include = myDlg.Author.GetValue().split(',')
+
+
+            if errorchecking:
+                print 'mineral: ',self.mnrl_include
+                print 'author: ',self.auth_include
+                print 'chemistry: ',self.elem_include,' but not ',self.elem_exclude
+                print 'symmetry: ',myDlg.Symmetry.GetValue()
+                print 'category: ',myDlg.Category.GetSelections()
+                if len(myDlg.Category.GetSelections()) > 0:
+                    print 'more...',     myDlg.Category.GetString(myDlg.Category.GetSelection())
+                print 'keyword: ',   myDlg.Keyword.GetValue()
+                print
+                print
+            
         myDlg.Destroy()
 
-        if fit:
-            self.background_fit()
+        list_amcsd = None
+        if filter == True:
+            if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
+                list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
+                                                                       exclude=self.elem_exclude,
+                                                                       list=list_amcsd)
+                if errorchecking:
+                    print 'element search - possible matches: ',len(list_amcsd)
+            if self.mnrl_include is not None:
+                list_amcsd = self.owner.cifdatabase.amcsd_by_mineral(include=self.mnrl_include,
+                                                                     list=list_amcsd)
+                if errorchecking:
+                    print 'mineral search - possible matches: ',len(list_amcsd)
+
+            if self.auth_include is not None:
+                list_amcsd = self.owner.cifdatabase.amcsd_by_author(include=self.auth_include,
+                                                                    list=list_amcsd)
+                if errorchecking:
+                    print 'author search - possible matches: ',len(list_amcsd)
+
+
+
+            ## Populates Results Panel with list
+            self.amcsdlistbox.Clear()
+            if list_amcsd is not None:
+                for amcsd in list_amcsd:
+                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
+                    entry = '%i : %s' % (amcsd,name)
+                    self.amcsdlistbox.Append(entry)
+                if len(list_amcsd) == 1:
+                    self.txt_amcsd_cnt.SetLabel('1 MATCH')
+                elif len(list_amcsd) > 1:
+                    self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
+                else:
+                    self.txt_amcsd_cnt.SetLabel('')
+
+
+
+        if errorchecking and list_amcsd is not None:
+            print '\n%i ENTRIES MATCH' % len(list_amcsd)
+            if len(list_amcsd) < 5:
+                for amcsd in list_amcsd:
+                    self.owner.cifdatabase.print_amcsd_info(amcsd)
+
+
+    def onMatch(self,event=None):
+        
+        fracq = float(self.val_gdnss.GetValue())
+        self.match_database(fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
+                  
+#         self.owner.write_message('Searching database for matches...')
+#         db_thread = Thread(target=partial(self.match_database,fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
+#         db_thread.start()
+#         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
+#         db_thread.join()
+#         self.owner.write_message('')
+
 
     def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
-                       data=None,ipks=None,cifdatabase=None):
+                       data=None,ipks=None,cifdatabase=None,
+                       verbose=False):
         '''
         fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
         pk_wid - maximum range in q which qualifies as a match between fitted and ideal
         data,ipks,cifdatabase - all read from gui but possible to alter
         '''
-
-        if data is None:
-            data = self.plt_data
-        if cifdatabase is None:
-            cifdatabase = self.owner.cifdatabase
-        if ipks is None:
-            ipks = self.ipeaks
-
-        try:
-            q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
-            minq = np.min(data[0])
-            maxq = np.max(data[0])
-        except:
-            print('\n**** DEBUGGING OPTION - NOT FROM FITTER *****')
-            q_pks = [2.010197, 2.321101, 3.284799, 3.851052, 4.023064, 4.647011, 5.063687, 5.1951]
-            minq = 1.75
-            maxq = 5.25
-
-        try:
-            minfracq = float(self.val_gdnss.GetValue())
-        except:
-            minfracq = fracq
-
-        ## error checking print-out. to be removed.
-        ## mkak 2017.02.03
-        print('\nPeaks for matching:')
-        print(' q: ',q_pks,'\n range: ',minq,maxq,'\n fraction: ',minfracq)
+        errorchecking = True # mkak 2017.02.27 to be removed
+    
+    
+        q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
+        minq = np.min(data[0])
+        maxq = np.max(data[0])
 
         qstep = QSTEP ## these quantities come from cifdb.py
-        qmin  = QMIN
 
         peaks = []
         p_ids = []
 
         for pk_q in q_pks:
-            pk_id = int((pk_q-qmin)/qstep)
+            pk_id = cifdatabase.search_for_q(pk_q)
 
             ## performs peak broadening here
             if pk_wid > 0:
@@ -1412,60 +1476,39 @@ class Fitting1DXRD(BasePanel):
                 peaks += [pk_q]
                 p_ids += [pk_id]
 
-
-        ## error checking timing and print-out. to be removed.
-        ## mkak 2017.02.03
-        a = time.time()
-
-        matches,count = cifdatabase.find_by_q(peaks)
-
-        b = time.time()
-        if (b-a) > 1:
-            print('\nFirst pass: %d matched pattern(s) in %0.3f s' % (len(matches),((b-a)* 1e0)))
-        else:
-            print('\nFirst pass: %d matched pattern(s) in %0.3f ms' % (len(matches),((b-a)* 1e3)))
-
-        goodness = np.zeros(np.shape(count))
+        matches,count = cifdatabase.amcsd_by_q(peaks)
+        goodness = np.zeros(np.shape(count))       
 
         for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            goodness[i] = cifdatabase.fraction_in_range(amcsd,cnt,
-                                                                qmin=minq,
-                                                                qmax=maxq)
+            peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
+            if len(peak_id) > 0:
+                goodness[i] = float(cnt)/len(peak_id)
 
         try:
-            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > minfracq])
+            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
         except:
             matches,count,goodness = [],[],[]
 
-        ## error checking timing and print-out. to be removed.
-        ## mkak 2017.02.03
-        c = time.time()
-        if (c-a) > 1:
-            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f s' % (len(matches),minfracq,((c-a)* 1e0)))
-            print('\t(%0.3f s and %0.3f s)' % (((b-a)* 1e0),((c-b)* 1e0)))
-        elif (c-a) > 120:
-            print('\n%Final: d matched pattern(s) for goodness %0.2f in %0.2f min' % (len(matches),minfraq,((c-a)/60)))
-            print('\t(%0.3f s and %0.2f min)' % (((b-a)* 1e0),((c-b)/60)))
+        for i,amcsd in enumerate(matches):
+            if verbose:
+                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
+                         cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
+                         count[i],count[i]/goodness[i])
+                print(str)
+                #print(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
 
-        else:
-            print('\nFinal: %d matched pattern(s) for goodness %0.2f in %0.3f ms' % (len(matches),minfracq,((c-a)* 1e3)))
-            print('\t(%0.3f ms and %0.3f ms)' % (((b-a)* 1e3),((c-b)* 1e3)))
-        if len(matches) > 0:
-            for i,amcsd in enumerate(matches):
-                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks): ' % (amcsd,
-                      self.owner.cifdatabase.find_mineral_name(amcsd),goodness[i],count[i],count[i]/goodness[i])
-                print(str, self.owner.cifdatabase.q_in_range(amcsd,qmin=minq,qmax=maxq))
-
-
-        print
-
+        if errorchecking and len(matches) > 0:
+            print '\n%i ENTRIES MATCH' % len(matches)
+            if len(matches) < 5:
+                for amcsd in matches:
+                    self.owner.cifdatabase.print_amcsd_info(amcsd)
 
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Background fitting options',
+        dialog = wx.Dialog.__init__(self, parent, title='Background fitting options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
@@ -1548,7 +1591,7 @@ class PeakOptions(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Peak searching options',
+        dialog = wx.Dialog.__init__(self, parent, title='Peak searching options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
@@ -1614,7 +1657,7 @@ class PeakOptions(wx.Dialog):
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
 
         hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
-        self.okBtn = wx.Button(self.panel, wx.ID_OK     )
+        self.okBtn = wx.Button(self.panel, wx.ID_OK     , label='Find peaks')
         canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
 
         hlpBtn.Bind(wx.EVT_BUTTON, lambda evt: wx.TipWindow(
@@ -1795,26 +1838,20 @@ class Viewer1DXRD(wx.Panel):
 
         ###########################
         ## Hide/show and reset
-        hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
+        #hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
+        
+        #self.btn_rmv   = wx.Button(self,label='remove')
+        #self.btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
 
-        btn_hide  = wx.Button(self,label='hide')
-        btn_rmv   = wx.Button(self,label='remove')
-
-        btn_hide.Bind(wx.EVT_BUTTON,  self.hide1Ddata)
-        btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
-
-        btn_hide.Disable()
-        btn_rmv.Disable()
-
-        hbox_btns.Add(btn_hide,  flag=wx.RIGHT, border=8)
-        hbox_btns.Add(btn_rmv,   flag=wx.RIGHT, border=8)
-        vbox.Add(hbox_btns, flag=wx.ALL, border=10)
-
+        #hbox_btns.Add(self.btn_rmv,   flag=wx.RIGHT, border=8)
+        #vbox.Add(hbox_btns, flag=wx.ALL, border=10)
+        
         ## Disable until data
         self.btn_reset.Disable()
         self.val_scale.Disable()
-
-        return vbox
+        #self.btn_rmv.Disable()
+        
+        return vbox   
 
     def CIFBox(self,panel):
         '''
@@ -1895,17 +1932,9 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D = PlotPanel(panel,size=(1000, 500))
         self.plot1D.messenger = self.owner.write_message
-
-
-        ## Set defaults for plotting
-#         self.plot1D.set_ylabel(self.ylabel)
-#         self.plot1D.set_xlabel(self.xlabel)
+        
         self.plot1D.cursor_mode = 'zoom'
-
-        ## trying to get this functionality into our gui
-        ## mkak 2016.11.10
-#         interactive_legend().show()
-
+  
     def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
 
@@ -1972,10 +2001,11 @@ class Viewer1DXRD(wx.Panel):
         if data:
             self.val_scale.Enable()
             self.btn_reset.Enable()
+            #self.btn_rmv.Enable()
         if cif:
             self.val_cifscale.Enable()
 
-    def add1Ddata(self,x,y,name=None):
+    def add1Ddata(self,x,y,name=None,unit='q'):
 
         plt_no = len(self.data_name)
 
@@ -1988,9 +2018,14 @@ class Viewer1DXRD(wx.Panel):
         self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(y))
 
-        q    = x
-        d    = d_from_q(q)
-        twth = twth_from_q(q,self.wavelength)
+        if unit.startswith('2th'):
+            twth = x
+            q    = q_from_twth(twth,self.wavelength)
+            d    = d_from_q(q)
+        else:
+            q    = x
+            d    = d_from_q(q)
+            twth = twth_from_q(q,self.wavelength)
         I    = y
 
         self.xy_data.append([q,d,twth,I])
@@ -2058,24 +2093,19 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.unzoom_all()
         self.rescale1Daxis(xaxis=False,yaxis=True)
 
-    def remove1Ddata(self,event=None):
-
-        ## Needs pop up warning: "Do you really want to delete this data set from plotter?
-        ## Current settings will not be saved."
-        ## mkak 2016.11.10
-
-        plt_no = self.ch_data.GetSelection()
-        print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
-
-        ## removing name from list works... do not activate till rest is working
-        ## mkak 2016.11.10
-#         self.data_name.remove(self.data_name[plt_no])
-#         self.ch_data.Set(self.data_name)
-
-    def hide1Ddata(self,event=None):
-
-        plt_no = self.ch_data.GetSelection()
-        print('EVENTUALLY, button will hide plot: %s' % self.data_name[plt_no])
+#     def remove1Ddata(self,event=None):
+#         
+#         ## Needs pop up warning: "Do you really want to delete this data set from plotter?
+#         ## Current settings will not be saved."
+#         ## mkak 2016.11.10
+#         
+#         plt_no = self.ch_data.GetSelection()        
+#         print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
+# 
+#         ## removing name from list works... do not activate till rest is working
+#         ## mkak 2016.11.10
+# #         self.data_name.remove(self.data_name[plt_no])
+# #         self.ch_data.Set(self.data_name)
 
     def onSELECT(self,event=None):
 
@@ -2204,10 +2234,9 @@ class Viewer1DXRD(wx.Panel):
 #### XRD FILE OPENING/SAVING
     def load_file(self,event=None):
 
-        x,y,path = loadXYFILE(self,verbose=True)
-
         try:
-            self.add1Ddata(x,y,name=os.path.split(path)[-1])
+            x,y,unit,path = loadXYFILE(self,verbose=True)
+            self.add1Ddata(x,y,name=os.path.split(path)[-1],unit=unit)
         except:
             pass
 
@@ -2275,83 +2304,6 @@ class Viewer1DXRD(wx.Panel):
                     print('Could not calculate real structure factors.')
             else:
                 print('Wavelength/energy must be specified for structure factor calculations.')
-
-#import matplotlib.pyplot as plt
-# def interactive_legend(ax=None):
-#     if ax is None:
-#         ax = plt.gca()
-#     if ax.legend_ is None:
-#         ax.legend()
-#
-#     return InteractiveLegend(ax.legend_)
-#
-# class InteractiveLegend(object):
-#     def __init__(self, legend):
-#         self.legend = legend
-#         self.fig = legend.axes.figure
-#
-#         self.lookup_artist, self.lookup_handle = self._build_lookups(legend)
-#         self._setup_connections()
-#
-#         self.update()
-#
-#     def _setup_connections(self):
-#         for artist in self.legend.texts + self.legend.legendHandles:
-#             artist.set_picker(10) # 10 points tolerance
-#
-#         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
-#         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-#
-#     def _build_lookups(self, legend):
-#         labels = [t.get_text() for t in legend.texts]
-#         handles = legend.legendHandles
-#         label2handle = dict(zip(labels, handles))
-#         handle2text = dict(zip(handles, legend.texts))
-#
-#         lookup_artist = {}
-#         lookup_handle = {}
-#         for artist in legend.axes.get_children():
-#             if artist.get_label() in labels:
-#                 handle = label2handle[artist.get_label()]
-#                 lookup_handle[artist] = handle
-#                 lookup_artist[handle] = artist
-#                 lookup_artist[handle2text[handle]] = artist
-#
-#         lookup_handle.update(zip(handles, handles))
-#         lookup_handle.update(zip(legend.texts, handles))
-#
-#         return lookup_artist, lookup_handle
-#
-#     def on_pick(self,event=None):
-#         handle = event.artist
-#         if handle in self.lookup_artist:
-#             artist = self.lookup_artist[handle]
-#             artist.set_visible(not artist.get_visible())
-#             self.update()
-#
-#     def on_click(self,event=None):
-#         if event.button == 3:
-#             visible = False
-#         elif event.button == 2:
-#             visible = True
-#         else:
-#             return
-#
-#         for artist in self.lookup_artist.values():
-#             artist.set_visible(visible)
-#         self.update()
-#
-#     def update(self):
-#         for artist in self.lookup_artist.values():
-#             handle = self.lookup_handle[artist]
-#             if artist.get_visible():
-#                 handle.set_visible(True)
-#             else:
-#                 handle.set_visible(False)
-#         self.fig.canvas.draw()
-#
-#     def show(self):
-#         plt.show()
 
 class RangeToolsPanel(wx.Panel):
     '''
@@ -2594,37 +2546,15 @@ class DatabasePanel(wx.Panel):
 
     def SearchMatchTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        btn_db = wx.Button(self,label='Database info')
+        btn_srch = wx.Button(self,label='Filter database')
 
-        btn_db = wx.Button(self,label='Select database file')
+        btn_db.Bind(wx.EVT_BUTTON,          self.owner.database_info)
+        btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
 
-        self.btn_srch = wx.Button(self,label='Search parameters')
-
-        ttl_gdnss = wx.StaticText(self, label='min. fraction')
-        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
-        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
-
-        self.owner.val_gdnss.SetValue('0.85')
-
-        self.btn_mtch = wx.Button(self,label='Find matches')
-        btn_debug = wx.Button(self,label='Debugging peak test')
-
-        btn_db.Bind(wx.EVT_BUTTON,          self.owner.open_database)
-        self.btn_srch.Bind(wx.EVT_BUTTON,   self.owner.onSettings)
-        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        btn_debug.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-
-        vbox.Add(btn_db,        flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_srch, flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_debug,     flag=wx.BOTTOM, border=8)
-
-        ## until peaks are available to search
-        self.btn_srch.Disable()
-        self.owner.val_gdnss.Disable()
-        self.btn_mtch.Disable()
+        vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
 
         return vbox
 
@@ -2653,6 +2583,24 @@ class RefinementPanel(wx.Panel):
 
     def RefinementTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ttl_gdnss = wx.StaticText(self, label='min. fraction')
+        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
+        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
+
+        self.owner.val_gdnss.SetValue('0.85')
+
+        self.btn_mtch = wx.Button(self,label='Search based on q')
+        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+        
+        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
+        
+        ## until peaks are available to search
+        self.owner.val_gdnss.Disable()
+        self.btn_mtch.Disable()
 
         return vbox
 
@@ -2669,8 +2617,6 @@ class ResultsPanel(wx.Panel):
         self.owner = owner
 
         ## Default information
-
-
         respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
@@ -2680,17 +2626,23 @@ class ResultsPanel(wx.Panel):
     def ResultsTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
+        self.owner.amcsdlistbox = EditableListBox(self, None,size=(200,-1))
+        self.owner.txt_amcsd_cnt = wx.StaticText(self, label='')
+
+        vbox.Add(self.owner.amcsdlistbox,  flag=wx.ALL, border=10)
+        vbox.Add(self.owner.txt_amcsd_cnt, flag=wx.ALL, border=10)
+
         return vbox
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
-    def __init__(self,xrd2Ddata,ai):
 
+    def __init__(self,parent,xrd2Ddata,ai):
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='Calculate 1DXRD options',
+        dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
-
+        self.parent = parent
         self.data2D = xrd2Ddata
         self.ai = ai
         self.steps = 5001
@@ -2877,10 +2829,9 @@ class SetLambdaDialog(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self,energy=19.0):
-
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Define wavelength/energy')#,size=(500, 440))
+    def __init__(self,parent,energy=19.0):
+        
+        wx.Dialog.__init__(self, parent, title='Define wavelength/energy')#,size=(500, 440))
         ## remember: size=(width,height)
 
         panel = wx.Panel(self)
@@ -2951,44 +2902,129 @@ class SetLambdaDialog(wx.Dialog):
                 self.entr_EorL.SetValue('%0.4f' % self.wavelength)
             self.pre_sel = self.ch_EorL.GetSelection()
 
-#########################################################################
-class XRDSearchGUI(wx.Dialog):
+
+class DatabaseInfoGUI(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
-
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Crystal Structure Database Search',size=(500, 440))
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, title='Database Information')
         ## remember: size=(width,height)
+        self.parent = parent
         self.panel = wx.Panel(self)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        
+        LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        
+        ## Database info
+        self.txt_dbname = wx.StaticText(self.panel, label='Current file : ')
+        self.txt_nocif  = wx.StaticText(self.panel, label='Number of cif entries : ')
+
+        ## Database buttons
+        db_sizer = wx.BoxSizer(wx.HORIZONTAL)
+       
+        dbBtn  = wx.Button(self.panel, label='Load new database' )
+        rstBtn = wx.Button(self.panel, label='Reset to default database')
+        
+        dbBtn.Bind(wx.EVT_BUTTON, self.onNewFile  )
+        rstBtn.Bind(wx.EVT_BUTTON, self.onResetFile  )
+        
+        db_sizer.Add(dbBtn,  flag=wx.RIGHT, border=10)
+        db_sizer.Add(rstBtn, flag=wx.RIGHT, border=10)
+        
+        ## Okay, etc. buttons
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
+        okBtn  = wx.Button(self.panel, wx.ID_OK,    label='Close')
+        #canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        #ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)
+        
+        sizer.Add(self.txt_dbname, flag=wx.ALL, border=10)
+        sizer.Add(self.txt_nocif,  flag=wx.ALL, border=10)
+        sizer.Add(db_sizer,        flag=wx.ALL, border=10)
+        sizer.AddSpacer(5)
+        sizer.Add(ok_sizer,        flag=wx.ALIGN_RIGHT|wx.ALL, border=10)
+        self.panel.SetSizer(sizer)
+        
+        self.onUpdateText()
+        
+    def onNewFile(self,event=None):
+    
+        path = self.parent.open_database()
+        self.onUpdateText()
+        
+    def onResetFile(self,event=None):
+    
+        self.parent.owner.openDB()
+        self.onUpdateText()
+
+    def onUpdateText(self,event=None):
+        
+        try:
+            filename = self.parent.owner.cifdatabase.dbname
+        except:
+            return
+        #filename = os.path.split(filename)[-1]
+        nocif = self.parent.owner.cifdatabase.return_no_of_cif()
+
+        self.txt_dbname.SetLabel('Current file : %s' % filename)
+        self.txt_nocif.SetLabel('Number of cif entries : %i' % nocif)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
+        self.Show()
+
+#########################################################################
+class XRDSearchGUI(wx.Dialog):
+
+    def __init__(self, parent):
+        
+        wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
+        ## remember: size=(width,height)
+        self.parent = parent
+        self.panel = wx.Panel(self)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        grd_sizer = wx.GridBagSizer( 5, 6)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
         ## Mineral search
-        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral:' )
-        self.Mineral = wx.TextCtrl(self.panel,   size=(270, -1))
-        #mineral_list = [] #['None']
-        #self.Mineral = wx.Choice(self.panel,    choices=mineral_list)
+        lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
+        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals,  size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## Author search
-        lbl_Author  = wx.StaticText(self.panel, label='Author:' )
-        self.Author = wx.TextCtrl(self.panel,   size=(270, -1))
+        lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
+        self.Author  = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
+        self.atrslct = wx.Button(self.panel,     label='Select...')
 
         ## Chemistry search
         lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
-        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1))
+        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.chmslct  = wx.Button(self.panel,     label='Specify...')
 
         ## Cell parameter symmetry search
-        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/parameters:' )
-        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1))
+        lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/unit cell:' )
+        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
         self.symslct  = wx.Button(self.panel,     label='Specify...')
 
+        ## Category search
+        opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
+        lbl_Category  = wx.StaticText(self.panel,  label='Category:', style=wx.TE_PROCESS_ENTER)
+        self.Category = wx.ListBox(self.panel, style=opts, choices=CATEGORIES, size=(270, -1))
+        
         ## General search
-        lbl_Search  = wx.StaticText(self.panel,  label='Keyword search:' )
-        self.Search = wx.TextCtrl(self.panel, size=(270, -1))
-
+        lbl_Keyword  = wx.StaticText(self.panel,  label='Keyword search:' )
+        self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## Define buttons
         self.rstBtn = wx.Button(self.panel, label='Reset' )
@@ -2998,110 +3034,381 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Bind buttons for functionality
         self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
+        
         self.chmslct.Bind(wx.EVT_BUTTON, self.onChemistry )
+        self.atrslct.Bind(wx.EVT_BUTTON, self.onAuthor    )
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
-        self.sizer = wx.GridBagSizer( 5, 6)
+        self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
+        self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral   )
+        self.Author.Bind(wx.EVT_TEXT_ENTER,    self.entrAuthor    )
+        self.Symmetry.Bind(wx.EVT_TEXT_ENTER,  self.entrSymmetry  )
+        self.Category.Bind(wx.EVT_TEXT_ENTER,  self.entrCategory  )
+        self.Keyword.Bind(wx.EVT_TEXT_ENTER,   self.entrKeyword   )
 
-        self.sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
-        self.sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
+        grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
+        grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        self.sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        self.sizer.Add(self.Author,    pos = ( 2,2), span = (1,3) )
+        grd_sizer.Add(lbl_Author,     pos = ( 2,1)               )
+        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,2) )
+        grd_sizer.Add(self.atrslct,   pos = ( 2,4)               )
 
-        self.sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
-        self.sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
-        self.sizer.Add(self.chmslct,   pos = ( 3,4)               )
+        grd_sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
+        grd_sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
+        grd_sizer.Add(self.chmslct,   pos = ( 3,4)               )
 
-        self.sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
-        self.sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
-        self.sizer.Add(self.symslct,   pos = ( 4,4)               )
+        grd_sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
+        grd_sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
+        grd_sizer.Add(self.symslct,   pos = ( 4,4)               )
 
-        self.sizer.Add(lbl_Search,     pos = ( 5,1)               )
-        self.sizer.Add(self.Search,    pos = ( 5,2), span = (1,3) )
+        grd_sizer.Add(lbl_Category,   pos = ( 5,1)               )
+        grd_sizer.Add(self.Category,  pos = ( 5,2), span = (1,3) )
 
-        self.sizer.Add(hlpBtn,        pos = (11,1)                )
-        self.sizer.Add(canBtn,        pos = (11,2)                )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)                )
-        self.sizer.Add(okBtn,         pos = (11,4)                )
+        grd_sizer.Add(lbl_Keyword,    pos = ( 6,1)               )
+        grd_sizer.Add(self.Keyword,   pos = ( 6,2), span = (1,3) )
+        
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)        
 
-        self.panel.SetSizer(self.sizer)
+        sizer.Add(grd_sizer)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
 
         self.Show()
+        self.srch = SearchCIFdb()
+
+#########################################################################
+
+    def entrAuthor(self,event=None):
+        key = 'authors'
+        self.srch.read_parameter(self.Author.GetValue(),key=key)
+        self.Author.SetValue(self.srch.print_parameter(key=key))
+            
+    def entrSymmetry(self,event=None):
+        self.srch.read_geometry(str(self.Symmetry.GetValue()))
+        self.Symmetry.SetValue(self.srch.print_geometry())
+
+            
+    def entrCategory(self,event=None):
+        key = 'categories'
+        self.srch.read_parameter(self.Category.GetValue(),key=key)
+        self.Category.SetValue(self.srch.print_parameter(key=key))
+             
+    def entrKeyword(self,event=None):
+        key = 'keywords'
+        self.srch.read_parameter(self.Keyword.GetValue(),key=key)
+        self.Keyword.SetValue(self.srch.print_parameter(key=key))
+
+
+    def entrMineral(self,event=None):
+        ## need to integrate with SearchCIFdb somehow...
+        ## mkak 2017.03.01
+        if event.GetString() not in self.minerals:
+            self.minerals.insert(1,event.GetString())
+            self.Mineral.Set(self.minerals)
+            self.Mineral.SetSelection(1)
+            self.srch.read_parameter(event.GetString(),key='mnrlname')
+
+    def entrChemistry(self,event=None):
+        self.srch.read_chemistry(self.Chemistry.GetValue())
+        self.Chemistry.SetValue(self.srch.print_chemistry())
+
+
 #########################################################################
     def onChemistry(self,event=None):
-        print('Will eventually show Periodic Table...')
-#########################################################################
+        dlg = PeriodicTableSearch(self,include=self.srch.elem_incl,
+                                       exclude=self.srch.elem_excl)
+        update = False
+        if dlg.ShowModal() == wx.ID_OK:
+            incl = dlg.element_include
+            excl = dlg.element_exclude
+            update = True
+        dlg.Destroy()
+
+        if update:
+            self.srch.elem_incl = incl
+            self.srch.elem_excl = excl
+            self.Chemistry.SetValue(self.srch.print_chemistry())
+
+
+    def onAuthor(self,event=None):
+        authorlist = self.parent.owner.cifdatabase.return_author_names()
+        dlg = AuthorListTable(self,authorlist,include=self.srch.authors)
+   
+        update = False
+        if dlg.ShowModal() == wx.ID_OK:
+            incl = []
+            ii = dlg.authlist.GetSelections()
+            for i in ii:
+                incl +=[authorlist[i]]
+            update = True
+        dlg.Destroy()
+
+        if update:
+            self.srch.authors = incl
+            self.Author.SetValue(self.srch.print_parameter(key='authors'))
+
     def onSymmetry(self,event=None):
-        XRDSymmetrySearch()
-#########################################################################
+        dlg = XRDSymmetrySearch(self,search=self.srch)
+        update = False
+        if dlg.ShowModal() == wx.ID_OK:
+            vals = [dlg.min_a.GetValue(),     dlg.max_a.GetValue(),
+                    dlg.min_b.GetValue(),     dlg.max_b.GetValue(),
+                    dlg.min_c.GetValue(),     dlg.max_c.GetValue(),
+                    dlg.min_alpha.GetValue(), dlg.max_alpha.GetValue(),
+                    dlg.min_beta.GetValue(),  dlg.max_beta.GetValue(),
+                    dlg.min_gamma.GetValue(), dlg.max_gamma.GetValue(),
+                    dlg.SG.GetSelection()]
+            update = True
+        dlg.Destroy()
+        
+        if update:
+            for i,val in enumerate(vals):
+                if val == '' or val == 0:
+                    vals[i] = None
+                elif val != 12:
+                    vals[i] = '%0.3f' % float(val)
+               
+            self.srch.a.min, self.srch.a.max, self.srch.a.unit = vals[0],vals[1],'A'
+            self.srch.b.min, self.srch.b.max, self.srch.b.unit = vals[2],vals[3],'A'
+            self.srch.c.min, self.srch.c.max, self.srch.c.unit = vals[4],vals[5],'A'
+
+            self.srch.alpha.min, self.srch.alpha.max, self.srch.alpha.unit = vals[6],vals[7],'deg'
+            self.srch.beta.min,  self.srch.beta.max,  self.srch.beta.unit  = vals[8],vals[9],'deg'
+            self.srch.gamma.min, self.srch.gamma.max, self.srch.gamma.unit = vals[10],vals[11],'deg'
+            
+            self.srch.sg = vals[12]
+
+            self.Symmetry.SetValue(self.srch.print_geometry())
+        
     def onReset(self,event=None):
-        self.Mineral.Clear()
+        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.Mineral.Set(self.minerals)
+        self.Mineral.Select(0)
         self.Author.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
-        self.Search.Clear()
-#########################################################################
+        for i,n in enumerate(CATEGORIES):
+            self.Category.Deselect(i)
+        self.Keyword.Clear()
+        self.srch.__init__()
+
+        
+#########################################################################            
+class PeriodicTableSearch(wx.Dialog):
+
+    def __init__(self, parent,include=[],exclude=[]):
+        
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title='Periodic Table of Elements')
+        
+        ## this eventually to file header - do not belong here but works.
+        ## mkak 2017.02.16
+        from larch_plugins.wx import PeriodicTablePanel
+        
+        panel = wx.Panel(self)
+        self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',
+                                         onselect=self.onSelectElement,
+                                         highlight=True)
+
+        okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'   )
+        exBtn  = wx.Button(panel,               label='Exclude all others' )
+        rstBtn = wx.Button(panel,               label='Clear'              )
+        canBtn = wx.Button(panel, wx.ID_CANCEL                             )
+
+        ## Bind buttons for functionality
+        exBtn.Bind(wx.EVT_BUTTON,  self.onExclude )
+        rstBtn.Bind(wx.EVT_BUTTON, self.onClear )
+
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        main_sizer.Add(self.ptable, flag=wx.ALL, border=20)
+
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn_sizer.Add(okBtn,  flag=wx.RIGHT, border=5)
+        btn_sizer.Add(exBtn,  flag=wx.RIGHT, border=5)
+        btn_sizer.Add(rstBtn, flag=wx.RIGHT, border=5)
+        btn_sizer.Add(canBtn, flag=wx.RIGHT, border=5)
+        
+        main_sizer.Add(btn_sizer, flag=wx.ALL, border=20)
+
+        pack(panel, main_sizer)
+        
+        ix,iy = panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+        
+        self.element_include = include
+        self.element_exclude = exclude
+        self.setDefault()
+        
+        
+        self.cnt_elem = len(self.ptable.syms)
+
+    def setDefault(self):
+    
+        for name in self.ptable.ctrls:
+            if name in self.element_include:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.SEL_FG)
+                textwid.SetBackgroundColour(self.ptable.SEL_BG)
+            elif name in self.element_exclude:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.NEG_FG)
+                textwid.SetBackgroundColour(self.ptable.NEG_BG)            
+            else:
+                textwid = self.ptable.ctrls[name]
+                textwid.SetForegroundColour(self.ptable.REG_FG)
+                textwid.SetBackgroundColour(self.ptable.REG_BG) 
+        
+        #self.ptable.onexclude(selected=self.element_include)
+        
+    def onSelectElement(self,elem=None, event=None):
+    
+        if elem not in self.element_include and elem not in self.element_exclude:
+            self.element_include += [elem]    
+        elif elem in self.element_include:
+            self.element_exclude += [elem]
+            i = self.element_include.index(elem)
+            self.element_include.pop(i)
+        elif elem in self.element_exclude:
+            i = self.element_exclude.index(elem)
+            self.element_exclude.pop(i)
+        
+    def onClear(self,event=None):
+    
+        self.element_include = []
+        self.element_exclude = []
+        self.ptable.onclear()
+
+    def onExclude(self,event=None):
+    
+        for elem in self.ptable.syms:
+            if elem not in self.element_include and elem not in self.element_exclude:
+                self.element_exclude += [elem]
+        self.ptable.onexclude(selected=self.element_include)
+
+#########################################################################            
+class AuthorListTable(wx.Dialog):
+    """"""
+
+    def __init__(self,parent,authorlist,include=[]):
+    
+        ## Constructor
+        dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry')
+        ## remember: size=(width,height)
+        self.panel = wx.Panel(self)
+        self.list = authorlist
+        self.include = include
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.authlist = wx.ListBox(self.panel, size=(170, 130), style= wx.LB_MULTIPLE)
+        self.authlist.Set(self.list)
+
+        ## Define buttons
+        self.rstBtn = wx.Button(self.panel, label='Reset' )
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        ## Bind buttons for functionality
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)      
+        
+
+        sizer.Add(self.authlist)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
+
+        self.Show()
+        self.onSet()
+
+    def onReset(self,event=None):
+        
+        for i,n in enumerate(self.list):
+            self.authlist.Deselect(i)
+        
+        
+    def onSet(self,event=None):
+        
+        for i,n in enumerate(self.list):
+            if n in self.include:
+                self.authlist.Select(i)
+            else:
+                self.authlist.Deselect(i)
+            
+
+
+#########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
     """"""
 
-    def __init__(self):
-
+    def __init__(self,parent,search=None):
+    
         ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='Cell Parameters and Symmetry',size=(460, 440))
+        dialog = wx.Dialog.__init__(self, parent, title='Cell Parameters and Symmetry')
         ## remember: size=(width,height)
         self.panel = wx.Panel(self)
 
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        grd_sizer = wx.GridBagSizer( 5, 6)
+        ok_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
         ## Lattice parameters
         lbl_a = wx.StaticText(self.panel,    label='a (A)' )
-        self.min_a = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_a = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_a = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_a = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_b = wx.StaticText(self.panel,    label='b (A)' )
-        self.min_b = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_b = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_b = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_b = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
-        lbl_c = wx.StaticText(self.panel,    label='a (A)' )
-        self.min_c = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_c = wx.TextCtrl(self.panel, size=(100, -1))
+        lbl_c = wx.StaticText(self.panel,    label='c (A)' )
+        self.min_c = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_c = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_alpha = wx.StaticText(self.panel,    label='alpha (deg)' )
-        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_alpha = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_alpha = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_beta = wx.StaticText(self.panel,    label='beta (deg)' )
-        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_beta = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_beta = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         lbl_gamma = wx.StaticText(self.panel,    label='gamma (deg)' )
-        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1))
-        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1))
+        self.min_gamma = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
+        self.max_gamma = wx.TextCtrl(self.panel, size=(100, -1), style = wx.TE_PROCESS_ENTER )
 
         SG_list = ['']
         for sgno in np.arange(230):
             SG_list.append('%3d' % (sgno+1))
 
-#         sgfile = 'space_groups.txt'
-#         if not os.path.exists(sgfile):
-#             parent, child = os.path.split(__file__)
-#             sgfile = os.path.join(parent, sgfile)
-#             if not os.path.exists(sgfile):
-#                 raise IOError("Space group file '%s' not found!" % sgfile)
-#         sg = open(sgfile,'r')
-#         for sgno,line in enumerate(sg):
-#             try:
-#                 sgno = sgno+1
-#                 SG_list.append('%3d  %s' % (sgno,line))
-#             except:
-#                 sg.close()
-#                 break
+        hm_notations = ['']
+        ## Displays all space groups
+        for spgrp in SPACEGROUPS:
+            iuc_id,name = spgrp
+            hm = '%s: %s' % (str(iuc_id),name)
+            hm_notations += [hm]
 
-
-        lbl_SG = wx.StaticText(self.panel, label='Space group:')
-        self.SG = wx.Choice(self.panel,    choices=SG_list)
+        lbl_SG    = wx.StaticText(self.panel, label='Space group:')
+        self.SG   = wx.Choice(self.panel,     choices=SG_list)
+        self.HMsg = wx.Choice(self.panel,     choices=hm_notations)
+        
+        self.HMsg.Bind(wx.EVT_CHOICE, self.onSpaceGroup)
 
         ## Define buttons
         self.rstBtn = wx.Button(self.panel, label='Reset' )
@@ -3112,44 +3419,67 @@ class XRDSymmetrySearch(wx.Dialog):
         ## Bind buttons for functionality
         self.rstBtn.Bind(wx.EVT_BUTTON,  self.onReset     )
 
-        self.sizer = wx.GridBagSizer( 5, 6)
+        grd_sizer.Add(lbl_a,          pos = ( 1,1) )
+        grd_sizer.Add(self.min_a,     pos = ( 1,2) )
+        grd_sizer.Add(self.max_a,     pos = ( 1,3) )
 
-        self.sizer.Add(lbl_a,          pos = ( 1,1) )
-        self.sizer.Add(self.min_a,     pos = ( 1,2) )
-        self.sizer.Add(self.max_a,     pos = ( 1,3) )
+        grd_sizer.Add(lbl_b,          pos = ( 2,1) )
+        grd_sizer.Add(self.min_b,     pos = ( 2,2) )
+        grd_sizer.Add(self.max_b,     pos = ( 2,3) )
 
-        self.sizer.Add(lbl_b,          pos = ( 2,1) )
-        self.sizer.Add(self.min_b,     pos = ( 2,2) )
-        self.sizer.Add(self.max_b,     pos = ( 2,3) )
+        grd_sizer.Add(lbl_c,          pos = ( 3,1) )
+        grd_sizer.Add(self.min_c,     pos = ( 3,2) )
+        grd_sizer.Add(self.max_c,     pos = ( 3,3) )
 
-        self.sizer.Add(lbl_c,          pos = ( 3,1) )
-        self.sizer.Add(self.min_c,     pos = ( 3,2) )
-        self.sizer.Add(self.max_c,     pos = ( 3,3) )
+        grd_sizer.Add(lbl_alpha,      pos = ( 4,1) )
+        grd_sizer.Add(self.min_alpha, pos = ( 4,2) )
+        grd_sizer.Add(self.max_alpha, pos = ( 4,3) )
 
-        self.sizer.Add(lbl_alpha,      pos = ( 4,1) )
-        self.sizer.Add(self.min_alpha, pos = ( 4,2) )
-        self.sizer.Add(self.max_alpha, pos = ( 4,3) )
+        grd_sizer.Add(lbl_beta,       pos = ( 5,1) )
+        grd_sizer.Add(self.min_beta,  pos = ( 5,2) )
+        grd_sizer.Add(self.max_beta,  pos = ( 5,3) )
 
-        self.sizer.Add(lbl_beta,       pos = ( 5,1) )
-        self.sizer.Add(self.min_beta,  pos = ( 5,2) )
-        self.sizer.Add(self.max_beta,  pos = ( 5,3) )
+        grd_sizer.Add(lbl_gamma,      pos = ( 6,1) )
+        grd_sizer.Add(self.min_gamma, pos = ( 6,2) )
+        grd_sizer.Add(self.max_gamma, pos = ( 6,3) )
 
-        self.sizer.Add(lbl_gamma,      pos = ( 6,1) )
-        self.sizer.Add(self.min_gamma, pos = ( 6,2) )
-        self.sizer.Add(self.max_gamma, pos = ( 6,3) )
+        grd_sizer.Add(lbl_SG,         pos = ( 7,1) )
+        grd_sizer.Add(self.SG,        pos = ( 7,2) )
+        grd_sizer.Add(self.HMsg,      pos = ( 7,3) )
+        
+        self.min_a.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_a.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_b.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_b.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_c.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_c.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_alpha.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_alpha.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_beta.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_beta.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.min_gamma.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        self.max_gamma.Bind(wx.EVT_TEXT_ENTER, self.formatFloat)
+        
+        ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
+        ok_sizer.Add(self.rstBtn, flag=wx.ALL, border=8)
+        ok_sizer.Add(okBtn,       flag=wx.ALL, border=8)      
+        
 
-        self.sizer.Add(lbl_SG,         pos = ( 7,1) )
-        self.sizer.Add(self.SG,        pos = ( 7,2) )
-
-
-        self.sizer.Add(hlpBtn,        pos = (11,1)  )
-        self.sizer.Add(canBtn,        pos = (11,2)  )
-        self.sizer.Add(self.rstBtn,   pos = (11,3)  )
-        self.sizer.Add(okBtn,         pos = (11,4)  )
-
-        self.panel.SetSizer(self.sizer)
+        sizer.Add(grd_sizer)
+        sizer.AddSpacer(15)
+        sizer.Add(ok_sizer)
+        self.panel.SetSizer(sizer)
+        
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+40, iy+40))
 
         self.Show()
+        
+        if search is not None:
+            self.srch = search
+            self.SetSearch()
+        
 #########################################################################
     def onReset(self,event=None):
         self.min_a.Clear()
@@ -3165,6 +3495,48 @@ class XRDSymmetrySearch(wx.Dialog):
         self.min_gamma.Clear()
         self.max_gamma.Clear()
         self.SG.SetSelection(0)
+        self.HMsg.SetSelection(0)
+
+    def SetSearch(self):
+
+        if self.srch.a.min is not None:
+            self.min_a.SetValue(self.srch.a.min)
+        if self.srch.a.max is not None:
+            self.max_a.SetValue(self.srch.a.max)
+        if self.srch.b.min is not None:
+            self.min_b.SetValue(self.srch.b.min)
+        if self.srch.b.max is not None:
+            self.max_b.SetValue(self.srch.b.max)
+        if self.srch.c.min is not None:
+            self.min_c.SetValue(self.srch.c.min)
+        if self.srch.c.max is not None:
+            self.max_c.SetValue(self.srch.c.max)
+        if self.srch.alpha.min is not None:
+            self.min_alpha.SetValue(self.srch.alpha.min)
+        if self.srch.alpha.max is not None:
+            self.max_alpha.SetValue(self.srch.alpha.max)
+        if self.srch.beta.min is not None:
+            self.min_beta.SetValue(self.srch.beta.min)
+        if self.srch.beta.max is not None:
+            self.max_beta.SetValue(self.srch.beta.max)
+        if self.srch.gamma.min is not None:
+            self.min_gamma.SetValue(self.srch.gamma.min)
+        if self.srch.gamma.max is not None:
+            self.max_gamma.SetValue(self.srch.gamma.max)
+        if self.srch.sg is not None:
+            self.SG.SetSelection(int(self.srch.sg))
+
+    def onSpaceGroup(self,event=None):
+
+        i = self.HMsg.GetSelection()
+        if i > 0:
+            iuc_id, name = SPACEGROUPS[i-1]
+            self.SG.SetSelection(int(iuc_id))
+        else:
+            self.SG.SetSelection(0)
+        
+    def formatFloat(self,event):
+        event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
 
 def loadXYFILE(self,event=None,verbose=False):
 
@@ -3183,12 +3555,12 @@ def loadXYFILE(self,event=None,verbose=False):
         if verbose:
             print('Opening file: %s\n' % os.path.split(path)[-1])
         try:
-            x,y = xy_file_reader(path)
+            x,y,unit = xy_file_reader(path)
         except:
            print('incorrect xy file format: %s' % os.path.split(path)[-1])
            return
 
-        return x,y,path
+        return x,y,unit,path
 
 
 

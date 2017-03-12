@@ -262,9 +262,8 @@ class XRDBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-def xrd_background(xdata, ydata, group=None, width=4,
-                   compress=2, exponent=2, slope=None,
-                   _larch=None):
+def xrd_background(xdata, ydata, width=4, compress=2, exponent=2,
+                   slope=None, _larch=None):
     """fit background for XRF spectra.  Arguments:
 
     xrd_background(xdata, ydata, group=None, width=4,
@@ -285,22 +284,18 @@ def xrd_background(xdata, ydata, group=None, width=4,
     exponent   power of polynomial used.  Default is 2, should be even.
     slope      channel to energy conversion, from energy calibration
                (default == None --> found from input energy array)
-
-    outputs (written to group)
     -------
     bgr       background array
     bgr_info  dictionary of parameters used to calculate background
     """
-
+   
     if slope is None:
         slope = (xdata[-1] - xdata[0])/len(xdata)
 
     xbgr = XRDBackground(ydata, width=width, compress=compress,
                          exponent=exponent, slope=slope, tangent=True)
 
-    if group is not None:
-        group.bgr = xbgr.bgr
-        group.bgr_info = xbgr.parinfo
+    return xbgr.bgr
 
 def registerLarchPlugin():
     return ('_xrd', {'xrd_background': xrd_background})

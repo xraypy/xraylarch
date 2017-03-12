@@ -110,6 +110,9 @@ def isGSEXRM_MapFolder(fname):
         if f not in flist:
             return False
     has_xrfdata = False
+    ## This should read Master.dat for file name and check that it exist.
+    ## If file name is listed as __unused__ then flag should be false.
+    ## mkak 2017.03.10
     for f in ('xmap.0001', 'xsp3.0001'):
         if f in flist: has_xrfdata = True
     return has_xrfdata
@@ -120,9 +123,12 @@ def isGSEXRM_XRDMapFolder(fname):
         not os.path.isdir(fname)):
         return False
     flist = os.listdir(fname)
+    for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
+        if f not in flist:
+            return False
     has_xrddata = False
-    for f in ('xrd_001.nc','xrd_001.h5'):
-        if f in flist: has_xrddata = True
+    header, rows = readMasterFile('%/Master.dat' % fname)
+    if rows[0,4] in flist: has_xrddata = True
     return has_xrddata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -221,6 +227,7 @@ class GSEXRM_MapRow:
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
+                 masterfile = None, xrftype=None, xrdtype=None,
                  FLAGxrf = True, FLAGxrd = False):
 
         if not FLAGxrf and not FLAGxrd:
@@ -238,18 +245,28 @@ class GSEXRM_MapRow:
         self.xpsfile = xpsfile
         self.sisfile = sisfile
         self.xrdfile = xrdfile
+       
+        if masterfile is not None:
+            header, rows = readMasterFile(masterfile)
+            for row in header:
+                if row.startswith('#XRF.filetype'): xrftype = row.split()[-1]
+                if row.startswith('#XRD.filetype'): xrdtype = row.split()[-1]
 
         if FLAGxrf:
-            xrf_reader = read_xsp3_hdf5
-            if not xrffile.startswith('xsp'):
+            if xrftype == 'hdf5' or xrffile.startswith('xsp'):
+                xrf_reader = read_xsp3_hdf5
+            elif xrftype == 'netcdf':
                 xrf_reader = read_xrf_netcdf
+            else:
+                xrf_reader = read_xsp3_hdf5
 
         if FLAGxrd:
-            xrd_reader = read_xrd_netcdf
-            ## not yet implemented for hdf5 files
-            ## mkak 2016.07.27
-            # if not xrdfile.endswith('nc'):
-            #    xrd_reader = read_xrd_hdf5
+            if xrdtype == 'hdf5':
+                xrd_reader = read_xrd_hdf5
+            elif xrdtype == 'netcdf' or xrdfile.endswith('nc'):
+                xrd_reader = read_xrd_netcdf
+            else:
+                xrd_reader = read_xrd_netcdf
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -337,6 +354,7 @@ class GSEXRM_MapRow:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
                 ## should change to [1:...] if skipping first frame
+                ## mkak 2017.02.08
             else:
                 self.xrd2d = xrddat[0:self.npts]
 
@@ -988,6 +1006,7 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
+                             masterfile = self.masterfile,
                              FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
 
 
@@ -1603,10 +1622,6 @@ class GSEXRM_MapFile(object):
 
             if yval != _yl and xrff != _xl:  # skip repeated rows in master file
                 self.rowdata.append(row)
-        if self.flag_xrd:
-            xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
-            for i,addxrd in enumerate(xrd_files):
-                self.rowdata[i].insert(4,addxrd)
         self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
@@ -1621,6 +1636,11 @@ class GSEXRM_MapFile(object):
         self.scan_version = float(self.scan_version)
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
+
+        if self.scan_version < 1.35 and self.flag_xrd:
+            xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
+            for i,addxrd in enumerate(xrd_files):
+                self.rowdata[i].insert(4,addxrd)
 
         cfile = FastMapConfig()
         cfile.Read(os.path.join(self.folder, self.ScanFile))
