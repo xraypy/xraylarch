@@ -40,55 +40,26 @@ class TestCase(unittest.TestCase):
         self.symtable = self.interp.symtable
 
         self.interp.eval('x = 1')
-        self.set_stdout()
-        self.set_stderr()
+        self.outfile = '_stdout_'
+        self.outfile = '_stdout_'
+
+        self.interp.writer = NamedTemporaryFile('w', delete=False,
+                                                prefix='larchtest')
+
         if not HAS_NUMPY:
             self.interp("arange = range")
 
-    def set_stdout(self):
-        self.stdout = NamedTemporaryFile('w', delete=False, prefix='astevaltest')
-        self.interp.writer = self.stdout
-
     def read_stdout(self):
-        self.stdout.close()
         time.sleep(0.1)
-        fname = self.stdout.name
-        with open(self.stdout.name) as inp:
+        self.interp.writer.flush()
+        out = None
+        with open(self.interp.writer.name) as inp:
             out = inp.read()
-        self.set_stdout()
-        os.unlink(fname)
-        return out
-
-    def set_stderr(self):
-        self.stderr = NamedTemporaryFile('w', delete=False,
-                                         prefix='astevaltest_stderr')
-        self.interp.err_writer = self.stderr
-
-    def read_stderr(self):
-        self.stderr.close()
-        time.sleep(0.1)
-        fname = self.stderr.name
-        with open(self.stderr.name) as inp:
-            out = inp.read()
-        self.set_stderr()
-        os.unlink(fname)
         return out
 
     def tearDown(self):
-        if not self.stdout.closed:
-            self.stdout.close()
-        if not self.stderr.closed:
-            self.stderr.close()
+        pass
 
-        # noinspection PyBroadException
-        try:
-            os.unlink(self.stdout.name)
-        except:
-            pass
-        try:
-            os.unlink(self.stderr.name)
-        except:
-            pass
 
     # noinspection PyUnresolvedReferences
     def isvalue(self, sym, val):
@@ -195,6 +166,7 @@ class TestEval(TestCase):
             n=0
             while n < 8:
                 n += 1
+            #endwhile
             """))
         self.isvalue('n', 8)
 
@@ -204,8 +176,10 @@ class TestEval(TestCase):
                 n += 1
                 if n > 3:
                     break
+                #endif
             else:
                 n = -1
+            #endwhile
             """))
         self.isvalue('n', 4)
 
@@ -215,6 +189,7 @@ class TestEval(TestCase):
                 n += 1
             else:
                 n = -1
+            #endwhile
             """))
         self.isvalue('n', -1)
 
@@ -224,7 +199,9 @@ class TestEval(TestCase):
                 n += 1
                 if n % 2:
                     continue
+                #endif
                 i += 1
+            #endwhile
             print( 'finish: n, i = ', n, i)
             """))
         self.isvalue('n', 10)
@@ -237,6 +214,8 @@ class TestEval(TestCase):
                 print( ' n = ', n)
                 if n > 5:
                     break
+                #endif
+            #endwhile
             print( 'finish: n = ', n)
             """))
         self.isvalue('n', 6)
@@ -248,7 +227,9 @@ class TestEval(TestCase):
                 n += 1
                 if n % 2:
                     continue
+                #endif
                 i += 1
+            #endwhile
             print( 'finish: n, i = ', n, i)
             """))
         self.isvalue('n', 10)
@@ -261,6 +242,8 @@ class TestEval(TestCase):
                 n += 1
                 if n > 6:
                     break
+                #endif
+            #endwhile
             print( 'finish: n = ', n)
             """))
         self.isvalue('n', 7)
@@ -281,6 +264,7 @@ class TestEval(TestCase):
             n=0
             for i in arange(10):
                 n += i
+            #endfor
             """))
         self.isvalue('n', 45)
 
@@ -290,6 +274,7 @@ class TestEval(TestCase):
                 n += i
             else:
                 n = -1
+            #endfor
             """))
         self.isvalue('n', -1)
 
@@ -300,8 +285,10 @@ class TestEval(TestCase):
                 n += i
                 if n > 2:
                     break
+                #endif
             else:
                 n = -1
+            #endfor
             """))
         self.isvalue('n', 3)
 
@@ -311,12 +298,15 @@ class TestEval(TestCase):
             zero = 0
             if zero == 0:
                 x = 1
+             #endif
             if zero != 100:
                 x = x+1
+            #endif
             if zero > 2:
                 x = x + 1
             else:
                 y = 33
+            #endif
             """))
         self.isvalue('x', 2)
         self.isvalue('y', 33)
@@ -569,6 +559,7 @@ class TestEval(TestCase):
             except ZeroDivisionError:
                 print( 'Error Seen!')
                 x = -999
+            #endtry
             """))
         self.isvalue('x', -999)
 
@@ -578,6 +569,7 @@ class TestEval(TestCase):
                 x = x/0
             except ZeroDivisionError:
                 pass
+            #endtry
             """))
         self.isvalue('x', -1)
 
@@ -597,6 +589,7 @@ class TestEval(TestCase):
                 #endtry
                 print(' DO TRY ', out, ok, clean)
                 return out, ok, clean
+            #enddef
 
             """))
         self.interp("val, ok, clean = dotry(1.0, 2.0)")
@@ -618,7 +611,9 @@ class TestEval(TestCase):
                 out = sqrt(x)
                 if scale > 1:
                     out = out * scale
+                #endif
                 return out
+            #enddef
             """))
         self.interp("a = fcn(4, scale=9)")
         self.isvalue("a", 18)
@@ -639,7 +634,9 @@ class TestEval(TestCase):
                 out = 0
                 for i in args:
                     out = out + i*i
+                #endfor
                 return out
+            #enddef
             """))
         self.interp("o = fcn(1,2,3)")
         self.isvalue('o', 14)
@@ -657,7 +654,10 @@ class TestEval(TestCase):
                         out = out + i*i
                     else:
                         out = out + i
+                    #endif
+                #endfor
                 return out
+            #enddef
             """))
         self.interp("print(fcn)")
         self.check_output('<Procedure fcn(square')
@@ -681,7 +681,10 @@ class TestEval(TestCase):
                         out = out + i*i
                     else:
                         out = out + i
+                    #endif
+                #endfor
                 return out
+            #enddef
             """))
         self.interp("print(fcn)")
         self.check_output('<Procedure fcn(square')
@@ -696,6 +699,7 @@ class TestEval(TestCase):
             def fcn(x, y):
                 'test function'
                 return x + y**2
+            #enddef
             """))
         self.interp("print(fcn)")
         self.check_output('<Procedure fcn(x,')
@@ -716,15 +720,19 @@ class TestEval(TestCase):
         def a(x=10):
             if x > 5:
                 return 1
+            #endif
             return -1
+        #enddef
 
         def b():
             return 2.5
+        #enddef
 
         def c(x=10):
             x = a(x=x)
             y = b()
             return x + y
+        #enddef
         """
         self.interp(textwrap.dedent(setup))
         self.interp("o1 = c()")
