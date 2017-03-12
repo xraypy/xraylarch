@@ -18,7 +18,8 @@ def nullfunction(*args, **kwargs):
 class LarchSession(object):
     def __init__(self):
         self._larch = Interpreter()
-        self.input  = InputText(prompt='test>', _larch=self._larch)
+        self.input  = self._larch.input
+        #  InputText(prompt='test>', _larch=self._larch)
         self.symtable = self._larch.symtable
         self.symtable.set_symbol('testdir',  os.getcwd())
         self.symtable.set_symbol('_plotter.newplot',  nullfunction)
@@ -28,20 +29,22 @@ class LarchSession(object):
         self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
         self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
         self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
-
-        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+        self._outfile = '_stdout_'
+        self._larch.writer = open(self._outfile, 'w')
 
     def read_stdout(self):
-        sys.stdout.flush()
+        self._larch.writer.flush()
         time.sleep(0.1)
-        with open(sys.stdout.name) as inp:
+        with open(self._outfile) as inp:
             out = inp.read()
-        sys.stdout.close()
-        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+        os.unlink(self._outfile)
+        self._larch.writer =  open(self._outfile, 'w')
         return out
 
     def run(self, text):
-        self.input.put(text)
+        return self._larch.eval(text, fname='test', lineno=0)
+
+    def runxx(self, text):
         ret = None
         buff = []
         while len(self.input) > 0:
@@ -83,18 +86,14 @@ class TestCase(unittest.TestCase):
         return out, err
 
     def tearDown(self):
-        sys.stdout.close()
-        try:
-            os.unlink(sys.stdout.name)
-        except:
-            pass
+        pass
 
     def getSym(self, sym):
         return self.session.get_symbol(sym)
 
     def isValue(self, sym, val):
         '''assert that a symboltable symbol has a particular value'''
-        testval = self.getSym(sym)
+        testval = self.session.get_symbol(sym)
         if isinstance(val, np.ndarray):
             return self.assertTrue(np.all(testval == val))
         else:
