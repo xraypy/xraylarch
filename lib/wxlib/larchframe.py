@@ -40,6 +40,7 @@ class LarchWxShell(object):
         if _larch is None:
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
+            self._larch.run_init_scripts()
 
 
         self.symtable = self._larch.symtable
@@ -51,8 +52,6 @@ class LarchWxShell(object):
         #    sys.stdout = self
 
         self.objtree = wxparent.objtree
-
-        self._larch.run_init_scripts()
 
         self.set_textstyle(mode='text')
         self._larch("_sys.display.colors['text2'] = {'color': 'blue'}")
