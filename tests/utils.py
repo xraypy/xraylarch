@@ -34,7 +34,11 @@ class LarchSession(object):
 
     def read_stdout(self):
         self._larch.writer.flush()
+        t0 = time.time()
         time.sleep(0.1)
+        while not os.path.exists(self._outfile) and (time.time() - t0)< 5.0:
+            time.sleep(0.1)
+
         with open(self._outfile) as inp:
             out = inp.read()
         os.unlink(self._outfile)
