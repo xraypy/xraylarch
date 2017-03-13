@@ -44,9 +44,9 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.input  = input
         self.output = output
-        if self.output is not None:
-            self.encoding = sys.stdout.encoding
-            sys.stdout = self
+        # if self.output is not None:
+        #    self.encoding = sys.stdout.encoding
+        #    sys.stdout = self
 
         self.objtree = wxparent.objtree
 
@@ -231,6 +231,7 @@ class LarchPanel(wx.Panel):
         self.objtree.SetRootObject(self.larchshell.symtable)
         self.larchshell.set_textstyle('text2')
         self.larchshell.write(larch.make_banner())
+        self.larchshell.set_textstyle('text')
         root = self.objtree.tree.GetRootItem()
         self.objtree.tree.Expand(root)
 
