@@ -35,6 +35,8 @@ class LarchWxShell(object):
     def __init__(self, wxparent=None,   writer=None, _larch=None,
                  prompt=None, historyfile=None, output=None, input=None):
         self._larch = _larch
+        self.textstyle = None
+
         if _larch is None:
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
@@ -52,6 +54,9 @@ class LarchWxShell(object):
 
         self._larch.run_init_scripts()
 
+        self.set_textstyle(mode='text')
+        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}")
+
         self._larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
@@ -60,9 +65,6 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.wxapp', output)
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
-        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}")
-
-        self.textstyle = None
         if self.output is not None:
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
