@@ -4,6 +4,7 @@ import unittest
 import time
 import ast
 import numpy as np
+import os
 from sys import version_info
 
 from utils import TestCase
@@ -41,7 +42,12 @@ class TestScripts(TestCase):
         self.isNear("a",  0.76863, places=4)
 
     def test_nested_runfiles(self):
-        self.runscript('nested_outer.lar', dirname='larch_scripts')
+        origdir = os.path.abspath(os.getcwd())
+        dirname = os.path.abspath('larch_scripts')
+        os.chdir(dirname)
+        self.trytext("run('nested_outer.lar')")
+        os.chdir(origdir)
+
         out = self.session.read_stdout().split('\n')
         assert(len(out) > 4)
         assert('before nested_inner.lar' in out[0])
@@ -53,8 +59,12 @@ class TestScripts(TestCase):
 
 
     def test_runfit(self):
-        self.runscript('fit_constraint.lar', dirname='larch_scripts')
+        origdir = os.path.abspath(os.getcwd())
+        dirname = os.path.abspath('larch_scripts')
+        os.chdir(dirname)
 
+        self.trytext("run('fit_constraint.lar')")
+        os.chdir(origdir)
         self.isTrue('params.fit_details.nfev > 30')
         self.isTrue('params.fit_details.nfev < 70')
         self.isNear('params.amp1.value', 6.05, places=2)
