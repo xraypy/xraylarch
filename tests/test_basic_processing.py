@@ -506,6 +506,21 @@ endtry
         dumped = self.session._larch.dump(astnode.body[0])
         self.assertTrue(dumped.startswith('Assign'))
 
+    def test_import(self):
+        '''simple import'''
+        self.trytext("import numpy")
+        self.isTrue("callable(getattr(numpy, 'sqrt'))")
+        self.isTrue("callable(getattr(numpy, 'arange'))")
+        self.isNear("getattr(numpy, 'pi', 0)", 3.14159, places=5)
+
+    def test_import_as(self):
+        '''simple import'''
+        self.trytext("import numpy as np")
+        self.isTrue("callable(getattr(np, 'sqrt'))")
+        self.isTrue("callable(getattr(np, 'arange'))")
+        self.isNear("getattr(np, 'pi', 0)", 3.14159, places=5)
+
+
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestEval,):
         suite = unittest.TestLoader().loadTestsFromTestCase(suite)
