@@ -45,10 +45,10 @@ class TestScripts(TestCase):
         origdir = os.path.abspath(os.getcwd())
         dirname = os.path.abspath('larch_scripts')
         os.chdir(dirname)
-        self.trytext("run('nested_outer.lar')")
-        os.chdir(origdir)
+        out, err = self.trytext("run('nested_outer.lar')")
 
-        out = self.session.read_stdout().split('\n')
+        os.chdir(origdir)
+        out = out.split('\n')
         assert(len(out) > 4)
         assert('before nested_inner.lar' in out[0])
         assert('in nested_inner.lar' in out[1])
@@ -58,12 +58,14 @@ class TestScripts(TestCase):
         self.isNear("deep_x",  5.0, places=2)
 
 
+
     def test_runfit(self):
         origdir = os.path.abspath(os.getcwd())
         dirname = os.path.abspath('larch_scripts')
         os.chdir(dirname)
 
-        self.trytext("run('fit_constraint.lar')")
+        out, err = self.trytext("run('fit_constraint.lar')")
+
         os.chdir(origdir)
         self.isTrue('params.fit_details.nfev > 30')
         self.isTrue('params.fit_details.nfev < 70')
