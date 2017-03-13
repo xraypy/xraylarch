@@ -29,14 +29,19 @@ class LarchSession(object):
         self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
         self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
         self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
-        self._outfile = '_stdout_'
+        self.set_stdout()
+
+    def set_stdout(self, fname='_stdout_'):
+        self._outfile = os.path.abspath(fname)
+
         self._larch.writer = open(self._outfile, 'w')
 
     def read_stdout(self):
         self._larch.writer.flush()
         t0 = time.time()
         time.sleep(0.1)
-        while not os.path.exists(self._outfile) and (time.time() - t0)< 5.0:
+        while (not os.path.exists(self._outfile) and
+               (time.time() - t0)< 5.0):
             time.sleep(0.1)
 
         with open(self._outfile) as inp:
@@ -47,19 +52,6 @@ class LarchSession(object):
 
     def run(self, text):
         return self._larch.eval(text, fname='test', lineno=0)
-
-    def runxx(self, text):
-        ret = None
-        buff = []
-        while len(self.input) > 0:
-            block, fname, lineno = self.input.get()
-            buff.append(block)
-            if not self.input.complete:
-                continue
-            ret = self._larch.eval("\n".join(buff), fname=fname, lineno=lineno)
-            if self._larch.error:
-                break
-        return ret
 
     def get_errors(self):
         return self._larch.error
@@ -84,6 +76,7 @@ class TestCase(unittest.TestCase):
         os.chdir(origdir)
 
     def trytext(self, text):
+        self.session.set_stdout()
         ret = self.session.run(text)
         out = self.session.read_stdout()
         err = self.session.get_errors()
