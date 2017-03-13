@@ -17,7 +17,13 @@ import numpy as np
 from itertools import groupby
 
 import larch
-from larch_plugins.xrd.XRDCalc import generate_hkl
+from larch_plugins.xrd.XRDCalc import generate_hkl,peaklocater
+# from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
+#                                lambda_from_E,E_from_lambda,
+#                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
+#                                peakfinder,peaklocater,peakfitter,peakfilter,
+#                                xrd_background)
+
 
 from sqlalchemy import (create_engine,MetaData,
                         Table,Column,Integer,String,Unicode,
@@ -1608,7 +1614,65 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
             
-                
+def match_database(event=None,fracq=0.75,pk_wid=0.05,
+                   q=None,I=None,ipks=None,cifdatabase=None,
+                   verbose=False):
+    '''
+    fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+    pk_wid - maximum range in q which qualifies as a match between fitted and ideal
+    data,ipks,cifdatabase - all read from gui but possible to alter
+    '''
+    errorchecking = True # mkak 2017.02.27 to be removed
+
+
+    q_pks = peaklocater(ipks,q,I)[0]
+    minq = np.min(q)
+    maxq = np.max(q)
+
+    qstep = QSTEP ## these quantities come from cifdb.py
+
+    peaks = []
+    p_ids = []
+
+    for pk_q in q_pks:
+        pk_id = cifdatabase.search_for_q(pk_q)
+
+        ## performs peak broadening here
+        if pk_wid > 0:
+            st = int(pk_wid/qstep/2)
+            for p in np.arange(-1*st,st+1):
+                peaks += [pk_q+p*qstep]
+                p_ids += [pk_id+p]
+        else:
+            peaks += [pk_q]
+            p_ids += [pk_id]
+
+    matches,count = cifdatabase.amcsd_by_q(peaks)
+    goodness = np.zeros(np.shape(count))       
+
+    for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+        peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
+        if len(peak_id) > 0:
+            goodness[i] = float(cnt)/len(peak_id)
+
+    try:
+        matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
+    except:
+        matches,count,goodness = [],[],[]
+
+    for i,amcsd in enumerate(matches):
+        if verbose:
+            str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
+                     cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
+                     count[i],count[i]/goodness[i])
+            print(str)
+            #print(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
+
+    if errorchecking and len(matches) > 0:
+        print '\n%i ENTRIES MATCH' % len(matches)
+        if len(matches) < 5:
+            for amcsd in matches:
+                cifdatabase.print_amcsd_info(amcsd)
                 
                           
                 

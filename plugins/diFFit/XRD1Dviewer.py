@@ -20,7 +20,8 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
-from larch_plugins.cifdb import cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS
+from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS,
+                                 match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                lambda_from_E,E_from_lambda,
                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
@@ -1358,8 +1359,9 @@ class Fitting1DXRD(BasePanel):
 
         filter = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.elem_include = myDlg.incl_elm
-            self.elem_exclude = myDlg.excl_elm
+            
+            self.elem_include = myDlg.srch.elem_incl
+            self.elem_exclude = myDlg.srch.elem_excl
             filter = True
             if myDlg.Mineral.IsTextEmpty():
                 self.mnrl_include = None
@@ -1433,75 +1435,14 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
         
         fracq = float(self.val_gdnss.GetValue())
-        self.match_database(fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
+        match_database(fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
                   
 #         self.owner.write_message('Searching database for matches...')
-#         db_thread = Thread(target=partial(self.match_database,fracq=fracq,data=self.plt_data,cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
+#         db_thread = Thread(target=partial(match_database,fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
 #         db_thread.start()
 #         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
 #         db_thread.join()
 #         self.owner.write_message('')
-
-
-    def match_database(self,event=None,fracq=0.75,pk_wid=0.05,
-                       data=None,ipks=None,cifdatabase=None,
-                       verbose=False):
-        '''
-        fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
-        pk_wid - maximum range in q which qualifies as a match between fitted and ideal
-        data,ipks,cifdatabase - all read from gui but possible to alter
-        '''
-        errorchecking = True # mkak 2017.02.27 to be removed
-    
-    
-        q_pks = peaklocater(ipks,data[0],data[3])[0] # <--- need in q for this
-        minq = np.min(data[0])
-        maxq = np.max(data[0])
-
-        qstep = QSTEP ## these quantities come from cifdb.py
-
-        peaks = []
-        p_ids = []
-
-        for pk_q in q_pks:
-            pk_id = cifdatabase.search_for_q(pk_q)
-
-            ## performs peak broadening here
-            if pk_wid > 0:
-                st = int(pk_wid/qstep/2)
-                for p in np.arange(-1*st,st+1):
-                    peaks += [pk_q+p*qstep]
-                    p_ids += [pk_id+p]
-            else:
-                peaks += [pk_q]
-                p_ids += [pk_id]
-
-        matches,count = cifdatabase.amcsd_by_q(peaks)
-        goodness = np.zeros(np.shape(count))       
-
-        for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-            peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
-            if len(peak_id) > 0:
-                goodness[i] = float(cnt)/len(peak_id)
-
-        try:
-            matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
-        except:
-            matches,count,goodness = [],[],[]
-
-        for i,amcsd in enumerate(matches):
-            if verbose:
-                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
-                         cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
-                         count[i],count[i]/goodness[i])
-                print(str)
-                #print(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
-
-        if errorchecking and len(matches) > 0:
-            print '\n%i ENTRIES MATCH' % len(matches)
-            if len(matches) < 5:
-                for amcsd in matches:
-                    self.owner.cifdatabase.print_amcsd_info(amcsd)
 
 
 class BackgroundOptions(wx.Dialog):
