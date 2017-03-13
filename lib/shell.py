@@ -78,7 +78,7 @@ class shell(cmd.Cmd):
 
         self.prompt = self.larch.input.prompt
         writer = self.larch.writer
-        self.color_writer = hasattr(writer, 'set_textstyle')
+        self.color_writer = os.name != 'nt' and hasattr(writer, 'set_textstyle')
         if not quiet:
             if banner_msg is None:
                 banner_msg = make_banner()
