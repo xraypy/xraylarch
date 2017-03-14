@@ -558,35 +558,26 @@ def data_poly_fit(x,y,plot=False,verbose=False):
 ##########################################################################
 ##########################################################################
 @ValidateLarchPlugin
-def xy_file_reader(xyfile,char=None,_larch=None):
+def xy_file_reader(xyfile,_larch=None):
     '''
     Parses (x,y) data from xy text file.
 
     options:
     char - chararacter separating columns in data file (e.g. ',')
     '''
-    with open(xyfile) as f:
-        lines = f.readlines()
-        
     units = None
-
     x, y = [], []
-    for i,line in enumerate(lines):
-        if '#' not in line:
-            if char:
-                fields = re.split(' |%s' % char,lines[i])
+    with open(xyfile) as f:
+        for line in f.readlines():
+            if '#' not in line:
+                fields = line.split()
+                x += [float(fields[0])]
+                y += [float(fields[1])]
             else:
-                fields = lines[i].split()
-            x += [float(fields[0])]
-            y += [float(fields[1])]
-        else:
-            options = ['2th_deg','q_A^-1']
-            for opt in options: 
-                if opt in line: units = opt
+                for opt in ['2th_deg','q_A^-1']: 
+                    if opt in line: units = opt
 
-    if units is not None:
-        return np.array(x),np.array(y),units
-    return np.array(x),np.array(y)
+    return np.array(x),np.array(y),units
 
 ##########################################################################
 def xy_file_writer(a,b,filename,char=None):
