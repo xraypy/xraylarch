@@ -255,6 +255,18 @@ def _addplugin(plugin, _larch=None, verbose=False, **kws):
                     try:
                         mod = __import__(modname)
                         vers = getattr(mod, '__version__', None)
+                        if vers is None:
+                            vers = getattr(mod, 'version', None)
+                        if vers is None:
+                            vers = getattr(mod, 'version_info', None)
+                        if callable(vers):
+                            vers = vers()
+                        if isinstance(vers, tuple):
+                            vers = '.'.join(vers)
+                        if vers is None:
+                            write("""Warning: cannot read version for imported module:
+        '%s', assuming it is OK.""" % modname)
+                            ok = True
                         if   cmp == '>':  ok = vers >  req_vers
                         elif cmp == '<':  ok = vers <  req_vers
                         elif cmp == '>=': ok = vers >= req_vers
