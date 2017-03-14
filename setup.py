@@ -15,8 +15,8 @@ DEBUG = False
 cmdline_args = sys.argv[1:]
 
 required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six', 'PIL']
-graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils', 'yaml']
-xrd_modules = ['pyFAI','xrayutilities','CifFile', 'requests'] # 'fabio',
+graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
+xrd_modules = ['pyFAI','xrayutilities','CifFile', 'requests', 'fabio']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,
@@ -26,7 +26,7 @@ recommended_modules = {'basic analysis': required_modules,
                        'testing tools': ('nose', ),
                        }
 
-# files that may be left from earlier installs) and should be removed
+# files that may be left from earlier install(s) and should be removed
 historical_cruft = []
 modules_imported = {}
 missing = []

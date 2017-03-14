@@ -15,7 +15,6 @@ import os
 import numpy as np
 from scipy import optimize,signal,constants,interpolate
 
-from larch import ValidateLarchPlugin
 
 HAS_XRAYUTIL = False
 try:
@@ -34,6 +33,9 @@ except ImportError:
     pass
 
 
+from larch import ValidateLarchPlugin
+from larch import use_plugin_path
+use_plugin_path('xrd')
 
 MODNAME = '_xrd'
 
@@ -52,16 +54,6 @@ peaklocater     cross-references data for a give coordinates
 
 
 '''
-
-# def get_xray(_larch):
-#     symname = '%s._xray' % MODNAME
-#     if _larch.symtable.has_symbol(symname):
-#         return _larch.symtable.get_symbol(symname)
-#     xraydb = xrayDB()
-#     _larch.symtable.set_symbol(symname, xraydb)
-#     return xraydb
-
-
 
 ##########################################################################
 # GLOBAL CONSTANTS
@@ -960,16 +952,15 @@ def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w):
 #         
 #     return
 
-# def initializeLarchPlugin(_larch=None):
-#     """initialize xraydb"""
-#     if _larch is not None:
-#         xdb = get_xraydb(_larch)
-#         mod = getattr(_larch.symtable, MODNAME)
-#         mod.__doc__ = MODDOC
-
+def initializeLarchPlugin(_larch=None):
+    """initialize xrd"""
+    if _larch is not None:
+        mod = getattr(_larch.symtable, MODNAME)
+        mod.__doc__ = MODDOC
                      
 def registerLarchPlugin():
-    return ('_xrd', {'xy_file_reader': xy_file_reader,
-                     'peakfinder': peakfinder,
-                     'peakfilter': peakfilter,
-                     'peaklocater': peaklocater})
+    return (MODNAME, {'xy_file_reader': xy_file_reader,
+                      'peakfinder': peakfinder,
+                      'peakfilter': peakfilter,
+                      'peaklocater': peaklocater
+                      })
