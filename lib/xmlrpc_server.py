@@ -224,6 +224,7 @@ class LarchServer(SimpleXMLRPCServer):
             ret = self.larch.eval(text, lineno=0)
             if ret is not None:
                 self.write(repr(ret))
+            self.client.last_event = time()
             self.flush()
         return 1
 
