@@ -36,7 +36,8 @@ if 'LARCHDIR' in os.environ:
 
 ##
 ## names (and loading order) for core plugin modules
-# core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
+#core_plugins = ('std', 'math')
+#core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
 core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',  
                 'wx', 'xafs', 'xray', 'xrd', 'xrf', 'xrmmap',  'xsw')
 

@@ -34,12 +34,11 @@ except ImportError:
 
 
 from larch import ValidateLarchPlugin
-from larch import use_plugin_path
-use_plugin_path('xrd')
+
 
 MODNAME = '_xrd'
-
 MODDOC = '''
+
 Functions for manipulating and analyzing x-ray diffraction
 data.
 
@@ -51,7 +50,6 @@ xy_file_reader  opens xy file with diffraction data
 peakfinder      identifies peaks in x,y data
 peakfilter      filters a set of data below a certain threshold
 peaklocater     cross-references data for a give coordinates
-
 
 '''
 
@@ -953,13 +951,13 @@ def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w):
 #     return
 
 def initializeLarchPlugin(_larch=None):
-    """initialize xrd"""
-    if _larch is not None:
-        mod = getattr(_larch.symtable, MODNAME)
-        mod.__doc__ = MODDOC
+   ''' initialize xrd '''
+   if _larch is not None:
+       mod = getattr(_larch.symtable, MODNAME)
+       mod.__doc__ = MODDOC
                      
 def registerLarchPlugin():
-    return (MODNAME, {'xy_file_reader': xy_file_reader,
+    return ('_xrd', {'xy_file_reader': xy_file_reader,
                       'peakfinder': peakfinder,
                       'peakfilter': peakfilter,
                       'peaklocater': peaklocater
