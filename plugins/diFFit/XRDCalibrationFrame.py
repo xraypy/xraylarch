@@ -10,7 +10,7 @@ import wx
 
 from wxmplot.imagepanel import ImagePanel
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
+from larch_plugins.xrd import lambda_from_E,E_from_lambda
 
 from larch_plugins.io import tifffile
 

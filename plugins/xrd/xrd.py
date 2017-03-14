@@ -29,7 +29,7 @@ class XRD(Group):
     ###############################################################################
     def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
                  data1D=None, nwedge=2, nchan=5001, 
-                 name='xrd',**kws):
+                 name='xrd', _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
@@ -64,7 +64,7 @@ class XRD(Group):
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
                data1D=None, nwedge=2, nchan=5001, 
-               name='xrd', **kws):
+               name='xrd', _larch=None, **kws):
 
     """create an XRD object
 

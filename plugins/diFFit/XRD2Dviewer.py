@@ -19,7 +19,9 @@ from wxutils import MenuItem
 
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd.XRDCalc import integrate_xrd,E_from_lambda
+from larch_plugins.xrd import integrate_xrd,E_from_lambda
+# from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
+# from larch_plugins.xrd.xrd_etc import E_from_lambda
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
