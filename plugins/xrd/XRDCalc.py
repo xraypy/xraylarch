@@ -15,6 +15,8 @@ import os
 import numpy as np
 from scipy import optimize,signal,constants,interpolate
 
+from larch import ValidateLarchPlugin
+
 HAS_XRAYUTIL = False
 try:
     import xrayutilities as xu
@@ -31,11 +33,40 @@ try:
 except ImportError:
     pass
 
+
+
+MODNAME = '_xrd'
+
+MODDOC = '''
+Functions for manipulating and analyzing x-ray diffraction
+data.
+
+The data and functions here include (but are not limited to):
+
+member name     description
+------------    ------------------------------
+xy_file_reader  opens xy file with diffraction data
+peakfinder      identifies peaks in x,y data
+peakfilter      filters a set of data below a certain threshold
+peaklocater     cross-references data for a give coordinates
+
+
+'''
+
+# def get_xray(_larch):
+#     symname = '%s._xray' % MODNAME
+#     if _larch.symtable.has_symbol(symname):
+#         return _larch.symtable.get_symbol(symname)
+#     xraydb = xrayDB()
+#     _larch.symtable.set_symbol(symname, xraydb)
+#     return xraydb
+
+
+
 ##########################################################################
 # GLOBAL CONSTANTS
 
 hc = constants.value(u'Planck constant in eV s')*constants.c*1e7 ## units: keV-A
-
 
 
 ##########################################################################
@@ -308,7 +339,8 @@ def show_F_depend_on_E(cry_strc,hkl,emin=500,emax=20000,esteps=5000):
 #####        DIFFRACTION PEAK FITTING RELATED FUNCTIONS             ######
 ##########################################################################
 ##########################################################################
-def peakfilter(intthrsh,ipeaks,y,verbose=False):
+@ValidateLarchPlugin
+def peakfilter(intthrsh,ipeaks,y,verbose=False,_larch=None):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfilter() with the option of setting a minimum intensity
@@ -323,7 +355,8 @@ def peakfilter(intthrsh,ipeaks,y,verbose=False):
     return ipks
 
 ##########################################################################
-def peaklocater(ipeaks,x,y):
+@ValidateLarchPlugin
+def peaklocater(ipeaks,x,y,_larch=None):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
@@ -335,7 +368,8 @@ def peaklocater(ipeaks,x,y):
     return np.array(xypeaks)
 
 ##########################################################################
-def peakfinder(x, y, regions=50, gapthrsh=5):
+@ValidateLarchPlugin
+def peakfinder(x, y, regions=50, gapthrsh=5, _larch=None):
     '''
     Returns indices for peaks in y from dataset (x,y)
     '''
@@ -533,7 +567,8 @@ def data_poly_fit(x,y,plot=False,verbose=False):
 #####                   FILE READING FUNCTIONS                      ######
 ##########################################################################
 ##########################################################################
-def xy_file_reader(xyfile,char=None):
+@ValidateLarchPlugin
+def xy_file_reader(xyfile,char=None,_larch=None):
     '''
     Parses (x,y) data from xy text file.
 
@@ -925,7 +960,16 @@ def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w):
 #         
 #     return
 
+# def initializeLarchPlugin(_larch=None):
+#     """initialize xraydb"""
+#     if _larch is not None:
+#         xdb = get_xraydb(_larch)
+#         mod = getattr(_larch.symtable, MODNAME)
+#         mod.__doc__ = MODDOC
 
-
+                     
 def registerLarchPlugin():
-    return ('_diFFit', {})
+    return ('_xrd', {'xy_file_reader': xy_file_reader,
+                     'peakfinder': peakfinder,
+                     'peakfilter': peakfilter,
+                     'peaklocater': peaklocater})

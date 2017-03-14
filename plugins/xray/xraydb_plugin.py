@@ -13,7 +13,7 @@ Functions for accessing and using data from X-ray Databases and
 Tables.  Many of these take an element as an argument -- this
 can be either the atomic symbol or atomic number Z.
 
-The data and functions here include (but are not limited too):
+The data and functions here include (but are not limited to):
 
 member name     descrption
 ------------    ------------------------------
