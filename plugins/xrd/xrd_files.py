@@ -15,20 +15,17 @@ import os
 import numpy as np
 from scipy import optimize,signal,constants,interpolate
 
-from larch import ValidateLarchPlugin
-
-
 ##########################################################################
 # FUNCTIONS
 
-@ValidateLarchPlugin
-def xy_file_reader(xyfile,_larch=None):
+def xy_file_reader(xyfile):
     '''
     Parses (x,y) data from xy text file.
 
     options:
     char - chararacter separating columns in data file (e.g. ',')
     '''
+
     units = None
     x, y = [], []
     with open(xyfile) as f:

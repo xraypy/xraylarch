@@ -102,8 +102,6 @@ Inputs to calc
 """
 
 import numpy as np
-#from larch import ValidateLarchPlugin
-#from larch_plugins.xrf import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -262,8 +260,7 @@ class XRDBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-def xrd_background(xdata, ydata, width=4, compress=2, exponent=2,
-                   slope=None, _larch=None):
+def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None):
     """fit background for XRF spectra.  Arguments:
 
     xrd_background(xdata, ydata, group=None, width=4,

@@ -14,14 +14,10 @@ import math
 import numpy as np
 from scipy import optimize,signal
 
-from larch import ValidateLarchPlugin
-
-
 ##########################################################################
 # FUNCTIONS
 
-@ValidateLarchPlugin
-def peakfilter(intthrsh,ipeaks,y,verbose=False,_larch=None):
+def peakfilter(intthrsh,ipeaks,y,verbose=False):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfilter() with the option of setting a minimum intensity
@@ -35,10 +31,7 @@ def peakfilter(intthrsh,ipeaks,y,verbose=False,_larch=None):
     
     return ipks
 
-
-
-@ValidateLarchPlugin
-def peaklocater(ipeaks,x,y,_larch=None):
+def peaklocater(ipeaks,x,y):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
@@ -49,9 +42,7 @@ def peaklocater(ipeaks,x,y,_larch=None):
 
     return np.array(xypeaks)
 
-
-@ValidateLarchPlugin
-def peakfinder(x, y, regions=50, gapthrsh=5, _larch=None):
+def peakfinder(x, y, regions=50, gapthrsh=5):
     '''
     Returns indices for peaks in y from dataset (x,y)
     '''
@@ -65,8 +56,7 @@ def peakfinder(x, y, regions=50, gapthrsh=5, _larch=None):
     return peak_indices
 
 
-def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
-               fittype='single'):
+def peakfitter(ipeaks, q, I, wavelength=0.6525, verbose=True, halfwidth=40, fittype='single'):
 
     peaktwth = []
     peakFWHM = []
@@ -93,7 +83,7 @@ def peakfitter(ipeaks,q,I,wavelength=0.6525,verbose=True,halfwidth=40,
     return np.array(peaktwth),np.array(peakFWHM),np.array(peakinty)
 
 
-def data_gaussian_fit(x,y,pknum=0,fittype='single', _larch=None):
+def data_gaussian_fit(x,y,pknum=0,fittype='single'):
     '''
     Fits a single or double Gaussian functions.
     '''
@@ -143,8 +133,7 @@ def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
 
 
-def instrumental_fit_uvw(ipeaks, q, I, wavelength=0.6525, halfwidth=40,
-                         verbose=True, _larch=None):
+def instrumental_fit_uvw(ipeaks, q, I, wavelength=0.6525, halfwidth=40, verbose=True):
 
     twth,FWHM,inten = peakfitter(ipeaks,q,I,wavelength=wavelength,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
@@ -172,7 +161,7 @@ def poly_func(x,a,b,c):
     return a*x**2 + b*x + c
 
 
-def data_poly_fit(x, y, plot=False, verbose=False, _larch=None):
+def data_poly_fit(x, y, plot=False, verbose=False):
     '''
     Fits a set of data with to a second order polynomial function.
     '''

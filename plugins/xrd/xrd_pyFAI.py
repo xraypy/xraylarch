@@ -18,15 +18,11 @@ try:
 except ImportError:
     pass
 
-from larch import ValidateLarchPlugin
-
-
 ##########################################################################
 # FUNCTIONS
 
-@ValidateLarchPlugin
 def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000, 
-                  file='', mask=None, dark=None, _larch=None):
+                  file='', mask=None, dark=None):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
@@ -72,8 +68,7 @@ def integrate_xrd(xrd_map, ai=None,AI=None, calfile=None, unit='q', steps=10000,
         print('pyFAI not imported. Cannot calculate 1D integration.')
         return
 
-@ValidateLarchPlugin
-def calculate_ai(AI, _larch=None):
+def calculate_ai(AI):
     '''
     Builds ai structure using AzimuthalIntegrator from hdf5 parameters
     mkak 2016.08.30

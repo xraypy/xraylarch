@@ -5,6 +5,7 @@ Diffraction functions require for fitting and analyzing data.
 mkak 2017.02.06 (originally written spring 2016)
 '''
 
+##########################################################################
 # IMPORT PYTHON PACKAGES
 
 import math

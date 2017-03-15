@@ -20,13 +20,13 @@ from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
+import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS,
                                  match_database)
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
-                               lambda_from_E,E_from_lambda,
-                               xy_file_reader,generate_hkl,instrumental_fit_uvw,
-                               peakfinder,peaklocater,peakfitter,peakfilter,
-                               xrd_background)
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
+                               E_from_lambda,xy_file_reader,generate_hkl,
+                               instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
+                               peakfilter, xrd_background)
 
 HAS_pyFAI = False
 try:
@@ -47,7 +47,7 @@ except ImportError:
 
 ###################################
 
-VERSION = '0 (6-February-2017)'
+VERSION = '0 (14-March-2017)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
@@ -72,11 +72,15 @@ def YesNo(parent, question, caption = 'Yes or no?'):
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
+        print('\n')
+        screenSize = wx.DisplaySize()
+        x,y = 1500, 750
+        if x > screenSize[0] * 0.9:
+            x = int(screenSize[0] * 0.9)
+            y = int(x*0.6)
+
         label = 'diFFit : 1D XRD Data Analysis Software'
-#         wx.Frame.__init__(self, None,title=label,size=(1500, 700)) #desktop
-        wx.Frame.__init__(self, None,title=label,size=(900, 600)) #laptop
-
-
+        wx.Frame.__init__(self, None,title=label,size=(x,y))
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
@@ -89,12 +93,12 @@ class diFFit1DFrame(wx.Frame):
         E_default = 19.0 # keV
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self,energy=E_default)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self,energy=E_default)
-        self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
+#         self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
 
         # add the pages to the notebook with the label to show on the tab
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
         self.nb.AddPage(self.xrd1Dfitting, 'Fitting')
-        self.nb.AddPage(self.xrddatabase, 'XRD Database')
+#         self.nb.AddPage(self.xrddatabase, 'XRD Database')
 
         # finally, put the notebook in a sizer for the panel to manage
         # the layout
@@ -183,6 +187,14 @@ class diFFit1DFrame(wx.Frame):
         menubar.Append(AnalyzeMenu, '&Analyze')
 
         ###########################
+        ## Help
+        HelpMenu = wx.Menu()
+        
+        MenuItem(self, HelpMenu, '&About', 'About diFFit1D viewer', self.onAbout)
+
+        menubar.Append(HelpMenu, '&Help')
+        
+        ###########################
         ## Create Menu Bar
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
@@ -191,6 +203,19 @@ class diFFit1DFrame(wx.Frame):
         '''write a message to the Status Bar'''
         self.statusbar.SetStatusText(s, panel)
 
+##############################################
+#### HELP FUNCTIONS
+    def onAbout(self, event=None):
+        info = wx.AboutDialogInfo()
+        info.SetName('diFFit1D XRD Data Viewer')
+        desc = 'Using X-ray Larch version: %s' % larch.version.__version__
+        info.SetDescription(desc)
+        info.SetVersion(VERSION)
+        info.AddDeveloper('Margaret Koker: koker at cars.uchicago.edu')
+        dlg = wx.AboutBox(info)
+
+##############################################
+#### 
     def fit1Dxrd(self,event=None):
 
         indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
@@ -218,12 +243,9 @@ class diFFit1DFrame(wx.Frame):
                 I    = np.array(self.all_data[index][3]).flatten()
 
         else:
-            try:
-                x,y,unit,path = loadXYFILE(self,verbose=True)
-                name = os.path.split(path)[-1]
-                okay = True
-            except:
-                return
+            x,y,unit,path = loadXYFILE(self,verbose=True)
+            name = os.path.split(path)[-1]
+            okay = True
 
             ## Add 'raw' data to array
             self.xrd1Dviewer.data_name.append(name)
@@ -398,7 +420,8 @@ class SelectFittingData(wx.Dialog):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Add things
-        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130), self.parent.list, wx.LB_SINGLE)
+        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130),
+                                      self.parent.list, wx.LB_SINGLE)
 
         btn_new = wx.Button(self.panel,label='Load data from file')
 
@@ -429,12 +452,12 @@ class SelectFittingData(wx.Dialog):
         if 1==1: #try:
             if unit.startswith('2th'):
                 twth = x
-                q    = q_from_twth(twth,self.wavelength)
+                q    = q_from_twth(twth,self.parent.wavelength)
                 d    = d_from_q(q)
             else:
                 q    = x
                 d    = d_from_q(q)
-                twth = twth_from_q(q,self.wavelength)
+                twth = twth_from_q(q,self.parent.wavelength)
             I    = y
 
             self.parent.all_data.append([q,d,twth,I])
@@ -451,77 +474,77 @@ class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
-class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
-    """
-    This will be the second notebook tab
-    """
-    #----------------------------------------------------------------------
-    def __init__(self,parent,owner=None,_larch=None):
-        """"""
-        wx.Panel.__init__(self, parent)
-
-        self.parent = parent
-        self.owner = owner
-
-        self.createAndLayout()
-
-    def createAndLayout(self):
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
-                                 | wx.BORDER_NONE
-                                 | wx.LC_EDIT_LABELS
-                                 | wx.LC_SORT_ASCENDING)
-        sizer.Add(self.list, 1, wx.EXPAND)
-
-        #self.database_info = self.createDATABASEarray()
-        ## removed so database not loaded upon start up
-        self.database_info = {}
-
-        self.populateList()
-
-        self.itemDataMap = self.database_info
-        listmix.ColumnSorterMixin.__init__(self, 4)
-        self.SetSizer(sizer)
-        self.SetAutoLayout(True)
-
-    def populateList(self):
-        self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
-        self.list.InsertColumn(1, 'Name')
-        self.list.InsertColumn(2, 'Space Group')
-        self.list.InsertColumn(3, 'Elements')
-        self.list.InsertColumn(4, 'Authors')
-
-        for key, data in self.database_info.items():
-            index = self.list.InsertStringItem(sys.maxint, data[0])
-            self.list.SetStringItem(index, 1, data[1])
-            self.list.SetStringItem(index, 2, data[2])
-            self.list.SetStringItem(index, 3, data[3])
-            self.list.SetStringItem(index, 4, data[4])
-            self.list.SetItemData(index, key)
-
-        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(1, 100)
-        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
-        self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-
-#
-#         # show how to select an item
-#         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
-#
-#         # show how to change the colour of a couple items
-#         item = self.list.GetItem(1)
-#         item.SetTextColour(wx.BLUE)
-#         self.list.SetItem(item)
-#         item = self.list.GetItem(4)
-#         item.SetTextColour(wx.RED)
-#         self.list.SetItem(item)
-
-        self.currentItem = 0
-
-    # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
-    def GetListCtrl(self):
-        return self.list
+# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
+#     """
+#     This will be the second notebook tab
+#     """
+#     #----------------------------------------------------------------------
+#     def __init__(self,parent,owner=None,_larch=None):
+#         """"""
+#         wx.Panel.__init__(self, parent)
+# 
+#         self.parent = parent
+#         self.owner = owner
+# 
+#         self.createAndLayout()
+# 
+#     def createAndLayout(self):
+#         sizer = wx.BoxSizer(wx.VERTICAL)
+#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
+#                                  | wx.BORDER_NONE
+#                                  | wx.LC_EDIT_LABELS
+#                                  | wx.LC_SORT_ASCENDING)
+#         sizer.Add(self.list, 1, wx.EXPAND)
+# 
+#         #self.database_info = self.createDATABASEarray()
+#         ## removed so database not loaded upon start up
+#         self.database_info = {}
+# 
+#         self.populateList()
+# 
+#         self.itemDataMap = self.database_info
+#         listmix.ColumnSorterMixin.__init__(self, 4)
+#         self.SetSizer(sizer)
+#         self.SetAutoLayout(True)
+# 
+#     def populateList(self):
+#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
+#         self.list.InsertColumn(1, 'Name')
+#         self.list.InsertColumn(2, 'Space Group')
+#         self.list.InsertColumn(3, 'Elements')
+#         self.list.InsertColumn(4, 'Authors')
+# 
+#         for key, data in self.database_info.items():
+#             index = self.list.InsertStringItem(sys.maxint, data[0])
+#             self.list.SetStringItem(index, 1, data[1])
+#             self.list.SetStringItem(index, 2, data[2])
+#             self.list.SetStringItem(index, 3, data[3])
+#             self.list.SetStringItem(index, 4, data[4])
+#             self.list.SetItemData(index, key)
+# 
+#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(1, 100)
+#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+# 
+# #
+# #         # show how to select an item
+# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+# #
+# #         # show how to change the colour of a couple items
+# #         item = self.list.GetItem(1)
+# #         item.SetTextColour(wx.BLUE)
+# #         self.list.SetItem(item)
+# #         item = self.list.GetItem(4)
+# #         item.SetTextColour(wx.RED)
+# #         self.list.SetItem(item)
+# 
+#         self.currentItem = 0
+# 
+#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
+#     def GetListCtrl(self):
+#         return self.list
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -583,7 +606,6 @@ class Fitting1DXRD(BasePanel):
         self.exponent   = 20
         self.compress   = 2
         self.width      = 4
-
 
 ##############################################
 #### PANEL DEFINITIONS
@@ -1353,8 +1375,6 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        errorchecking = True
-
         myDlg = XRDSearchGUI(self)
 
         filter = False
@@ -1371,20 +1391,6 @@ class Fitting1DXRD(BasePanel):
                 self.auth_include = None
             else: 
                 self.auth_include = myDlg.Author.GetValue().split(',')
-
-
-            if errorchecking:
-                print 'mineral: ',self.mnrl_include
-                print 'author: ',self.auth_include
-                print 'chemistry: ',self.elem_include,' but not ',self.elem_exclude
-                print 'symmetry: ',myDlg.Symmetry.GetValue()
-                print 'category: ',myDlg.Category.GetSelections()
-                if len(myDlg.Category.GetSelections()) > 0:
-                    print 'more...',     myDlg.Category.GetString(myDlg.Category.GetSelection())
-                print 'keyword: ',   myDlg.Keyword.GetValue()
-                print
-                print
-            
         myDlg.Destroy()
 
         list_amcsd = None
@@ -1393,56 +1399,44 @@ class Fitting1DXRD(BasePanel):
                 list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
                                                                        exclude=self.elem_exclude,
                                                                        list=list_amcsd)
-                if errorchecking:
-                    print 'element search - possible matches: ',len(list_amcsd)
             if self.mnrl_include is not None:
                 list_amcsd = self.owner.cifdatabase.amcsd_by_mineral(include=self.mnrl_include,
                                                                      list=list_amcsd)
-                if errorchecking:
-                    print 'mineral search - possible matches: ',len(list_amcsd)
-
             if self.auth_include is not None:
                 list_amcsd = self.owner.cifdatabase.amcsd_by_author(include=self.auth_include,
                                                                     list=list_amcsd)
-                if errorchecking:
-                    print 'author search - possible matches: ',len(list_amcsd)
 
 
 
-            ## Populates Results Panel with list
-            self.amcsdlistbox.Clear()
-            if list_amcsd is not None:
-                for amcsd in list_amcsd:
-                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
-                    entry = '%i : %s' % (amcsd,name)
-                    self.amcsdlistbox.Append(entry)
-                if len(list_amcsd) == 1:
-                    self.txt_amcsd_cnt.SetLabel('1 MATCH')
-                elif len(list_amcsd) > 1:
-                    self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
-                else:
-                    self.txt_amcsd_cnt.SetLabel('')
 
+        self.displayMATCHES(list_amcsd)
 
-
-        if errorchecking and list_amcsd is not None:
-            print '\n%i ENTRIES MATCH' % len(list_amcsd)
-            if len(list_amcsd) < 5:
-                for amcsd in list_amcsd:
-                    self.owner.cifdatabase.print_amcsd_info(amcsd)
 
 
     def onMatch(self,event=None):
         
         fracq = float(self.val_gdnss.GetValue())
-        match_database(fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
+        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
                   
-#         self.owner.write_message('Searching database for matches...')
-#         db_thread = Thread(target=partial(match_database,fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks))
-#         db_thread.start()
-#         #self.owner.show_XRFDisplay()  ## anything to run in the mean time?
-#         db_thread.join()
-#         self.owner.write_message('')
+        self.displayMATCHES(list_amcsd)
+        
+    def displayMATCHES(self,list_amcsd):
+        '''
+        Populates Results Panel with list
+        '''
+        self.amcsdlistbox.Clear()
+
+        if list_amcsd is not None:
+            for amcsd in list_amcsd:
+                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
+                entry = '%i : %s' % (amcsd,name)
+                self.amcsdlistbox.Append(entry)
+            if len(list_amcsd) == 1:
+                self.txt_amcsd_cnt.SetLabel('1 MATCH')
+            elif len(list_amcsd) > 1:
+                self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
+            else:
+                self.txt_amcsd_cnt.SetLabel('')
 
 
 class BackgroundOptions(wx.Dialog):
@@ -3493,9 +3487,10 @@ def loadXYFILE(self,event=None,verbose=False):
     dlg.Destroy()
 
     if read:
-        if verbose:
-            print('Opening file: %s\n' % os.path.split(path)[-1])
+
         try:
+            if verbose:
+                print('Opening file: %s' % os.path.split(path)[-1])
             x,y,unit = xy_file_reader(path)
         except:
            print('incorrect xy file format: %s' % os.path.split(path)[-1])

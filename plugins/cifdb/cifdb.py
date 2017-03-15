@@ -1614,16 +1614,13 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
             
-def match_database(event=None,fracq=0.75,pk_wid=0.05,
-                   q=None,I=None,ipks=None,cifdatabase=None,
-                   verbose=False):
+def match_database(fracq=0.75, pk_wid=0.05, q=None, I=None, ipks=None,
+                   cifdatabase=None, verbose=False):
     '''
-    fracq  - min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
-    pk_wid - maximum range in q which qualifies as a match between fitted and ideal
-    data,ipks,cifdatabase - all read from gui but possible to alter
-    '''
-    errorchecking = True # mkak 2017.02.27 to be removed
+    fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+    pk_wid : maximum range in q which qualifies as a match between fitted and ideal
 
+    '''
 
     q_pks = peaklocater(ipks,q,I)[0]
     minq = np.min(q)
@@ -1666,13 +1663,9 @@ def match_database(event=None,fracq=0.75,pk_wid=0.05,
                      cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
                      count[i],count[i]/goodness[i])
             print(str)
-            #print(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
 
-    if errorchecking and len(matches) > 0:
-        print '\n%i ENTRIES MATCH' % len(matches)
-        if len(matches) < 5:
-            for amcsd in matches:
-                cifdatabase.print_amcsd_info(amcsd)
+               
+    return matches
                 
                           
                 

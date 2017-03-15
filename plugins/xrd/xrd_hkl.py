@@ -7,7 +7,6 @@ mkak 2017.02.06 (originally written spring 2016)
 
 ##########################################################################
 # IMPORT PYTHON PACKAGES
-from larch import ValidateLarchPlugin
 
 ##########################################################################
 # FUNCTIONS
@@ -69,8 +68,7 @@ allhkl = [[0,0,1],[0,1,0],[1,0,0],                          ##  1
           [5,5,0],[5,0,5],[0,5,5],
           ]
 
-@ValidateLarchPlugin
-def generate_hkl(maxval=50, symmetry=None, _larch=None):
+def generate_hkl(maxval=50, symmetry=None):
 
     if maxval == 50:
         return allhkl

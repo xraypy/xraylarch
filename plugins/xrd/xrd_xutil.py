@@ -18,14 +18,12 @@ try:
 except ImportError:
     pass
 
-from larch import ValidateLarchPlugin
 from larch_plugins.xrd.xrd_hkl import generate_hkl
 
 ##########################################################################
 # FUNCTIONS
 
-@ValidateLarchPlugin
-def structurefactor_from_cif(ciffile, wavelength, qmax=10, _larch=None):
+def structurefactor_from_cif(ciffile, wavelength, qmax=10):
     '''
     Calculate structure factor, F from cif
     mkak 2016.09.22
@@ -70,8 +68,8 @@ def structurefactor_from_cif(ciffile, wavelength, qmax=10, _larch=None):
     
     return np.array([qlist,Flist]),np.array(q_cif),np.array(F_cif)
 
-@ValidateLarchPlugin
-def structurefactor_wrt_E(cry_strc, hkl, emin=500, emax=20000, esteps=5000, _larch=None):
+
+def structurefactor_wrt_E(cry_strc, hkl, emin=500, emax=20000, esteps=5000):
     '''
     Dependence of F on E for single hkl for one cif
     mkak 2016.09.22

@@ -17,6 +17,7 @@ except:
 from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 
+import larch
 from larch_plugins.io import tifffile
 
 from larch_plugins.xrd import integrate_xrd,E_from_lambda
@@ -37,7 +38,7 @@ except ImportError:
 
 ###################################
 
-VERSION = '0 (6-February-2017)'
+VERSION = '0 (14-March-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
@@ -46,9 +47,16 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None,title='', xrd1Dviewer=None, *args, **kw):
+    def __init__(self, _larch=None, xrd1Dviewer=None, *args, **kw):
+        
+        screenSize = wx.DisplaySize()
+        x,y = 1200, 720
+        if x > screenSize[0] * 0.9:
+            x = int(screenSize[0] * 0.9)
+            y = int(x*0.6)
+        
         label = 'diFFit : 2D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None, -1,title=title, size=(1000, 600))
+        wx.Frame.__init__(self, None,title=label,size=(x,y))
         
         self.SetMinSize((700,500))
         
@@ -513,6 +521,17 @@ class diFFit2DFrame(wx.Frame):
         self.redrawIMAGE() 
 
 ##############################################
+#### HELP FUNCTIONS
+    def onAbout(self, event=None):
+        info = wx.AboutDialogInfo()
+        info.SetName('diFFit2D XRD Data Viewer')
+        desc = 'Using X-ray Larch version: %s' % larch.version.__version__
+        info.SetDescription(desc)
+        info.SetVersion(VERSION)
+        info.AddDeveloper('Margaret Koker: koker at cars.uchicago.edu')
+        dlg = wx.AboutBox(info)
+
+##############################################
 #### PANEL DEFINITIONS
     def onExit(self, event=None):
         try:
@@ -539,7 +558,7 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
         MenuItem(self, diFFitMenu, '&Save settings', '', None)
         MenuItem(self, diFFitMenu, '&Load settings', '', None)
-        MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
+        MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
 
         menubar.Append(diFFitMenu, '&diFFit2D')
@@ -548,12 +567,12 @@ class diFFit2DFrame(wx.Frame):
         ## Process
         ProcessMenu = wx.Menu()
         
-        MenuItem(self, ProcessMenu, '&Load mask file', '', self.openMask)
-        MenuItem(self, ProcessMenu, '&Remove current mask', '', self.clearMask)
-        MenuItem(self, ProcessMenu, '&Create mask', '', self.createMask)
+        MenuItem(self, ProcessMenu, 'Load &mask file', '', self.openMask)
+        MenuItem(self, ProcessMenu, 'Remove current mas&k', '', self.clearMask)
+        MenuItem(self, ProcessMenu, 'C&reate mas&k', '', self.createMask)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
-        MenuItem(self, ProcessMenu, '&Remove current background image', '', None)
+        MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', None)
         
         menubar.Append(ProcessMenu, '&Process')
 
@@ -562,12 +581,20 @@ class diFFit2DFrame(wx.Frame):
         AnalyzeMenu = wx.Menu()
         
         MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
-        MenuItem(self, AnalyzeMenu, '&Load calibration file', '', self.openPONI)
-        MenuItem(self, AnalyzeMenu, '&Show current calibration', '', self.showPONI)
+        MenuItem(self, AnalyzeMenu, 'Load cali&bration file', '', self.openPONI)
+        MenuItem(self, AnalyzeMenu, 'Show current calibratio&n', '', self.showPONI)
         AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', None)
 
-        menubar.Append(AnalyzeMenu, '&Analyze')
+        menubar.Append(AnalyzeMenu, 'Anal&yze')
+
+        ###########################
+        ## Help
+        HelpMenu = wx.Menu()
+        
+        MenuItem(self, HelpMenu, '&About', 'About diFFit2D viewer', self.onAbout)
+
+        menubar.Append(HelpMenu, '&Help')
 
         ###########################
         ## Create Menu Bar
