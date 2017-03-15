@@ -24,7 +24,7 @@ from larch_plugins.xrd import integrate_xrd,E_from_lambda
 # from larch_plugins.xrd.xrd_etc import E_from_lambda
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
-from git sts.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
+from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
 
 HAS_pyFAI = False
 try:
