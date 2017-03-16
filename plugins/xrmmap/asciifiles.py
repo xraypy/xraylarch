@@ -38,61 +38,48 @@ def readEnvironFile(fname):
     return h
 
 def read1DXRDFile(fname,metadata=True):
-    h, d = readASCII(fname, nskip=0, isnumeric=True)
-
-    ## header info
-    splfl = None
-    xpix,ypix = None,None
-    poni1,poni2 = None,None
-    dist = None
-    rot1,rot2,rot3 = None,None,None
-    wavelength = None
-    plr = None
-    nrm = None
-    units = None
-
-    for line in h:
-        import re
-        line = re.sub(',','',line)
-
-        if 'SplineFile' in line:
-            splfl = line.split()[-1]
-        if 'PixelSize' in line:
-            xpix,ypix = float(line.split()[2]),float(line.split()[3])
-        if 'PONI' in line:
-            poni1,poni2 = float(line.split()[2]),float(line.split()[3])
-        if 'Detector' in line:
-            dist = float(line.split()[-2])
-        if 'Rotations' in line:
-            rot1,rot2,rot3 = float(line.split()[2]),float(line.split()[3]),float(line.split()[4])
-
-        if 'Wavelength' in line:
-            wavelength = float(line.split()[-1])
-        if 'Polarization' in line:
-            if line.split()[-1] != 'None': plr = float(line.split()[-1])
-        if 'Normalization' in line:
-            nrm = float(line.split()[-1])
-
-        if 'q_' in line or '2th_' in line:
-            units = line.split()[1]
-
-
-    print 'splfl',splfl
-    print 'xpix,ypix',xpix,ypix
-    print 'poni1,poni2',poni1,poni2
-    print 'dist',dist
-    print 'rot1,rot2,rot3',rot1,rot2,rot3
-    print 'wavelength',wavelength
-    print 'plr',plr
-    print 'nrm',nrm
-    print 'units',units
-
-
-
-    ## data
-    x,y = numpy.split(numpy.array(d),2,axis=1)
-    
-    return x,y,units,wavelength
+    return readASCII(fname, nskip=0, isnumeric=True)
+#     h, d = readASCII(fname, nskip=0, isnumeric=True)
+# 
+#     ## header info
+#     splfl = None
+#     xpix,ypix = None,None
+#     poni1,poni2 = None,None
+#     dist = None
+#     rot1,rot2,rot3 = None,None,None
+#     wavelength = None
+#     plr = None
+#     nrm = None
+#     units = None
+# 
+#     for line in h:
+#         import re
+#         line = re.sub(',','',line)
+# 
+#         if 'SplineFile' in line:
+#             splfl = line.split()[-1]
+#         if 'PixelSize' in line:
+#             xpix,ypix = float(line.split()[2]),float(line.split()[3])
+#         if 'PONI' in line:
+#             poni1,poni2 = float(line.split()[2]),float(line.split()[3])
+#         if 'Detector' in line:
+#             dist = float(line.split()[-2])
+#         if 'Rotations' in line:
+#             rot1,rot2,rot3 = float(line.split()[2]),float(line.split()[3]),float(line.split()[4])
+# 
+#         if 'Wavelength' in line:
+#             wavelength = float(line.split()[-1])
+#         if 'Polarization' in line:
+#             if line.split()[-1] != 'None': plr = float(line.split()[-1])
+#         if 'Normalization' in line:
+#             nrm = float(line.split()[-1])
+# 
+#         if 'q_' in line or '2th_' in line:
+#             units = line.split()[1]
+#     ## data
+#     x,y = numpy.split(numpy.array(d),2,axis=1)
+#     
+#     return x,y,units,wavelength
 
 def parseEnviron(text):
     """ split Environ data into desc, addr, val arrays """

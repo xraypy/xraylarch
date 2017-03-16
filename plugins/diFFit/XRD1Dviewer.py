@@ -3488,16 +3488,55 @@ def loadXYFILE(parent,event=None,verbose=False):
     dlg.Destroy()
 
     if read:
-        if 1 ==1: #try:
+        try:
             if verbose:
                 print('Opening file: %s' % os.path.split(path)[-1])
-            x,y,units,wavelength = read1DXRDFile(path)
-            print units,wavelength
-            return x,y,units,path
-#         except:
-#            print('incorrect xy file format: %s' % os.path.split(path)[-1])
-#            return
+#             x,y,units,wavelength = read1DXRDFile(path)
+            h,d = read1DXRDFile(path)
 
+            ## header info
+            splfl = None
+            xpix,ypix = None,None
+            poni1,poni2 = None,None
+            dist = None
+            rot1,rot2,rot3 = None,None,None
+            wavelength = None
+            plr = None
+            nrm = None
+            units = None
+
+            for line in h:
+                import re
+                line = re.sub(',','',line)
+
+                if 'SplineFile' in line:
+                    splfl = line.split()[-1]
+                if 'PixelSize' in line:
+                    xpix,ypix = float(line.split()[2]),float(line.split()[3])
+                if 'PONI' in line:
+                    poni1,poni2 = float(line.split()[2]),float(line.split()[3])
+                if 'Detector' in line:
+                    dist = float(line.split()[-2])
+                if 'Rotations' in line:
+                    rot1,rot2,rot3 = float(line.split()[2]),float(line.split()[3]),float(line.split()[4])
+
+                if 'Wavelength' in line:
+                    wavelength = float(line.split()[-1])
+                if 'Polarization' in line:
+                    if line.split()[-1] != 'None': plr = float(line.split()[-1])
+                if 'Normalization' in line:
+                    nrm = float(line.split()[-1])
+
+                if 'q_' in line or '2th_' in line:
+                    units = line.split()[1]
+            ## data
+            x,y = np.split(np.array(d),2,axis=1)
+
+        except:
+           print('incorrect xy file format: %s' % os.path.split(path)[-1])
+           return
+
+        return x,y,units,path
 
 class diFFit1D(wx.App):
     def __init__(self):
