@@ -38,11 +38,28 @@ def readEnvironFile(fname):
     return h
 
 def read1DXRDFile(fname):
-    h, d = readASCII(fname, nskip=0, isnumeric=False)
+    h, d = readASCII(fname, nskip=0, isnumeric=True)
+
+    ## header info
+    units,wavelength = None,None
     for line in h:
+        print line.split()
         if 'q_' in line or '2th_' in line:
              units = line.split()[1]
-    return d[:,0],d[:,1],units
+        if 'Wavelength' in line:
+             wavelength = float(line.split()[-1])
+        if 'PixelSize' in line:
+             print line.split()
+#              xpix,ypix = line.split()[1]
+        if 'PONI' in line:
+             print line.split()
+#              poni1,poni2 = float(line.split()[-1])
+
+
+    ## data
+    x,y = numpy.split(numpy.array(d),2,axis=1)
+    
+    return x,y,units,wavelength
 
 def parseEnviron(text):
     """ split Environ data into desc, addr, val arrays """

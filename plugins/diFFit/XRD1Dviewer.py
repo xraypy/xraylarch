@@ -25,7 +25,6 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGR
                                  match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                E_from_lambda,generate_hkl,
-                               #xy_file_reader,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
                                peakfilter, xrd_background)
 from larch_plugins.xrmmap import read1DXRDFile
@@ -3475,10 +3474,10 @@ class XRDSymmetrySearch(wx.Dialog):
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
 
-def loadXYFILE(self,event=None,verbose=False):
+def loadXYFILE(parent,event=None,verbose=False):
 
     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-    dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
+    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
                        defaultDir=os.getcwd(),
                        wildcard=wildcards, style=wx.FD_OPEN)
 
@@ -3489,17 +3488,15 @@ def loadXYFILE(self,event=None,verbose=False):
     dlg.Destroy()
 
     if read:
-
-        if 1==1: #try:
+        if 1 ==1: #try:
             if verbose:
                 print('Opening file: %s' % os.path.split(path)[-1])
-            x,y,unit = read1DXRDFile(path) #xy_file_reader(path)
+            x,y,units,wavelength = read1DXRDFile(path)
+            print units,wavelength
+            return x,y,units,path
 #         except:
 #            print('incorrect xy file format: %s' % os.path.split(path)[-1])
 #            return
-
-        return x,y,unit,path
-
 
 
 class diFFit1D(wx.App):

@@ -1,7 +1,6 @@
 from .xrd import XRD
 from .xrd_bgr import xrd_background
 from .xrd_hkl import generate_hkl
-from .xrd_files import xy_file_reader
 from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,
                           data_gaussian_fit,instrumental_fit_uvw)
 from .xrd_pyFAI import integrate_xrd,calculate_ai
