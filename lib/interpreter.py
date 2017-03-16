@@ -18,6 +18,7 @@ import six
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
+from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
@@ -65,9 +66,10 @@ PYTHON_RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class',
                          'not', 'or', 'pass', 'print', 'raise', 'return',
                          'try', 'while', 'with', 'yield')
 
+
 class Interpreter:
     """larch program compiler and interpreter.
-  This module compiles expressions and statements to AST representation,
+  Thiso module compiles expressions and statements to AST representation,
   using python's ast module, and then executes the AST representation
   using a custom SymbolTable for named object (variable, functions).
   This then gives a restricted version of Python, with slightly modified
@@ -91,13 +93,14 @@ class Interpreter:
                        'str', 'subscript', 'try', 'tryexcept', 'tryfinally',
                        'tuple', 'unaryop', 'while')
 
-    def __init__(self, symtable=None, writer=None, with_plugins=True):
-        self.writer = writer or StdWriter()
-        self.writer._larch = self
+    def __init__(self, symtable=None, input=None, writer=None,
+                 with_plugins=True, historyfile=None, maxhistory=5000):
 
-        if symtable is None:
-            symtable = SymbolTable(larch=self)
-        self.symtable   = symtable
+        self.symtable   = symtable or SymbolTable(larch=self)
+        self.input      = input or InputText(_larch=self,
+                                             historyfile=historyfile,
+                                             maxhistory=maxhistory)
+        self.writer     = writer or StdWriter(_larch=self)
         self._interrupt = None
         self.error      = []
         self.expr       = None
@@ -105,12 +108,13 @@ class Interpreter:
         self.func       = None
         self.fname      = '<stdin>'
         self.lineno     = 0
-        builtingroup = symtable._builtin
-        mathgroup    = symtable._math
+        builtingroup    = self.symtable._builtin
+        mathgroup       = self.symtable._math
         setattr(mathgroup, 'j', 1j)
 
         # system-specific settings
         enable_plugins()
+
         site_config.system_settings()
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
@@ -127,7 +131,7 @@ class Interpreter:
             setattr(mathgroup, fname, getattr(numpy, sym))
 
         for groupname, entries in builtins.local_funcs.items():
-            group = getattr(symtable, groupname, None)
+            group = getattr(self.symtable, groupname, None)
             if group is not None:
                 for fname, fcn in list(entries.items()):
                     setattr(group, fname,
@@ -270,31 +274,126 @@ class Interpreter:
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
 
-    def eval(self, expr, fname=None, lineno=0):
-        """evaluates a single statement"""
-        self.fname = fname
-        self.lineno = lineno
+    def eval(self, expr, fname=None, lineno=0, add_history=True):
+        """evaluates an expression
+        really: puts expression to input buffer, and if the
+        input buffer is complete, it executes all the code in
+        that buffer.
+        """
+        self.input.put(expr, filename=fname, lineno=lineno,
+                       add_history=add_history)
+        if self.input.complete and len(self.input) > 0:
+            return self.execute_input()
+
+    def execute_input(self):
+        """executes the text in the input buffer"""
         self.error = []
-        self.this_expr = expr
-        try:
-            node = self.parse(expr, fname=fname, lineno=lineno)
-        except RuntimeError:
-            errmsg = sys.exc_info()[1]
-            if len(self.error) > 0:
-                errtype, errmsg = self.error[0].get_error()
+        if not hasattr(self.symtable._sys, 'call_stack'):
+            self.symtable._sys.call_stack = []
+        call_stack = self.symtable._sys.call_stack
+        call_stack.append(None)
+
+        ret = None
+
+        while len(self.input) > 0:
+            text, fname, lineno = self.input.get()
+            # print("EXEC ", text, fname, lineno)
+            # self.input.buffer.append(text)
+            if len(self.input.curtext) > 0 or len(self.input.blocks) > 0:
+                continue
+            call_stack[-1] = (text, fname, lineno)
+            try:
+                node = self.parse(text, fname=fname, lineno=lineno)
+                ret =  self.run(node, expr=text, fname=fname, lineno=lineno)
+            except RuntimeError:
+                pass
+
+        self.input.clear()
+        call_stack.pop()
+        return ret
+
+    def runfile(self, filename, new_module=None):
+        """
+        run the larch code held in a file, possibly as 'module'
+        """
+        ret = self.input.putfile(filename)
+        if ret is not None:
+            exc, msg = ret
+            err = LarchException(node=None, exc=IOError,
+                                 msg='Cannot read %s' % filename)
+            self.error.append(err)
+            self.symtable._sys.last_error = err
             return
 
-        out = None
-        try:
-            return self.run(node, expr=expr, fname=fname, lineno=lineno)
-        except RuntimeError:
+        # self.input.put(text, filename=filename, lineno=0, add_history=add_history)
+        if not self.input.complete:
+            msg = "File '%s' ends with incomplete input" % (filename)
+            text = None
+            if len(self.input.blocks) > 0 and filename is not None:
+                blocktype, lineno, text = self.input.blocks[0]
+                msg = "File '%s' ends with un-terminated '%s'" % (filename,
+                                                                  blocktype)
+            elif self.input.saved_text is not BLANK_TEXT:
+                text, fname, lineno = self.input.saved_text
+                msg = "File '%s' ends with incomplete statement" % (filename)
+            self.input.clear()
+            err = LarchExceptionHolder(node=None, exc=SyntaxError, msg=msg,
+                                       expr=text, fname=filename,
+                                       lineno=lineno)
+
+            self.error.append(err)
+            self.symtable._sys.last_error = err
             return
+
+        thismod = None
+        if new_module is not None:
+            # save current module group
+            #  create new group, set as moduleGroup and localGroup
+            self.symtable.save_frame()
+            thismod = self.symtable.create_group(name=new_module)
+            self.symtable._sys.modules[new_module] = thismod
+            self.symtable.set_frame((thismod, thismod))
+
+        ret = self.execute_input()
+
+        if new_module is not None:
+            # for a "newly created module" (as on import),
+            # the module group is the return value
+            self.symtable.restore_frame()
+        return thismod
+
+
+
+    def show_errors(self):
+        """show errors """
+        if self.error:
+            call_stack = self.symtable._sys.call_stack
+            writer = self.writer
+            fname = self.fname
+            lineno = self.lineno
+
+            writer.write('Traceback (most recent calls last): \n')
+            for eblock, efname, elineno in call_stack:
+                text = "File %s, line %i" % (efname, elineno)
+                if efname != fname and elineno != lineno:
+                    text =  "%s\n    %s" % (text, eblock.split('\n')[0])
+                writer.write('   %s\n' % (text))
+
+            errors_seen = []
+            for err in self.error:
+                exc_name, errmsg = err.get_error()
+                file_lineno = errmsg.split('\n')[0].strip()
+                if file_lineno in errors_seen:
+                    continue
+                errors_seen.append(file_lineno)
+                writer.write(errmsg)
+            self.error = []
 
     def run_init_scripts(self):
         for fname in site_config.init_files:
             if os.path.exists(fname):
                 try:
-                    builtins._run(filename=fname, _larch=self)
+                    self.runfile(fname)
                 except:
                     self.raise_exception(None, exc=RuntimeError,
                                          msg='Initialization Error')
@@ -809,8 +908,7 @@ class Interpreter:
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
                     try:
-                        thismod = builtins._run(filename=modname, _larch=self,
-                                                new_module=name)
+                        thismod = self.runfile(modname, new_module=name)
                     except:
                         thismod = None
 

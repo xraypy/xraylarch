@@ -371,6 +371,20 @@ class xrayDB(object):
         "return density of pure element"
         return self._getElementData(element).density
 
+    def all_xray_edges(self, edge):
+        """returns a list of all X-ray edge energies for all elements
+        for a given edge (by symbol: 'K', 'L3', ...)
+
+        result will have 99 elements, with leading zeros so that
+        the ith entry will be for element Z=i.
+        """
+        tab = XrayLevelsTable
+        ret = self.query(tab).filter(tab.iupac_symbol==edge).all()
+        ret = [(i.element, i.absorption_edge) for i in ret]
+        out = [0 for ent in range(self.zofsym(ret[0][0]))]
+        out.extend([ent[1] for ent in ret])
+        return out
+
     def xray_edges(self, element):
         """returns dictionary of all x-ray absorption
         edge energy (in eV), fluorescence yield, and

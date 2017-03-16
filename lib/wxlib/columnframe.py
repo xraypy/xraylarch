@@ -36,27 +36,21 @@ DATATYPES = ('raw', 'xas')
 
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
-    def __init__(self, parent, group, on_ok=None, _larch=None):
+    def __init__(self, parent, group, on_ok=None):
 
         self.group = group
         self.on_ok = on_ok
-        self._larch = _larch
-
         wx.Frame.__init__(self, None, -1, 'Edit Array Names',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         self.SetFont(Font(10))
-
         sizer = wx.GridBagSizer(4, 4)
         if not hasattr(group, 'orig_array_labels'):
             group.orig_array_labels = group.array_labels[:]
 
-
         self.SetMinSize((600, 600))
-        self.colors = GUIColors()
 
         self.wids = {}
-
         cind = SimpleText(self, label='Column')
         cold = SimpleText(self, label='Current Name')
         cnew = SimpleText(self, label='Enter New Name')
@@ -111,51 +105,45 @@ class EditColumnFrame(wx.Frame) :
     def onOK(self, evt=None):
         group = self.group
         array_labels = []
-        for name in group.array_labels:
-            delattr(group, name)
-
-        for i, name in enumerate(group.array_labels):
+        for i in range(len(self.group.array_labels)):
             newname = self.wids["ret_%i" % i].GetLabel()
             array_labels.append(newname)
-            # setattr(group, newname, group.data[i, :])
 
-        group.array_labels = array_labels
         if callable(self.on_ok):
             self.on_ok(array_labels)
-
         self.Destroy()
-
 
 class SelectColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
-    def __init__(self, parent, group=None, last_array_sel=None,
-                 read_ok_cb=None, edit_groupname=True,
-                 _larch=None):
+    def __init__(self, parent, filename=None, groupname=None,
+                 last_array_sel=None, read_ok_cb=None,
+                 edit_groupname=True, _larch=None):
         self.parent = parent
-        self.larch = _larch
-        self.rawgroup = group
+        self._larch = _larch
+        self.path = filename
 
+        group = self.group = self.read_column_file(self.path)
+
+        print("READ Group OK: ", group, dir(group))
+        self.array_labels = group.array_labels
 
         self.subframes = {}
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
-
-        arr_labels = [l.lower() for l in self.rawgroup.array_labels]
+        arr_labels = [l.lower() for l in self.array_labels]
         if self.outgroup.datatype is None:
             self.outgroup.datatype = 'raw'
             if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
                 self.outgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-        self.array_sel = {'xpop': '',
-                          'xarr': None,
-                          'ypop': '',
-                          'yop': '/',
-                          'yarr1': None,
-                          'yarr2': None,
-                          'use_deriv': False}
+
+        self.array_sel = {'xpop': '',  'xarr': None,
+                          'ypop': '',  'yop': '/',
+                          'yarr1': None, 'yarr2': None, 'use_deriv': False}
+
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
@@ -167,9 +155,9 @@ class SelectColumnFrame(wx.Frame) :
                 self.array_sel['yarr1'] = 'itrans'
             elif 'i1' in arr_labels:
                 self.array_sel['yarr1'] = 'i1'
-        message = "Data Columns for %s" % self.rawgroup.filename
+        message = "Data Columns for %s" % group.filename
         wx.Frame.__init__(self, None, -1,
-                          'Build Arrays from Data Columns for %s' % self.rawgroup.filename,
+                          'Build Arrays from Data Columns for %s' % group.filename,
                           style=FRAMESTYLE)
 
         self.SetFont(Font(10))
@@ -275,7 +263,7 @@ class SelectColumnFrame(wx.Frame) :
         sizer.Add(self.datatype,                    (ir, 1), (1, 2), LCEN, 0)
 
         ir += 1
-        self.wid_groupname = wx.TextCtrl(panel, value=self.rawgroup.groupname,
+        self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
                                          size=(240, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
@@ -299,13 +287,8 @@ class SelectColumnFrame(wx.Frame) :
         textpanel = wx.Panel(self)
         ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                size=(400, 250))
-        try:
-            m = open(self.rawgroup.filename, 'r')
-            text = m.read()
-            m.close()
-        except:
-            text = "The file '%s'\n could not be read" % self.rawgroup.filename
-        ftext.SetValue(text)
+
+        ftext.SetValue(group.text)
         ftext.SetFont(Font(11))
 
         textsizer = wx.BoxSizer(wx.VERTICAL)
@@ -322,13 +305,53 @@ class SelectColumnFrame(wx.Frame) :
 
         self.statusbar = self.CreateStatusBar(2, 0)
         self.statusbar.SetStatusWidths([-1, -1])
-        statusbar_fields = [self.rawgroup.filename, ""]
+        statusbar_fields = [group.filename, ""]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
         self.Show()
         self.Raise()
         self.onUpdate(self)
+
+    def read_column_file(self, path):
+        """read column file, generally as initial read"""
+        parent, filename = os.path.split(path)
+        with open(path, 'r') as fh:
+            lines = fh.readlines()
+
+        text = '\n'.join(lines)
+        line1 = lines[0].lower()
+
+        reader = 'read_ascii'
+        if 'epics stepscan file' in line1:
+            reader = 'read_gsexdi'
+        elif 'xdi' in line1:
+            reader = 'read_xdi'
+        elif 'epics scan' in line1:
+            reader = 'read_gsescan'
+
+        tmpname = '_tmp_file_'
+        read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
+        self.reader = reader
+        self._larch.eval(read_cmd, add_history=False)
+        group = self._larch.symtable.get_symbol(tmpname)
+        self._larch.symtable.del_symbol(tmpname)
+
+        gname = fix_varname(filename.replace('.', '_'))
+        if len(gname) > 16:
+            gname = gname[:16]
+
+        groupname, count, maxcount = gname, 0, 999
+
+        while hasattr(self._larch.symtable, groupname) and count < maxcount:
+            count += 1
+            groupname = '%s_%3.3i' % (gname, count)
+
+        group.text = text
+        group.path = path
+        group.filename = filename
+        group.groupname = groupname
+        return group
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -343,14 +366,13 @@ class SelectColumnFrame(wx.Frame) :
 
     def onEditNames(self, evt=None):
         self.show_subframe('editcol', EditColumnFrame,
-                           group=self.rawgroup,
-                           on_ok=self.set_array_labels,
-                           _larch=self.larch)
+                           group=self.group,
+                           on_ok=self.set_array_labels)
 
     def set_array_labels(self, arr_labels):
+        self.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['<index>']
-
         def update(wid, choices):
             curstr = wid.GetStringSelection()
             curind = wid.GetSelection()
@@ -368,19 +390,49 @@ class SelectColumnFrame(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
         if self.wid_groupname is not None:
-            self.outgroup.groupname = fix_varname(self.wid_groupname.GetValue())
+            groupname = fix_varname(self.wid_groupname.GetValue())
 
         yerr_op = self.yerr_op.GetStringSelection().lower()
+        yerr_expr = '1'
         if yerr_op.startswith('const'):
-            self.outgroup.yerr = self.yerr_const.GetValue()
+            yerr_expr = "%f" % self.yerr_const.GetValue()
         elif yerr_op.startswith('array'):
-            yerr = self.yerr_arr.GetStringSelection().strip()
-            self.outgroup.yerr = get_data(rawgroup, yerr)
+            yerr_expr = '%%s.data[%i, :]' % self.yerr_arr.GetSelection()
         elif yerr_op.startswith('sqrt'):
-            self.outgroup.yerr = np.sqrt(outgroup.ydat)
+            yerr_expr = 'sqrt(%s.ydat)'
+        self.expressions['yerr'] = yerr_expr
+
+        # if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
+        #     array_labels = datagroup.array_labels
+
+
+        leval = self._larch.eval
+
+        cmd = "'%s'" % self.path
+        if self.array_labels is not None:
+            cmd = "%s, labels='%s'" % (cmd, ', '.join(self.array_labels))
+
+        leval("%s = %s(%s)" % (groupname, self.reader, cmd))
+
+        for attr in ('datatype', 'groupname', 'filename',
+                     'path', 'plot_xlabel', 'plot_ylabel'):
+            val = getattr(self.outgroup, attr)
+            leval("%s.%s = '%s'" % (groupname, attr, val))
+
+        print("--- EXPRESSION ", self.expressions)
+
+        for aname in ('xdat', 'ydat', 'yerr'):
+            expr = self.expressions[aname].replace('%s', groupname)
+            leval("%s.%s = %s" % (groupname, aname, expr))
+
+        if getattr(self.outgroup, 'datatype', 'raw') == 'xas':
+            leval("%s.energy = %s.xdat" % (gname, gname))
+            leval("%s.mu = %s.ydat" % (gname, gname))
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
+            self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
+                            array_labels=self.array_labels,
+                            expressions=self.expressions)
         self.Destroy()
 
     def onCancel(self, event=None):
@@ -404,19 +456,24 @@ class SelectColumnFrame(wx.Frame) :
 
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
-        rawgroup = self.rawgroup
+        rawgroup = self.group
         outgroup = self.outgroup
-        rdata = rawgroup.data
+        rdata = self.group.data
+
         # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
+
+        exprs = dict(xdat=None, ydat=None, yerr=None)
 
         ncol, npts = rdata.shape
         if xname.startswith('<index') or ix >= ncol:
             outgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
+            exprs['xdat'] = 'arange(%i)' % npts
         else:
             outgroup.xdat = rdata[ix, :]
+            exprs['xdat'] = '%%s.data[%i, : ]' % ix
 
         outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
@@ -434,6 +491,7 @@ class SelectColumnFrame(wx.Frame) :
         try:
             xsuf, xpop, outgroup.xdat = pre_op(self.xpop, outgroup.xdat)
             self.xsuf.SetLabel(xsuf)
+            exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
         except:
             return
         try:
@@ -456,51 +514,68 @@ class SelectColumnFrame(wx.Frame) :
 
         if yname1 == '0.0':
             yarr1 = np.zeros(npts)*1.0
+            yexpr1 = 'zeros(%i)' % npts
         elif len(yname1) == 0 or yname1 == '1.0' or iy1 >= ncol:
             yarr1 = np.ones(npts)*1.0
+            yexpr1 = 'ones(%i)' % npts
         else:
             yarr1 = rdata[iy1, :]
+            yexpr1 = '%%s.data[%i, : ]' % iy1
 
         if yname2 == '0.0':
             yarr2 = np.zeros(npts)*1.0
+            yexpr2 = '0.0'
         elif len(yname2) == 0 or yname2 == '1.0' or iy2 >= ncol:
             yarr2 = np.ones(npts)*1.0
+            yexpr2 = '1.0'
         else:
             yarr2 = rdata[iy2, :]
+            yexpr2 = '%%s.data[%i, : ]' % iy2
 
         outgroup.ydat = yarr1
-        if yop == '+':
-            outgroup.ydat = yarr1.__add__(yarr2)
-        elif yop == '-':
-            outgroup.ydat = yarr1.__sub__(yarr2)
-        elif yop == '*':
-            outgroup.ydat = yarr1.__mul__(yarr2)
-        elif yop == '/':
-            outgroup.ydat = yarr1.__truediv__(yarr2)
-
-        yerr_op = self.yerr_op.GetStringSelection().lower()
-        if yerr_op.startswith('const'):
-            yerr = self.yerr_const.GetValue()
-        elif yerr_op.startswith('array'):
-            iyerr = self.yerr_arr.GetSelection()
-            yerr = rdata[iyerr, :]
-        elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(outgroup.ydat)
+        exprs['ydat'] = yexpr1
+        if yop in ('+', '-', '*', '/'):
+            exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
+            if yop == '+':
+                outgroup.ydat = yarr1.__add__(yarr2)
+            elif yop == '-':
+                outgroup.ydat = yarr1.__sub__(yarr2)
+            elif yop == '*':
+                outgroup.ydat = yarr1.__mul__(yarr2)
+            elif yop == '/':
+                outgroup.ydat = yarr1.__truediv__(yarr2)
 
         ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
         self.ysuf.SetLabel(ysuf)
+        exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
+
+        yerr_op = self.yerr_op.GetStringSelection().lower()
+        exprs['yerr'] = '1'
+        if yerr_op.startswith('const'):
+            yerr = self.yerr_const.GetValue()
+            exprs['yerr'] = '%f' % yerr
+        elif yerr_op.startswith('array'):
+            iyerr = self.yerr_arr.GetSelection()
+            yerr = rdata[iyerr, :]
+            exprs['yerr'] = '%%s.data[%i, :]' % iyerr
+        elif yerr_op.startswith('sqrt'):
+            yerr = np.sqrt(outgroup.ydat)
+            exprs['yerr'] = 'sqrt(%s.ydat)'
 
         if use_deriv:
             try:
                 outgroup.ydat = (np.gradient(outgroup.ydat) /
                                  np.gradient(outgroup.xdat))
+                exprs['ydat'] = 'deriv(%s)/deriv(%s)' % (exprs['ydat'],
+                                                         exprs['xdat'])
             except:
                 pass
 
+        self.expressions = exprs
         self.array_sel = {'xpop': xpop, 'xarr': xname,
-                     'ypop': ypop, 'yop': yop,
-                     'yarr1': yname1, 'yarr2': yname2,
-                     'use_deriv': use_deriv}
+                          'ypop': ypop, 'yop': yop,
+                          'yarr1': yname1, 'yarr2': yname2,
+                          'use_deriv': use_deriv}
 
         try:
             npts = min(len(outgroup.xdat), len(outgroup.ydat))

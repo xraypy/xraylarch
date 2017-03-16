@@ -78,4 +78,7 @@ else:
 
     # if interactive, start command loop
     if not options.noshell:
-        shell.cmdloop()
+        try:
+            shell.cmdloop()
+        except ValueError:
+            pass

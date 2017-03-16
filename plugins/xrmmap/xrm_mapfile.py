@@ -244,7 +244,7 @@ class GSEXRM_MapRow:
         self.xpsfile = xpsfile
         self.sisfile = sisfile
         self.xrdfile = xrdfile
-       
+
         if masterfile is not None:
             header, rows = readMasterFile(masterfile)
             for row in header:
@@ -252,9 +252,11 @@ class GSEXRM_MapRow:
                 if row.startswith('#XRD.filetype'): xrdtype = row.split()[-1]
 
         if FLAGxrf:
-            if xrftype == 'hdf5' or xrffile.startswith('xsp'):
-                xrf_reader = read_xsp3_hdf5
-            elif xrftype == 'netcdf':
+            if xrftype is None:
+                xrftype = 'netcdf'
+                if xrffile.startswith('xsp3'):
+                    xrftype = 'hdf5'
+            if xrftype == 'netcdf':
                 xrf_reader = read_xrf_netcdf
             else:
                 xrf_reader = read_xsp3_hdf5
