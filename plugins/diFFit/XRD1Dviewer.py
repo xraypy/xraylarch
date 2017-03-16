@@ -24,9 +24,11 @@ import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS,
                                  match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,xy_file_reader,generate_hkl,
+                               E_from_lambda,generate_hkl,
+                               #xy_file_reader,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
                                peakfilter, xrd_background)
+from larch_plugins.xrmmap import read1DXRDFile
 
 HAS_pyFAI = False
 try:
@@ -2169,11 +2171,11 @@ class Viewer1DXRD(wx.Panel):
 #### XRD FILE OPENING/SAVING
     def load_file(self,event=None):
 
-        try:
+        if 1==1: #try:
             x,y,unit,path = loadXYFILE(self,verbose=True)
             self.add1Ddata(x,y,name=os.path.split(path)[-1],unit=unit)
-        except:
-            pass
+#         except:
+#             pass
 
     def saveXYFILE(self,event=None):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
@@ -3488,13 +3490,13 @@ def loadXYFILE(self,event=None,verbose=False):
 
     if read:
 
-        try:
+        if 1==1: #try:
             if verbose:
                 print('Opening file: %s' % os.path.split(path)[-1])
-            x,y,unit = xy_file_reader(path)
-        except:
-           print('incorrect xy file format: %s' % os.path.split(path)[-1])
-           return
+            x,y,unit = read1DXRDFile(path) #xy_file_reader(path)
+#         except:
+#            print('incorrect xy file format: %s' % os.path.split(path)[-1])
+#            return
 
         return x,y,unit,path
 

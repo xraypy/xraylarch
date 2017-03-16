@@ -18,12 +18,6 @@ from itertools import groupby
 
 import larch
 from larch_plugins.xrd import generate_hkl,peaklocater
-# from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
-#                                lambda_from_E,E_from_lambda,
-#                                xy_file_reader,generate_hkl,instrumental_fit_uvw,
-#                                peakfinder,peaklocater,peakfitter,peakfilter,
-#                                xrd_background)
-
 
 from sqlalchemy import (create_engine,MetaData,
                         Table,Column,Integer,String,Unicode,

@@ -137,7 +137,6 @@ The data and functions here include (but are not limited to):
 
 member name     description
 ------------    ------------------------------
-xy_file_reader  opens xy file with diffraction data
 peakfinder      identifies peaks in x,y data
 peakfilter      filters a set of data below a certain threshold
 peaklocater     cross-references data for a give coordinates
