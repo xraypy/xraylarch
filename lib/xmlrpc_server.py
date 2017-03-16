@@ -10,7 +10,7 @@ from threading import Thread, Timer
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
 
-from larch import Interpreter, InputText
+from larch import Interpreter
 from larch.utils.jsonutils import encode4js
 
 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER = range(3)
@@ -81,7 +81,8 @@ class LarchServer(SimpleXMLRPCServer):
         self.out_buffer = []
 
         self.larch = Interpreter(writer=self)
-        self.input = InputText(prompt='', _larch=self.larch)
+        self.larch.input.prompt = ''
+        self.larch.input.prompt2 = ''
         self.larch.run_init_scripts()
 
         self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
@@ -220,10 +221,10 @@ class LarchServer(SimpleXMLRPCServer):
         if text in ('quit', 'exit', 'EOF'):
             self.shutdown()
         else:
-            self.input.put(text, lineno=0)
-            if self.input.complete:
-                self.larch('_sys.client.last_event = %i' % time())
-                self.input.run()
+            ret = self.larch.eval(text, lineno=0)
+            if ret is not None:
+                self.write(repr(ret))
+            self.client.last_event = time()
             self.flush()
         return 1
 

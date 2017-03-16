@@ -113,7 +113,43 @@ class TestScripts(TestCase):
             self.assertTrue(amp_err < 2.0)
             self.assertTrue(abs(delr) < 0.1)
 
+    def test13_feffit1(self):
+        self.runscript('doc_feffit1.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
 
+        self.isTrue('out.params.fit_details.nfev > 20')
+        self.isTrue('out.params.fit_details.nfev < 100')
+        self.isTrue('out.params.chi_square > 145')
+        self.isTrue('out.params.chi_square < 150')
+        self.isNear('out.params.amp.value',     0.93, places=1)
+        self.isNear('out.params.del_e0.value',  4.364, places=1)
+        self.isNear('out.params.del_e0.stderr', 0.52, places=1)
+        self.isNear('out.params.del_r.value',  -0.006, places=3)
+        self.isNear('out.params.sig2.value',    0.0087, places=3)
+
+    def test14_feffdat3(self):
+        self.runscript('doc_feffdat3.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
+
+        self.isNear('path1.degen',  6.0, places=1)
+        self.isNear('path1.e0', -0.5, places=1)
+
+        self.isNear('path1.reff',  2.1387, places=2)
+        self.isNear('path1.rmass',  12.436, places=2)
+        self.isNear('path1.s02',     0.9, places=2)
+        self.isNear('path1.sigma2',  0.003, places=2)
+
+        self.isTrue('path1.deltar == 0')
+        self.isTrue('path1.ei == 0')
+        self.isTrue('path1.filename == "feff_feo01.dat"')
+        self.isTrue('path1.fourth == 0')
+        self.isTrue('path1.label == "feff_feo01.dat"')
+        self.isTrue('path1.nleg == 2')
+        self.isTrue('path1.third == 0')
+        self.isTrue('path1.geom[0][0] == "Fe"')
+        self.isTrue('path1.geom[1][0] == "O"')
+        self.isTrue('path1.geom[0][1] == 26')
+        self.isTrue('path1.geom[1][1] == 8')
 
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestScripts,):

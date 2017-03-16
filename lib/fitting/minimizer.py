@@ -85,7 +85,7 @@ def larcheval_with_uncertainties(*vals,  **kwargs):
         return 0
     for val, name in zip(vals, _names):
         _pars[name]._val = val
-    result =  _larch.eval(_obj._ast)
+    result =  _larch.run(_obj._ast)
     if isParameter(result):
         result = result.value
     return result

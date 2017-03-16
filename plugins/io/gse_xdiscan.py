@@ -28,9 +28,6 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     group.filename = fname
     group.npts = xdi.npts
     group.bad_channels = bad
-    group.dtc_taus = XSPRESS3_TAUS
-    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
-        group.dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     for family in ('scan', 'mono', 'facility'):
         for key, val in xdi.attrs.get(family, {}).items():
@@ -55,6 +52,11 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
 
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
+    dtc_taus = XSPRESS3_TAUS
+    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+        dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+
+    dtc_mode = 'icr/ocr'
     for i in range(nmca):
         mca = "mca%i" % (i+1)
         ocr    = getattr(xdi, 'OutputCounts_%s' % mca, None)
@@ -77,19 +79,28 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         if icr is None:
             if dtfact is not None:
                 icr = ocr * dtfact
+                dtc_mode = 'dtfactor'
             elif (clock is not None and
                   resets is not None and
                   allevt is not None):
                 dtfact = clock/(clock - (6*allevt + resets))
                 icr = ocr * dtfact
+                dtc_mode = 'resets'
         # finally estimate from measured values of tau:
         if icr is None:
             icr = 1.0*ocr
+            dtc_mode = 'none'
             if is_xspress3:
-                tau = group.dtc_taus[i]
+                tau = dtc_taus[i]
                 icr = estimate_icr(ocr*1.00, tau, niter=7)
+                dtc_mode = 'saved_taus'
         ocrs.append(ocr)
         icrs.append(icr)
+
+    group.dtc_mode =  dtc_mode
+    if dtc_mode == 'saved_taus':
+        group.dtc_taus = dtc_taus
+
     labels = []
     sums = OrderedDict()
     for i, arrname in enumerate(xdi.array_labels):
@@ -132,8 +143,6 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     for imca in range(nmca):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
         setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
-
-
     group.array_labels = labels
     return group
 

@@ -11,42 +11,33 @@ from .interpreter import Interpreter
 from .site_config import history_file, show_site_config
 from .version import __version__, __date__, make_banner
 from .inputText import InputText
+from .larchlib import StdWriter
 
 HAS_READLINE = False
 try:
     import readline
     HAS_READLINE = True
 except ImportError:
-    HAS_READLINE = False
+    pass
 
 HAS_WXPYTHON = False
 try:
     import wx
     HAS_WXPYTHON = True
 except ImportError:
-    HAS_WXPYTHON = False
+    pass
 
 
 class shell(cmd.Cmd):
-    ps1    = "larch> "
-    ps2    = ".....> "
     def __init__(self,  completekey='tab', debug=False, quiet=False,
                  stdin=None, stdout=None, banner_msg=None,
                  maxhist=5000, with_wx=False, with_plugins=True):
 
         with_wx = HAS_WXPYTHON and with_wx
 
-        self.maxhist = maxhist
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
-
-        if HAS_READLINE:
-            self.rdline = readline
-            try:
-                readline.read_history_file(history_file)
-            except IOError:
-                print('could not read history from %s' % history_file)
 
         if stdin is not None:
             sys.stdin = stdin
@@ -55,18 +46,23 @@ class shell(cmd.Cmd):
         self.stdin = sys.stdin
         self.stdout = sys.stdout
 
-        if banner_msg is None:
-            banner_msg = make_banner()
+        if HAS_READLINE:
+            try:
+                readline.read_history_file(history_file)
+            except IOError:
+                print('could not read history from %s' % history_file)
 
         if with_wx:
             matplotlib.use('WXAgg')
 
-        self.larch = Interpreter(with_plugins=with_plugins)
+        self.larch = Interpreter(with_plugins=with_plugins,
+                                 historyfile=history_file,
+                                 maxhistory=maxhist)
+        self.larch.writer = StdWriter(_larch=self.larch)
 
         if with_wx:
             symtable = self.larch.symtable
 
-            
             app = wx.App(redirect=False, clearSigInt=False)
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
@@ -80,39 +76,40 @@ class shell(cmd.Cmd):
             inputhook.ON_INTERRUPT = onCtrlC
             inputhook.WXLARCH_SYM = symtable
 
-        self.input = InputText(_larch=self.larch)
-        self.prompt = self.ps1
-
-        if with_wx:
-            matplotlib.use('WXAgg')
-
+        self.prompt = self.larch.input.prompt
         writer = self.larch.writer
+        self.color_writer = os.name != 'nt' and hasattr(writer, 'set_textstyle')
         if not quiet:
-            writer.write(banner_msg, color='red', bold=True)
+            if banner_msg is None:
+                banner_msg = make_banner()
+            if self.color_writer:
+                writer.set_textstyle('error')
+            writer.write(banner_msg)
             writer.write("\n")
+            if self.color_writer:
+                writer.set_textstyle('text')
 
         self.larch.run_init_scripts()
 
-    def __del__(self, *args):
-        self.write_history()
+    def on_exit(self, text=None):
+        trim_last = False
+        if text is not None:
+            trim_last = text.strip() in ('quit', 'exit')
+        self.larch.input.history.save(trim_last=trim_last)
+        sys.exit()
 
-    def write_history(self, trim_last=False):
-        if not HAS_READLINE or history_file is None:
-            return
-        try:
-            readline.set_history_length(self.maxhist)
-            if trim_last:
-                n = readline.get_current_history_length()
-                readline.remove_history_item(n-1)
-            readline.write_history_file(history_file)
-        except:
-            print("Warning: could not write history file")
+
+    def do_quit(self, text):
+        self.on_exit(text=text)
+
+    def do_exit(self, text):
+        self.on_exit(text=text)
 
     def emptyline(self):
         pass
 
-    def onecmd(self, text):
-        return self.default(text)
+    def onecmd(self, txt):
+        return self.default(txt)
 
     def do_help(self, txt):
         if txt.startswith('(') and txt.endswith(')'):
@@ -131,15 +128,20 @@ class shell(cmd.Cmd):
 
     def default(self, text):
         if text.strip() in ('quit', 'exit', 'EOF'):
-            trim_last = text.strip() in ('quit', 'exit')
-            self.write_history(trim_last=trim_last)
-            return True
+            self.on_exit(text)
+        ret = self.larch.eval(text, fname='<stdin>', lineno=0)
+        if self.larch.error:
+            self.larch.input.clear()
+            if self.color_writer:
+                self.larch.writer.set_textstyle('error')
+            self.larch.show_errors()
+            if self.color_writer:
+                self.larch.writer.set_textstyle('text')
+        if ret is not None:
+            self.larch.writer.write("%s\n" % repr(ret))
 
-        self.input.put(text, filename='<stdin>', lineno=0)
-        complete = self.input.complete
-        if complete:
-            complete = self.input.run()
-        self.prompt = {True:self.ps1, False:self.ps2}[complete]
+        self.larch.writer.flush()
+        self.prompt = self.larch.input.next_prompt
 
 if __name__ == '__main__':
     t = shell(debug=True).cmdloop()

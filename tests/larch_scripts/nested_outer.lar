@@ -1,0 +1,9 @@
+## Example of nested scripts, using "run('myscript.lar')"
+## inside of scripts
+
+print('in nested_outer.lar before nested_inner.lar')
+
+run('nested_inner.lar')
+
+print('in nested_outer.lar, after nested_inner.lar ')
+print("deep_x = %.3f" % (deep_x))

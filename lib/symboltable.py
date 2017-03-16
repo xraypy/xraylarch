@@ -481,6 +481,7 @@ class SymbolTable(Group):
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
             return
+
         groupname, syms = registrar()
         if not isinstance(syms, dict):
             raise ValueError('add_plugin requires dictionary of plugins')
@@ -507,6 +508,7 @@ class SymbolTable(Group):
         plugin_init = getattr(plugin, 'initializeLarchPlugin', None)
         if plugin_init is not None:
             plugin_init(_larch=self._larch)
+        return (groupname, syms)
 
     def show_group(self, groupname):
         """display group members --- simple version for tests"""

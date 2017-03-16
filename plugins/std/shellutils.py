@@ -31,7 +31,26 @@ def _parent(name, _larch=None, **kw):
 
 @ValidateLarchPlugin
 def _ls(directory='.', _larch=None, **kws):
-    """return a list of files in the current directory"""
+    """return a list of files in the current directory,
+    optionally using '*' to match file names
+
+    Returns
+    -------
+    a : list of strings
+       matching file names
+
+    Examples
+    --------
+    to list all files::
+
+        larch> ls('.')
+
+    to list all files that end with '.xdi'::
+
+        larch> ls('*.xdi')
+
+
+    """
     directory.strip()
     if len(directory) == 0:
         arg = '.'
@@ -132,7 +151,7 @@ with the  pagelength option:
 
 def initializeLarchPlugin(_larch=None):
     """initialize ls as a valid command"""
-    cmds = ['ls', 'cd', 'more']
+    cmds = ['more', 'cd']
     if _larch is not None:
         _larch.symtable._sys.valid_commands.extend(cmds)
 

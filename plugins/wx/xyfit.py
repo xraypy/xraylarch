@@ -774,7 +774,7 @@ class XYFitFrame(wx.Frame):
 
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
-        self.larch_panel =  LarchPanel(_larch=self.larch, **panel_opts)
+        self.larch_panel = LarchPanel(_larch=self.larch, **panel_opts)
 
         self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
@@ -970,67 +970,51 @@ class XYFitFrame(wx.Frame):
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
+        kwargs = dict(filename=path, _larch=self.larch_panel.larchshell,
+                      last_array_sel=self.last_array_sel,
+                      read_ok_cb=self.onRead_OK)
+
+
         # check for athena projects
         if is_athena_project(path):
-            self.show_subframe('athena_import', AthenaImporter,
-                               filename=path, _larch=self.larch,
-                               read_ok_cb=partial(self.onRead_OK,
-                                                  overwrite=False))
-            return
+            self.show_subframe('athena_import', AthenaImporter, **kwargs)
+        else:
+            self.show_subframe('selectcol', SelectColumnFrame, **kwargs)
 
-        ## not athena, plain ASCII:
-        fh = open(path, 'r')
-        line1 = fh.readline().lower()
-        fh.close()
 
-        reader = read_ascii
-        if 'epics stepscan file' in line1:
-            reader = read_gsexdi
-        elif 'epics scan' in line1:
-            reader = gsescan_group
-        elif 'xdi' in line1:
-            reader = read_xdi
-
-        dgroup = reader(str(path), _larch=self.larch)
-        if reader == gsescan_group:
-            assign_gsescan_groups(dgroup)
-        dgroup.path = path
-        dgroup.filename = filename
-        dgroup.groupname = groupname
-        self.show_subframe('selectcol', SelectColumnFrame, group=dgroup,
-                           last_array_sel=self.last_array_sel,
-                           _larch=self.larch,
-                           read_ok_cb=partial(self.onRead_OK,
-                                              overwrite=False))
-
-    def onRead_OK(self, datagroup, array_sel=None, overwrite=False, plot=True):
+    def onRead_OK(self, datagroup, array_sel=None, array_labels=None,
+                  expressions=None,  overwrite=False, plot=True):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
-
         """
-        print("xyfit onRead OK " , datagroup, array_sel)
+        if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
+            array_labels = datagroup.array_labels
+
+        gname = datagroup.groupname
+        fname = datagroup.filename
+        path  = datagroup.path
+        datatype = getattr(datagroup, 'datatype', 'raw')
+
         if array_sel is not None:
             self.last_array_sel = array_sel
-        filename = datagroup.filename
-        groupname = datagroup.groupname
-        print("READ OK  storing datagroup ", datagroup, groupname, filename)
+
+        print("READ OK  storing datagroup ", datagroup, gname, fname)
         # file /group may already exist in list
-        if filename in self.controller.file_groups and not overwrite:
+        if fname in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
-                ftest = "%s (%i)"  % (filename, i)
+                ftest = "%s (%i)"  % (fname, i)
                 if ftest not in self.controller.file_groups:
-                    filename = ftest
+                    fname = ftest
                     break
 
-        if filename not in self.controller.file_groups:
-            self.controller.filelist.Append(filename)
-            self.controller.file_groups[filename] = groupname
+        if fname not in self.controller.file_groups:
+            self.controller.filelist.Append(fname)
+            self.controller.file_groups[fname] = gname
 
-        setattr(self.larch.symtable, groupname, datagroup)
-
+        # setattr(self.larch.symtable, groupname, datagroup)
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname)
+        self.ShowFile(groupname=gname)
 
 class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):

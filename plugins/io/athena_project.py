@@ -116,7 +116,7 @@ def read_athena(filename, match=None, do_preedge=True,
             dat = {'name':''}
         elif key == 'args':
             dat['args'] = perl2json(t)
-        elif key in ('x', 'y', 'i0'):
+        elif key in ('x', 'y', 'i0', 'signal'):
             dat[key] = np.array([float(x) for x in perl2json(t)])
 
     if match is not None:

@@ -138,85 +138,19 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text=None, filename=None, _larch=None, new_module=None):
+def _eval(text, _larch=None):
     """evaluate a string of larch text
     """
     if _larch is None:
         raise Warning("cannot eval string. larch broken?")
+    return _larch.eval(text, fname=filename)
 
-    if text is None:
-        return None
-
-    symtable = _larch.symtable
-    lineno = 0
-    output = None
-
-    inp = inputText.InputText(_larch=_larch)
-    inp.put(text, filename=filename, lineno=0)
-    if not inp.complete:
-        msg = "File '%s' ends with incomplete input" % (filename)
-        text = None
-        if len(inp.blocks) > 0 and filename is not None:
-            blocktype, lineno, text = inp.blocks[0]
-            msg = "File '%s' ends with un-terminated '%s'" % (filename,
-                                                              blocktype)
-        elif inp.saved_text is not None:
-            text, fname, lineno = inp.saved_text
-            msg = "File '%s' ends with incomplete statement" % (filename)
-        while not inp.queue.empty():
-            inp.get()
-        err = LarchExceptionHolder(node=None, exc=SyntaxError, msg=msg,
-                                   expr=text, fname=filename,
-                                   lineno=lineno)
-
-        _larch.error.append(err)
-        symtable._sys.last_error = err
-
-    thismod = None
-    if new_module is not None:
-        # save current module group
-        #  create new group, set as moduleGroup and localGroup
-        symtable.save_frame()
-        thismod = symtable.create_group(name=new_module)
-        symtable._sys.modules[new_module] = thismod
-        symtable.set_frame((thismod, thismod))
-
-    if len(_larch.error) > 0:
-        inp.clear()
-
-    complete = inp.run()
-    # for a "newly created module" (as on import),
-    # the module group is the return value
-    # print('eval End ', new_module, output)
-    if new_module is not None:
-        symtable.restore_frame()
-
-    return thismod
 
 def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
     if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
-
-    text = None
-    if six.PY2:
-        filetype = file
-    else:
-        filetype = io.IOBase
-    if isinstance(filename, filetype):
-        text = filename.read()
-        filename = filename.name
-    elif os.path.exists(filename) and os.path.isfile(filename):
-        try:
-            text = open(filename).read()
-        except IOError:
-            _larch.writer.write("cannot read file '%s'\n" % filename)
-            return
-    else:
-        _larch.writer.write("file not found '%s'\n" % filename)
-        return
-    return  _eval(text=text, filename=filename, _larch=_larch,
-                  new_module=new_module)
+    return _larch.runfile(filename, new_module=new_module)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
@@ -257,19 +191,17 @@ def _help(*args, **kws):
     else:
         return helper.getbuffer()
 
-def _addplugin(plugin, _larch=None, **kws):
+def _addplugin(plugin, _larch=None, verbose=False, **kws):
     """add plugin components from plugin directory"""
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
+    symtable = _larch.symtable
     write = _larch.writer.write
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
     path = site_config.plugins_path
-    _sysconf = _larch.symtable._sys.config
-    if not hasattr(_larch.symtable._sys, 'import_ok'):
-        _larch.symtable._sys.import_ok  = True
-    if not _larch.symtable._sys.import_ok:
-        return
+    _sysconf = symtable._sys.config
+    symtable._sys.import_ok  = True
 
     if not hasattr(_sysconf, 'plugins_path'):
         _sysconf.plugins_path = site_config.plugins_path
@@ -280,7 +212,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 False, (fh, modpath, desc) for imported modules
                 None, None for Not Found
         """
-        if not _larch.symtable._sys.import_ok:
+        if not symtable._sys.import_ok:
             return
 
         if plugin == '__init__':
@@ -301,7 +233,7 @@ def _addplugin(plugin, _larch=None, **kws):
 
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
-        _larch.symtable._sys.import_ok = False
+        symtable._sys.import_ok = False
 
     def _check_requirements(ppath):
         """check for requirements.txt, return True only if all
@@ -353,12 +285,12 @@ def _addplugin(plugin, _larch=None, **kws):
         fh = None
         if plugin == '__init__':
             return
-        if not _larch.symtable._sys.import_ok:
+        if not symtable._sys.import_ok:
             return
 
         if path is None:
             try:
-                path = _larch.symtable._sys.config.plugins_path
+                path = symtable._sys.config.plugins_path
             except:
                 path = site_config.plugins_path
 
@@ -372,6 +304,7 @@ def _addplugin(plugin, _larch=None, **kws):
             return False
 
         retval = True
+        out = None
         if is_pkg:
             if _check_requirements(plugin):
                 filelist = []
@@ -394,7 +327,7 @@ def _addplugin(plugin, _larch=None, **kws):
 
                 retvals = []
                 for fname in filelist:
-                    if not _larch.symtable._sys.import_ok:
+                    if not symtable._sys.import_ok:
                         return
                     try:
                         ret =  _plugin_file(fname[:-3], path=[mod])
@@ -404,14 +337,15 @@ def _addplugin(plugin, _larch=None, **kws):
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
                         ret = False
-                        _larch.symtable._sys.import_ok = False
+                        symtable._sys.import_ok = False
                     retvals.append(ret)
                 retval = all(retvals)
         else:
             fh, modpath, desc = mod
             try:
                 out = imp.load_module(plugin, fh, modpath, desc)
-                _larch.symtable.add_plugin(out, on_error, **kws)
+                ret = symtable.add_plugin(out, on_error, **kws)
+                symtable._sys.last_import = ret
             except:
                 err, exc, tback = sys.exc_info()
                 lineno = getattr(exc, 'lineno', 0)
@@ -426,7 +360,7 @@ def _addplugin(plugin, _larch=None, **kws):
   %s %s^
 %s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False
-                _larch.symtable._sys.import_ok = False
+                symtable._sys.import_ok = False
 
         if _larch.error:
             retval = False
@@ -445,7 +379,15 @@ def _addplugin(plugin, _larch=None, **kws):
             fh.close()
         return retval
 
-    return _plugin_file(plugin)
+    _plugin_file(plugin)
+    if verbose:
+        try:
+            groupname, syms = symtable._sys.last_import
+        except ValueError:
+            return
+        out = ', '.join(["%s.%s" % (groupname, i) for i in syms])
+        write('plugin added: %s \n' % out)
+
 
 def _dir(obj=None, _larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
@@ -536,11 +478,19 @@ _clock.__doc__ = time.clock.__doc__
 def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
-def my_eval(text, _larch=None):
-    return  _eval(text=text, _larch=_larch, new_module=None)
-
 def _ufloat(arg, _larch=None):
     return fitting.ufloat(arg)
+
+def save_history(filename, session_only=False, max_lines=5000, _larch=None):
+    """save history of larch commands to a file"""
+    _larch.history.save(filename, session_only=session_only, max_lines=max_lines)
+
+def show_history(max_lines=10000, _larch=None):
+    """show history of larch commands"""
+    nhist = min(max_lines, len(_larch.history.buffer))
+    for hline in _larch.history.buffer[-nhist:]:
+        _larch.writer.write("%s\n" % hline)
+
 
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
@@ -557,9 +507,11 @@ local_funcs = {'_builtin': {'group':_group,
                             'strftime': _strftime,
                             'reload':_reload,
                             'run': _run,
-                            'eval': my_eval,
+                            'eval': _eval,
                             'help': _help,
-                            'add_plugin':_addplugin},
+                            'add_plugin':_addplugin,
+                            'save_history': save_history,
+                            'show_history': show_history},
                '_math':{'param': fitting.param,
                         'guess': fitting.guess,
                         'confidence_intervals': fitting.confidence_intervals,
