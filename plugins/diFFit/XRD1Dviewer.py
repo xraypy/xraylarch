@@ -405,16 +405,13 @@ class SelectFittingData(wx.Dialog):
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
                                     size = (210,410))
         self.parent = parent
-#         self.list = list
-#         self.all_data = all_data
-#         self.energy = 19.0
 
-        self.Init()
+        self.createPanel()
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
 
-    def Init(self):
+    def createPanel(self):
 
         self.panel = wx.Panel(self)
 
@@ -1483,7 +1480,7 @@ class BackgroundOptions(wx.Dialog):
                                     size = (210,410))
         self.parent = parent
 
-        self.Init()
+        self.createPanel()
 
         ## Set defaults
         self.val_exp.SetValue(str(self.parent.exponent))
@@ -1493,7 +1490,7 @@ class BackgroundOptions(wx.Dialog):
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
 
-    def Init(self):
+    def createPanel(self):
 
         self.panel = wx.Panel(self)
 
@@ -1566,7 +1563,7 @@ class PeakOptions(wx.Dialog):
                                     size = (210,410))
         self.parent = parent
 
-        self.Init()
+        self.createPanel()
 
         ## Set defaults
         self.val_regions.SetValue(str(self.parent.iregions))
@@ -1577,7 +1574,7 @@ class PeakOptions(wx.Dialog):
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
 
-    def Init(self):
+    def createPanel(self):
 
         self.panel = wx.Panel(self)
 
@@ -2617,7 +2614,7 @@ class Calc1DPopup(wx.Dialog):
         self.ai = ai
         self.steps = 5001
 
-        self.Init()
+        self.createPanel()
         self.setDefaults()
 
         ## Set defaults
@@ -2626,7 +2623,7 @@ class Calc1DPopup(wx.Dialog):
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
 
-    def Init(self):
+    def createPanel(self):
 
         self.panel = wx.Panel(self)
 
