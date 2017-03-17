@@ -465,8 +465,42 @@ class SelectFittingData(wx.Dialog):
             self.parent.list.append(os.path.split(path)[-1])
             self.slct_1Ddata.Set(self.parent.list)
             self.slct_1Ddata.SetSelection(-1)
+
+#             ## Add 'raw' data to array
+#             self.parent.xrd1Dviewer.data_name.append(name)
+#             self.parent.xrd1Dviewer.idata.append(len(self.parent.xrd1Dviewer.plotlist))
+#             self.parent.xrd1Dviewer.xy_scale.append(np.max(y))
+# 
+#             if unit.startswith('2th'):
+#                 twth = x
+#                 q    = q_from_twth(twth,self.wavelength)
+#                 d    = d_from_q(q)
+#             else:
+#                 q    = x
+#                 d    = d_from_q(q)
+#                 twth = twth_from_q(q,self.wavelength)
+#             I    = y
+#             
+#             self.parent.xrd1Dviewer.xy_data.append([q,d,twth,I])
+#             self.parent.xrd1Dviewer.xy_plot.append([q,d,twth,I])
+# 
+#             ## Add to plot
+#             self.parent.xrd1Dviewer.plotlist.append(self.parent.xrd1Dviewer.plot1D.oplot(self.parent.xrd1Dviewer.xy_plot[-1][xi],
+#                                                                            self.parent.xrd1Dviewer.xy_plot[-1][3],
+#                                                                            xlabel=self.parent.xrd1Dviewer.xlabel,
+#                                                                            ylabel=self.parent.xrd1Dviewer.ylabel,
+#                                                                            label=name,show_legend=True))
+# 
+#             self.parent.xrd1Dviewer.ch_data.Set(self.parent.xrd1Dviewer.data_name)
+#             self.parent.xrd1Dviewer.ch_data.SetStringSelection(name)
+#             self.parent.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
+
+
 #         except:
 #             pass
+
+
+
 
 
 class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
