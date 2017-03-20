@@ -14,6 +14,8 @@ import math
 import numpy as np
 from scipy import optimize,signal
 
+from xrd_etc import d_from_q,d_from_twth,twth_from_d,twth_from_q,q_from_d,q_from_twth
+
 ##########################################################################
 # FUNCTIONS
 

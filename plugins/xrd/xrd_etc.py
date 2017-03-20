@@ -59,7 +59,7 @@ def twth_from_d(d,wavelength,ang_units='degrees'):
 
 def twth_from_q(q,wavelength,ang_units='degrees'):
     '''
-    Converts d axis into 2th (d and wavelength must be in same units)
+    Converts q axis into 2th (q and wavelength will have inverse units)
     2th = 2*sin^-1(lambda/[2*d])
     
     ang_unit : default in degrees; will convert to 'rad' if given

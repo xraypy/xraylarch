@@ -1,4 +1,4 @@
-from .xrd import XRD
+from .xrd import XRD,xrd1d
 from .xrd_bgr import xrd_background
 from .xrd_hkl import generate_hkl
 from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,

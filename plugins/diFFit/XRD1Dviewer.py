@@ -26,7 +26,7 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGR
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                E_from_lambda,generate_hkl,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
-                               peakfilter, xrd_background)
+                               peakfilter,xrd_background,xrd1d)
 from larch_plugins.xrmmap import read1DXRDFile
 
 HAS_pyFAI = False
@@ -446,55 +446,56 @@ class SelectFittingData(wx.Dialog):
 
     def load_file(self,event=None):
 
-        x,y,unit,path = loadXYFILE(self,verbose=True)
-        if 1==1: #try:
-            if unit.startswith('2th'):
-                twth = x
-                q    = q_from_twth(twth,self.parent.wavelength)
-                d    = d_from_q(q)
-            else:
-                q    = x
-                d    = d_from_q(q)
-                twth = twth_from_q(q,self.parent.wavelength)
-            I    = y
-
-            self.parent.all_data.append([q,d,twth,I])
-            self.parent.list.append(os.path.split(path)[-1])
-            self.slct_1Ddata.Set(self.parent.list)
-            self.slct_1Ddata.SetSelection(-1)
-
-#             ## Add 'raw' data to array
-#             self.parent.xrd1Dviewer.data_name.append(name)
-#             self.parent.xrd1Dviewer.idata.append(len(self.parent.xrd1Dviewer.plotlist))
-#             self.parent.xrd1Dviewer.xy_scale.append(np.max(y))
-# 
+        print('Temporarily disabled. /load_file/ function 2017.03.20')
+#         x,y,unit,path = loadXYFILE(self,verbose=True)
+#         if 1==1: #try:
 #             if unit.startswith('2th'):
 #                 twth = x
-#                 q    = q_from_twth(twth,self.wavelength)
+#                 q    = q_from_twth(twth,self.parent.wavelength)
 #                 d    = d_from_q(q)
 #             else:
 #                 q    = x
 #                 d    = d_from_q(q)
-#                 twth = twth_from_q(q,self.wavelength)
+#                 twth = twth_from_q(q,self.parent.wavelength)
 #             I    = y
-#             
-#             self.parent.xrd1Dviewer.xy_data.append([q,d,twth,I])
-#             self.parent.xrd1Dviewer.xy_plot.append([q,d,twth,I])
 # 
-#             ## Add to plot
-#             self.parent.xrd1Dviewer.plotlist.append(self.parent.xrd1Dviewer.plot1D.oplot(self.parent.xrd1Dviewer.xy_plot[-1][xi],
-#                                                                            self.parent.xrd1Dviewer.xy_plot[-1][3],
-#                                                                            xlabel=self.parent.xrd1Dviewer.xlabel,
-#                                                                            ylabel=self.parent.xrd1Dviewer.ylabel,
-#                                                                            label=name,show_legend=True))
+#             self.parent.all_data.append([q,d,twth,I])
+#             self.parent.list.append(os.path.split(path)[-1])
+#             self.slct_1Ddata.Set(self.parent.list)
+#             self.slct_1Ddata.SetSelection(-1)
 # 
-#             self.parent.xrd1Dviewer.ch_data.Set(self.parent.xrd1Dviewer.data_name)
-#             self.parent.xrd1Dviewer.ch_data.SetStringSelection(name)
-#             self.parent.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
-
-
-#         except:
-#             pass
+# #             ## Add 'raw' data to array
+# #             self.parent.xrd1Dviewer.data_name.append(name)
+# #             self.parent.xrd1Dviewer.idata.append(len(self.parent.xrd1Dviewer.plotlist))
+# #             self.parent.xrd1Dviewer.xy_scale.append(np.max(y))
+# # 
+# #             if unit.startswith('2th'):
+# #                 twth = x
+# #                 q    = q_from_twth(twth,self.wavelength)
+# #                 d    = d_from_q(q)
+# #             else:
+# #                 q    = x
+# #                 d    = d_from_q(q)
+# #                 twth = twth_from_q(q,self.wavelength)
+# #             I    = y
+# #             
+# #             self.parent.xrd1Dviewer.xy_data.append([q,d,twth,I])
+# #             self.parent.xrd1Dviewer.xy_plot.append([q,d,twth,I])
+# # 
+# #             ## Add to plot
+# #             self.parent.xrd1Dviewer.plotlist.append(self.parent.xrd1Dviewer.plot1D.oplot(self.parent.xrd1Dviewer.xy_plot[-1][xi],
+# #                                                                            self.parent.xrd1Dviewer.xy_plot[-1][3],
+# #                                                                            xlabel=self.parent.xrd1Dviewer.xlabel,
+# #                                                                            ylabel=self.parent.xrd1Dviewer.ylabel,
+# #                                                                            label=name,show_legend=True))
+# # 
+# #             self.parent.xrd1Dviewer.ch_data.Set(self.parent.xrd1Dviewer.data_name)
+# #             self.parent.xrd1Dviewer.ch_data.SetStringSelection(name)
+# #             self.parent.xrd1Dviewer.val_scale.SetValue(str(np.max(y)))
+# 
+# 
+# #         except:
+# #             pass
 
 
 
@@ -1674,6 +1675,8 @@ class Viewer1DXRD(wx.Panel):
         self.xy_scale     = []
         self.idata        = []
 
+        self.xy_data2      = [] #None #[]
+
         self.cif_name     = []
         self.cif_data     = [] #None #[]
         self.cif_plot     = [] #None #[]
@@ -1972,38 +1975,29 @@ class Viewer1DXRD(wx.Panel):
         if cif:
             self.val_cifscale.Enable()
 
-    def add1Ddata(self,x,y,name=None,unit='q'):
 
-        plt_no = len(self.data_name)
-
-        if name is None:
-            name = 'dataset %i' % plt_no
+    def add1Ddata(self):
+        
+        if self.xy_data2[-1].label is None:
+            self.xy_data2[-1].label = 'dataset %i' % plt_no
         else:
-            name = 'data: %s' % name
+            self.xy_data2[-1].label = 'data: %s' % self.xy_data2[-1].label
+        name = self.xy_data2[-1].label
 
         self.data_name.append(name)
         self.idata.append(len(self.plotlist))
-        self.xy_scale.append(np.max(y))
+        self.xy_scale.append(np.max(self.xy_data2[-1].I))
 
-        if unit.startswith('2th'):
-            twth = x
-            q    = q_from_twth(twth,self.wavelength)
-            d    = d_from_q(q)
-        else:
-            q    = x
-            d    = d_from_q(q)
-            twth = twth_from_q(q,self.wavelength)
-        I    = y
-
-        self.xy_data.append([q,d,twth,I])
-        self.xy_plot.append([q,d,twth,I])
+        self.xy_plot.append([self.xy_data2[-1].q,self.xy_data2[-1].d,self.xy_data2[-1].twth,self.xy_data2[-1].I])
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
         self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],
                                                self.xy_plot[-1][3],
-                                               xlabel=self.xlabel,ylabel=self.ylabel,
-                                               label=name,show_legend=True))
+                                               xlabel=self.xlabel,
+                                               ylabel=self.ylabel,
+                                               label=name,
+                                               show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis(yaxis=True)
@@ -2012,10 +2006,56 @@ class Viewer1DXRD(wx.Panel):
         self.ch_data.SetStringSelection(name)
 
         ## Update toolbox panel
-        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue(str(self.xy_scale[-1]))
         self.optionsON(data=True,cif=False)
 
         self.owner.nb.SetSelection(0) ## switches to viewer panel
+
+
+#     def add1Ddata(self,x,y,name=None,unit='q'):
+# 
+#         plt_no = len(self.data_name)
+# 
+#         if name is None:
+#             name = 'dataset %i' % plt_no
+#         else:
+#             name = 'data: %s' % name
+# 
+#         self.data_name.append(name)
+#         self.idata.append(len(self.plotlist))
+#         self.xy_scale.append(np.max(y))
+# 
+#         if unit.startswith('2th'):
+#             twth = x
+#             q    = q_from_twth(twth,self.wavelength)
+#             d    = d_from_q(q)
+#         else:
+#             q    = x
+#             d    = d_from_q(q)
+#             twth = twth_from_q(q,self.wavelength)
+#         I    = y
+# 
+#         self.xy_data.append([q,d,twth,I])
+#         self.xy_plot.append([q,d,twth,I])
+# 
+#         ## Plot data (x,y)
+#         xi = self.ch_xaxis.GetSelection()
+#         self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],
+#                                                self.xy_plot[-1][3],
+#                                                xlabel=self.xlabel,ylabel=self.ylabel,
+#                                                label=name,show_legend=True))
+# 
+#         ## Use correct x-axis units
+#         self.check1Daxis(yaxis=True)
+# 
+#         self.ch_data.Set(self.data_name)
+#         self.ch_data.SetStringSelection(name)
+# 
+#         ## Update toolbox panel
+#         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+#         self.optionsON(data=True,cif=False)
+# 
+#         self.owner.nb.SetSelection(0) ## switches to viewer panel
 
 
     def addLAMBDA(self,wavelength,units='m'):
@@ -2201,11 +2241,36 @@ class Viewer1DXRD(wx.Panel):
 #### XRD FILE OPENING/SAVING
     def load_file(self,event=None):
 
-        if 1==1: #try:
-            x,y,unit,path = loadXYFILE(self,verbose=True)
-            self.add1Ddata(x,y,name=os.path.split(path)[-1],unit=unit)
-#         except:
-#             pass
+        wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose 1D XRD data file',
+                            defaultDir=os.getcwd(),
+                            wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            data1dxrd = xrd1d(file=path)
+            x = data1dxrd.q
+            y = data1dxrd.I
+            #unit = 'q'
+
+            self.xy_data2.append(data1dxrd)
+            
+            print self.xy_data2
+            print self.xy_data2[-1]
+            print len(self.xy_data2[-1].q),len(self.xy_data2[-1].twth),len(self.xy_data2[-1].I)
+            print 'q',np.min(self.xy_data2[-1].q),np.max(self.xy_data2[-1].q)
+            print '2th',np.min(self.xy_data2[-1].twth),np.max(self.xy_data2[-1].twth)
+            print 'I',np.min(self.xy_data2[-1].I),np.max(self.xy_data2[-1].I)
+            print 'wavelength',self.xy_data2[-1].wavelength
+            print 'energy',self.xy_data2[-1].energy
+
+            #self.add1Ddata(x,y,name=os.path.split(path)[-1],unit=unit)
+            self.add1Ddata()
 
     def saveXYFILE(self,event=None):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
@@ -3504,70 +3569,6 @@ class XRDSymmetrySearch(wx.Dialog):
         
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
-
-def loadXYFILE(parent,event=None,verbose=False):
-
-    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-                       defaultDir=os.getcwd(),
-                       wildcard=wildcards, style=wx.FD_OPEN)
-
-    path, read = None, False
-    if dlg.ShowModal() == wx.ID_OK:
-        read = True
-        path = dlg.GetPath().replace('\\', '/')
-    dlg.Destroy()
-
-    if read:
-        try:
-            if verbose:
-                print('Opening file: %s' % os.path.split(path)[-1])
-#             x,y,units,wavelength = read1DXRDFile(path)
-            h,d = read1DXRDFile(path)
-
-            ## header info
-            splfl = None
-            xpix,ypix = None,None
-            poni1,poni2 = None,None
-            dist = None
-            rot1,rot2,rot3 = None,None,None
-            wavelength = None
-            plr = None
-            nrm = None
-            units = None
-
-            for line in h:
-                import re
-                line = re.sub(',','',line)
-
-                if 'SplineFile' in line:
-                    splfl = line.split()[-1]
-                if 'PixelSize' in line:
-                    xpix,ypix = float(line.split()[2]),float(line.split()[3])
-                if 'PONI' in line:
-                    poni1,poni2 = float(line.split()[2]),float(line.split()[3])
-                if 'Detector' in line:
-                    dist = float(line.split()[-2])
-                if 'Rotations' in line:
-                    rot1,rot2,rot3 = float(line.split()[2]),float(line.split()[3]),float(line.split()[4])
-
-                if 'Wavelength' in line:
-                    wavelength = float(line.split()[-1])
-                if 'Polarization' in line:
-                    if line.split()[-1] != 'None': plr = float(line.split()[-1])
-                if 'Normalization' in line:
-                    nrm = float(line.split()[-1])
-
-                if 'q_' in line or '2th_' in line:
-                    units = line.split()[1]
-            ## data
-            x,y = np.split(np.array(d),2,axis=1)
-
-        except:
-           print('incorrect xy file format: %s' % os.path.split(path)[-1])
-           return
-
-        return x,y,units,path
 
 class diFFit1D(wx.App):
     def __init__(self):
