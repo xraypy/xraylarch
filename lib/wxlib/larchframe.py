@@ -42,7 +42,6 @@ class LarchWxShell(object):
                                              writer=self)
             self._larch.run_init_scripts()
 
-
         self.symtable = self._larch.symtable
         self.prompt = prompt
         self.input  = input
@@ -54,7 +53,7 @@ class LarchWxShell(object):
         self.objtree = wxparent.objtree
 
         self.set_textstyle(mode='text')
-        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}")
+        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}", add_history=False)
 
         self._larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
@@ -81,7 +80,6 @@ class LarchWxShell(object):
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
-            print("on Update!")
             app = wx.GetApp()
             evtloop = wx.EventLoop()
             while evtloop.Pending():
@@ -143,7 +141,6 @@ class LarchWxShell(object):
     def eval(self, text, add_history=True, **kws):
         if text is None:
             return
-
         if text.startswith('!'):
             return os.system(text[1:])
 
@@ -221,7 +218,6 @@ class LarchPanel(wx.Panel):
         sizer.Add(ipanel, 0, **opts)
 
         self.SetSizer(sizer)
-
         self.larchshell = LarchWxShell(wxparent=self,
                                        _larch = _larch,
                                        historyfile=historyfile,
@@ -242,8 +238,8 @@ class LarchPanel(wx.Panel):
     def onText(self, event=None):
         text =  event.GetString()
         self.input.Clear()
-        if text.lower() in ('quit', 'exit'):
-            self.onExit()
+        if text.lower() in ('quit', 'exit', 'quit()', 'exit()'):
+            self.parent.onExit()
         else:
             wx.CallAfter(self.larchshell.eval, text)
 
@@ -273,6 +269,7 @@ class LarchFrame(wx.Frame):
                                     historyfile=historyfile)
 
         self.larchshell = self.mainpanel.larchshell
+        self._larch = self.larchshell._larch
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -366,7 +363,7 @@ class LarchFrame(wx.Frame):
                 del self.subframes[name]
         if not shown:
             self.subframes[name] = creator(parent=self,
-                                           _larch=self.larchshell.larch,
+                                           _larch=self.larchshell._larch,
                                            **opts)
             self.subframes[name].Show()
 
@@ -399,7 +396,7 @@ class LarchFrame(wx.Frame):
             elif 'xdi' in line1:
                 reader = read_xdi
 
-            dgroup = reader(str(path), _larch=self.larchshell.larch)
+            dgroup = reader(str(path), _larch=self.larchshell._larch)
             dgroup._path = path
             dgroup._filename = filename
             dgroup._groupname = groupname
@@ -431,7 +428,7 @@ class LarchFrame(wx.Frame):
             os.chdir(path)
             text = "run('%s')" % fname
             self.larchshell.write(">%s\n" % text)
-            self.input.AddToHistory(text)
+            # self._larch.input.historAddToHistory(text)
             wx.CallAfter(self.larchshell.eval, text)
         dlg.Destroy()
 
@@ -444,7 +441,7 @@ class LarchFrame(wx.Frame):
                             style=wx.FD_SAVE|wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             fout = os.path.abspath(dlg.GetPath())
-            self.input.SaveHistory(filename=fout, session_only=True)
+            self._larch.input.history.save(fout, session_only=True)
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
 
@@ -482,7 +479,7 @@ class LarchFrame(wx.Frame):
         # sys.stderr.write(" LarchFrame onClose\n")
         try:
             self.Hide()
-            self.input.SaveHistory()
+            self._larch.input.history.save()
             self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
         except:
             pass
@@ -494,7 +491,7 @@ class LarchFrame(wx.Frame):
         ret = dlg.ShowModal()
         if ret == wx.ID_YES:
             try:
-                self.input.SaveHistory()
+                self._larch.input.history.save()
                 self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
             except:
                 pass
