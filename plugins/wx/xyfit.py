@@ -29,8 +29,9 @@ from larch.utils import index_of, savitzky_golay, smooth, boxcar
 
 from larch.larchlib import read_workdir, save_workdir
 
-from larch.wxlib import (LarchPanel, SelectColumnFrame, ReportFrame,
+from larch.wxlib import (LarchPanel, LarchFrame, SelectColumnFrame, ReportFrame,
                          BitmapButton, FileCheckList, FloatCtrl, SetTip)
+
 
 from larch.fitting import fit_report
 
@@ -504,6 +505,7 @@ class XYFitController():
         self.larch = _larch
         if self.larch is None:
             self.larch = Interpreter()
+
         self.filelist = None
         self.file_groups = {}
         self.proc_opts = {}
@@ -538,7 +540,9 @@ class XYFitController():
             win = 2
             wintitle='Larch XYFit Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win)
-        return self.symtable._plotter.get_display(**opts)
+
+        out = self.symtable._plotter.get_display(**opts)
+        return out
 
     def get_group(self, groupname):
         if groupname is None:
@@ -698,8 +702,16 @@ class XYFitFrame(wx.Frame):
 
         self.last_array_sel = {}
         title = "Larch XYFit: XY Data Viewing & Curve Fitting"
-        self.controller = XYFitController(wxparent=self, _larch=_larch)
-        self.larch = self.controller.larch
+
+        self.larch_buffer = parent
+        if not isinstance(parent, LarchFrame):
+            self.larch_buffer = LarchFrame(_larch=_larch)
+
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
+        self.larch = self.larch_buffer._larch
+        self.controller = XYFitController(wxparent=self, _larch=self.larch)
+
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -715,7 +727,9 @@ class XYFitFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        read_workdir('scanviewer.dat')
+        read_workdir('xyfit.dat')
+        self.larch_buffer.Hide()
+
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -774,11 +788,9 @@ class XYFitFrame(wx.Frame):
 
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
-        self.larch_panel = LarchPanel(_larch=self.larch, **panel_opts)
 
         self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
         self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
-        self.nb.AddPage(self.larch_panel, ' Larch Shell ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.SetSelection(0)
@@ -873,6 +885,10 @@ class XYFitFrame(wx.Frame):
                  self.onSelectColumns)
 
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+                 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
+
         MenuItem(self, fmenu, "debug wx\tCtrl+I", "", self.showInspectionTool)
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
@@ -888,6 +904,14 @@ class XYFitFrame(wx.Frame):
 
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
+
+
+    def onShowLarchBuffer(self, evt=None):
+        if self.larch_buffer is None:
+            self.larch_buffer = LarchFrame(_larch=self.larch)
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
+
 
     def onConfigDataProcessing(self, event=None):
         pass
@@ -907,7 +931,7 @@ class XYFitFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, evt):
-        save_workdir('scanviewer.dat')
+        save_workdir('xyfit.dat')
         self.proc_panel.proc_timer.Stop()
 
         for nam in dir(self.larch.symtable._plotter):
@@ -916,9 +940,17 @@ class XYFitFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
+
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             del obj
+
+
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.Destroy()
+            except:
+                pass
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -970,7 +1002,7 @@ class XYFitFrame(wx.Frame):
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
-        kwargs = dict(filename=path, _larch=self.larch_panel.larchshell,
+        kwargs = dict(filename=path, _larch=self.larch_buffer.larchshell,
                       last_array_sel=self.last_array_sel,
                       read_ok_cb=self.onRead_OK)
 
@@ -999,7 +1031,7 @@ class XYFitFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel = array_sel
 
-        print("READ OK  storing datagroup ", datagroup, gname, fname)
+        # print("READ OK  storing datagroup ", datagroup, gname, fname)
         # file /group may already exist in list
         if fname in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
@@ -1012,7 +1044,7 @@ class XYFitFrame(wx.Frame):
             self.controller.filelist.Append(fname)
             self.controller.file_groups[fname] = gname
 
-        # setattr(self.larch.symtable, groupname, datagroup)
+        setattr(self.larch.symtable, gname, datagroup)
         self.nb.SetSelection(0)
         self.ShowFile(groupname=gname)
 
