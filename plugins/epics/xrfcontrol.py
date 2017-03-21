@@ -47,9 +47,9 @@ from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, XRFCalibrationFrame)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
-larch.use_plugin_path('epics')
+# larch.use_plugin_path('epics')
 try:
-    from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
+    from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3, caget
     from scandb import ScanDB
 except:
     pass
@@ -68,7 +68,8 @@ class DetectorSelectDialog(wx.Dialog):
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
                  ioc_type='Xspress3', nmca=4,
                  title='Select Epics MCA Detector'):
-        if prefix is None: prefix = self.def_prefix
+        if prefix is None:
+            prefix = self.def_prefix
         if det_type not in self.det_types:
             det_type = self.det_types[0]
 
@@ -131,11 +132,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
   """
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
     main_title = 'Epics XRF Control'
+
     def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4',  ioc_type='Xspress3',
-                 nmca=4, size=(725, 580),  scandb_conn=None,
-                 title='Epics XRF Display',
-                 output_title='XRF', **kws):
+                 det_type='ME-4', ioc_type='Xspress3', nmca=4,
+                 size=(725, 580), environ_file=None, scandb_conn=None,
+                 title='Epics XRF Display', output_title='XRF', **kws):
 
         self.det_type = det_type
         self.ioc_type = ioc_type
@@ -143,6 +144,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det_fore = 1
         self.det_back = 0
         self.scandb = None
+        self.environ = []
+        if environ_file is not None:
+            self.read_environfile(environ_file)
         if scandb_conn is not None:
             self.ConnectScanDB(**scandb_conn)
 
@@ -150,6 +154,22 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
+
+    def read_environfile(self, filename):
+        """read environmnet file"""
+        if os.path.exists(filename):
+            textlines = []
+            try:
+                with open(filename, 'r') as fh:
+                    textlines = fh.readlines()
+            except IOError:
+                return
+            self.environ = []
+            for line in textlines:
+                line = line[:-1].replace('\t', ' ')
+                pvname, desc = line.split(' ', 1)
+                desc = desc.strip()
+                self.environ.append((pvname, desc))
 
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
@@ -167,7 +187,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        # print("Scandb ", self.scandb)
+        print("Scandb ", self.scandb)
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')
@@ -212,6 +232,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 desc = str(row.notes)
                 val  = self.scandb.pvs[addr].get(as_string=True)
                 environ.append((addr, val, desc))
+
+        elif len(self.environ) > 0:
+            for pvname, desc in self.environ:
+                val  = caget(pvname, as_string=True)
+                environ.append((pvname, val, desc))
 
         if outfile is not None:
             self.det.save_mcafile(outfile, environ=environ)
