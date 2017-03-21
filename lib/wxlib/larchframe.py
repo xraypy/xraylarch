@@ -77,7 +77,6 @@ class LarchWxShell(object):
         wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
         self.flush_timer.Start(500)
 
-
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
@@ -283,7 +282,7 @@ class LarchFrame(wx.Frame):
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
              self.Bind(wx.EVT_CLOSE,  self.onClose)
-
+        self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
 
         larchdir = larch.site_config.larchdir
@@ -400,7 +399,6 @@ class LarchFrame(wx.Frame):
             dgroup._groupname = groupname
         dlg.Destroy()
         if dgroup is not None:
-
             self.show_subframe(name='coledit', event=None,
                                creator=EditColumnFrame,
                                group=dgroup,
@@ -473,8 +471,11 @@ class LarchFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
+    def onShow(self, event=None):
+        if event.Show:
+            self.mainpanel.update()
+
     def onClose(self, event=None):
-        # sys.stderr.write(" LarchFrame onClose\n")
         try:
             self.Hide()
             self._larch.input.history.save()
