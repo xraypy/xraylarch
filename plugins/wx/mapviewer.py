@@ -1349,7 +1349,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 500), larch_buffer=None,
+    def __init__(self, parent=None,  size=(825, 500),
                  use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
@@ -1361,10 +1361,8 @@ class MapViewerFrame(wx.Frame):
         self.im_displays = []
         self.plot_displays = []
 
-        self.larch_buffer = None
-        if isinstance(parent, LarchFrame):
-            self.larch_buffer = parent
-        else:
+        self.larch_buffer = parent
+        if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
         self.larch = self.larch_buffer._larch
@@ -1404,7 +1402,6 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
-
 
         self.larch_buffer.Hide()
 
