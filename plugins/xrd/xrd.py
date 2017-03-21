@@ -90,15 +90,16 @@ class xrd1d(grpobjt):
         self.uvw  = None
         self.ipks = None
         
-        if file is None:
-            print('XRD data file not provided. Returning empty group.')
-        else:
+        if file is not None:
             self.xrd_from_file(file)
-
-        
         
         if HAS_larch:
            Group.__init__(self)
+
+
+    def xrd_from_2d(self,xy,xtype,verbose=True):
+
+        self.set_xy_data(xy,xtype)
 
     def xrd_from_file(self,filename,verbose=True):
         
@@ -107,7 +108,7 @@ class xrd1d(grpobjt):
                 print('Opening file: %s' % os.path.split(filename)[-1])
 
             from larch_plugins.xrmmap import read1DXRDFile
-            h,d = read1DXRDFile(filename)
+            head,dat = read1DXRDFile(filename)
         except:
            print('incorrect xy file format: %s' % os.path.split(filename)[-1])
            return
@@ -116,7 +117,7 @@ class xrd1d(grpobjt):
 
         ## header info
         units = 'q'
-        for line in h:
+        for line in head:
             import re
             line = re.sub(',','',line)
 
@@ -142,7 +143,15 @@ class xrd1d(grpobjt):
             if 'q_' in line or '2th_' in line:
                 xtype = line.split()[1]
         ## data
-        x,y = np.split(np.array(d),2,axis=1)
+        self.set_xy_data(dat,xtype)
+        
+    def set_xy_data(self,xy,xtype):
+        
+        xy = np.array(xy)
+        if np.shape(xy)[0] > np.shape(xy)[1]:
+            x,y = np.split(xy,2,axis=1)        
+        else:
+            x,y = np.split(xy,2,axis=0)
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
         self.I = np.array(y).squeeze()
 

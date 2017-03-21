@@ -82,7 +82,7 @@ from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
 from larch_plugins.diFFit.XRD2Dviewer import diFFit2DFrame
-from larch_plugins.xrd import integrate_xrd,calculate_ai,lambda_from_E,E_from_lambda
+from larch_plugins.xrd import integrate_xrd,calculate_ai,lambda_from_E,E_from_lambda,xrd1d
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
@@ -1319,7 +1319,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if flag1D:
             kwargs = {'steps':5001,
-                      'save':save,
                       'AI':xrmfile.xrmmap['xrd']}
             if save:
                 counter = 1
@@ -1330,7 +1329,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.data1D = integrate_xrd(map,**kwargs)
             self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
             if show:
-                self.owner.display_1Dxrd(self._xrd.data1D,label=label)
+                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.wavelength,label=label)
         if flag2D:
             if save:
                 counter = 1
@@ -1659,17 +1658,20 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
 
-    def display_1Dxrd(self, xy, label='dataset 0', xrmfile=None):
+    def display_1Dxrd(self, xy, wavelength, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
+
+        data1dxrd = xrd1d(label=label,wavelength=wavelength)
+        data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:
             self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
         try:
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
             self.xrddisplay1D.Show()
         except PyDeadObjectError:
             self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(*xy, name=label)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
             self.xrddisplay1D.Show()
 
     def init_larch(self):
