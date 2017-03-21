@@ -482,7 +482,6 @@ class LarchFrame(wx.Frame):
             pass
 
     def onExit(self, event=None, force=False):
-        sys.stderr.write(" LarchFrame onExit ", force)
         if force:
             ret = wx.ID_YES
         else:
