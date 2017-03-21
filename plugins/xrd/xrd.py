@@ -144,7 +144,7 @@ class xrd1d(grpobjt):
         ## data
         x,y = np.split(np.array(d),2,axis=1)
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
-        self.I = np.array(y).flatten()
+        self.I = np.array(y).squeeze()
 
 def calculate_xvalues(x,xtype,wavelength):
     '''
@@ -156,7 +156,7 @@ def calculate_xvalues(x,xtype,wavelength):
     
     q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
     '''
-    x = np.array(x).flatten()
+    x = np.array(x).squeeze()
     if xtype.startswith('q'):
 
         q = x
