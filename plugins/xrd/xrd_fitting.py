@@ -14,7 +14,9 @@ import math
 import numpy as np
 from scipy import optimize,signal
 
-from xrd_etc import d_from_q,d_from_twth,twth_from_d,twth_from_q,q_from_d,q_from_twth
+from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
+                                       q_from_d, q_from_twth)
+
 
 ##########################################################################
 # FUNCTIONS
@@ -48,6 +50,7 @@ def peakfinder(x, y, regions=50, gapthrsh=5):
     '''
     Returns indices for peaks in y from dataset (x,y)
     '''
+
     ttlpnts = len(x)
     widths = np.arange(1,int(ttlpnts/regions))
 

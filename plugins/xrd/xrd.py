@@ -13,8 +13,9 @@ Authors/Modifications:
 import os
 import numpy as np
 
-from xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q, q_from_d,
-                     q_from_twth, E_from_lambda)
+from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
+                                       q_from_d, q_from_twth, E_from_lambda)
+
 
 HAS_larch = False
 try:
@@ -57,27 +58,22 @@ class xrd1d(grpobjt):
     
     # Data fitting parameters
     * self.uvw           = [0.313, -0.109, 0.019] # instrumental broadening parameters
-
-
-    # Plotting parameters
-    * self.yscale        = 1.0                    # scale for y axis plotting
+    * self.ipks          = [8, 254, 3664]         # list of peak indecides
 
 
     mkak 2017.03.15
     '''
 
-    def __init__(self,file=None,label=None,
-                 I=None,q=None,d=None,twth=None,wavelength=None,energy=None,
-                 _larch=None):
+    def __init__(self,file=None,label=None,q=None,twth=None,d=None,I=None,
+                 wavelength=None,energy=None):
 
         self.filename = file
         self.label    = label
 
-
-        self.I    = I
         self.q    = q
-        self.d    = d
         self.twth = twth
+        self.d    = d
+        self.I    = I
 
         self.wavelength = wavelength
         self.energy     = energy
@@ -91,13 +87,11 @@ class xrd1d(grpobjt):
         self.polarization  = None
         self.normalization = None
         
-        self.uvw = None
-        self.yscale = 1.0
-        
+        self.uvw  = None
+        self.ipks = None
         
         if file is None:
-            print('File not given. Leaving blank group for now.')
-       
+            print('XRD data file not provided. Returning empty group.')
         else:
             self.xrd_from_file(file)
 
@@ -118,7 +112,7 @@ class xrd1d(grpobjt):
            print('incorrect xy file format: %s' % os.path.split(filename)[-1])
            return
            
-        self.label = os.path.split(filename)[-1]
+        if self.label is None: self.label = os.path.split(filename)[-1]
 
         ## header info
         units = 'q'
@@ -146,59 +140,59 @@ class xrd1d(grpobjt):
                 self.normalization = float(line.split()[-1])
 
             if 'q_' in line or '2th_' in line:
-                units = line.split()[1]
+                xtype = line.split()[1]
         ## data
         x,y = np.split(np.array(d),2,axis=1)
-        if units.startswith('q'):
-            self.q = x
-        elif units.startswith('2th'):
-            self.twth = x
-        else:
-            print('x-axis units not correct. check file: %s' % os.path.split(filename)[-1])
-            return
-        self.calculate_xvalues()
-        self.I = y
+        self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
+        self.I = np.array(y).flatten()
 
-    def calculate_xvalues(self):
-
-        if self.q is not None:
-            self.q = np.array(self.q)
-            self.d = d_from_q(self.q)
-            if self.wavelength is not None:
-                self.twth = twth_from_q(self.q,self.wavelength)
-            else:
-                self.twth = np.zeros(len(self.q))
-        elif self.twth is not None:
-            self.twth = np.array(self.twth)
-            if self.wavelength is not None:
-                self.q = q_from_twth(self.twth,self.wavelength)
-                self.d = d_from_twth(self.twth,self.wavelength)
-            else:
-                self.q = np.zeros(len(self.twth))
-                self.d = np.zeros(len(self.twth))
-        elif self.d is not None:
-            self.d = np.array(self.d)
-            self.q = q_from_d(self.d)
-            if self.wavelength is not None:
-                self.twth = twth_from_d(self.d,self.wavelength)
-            else:
-                self.twth = np.zeros(len(self.d))
-        else:
-            print('All x-axis arrays are None. Cannot create an xrd1d object.')
-        
-    def calculate_Evalues(self,energy,wavelength):
+def calculate_xvalues(x,xtype,wavelength):
+    '''
+    projects given x-axis onto q-, 2theta-, and d-axes
     
-        if energy is not None:
-            if energy > 100:
-                energy = energy/1000. # convert units to keV from eV
-            wavelength = lambda_from_E(energy,E_units='keV',lambda_units='A')
-        elif wavelength is not None:
-            energy = E_from_lambda(wavelength,E_units='keV',lambda_units='A')
+    x            :   list or array (expected units: 1/A, deg, or A)
+    xtype        :   options 'q', '2th', or 'd'
+    wavelength   :   incident x-ray wavelength (units: A)
+    
+    q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
+    '''
+    x = np.array(x).flatten()
+    if xtype.startswith('q'):
+
+        q = x
+        d = d_from_q(q)
+        if wavelength is not None:
+            twth = twth_from_q(q,wavelength)
         else:
-            energy = None
-            wavelength = None
-            
-        return energy,wavelength
+            twth = np.zeros(len(q))        
+    
+    elif xtype.startswith('2th'):
+
+        twth = x
+        if wavelength is not None:
+            q = q_from_twth(twth,wavelength)
+            d = d_from_twth(twth,wavelength)
+        else:
+            q = np.zeros(len(twth))
+            d = np.zeros(len(twth))        
+    
+    
+    elif xtype.startswith('d'):
+
+        d = x
+        q = q_from_d(d)
+        if wavelength is not None:
+            twth = twth_from_d(d,wavelength)
+        else:
+            twth = np.zeros(len(d))
+    
+    else:
+        print('The provided x-axis label (%s) not correct. Check data.' % xtype)
+        return None,None,None
+        
+    
+    return q,twth,d
+
 
 class XRD(grpobjt):
     '''
@@ -276,6 +270,25 @@ def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
     return XRD(data2D=data2D, data1D=data1D, xpixels=xpixels, ypixels=ypixels,
                name=name, **kws)
 
+
+def create_xrd1d(file, _larch=None, **kws):
+
+    '''
+    create an XRD object
+
+     Parameters:
+     ------------
+      data2D:   2D diffraction patterns
+      data1D:   1D diffraction patterns
+      xpixels:  number of x pixels
+      ypixels:  number of y pixels
+
+     Returns:
+     ----------
+      an XRD object
+
+    '''
+    return xrd1d(file=file, **kws)
 
 
         
@@ -362,4 +375,8 @@ def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
 #     
 
 def registerLarchPlugin():
-    return ('_xrd', {'create_xrd': create_xrd, 'loadXYFILE': loadXYFILE})
+    return ('_xrd', {'create_xrd': create_xrd, 'create_xrd1d': create_xrd1d})
+
+
+def registerLarchGroups():
+    return (XRD,xrd1d)
