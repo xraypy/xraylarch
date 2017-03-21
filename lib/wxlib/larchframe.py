@@ -478,13 +478,11 @@ class LarchFrame(wx.Frame):
     def onClose(self, event=None):
         try:
             self.Hide()
-            self._larch.input.history.save()
-            self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
         except:
             pass
 
     def onExit(self, event=None, force=False):
-        # sys.stderr.write(" LarchFrame onExit\n")
+        sys.stderr.write(" LarchFrame onExit ", force)
         if force:
             ret = wx.ID_YES
         else:
@@ -495,7 +493,7 @@ class LarchFrame(wx.Frame):
         if ret == wx.ID_YES:
             try:
                 self._larch.input.history.save()
-                self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
+                # self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
             except:
                 pass
             try:
