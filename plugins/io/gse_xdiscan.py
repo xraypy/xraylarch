@@ -106,7 +106,9 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
         aname = sumname = rawname = arrname.lower()
-        if ('_mca' in aname and 'outputcounts' not in aname and
+        if ('_mca' in aname and 
+            'outputcounts' not in aname and
+            'dtfactor' not in aname and
             'clock' not in aname):
             sumname, imca = sumname.split('_mca')
             imca = int(imca) - 1
@@ -139,6 +141,11 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         sname = arrname.lower()
         if sname not in labels:
             labels.append(sname)
+
+    data = []
+    for name in labels:
+        data.append(getattr(group, name))
+    group.data = np.array(data)
 
     for imca in range(nmca):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
