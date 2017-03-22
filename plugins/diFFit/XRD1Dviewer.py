@@ -24,7 +24,7 @@ import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS,
                                  match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,generate_hkl,
+                               E_from_lambda,calcCIFpeaks,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
                                peakfilter,xrd_background,xrd1d)
 from larch_plugins.xrmmap import read1DXRDFile
@@ -38,19 +38,12 @@ try:
 except ImportError:
     pass
 
-HAS_XRAYUTIL = False
-try:
-    import xrayutilities as xu
-    HAS_XRAYUTIL = True
-except ImportError:
-    pass
-
-
 ###################################
 
 VERSION = '0 (14-March-2017)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
+CIFSCALE = 1000
 
 FIT_METHODS = ['scipy.signal.find_peaks_cwt']
 
@@ -765,10 +758,10 @@ class Fitting1DXRD(BasePanel):
             indicies = [i for i,value in enumerate(self.raw_data[xi]) if value>=self.xmin and value<=self.xmax]
             if len(indicies) > 0:
                 q    = [self.raw_data[0,i] for i in indicies]
-                d    = [self.raw_data[1,i] for i in indicies]
-                twth = [self.raw_data[2,i] for i in indicies]
+                twth = [self.raw_data[1,i] for i in indicies]
+                d    = [self.raw_data[2,i] for i in indicies]
                 I    = [self.raw_data[3,i] for i in indicies]
-                self.plt_data = np.array([q,d,twth,I])
+                self.plt_data = np.array([q,twth,d,I])
             else:
                 self.plt_data = np.copy(self.raw_data)
                 self.reset_range()
@@ -1510,14 +1503,14 @@ class Viewer1DXRD(wx.Panel):
         self.ylabel       = 'Intensity (a.u.)'
 
         self.data_name    = []
-        self.xy_data      = [] #None #[]
-        self.xy_plot      = [] #None #[]
+        self.xy_data      = []
+        self.xy_plot      = []
         self.xy_scale     = []
         self.idata        = []
 
         self.cif_name     = []
-        self.cif_data     = [] #None #[]
-        self.cif_plot     = [] #None #[]
+        self.cif_plot     = []
+        self.cif_path     = []
         self.cif_scale    = []
         self.icif         = []
 
@@ -1683,8 +1676,8 @@ class Viewer1DXRD(wx.Panel):
         self.slctEorL = wx.Choice(self,choices=['Energy (keV)','Wavelength (A)'])
         self.val_cifE = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
 
-        self.slctEorL.Bind(wx.EVT_TEXT_ENTER, None) ## converts value in box to E/lambda
-        self.val_cifE.Bind(wx.EVT_TEXT_ENTER, None) ## triggers recalculation of cif pattern
+        self.slctEorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
+        self.val_cifE.Bind(wx.EVT_TEXT_ENTER, self.onResetE)
 
         hbox_E.Add(self.slctEorL, flag=wx.RIGHT, border=8)
         hbox_E.Add(self.val_cifE, flag=wx.RIGHT, border=8)
@@ -1698,7 +1691,7 @@ class Viewer1DXRD(wx.Panel):
         self.btn_cifreset = wx.Button(self,label='reset')
 
         self.val_cifscale.Bind(wx.EVT_TEXT_ENTER, partial(self.normalize1Ddata,cif=True))
-        self.btn_cifreset.Bind(wx.EVT_BUTTON, partial(self.reset1Dscale,cif=True))
+        self.btn_cifreset.Bind(wx.EVT_BUTTON, self.resetCIFscale)
 
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.val_cifscale, flag=wx.RIGHT, border=8)
@@ -1711,7 +1704,6 @@ class Viewer1DXRD(wx.Panel):
         self.btn_cifreset.Disable()
 
         return vbox
-
 
     def AddPanel(self,panel):
 
@@ -1778,49 +1770,94 @@ class Viewer1DXRD(wx.Panel):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
 
-    def addCIFdata(self,x,y,name=None,cifscale=1000):
+    def addCIFdata(self,newcif,path):
 
-        plt_no = len(self.cif_name)
-
-        if name is None:
-            name = 'cif %i' % plt_no
-        else:
-            name = 'cif: %s' % name
-
-        y = y/np.max(y)*cifscale
-
-
-        print('Need to read wavelength from data set; currently set to 0.66 A.')
-        print('mkak 2017.03.21')
-        q    = x
-        twth = twth_from_q(q,0.66)
-        d    = d_from_q(q)
-        I    = y
-
+        cif_no = len(self.cif_name)
+        
         ## Add 'raw' data to array
-        self.cif_name.append(name)
-        self.icif.append(len(self.plotlist))
-        self.cif_scale.append(cifscale)
+        self.cif_plot.append(newcif)
+        self.cif_path.append(path)
+        
+        cifscale = np.max(self.cif_plot[-1][3])
+        self.cif_scale.append(int(cifscale))
 
-        self.cif_data.append([q,twth,d,I])
-        self.cif_plot.append([q,twth,d,I])
+        if path is None:
+            datalabel = 'cif %i' % len(self.cif_plot)
+        else:
+            datalabel = 'cif: %s' % os.path.split(path)[-1]
+        self.cif_name.append(datalabel)
 
         ## Plot data (x,y)
+        self.icif.append(len(self.plotlist))
         xi = self.ch_xaxis.GetSelection()
         self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
                                                self.cif_plot[-1][3],
-                                               xlabel=self.xlabel,ylabel=self.ylabel,
-                                               label=name,show_legend=True))
+                                               xlabel=self.xlabel,
+                                               ylabel=self.ylabel,
+                                               label=datalabel,
+                                               show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
 
         self.ch_cif.Set(self.cif_name)
-        self.ch_cif.SetStringSelection(name)
+        self.ch_cif.SetStringSelection(datalabel)
 
         ## Update toolbox panel, scale all cif to 1000
-        self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
+        self.val_cifscale.SetValue(str(self.cif_scale[cif_no]))
         self.optionsON(data=False,cif=True)
+
+    def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
+    
+        energy = self.getE()
+        
+        qall,Fall = calcCIFpeaks(path,energy,verbose=verbose)
+        
+        if len(Fall) > 0:
+        
+            Fall = Fall/np.max(Fall)*cifscale
+
+            wavelength = lambda_from_E(energy)
+            q    = qall
+            twth = twth_from_q(q,wavelength)
+            d    = d_from_q(q)
+            I    = Fall
+        else:
+            print('No real structure factors found in range.')
+            return
+        
+        return [q,twth,d,I]
+
+    def onResetE(self,event=None):
+    
+        
+        xi = self.ch_xaxis.GetSelection()
+        for i,cif_no in enumerate(self.icif):
+            
+            self.cif_plot[i] = self.readCIF(self.cif_path[i],
+                                            cifscale=self.cif_scale[i])
+            
+            self.plot1D.update_line(cif_no,
+                                    np.array(self.cif_plot[i][xi]),
+                                    np.array(self.cif_plot[i][3]))
+                                    
+        self.plot1D.canvas.draw()
+
+    def onEorLSel(self,event=None):
+
+        try:
+            current = float(self.val_cifE.GetValue())
+        except:
+            return
+        
+        if self.slctEorL.GetSelection() == 1 and current > 5:
+            new = '%0.4f' % lambda_from_E(current)
+        elif self.slctEorL.GetSelection() == 0 and current < 5:
+            new = '%0.4f' % E_from_lambda(current)
+        else:
+            return
+        
+        self.val_cifE.SetValue(new)
 
     def optionsON(self,data=True,cif=False):
 
@@ -1832,6 +1869,7 @@ class Viewer1DXRD(wx.Panel):
             #self.btn_rmv.Enable()
         if cif:
             self.val_cifscale.Enable()
+            self.btn_cifreset.Enable()
 
 
     def add1Ddata(self,data1dxrd):
@@ -1879,11 +1917,11 @@ class Viewer1DXRD(wx.Panel):
 
         if cif:
             plt_no = self.ch_cif.GetSelection()
-            y = self.cif_data[plt_no][3]
+            y = self.cif_plot[plt_no][3]
 
             self.cif_scale[plt_no] = float(self.val_cifscale.GetValue())
             if self.cif_scale[plt_no] <= 0:
-                self.cif_scale[plt_no] = np.max(y)
+                self.cif_scale[plt_no] = CIFSCALE
                 self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
             self.cif_plot[plt_no][3] = y/np.max(y) * self.cif_scale[plt_no]
         else:
@@ -1948,10 +1986,12 @@ class Viewer1DXRD(wx.Panel):
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
-        xmax,xmin,ymax,ymin = 0,10,0,10
         xi = self.ch_xaxis.GetSelection()
 
+        xmin,xmax,ymin,ymax = 0,10,0,10
+        
         for i,plt_no in enumerate(self.icif):
+
             x = np.array(self.cif_plot[i][xi])
             y = np.array(self.cif_plot[i][3])
 
@@ -1961,7 +2001,7 @@ class Viewer1DXRD(wx.Panel):
             if ymin > np.min(y): ymin = np.min(y)
 
             self.plot1D.update_line(plt_no,x,y)
-
+            
         for i,plt_no in enumerate(self.idata):
             x = np.array(self.xy_plot[i][xi])
             y = np.array(self.xy_plot[i][3])
@@ -1992,13 +2032,33 @@ class Viewer1DXRD(wx.Panel):
 
         self.rescale1Daxis(xaxis=False,yaxis=True)
         self.xy_scale[plt_no] = np.max(self.xy_data[plt_no].I)
-        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
+
+    def resetCIFscale(self,event=None):
+
+        cif_no = self.ch_cif.GetSelection()
+        xi = self.ch_xaxis.GetSelection()
+
+        self.cif_scale[cif_no] = CIFSCALE
+        self.normalize1Ddata(cif=True)
+        
+        self.plot1D.update_line(int(self.icif[cif_no]),
+                                np.array(self.cif_plot[cif_no][xi]),
+                                np.array(self.cif_plot[cif_no][3]))
+        self.plot1D.canvas.draw()
+        self.plot1D.unzoom_all()
+        
+        self.rescale1Daxis(xaxis=False,yaxis=True)
+        
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
+
+
 
     def set_xview(self, x1, x2):
 
-        if self.xy_plot is not None:
+        if len(self.xy_plot) > 0:
             xydata = self.xy_plot
-        elif self.cif_plot is not None:
+        elif len(self.cif_plot) > 0:
             xydata = self.cif_plot
         else:
             return
@@ -2014,9 +2074,9 @@ class Viewer1DXRD(wx.Panel):
 
     def set_yview(self, y1, y2):
 
-        if self.xy_plot is not None:
+        if len(self.xy_plot) > 0:
             xydata = self.xy_plot
-        elif self.cif_plot is not None:
+        elif len(self.cif_plot) > 0:
             xydata = self.cif_plot
         else:
             return
@@ -2029,10 +2089,9 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.set_ylabel(self.ylabel)
         self.plot1D.canvas.draw()
 
-
     def abs_limits(self,xydata,axis=0):
 
-        mini, maxi = 10,0
+        mini, maxi = 0,1
         for axisi in xydata:
             mini = np.min(axisi[axis]) if np.min(axisi[axis]) < mini else mini
             maxi = np.max(axisi[axis]) if np.max(axisi[axis]) > maxi else maxi
@@ -2076,20 +2135,32 @@ class Viewer1DXRD(wx.Panel):
         dlg.Destroy()
 
         if read:
-            cifile = os.path.split(path)[-1]
-            
-            
-            print self.val_cifE.GetValue()
-            plt_no = self.ch_data.GetSelection()
-            print self.xy_data[plt_no].energy
-            energy = 19.0
-            qall,Fall = calculateCIF(path,energy)
-            if len(Fall) > 0:
-                Fall = np.array(Fall)
-                qall = np.array(qall)
-                self.addCIFdata(qall,Fall,name=cifile)
+            newcif = self.readCIF(path,verbose=True)
+
+            if newcif is not None:
+                self.addCIFdata(newcif,path)
+    
+    def getE(self):
+    
+        try:
+            energy = float(self.val_cifE.GetValue())
+        except:
+            energy = None
+        
+        if energy is None:
+            try:
+                plt_no = self.ch_data.GetSelection()
+                energy = self.xy_data[plt_no].energy
+            except:
+                energy = 19.0
+            self.val_cifE.SetValue('%0.3f' % energy)
+            self.slctEorL.SetSelection(0)
+        else:
+            if self.slctEorL.GetSelection() == 0:
+                energy = float(self.val_cifE.GetValue())
             else:
-                print('Could not calculate real structure factors.')
+                energy = E_from_lambda(float(self.val_cifE.GetValue()))
+        return energy
 
 
 class RangeToolsPanel(wx.Panel):
