@@ -43,9 +43,9 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         hanning              cosine-squared taper
         parzen               linear taper
         welch                quadratic taper
-	gaussian             Gaussian (normal) function window
-	sine                 sine function window
-	kaiser               Kaiser-Bessel function-derived window
+        gaussian             Gaussian (normal) function window
+        sine                 sine function window
+        kaiser               Kaiser-Bessel function-derived window
 
     """
     if window is None:
@@ -153,12 +153,12 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
     -------
     Arrays written to output group:
         rwin               window Omega(R) (length of input chi(R)).
-	q                  uniform array of k, out to qmax_out.
-	chiq               complex array of chi(k).
-	chiq_mag           magnitude of chi(k).
-	chiq_re            real part of chi(k).
-	chiq_im            imaginary part of chi(k).
-	chiq_pha           phase of chi(k) if with_phase=True
+        q                  uniform array of k, out to qmax_out.
+        chiq               complex array of chi(k).
+        chiq_mag           magnitude of chi(k).
+        chiq_re            real part of chi(k).
+        chiq_im            imaginary part of chi(k).
+        chiq_pha           phase of chi(k) if with_phase=True
                            (a noticable performance hit)
 
     Supports First Argument Group convention (with group member names 'r' and 'chir')
@@ -232,12 +232,12 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     -------
     Arrays written to output group:
         kwin               window function Omega(k) (length of input chi(k)).
-	r                  uniform array of R, out to rmax_out.
-	chir               complex array of chi(R).
-	chir_mag           magnitude of chi(R).
-	chir_re            real part of chi(R).
-	chir_im            imaginary part of chi(R).
-	chir_pha           phase of chi(R) if with_phase=True
+        r                  uniform array of R, out to rmax_out.
+        chir               complex array of chi(R).
+        chir_mag           magnitude of chi(R).
+        chir_re            real part of chi(R).
+        chir_im            imaginary part of chi(R).
+        chir_pha           phase of chi(R) if with_phase=True
                            (a noticable performance hit)
 
     Supports First Argument Group convention (with group member names 'k' and 'chi')
