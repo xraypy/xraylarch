@@ -580,7 +580,8 @@ class Fitting1DXRD(BasePanel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.ttl_energy = wx.StaticText(self, label=('UPDATE Energy: %0.3f keV (%0.4f A)' % (0.0,0.0)))
+        self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (0,0)))
+
         vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
 
         return vbox
@@ -1558,11 +1559,11 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1DXRD(panel)
 
-        settings = self.SettingsPanel(self)
+#         settings = self.SettingsPanel(self)
         btnbox = self.QuickButtons(panel)
 
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        hbox.Add(settings,flag=wx.RIGHT,border=10)
+#         hbox.Add(settings,flag=wx.RIGHT,border=10)
         hbox.Add(btnbox,flag=wx.LEFT,border = 1)
         vbox.Add(hbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
@@ -1580,7 +1581,7 @@ class Viewer1DXRD(wx.Panel):
         ## X-Scale
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-        xunits = ['q','d',u'2\u03B8']
+        xunits = ['q',u'2\u03B8','d']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
 
         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.check1Daxis)
@@ -1621,10 +1622,14 @@ class Viewer1DXRD(wx.Panel):
 
         self.ch_data = wx.Choice(self,choices=self.data_name)
         self.ch_data.Bind(wx.EVT_CHOICE,   self.onSELECT)
-        vbox.Add(self.ch_data, flag=wx.EXPAND|wx.ALL, border=8)
+        vbox.Add(self.ch_data, flag=wx.BOTTOM|wx.TOP|wx.EXPAND, border=8)
 
         ###########################
+        # Energy display
+        self.ttl_energy = wx.StaticText(self, label=('Energy:'))
+        vbox.Add(self.ttl_energy, flag=wx.RIGHT, border=8)
 
+        ###########################
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
@@ -1670,24 +1675,40 @@ class Viewer1DXRD(wx.Panel):
 
         self.ch_cif = wx.Choice(self,choices=self.cif_name)
         self.ch_cif.Bind(wx.EVT_CHOICE,   self.selectCIF)
-        vbox.Add(self.ch_cif, flag=wx.EXPAND|wx.ALL, border=8)
+        vbox.Add(self.ch_cif, flag=wx.BOTTOM|wx.TOP|wx.EXPAND, border=8)
 
         ###########################
+        ## Energy
+        hbox_E = wx.BoxSizer(wx.HORIZONTAL)
+        self.slctEorL = wx.Choice(self,choices=['Energy (keV)','Wavelength (A)'])
+        self.val_cifE = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
 
+        self.slctEorL.Bind(wx.EVT_TEXT_ENTER, None) ## converts value in box to E/lambda
+        self.val_cifE.Bind(wx.EVT_TEXT_ENTER, None) ## triggers recalculation of cif pattern
+
+        hbox_E.Add(self.slctEorL, flag=wx.RIGHT, border=8)
+        hbox_E.Add(self.val_cifE, flag=wx.RIGHT, border=8)
+        vbox.Add(hbox_E, flag=wx.BOTTOM|wx.TOP, border=8)
+
+        ###########################
         ## Scale
         hbox_scl = wx.BoxSizer(wx.HORIZONTAL)
         ttl_scl = wx.StaticText(self, label='SCALE Y TO:')
         self.val_cifscale = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.btn_cifreset = wx.Button(self,label='reset')
 
         self.val_cifscale.Bind(wx.EVT_TEXT_ENTER, partial(self.normalize1Ddata,cif=True))
+        self.btn_cifreset.Bind(wx.EVT_BUTTON, partial(self.reset1Dscale,cif=True))
 
         hbox_scl.Add(ttl_scl, flag=wx.RIGHT, border=8)
         hbox_scl.Add(self.val_cifscale, flag=wx.RIGHT, border=8)
+        hbox_scl.Add(self.btn_cifreset, flag=wx.RIGHT, border=8)
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         ## Disable until data
         self.val_cifscale.Disable()
+        self.btn_cifreset.Disable()
 
         return vbox
 
@@ -1706,13 +1727,13 @@ class Viewer1DXRD(wx.Panel):
         hbox.Add(btn_cif, flag=wx.ALL, border=8)
         return hbox
 
-    def SettingsPanel(self,panel):
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.ttl_energy = wx.StaticText(self, label=('UPDATE Energy: %0.3f keV (%0.4f A)' % (0.0,0.0)))
-        vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
-
-        return vbox
+#     def SettingsPanel(self,panel):
+# 
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+#         self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (0,0)))
+#         vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
+# 
+#         return vbox
 
     def QuickButtons(self,panel):
         buttonbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -1772,8 +1793,8 @@ class Viewer1DXRD(wx.Panel):
         print('Need to read wavelength from data set; currently set to 0.66 A.')
         print('mkak 2017.03.21')
         q    = x
-        d    = d_from_q(q)
         twth = twth_from_q(q,0.66)
+        d    = d_from_q(q)
         I    = y
 
         ## Add 'raw' data to array
@@ -1781,8 +1802,8 @@ class Viewer1DXRD(wx.Panel):
         self.icif.append(len(self.plotlist))
         self.cif_scale.append(cifscale)
 
-        self.cif_data.append([q,d,twth,I])
-        self.cif_plot.append([q,d,twth,I])
+        self.cif_data.append([q,twth,d,I])
+        self.cif_plot.append([q,twth,d,I])
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
@@ -1851,6 +1872,8 @@ class Viewer1DXRD(wx.Panel):
         self.val_scale.SetValue(str(self.xy_scale[-1]))
         self.optionsON(data=True,cif=False)
         #self.owner.nb.SetSelection(0) ## switches to viewer panel
+        self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[-1].energy,
+                                                                  self.xy_data[-1].wavelength))
 
     def normalize1Ddata(self,event=None,cif=False):
 
@@ -1896,6 +1919,9 @@ class Viewer1DXRD(wx.Panel):
 
         plt_no = self.ch_data.GetSelection()
         self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+        
+        self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[plt_no].energy,
+                                                                  self.xy_data[plt_no].wavelength))
 
     def selectCIF(self,event=None):
 
@@ -1908,12 +1934,12 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D.unzoom_all()
 
-        ## 2theta
-        if self.ch_xaxis.GetSelection() == 1:
-            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
         ## d
-        elif self.ch_xaxis.GetSelection() == 2:
+        if self.ch_xaxis.GetSelection() == 2:
             self.xlabel = 'd ($\AA$)'
+        ## 2theta
+        elif self.ch_xaxis.GetSelection() == 1:
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
         ## q
         else:
             self.xlabel = 'q (1/$\AA$)'
@@ -1947,7 +1973,7 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
-        if xi == 1: xmax = 5
+        if xi == 2: xmax = 5
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
 
@@ -2051,35 +2077,17 @@ class Viewer1DXRD(wx.Panel):
 
         if read:
             cifile = os.path.split(path)[-1]
-
-            try:
-                cif = xu.materials.Crystal.fromCIF(path)
-            except:
-                print('incorrect file format: %s' % os.path.split(path)[-1])
-                return
-
-            ## generate hkl list
-            hkllist = generate_hkl()
-
-            print('Need to add in wavelength/energy here. Currently using default 19.0 keV.')
-            print('mkak 2017.03.21')
-            qlist = cif.Q(hkllist)
-            Flist = cif.StructureFactorForQ(qlist,19.0)
-
-            Fall = []
-            qall = []
-            hklall = []
-            for i,hkl in enumerate(hkllist):
-                if np.abs(Flist[i]) > 0.01:
-                    Fadd = np.abs(Flist[i])
-                    qadd = np.linalg.norm(qlist[i])
-                    if qadd not in qall and qadd < 6:
-                        Fall.extend((0,Fadd,0))
-                        qall.extend((qadd,qadd,qadd))
-            if np.shape(Fall)[0] > 0:
+            
+            
+            print self.val_cifE.GetValue()
+            plt_no = self.ch_data.GetSelection()
+            print self.xy_data[plt_no].energy
+            energy = 19.0
+            qall,Fall = calculateCIF(path,energy)
+            if len(Fall) > 0:
                 Fall = np.array(Fall)
                 qall = np.array(qall)
-                self.addCIFdata(qall,Fall,name=os.path.split(path)[-1])
+                self.addCIFdata(qall,Fall,name=cifile)
             else:
                 print('Could not calculate real structure factors.')
 

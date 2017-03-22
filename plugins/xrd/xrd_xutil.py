@@ -85,6 +85,9 @@ def structurefactor_wrt_E(cry_strc, hkl, emin=500, emax=20000, esteps=5000):
 
     return E,F
 
+
+
+
                      
 def registerLarchPlugin():
     return ('_xrd', {'structurefactor_from_cif': structurefactor_from_cif,
