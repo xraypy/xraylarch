@@ -20,9 +20,7 @@ from wxutils import MenuItem
 import larch
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd import integrate_xrd,E_from_lambda
-# from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
-# from larch_plugins.xrd.xrd_etc import E_from_lambda
+from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -47,7 +45,7 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, *args, **kw):
+    def __init__(self, _larch=None, xrd1Dviewer=None, poni=None, *args, **kw):
         
         screenSize = wx.DisplaySize()
         x,y = 1200, 720
@@ -82,16 +80,19 @@ class diFFit2DFrame(wx.Frame):
         
         self.color = 'bone'
         self.flip = 'none'
-        
-        self.ai = None
-        
+
         self.XRD2DMenuBar()
         self.Panel2DViewer()
         
         self.Centre()
         self.Show()
         
-        self.btn_integ.Disable()
+        if poni is None:
+            self.ai = None
+            self.btn_integ.Disable()
+        else:
+            self.ai = pyFAI.load(poni)
+            self.btn_integ.Enable()
 
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
@@ -381,19 +382,19 @@ class diFFit2DFrame(wx.Frame):
             if plot:
                 if self.xrddisplay1D is None:
                     self.xrddisplay1D = diFFit1DFrame()
-                    try:
-                        self.xrddisplay1D.xrd1Dviewer.addLAMBDA(self.ai._wavelength,units='m')
-                    except:
-                        pass
+
+                wavelength = self.ai._wavelength*1e10 ## units A
                 label = self.name_images[self.ch_img.GetSelection()]
+                data1dxrd = xrd1d(label=label,wavelength=wavelength,energy=E_from_lambda(wavelength))            
+                data1dxrd.xrd_from_2d(data1D,'q')                
+
                 try:
-                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
                 except PyDeadObjectError:
                     self.xrddisplay1D = diFFit1DFrame()
-                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
-
             
 ##############################################
 #### CALIBRATION FUNCTIONS

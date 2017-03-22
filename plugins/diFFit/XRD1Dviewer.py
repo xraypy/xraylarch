@@ -1804,7 +1804,7 @@ class Viewer1DXRD(wx.Panel):
         self.ch_cif.SetStringSelection(datalabel)
 
         ## Update toolbox panel, scale all cif to 1000
-        self.val_cifscale.SetValue(str(self.cif_scale[cif_no]))
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
         self.optionsON(data=False,cif=True)
 
     def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
@@ -1907,7 +1907,7 @@ class Viewer1DXRD(wx.Panel):
         self.ch_data.SetStringSelection(datalabel)
 
         ## Update toolbox panel
-        self.val_scale.SetValue(str(self.xy_scale[-1]))
+        self.val_scale.SetValue('%i' % self.xy_scale[-1])
         self.optionsON(data=True,cif=False)
         #self.owner.nb.SetSelection(0) ## switches to viewer panel
         self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[-1].energy,
@@ -1916,14 +1916,14 @@ class Viewer1DXRD(wx.Panel):
     def normalize1Ddata(self,event=None,cif=False):
 
         if cif:
-            plt_no = self.ch_cif.GetSelection()
-            y = self.cif_plot[plt_no][3]
+            cif_no = self.ch_cif.GetSelection()
+            y = self.cif_plot[cif_no][3]
 
-            self.cif_scale[plt_no] = float(self.val_cifscale.GetValue())
-            if self.cif_scale[plt_no] <= 0:
-                self.cif_scale[plt_no] = CIFSCALE
-                self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
-            self.cif_plot[plt_no][3] = y/np.max(y) * self.cif_scale[plt_no]
+            self.cif_scale[cif_no] = float(self.val_cifscale.GetValue())
+            if self.cif_scale[cif_no] <= 0:
+                self.cif_scale[cif_no] = CIFSCALE
+                self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
+            self.cif_plot[cif_no][3] = y/np.max(y) * self.cif_scale[cif_no]
         else:
             plt_no = self.ch_data.GetSelection()
             y = self.xy_data[plt_no].I
@@ -1931,7 +1931,7 @@ class Viewer1DXRD(wx.Panel):
             self.xy_scale[plt_no] = float(self.val_scale.GetValue())
             if self.xy_scale[plt_no] <= 0:
                 self.xy_scale[plt_no] = np.max(y)
-                self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+                self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
             self.xy_plot[plt_no][3] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.plot1D.unzoom_all()
@@ -1956,7 +1956,7 @@ class Viewer1DXRD(wx.Panel):
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
 
         plt_no = self.ch_data.GetSelection()
-        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
         
         self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[plt_no].energy,
                                                                   self.xy_data[plt_no].wavelength))
@@ -1965,8 +1965,8 @@ class Viewer1DXRD(wx.Panel):
 
         cif_str = self.ch_cif.GetString(self.ch_cif.GetSelection())
 
-        plt_no = self.ch_cif.GetSelection()
-        self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
+        cif_no = self.ch_cif.GetSelection()
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
 
     def check1Daxis(self,event=None,yaxis=False):
 

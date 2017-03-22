@@ -1472,6 +1472,8 @@ class MapViewerFrame(wx.Frame):
             xrmfile = self.current_file
         ##aname = xrmfile.add_area(mask)
         ##self.sel_xrd = xrmfile.get_xrd_area(aname)
+        print 'in get_xrd_area'
+        print np.shape(xrmfile.xrd2d)
         self.sel_xrd = xrmfile.xrd2d[50,50,]
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None,
@@ -1649,7 +1651,10 @@ class MapViewerFrame(wx.Frame):
         'displays 2D XRD pattern in diFFit viewer'
 
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
+            poni = self.current_file.xrmmap['xrd'].attrs['calfile']
+            if not os.path.exists(poni): poni = None
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,poni=poni,
+                                              xrd1Dviewer=self.xrddisplay1D)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
@@ -1661,7 +1666,8 @@ class MapViewerFrame(wx.Frame):
     def display_1Dxrd(self, xy, wavelength, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
 
-        data1dxrd = xrd1d(label=label,wavelength=wavelength)
+        wavelength = wavelength*1e10 ## convert to A
+        data1dxrd = xrd1d(label=label,wavelength=wavelength,energy=E_from_lambda(wavelength))
         data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:
