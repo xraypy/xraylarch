@@ -26,8 +26,8 @@ except:
     grpobjt = object
 
 ##########################################################################
-# FUNCTIONS
-  
+# CLASSES
+
 class xrd1d(grpobjt):
     '''
     1D XRD data class
@@ -104,11 +104,10 @@ class xrd1d(grpobjt):
     def xrd_from_file(self,filename,verbose=True):
         
         try:
-            if verbose:
-                print('Opening file: %s' % os.path.split(filename)[-1])
-
             from larch_plugins.xrmmap import read1DXRDFile
             head,dat = read1DXRDFile(filename)
+            if verbose:
+                print('Opening xrd data file: %s' % os.path.split(filename)[-1])
         except:
            print('incorrect xy file format: %s' % os.path.split(filename)[-1])
            return
@@ -154,55 +153,7 @@ class xrd1d(grpobjt):
             x,y = np.split(xy,2,axis=0)
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
         self.I = np.array(y).squeeze()
-
-def calculate_xvalues(x,xtype,wavelength):
-    '''
-    projects given x-axis onto q-, 2theta-, and d-axes
-    
-    x            :   list or array (expected units: 1/A, deg, or A)
-    xtype        :   options 'q', '2th', or 'd'
-    wavelength   :   incident x-ray wavelength (units: A)
-    
-    q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
-    '''
-    x = np.array(x).squeeze()
-    if xtype.startswith('q'):
-
-        q = x
-        d = d_from_q(q)
-        if wavelength is not None:
-            twth = twth_from_q(q,wavelength)
-        else:
-            twth = np.zeros(len(q))        
-    
-    elif xtype.startswith('2th'):
-
-        twth = x
-        if wavelength is not None:
-            q = q_from_twth(twth,wavelength)
-            d = d_from_twth(twth,wavelength)
-        else:
-            q = np.zeros(len(twth))
-            d = np.zeros(len(twth))        
-    
-    
-    elif xtype.startswith('d'):
-
-        d = x
-        q = q_from_d(d)
-        if wavelength is not None:
-            twth = twth_from_d(d,wavelength)
-        else:
-            twth = np.zeros(len(d))
-    
-    else:
-        print('The provided x-axis label (%s) not correct. Check data.' % xtype)
-        return None,None,None
-        
-    
-    return q,twth,d
-
-
+      
 class XRD(grpobjt):
     '''
     X-Ray Diffraction (XRD) class
@@ -256,6 +207,56 @@ class XRD(grpobjt):
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
 
 
+##########################################################################
+# FUNCTIONS
+
+def calculate_xvalues(x,xtype,wavelength):
+    '''
+    projects given x-axis onto q-, 2theta-, and d-axes
+    
+    x            :   list or array (expected units: 1/A, deg, or A)
+    xtype        :   options 'q', '2th', or 'd'
+    wavelength   :   incident x-ray wavelength (units: A)
+    
+    q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
+    '''
+    x = np.array(x).squeeze()
+    if xtype.startswith('q'):
+
+        q = x
+        d = d_from_q(q)
+        if wavelength is not None:
+            twth = twth_from_q(q,wavelength)
+        else:
+            twth = np.zeros(len(q))        
+    
+    elif xtype.startswith('2th'):
+
+        twth = x
+        if wavelength is not None:
+            q = q_from_twth(twth,wavelength)
+            d = d_from_twth(twth,wavelength)
+        else:
+            q = np.zeros(len(twth))
+            d = np.zeros(len(twth))        
+    
+    
+    elif xtype.startswith('d'):
+
+        d = x
+        q = q_from_d(d)
+        if wavelength is not None:
+            twth = twth_from_d(d,wavelength)
+        else:
+            twth = np.zeros(len(d))
+    
+    else:
+        print('The provided x-axis label (%s) not correct. Check data.' % xtype)
+        return None,None,None
+        
+    
+    return q,twth,d
+
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
                data1D=None, nwedge=2, nchan=5001, 
@@ -299,89 +300,7 @@ def create_xrd1d(file, _larch=None, **kws):
     '''
     return xrd1d(file=file, **kws)
 
-
-        
-## ADD IN TO XRD1D VIEWER mkak 2017.03.20
-# # # def loadXYFILE(parent,event=None,verbose=False):
-# # # 
-# # #     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-# # #     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-# # #                        defaultDir=os.getcwd(),
-# # #                        wildcard=wildcards, style=wx.FD_OPEN)
-# # # 
-# # #     path, read = None, False
-# # #     if dlg.ShowModal() == wx.ID_OK:
-# # #         read = True
-# # #         path = dlg.GetPath().replace('\\', '/')
-# # #     dlg.Destroy()
-# # # 
-# # #     if read:
-
-# def readXYFILE(parent,event=None,verbose=False):
-# 
-# #     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-# #     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-# #                        defaultDir=os.getcwd(),
-# #                        wildcard=wildcards, style=wx.FD_OPEN)
-# # 
-# #     path, read = None, False
-# #     if dlg.ShowModal() == wx.ID_OK:
-# #         read = True
-# #         path = dlg.GetPath().replace('\\', '/')
-# #     dlg.Destroy()
-# # 
-# #     if read:
-# 
-#     try:
-#         if verbose:
-#             print('Opening file: %s' % os.path.split(path)[-1])
-# 
-#         h,d = read1DXRDFile(path)
-# 
-#         ## header info
-#         splfl = None
-#         xpix,ypix = None,None
-#         poni1,poni2 = None,None
-#         dist = None
-#         rot1,rot2,rot3 = None,None,None
-#         wavelength = None
-#         plr = None
-#         nrm = None
-#         units = None
-# 
-#         for line in h:
-#             import re
-#             line = re.sub(',','',line)
-# 
-#             if 'SplineFile' in line:
-#                 splfl = line.split()[-1]
-#             if 'PixelSize' in line:
-#                 xpix,ypix = float(line.split()[2]),float(line.split()[3])
-#             if 'PONI' in line:
-#                 poni1,poni2 = float(line.split()[2]),float(line.split()[3])
-#             if 'Detector' in line:
-#                 dist = float(line.split()[-2])
-#             if 'Rotations' in line:
-#                 rot1,rot2,rot3 = float(line.split()[2]),float(line.split()[3]),float(line.split()[4])
-# 
-#             if 'Wavelength' in line:
-#                 wavelength = float(line.split()[-1])
-#             if 'Polarization' in line:
-#                 if line.split()[-1] != 'None': plr = float(line.split()[-1])
-#             if 'Normalization' in line:
-#                 nrm = float(line.split()[-1])
-# 
-#             if 'q_' in line or '2th_' in line:
-#                 units = line.split()[1]
-#         ## data
-#         x,y = np.split(np.array(d),2,axis=1)
-# 
-#     except:
-#        print('incorrect xy file format: %s' % os.path.split(path)[-1])
-#        return
-# 
-#     return x,y,units,path
-#     
+   
 
 def registerLarchPlugin():
     return ('_xrd', {'create_xrd': create_xrd, 'create_xrd1d': create_xrd1d})
