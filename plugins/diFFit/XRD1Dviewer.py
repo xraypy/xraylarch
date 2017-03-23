@@ -904,11 +904,30 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
 
-        self.plot1D.scatterplot(*self.plt_peaks,
-                          color='red',edge_color='yellow', selectcolor='green',size=12,
-                          show_legend=True)
+#         self.plot1D.scatterplot(*self.plt_peaks,
+#                           color='red',edge_color='yellow', selectcolor='green',size=12,
+#                           label='Found peaks',show_legend=True)
+        self.plot1D.oplot(*self.plt_peaks,
+                          marker='o',
+                          color='red',markersize=8,linewidth=0,
+                          label='Found peaks',show_legend=True)
+
         self.plot1D.cursor_mode = 'zoom'
 
+
+
+# # #   oplot(self, xdata, ydata, side='left', label=None,
+# # #           xlabel=None, ylabel=None, y2label=None, title=None,
+# # #           dy=None, ylog_scale=None, grid=None,
+# # #           xmin=None, xmax=None, ymin=None, ymax=None,
+# # #           color=None, style=None, drawstyle=None,
+# # #           linewidth=2, marker=None, markersize=None,
+# # #           autoscale=True, refresh=True, show_legend=None,
+# # #           legend_loc='best', legend_on=True, delay_draw=False,
+# # #           bgcolor=None, framecolor=None, gridcolor=None,
+# # #           labelfontsize=None, legendfontsize=None,
+# # #           fullbox=None, axes_style=None, zorder=None, **kws)
+              
 # # #   scatterplot(self, xdata, ydata, label=None, size=10, color=None, edgecolor=None,
 # # #           selectcolor=None, selectedge=None, xlabel=None, ylabel=None, y2label=None,
 # # #           xmin=None, xmax=None, ymin=None, ymax=None, title=None, grid=None,
