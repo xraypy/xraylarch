@@ -63,16 +63,41 @@ def YesNo(parent, question, caption = 'Yes or no?'):
     dlg.Destroy()
     return result
 
+def calcFrameSize(x,y):
+    '''
+    Calculates an appropriate frame size based on user's display
+    '''
+    screenSize = wx.DisplaySize()
+    if x > screenSize[0] * 0.9:
+        x = int(screenSize[0] * 0.9)
+        y = int(x*0.6)
+        
+    return x,y
+
+def loadXYfile(event=None,parent=None,xrdviewer=None):
+
+    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
+                        defaultDir=os.getcwd(),
+                        wildcard=wildcards, style=wx.FD_OPEN)
+
+    path, read = None, False
+    if dlg.ShowModal() == wx.ID_OK:
+        read = True
+        path = dlg.GetPath().replace('\\', '/')
+    dlg.Destroy()
+    
+    if read:
+        data1dxrd = xrd1d(file=path)
+        if xrdviewer is None:
+            return data1dxrd
+        else:
+            xrdviewer.add1Ddata(data1dxrd)
+
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        print('\n')
-        screenSize = wx.DisplaySize()
-        x,y = 1500, 750
-        if x > screenSize[0] * 0.9:
-            x = int(screenSize[0] * 0.9)
-            y = int(x*0.6)
-
+        x,y = calcFrameSize(1500, 750)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -83,18 +108,17 @@ class diFFit1DFrame(wx.Frame):
         
         self.openDB(dbname='amcsd_cif.db')
 
-        # create the page windows as children of the notebook
+        ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
-#         self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
+        ## include database tab? #self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
 
-        # add the pages to the notebook with the label to show on the tab
+        ## add the pages to the notebook with the label to show on the tab
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
         self.nb.AddPage(self.xrd1Dfitting, 'Fitting')
-#         self.nb.AddPage(self.xrddatabase, 'XRD Database')
+        ## include database tab? #self.nb.AddPage(self.xrddatabase, 'XRD Database')
 
-        #3 finally, put the notebook in a sizer for the panel to manage
-        ## the layout
+        ## put the notebook in a sizer for the panel to manage the layout
         sizer = wx.BoxSizer()
         sizer.Add(self.nb, -1, wx.EXPAND)
         panel.SetSizer(sizer)
@@ -124,7 +148,6 @@ class diFFit1DFrame(wx.Frame):
             self.closeDB()
         except:
             pass
-
 
         try:
             self.Destroy()
@@ -202,70 +225,66 @@ class diFFit1DFrame(wx.Frame):
 ##############################################
 #### 
     def fit1Dxrd(self,event=None):
-
-        indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
+        '''
+        GUI interface for loading data to fitting panel (from data in viewer or file)
+        mkak 2017.03.23
+        '''
+        xrdv = self.xrd1Dviewer
+        xrdf = self.xrd1Dfitting
+        
+        indicies = [i for i,name in enumerate(xrdv.data_name) if 'cif' not in name]
         okay = False
 
-        xi = self.xrd1Dviewer.ch_xaxis.GetSelection()
-        self.xrd1Dfitting.rngpl.ch_xaxis.SetSelection(xi)
+        xi = xrdv.ch_xaxis.GetSelection()
+        xrdf.rngpl.ch_xaxis.SetSelection(xi)
 
         if len(indicies) > 0:
-            self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
-            self.all_data = self.xrd1Dviewer.xy_data
-
+            self.list = [xrdv.data_name[i] for i in indicies]
+            self.all_data = xrdv.xy_data
             dlg = SelectFittingData(self)
-
             if dlg.ShowModal() == wx.ID_OK:
                 okay = True
                 index = dlg.slct_1Ddata.GetSelection()
             dlg.Destroy()
-
         else:
             index = -1
-            loadXYfile(parent=self,xrdviewer=self.xrd1Dviewer)
+            loadXYfile(parent=self,xrdviewer=xrdv)
             okay = True
 
         if okay:
-            seldat = self.xrd1Dviewer.xy_data[index]
-            
-            name = seldat.label
-            q    = seldat.q
-            twth = seldat.twth
-            d    = seldat.d
-            I    = seldat.I
-
+            seldat = xrdv.xy_data[index]
             self.nb.SetSelection(1) ## switches to fitting panel
 
             adddata = True
-            if self.xrd1Dfitting.raw_data is not None:
-                question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.plttitle,name)
+            if xrdf.raw_data is not None:
+                question = 'Replace current data file %s with selected file %s?' % \
+                               (xrdf.plttitle,name)
                 adddata = YesNo(self,question,caption='Overwrite warning')
 
             if adddata:
 
-                if self.xrd1Dfitting.raw_data is not None:
-                    self.xrd1Dfitting.reset_fitting()
+                if xrdf.raw_data is not None:
+                    xrdf.reset_fitting()
 
-                self.xrd1Dfitting.plttitle = name
-                self.xrd1Dfitting.raw_data = np.array([q,twth,d,I])
-                self.xrd1Dfitting.plt_data = np.array([q,twth,d,I])
+                xrdf.plttitle = seldat.label
+                xrdf.raw_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
+                xrdf.plt_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
 
-                self.xrd1Dfitting.xmin     = np.min(self.xrd1Dfitting.plt_data[xi])
-                self.xrd1Dfitting.xmax     = np.max(self.xrd1Dfitting.plt_data[xi])
+                xrdf.xmin     = np.min(xrdf.plt_data[xi])
+                xrdf.xmax     = np.max(xrdf.plt_data[xi])
 
-                self.xrd1Dfitting.optionsON()
-                self.xrd1Dviewer.optionsON()
-                self.xrd1Dfitting.check1Daxis()
+                xrdf.optionsON()
+                xrdv.optionsON()
+                xrdf.check1Daxis()
 
 class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Select data for fitting',
-                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
-                                    size = (210,410))
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK)
+                                    #size = (210,410))
         self.parent = parent
-
         self.createPanel()
 
         ix,iy = self.panel.GetBestSize()
@@ -274,15 +293,12 @@ class SelectFittingData(wx.Dialog):
     def createPanel(self):
 
         self.panel = wx.Panel(self)
-
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Add things
         self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130),
                                       self.parent.list, wx.LB_SINGLE)
-
         btn_new = wx.Button(self.panel,label='Load data from file')
-
         btn_new.Bind(wx.EVT_BUTTON, self.load_file)
 
         #####
@@ -311,105 +327,6 @@ class SelectFittingData(wx.Dialog):
         self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
         self.slct_1Ddata.Set(self.parent.list)
         self.slct_1Ddata.SetSelection(-1)
-
-def loadXYfile(event=None,parent=None,xrdviewer=None):
-
-    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-                        defaultDir=os.getcwd(),
-                        wildcard=wildcards, style=wx.FD_OPEN)
-
-    path, read = None, False
-    if dlg.ShowModal() == wx.ID_OK:
-        read = True
-        path = dlg.GetPath().replace('\\', '/')
-    dlg.Destroy()
-    
-    if read:
-        data1dxrd = xrd1d(file=path)
-        if xrdviewer is None:
-            return data1dxrd
-        else:
-            xrdviewer.add1Ddata(data1dxrd)
-
-
-# class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
-#     def __init__(self, parent, ID, pos=wx.DefaultPosition,
-#                  size=wx.DefaultSize, style=0):
-#         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
-#         listmix.ListCtrlAutoWidthMixin.__init__(self)
-
-# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
-#     """
-#     This will be the second notebook tab
-#     """
-#     #----------------------------------------------------------------------
-#     def __init__(self,parent,owner=None,_larch=None):
-#         """"""
-#         wx.Panel.__init__(self, parent)
-# 
-#         self.parent = parent
-#         self.owner = owner
-# 
-#         self.createAndLayout()
-# 
-#     def createAndLayout(self):
-#         sizer = wx.BoxSizer(wx.VERTICAL)
-#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
-#                                  | wx.BORDER_NONE
-#                                  | wx.LC_EDIT_LABELS
-#                                  | wx.LC_SORT_ASCENDING)
-#         sizer.Add(self.list, 1, wx.EXPAND)
-# 
-#         #self.database_info = self.createDATABASEarray()
-#         ## removed so database not loaded upon start up
-#         self.database_info = {}
-# 
-#         self.populateList()
-# 
-#         self.itemDataMap = self.database_info
-#         listmix.ColumnSorterMixin.__init__(self, 4)
-#         self.SetSizer(sizer)
-#         self.SetAutoLayout(True)
-# 
-#     def populateList(self):
-#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
-#         self.list.InsertColumn(1, 'Name')
-#         self.list.InsertColumn(2, 'Space Group')
-#         self.list.InsertColumn(3, 'Elements')
-#         self.list.InsertColumn(4, 'Authors')
-# 
-#         for key, data in self.database_info.items():
-#             index = self.list.InsertStringItem(sys.maxint, data[0])
-#             self.list.SetStringItem(index, 1, data[1])
-#             self.list.SetStringItem(index, 2, data[2])
-#             self.list.SetStringItem(index, 3, data[3])
-#             self.list.SetStringItem(index, 4, data[4])
-#             self.list.SetItemData(index, key)
-# 
-#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(1, 100)
-#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-# 
-# #
-# #         # show how to select an item
-# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
-# #
-# #         # show how to change the colour of a couple items
-# #         item = self.list.GetItem(1)
-# #         item.SetTextColour(wx.BLUE)
-# #         self.list.SetItem(item)
-# #         item = self.list.GetItem(4)
-# #         item.SetTextColour(wx.RED)
-# #         self.list.SetItem(item)
-# 
-#         self.currentItem = 0
-# 
-#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
-#     def GetListCtrl(self):
-#         return self.list
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -2673,7 +2590,10 @@ class Calc1DPopup(wx.Dialog):
         self.steps = int(self.xstep.GetValue())
 
 class DatabaseInfoGUI(wx.Dialog):
-    """"""
+    '''
+    Displays number of entries in current database; allows for loading new database files
+    mkak 2017.03.23
+    '''
 
     #----------------------------------------------------------------------
     def __init__(self, parent):
@@ -3122,7 +3042,9 @@ class AuthorListTable(wx.Dialog):
 
 #########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
-    """"""
+    '''
+    GUI interface for specifying lattice parameters 
+    '''
 
     def __init__(self,parent,search=None):
     
@@ -3306,6 +3228,84 @@ class XRDSymmetrySearch(wx.Dialog):
         
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
+
+# class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+#     def __init__(self, parent, ID, pos=wx.DefaultPosition,
+#                  size=wx.DefaultSize, style=0):
+#         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
+#         listmix.ListCtrlAutoWidthMixin.__init__(self)
+
+# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
+#     """
+#     This will be the second notebook tab
+#     """
+#     #----------------------------------------------------------------------
+#     def __init__(self,parent,owner=None,_larch=None):
+#         """"""
+#         wx.Panel.__init__(self, parent)
+# 
+#         self.parent = parent
+#         self.owner = owner
+# 
+#         self.createAndLayout()
+# 
+#     def createAndLayout(self):
+#         sizer = wx.BoxSizer(wx.VERTICAL)
+#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
+#                                  | wx.BORDER_NONE
+#                                  | wx.LC_EDIT_LABELS
+#                                  | wx.LC_SORT_ASCENDING)
+#         sizer.Add(self.list, 1, wx.EXPAND)
+# 
+#         #self.database_info = self.createDATABASEarray()
+#         ## removed so database not loaded upon start up
+#         self.database_info = {}
+# 
+#         self.populateList()
+# 
+#         self.itemDataMap = self.database_info
+#         listmix.ColumnSorterMixin.__init__(self, 4)
+#         self.SetSizer(sizer)
+#         self.SetAutoLayout(True)
+# 
+#     def populateList(self):
+#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
+#         self.list.InsertColumn(1, 'Name')
+#         self.list.InsertColumn(2, 'Space Group')
+#         self.list.InsertColumn(3, 'Elements')
+#         self.list.InsertColumn(4, 'Authors')
+# 
+#         for key, data in self.database_info.items():
+#             index = self.list.InsertStringItem(sys.maxint, data[0])
+#             self.list.SetStringItem(index, 1, data[1])
+#             self.list.SetStringItem(index, 2, data[2])
+#             self.list.SetStringItem(index, 3, data[3])
+#             self.list.SetStringItem(index, 4, data[4])
+#             self.list.SetItemData(index, key)
+# 
+#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(1, 100)
+#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+# 
+# #
+# #         # show how to select an item
+# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+# #
+# #         # show how to change the colour of a couple items
+# #         item = self.list.GetItem(1)
+# #         item.SetTextColour(wx.BLUE)
+# #         self.list.SetItem(item)
+# #         item = self.list.GetItem(4)
+# #         item.SetTextColour(wx.RED)
+# #         self.list.SetItem(item)
+# 
+#         self.currentItem = 0
+# 
+#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
+#     def GetListCtrl(self):
+#         return self.list
 
 class diFFit1D(wx.App):
     def __init__(self):
