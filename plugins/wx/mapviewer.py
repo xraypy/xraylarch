@@ -59,15 +59,6 @@ import scipy.stats as stats
 
 #from matplotlib.widgets import Slider, Button, RadioButtons
 
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    # from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
-
 from wxmplot import PlotFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
@@ -80,12 +71,12 @@ from larch.wxlib import LarchPanel, LarchFrame
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
-from larch_plugins.diFFit.XRD1Dviewer import diFFit1DFrame
-from larch_plugins.diFFit.XRD2Dviewer import diFFit2DFrame
-from larch_plugins.xrd import integrate_xrd,calculate_ai,lambda_from_E,E_from_lambda,xrd1d
+from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame,CalXRD
+from larch_plugins.xrd import integrate_xrd,lambda_from_E,E_from_lambda,xrd1d
 from larch_plugins.io import nativepath, tifffile
 from larch_plugins.epics import pv_fullname
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
+
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -756,11 +747,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
-                      ## add rows for XRD Calibration File:
-                      'XRD Parameters',  'XRD Detector',
-                      'XRD Wavelength',  'XRD Detector Distance',
-                      'XRD Pixel Size',  'XRD Beam Center (x,y)',  'XRD Detector Tilts',
-                      'XRD Spline'):
+                      'XRD Calibration'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -852,59 +839,13 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        xrdgp = None
         try:
             xrdgp = xrmmap['xrd']
-            pref, calfile = os.path.split(xrdgp.attrs['calfile'])
-            self.wids['XRD Parameters'].SetLabel('%s' % calfile)
-            xrd_exists = True
         except:
-            self.wids['XRD Parameters'].SetLabel('No XRD calibration file in map.')
-            xrd_exists = False
-
-        if xrd_exists:
-            try:
-                self.wids['XRD Detector'].SetLabel('%s' % xrdgp.attrs['detector'])
-            except:
-                self.wids['XRD Detector'].SetLabel('')
-            try:
-                self.wids['XRD Wavelength'].SetLabel('%0.4f A (%0.3f keV)' % \
-                                    (float(xrdgp.attrs['wavelength'])*1.e10,
-                                     float(xrdgp.attrs['energy'])))
-            except:
-                self.wids['XRD Wavelength'].SetLabel('')
-            try:
-                self.wids['XRD Detector Distance'].SetLabel('%0.3f mm' % \
-                                    (float(xrdgp.attrs['distance'])*1.e3))
-            except:
-                self.wids['XRD Detector Distance'].SetLabel('')
-            try:
-                self.wids['XRD Pixel Size'].SetLabel('%0.1f um, %0.1f um ' % ( \
-                                    float(xrdgp.attrs['ps1'])*1.e6,
-                                    float(xrdgp.attrs['ps2'])*1.e6))
-            except:
-                self.wids['XRD Pixel Size'].SetLabel('')
-            try:
-                self.wids['XRD Beam Center (x,y)'].SetLabel( \
-                                    '%0.4f m, %0.4f m (%i pix, %i pix)' % ( \
-                                    float(xrdgp.attrs['poni2']),
-                                    float(xrdgp.attrs['poni1']),
-                                    float(xrdgp.attrs['poni2'])/float(xrdgp.attrs['ps2']),
-                                    float(xrdgp.attrs['poni1'])/float(xrdgp.attrs['ps1'])))
-            except:
-                self.wids['XRD Beam Center (x,y)'].SetLabel('')
-            try:
-                self.wids['XRD Detector Tilts'].SetLabel( \
-                                    '%0.6f rad., %0.6f rad., %0.6f rad.' % ( \
-                                    float(xrdgp.attrs['rot1']),
-                                    float(xrdgp.attrs['rot2']),
-                                    float(xrdgp.attrs['rot3'])))
-            except:
-                self.wids['XRD Detector Tilts'].SetLabel('')
-            try:
-                self.wids['XRD Spline'].SetLabel('%s' % xrdgp.attrs['spline'])
-            except:
-                self.wids['XRD Spline'].SetLabel('')
+            return
+            
+        if os.path.exists(xrdgp.attrs['calfile']):
+            self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
 
     def onClose(self):
         pass
@@ -1280,17 +1221,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onXRD(self, event=None, save=False, show=False):
 
-        ## First, check to make sure there is XRD data
-        ## either use FLAG or look for data structures.
         flag1D,flag2D = self.owner.current_file.check_xrd()
-
         if not flag1D and not flag2D:
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
-
-        ## calibration file: self.owner.current_file.xrmmap['xrd'].attrs['calfile']
-        ## DATA      : xrmfile.xrmmap['xrd/data2D'][i,j,] !!!!!!
-        ## AREA MASK : area.value
 
         ## Calculate area
         try:
@@ -1303,45 +1237,54 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('No map file and/or areas specified.')
             return
 
-        self._getxrd_area(aname)
-
-        pref, fname = os.path.split(self.owner.current_file.filename)
-        npix = len(area.value[np.where(area.value)])
-        self._xrd.filename = fname
+        self._getxrd_area(aname) ## creates self._xrd group of type XRD
+        self._xrd.filename = os.path.split(self.owner.current_file.filename)[-1]
         self._xrd.title = label
-        self._xrd.npixels = npix
-        map = self._xrd.data2D
+        self._xrd.npixels = len(area.value[np.where(area.value)])
+        
+        ## what's a clearer way to do this?
+        ## mkak 2017.03.24
+        env_names = list(xrmfile.xrmmap['config/environ/name'])
+        env_vals  = list(xrmfile.xrmmap['config/environ/value'])
+        env_addrs = list(xrmfile.xrmmap['config/environ/address'])
+        for name, addr, val in zip(env_names, env_addrs, env_vals):
+            if 'mono.energy' in str(name).lower():
+                energy = float(val)/1000.
+                self._xrd.energy = energy
+                self._xrd.wavelength = lambda_from_E(energy)
 
         if show:
             self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
-        if flag1D:
-            kwargs = {'steps':5001,
-                      'AI':xrmfile.xrmmap['xrd']}
+        if flag1D and os.path.exists(xrmfile.xrmmap['xrd'].attrs['calfile']):
+            kwargs = {'steps':5001}
+            self._xrd.calfile = xrmfile.xrmmap['xrd'].attrs['calfile']
+
             if save:
                 counter = 1
-                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,label,counter)):
+                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,self._xrd.filename,label,counter)):
                     counter += 1
-                file = '%s/%s-%s-%03d.xy' % (pref,fname,label,counter)
+                file = '%s/%s-%s-%03d.xy' % (pref,self._xrd.filename,label,counter)
                 kwargs.update({'file':file})
-            self._xrd.data1D = integrate_xrd(map,**kwargs)
-            self._xrd.wavelength = xrmfile.xrmmap['xrd'].attrs['wavelength']
+            self._xrd.data1D = integrate_xrd(self._xrd.data2D,self._xrd.calfile,**kwargs)
+
             if show:
-                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.wavelength,label=label)
+                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=label)
+        
         if flag2D:
             if save:
                 counter = 1
-                while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)):
+                while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,self._xrd.filename,label,counter)):
                     counter += 1
-                tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,label,counter)
+                tiffname = '%s/%s-%s-%03d.tiff' % (pref,self._xrd.filename,label,counter)
                 print('Saving 2D data in file: %s' % (tiffname))
-                tifffile.imsave(tiffname,map)
+                tifffile.imsave(tiffname,self._xrd.data2D)
 
             if show:
-                title = '%s: %s' % (fname, label)
-                self.owner.display_2Dxrd(map, title=title, xrmfile=xrmfile)
+                title = '%s: %s' % (self._xrd.filename, label)
+                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1653,7 +1596,7 @@ class MapViewerFrame(wx.Frame):
         if self.xrddisplay2D is None:
             poni = self.current_file.xrmmap['xrd'].attrs['calfile']
             if not os.path.exists(poni): poni = None
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,poni=poni,
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,ponifile=poni,
                                               xrd1Dviewer=self.xrddisplay1D)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
@@ -1663,11 +1606,12 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
 
-    def display_1Dxrd(self, xy, wavelength, label='dataset 0', xrmfile=None):
+    def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
 
-        wavelength = wavelength*1e10 ## convert to A
-        data1dxrd = xrd1d(label=label,wavelength=wavelength,energy=E_from_lambda(wavelength))
+        data1dxrd = xrd1d(label=label,
+                          energy=energy,
+                          wavelength=lambda_from_E(energy))
         data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:
@@ -1749,9 +1693,9 @@ class MapViewerFrame(wx.Frame):
                  self.onShowLarchBuffer)
 
         MenuItem(self, fmenu, '&Load XRD calibration file',
-                 'Load XRD calibration file',  self.onReadXRD)
-        MenuItem(self, fmenu, 'Perform XRD &Calibration',
-                 'Calibrate XRD Detector',  self.onCalXRD)
+                 'Load XRD calibration file',  self.openPONI)
+#         MenuItem(self, fmenu, 'Perform XRD &Calibration',
+#                  'Calibrate XRD Detector',  self.onCalXRD)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
@@ -1953,7 +1897,7 @@ class MapViewerFrame(wx.Frame):
 
 
 
-    def onReadXRD(self, evt=None):
+    def openPONI(self, evt=None):
         """
         Read specified poni file.
         mkak 2016.07.21
@@ -1981,93 +1925,70 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
 
-    def onCalXRD(self, evt=None):
-        """
-        Perform calibration with pyFAI
-        mkak 2016.09.16
-        """
-        if HAS_pyFAI:
-
-            myDlg = CalXRD()
-
-            path, read = None, False
-            if myDlg.ShowModal() == wx.ID_OK:
-                read = True
-
-            myDlg.Destroy()
-
-            if read:
-
-                usr_calimg = myDlg.CaliPath
-
-                if myDlg.slctEorL.GetSelection() == 1:
-                    usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
-                    usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
-                else:
-                    usr_E = float(myDlg.EorL.GetValue()) ## units keV
-                    usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
-
-                if myDlg.slctDorP.GetSelection() == 1:
-                    usr_pixel = float(myDlg.pixel.GetValue())*1e-6
-                else:
-                    usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
-                usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
-                usr_dist = float(myDlg.Distance.GetValue())
-
-                verbose = True #False
-                if verbose:
-                    print('\n=== Calibration input ===')
-                    print('XRD image: %s' % usr_calimg)
-                    print('Calibrant: %s' % usr_clbrnt)
-                    if myDlg.slctDorP.GetSelection() == 1:
-                        print('Pixel size: %0.1f um' % (usr_pixel*1e6))
-                    else:
-                        print('Detector: %s' % usr_det)
-                    print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
-                    print('Starting distance: %0.3f m' % usr_dist)
-                    print('=========================\n')
-
-                ## Adapted from pyFAI-calib
-                ## note: -l:units mm; -dist:units m
-                ## mkak 2016.09.19
-
-                if myDlg.slctDorP.GetSelection() == 1:
-                    pform1 = 'pyFAI-calib -c %s -p %s -e %0.1f -dist %0.3f %s'
-                    command1 = pform1 % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
-
-
-                else:
-                    pform1 = 'pyFAI-calib -c %s -D %s -e %0.1f -dist %0.3f %s'
-                    command1 = pform1 % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
-                pform2 = 'pyFAI-recalib -i %s -c %s %s'
-                command2 = pform2 % (usr_calimg.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
-
-                if verbose:
-                    print('\nNot functioning within code yet... but you could execute:')
-                    print('\t $ %s' % command1)
-                    print('\t $ %s\n\n' % command2)
-                #os.system(command1)
-                #os.system(command2)
-
-                ## Try 1: fails to open/find file. Problem with fabio? -> could
-                ##        be that we need 'trying PIL' option, e.g. WARNING:tifimage:Unable
-                ##        to read /Users/mkak/xl_CeO2-19keV.tif with TiffIO due to unpack
-                ##        requires a string argument of length 8, trying PIL
-                #cal = Calibration(dataFiles=usr_calimg,
-                #                  detector=usr_det,
-                #                  wavelength=usr_lambda,
-                #                  #pixelSize=usr_pixel,
-                #                  calibrant=usr_clbrnt,
-                #                  )
-
-                ## Try 2: Not providing CeO2 correctly... Hmmm...
-                #usr_detect = pyFAI.detectors.Detector().factory(usr_det)
-                #usr_clb = pyFAI.calibrant.Calibrant(filename=usr_clbrnt,wavelength=usr_lambda)
-                #pyFAI.calibration.calib(usr_calimg,usr_clb,usr_detect,dist=usr_dist)
-                #usr_calibrate = pyFAI.calibrant.ALL_CALIBRANTS[usr_clbrnt]
-
-        else:
-            print('pyFAI must be available for calibration.')
+#     def onCalXRD(self, evt=None):
+#         """
+#         Perform calibration with pyFAI
+#         mkak 2016.09.16
+#         """
+#         
+#         ### can this pop up pyFAI or Dioptas GUI instead of creating own?
+#         
+#         myDlg = CalXRD()
+# 
+#         path, read = None, False
+#         if myDlg.ShowModal() == wx.ID_OK:
+#             read = True
+# 
+#         myDlg.Destroy()
+# 
+#         if read:
+# 
+#             usr_calimg = myDlg.CaliPath
+# 
+#             if myDlg.slctEorL.GetSelection() == 1:
+#                 usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
+#                 usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
+#             else:
+#                 usr_E = float(myDlg.EorL.GetValue()) ## units keV
+#                 usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
+# 
+#             if myDlg.slctDorP.GetSelection() == 1:
+#                 usr_pixel = float(myDlg.pixel.GetValue())*1e-6
+#             else:
+#                 usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+#             usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+#             usr_dist = float(myDlg.Distance.GetValue())
+# 
+#             verbose = True #False
+#             if verbose:
+#                 print('\n=== Calibration input ===')
+#                 print('XRD image: %s' % usr_calimg)
+#                 print('Calibrant: %s' % usr_clbrnt)
+#                 if myDlg.slctDorP.GetSelection() == 1:
+#                     print('Pixel size: %0.1f um' % (usr_pixel*1e6))
+#                 else:
+#                     print('Detector: %s' % usr_det)
+#                 print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
+#                 print('Starting distance: %0.3f m' % usr_dist)
+#                 print('=========================\n')
+# 
+#             ## Adapted from pyFAI-calib
+#             ## note: -l:units mm; -dist:units m
+#             ## mkak 2016.09.19
+# 
+#             if myDlg.slctDorP.GetSelection() == 1:
+#                 pform1 = 'pyFAI-calib -c %s -p %s -e %0.1f -dist %0.3f %s'
+#                 command1 = pform1 % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
+#             else:
+#                 pform1 = 'pyFAI-calib -c %s -D %s -e %0.1f -dist %0.3f %s'
+#                 command1 = pform1 % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
+#             pform2 = 'pyFAI-recalib -i %s -c %s %s'
+#             command2 = pform2 % (usr_calimg.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
+# 
+#             if verbose:
+#                 print('\nNot functioning within code yet... but you could execute:')
+#                 print('\t $ %s' % command1)
+#                 print('\t $ %s\n\n' % command2)
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
@@ -2283,9 +2204,6 @@ class AddToMapFolder(wx.Dialog):
         self.FLAGxrf  = False
         self.FLAGxrd  = False
         self.FldrPath = None
-        self.CaliPath = None
-        self.MaskPath = None
-        self.BkgdPath = None
 
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 450))
@@ -2387,183 +2305,6 @@ class AddToMapFolder(wx.Dialog):
         else:
             self.FindWindowById(wx.ID_OK).Disable()
 
-
-class CalXRD(wx.Dialog):
-    """"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-
-        ## Constructor
-        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(460, 440))
-        ## remember: size=(width,height)
-        self.panel = wx.Panel(self)
-
-        self.InitUI()
-        self.Centre()
-        self.Show()
-
-        ## Sets some typical defaults specific to GSE 13-ID procedure
-        self.pixel.SetValue('400')     ## binned pixels (2x200um)
-        self.EorL.SetValue('19.0')     ## 19.0 keV
-        self.Distance.SetValue('0.5')  ## 0.5 m
-        self.detslct.SetSelection(22)  ## Perkin detector
-        self.calslct.SetSelection(20)  ## CeO2
-
-        if self.slctDorP.GetSelection() == 0:
-            self.sizer.Hide(self.pixel)
-
-        ## Do not need flags if defaults are set
-        #self.FlagCalibrant = False
-        #self.FlagDetector  = False
-        self.FlagCalibrant = True
-        self.FlagDetector  = True
-
-    def InitUI(self):
-
-
-        ## Establish lists from pyFAI
-        clbrnts = [] #['None']
-        self.dets = [] #['None']
-        for key,value in pyFAI.detectors.ALL_DETECTORS.items():
-            self.dets.append(key)
-        for key,value in pyFAI.calibrant.ALL_CALIBRANTS.items():
-            clbrnts.append(key)
-        self.CaliPath = None
-
-
-        ## Calibration Image selection
-        caliImg     = wx.StaticText(self.panel,  label='Calibration Image:' )
-        self.calFil = wx.TextCtrl(self.panel, size=(190, -1))
-        fileBtn1    = wx.Button(self.panel,      label='Browse...'             )
-
-        ## Calibrant selection
-        self.calslct = wx.Choice(self.panel,choices=clbrnts)
-        CalLbl = wx.StaticText(self.panel, label='Calibrant:' ,style=LEFT)
-
-        ## Detector selection
-        self.slctDorP = wx.Choice(self.panel,choices=['Detector','Pixel size (um)'])
-        self.detslct  = wx.Choice(self.panel, choices=self.dets)
-        self.pixel    = wx.TextCtrl(self.panel, size=(140, -1))
-
-        ## Energy or Wavelength
-        self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
-        self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
-
-        ## Refine label
-        RefLbl = wx.StaticText(self.panel, label='To be refined...' ,style=LEFT)
-
-        ## Distance
-        self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
-        DstLbl = wx.StaticText(self.panel, label='Distance (m):' ,style=LEFT)
-
-        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
-        okBtn  = wx.Button(self.panel, wx.ID_OK     )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
-
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
-        self.calslct.Bind(wx.EVT_CHOICE,  self.onCalSel)
-        self.detslct.Bind(wx.EVT_CHOICE,  self.onDetSel)
-        self.slctDorP.Bind(wx.EVT_CHOICE, self.onDorPSel)
-        self.slctEorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
-
-        self.sizer = wx.GridBagSizer(3, 3)
-
-        self.sizer.Add(caliImg,       pos = ( 1,1)               )
-        self.sizer.Add(self.calFil,   pos = ( 1,2), span = (1,2) )
-        self.sizer.Add(fileBtn1,      pos = ( 1,4)               )
-        self.sizer.Add(CalLbl,        pos = ( 3,1)               )
-        self.sizer.Add(self.calslct,  pos = ( 3,2), span = (1,2) )
-
-        self.sizer.Add(self.slctDorP, pos = ( 4,1)               )
-        self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,4) )
-        self.sizer.Add(self.pixel,    pos = ( 5,2), span = (1,2) )
-
-        self.sizer.Add(self.slctEorL, pos = ( 6,1)               )
-        self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,2) )
-
-        self.sizer.Add(RefLbl,        pos = ( 8,1)               )
-        self.sizer.Add(DstLbl,        pos = ( 9,1)               )
-        self.sizer.Add(self.Distance, pos = ( 9,2), span = (1,2) )
-
-        self.sizer.Add(hlpBtn,        pos = (11,1)               )
-        self.sizer.Add(canBtn,        pos = (11,2)               )
-        self.sizer.Add(okBtn,         pos = (11,3)               )
-
-        self.FindWindowById(wx.ID_OK).Disable()
-
-        self.panel.SetSizer(self.sizer)
-
-
-    def onCalSel(self,event=None):
-        #if self.calslct.GetSelection() == 0:
-        #    self.FlagCalibrant = False
-        #else:
-        #    self.FlagCalibrant = True
-        self.checkOK()
-
-    def onDetSel(self,event=None):
-        #if self.detslct.GetSelection() == 0:
-        #    self.FlagDetector = False
-        #else:
-        #    self.FlagDetector = True
-        self.checkOK()
-
-    def onCheckOK(self,event=None):
-        self.checkOK()
-
-    def checkOK(self):
-        if self.FlagCalibrant and self.CaliPath is not None:
-            if self.slctDorP.GetSelection() == 1:
-                self.FindWindowById(wx.ID_OK).Enable()
-            else:
-                if self.FlagDetector:
-                    self.FindWindowById(wx.ID_OK).Enable()
-                else:
-                    self.FindWindowById(wx.ID_OK).Disable()
-        else:
-            self.FindWindowById(wx.ID_OK).Disable()
-
-    def onEorLSel(self,event=None):
-
-        if self.slctEorL.GetSelection() == 1:
-            energy = float(self.EorL.GetValue()) ## units keV
-            wavelength = lambda_from_E(energy) ## units: A
-            self.EorL.SetValue(str(wavelength))
-        else:
-            wavelength = float(self.EorL.GetValue()) ## units: A
-            energy = E_from_lambda(wavelength) ## units: keV
-            self.EorL.SetValue(str(energy))
-
-        self.checkOK()
-
-    def onDorPSel(self,event=None):
-        if self.slctDorP.GetSelection() == 0:
-            self.sizer.Hide(self.pixel)
-            self.sizer.Show(self.detslct)
-        else:
-            self.sizer.Hide(self.detslct)
-            self.sizer.Show(self.pixel)
-
-        self.checkOK()
-
-    def onBROWSE1(self,event=None):
-        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRD calibration file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            self.calFil.Clear()
-            self.calFil.SetValue(os.path.split(path)[-1])
-            self.CaliPath = path
-            self.checkOK()
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):

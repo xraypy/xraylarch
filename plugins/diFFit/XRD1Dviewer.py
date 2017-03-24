@@ -29,15 +29,6 @@ from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                peakfilter,xrd_background,xrd1d)
 from larch_plugins.xrmmap import read1DXRDFile
 
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    # from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
-
 ###################################
 
 VERSION = '0 (14-March-2017)'
@@ -2431,14 +2422,13 @@ class ResultsPanel(wx.Panel):
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
 
-    def __init__(self,parent,xrd2Ddata,ai):
+    def __init__(self,parent,xrd2Ddata):
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
         self.data2D = xrd2Ddata
-        self.ai = ai
         self.steps = 5001
 
         self.createPanel()

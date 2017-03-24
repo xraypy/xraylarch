@@ -172,20 +172,24 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
-                 data1D=None, nwedge=2, nchan=5001, 
-                 name='xrd', _larch=None, **kws):
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=1, 
+                 steps=5001, name='xrd', _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
         self.ypix    = ypixels
         self.data2D  = data2D
         self.nwedge  = nwedge
-        self.nchan   = nchan
+        self.steps   = steps
         self.data1D  = data1D
         
-        ## Also include calibration data file?
-        ## mkak 2016.08.20
+        self.energy     = None
+        self.wavelength = None
+        self.calfile    = None
+        
+        self.filename = None
+        self.title    = None
+        self.npixels  = None
 
         if HAS_larch:
             Group.__init__(self)
@@ -196,7 +200,7 @@ class XRD(grpobjt):
             return form % (self.name, self.xpix, self.ypix)
         elif self.data1D is not None:
             form = "<1DXRD %s: channels = %d>"
-            return form % (self.name, self.nchan)
+            return form % (self.name, self.steps)
         else:
             form = "<no 1D or 2D XRD pattern given>"
             return form       
@@ -259,7 +263,7 @@ def calculate_xvalues(x,xtype,wavelength):
 
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
-               data1D=None, nwedge=2, nchan=5001, 
+               data1D=None, nwedge=2, steps=5001, 
                name='xrd', _larch=None, **kws):
 
     '''
