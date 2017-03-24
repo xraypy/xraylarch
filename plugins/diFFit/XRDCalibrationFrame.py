@@ -642,6 +642,75 @@ class CalXRD(wx.Dialog):
             self.CaliPath = path
             self.checkOK()
 
+# # # # # # # WAS IN mapviewer.py ; needs to be corrected or removed
+# 
+# # # # def onCalXRD(self, evt=None):
+# # # #     """
+# # # #     Perform calibration with pyFAI
+# # # #     mkak 2016.09.16
+# # # #     """
+# # # #     
+# # # #     ### can this pop up pyFAI or Dioptas GUI instead of creating own?
+# # # #     
+# # # #     myDlg = CalXRD()
+# # # # 
+# # # #     path, read = None, False
+# # # #     if myDlg.ShowModal() == wx.ID_OK:
+# # # #         read = True
+# # # # 
+# # # #     myDlg.Destroy()
+# # # # 
+# # # #     if read:
+# # # # 
+# # # #         usr_calimg = myDlg.CaliPath
+# # # # 
+# # # #         if myDlg.slctEorL.GetSelection() == 1:
+# # # #             usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
+# # # #             usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
+# # # #         else:
+# # # #             usr_E = float(myDlg.EorL.GetValue()) ## units keV
+# # # #             usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
+# # # # 
+# # # #         if myDlg.slctDorP.GetSelection() == 1:
+# # # #             usr_pixel = float(myDlg.pixel.GetValue())*1e-6
+# # # #         else:
+# # # #             usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+# # # #         usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+# # # #         usr_dist = float(myDlg.Distance.GetValue())
+# # # # 
+# # # #         verbose = True #False
+# # # #         if verbose:
+# # # #             print('\n=== Calibration input ===')
+# # # #             print('XRD image: %s' % usr_calimg)
+# # # #             print('Calibrant: %s' % usr_clbrnt)
+# # # #             if myDlg.slctDorP.GetSelection() == 1:
+# # # #                 print('Pixel size: %0.1f um' % (usr_pixel*1e6))
+# # # #             else:
+# # # #                 print('Detector: %s' % usr_det)
+# # # #             print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
+# # # #             print('Starting distance: %0.3f m' % usr_dist)
+# # # #             print('=========================\n')
+# # # # 
+# # # #         ## Adapted from pyFAI-calib
+# # # #         ## note: -l:units mm; -dist:units m
+# # # #         ## mkak 2016.09.19
+# # # # 
+# # # #         if myDlg.slctDorP.GetSelection() == 1:
+# # # #             pform1 = 'pyFAI-calib -c %s -p %s -e %0.1f -dist %0.3f %s'
+# # # #             command1 = pform1 % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
+# # # #         else:
+# # # #             pform1 = 'pyFAI-calib -c %s -D %s -e %0.1f -dist %0.3f %s'
+# # # #             command1 = pform1 % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
+# # # #         pform2 = 'pyFAI-recalib -i %s -c %s %s'
+# # # #         command2 = pform2 % (usr_calimg.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
+# # # # 
+# # # #         if verbose:
+# # # #             print('\nNot functioning within code yet... but you could execute:')
+# # # #             print('\t $ %s' % command1)
+# # # #             print('\t $ %s\n\n' % command2)
+
+
+
 
 class diFFit_XRDcal(wx.App):
     def __init__(self):
