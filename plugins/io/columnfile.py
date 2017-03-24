@@ -358,10 +358,10 @@ def guess_filereader(filename, _larch=None):
     line1 = lines[0].lower()
 
     reader = 'read_ascii'
-    if 'epics stepscan file' in line1:
-        reader = 'read_gsexdi'
-    elif 'xdi' in line1:
+    if 'xdi' in line1:
         reader = 'read_xdi'
+        if ('epics stepscan' in line1 or 'gse' in line1):
+            reader = 'read_gsexdi'
     elif 'epics scan' in line1:
         reader = 'read_gsescan'
     return reader
