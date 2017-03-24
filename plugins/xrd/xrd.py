@@ -154,6 +154,8 @@ class xrd1d(grpobjt):
             x,y = np.split(xy,2,axis=0)
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
         self.I = np.array(y).squeeze()
+        
+    
       
 class XRD(grpobjt):
     '''
@@ -221,7 +223,15 @@ class XRD(grpobjt):
             file = self.save_1D()
             kwargs.update({'file':file}) 
                     
-        self.data1D = integrate_xrd(self.data2D,self.calfile,verbose=verbose,**kwargs)
+        if os.path.exists(self.calfile):
+            if len(self.data2D) > 0:
+                self.data1D = integrate_xrd(self.data2D,self.calfile,verbose=verbose,**kwargs)
+            else:
+                if verbose:
+                    print('No 2D XRD data provided.')
+        else:
+            if verbose:
+                print('Could not locate file %s' % self.calfile)
     
     def save_1D(self):
 

@@ -624,7 +624,7 @@ class Fitting1DXRD(BasePanel):
             self.xmax = float(self.rngpl.val_qmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
+        if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -641,7 +641,7 @@ class Fitting1DXRD(BasePanel):
         xi = self.rngpl.ch_xaxis.GetSelection()
         self.xmin = np.min(self.raw_data[xi])
         self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
+        if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -867,24 +867,18 @@ class Fitting1DXRD(BasePanel):
 
     def fit_instrumental(self,event=None):
 
-        print('Need to read wavelength from data set; currently set to 0.66 A.')
-        print('Then need to return uvw to data set.')
-        print('mkak 2017.03.21')
         xi = self.rngpl.ch_xaxis.GetSelection()
+        
         u,v,w = instrumental_fit_uvw(self.ipeaks,
-                                     self.plt_data[xi],self.plt_data[3],
-                                     wavelength=0.66,
+                                     self.plt_data[1],self.plt_data[3],
                                      halfwidth=self.halfwidth,
                                      verbose=True)
+        print 'u,v,w',u,v,w
 
     def fit_peaks(self,event=None):
 
-        print('Need to read wavelength from data set; currently set to 0.66 A.')
-        print('Why needed in peak fitter?')
-        print('mkak 2017.03.21')
         peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
-                                                self.plt_data[0],self.plt_data[3],
-                                                wavelength=0.66,
+                                                self.plt_data[1],self.plt_data[3],
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
@@ -1034,14 +1028,14 @@ class Fitting1DXRD(BasePanel):
 #         self.plot1D.unzoom_all()
         xi = self.rngpl.ch_xaxis.GetSelection()
 
-        ## 2theta
-        if xi == 2:
-            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-            self.xunit = 'deg.' #'$(^\circ)$'
         ## d
-        elif xi == 1:
+        if xi == 2:
             self.xlabel = 'd ($\AA$)'
             self.xunit = 'A' #'$\AA$'
+        ## 2theta
+        elif xi == 1:
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+            self.xunit = 'deg.' #'$(^\circ)$'
         ## q
         else:
             self.xlabel = 'q (1/$\AA$)'
@@ -1054,7 +1048,7 @@ class Fitting1DXRD(BasePanel):
         else:
             minx = np.min(self.raw_data[xi])
             maxx = np.max(self.raw_data[xi])
-        if xi == 1: maxx = min(maxx,self.dlimit)
+        if xi == 2: maxx = min(maxx,self.dlimit)
         self.rngpl.val_qmin.SetValue('%0.3f' % minx)
         self.rngpl.val_qmax.SetValue('%0.3f' % maxx)
 
@@ -1104,7 +1098,7 @@ class Fitting1DXRD(BasePanel):
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
 
-        if xi == 1: x2 = min(x2,self.dlimit)
+        if xi == 2: x2 = min(x2,self.dlimit)
 
         self.plot1D.axes.set_xlim((x1, x2))
 
@@ -1428,6 +1422,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotlist     = []
         self.xlabel       = 'q (1/$\AA$)' #'q (A^-1)'
         self.ylabel       = 'Intensity (a.u.)'
+        self.dlimit       = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
 
         self.data_name    = []
         self.xy_data      = []
@@ -1940,7 +1935,7 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
-        if xi == 2: xmax = 5
+        if xi == 2: xmax = min(xmax,self.dlimit)
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
 
