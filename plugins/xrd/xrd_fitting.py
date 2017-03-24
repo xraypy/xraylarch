@@ -66,23 +66,36 @@ def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
     peaktwth = []
     peakFWHM = []
     peakinty = []
+    
+    print 'type?',type(twth)
+    xlen = np.shape(twth)[0]
+    
     for j in ipeaks:
-        if j > halfwidth and (np.shape(twth)-j) > halfwidth:
+        print '\nstart new j: ', j
+        print 'j > halfwidth ?',j > halfwidth
+        print 'abs(xlen-j) > halfwidth?',abs(xlen-j),halfwidth,abs(xlen-j) > halfwidth
+        print 'both?',(j > halfwidth and abs(xlen-j) > halfwidth)
+        if j > halfwidth and (xlen-j) > halfwidth:
             minval = int(j - halfwidth)
             maxval = int(j + halfwidth)
-
+            print '%i - good range: %i to %i' % (j,minval,maxval)
+            print '\t',I[j],'is greater than both',I[minval],I[maxval],'?',(I[j] > I[minval] and I[j] > I[maxval])
+            print
+            
             if I[j] > I[minval] and I[j] > I[maxval]:
                 
+                print 'shape of twth',np.shape(twth)
+                print 'range for twth',minval,maxval
                 xdata = twth[minval:maxval]
                 ydata = I[minval:maxval]
 
-                try:
+                if 1==1: #try:
                     twth,fwhm,pkint = data_gaussian_fit(xdata,ydata,fittype=fittype)
                     peaktwth += [twth]
                     peakFWHM += [fwhm]
                     peakinty += [pkint]
-                except:
-                    pass
+                #except:
+                #    pass
         
     return np.array(peaktwth),np.array(peakFWHM),np.array(peakinty)
 
@@ -141,6 +154,8 @@ def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
 
     twth,FWHM,inten = peakfitter(ipeaks,twth,I,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
+    print 'from instr. call'
+    print twth,FWHM,inten
 
     tanth = np.tan(np.radians(twth/2))
     sqFWHM  = FWHM**2

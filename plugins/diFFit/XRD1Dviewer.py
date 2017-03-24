@@ -749,6 +749,7 @@ class Fitting1DXRD(BasePanel):
             self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],
                               title=self.plttitle,
                               color='red', label='Background',
+                              marker='',
                               xlabel=self.xlabel,ylabel=self.ylabel,
                               show_legend=True)
 
@@ -848,7 +849,7 @@ class Fitting1DXRD(BasePanel):
             self.plot_peaks()
 
             self.pkpl.btn_rpks.Enable()
-            #self.pkpl.btn_fitpks.Enable()
+            self.pkpl.btn_fitpks.Enable()
 
     def peak_display(self):
 
@@ -877,11 +878,18 @@ class Fitting1DXRD(BasePanel):
 
     def fit_peaks(self,event=None):
 
+        print 'self.plt_data'
+        print np.shape(self.plt_data)
+        print np.shape(self.plt_data[1])
+        print
+        
         peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
                                                 self.plt_data[1],self.plt_data[3],
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
+        print 'from gui'
+        print peaktwth,peakFWHM,peakinty
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(peaktwth,peakFWHM,peakinty)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
