@@ -1467,14 +1467,14 @@ class MapViewerFrame(wx.Frame):
         aname = xrmfile.add_area(mask)
         self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
-    def get_xrd_area(self, mask, xoff=0, yoff=0, xrmfile=None):
-        if xrmfile is None:
-            xrmfile = self.current_file
-        ##aname = xrmfile.add_area(mask)
-        ##self.sel_xrd = xrmfile.get_xrd_area(aname)
-        print 'in get_xrd_area'
-        print np.shape(xrmfile.xrd2d)
-        self.sel_xrd = xrmfile.xrd2d[50,50,]
+#     def get_xrd_area(self, mask, xoff=0, yoff=0, xrmfile=None):
+#         if xrmfile is None:
+#             xrmfile = self.current_file
+#         ##aname = xrmfile.add_area(mask)
+#         ##self.sel_xrd = xrmfile.get_xrd_area(aname)
+#         print 'in get_xrd_area'
+#         print np.shape(xrmfile.xrd2d)
+#         self.sel_xrd = xrmfile.xrd2d[50,50,]
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None,
                      xoff=0, yoff=0, **kws):
