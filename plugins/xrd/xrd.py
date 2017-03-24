@@ -16,7 +16,7 @@ import numpy as np
 from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
 from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
-from larch_plugins.io import nativepath, tifffile
+from larch_plugins.io import tifffile
 
 HAS_larch = False
 try:

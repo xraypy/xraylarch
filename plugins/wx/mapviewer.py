@@ -74,6 +74,7 @@ from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame,CalXRD
 from larch_plugins.xrd import integrate_xrd,lambda_from_E,E_from_lambda,xrd1d
 from larch_plugins.epics import pv_fullname
+from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
 
 
