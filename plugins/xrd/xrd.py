@@ -15,7 +15,8 @@ import numpy as np
 
 from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
-
+from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
+from larch_plugins.io import nativepath, tifffile
 
 HAS_larch = False
 try:
@@ -182,6 +183,7 @@ class XRD(grpobjt):
         self.nwedge  = nwedge
         self.steps   = steps
         self.data1D  = data1D
+        self.data2D  = data2D
         
         self.energy     = None
         self.wavelength = None
@@ -209,6 +211,39 @@ class XRD(grpobjt):
         '''add an Environment setting'''
         if len(desc) > 0 and len(val) > 0:
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
+            
+            
+    def calc_1D(self,save=False,verbose=False):
+    
+        kwargs = {'steps':self.steps}
+        
+        if save:
+            file = self.save_1D()
+            kwargs.update({'file':file}) 
+                    
+        self.data1D = integrate_xrd(self.data2D,self.calfile,verbose=verbose,**kwargs)
+    
+    def save_1D(self):
+
+        pref,fname = os.path.split(self.filename)
+        counter = 1
+        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)):
+            counter += 1
+        return '%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)
+
+    def save_2D(self,verbose=False):
+    
+        pref,fname = os.path.split(self.filename)
+        
+        counter = 1
+        while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)):
+            counter += 1
+        tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)
+        
+        if verbose:
+            print('Saving 2D data in file: %s' % (tiffname))
+        tifffile.imsave(tiffname,self.data2D)
+
 
 
 ##########################################################################

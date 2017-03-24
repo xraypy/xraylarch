@@ -21,7 +21,7 @@ except ImportError:
 ##########################################################################
 # FUNCTIONS
 
-def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None):
+def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None, verbose=False):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
@@ -53,7 +53,8 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
         if dark:
             if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
         if file is not '':
-            print('\nSaving %s data to file: %s' % (unit,file))
+            if verbose:
+                print('\nSaving %s data to file: %s' % (unit,file))
             attrs.update({'filename':file})
 
         return ai.integrate1d(xrd2d,steps,**attrs)

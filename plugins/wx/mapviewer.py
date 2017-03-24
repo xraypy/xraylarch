@@ -1238,7 +1238,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         self._getxrd_area(aname) ## creates self._xrd group of type XRD
-        self._xrd.filename = os.path.split(self.owner.current_file.filename)[-1]
+        self._xrd.filename = self.owner.current_file.filename
         self._xrd.title = label
         self._xrd.npixels = len(area.value[np.where(area.value)])
         
@@ -1258,32 +1258,23 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
+
         if flag1D and os.path.exists(xrmfile.xrmmap['xrd'].attrs['calfile']):
-            kwargs = {'steps':5001}
+            self._xrd.steps = 5001
             self._xrd.calfile = xrmfile.xrmmap['xrd'].attrs['calfile']
-
-            if save:
-                counter = 1
-                while os.path.exists('%s/%s-%s-%03d.xy' % (pref,self._xrd.filename,label,counter)):
-                    counter += 1
-                file = '%s/%s-%s-%03d.xy' % (pref,self._xrd.filename,label,counter)
-                kwargs.update({'file':file})
-            self._xrd.data1D = integrate_xrd(self._xrd.data2D,self._xrd.calfile,**kwargs)
-
+            
+            self._xrd.calc_1D(save=save,verbose=True)
+            
             if show:
-                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=label)
+                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+
         
         if flag2D:
             if save:
-                counter = 1
-                while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,self._xrd.filename,label,counter)):
-                    counter += 1
-                tiffname = '%s/%s-%s-%03d.tiff' % (pref,self._xrd.filename,label,counter)
-                print('Saving 2D data in file: %s' % (tiffname))
-                tifffile.imsave(tiffname,self._xrd.data2D)
+                self._xrd.save_2D(verbose=True)
 
             if show:
-                title = '%s: %s' % (self._xrd.filename, label)
+                title = '%s: %s' % (os.path.split(self._xrd.filename)[-1], label)
                 self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile)
 
 class MapViewerFrame(wx.Frame):
