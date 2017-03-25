@@ -529,25 +529,25 @@ class Fitting1DXRD(BasePanel):
                              title=self.plttitle,
                              color='blue', label='Data',
                              xlabel=self.xlabel,ylabel=self.ylabel,
-                             show_legend=True)
+                             marker=None, show_legend=True)
         else:
             if self.trim:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.plttitle,
-                                 color='grey', label='Raw data',
-                                 xlabel=self.xlabel,ylabel=self.ylabel,
-                                 show_legend=True)
+                                  title=self.plttitle,
+                                  color='grey', label='Raw data',
+                                  xlabel=self.xlabel,ylabel=self.ylabel,
+                                  marker=None, show_legend=True)
                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],
                                   title=self.plttitle,
                                   color='blue', label='Trimmed data',
-                                  xlabel=self.xlabel,ylabel=self.ylabel,
-                                  show_legend=True)
+                                  xlabel=self.xlabel, ylabel=self.ylabel,
+                                  marker=None, show_legend=True)
             else:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.plttitle,
-                                 color='blue', label='Raw data',
-                                 xlabel=self.xlabel,ylabel=self.ylabel,
-                                 show_legend=True)
+                                  title=self.plttitle,
+                                  color='blue', label='Raw data',
+                                  xlabel=self.xlabel,ylabel=self.ylabel,
+                                  marker=None, show_legend=True)
             self.plot_background()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
@@ -746,12 +746,9 @@ class Fitting1DXRD(BasePanel):
 
         if self.bgr is not None and self.subtracted is False:
             xi = self.rngpl.ch_xaxis.GetSelection()
-            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],
-                              title=self.plttitle,
-                              color='red', label='Background',
-                              marker='',
-                              xlabel=self.xlabel,ylabel=self.ylabel,
-                              show_legend=True)
+            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3], title=self.plttitle,
+                              color='red', label='Background', xlabel=self.xlabel,
+                              ylabel=self.ylabel, marker=None, show_legend=True)
 
     def background_options(self,event=None):
 
@@ -781,8 +778,8 @@ class Fitting1DXRD(BasePanel):
 
             self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.plttitle,
                              color='blue', label='Background subtracted',
-                             xlabel=self.xlabel,ylabel=self.ylabel,
-                             show_legend=True)
+                             xlabel=self.xlabel, ylabel=self.ylabel,
+                             marker=None, show_legend=True)
 
             self.bkgdpl.btn_fbkgd.Disable()
             self.bkgdpl.btn_obkgd.Disable()
@@ -888,8 +885,6 @@ class Fitting1DXRD(BasePanel):
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
-        print 'from gui'
-        print peaktwth,peakFWHM,peakinty
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(peaktwth,peakFWHM,peakinty)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
@@ -897,34 +892,9 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
 
-#         self.plot1D.scatterplot(*self.plt_peaks,
-#                           color='red',edge_color='yellow', selectcolor='green',size=12,
-#                           label='Found peaks',show_legend=True)
-        self.plot1D.oplot(*self.plt_peaks,
-                          marker='o',
-                          color='red',markersize=8,linewidth=0,
-                          label='Found peaks',show_legend=True)
-
+        self.plot1D.oplot(*self.plt_peaks, marker='o', color='red', markersize=8,
+                          linewidth=0, label='Found peaks', show_legend=True)
         self.plot1D.cursor_mode = 'zoom'
-
-
-
-# # #   oplot(self, xdata, ydata, side='left', label=None,
-# # #           xlabel=None, ylabel=None, y2label=None, title=None,
-# # #           dy=None, ylog_scale=None, grid=None,
-# # #           xmin=None, xmax=None, ymin=None, ymax=None,
-# # #           color=None, style=None, drawstyle=None,
-# # #           linewidth=2, marker=None, markersize=None,
-# # #           autoscale=True, refresh=True, show_legend=None,
-# # #           legend_loc='best', legend_on=True, delay_draw=False,
-# # #           bgcolor=None, framecolor=None, gridcolor=None,
-# # #           labelfontsize=None, legendfontsize=None,
-# # #           fullbox=None, axes_style=None, zorder=None, **kws)
-              
-# # #   scatterplot(self, xdata, ydata, label=None, size=10, color=None, edgecolor=None,
-# # #           selectcolor=None, selectedge=None, xlabel=None, ylabel=None, y2label=None,
-# # #           xmin=None, xmax=None, ymin=None, ymax=None, title=None, grid=None,
-# # #           callback=None, **kw):
 
     def remove_all_peaks(self,event=None):
 
@@ -1722,10 +1692,9 @@ class Viewer1DXRD(wx.Panel):
         xi = self.ch_xaxis.GetSelection()
         self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
                                                self.cif_plot[-1][3],
-                                               xlabel=self.xlabel,
-                                               ylabel=self.ylabel,
+                                               xlabel=self.xlabel, ylabel=self.ylabel,
                                                label=datalabel,
-                                               show_legend=True))
+                                               marker=None, show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1823,11 +1792,9 @@ class Viewer1DXRD(wx.Panel):
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
-        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],
-                                               self.xy_plot[-1][3],
-                                               xlabel=self.xlabel,
-                                               ylabel=self.ylabel,
-                                               label=datalabel,
+        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi], self.xy_plot[-1][3],
+                                               xlabel=self.xlabel, ylabel=self.ylabel,
+                                               label=datalabel, marker=None,
                                                show_legend=True))
 
         ## Use correct x-axis units
