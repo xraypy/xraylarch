@@ -138,8 +138,6 @@ def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
 
     twth,FWHM,inten = peakfitter(ipeaks,twth,I,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
-    print 'from instr. call'
-    print twth,FWHM,inten
 
     tanth = np.tan(np.radians(twth/2))
     sqFWHM  = FWHM**2
@@ -150,12 +148,10 @@ def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
-        print(                                         )
-        print( '\nInstrumental broadening parameters:' )
-        print( '---  U',u                              )
-        print( '---  V',v                              )
-        print( '---  W',w                              )
-        print(                                         )
+        print('\nInstrumental broadening parameters:')
+        print('---  U  : %0.8f'   % u)
+        print('---  V  : %0.8f'   % v)
+        print('---  W  : %0.8f\n' % w)
 
     return(u,v,w)
 
@@ -185,12 +181,10 @@ def data_poly_fit(x, y, plot=False, verbose=False):
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
     if verbose:
-        print( '---Polynomial Fit'                      ) 
-        print( '---  U',popt[0]                         ) 
-        print( '---  V',popt[1]                         ) 
-        print( '---  W',popt[2]                         ) 
-        print( 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d  ) 
-        print(                                          ) 
+        print('---Polynomial Fit:')
+        print('---  U  : %0.8f'   % popt[0])
+        print('---  V  : %0.8f'   % popt[1])
+        print('---  W  : %0.8f\n' % popt[2])
 
     return popt
 

@@ -529,25 +529,25 @@ class Fitting1DXRD(BasePanel):
                              title=self.plttitle,
                              color='blue', label='Data',
                              xlabel=self.xlabel,ylabel=self.ylabel,
-                             marker=None, show_legend=True)
+                             marker='', markersize=0, show_legend=True)
         else:
             if self.trim:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
                                   title=self.plttitle,
                                   color='grey', label='Raw data',
                                   xlabel=self.xlabel,ylabel=self.ylabel,
-                                  marker=None, show_legend=True)
+                                  marker='', markersize=0, show_legend=True)
                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],
                                   title=self.plttitle,
                                   color='blue', label='Trimmed data',
                                   xlabel=self.xlabel, ylabel=self.ylabel,
-                                  marker=None, show_legend=True)
+                                  marker='', markersize=0, show_legend=True)
             else:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
                                   title=self.plttitle,
                                   color='blue', label='Raw data',
                                   xlabel=self.xlabel,ylabel=self.ylabel,
-                                  marker=None, show_legend=True)
+                                  marker='', markersize=0, show_legend=True)
             self.plot_background()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
@@ -748,7 +748,7 @@ class Fitting1DXRD(BasePanel):
             xi = self.rngpl.ch_xaxis.GetSelection()
             self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3], title=self.plttitle,
                               color='red', label='Background', xlabel=self.xlabel,
-                              ylabel=self.ylabel, marker=None, show_legend=True)
+                              ylabel=self.ylabel, marker='', markersize=0, show_legend=True)
 
     def background_options(self,event=None):
 
@@ -779,7 +779,7 @@ class Fitting1DXRD(BasePanel):
             self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.plttitle,
                              color='blue', label='Background subtracted',
                              xlabel=self.xlabel, ylabel=self.ylabel,
-                             marker=None, show_legend=True)
+                             marker='', markersize=0, show_legend=True)
 
             self.bkgdpl.btn_fbkgd.Disable()
             self.bkgdpl.btn_obkgd.Disable()
@@ -871,14 +871,8 @@ class Fitting1DXRD(BasePanel):
                                      self.plt_data[1],self.plt_data[3],
                                      halfwidth=self.halfwidth,
                                      verbose=True)
-        print 'u,v,w',u,v,w
 
     def fit_peaks(self,event=None):
-
-        print 'self.plt_data'
-        print np.shape(self.plt_data)
-        print np.shape(self.plt_data[1])
-        print
         
         peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
                                                 self.plt_data[1],self.plt_data[3],
@@ -1690,11 +1684,12 @@ class Viewer1DXRD(wx.Panel):
         ## Plot data (x,y)
         self.icif.append(len(self.plotlist))
         xi = self.ch_xaxis.GetSelection()
+
         self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
                                                self.cif_plot[-1][3],
                                                xlabel=self.xlabel, ylabel=self.ylabel,
                                                label=datalabel,
-                                               marker=None, show_legend=True))
+                                               marker='', markersize=0, show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1792,9 +1787,10 @@ class Viewer1DXRD(wx.Panel):
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
+
         self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi], self.xy_plot[-1][3],
                                                xlabel=self.xlabel, ylabel=self.ylabel,
-                                               label=datalabel, marker=None,
+                                               label=datalabel, marker='',
                                                show_legend=True))
 
         ## Use correct x-axis units
