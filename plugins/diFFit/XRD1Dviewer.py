@@ -29,15 +29,6 @@ from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                peakfilter,xrd_background,xrd1d)
 from larch_plugins.xrmmap import read1DXRDFile
 
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    # from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
-
 ###################################
 
 VERSION = '0 (14-March-2017)'
@@ -63,16 +54,41 @@ def YesNo(parent, question, caption = 'Yes or no?'):
     dlg.Destroy()
     return result
 
+def calcFrameSize(x,y):
+    '''
+    Calculates an appropriate frame size based on user's display
+    '''
+    screenSize = wx.DisplaySize()
+    if x > screenSize[0] * 0.9:
+        x = int(screenSize[0] * 0.9)
+        y = int(x*0.6)
+        
+    return x,y
+
+def loadXYfile(event=None,parent=None,xrdviewer=None):
+
+    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
+    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
+                        defaultDir=os.getcwd(),
+                        wildcard=wildcards, style=wx.FD_OPEN)
+
+    path, read = None, False
+    if dlg.ShowModal() == wx.ID_OK:
+        read = True
+        path = dlg.GetPath().replace('\\', '/')
+    dlg.Destroy()
+    
+    if read:
+        data1dxrd = xrd1d(file=path)
+        if xrdviewer is None:
+            return data1dxrd
+        else:
+            xrdviewer.add1Ddata(data1dxrd)
+
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        print('\n')
-        screenSize = wx.DisplaySize()
-        x,y = 1500, 750
-        if x > screenSize[0] * 0.9:
-            x = int(screenSize[0] * 0.9)
-            y = int(x*0.6)
-
+        x,y = calcFrameSize(1500, 750)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -83,18 +99,17 @@ class diFFit1DFrame(wx.Frame):
         
         self.openDB(dbname='amcsd_cif.db')
 
-        # create the page windows as children of the notebook
+        ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
-#         self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
+        ## include database tab? #self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
 
-        # add the pages to the notebook with the label to show on the tab
+        ## add the pages to the notebook with the label to show on the tab
         self.nb.AddPage(self.xrd1Dviewer, 'Viewer')
         self.nb.AddPage(self.xrd1Dfitting, 'Fitting')
-#         self.nb.AddPage(self.xrddatabase, 'XRD Database')
+        ## include database tab? #self.nb.AddPage(self.xrddatabase, 'XRD Database')
 
-        #3 finally, put the notebook in a sizer for the panel to manage
-        ## the layout
+        ## put the notebook in a sizer for the panel to manage the layout
         sizer = wx.BoxSizer()
         sizer.Add(self.nb, -1, wx.EXPAND)
         panel.SetSizer(sizer)
@@ -124,7 +139,6 @@ class diFFit1DFrame(wx.Frame):
             self.closeDB()
         except:
             pass
-
 
         try:
             self.Destroy()
@@ -202,70 +216,66 @@ class diFFit1DFrame(wx.Frame):
 ##############################################
 #### 
     def fit1Dxrd(self,event=None):
-
-        indicies = [i for i,name in enumerate(self.xrd1Dviewer.data_name) if 'cif' not in name]
+        '''
+        GUI interface for loading data to fitting panel (from data in viewer or file)
+        mkak 2017.03.23
+        '''
+        xrdv = self.xrd1Dviewer
+        xrdf = self.xrd1Dfitting
+        
+        indicies = [i for i,name in enumerate(xrdv.data_name) if 'cif' not in name]
         okay = False
 
-        xi = self.xrd1Dviewer.ch_xaxis.GetSelection()
-        self.xrd1Dfitting.rngpl.ch_xaxis.SetSelection(xi)
+        xi = xrdv.ch_xaxis.GetSelection()
+        xrdf.rngpl.ch_xaxis.SetSelection(xi)
 
         if len(indicies) > 0:
-            self.list = [self.xrd1Dviewer.data_name[i] for i in indicies]
-            self.all_data = self.xrd1Dviewer.xy_data
-
+            self.list = [xrdv.data_name[i] for i in indicies]
+            self.all_data = xrdv.xy_data
             dlg = SelectFittingData(self)
-
             if dlg.ShowModal() == wx.ID_OK:
                 okay = True
                 index = dlg.slct_1Ddata.GetSelection()
             dlg.Destroy()
-
         else:
             index = -1
-            loadXYfile(parent=self,xrdviewer=self.xrd1Dviewer)
+            loadXYfile(parent=self,xrdviewer=xrdv)
             okay = True
 
         if okay:
-            seldat = self.xrd1Dviewer.xy_data[index]
-            
-            name = seldat.label
-            q    = seldat.q
-            twth = seldat.twth
-            d    = seldat.d
-            I    = seldat.I
-
+            seldat = xrdv.xy_data[index]
             self.nb.SetSelection(1) ## switches to fitting panel
 
             adddata = True
-            if self.xrd1Dfitting.raw_data is not None:
-                question = 'Do you want to replace current data file %s with selected file %s?' % (self.xrd1Dfitting.plttitle,name)
+            if xrdf.raw_data is not None:
+                question = 'Replace current data file %s with selected file %s?' % \
+                               (xrdf.plttitle,name)
                 adddata = YesNo(self,question,caption='Overwrite warning')
 
             if adddata:
 
-                if self.xrd1Dfitting.raw_data is not None:
-                    self.xrd1Dfitting.reset_fitting()
+                if xrdf.raw_data is not None:
+                    xrdf.reset_fitting()
 
-                self.xrd1Dfitting.plttitle = name
-                self.xrd1Dfitting.raw_data = np.array([q,twth,d,I])
-                self.xrd1Dfitting.plt_data = np.array([q,twth,d,I])
+                xrdf.plttitle = seldat.label
+                xrdf.raw_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
+                xrdf.plt_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
 
-                self.xrd1Dfitting.xmin     = np.min(self.xrd1Dfitting.plt_data[xi])
-                self.xrd1Dfitting.xmax     = np.max(self.xrd1Dfitting.plt_data[xi])
+                xrdf.xmin     = np.min(xrdf.plt_data[xi])
+                xrdf.xmax     = np.max(xrdf.plt_data[xi])
 
-                self.xrd1Dfitting.optionsON()
-                self.xrd1Dviewer.optionsON()
-                self.xrd1Dfitting.check1Daxis()
+                xrdf.optionsON()
+                xrdv.optionsON()
+                xrdf.check1Daxis()
 
 class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Select data for fitting',
-                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
-                                    size = (210,410))
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK)
+                                    #size = (210,410))
         self.parent = parent
-
         self.createPanel()
 
         ix,iy = self.panel.GetBestSize()
@@ -274,15 +284,12 @@ class SelectFittingData(wx.Dialog):
     def createPanel(self):
 
         self.panel = wx.Panel(self)
-
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Add things
         self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130),
                                       self.parent.list, wx.LB_SINGLE)
-
         btn_new = wx.Button(self.panel,label='Load data from file')
-
         btn_new.Bind(wx.EVT_BUTTON, self.load_file)
 
         #####
@@ -311,105 +318,6 @@ class SelectFittingData(wx.Dialog):
         self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
         self.slct_1Ddata.Set(self.parent.list)
         self.slct_1Ddata.SetSelection(-1)
-
-def loadXYfile(event=None,parent=None,xrdviewer=None):
-
-    wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
-    dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-                        defaultDir=os.getcwd(),
-                        wildcard=wildcards, style=wx.FD_OPEN)
-
-    path, read = None, False
-    if dlg.ShowModal() == wx.ID_OK:
-        read = True
-        path = dlg.GetPath().replace('\\', '/')
-    dlg.Destroy()
-    
-    if read:
-        data1dxrd = xrd1d(file=path)
-        if xrdviewer is None:
-            return data1dxrd
-        else:
-            xrdviewer.add1Ddata(data1dxrd)
-
-
-# class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
-#     def __init__(self, parent, ID, pos=wx.DefaultPosition,
-#                  size=wx.DefaultSize, style=0):
-#         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
-#         listmix.ListCtrlAutoWidthMixin.__init__(self)
-
-# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
-#     """
-#     This will be the second notebook tab
-#     """
-#     #----------------------------------------------------------------------
-#     def __init__(self,parent,owner=None,_larch=None):
-#         """"""
-#         wx.Panel.__init__(self, parent)
-# 
-#         self.parent = parent
-#         self.owner = owner
-# 
-#         self.createAndLayout()
-# 
-#     def createAndLayout(self):
-#         sizer = wx.BoxSizer(wx.VERTICAL)
-#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
-#                                  | wx.BORDER_NONE
-#                                  | wx.LC_EDIT_LABELS
-#                                  | wx.LC_SORT_ASCENDING)
-#         sizer.Add(self.list, 1, wx.EXPAND)
-# 
-#         #self.database_info = self.createDATABASEarray()
-#         ## removed so database not loaded upon start up
-#         self.database_info = {}
-# 
-#         self.populateList()
-# 
-#         self.itemDataMap = self.database_info
-#         listmix.ColumnSorterMixin.__init__(self, 4)
-#         self.SetSizer(sizer)
-#         self.SetAutoLayout(True)
-# 
-#     def populateList(self):
-#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
-#         self.list.InsertColumn(1, 'Name')
-#         self.list.InsertColumn(2, 'Space Group')
-#         self.list.InsertColumn(3, 'Elements')
-#         self.list.InsertColumn(4, 'Authors')
-# 
-#         for key, data in self.database_info.items():
-#             index = self.list.InsertStringItem(sys.maxint, data[0])
-#             self.list.SetStringItem(index, 1, data[1])
-#             self.list.SetStringItem(index, 2, data[2])
-#             self.list.SetStringItem(index, 3, data[3])
-#             self.list.SetStringItem(index, 4, data[4])
-#             self.list.SetItemData(index, key)
-# 
-#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(1, 100)
-#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-# 
-# #
-# #         # show how to select an item
-# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
-# #
-# #         # show how to change the colour of a couple items
-# #         item = self.list.GetItem(1)
-# #         item.SetTextColour(wx.BLUE)
-# #         self.list.SetItem(item)
-# #         item = self.list.GetItem(4)
-# #         item.SetTextColour(wx.RED)
-# #         self.list.SetItem(item)
-# 
-#         self.currentItem = 0
-# 
-#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
-#     def GetListCtrl(self):
-#         return self.list
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -621,25 +529,25 @@ class Fitting1DXRD(BasePanel):
                              title=self.plttitle,
                              color='blue', label='Data',
                              xlabel=self.xlabel,ylabel=self.ylabel,
-                             show_legend=True)
+                             marker='', markersize=0, show_legend=True)
         else:
             if self.trim:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.plttitle,
-                                 color='grey', label='Raw data',
-                                 xlabel=self.xlabel,ylabel=self.ylabel,
-                                 show_legend=True)
+                                  title=self.plttitle,
+                                  color='grey', label='Raw data',
+                                  xlabel=self.xlabel,ylabel=self.ylabel,
+                                  marker='', markersize=0, show_legend=True)
                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],
                                   title=self.plttitle,
                                   color='blue', label='Trimmed data',
-                                  xlabel=self.xlabel,ylabel=self.ylabel,
-                                  show_legend=True)
+                                  xlabel=self.xlabel, ylabel=self.ylabel,
+                                  marker='', markersize=0, show_legend=True)
             else:
                 self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                 title=self.plttitle,
-                                 color='blue', label='Raw data',
-                                 xlabel=self.xlabel,ylabel=self.ylabel,
-                                 show_legend=True)
+                                  title=self.plttitle,
+                                  color='blue', label='Raw data',
+                                  xlabel=self.xlabel,ylabel=self.ylabel,
+                                  marker='', markersize=0, show_legend=True)
             self.plot_background()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
@@ -716,7 +624,7 @@ class Fitting1DXRD(BasePanel):
             self.xmax = float(self.rngpl.val_qmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
+        if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -733,7 +641,7 @@ class Fitting1DXRD(BasePanel):
         xi = self.rngpl.ch_xaxis.GetSelection()
         self.xmin = np.min(self.raw_data[xi])
         self.xmax = np.max(self.raw_data[xi])
-        if xi == 1: self.xmax = min(self.xmax,self.dlimit)
+        if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
@@ -838,11 +746,9 @@ class Fitting1DXRD(BasePanel):
 
         if self.bgr is not None and self.subtracted is False:
             xi = self.rngpl.ch_xaxis.GetSelection()
-            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],
-                              title=self.plttitle,
-                              color='red', label='Background',
-                              xlabel=self.xlabel,ylabel=self.ylabel,
-                              show_legend=True)
+            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3], title=self.plttitle,
+                              color='red', label='Background', xlabel=self.xlabel,
+                              ylabel=self.ylabel, marker='', markersize=0, show_legend=True)
 
     def background_options(self,event=None):
 
@@ -872,8 +778,8 @@ class Fitting1DXRD(BasePanel):
 
             self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.plttitle,
                              color='blue', label='Background subtracted',
-                             xlabel=self.xlabel,ylabel=self.ylabel,
-                             show_legend=True)
+                             xlabel=self.xlabel, ylabel=self.ylabel,
+                             marker='', markersize=0, show_legend=True)
 
             self.bkgdpl.btn_fbkgd.Disable()
             self.bkgdpl.btn_obkgd.Disable()
@@ -940,7 +846,7 @@ class Fitting1DXRD(BasePanel):
             self.plot_peaks()
 
             self.pkpl.btn_rpks.Enable()
-            #self.pkpl.btn_fitpks.Enable()
+            self.pkpl.btn_fitpks.Enable()
 
     def peak_display(self):
 
@@ -959,24 +865,17 @@ class Fitting1DXRD(BasePanel):
 
     def fit_instrumental(self,event=None):
 
-        print('Need to read wavelength from data set; currently set to 0.66 A.')
-        print('Then need to return uvw to data set.')
-        print('mkak 2017.03.21')
         xi = self.rngpl.ch_xaxis.GetSelection()
+        
         u,v,w = instrumental_fit_uvw(self.ipeaks,
-                                     self.plt_data[xi],self.plt_data[3],
-                                     wavelength=0.66,
+                                     self.plt_data[1],self.plt_data[3],
                                      halfwidth=self.halfwidth,
                                      verbose=True)
 
     def fit_peaks(self,event=None):
-
-        print('Need to read wavelength from data set; currently set to 0.66 A.')
-        print('Why needed in peak fitter?')
-        print('mkak 2017.03.21')
+        
         peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
-                                                self.plt_data[0],self.plt_data[3],
-                                                wavelength=0.66,
+                                                self.plt_data[1],self.plt_data[3],
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
@@ -987,15 +886,9 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
 
-        self.plot1D.scatterplot(*self.plt_peaks,
-                          color='red',edge_color='yellow', selectcolor='green',size=12,
-                          show_legend=True)
+        self.plot1D.oplot(*self.plt_peaks, marker='o', color='red', markersize=8,
+                          linewidth=0, label='Found peaks', show_legend=True)
         self.plot1D.cursor_mode = 'zoom'
-
-# # #   scatterplot(self, xdata, ydata, label=None, size=10, color=None, edgecolor=None,
-# # #           selectcolor=None, selectedge=None, xlabel=None, ylabel=None, y2label=None,
-# # #           xmin=None, xmax=None, ymin=None, ymax=None, title=None, grid=None,
-# # #           callback=None, **kw):
 
     def remove_all_peaks(self,event=None):
 
@@ -1107,14 +1000,14 @@ class Fitting1DXRD(BasePanel):
 #         self.plot1D.unzoom_all()
         xi = self.rngpl.ch_xaxis.GetSelection()
 
-        ## 2theta
-        if xi == 2:
-            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
-            self.xunit = 'deg.' #'$(^\circ)$'
         ## d
-        elif xi == 1:
+        if xi == 2:
             self.xlabel = 'd ($\AA$)'
             self.xunit = 'A' #'$\AA$'
+        ## 2theta
+        elif xi == 1:
+            self.xlabel = r'$2\Theta$'+r' $(^\circ)$'
+            self.xunit = 'deg.' #'$(^\circ)$'
         ## q
         else:
             self.xlabel = 'q (1/$\AA$)'
@@ -1127,7 +1020,7 @@ class Fitting1DXRD(BasePanel):
         else:
             minx = np.min(self.raw_data[xi])
             maxx = np.max(self.raw_data[xi])
-        if xi == 1: maxx = min(maxx,self.dlimit)
+        if xi == 2: maxx = min(maxx,self.dlimit)
         self.rngpl.val_qmin.SetValue('%0.3f' % minx)
         self.rngpl.val_qmax.SetValue('%0.3f' % maxx)
 
@@ -1177,7 +1070,7 @@ class Fitting1DXRD(BasePanel):
         x1 = max(xmin,x1)
         x2 = min(xmax,x2)
 
-        if xi == 1: x2 = min(x2,self.dlimit)
+        if xi == 2: x2 = min(x2,self.dlimit)
 
         self.plot1D.axes.set_xlim((x1, x2))
 
@@ -1501,6 +1394,7 @@ class Viewer1DXRD(wx.Panel):
         self.plotlist     = []
         self.xlabel       = 'q (1/$\AA$)' #'q (A^-1)'
         self.ylabel       = 'Intensity (a.u.)'
+        self.dlimit       = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
 
         self.data_name    = []
         self.xy_data      = []
@@ -1790,12 +1684,12 @@ class Viewer1DXRD(wx.Panel):
         ## Plot data (x,y)
         self.icif.append(len(self.plotlist))
         xi = self.ch_xaxis.GetSelection()
+
         self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
                                                self.cif_plot[-1][3],
-                                               xlabel=self.xlabel,
-                                               ylabel=self.ylabel,
+                                               xlabel=self.xlabel, ylabel=self.ylabel,
                                                label=datalabel,
-                                               show_legend=True))
+                                               marker='', markersize=0, show_legend=True))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1804,7 +1698,7 @@ class Viewer1DXRD(wx.Panel):
         self.ch_cif.SetStringSelection(datalabel)
 
         ## Update toolbox panel, scale all cif to 1000
-        self.val_cifscale.SetValue(str(self.cif_scale[cif_no]))
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
         self.optionsON(data=False,cif=True)
 
     def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
@@ -1893,11 +1787,10 @@ class Viewer1DXRD(wx.Panel):
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
-        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],
-                                               self.xy_plot[-1][3],
-                                               xlabel=self.xlabel,
-                                               ylabel=self.ylabel,
-                                               label=datalabel,
+
+        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi], self.xy_plot[-1][3],
+                                               xlabel=self.xlabel, ylabel=self.ylabel,
+                                               label=datalabel, marker='',
                                                show_legend=True))
 
         ## Use correct x-axis units
@@ -1907,7 +1800,7 @@ class Viewer1DXRD(wx.Panel):
         self.ch_data.SetStringSelection(datalabel)
 
         ## Update toolbox panel
-        self.val_scale.SetValue(str(self.xy_scale[-1]))
+        self.val_scale.SetValue('%i' % self.xy_scale[-1])
         self.optionsON(data=True,cif=False)
         #self.owner.nb.SetSelection(0) ## switches to viewer panel
         self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[-1].energy,
@@ -1916,14 +1809,14 @@ class Viewer1DXRD(wx.Panel):
     def normalize1Ddata(self,event=None,cif=False):
 
         if cif:
-            plt_no = self.ch_cif.GetSelection()
-            y = self.cif_plot[plt_no][3]
+            cif_no = self.ch_cif.GetSelection()
+            y = self.cif_plot[cif_no][3]
 
-            self.cif_scale[plt_no] = float(self.val_cifscale.GetValue())
-            if self.cif_scale[plt_no] <= 0:
-                self.cif_scale[plt_no] = CIFSCALE
-                self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
-            self.cif_plot[plt_no][3] = y/np.max(y) * self.cif_scale[plt_no]
+            self.cif_scale[cif_no] = float(self.val_cifscale.GetValue())
+            if self.cif_scale[cif_no] <= 0:
+                self.cif_scale[cif_no] = CIFSCALE
+                self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
+            self.cif_plot[cif_no][3] = y/np.max(y) * self.cif_scale[cif_no]
         else:
             plt_no = self.ch_data.GetSelection()
             y = self.xy_data[plt_no].I
@@ -1931,7 +1824,7 @@ class Viewer1DXRD(wx.Panel):
             self.xy_scale[plt_no] = float(self.val_scale.GetValue())
             if self.xy_scale[plt_no] <= 0:
                 self.xy_scale[plt_no] = np.max(y)
-                self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+                self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
             self.xy_plot[plt_no][3] = y/np.max(y) * self.xy_scale[plt_no]
 
         self.plot1D.unzoom_all()
@@ -1956,7 +1849,7 @@ class Viewer1DXRD(wx.Panel):
         data_str = self.ch_data.GetString(self.ch_data.GetSelection())
 
         plt_no = self.ch_data.GetSelection()
-        self.val_scale.SetValue(str(self.xy_scale[plt_no]))
+        self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
         
         self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[plt_no].energy,
                                                                   self.xy_data[plt_no].wavelength))
@@ -1965,8 +1858,8 @@ class Viewer1DXRD(wx.Panel):
 
         cif_str = self.ch_cif.GetString(self.ch_cif.GetSelection())
 
-        plt_no = self.ch_cif.GetSelection()
-        self.val_cifscale.SetValue(str(self.cif_scale[plt_no]))
+        cif_no = self.ch_cif.GetSelection()
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
 
     def check1Daxis(self,event=None,yaxis=False):
 
@@ -2013,7 +1906,7 @@ class Viewer1DXRD(wx.Panel):
 
             self.plot1D.update_line(plt_no,x,y)
 
-        if xi == 2: xmax = 5
+        if xi == 2: xmax = min(xmax,self.dlimit)
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
 
@@ -2495,14 +2388,13 @@ class ResultsPanel(wx.Panel):
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
 
-    def __init__(self,parent,xrd2Ddata,ai):
+    def __init__(self,parent,xrd2Ddata):
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                                     size = (210,410))
         self.parent = parent
         self.data2D = xrd2Ddata
-        self.ai = ai
         self.steps = 5001
 
         self.createPanel()
@@ -2673,7 +2565,10 @@ class Calc1DPopup(wx.Dialog):
         self.steps = int(self.xstep.GetValue())
 
 class DatabaseInfoGUI(wx.Dialog):
-    """"""
+    '''
+    Displays number of entries in current database; allows for loading new database files
+    mkak 2017.03.23
+    '''
 
     #----------------------------------------------------------------------
     def __init__(self, parent):
@@ -3122,7 +3017,9 @@ class AuthorListTable(wx.Dialog):
 
 #########################################################################            
 class XRDSymmetrySearch(wx.Dialog):
-    """"""
+    '''
+    GUI interface for specifying lattice parameters 
+    '''
 
     def __init__(self,parent,search=None):
     
@@ -3306,6 +3203,84 @@ class XRDSymmetrySearch(wx.Dialog):
         
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
+
+# class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+#     def __init__(self, parent, ID, pos=wx.DefaultPosition,
+#                  size=wx.DefaultSize, style=0):
+#         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
+#         listmix.ListCtrlAutoWidthMixin.__init__(self)
+
+# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
+#     """
+#     This will be the second notebook tab
+#     """
+#     #----------------------------------------------------------------------
+#     def __init__(self,parent,owner=None,_larch=None):
+#         """"""
+#         wx.Panel.__init__(self, parent)
+# 
+#         self.parent = parent
+#         self.owner = owner
+# 
+#         self.createAndLayout()
+# 
+#     def createAndLayout(self):
+#         sizer = wx.BoxSizer(wx.VERTICAL)
+#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
+#                                  | wx.BORDER_NONE
+#                                  | wx.LC_EDIT_LABELS
+#                                  | wx.LC_SORT_ASCENDING)
+#         sizer.Add(self.list, 1, wx.EXPAND)
+# 
+#         #self.database_info = self.createDATABASEarray()
+#         ## removed so database not loaded upon start up
+#         self.database_info = {}
+# 
+#         self.populateList()
+# 
+#         self.itemDataMap = self.database_info
+#         listmix.ColumnSorterMixin.__init__(self, 4)
+#         self.SetSizer(sizer)
+#         self.SetAutoLayout(True)
+# 
+#     def populateList(self):
+#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
+#         self.list.InsertColumn(1, 'Name')
+#         self.list.InsertColumn(2, 'Space Group')
+#         self.list.InsertColumn(3, 'Elements')
+#         self.list.InsertColumn(4, 'Authors')
+# 
+#         for key, data in self.database_info.items():
+#             index = self.list.InsertStringItem(sys.maxint, data[0])
+#             self.list.SetStringItem(index, 1, data[1])
+#             self.list.SetStringItem(index, 2, data[2])
+#             self.list.SetStringItem(index, 3, data[3])
+#             self.list.SetStringItem(index, 4, data[4])
+#             self.list.SetItemData(index, key)
+# 
+#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(1, 100)
+#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+# 
+# #
+# #         # show how to select an item
+# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+# #
+# #         # show how to change the colour of a couple items
+# #         item = self.list.GetItem(1)
+# #         item.SetTextColour(wx.BLUE)
+# #         self.list.SetItem(item)
+# #         item = self.list.GetItem(4)
+# #         item.SetTextColour(wx.RED)
+# #         self.list.SetItem(item)
+# 
+#         self.currentItem = 0
+# 
+#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
+#     def GetListCtrl(self):
+#         return self.list
 
 class diFFit1D(wx.App):
     def __init__(self):

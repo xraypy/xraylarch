@@ -15,7 +15,8 @@ import numpy as np
 
 from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
-
+from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
+from larch_plugins.io import tifffile
 
 HAS_larch = False
 try:
@@ -153,6 +154,8 @@ class xrd1d(grpobjt):
             x,y = np.split(xy,2,axis=0)
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
         self.I = np.array(y).squeeze()
+        
+    
       
 class XRD(grpobjt):
     '''
@@ -172,20 +175,25 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
-                 data1D=None, nwedge=2, nchan=5001, 
-                 name='xrd', _larch=None, **kws):
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=1, 
+                 steps=5001, name='xrd', _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
         self.ypix    = ypixels
         self.data2D  = data2D
         self.nwedge  = nwedge
-        self.nchan   = nchan
+        self.steps   = steps
         self.data1D  = data1D
+        self.data2D  = data2D
         
-        ## Also include calibration data file?
-        ## mkak 2016.08.20
+        self.energy     = None
+        self.wavelength = None
+        self.calfile    = None
+        
+        self.filename = None
+        self.title    = None
+        self.npixels  = None
 
         if HAS_larch:
             Group.__init__(self)
@@ -196,7 +204,7 @@ class XRD(grpobjt):
             return form % (self.name, self.xpix, self.ypix)
         elif self.data1D is not None:
             form = "<1DXRD %s: channels = %d>"
-            return form % (self.name, self.nchan)
+            return form % (self.name, self.steps)
         else:
             form = "<no 1D or 2D XRD pattern given>"
             return form       
@@ -205,6 +213,47 @@ class XRD(grpobjt):
         '''add an Environment setting'''
         if len(desc) > 0 and len(val) > 0:
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
+            
+            
+    def calc_1D(self,save=False,verbose=False):
+    
+        kwargs = {'steps':self.steps}
+        
+        if save:
+            file = self.save_1D()
+            kwargs.update({'file':file}) 
+                    
+        if os.path.exists(self.calfile):
+            if len(self.data2D) > 0:
+                self.data1D = integrate_xrd(self.data2D,self.calfile,verbose=verbose,**kwargs)
+            else:
+                if verbose:
+                    print('No 2D XRD data provided.')
+        else:
+            if verbose:
+                print('Could not locate file %s' % self.calfile)
+    
+    def save_1D(self):
+
+        pref,fname = os.path.split(self.filename)
+        counter = 1
+        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)):
+            counter += 1
+        return '%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)
+
+    def save_2D(self,verbose=False):
+    
+        pref,fname = os.path.split(self.filename)
+        
+        counter = 1
+        while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)):
+            counter += 1
+        tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)
+        
+        if verbose:
+            print('Saving 2D data in file: %s' % (tiffname))
+        tifffile.imsave(tiffname,self.data2D)
+
 
 
 ##########################################################################
@@ -259,7 +308,7 @@ def calculate_xvalues(x,xtype,wavelength):
 
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
-               data1D=None, nwedge=2, nchan=5001, 
+               data1D=None, nwedge=2, steps=5001, 
                name='xrd', _larch=None, **kws):
 
     '''

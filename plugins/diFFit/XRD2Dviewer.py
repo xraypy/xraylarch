@@ -20,21 +20,10 @@ from wxutils import MenuItem
 import larch
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd import integrate_xrd,E_from_lambda
-# from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
-# from larch_plugins.xrd.xrd_etc import E_from_lambda
+from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
-
-HAS_pyFAI = False
-try:
-    import pyFAI
-    import pyFAI.calibrant
-    # from pyFAI.calibration import Calibration
-    HAS_pyFAI = True
-except ImportError:
-    pass
 
 ###################################
 
@@ -47,7 +36,7 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, *args, **kw):
+    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, *args, **kw):
         
         screenSize = wx.DisplaySize()
         x,y = 1200, 720
@@ -82,16 +71,19 @@ class diFFit2DFrame(wx.Frame):
         
         self.color = 'bone'
         self.flip = 'none'
-        
-        self.ai = None
-        
+
         self.XRD2DMenuBar()
         self.Panel2DViewer()
         
         self.Centre()
         self.Show()
         
-        self.btn_integ.Disable()
+        if ponifile is None:
+            self.calfile = None
+            self.btn_integ.Disable()
+        else:
+            self.calfile = ponifile
+            self.btn_integ.Enable()
 
     def write_message(self, s, panel=0):
         '''write a message to the Status Bar'''
@@ -346,7 +338,7 @@ class diFFit2DFrame(wx.Frame):
 
     def on1DXRD(self,event=None):
         
-        myDlg = Calc1DPopup(self,self.plt_img,self.ai)
+        myDlg = Calc1DPopup(self,self.plt_img)
         
         read, save, plot = False, False, False
         if myDlg.ShowModal() == wx.ID_OK:
@@ -354,7 +346,7 @@ class diFFit2DFrame(wx.Frame):
             save = myDlg.ch_save.GetValue()
             plot = myDlg.ch_plot.GetValue()
 
-            attrs = {'ai':self.ai}
+            attrs = {}
             if int(myDlg.xstep.GetValue()) < 1:
                 attrs.update({'steps':5001})
             else:
@@ -376,24 +368,24 @@ class diFFit2DFrame(wx.Frame):
                     attrs.update({'file':path,'save':save})
                 dlg.Destroy()
 
-            data1D = integrate_xrd(self.plt_img,**attrs)
+            data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
             
             if plot:
                 if self.xrddisplay1D is None:
                     self.xrddisplay1D = diFFit1DFrame()
-                    try:
-                        self.xrddisplay1D.xrd1Dviewer.addLAMBDA(self.ai._wavelength,units='m')
-                    except:
-                        pass
+
+                wavelength = read_lambda(self.calfile)
                 label = self.name_images[self.ch_img.GetSelection()]
+                data1dxrd = xrd1d(label=label,wavelength=wavelength,energy=E_from_lambda(wavelength))            
+                data1dxrd.xrd_from_2d(data1D,'q')                
+
                 try:
-                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
                 except PyDeadObjectError:
                     self.xrddisplay1D = diFFit1DFrame()
-                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(*data1D, name=label)
+                    self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
-
             
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -416,46 +408,17 @@ class diFFit2DFrame(wx.Frame):
         
         if read:
             try:
-                self.ai = pyFAI.load(path)
+                self.calfile = path
                 print('Loading calibration file: %s' % path)
                 #self.showPONI()
                 self.btn_integ.Enable()
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
 
-    def setPONI(self,ai):
-
-        self.ai = ai
-        #self.showPONI()
-        self.btn_integ.Enable()
-    
+   
     def showPONI(self,event=None):
-        if self.ai is None:
-            print(' xxxxx NO CALIBRATION INFORMATION TO PRINT xxxxx ')
-        else:
-            print()
-            print()
-            print(' ====== CURRENT CALIBRATION INFORMATION ====== ')
-            print()
-            try:
-                print('Detector name: %s' % self.ai.detector.name)
-                #ai.detector.splineFile
-            except:
-                pass
-            prt_str = 'Detector distance: %.1f mm'
-            print(prt_str % (self.ai._dist*1000.))
-            prt_str = 'Pixel size (x,y): %.1f um, %.1f um'
-            print(prt_str % (self.ai.detector.pixel1*1000000.,
-                             self.ai.detector.pixel2*1000000.))
-            prt_str = 'Detector center (x,y): %i pixels, %i pixels'
-            print(prt_str % (self.ai._poni1/self.ai.detector.pixel1,
-                             self.ai._poni2/self.ai.detector.pixel2))
-            prt_str = 'Detector tilts: %0.5f, %0.5f %0.5f'
-            print(prt_str % (self.ai._rot1,self.ai._rot2,self.ai._rot3))
-            prt_str = 'Incident energy, wavelength: %0.2f keV, %0.4f A'
-            E = E_from_lambda(self.ai._wavelength) ## units: keV
-            print(prt_str % (E,self.ai._wavelength*1.e10))
-
+        
+        print('Calibration file: %s' % self.calfile)
 
 ##############################################
 #### BACKGROUND FUNCTIONS

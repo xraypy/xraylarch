@@ -61,26 +61,22 @@ def peakfinder(x, y, regions=50, gapthrsh=5):
     return peak_indices
 
 
-def peakfitter(ipeaks, q, I, wavelength=0.6525, verbose=True, halfwidth=40, fittype='single'):
+def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
 
-    peaktwth = []
-    peakFWHM = []
-    peakinty = []
+    peaktwth,peakFWHM,peakinty = [],[],[]
     for j in ipeaks:
-        if j > halfwidth and (np.shape(q)-j) > halfwidth:
+        if j > halfwidth and (np.shape(twth)[0]-j) > halfwidth:
             minval = int(j - halfwidth)
             maxval = int(j + halfwidth)
 
             if I[j] > I[minval] and I[j] > I[maxval]:
-                
-                xdata = q[minval:maxval]
+                xdata = twth[minval:maxval]
                 ydata = I[minval:maxval]
 
-                xdata = twth_from_q(xdata,wavelength)
                 try:
-                    twth,fwhm,pkint = data_gaussian_fit(xdata,ydata,fittype=fittype)
-                    peaktwth += [twth]
-                    peakFWHM += [fwhm]
+                    pktwth,pkfwhm,pkint = data_gaussian_fit(xdata,ydata,fittype=fittype)
+                    peaktwth += [pktwth]
+                    peakFWHM += [pkfwhm]
                     peakinty += [pkint]
                 except:
                     pass
@@ -138,9 +134,9 @@ def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
 
 
-def instrumental_fit_uvw(ipeaks, q, I, wavelength=0.6525, halfwidth=40, verbose=True):
+def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
 
-    twth,FWHM,inten = peakfitter(ipeaks,q,I,wavelength=wavelength,halfwidth=halfwidth,
+    twth,FWHM,inten = peakfitter(ipeaks,twth,I,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
 
     tanth = np.tan(np.radians(twth/2))
@@ -152,12 +148,10 @@ def instrumental_fit_uvw(ipeaks, q, I, wavelength=0.6525, halfwidth=40, verbose=
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
-        print(                                         )
-        print( '\nInstrumental broadening parameters:' )
-        print( '---  U',u                              )
-        print( '---  V',v                              )
-        print( '---  W',w                              )
-        print(                                         )
+        print('\nInstrumental broadening parameters:')
+        print('---  U  : %0.8f'   % u)
+        print('---  V  : %0.8f'   % v)
+        print('---  W  : %0.8f\n' % w)
 
     return(u,v,w)
 
@@ -187,12 +181,10 @@ def data_poly_fit(x, y, plot=False, verbose=False):
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
     if verbose:
-        print( '---Polynomial Fit'                      ) 
-        print( '---  U',popt[0]                         ) 
-        print( '---  V',popt[1]                         ) 
-        print( '---  W',popt[2]                         ) 
-        print( 'Goodness of fit, R^2:',1-rsqu_n/rsqu_d  ) 
-        print(                                          ) 
+        print('---Polynomial Fit:')
+        print('---  U  : %0.8f'   % popt[0])
+        print('---  V  : %0.8f'   % popt[1])
+        print('---  W  : %0.8f\n' % popt[2])
 
     return popt
 
