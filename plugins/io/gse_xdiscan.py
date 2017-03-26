@@ -154,7 +154,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     return group
 
 
-DTC_header = '''# XDI/1.0  GSE/1.0
+DTC_header = '''# XDI/1.1  Epics StepScan File/2.0
 # Beamline.name:  13-ID-E, GSECARS
 # Monochromator.name:  %(mono_cut)s, LN2 Cooled
 # Monochromator.dspacing:  %(mono_dspace)s
