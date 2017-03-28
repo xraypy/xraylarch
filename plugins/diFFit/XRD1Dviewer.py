@@ -833,7 +833,7 @@ class Fitting1DXRD(BasePanel):
             ## clears previous searches
             self.remove_all_peaks()
 
-            self.ipeaks = peakfinder(self.plt_data[xi],self.plt_data[3],
+            self.ipeaks = peakfinder(self.plt_data[3],
                                      regions=self.iregions,
                                      gapthrsh=self.gapthrsh)
 

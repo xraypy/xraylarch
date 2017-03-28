@@ -16,6 +16,8 @@ import numpy as np
 from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
 from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
+from larch_plugins.xrd.xrd_bgr import xrd_background
+from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
 
 HAS_larch = False
@@ -59,14 +61,14 @@ class xrd1d(grpobjt):
     
     # Data fitting parameters
     * self.uvw           = [0.313, -0.109, 0.019] # instrumental broadening parameters
-    * self.ipks          = [8, 254, 3664]         # list of peak indecides
+    * self.pki          = [8, 254, 3664]         # list of peak indecides
 
 
     mkak 2017.03.15
     '''
 
     def __init__(self,file=None,label=None,q=None,twth=None,d=None,I=None,
-                 wavelength=None,energy=None):
+                 imin=None,imax=None,bkgd=None,wavelength=None,energy=None):
 
         self.filename = file
         self.label    = label
@@ -75,6 +77,15 @@ class xrd1d(grpobjt):
         self.twth = twth
         self.d    = d
         self.I    = I
+        self.imin = imin
+        self.imax = imax
+        
+        self.bkgd = bkgd
+
+        self.qpks    = None
+        self.twthpks = None
+        self.dpks    = None
+        self.Ipks    = None     
 
         self.wavelength = wavelength
         self.energy     = energy
@@ -89,7 +100,7 @@ class xrd1d(grpobjt):
         self.normalization = None
         
         self.uvw  = None
-        self.ipks = None
+        self.pki = None
         
         if file is not None:
             self.xrd_from_file(file)
@@ -155,8 +166,100 @@ class xrd1d(grpobjt):
         self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
         self.I = np.array(y).squeeze()
         
+        if self.imin is None or self.imax is None:
+            self.imin,self.imax = 0,len(self.q)
+        
+    def set_trim(self,xmin,xmax,xtype):
     
-      
+        if xtype.startswith('q'):
+            x = self.q
+        elif xtype.startswith('2th'):
+            x = self.twth
+        elif xtype.startswith('d'):
+            x = self.d
+        else:
+            print('The provided x-axis label (%s) not correct.' % xtype)
+            return
+            
+        self.imin,self.imax = 0,len(x)
+        if xmin > np.min(x):
+            self.imin = (np.abs(x-xmin)).argmin()
+        if xmax < np.max(x):
+            self.imax = (np.abs(x-xmax)).argmin()
+
+    def trim(self,axis):
+
+        if self.imin is None or self.imax is None:
+            self.imin,self.imax = 0,len(self.I)
+            
+        if axis.startswith('q'):
+            return self.q[self.imin:self.imax]
+        elif axis.startswith('2th'):
+            return self.twth[self.imin:self.imax]
+        elif axis.startswith('d'):
+            return self.d[self.imin:self.imax]
+        elif axis.startswith('I'):
+            return self.I[self.imin:self.imax]
+        else:
+            print('The provided axis label (%s) not correct.' % axis)
+            return
+            
+    def fit_background(self,trim=False):
+    
+        if trim:
+            x = self.trim('q')
+            y = self.trim('I')
+        else:
+            x = self.q
+            y = self.I
+
+        self.bkgd = xrd_background(x,y)
+        if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
+        
+    def set_data_range(self,trim,bkgd):
+    
+        if trim:
+            I = self.trim('I')
+            q,twth,d = self.trim('q'),self.trim('2th'),self.trim('d')
+        else:
+            I = self.I
+            q,twth,d = self.q,self.twth,self.d
+        if bkgd and len(I) == len(self.bkgd):
+            I = I-self.bkgd
+            
+        return q,twth,d,I
+    
+    
+    def find_peaks(self,trim=False,bkgd=False,threshold=None,**kwargs):
+    
+        q,twth,d,I = self.set_data_range(trim,bkgd)
+    
+        self.pki = peakfinder(I,**kwargs)
+        if threshold is not None:
+            self.pki = peakfilter(threshold,self.pki,I)
+
+        self.qpks    = peaklocater(self.pki,q)
+        self.twthpks = peaklocater(self.pki,twth)
+        self.dpks    = peaklocater(self.pki,d)
+        self.Ipks    = peaklocater(self.pki,I)
+        
+    def refine_peaks(self,trim=False,bkgd=False):
+    
+        q,twth,d,I = self.set_data_range(trim,bkgd)
+        
+        pktwth,pkfwhm,self.Ipks = peakfitter(self.pki,twth,I,fittype='double')
+        #self.peaks = zip(pkfwhm,pkI)
+
+        self.qpks,self.twthpks,self.dpks = calculate_xvalues(pktwth,'2th',self.wavelength)
+
+    def fit_pattern(self):
+    
+        fit = np.zeros(len(self.I))
+        for i,j in enumerate(self.pki):
+            print i,j
+
+
+        
 class XRD(grpobjt):
     '''
     X-Ray Diffraction (XRD) class
@@ -164,8 +267,8 @@ class XRD(grpobjt):
     Attributes:
     -----------
     * self.name        = 'xrd'  # Name of the object
-    * self.xpix        = 2048   # number of x pixels
-    * self.ypix        = 2048   # number of y pixels
+    * self.xpix        = 2048   # Number of x pixels
+    * self.ypix        = 2048   # Number of y pixels
     * self.data2D      = None   # 2D XRD data
     * self.data1D      = None   # 1D XRD data
 
@@ -269,6 +372,7 @@ def calculate_xvalues(x,xtype,wavelength):
     
     q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
     '''
+
     x = np.array(x).squeeze()
     if xtype.startswith('q'):
 
@@ -287,8 +391,7 @@ def calculate_xvalues(x,xtype,wavelength):
             d = d_from_twth(twth,wavelength)
         else:
             q = np.zeros(len(twth))
-            d = np.zeros(len(twth))        
-    
+            d = np.zeros(len(twth))
     
     elif xtype.startswith('d'):
 

@@ -35,23 +35,21 @@ def peakfilter(intthrsh,ipeaks,y,verbose=False):
     
     return ipks
 
-def peaklocater(ipeaks,x,y):
+def peaklocater(ipeaks,x):
     '''
     Returns x and y for data set corresponding to peak indices solution
     from peakfinder()
     '''
-    xypeaks = np.zeros((2,len(ipeaks)))
-    xypeaks[0,:] = [x[i] for i in ipeaks]
-    xypeaks[1,:] = [y[i] for i in ipeaks]
+    xypeaks = [x[i] for i in ipeaks]
 
     return np.array(xypeaks)
 
-def peakfinder(x, y, regions=50, gapthrsh=5):
+def peakfinder(y, regions=20, gapthrsh=5):
     '''
-    Returns indices for peaks in y from dataset (x,y)
+    Returns indices for peaks in y from dataset
     '''
 
-    ttlpnts = len(x)
+    ttlpnts = len(y)
     widths = np.arange(1,int(ttlpnts/regions))
 
     peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
@@ -84,7 +82,7 @@ def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
     return np.array(peaktwth),np.array(peakFWHM),np.array(peakinty)
 
 
-def data_gaussian_fit(x,y,pknum=0,fittype='single'):
+def data_gaussian_fit(x,y,fittype='single'):
     '''
     Fits a single or double Gaussian functions.
     '''
@@ -118,7 +116,7 @@ def data_gaussian_fit(x,y,pknum=0,fittype='single'):
     else:
         pkpos = popt[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
-        pkint  = np.max(gaussian(x,*popt2))
+        pkint  = np.max(gaussian(x,*popt))
 
    
     return pkpos,pkfwhm,pkint
