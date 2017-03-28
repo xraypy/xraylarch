@@ -29,6 +29,7 @@ STARTKEYS = ['if', 'for', 'def', 'try', 'while']
 if six.PY2:
     FILETYPE = file
 else:
+    import io
     FILETYPE = io.IOBase
 
 def find_eostring(txt, eos, istart):

@@ -492,7 +492,6 @@ class LarchFrame(wx.Frame):
         if ret == wx.ID_YES:
             try:
                 self._larch.input.history.save()
-                # self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
             except:
                 pass
             try:
