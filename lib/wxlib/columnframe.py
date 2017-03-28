@@ -412,6 +412,7 @@ class SelectColumnFrame(wx.Frame) :
             cmd = "%s, labels='%s'" % (cmd, ', '.join(self.array_labels))
 
         leval("%s = %s(%s)" % (groupname, self.reader, cmd))
+        self.outgroup.groupname = groupname
 
         for attr in ('datatype', 'groupname', 'filename',
                      'path', 'plot_xlabel', 'plot_ylabel'):
@@ -427,9 +428,8 @@ class SelectColumnFrame(wx.Frame) :
             leval("%s.mu = %s.ydat" % (groupname, groupname))
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
-                            array_labels=self.array_labels,
-                            expressions=self.expressions)
+            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
+
         self.Destroy()
 
     def onCancel(self, event=None):
