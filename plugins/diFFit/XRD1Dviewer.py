@@ -12,6 +12,11 @@ import re
 from threading import Thread
 from functools import partial
 
+try:
+    from cStringIO import StringIO #python 2
+except:
+    from io import StringIO #python 3
+
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
@@ -263,10 +268,15 @@ class diFFit1DFrame(wx.Frame):
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
                 xrdf.xmax     = np.max(xrdf.plt_data[xi])
+                
+                xrdf.xrd1dgrp = seldat
 
                 xrdf.optionsON()
                 xrdv.optionsON()
                 xrdf.check1Daxis()
+                
+                xrdf.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (seldat.energy,
+                                                                          seldat.wavelength))
 
 class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
@@ -335,6 +345,8 @@ class Fitting1DXRD(BasePanel):
         self.raw_data   = None
         self.plt_data   = None
         self.bgr_data   = None
+        
+        self.xrd1dgrp   = None
 
         self.bgr        = None
         self.bgr_info   = None
@@ -390,6 +402,31 @@ class Fitting1DXRD(BasePanel):
         self.SetSizer(panel1D)
 
 
+    def showCIF(self, event=None, **kws):
+
+        if event is not None:
+            cifname = event.GetString()
+            amcsd_id = int(cifname.split()[0])
+            ciffile = '/%s' % cifname
+            
+            energy = self.xrd1dgrp.energy
+            maxI = np.max(self.plt_data[3])*0.8
+            maxq = np.max(self.plt_data[0])*1.05
+        
+            cifmatch = self.owner.cifdatabase.return_cif(amcsd_id)
+            qall,Fall = calcCIFpeaks(ciffile,energy,verbose=True,fid=StringIO(cifmatch),qmax=maxq)
+            Fall = Fall/max(Fall)*maxI
+            cifpks = np.array([qall,Fall])
+            
+            self.plot1D.oplot(*cifpks, title=self.plttitle,
+                              color='green', label=cifname, xlabel=self.xlabel,
+                              ylabel=self.ylabel, marker='', markersize=0, show_legend=True)
+
+            ## self.plot1D.update_line(2,*cifpks, label=cifname)
+            print 'NEED TO FIGURE OUT HOW TO DELETE A DATASET WITHOUT REPLOTTING ALL'
+            ## mkak 2017.03.28
+
+    
     def createFittingPanels(self,parent):
         
         pattern_title    = SimpleText(parent, 'DATABASE FILTERING', size=(200, -1))
@@ -697,8 +734,7 @@ class Fitting1DXRD(BasePanel):
         if self.bgr is not None:
             self.plot_data()
             if self.ipeaks is not None:
-                xi = self.rngpl.ch_xaxis.GetSelection()
-                self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
+                self.define_peaks()
                 self.plot_peaks()
         self.fit_background()
         self.plot_background()
@@ -724,8 +760,7 @@ class Fitting1DXRD(BasePanel):
         self.plot_data()
 
         if self.ipeaks is not None:
-            xi = self.rngpl.ch_xaxis.GetSelection()
-            self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
+            self.define_peaks()
             self.plot_peaks()
 
     def delete_background(self,event=None):
@@ -795,9 +830,8 @@ class Fitting1DXRD(BasePanel):
             self.bkgdpl.btn_obkgd.Enable()
             self.plot_data()
 
-
         if self.ipeaks is not None:
-            self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
+            self.define_peaks()
             self.plot_peaks()
 
 
@@ -850,23 +884,21 @@ class Fitting1DXRD(BasePanel):
 
     def peak_display(self):
 
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
+        self.define_peaks()
 
         self.peaklist = []
         self.peaklistbox.Clear()
 
         str = 'Peak (%6d cts @ %2.3f %s )'
+        xi = self.rngpl.ch_xaxis.GetSelection()
         for i,ii in enumerate(self.ipeaks):
-            peakname = str % (self.plt_peaks[1,i],self.plt_peaks[0,i],self.xunit)
+            peakname = str % (self.plt_peaks[3,i],self.plt_peaks[xi,i],self.xunit)
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
         self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
 
     def fit_instrumental(self,event=None):
 
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        
         u,v,w = instrumental_fit_uvw(self.ipeaks,
                                      self.plt_data[1],self.plt_data[3],
                                      halfwidth=self.halfwidth,
@@ -886,7 +918,8 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
 
-        self.plot1D.oplot(*self.plt_peaks, marker='o', color='red', markersize=8,
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3], marker='o', color='red', markersize=8,
                           linewidth=0, label='Found peaks', show_legend=True)
         self.plot1D.cursor_mode = 'zoom'
 
@@ -934,6 +967,13 @@ class Fitting1DXRD(BasePanel):
 ##      if pki is None and evt is not None:
 ##          pki = self.peaklistbox.GetSelections()
 
+    def define_peaks(self):
+    
+        peaks=np.zeros((4,len(self.ipeaks)))
+        for axis,data in enumerate(self.plt_data):
+            peaks[axis] = peaklocater(self.ipeaks,data)
+        self.plt_peaks = peaks
+    
     def rm_sel_peaks(self, peakname, event=None):
 
         if peakname in self.peaklist:
@@ -942,8 +982,8 @@ class Fitting1DXRD(BasePanel):
 
             self.peaklist.pop(pki)
             self.ipeaks.pop(pki)
-            xi = self.rngpl.ch_xaxis.GetSelection()
-            self.plt_peaks = peaklocater(self.ipeaks,self.plt_data[xi],self.plt_data[3])
+
+            self.define_peaks()
 
             self.plot_data()
             self.plot_peaks()
@@ -2383,11 +2423,23 @@ class ResultsPanel(wx.Panel):
     def ResultsTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.owner.amcsdlistbox = EditableListBox(self, None,size=(200,-1))
+        self.owner.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,-1))
         self.owner.txt_amcsd_cnt = wx.StaticText(self, label='')
 
-        vbox.Add(self.owner.amcsdlistbox,  flag=wx.ALL, border=10)
-        vbox.Add(self.owner.txt_amcsd_cnt, flag=wx.ALL, border=10)
+        vbox.Add(self.owner.txt_amcsd_cnt, flag=wx.BOTTOM, border=8)
+        vbox.Add(self.owner.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        btn_prv = wx.Button(self,label='Preview CIF')
+        btn_prv.Bind(wx.EVT_BUTTON, None)
+        hbox.Add(btn_prv, flag=wx.RIGHT, border=8)
+
+        btn_clr = wx.Button(self,label='Clear Results')
+        btn_clr.Bind(wx.EVT_BUTTON, None)
+        hbox.Add(btn_clr, flag=wx.RIGHT, border=8)
+        
+        vbox.Add(hbox,  flag=wx.BOTTOM, border=4)
+
 
         return vbox
 
