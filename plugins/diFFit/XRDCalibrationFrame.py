@@ -712,34 +712,34 @@ class CalXRD(wx.Dialog):
 
 
 
-class diFFit_XRDcal(wx.App):
-    def __init__(self):
-        wx.App.__init__(self)
-
-    def run(self):
-        self.MainLoop()
-
-    def createApp(self):
-        frame = CalibrationPopup()
-        frame.Show()
-        self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.createApp()
-        return True
-
-def registerLarchPlugin():
-    return ('_diFFit', {})
-
-class DebugViewer(diFFit_XRDcal):
-    def __init__(self, **kws):
-        diFFit_XRDcal.__init__(self, **kws)
-
-    def OnInit(self):
-        #self.Init()
-        self.createApp()
-        #self.ShowInspectionTool()
-        return True
-
-if __name__ == '__main__':
-    diFFit_XRDcal().run()
+# class diFFit_XRDcal(wx.App):
+#     def __init__(self):
+#         wx.App.__init__(self)
+# 
+#     def run(self):
+#         self.MainLoop()
+# 
+#     def createApp(self):
+#         frame = CalibrationPopup()
+#         frame.Show()
+#         self.SetTopWindow(frame)
+# 
+#     def OnInit(self):
+#         self.createApp()
+#         return True
+# 
+# def registerLarchPlugin():
+#     return ('_diFFit', {})
+# 
+# class DebugViewer(diFFit_XRDcal):
+#     def __init__(self, **kws):
+#         diFFit_XRDcal.__init__(self, **kws)
+# 
+#     def OnInit(self):
+#         #self.Init()
+#         self.createApp()
+#         #self.ShowInspectionTool()
+#         return True
+# 
+# if __name__ == '__main__':
+#     diFFit_XRDcal().run()
