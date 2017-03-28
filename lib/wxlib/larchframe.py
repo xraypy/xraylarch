@@ -53,7 +53,8 @@ class LarchWxShell(object):
         self.objtree = wxparent.objtree
 
         self.set_textstyle(mode='text')
-        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}", add_history=False)
+        self._larch("_sys.display.colors['text2'] = {'color': 'blue'}",
+                    add_history=False)
 
         self._larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
@@ -75,7 +76,6 @@ class LarchWxShell(object):
         self.needs_flush = True
         wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
         self.flush_timer.Start(500)
-
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -278,12 +278,11 @@ class LarchFrame(wx.Frame):
 
         self.SetSizer(sizer)
 
-
         if parent is None and exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
-            self.Bind(wx.EVT_CLOSE,  self.onClose)
-
+             self.Bind(wx.EVT_CLOSE,  self.onClose)
+        self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
 
         larchdir = larch.site_config.larchdir
@@ -294,7 +293,6 @@ class LarchFrame(wx.Frame):
         self.Refresh()
         self.SetStatusText("Ready", 0)
         self.Raise()
-
 
     def BuildMenus(self):
         fmenu = wx.Menu()
@@ -337,7 +335,6 @@ class LarchFrame(wx.Frame):
         menuBar.Append(appmenu, 'Applications')
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
-
 
     def onWxInspect(self, event=None):
         wx.GetApp().ShowInspectionTool()
@@ -402,7 +399,6 @@ class LarchFrame(wx.Frame):
             dgroup._groupname = groupname
         dlg.Destroy()
         if dgroup is not None:
-
             self.show_subframe(name='coledit', event=None,
                                creator=EditColumnFrame,
                                group=dgroup,
@@ -475,24 +471,27 @@ class LarchFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
+    def onShow(self, event=None):
+        if event.Show:
+            self.mainpanel.update()
+
     def onClose(self, event=None):
-        # sys.stderr.write(" LarchFrame onClose\n")
         try:
             self.Hide()
-            self._larch.input.history.save()
-            self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
         except:
             pass
 
-    def onExit(self, event=None):
-        # sys.stderr.write(" LarchFrame onExit\n")
-        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        ret = dlg.ShowModal()
+    def onExit(self, event=None, force=False):
+        if force:
+            ret = wx.ID_YES
+        else:
+            dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            ret = dlg.ShowModal()
+
         if ret == wx.ID_YES:
             try:
                 self._larch.input.history.save()
-                self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
             except:
                 pass
             try:

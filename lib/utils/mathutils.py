@@ -307,7 +307,7 @@ def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
     if len(y2) > len(x0):
         nex = int((len(y2) - len(x0))/2)
         y2 = (y2[nex:])[:len(x0)]
-    return interp(x, x0, y2)
+    return interp(x0, y2, x)
 
 
 def savitzky_golay(y, window_size, order, deriv=0):

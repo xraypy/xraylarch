@@ -1293,15 +1293,19 @@ class MapViewerFrame(wx.Frame):
         self.filemap = {}
         self.im_displays = []
         self.plot_displays = []
-        self.larch = _larch
-        if self.larch is None:
-            self.larch = larch.Interpreter()
-            self.larch.symtable.set_symbol('_sys.wx.parent', self)
+
+        self.larch_buffer = parent
+        if not isinstance(parent, LarchFrame):
+            self.larch_buffer = LarchFrame(_larch=_larch)
+
+        self.larch = self.larch_buffer._larch
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
 
         self.xrfdisplay = None
         self.xrddisplay1D = None
         self.xrddisplay2D = None
-        self.larch_buffer = None
+
         self.watch_files = False
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
@@ -1331,6 +1335,8 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
+
+        self.larch_buffer.Hide()
 
 
     def CloseFile(self, filename, event=None):
@@ -1711,7 +1717,7 @@ class MapViewerFrame(wx.Frame):
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = LarchFrame(_larch=self.larch)
-            
+
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
@@ -1744,6 +1750,13 @@ class MapViewerFrame(wx.Frame):
 
 
     def onClose(self, evt):
+        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+
+        ret = dlg.ShowModal()
+        if ret != wx.ID_YES:
+            return
+
         save_workdir('gsemap.dat')
         for xrmfile in self.filemap.values():
             xrmfile.close()
@@ -1778,7 +1791,8 @@ class MapViewerFrame(wx.Frame):
 
         if self.larch_buffer is not None:
             try:
-                self.larch_buffer.onClose()
+                self.larch_buffer.Show()
+                self.larch_buffer.onExit(force=True)
             except:
                 pass
 

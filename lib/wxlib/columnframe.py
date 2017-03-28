@@ -124,7 +124,6 @@ class SelectColumnFrame(wx.Frame) :
 
         group = self.group = self.read_column_file(self.path)
 
-        print("READ Group OK: ", group, dir(group))
         self.array_labels = group.array_labels
 
         self.subframes = {}
@@ -413,26 +412,24 @@ class SelectColumnFrame(wx.Frame) :
             cmd = "%s, labels='%s'" % (cmd, ', '.join(self.array_labels))
 
         leval("%s = %s(%s)" % (groupname, self.reader, cmd))
+        self.outgroup.groupname = groupname
 
         for attr in ('datatype', 'groupname', 'filename',
                      'path', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.outgroup, attr)
             leval("%s.%s = '%s'" % (groupname, attr, val))
 
-        print("--- EXPRESSION ", self.expressions)
-
         for aname in ('xdat', 'ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', groupname)
             leval("%s.%s = %s" % (groupname, aname, expr))
 
         if getattr(self.outgroup, 'datatype', 'raw') == 'xas':
-            leval("%s.energy = %s.xdat" % (gname, gname))
-            leval("%s.mu = %s.ydat" % (gname, gname))
+            leval("%s.energy = %s.xdat" % (groupname, groupname))
+            leval("%s.mu = %s.ydat" % (groupname, groupname))
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, array_sel=self.array_sel,
-                            array_labels=self.array_labels,
-                            expressions=self.expressions)
+            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
+
         self.Destroy()
 
     def onCancel(self, event=None):
