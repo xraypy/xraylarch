@@ -106,7 +106,9 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
         aname = sumname = rawname = arrname.lower()
-        if ('_mca' in aname and 'outputcounts' not in aname and
+        if ('_mca' in aname and 
+            'outputcounts' not in aname and
+            'dtfactor' not in aname and
             'clock' not in aname):
             sumname, imca = sumname.split('_mca')
             imca = int(imca) - 1
@@ -140,6 +142,11 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         if sname not in labels:
             labels.append(sname)
 
+    data = []
+    for name in labels:
+        data.append(getattr(group, name))
+    group.data = np.array(data)
+
     for imca in range(nmca):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
         setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
@@ -147,7 +154,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     return group
 
 
-DTC_header = '''# XDI/1.0  GSE/1.0
+DTC_header = '''# XDI/1.1  Epics StepScan File/2.0
 # Beamline.name:  13-ID-E, GSECARS
 # Monochromator.name:  %(mono_cut)s, LN2 Cooled
 # Monochromator.dspacing:  %(mono_dspace)s

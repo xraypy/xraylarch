@@ -73,10 +73,10 @@ class AllParamsPanel(wx.Panel):
             self.user_params = OrderedDict()
             for parname, param in user_params.items():
                 self.user_params[parname] = param
-        print("Fit Params: ")
-        for p in self.fit_params.values(): print(p)
-        print("User Params: ")
-        for p in self.user_params.values(): print(p)
+        #print("Fit Params: ")
+        #for p in self.fit_params.values(): print(p)
+        #print("User Params: ")
+        #for p in self.user_params.values(): print(p)
 
 
 class FitController(object):
