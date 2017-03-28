@@ -1014,15 +1014,11 @@ class XYFitFrame(wx.Frame):
             self.show_subframe('selectcol', SelectColumnFrame, **kwargs)
 
 
-    def onRead_OK(self, datagroup, array_sel=None, array_labels=None,
-                  expressions=None,  overwrite=False, plot=True):
+    def onRead_OK(self, datagroup, array_sel=None, overwrite=False):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
-        if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
-            array_labels = datagroup.array_labels
-
         gname = datagroup.groupname
         fname = datagroup.filename
         path  = datagroup.path
@@ -1031,7 +1027,6 @@ class XYFitFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel = array_sel
 
-        # print("READ OK  storing datagroup ", datagroup, gname, fname)
         # file /group may already exist in list
         if fname in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
@@ -1044,7 +1039,6 @@ class XYFitFrame(wx.Frame):
             self.controller.filelist.Append(fname)
             self.controller.file_groups[fname] = gname
 
-        setattr(self.larch.symtable, gname, datagroup)
         self.nb.SetSelection(0)
         self.ShowFile(groupname=gname)
 
