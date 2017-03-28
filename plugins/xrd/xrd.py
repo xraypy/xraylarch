@@ -61,14 +61,14 @@ class xrd1d(grpobjt):
     
     # Data fitting parameters
     * self.uvw           = [0.313, -0.109, 0.019] # instrumental broadening parameters
-    * self.pki          = [8, 254, 3664]         # list of peak indecides
+    * self.pki           = [8, 254, 3664]         # list of peak indecides
 
 
     mkak 2017.03.15
     '''
 
     def __init__(self,file=None,label=None,q=None,twth=None,d=None,I=None,
-                 imin=None,imax=None,bkgd=None,wavelength=None,energy=None):
+                 wavelength=None,energy=None):
 
         self.filename = file
         self.label    = label
@@ -77,15 +77,6 @@ class xrd1d(grpobjt):
         self.twth = twth
         self.d    = d
         self.I    = I
-        self.imin = imin
-        self.imax = imax
-        
-        self.bkgd = bkgd
-
-        self.qpks    = None
-        self.twthpks = None
-        self.dpks    = None
-        self.Ipks    = None     
 
         self.wavelength = wavelength
         self.energy     = energy
@@ -101,6 +92,19 @@ class xrd1d(grpobjt):
         
         self.uvw  = None
         self.pki = None
+
+        self.imin = None
+        self.imax = None
+        
+        self.bkgd = None
+
+        self.qpks    = None
+        self.twthpks = None
+        self.dpks    = None
+        self.Ipks    = None     
+
+        self.matches = None    
+
         
         if file is not None:
             self.xrd_from_file(file)

@@ -1016,6 +1016,12 @@ class cifDB(object):
         print(' ===================== ')
         print('')
 
+    def return_cif(self,amcsd_id):
+
+        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
+        for row in search_cif.execute():
+            return row.cif
+
 ##################################################################################
 
     def all_by_amcsd(self,amcsd_id,verbose=True):
@@ -1608,7 +1614,7 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
             
-def match_database(fracq=0.75, pk_wid=0.05, q=None, I=None, ipks=None,
+def match_database(fracq=0.75, pk_wid=0.05, q=None, ipks=None,
                    cifdatabase=None, verbose=False):
     '''
     fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
@@ -1616,7 +1622,7 @@ def match_database(fracq=0.75, pk_wid=0.05, q=None, I=None, ipks=None,
 
     '''
 
-    q_pks = peaklocater(ipks,q,I)[0]
+    q_pks = peaklocater(ipks,q)
     minq = np.min(q)
     maxq = np.max(q)
 

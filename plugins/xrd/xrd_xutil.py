@@ -85,10 +85,10 @@ from larch_plugins.xrd.xrd_hkl import generate_hkl
 # 
 #     return E,F
 
-def calcCIFpeaks(path,energy,verbose=True):
+def calcCIFpeaks(path,energy,verbose=True,fid=None,plotable=True,qmax=6):
 
     try:
-        cif = xu.materials.Crystal.fromCIF(path)
+        cif = xu.materials.Crystal.fromCIF(path,fid=fid)
         if verbose:
             print('Opening cif: %s' % os.path.split(path)[-1])
     except:
@@ -108,9 +108,13 @@ def calcCIFpeaks(path,energy,verbose=True):
         if np.abs(Flist[i]) > 0.01:
             Fadd = np.abs(Flist[i])
             qadd = np.linalg.norm(qlist[i])
-            if qadd not in qall and qadd < 6:
-                Fall.extend((0,Fadd,0))
-                qall.extend((qadd,qadd,qadd))
+            if qadd not in qall and qadd < qmax:
+                if plotable:
+                    Fall.extend((0,Fadd,0))
+                    qall.extend((qadd,qadd,qadd))
+                else:
+                    Fall.extend(Fadd)
+                    qall.extend(qadd)                    
                 
     return np.array(qall),np.array(Fall)
 

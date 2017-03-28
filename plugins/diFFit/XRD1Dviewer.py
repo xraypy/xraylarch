@@ -1175,7 +1175,8 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
         
         fracq = float(self.val_gdnss.GetValue())
-        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],I=self.plt_data[3],cifdatabase=self.owner.cifdatabase,ipks=self.ipeaks)
+        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],ipks=self.ipeaks,
+                                    cifdatabase=self.owner.cifdatabase)
                   
         self.displayMATCHES(list_amcsd)
         
@@ -1705,7 +1706,12 @@ class Viewer1DXRD(wx.Panel):
     
         energy = self.getE()
         
-        qall,Fall = calcCIFpeaks(path,energy,verbose=verbose)
+        maxq = 5
+        for i,data in enumerate(self.xy_plot):
+            if 1.05*np.max(data[0]) > maxq:
+                maxq = 1.05*np.max(data[0])
+
+        qall,Fall = calcCIFpeaks(path,energy,verbose=verbose,qmax=maxq)
         
         if len(Fall) > 0:
         
