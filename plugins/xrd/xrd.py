@@ -103,7 +103,10 @@ class xrd1d(grpobjt):
         self.dpks    = None
         self.Ipks    = None     
 
-        self.matches = None    
+        self.matches = None
+        
+        self.xrd2d   = None
+        self.cake    = None    
 
         
         if file is not None:
@@ -114,7 +117,6 @@ class xrd1d(grpobjt):
 
 
     def xrd_from_2d(self,xy,xtype,verbose=True):
-
         self.set_xy_data(xy,xtype)
 
     def xrd_from_file(self,filename,verbose=True):
@@ -131,7 +133,6 @@ class xrd1d(grpobjt):
         if self.label is None: self.label = os.path.split(filename)[-1]
 
         ## header info
-        units = 'q'
         for line in head:
             import re
             line = re.sub(',','',line)
@@ -162,16 +163,17 @@ class xrd1d(grpobjt):
         
     def set_xy_data(self,xy,xtype):
         
-        xy = np.array(xy)
-        if np.shape(xy)[0] > np.shape(xy)[1]:
-            x,y = np.split(xy,2,axis=1)        
-        else:
-            x,y = np.split(xy,2,axis=0)
-        self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
-        self.I = np.array(y).squeeze()
+        if xy is not None:
+            xy = np.array(xy)
+            if xy.shape[0] > xy.shape[1]:
+                x,y = np.split(xy,2,axis=1)        
+            else:
+                x,y = np.split(xy,2,axis=0)
+            self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
+            self.I = np.array(y).squeeze()
         
-        if self.imin is None or self.imax is None:
-            self.imin,self.imax = 0,len(self.q)
+            if self.imin is None or self.imax is None:
+                self.imin,self.imax = 0,len(self.q)
         
     def set_trim(self,xmin,xmax,xtype):
     
@@ -293,6 +295,7 @@ class XRD(grpobjt):
         self.steps   = steps
         self.data1D  = data1D
         self.data2D  = data2D
+        self.cake    = None
         
         self.energy     = None
         self.wavelength = None
@@ -322,9 +325,9 @@ class XRD(grpobjt):
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
             
             
-    def calc_1D(self,save=False,verbose=False):
+    def calc_1D(self,save=False,calccake=True,calc1d=True,verbose=False):
     
-        kwargs = {'steps':self.steps}
+        kwargs = {'steps':self.steps,'calccake':calccake,'calc1d':calc1d}
         
         if save:
             file = self.save_1D()
@@ -332,7 +335,8 @@ class XRD(grpobjt):
                     
         if os.path.exists(self.calfile):
             if len(self.data2D) > 0:
-                self.data1D = integrate_xrd(self.data2D,self.calfile,verbose=verbose,**kwargs)
+                self.data1D,self.cake = integrate_xrd(self.data2D,self.calfile,
+                                                      verbose=verbose,**kwargs)
             else:
                 if verbose:
                     print('No 2D XRD data provided.')

@@ -24,9 +24,10 @@ except ImportError:
 def read_lambda(calfile):
     
     ai = pyFAI.load(calfile)
-    return self.ai._wavelength*1e10 ## units A
+    return ai._wavelength*1e10 ## units A
 
-def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None, verbose=False):
+def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
+                  calccake=False, calc1d=True, verbose=False):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
@@ -40,7 +41,10 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
     mask    : mask array for image
     dark    : dark image array
     '''
-
+    
+    xrd1d = None
+    cake  = None
+    
     if HAS_pyFAI:
         try:
             ai = pyFAI.load(calfile)
@@ -57,16 +61,37 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
             if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
         if dark:
             if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
-        if file is not '':
-            if verbose:
-                print('\nSaving %s data to file: %s' % (unit,file))
-            attrs.update({'filename':file})
 
-        return ai.integrate1d(xrd2d,steps,**attrs)
-
+        if calccake:
+            
+            cake = calcXRDcake(xrd2d,ai,attrs)
+        
+        if calc1d:
+            if file is not '':
+                if verbose:
+                    print('\nSaving %s data to file: %s' % (unit,file))
+                attrs.update({'filename':file})
+            xrd1d = calcXRD1d(xrd2d,ai,steps,attrs)
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
-        return
+
+    return xrd1d,cake
+
+
+def calcXRD1d(xrd2d,ai,steps,attrs):
+    return ai.integrate1d(xrd2d,steps,**attrs)
+
+def calcXRDcake(xrd2d,ai,attrs):
+    #res = ai.integrate2d(xrd2d,2048,2048,**attrs)
+    #cakeI   = res[0]
+    #cakeq   = res[1]
+    #cakeeta = res[2]
+    return ai.integrate2d(xrd2d,2048,2048,**attrs)
+    
+    
+    
+
+
 
 # def calculate_ai(AI):
 #     '''

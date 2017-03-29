@@ -1024,7 +1024,7 @@ class cifDB(object):
 
 ##################################################################################
 
-    def all_by_amcsd(self,amcsd_id,verbose=True):
+    def all_by_amcsd(self,amcsd_id,verbose=False):
 
         mineral_id,iuc_id,cifstr = self.cif_by_amcsd(amcsd_id,all=True)
         

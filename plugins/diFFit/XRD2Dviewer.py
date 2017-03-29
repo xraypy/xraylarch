@@ -54,12 +54,12 @@ class diFFit2DFrame(wx.Frame):
         ## Default image information
         self.name_images = []
         self.data_images = []
-        self.raw_img  = None
-        self.flp_img = None
-        self.plt_img = None
+        self.raw_img = np.zeros((2048,2048))
+        self.flp_img = np.zeros((2048,2048))
+        self.plt_img = np.zeros((2048,2048))
         
-        self.msk_img = None
-        self.bkgd_img = None
+        self.msk_img  = np.ones((2048,2048))
+        self.bkgd_img = np.zeros((2048,2048))
         
         self.bkgd_scale = 0
         self.bkgdMAX = 2
@@ -115,7 +115,7 @@ class diFFit2DFrame(wx.Frame):
         str_msg = 'Displaying image: %s' % iname
         self.write_message(str_msg,panel=0)
 
-        img_no = np.shape(self.data_images)[0]
+        img_no = len(self.data_images)
         self.name_images.append(iname)
         self.data_images.append(img)
         
@@ -130,7 +130,7 @@ class diFFit2DFrame(wx.Frame):
         self.checkIMAGE()
         self.calcIMAGE()
         
-        self.plot2D.display(self.plt_img)       
+        self.plot2D.display(self.plt_img)
         self.autoContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
@@ -177,20 +177,20 @@ class diFFit2DFrame(wx.Frame):
     def checkIMAGE(self):
         
         ## Reshapes/replaces mask and/or background if shape doesn't match that of image    
-        if np.shape(self.msk_img) != np.shape(self.raw_img):
-            self.msk_img = np.ones(np.shape(self.raw_img))
-        if np.shape(self.bkgd_img) != np.shape(self.raw_img):
-            self.bkgd_img = np.zeros(np.shape(self.raw_img))
+        if self.msk_img.shape != self.raw_img.shape:
+            self.msk_img = np.ones(self.raw_img.shape)
+        if self.bkgd_img.shape != self.raw_img.shape:
+            self.bkgd_img = np.zeros(self.raw_img.shape)
 
         ## Calculates the number of pixels in image, masked pixels, and background pixels
-        img_pxls  = np.shape(self.raw_img)[0]*np.shape(self.raw_img)[1]
+        img_pxls  = self.raw_img.shape[0]*self.raw_img.shape[1]
         msk_pxls  = img_pxls - int(sum(sum(self.msk_img)))
         bkgd_pxls = int(sum(sum(self.bkgd_img)))
 
         ## Enables mask checkbox.
         if msk_pxls == 0 or msk_pxls == img_pxls:
             self.ch_msk.Disable()
-            self.msk_img = np.ones(np.shape(self.raw_img))
+            self.msk_img = np.ones(self.raw_img.shape)
         else:
             self.ch_msk.Enable()
         
@@ -346,7 +346,7 @@ class diFFit2DFrame(wx.Frame):
             save = myDlg.ch_save.GetValue()
             plot = myDlg.ch_plot.GetValue()
 
-            attrs = {}
+            attrs = {'calccake':True,'calc1d':True}
             if int(myDlg.xstep.GetValue()) < 1:
                 attrs.update({'steps':5001})
             else:
@@ -368,16 +368,20 @@ class diFFit2DFrame(wx.Frame):
                     attrs.update({'file':path,'save':save})
                 dlg.Destroy()
 
-            data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
+            data1D,cake = integrate_xrd(self.plt_img,self.calfile,**attrs)
             
+            ##self.plot2D.display(cake[0])                   
+
             if plot:
                 if self.xrddisplay1D is None:
                     self.xrddisplay1D = diFFit1DFrame()
 
-                wavelength = read_lambda(self.calfile)
-                label = self.name_images[self.ch_img.GetSelection()]
-                data1dxrd = xrd1d(label=label,wavelength=wavelength,energy=E_from_lambda(wavelength))            
-                data1dxrd.xrd_from_2d(data1D,'q')                
+                attrs = {}
+                wvlngth = read_lambda(self.calfile)
+                attrs.update({'wavelength':wvlngth,'energy':E_from_lambda(wvlngth)})
+                attrs.update({'label':self.name_images[self.ch_img.GetSelection()]})
+                data1dxrd = xrd1d(**attrs)
+                data1dxrd.xrd_from_2d(data1D,'q')
 
                 try:
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
@@ -423,7 +427,8 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### BACKGROUND FUNCTIONS
     def clearBkgd(self,event=None):
-        self.bkgd = np.zeros(np.shape(self.raw_img))
+        print 'self.raw_img',type(self.raw_img)
+        self.bkgd = np.zeros(self.raw_img.shape)
         self.checkIMAGE()
 
     def openBkgd(self,event=None):
@@ -462,7 +467,7 @@ class diFFit2DFrame(wx.Frame):
             #raw_mask = tifffile.imread(path)
             import fabio
             raw_mask = fabio.open(path).data
-            self.msk_img = np.ones(np.shape(raw_mask))-raw_mask
+            self.msk_img = np.ones(raw_mask.shape)-raw_mask
 
             self.checkIMAGE()
 
@@ -475,7 +480,8 @@ class diFFit2DFrame(wx.Frame):
         print('Popup to create mask!')
 
     def clearMask(self,event=None):
-        self.msk_img = np.zeros(np.shape(self.raw_img))
+        print 'self.raw_img',type(self.raw_img)
+        self.msk_img = np.zeros(self.raw_img.shape)
         self.checkIMAGE()
 
     def applyMask(self,event=None):

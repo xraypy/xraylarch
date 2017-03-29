@@ -29,7 +29,7 @@ import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGROUPS,
                                  match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,calcCIFpeaks,
+                               E_from_lambda,calcCIFpeaks,d_from_twth,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
                                peakfilter,xrd_background,xrd1d)
 from larch_plugins.xrmmap import read1DXRDFile
@@ -369,7 +369,7 @@ class Fitting1DXRD(BasePanel):
         self.ylabel     = 'Intensity (a.u.)'
         self.xunit      = '1/A'
         self.dlimit     = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
-
+        
         self.SetFittingDefaults()
         self.Panel1DFitting()
 
@@ -418,9 +418,8 @@ class Fitting1DXRD(BasePanel):
             Fall = Fall/max(Fall)*maxI
             cifpks = np.array([qall,Fall])
             
-            self.plot1D.oplot(*cifpks, title=self.plttitle,
-                              color='green', label=cifname, xlabel=self.xlabel,
-                              ylabel=self.ylabel, marker='', markersize=0, show_legend=True)
+            cifargs = {'label':cifname,'title':self.plttitle,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            self.plot1D.oplot(*cifpks,**cifargs)
 
             ## self.plot1D.update_line(2,*cifpks, label=cifname)
             print 'NEED TO FIGURE OUT HOW TO DELETE A DATASET WITHOUT REPLOTTING ALL'
@@ -562,29 +561,17 @@ class Fitting1DXRD(BasePanel):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
         if self.subtracted:
-            self.plot1D.plot(self.plt_data[xi],self.plt_data[3],
-                             title=self.plttitle,
-                             color='blue', label='Data',
-                             xlabel=self.xlabel,ylabel=self.ylabel,
-                             marker='', markersize=0, show_legend=True)
+            datargs = {'title':self.plttitle,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**datargs)
         else:
             if self.trim:
-                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                  title=self.plttitle,
-                                  color='grey', label='Raw data',
-                                  xlabel=self.xlabel,ylabel=self.ylabel,
-                                  marker='', markersize=0, show_legend=True)
-                self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],
-                                  title=self.plttitle,
-                                  color='blue', label='Trimmed data',
-                                  xlabel=self.xlabel, ylabel=self.ylabel,
-                                  marker='', markersize=0, show_legend=True)
+                rawargs = {'title':self.plttitle,'color':'grey','label':'Raw data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                trmargs = {'title':self.plttitle,'color':'blue','label':'Trimmed data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],**rawargs)
+                self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],**trmargs)
             else:
-                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],
-                                  title=self.plttitle,
-                                  color='blue', label='Raw data',
-                                  xlabel=self.xlabel,ylabel=self.ylabel,
-                                  marker='', markersize=0, show_legend=True)
+                rawargs = {'title':self.plttitle,'color':'blue','label':'Raw data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],**rawargs)
             self.plot_background()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
@@ -633,13 +620,15 @@ class Fitting1DXRD(BasePanel):
 
     def set_range(self,event=None):
 
-        if self.xmax != float(self.rngpl.val_qmax.GetValue()) or self.xmin != float(self.rngpl.val_qmin.GetValue()):
+        qmax = self.rngpl.val_qmax
+        qmin = self.rngpl.val_qmin
 
-            if float(self.rngpl.val_qmax.GetValue()) < float(self.rngpl.val_qmin.GetValue()):
-                min = float(self.rngpl.val_qmax.GetValue())
-                max = float(self.rngpl.val_qmin.GetValue())
-                self.rngpl.val_qmin.SetValue('%0.3f' % min)
-                self.rngpl.val_qmax.SetValue('%0.3f' % max)
+        if self.xmax != float(qmax.GetValue()) or self.xmin != float(qmin.GetValue()):
+            if float(qmax.GetValue()) < float(qmin.GetValue()):
+                min = float(qmax.GetValue())
+                max = float(qmin.GetValue())
+                qmin.SetValue('%0.3f' % min)
+                qmax.SetValue('%0.3f' % max)
 
             self.plt_data = np.copy(self.raw_data)
             self.check_range()
@@ -666,7 +655,8 @@ class Fitting1DXRD(BasePanel):
         self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
 
-        if np.max(self.raw_data[xi])-self.xmax < 0.005 and self.xmin-np.min(self.raw_data[xi]) < 0.005:
+        if np.max(self.raw_data[xi])-self.xmax < 0.005 and \
+           self.xmin-np.min(self.raw_data[xi]) < 0.005:
             self.trim = False
 
     def onReset(self,event=None):
@@ -698,6 +688,8 @@ class Fitting1DXRD(BasePanel):
 
     def trim_data(self):
 
+        print 'THIS SHOULD BE REPLACED BY FUNCTION IN xrd1d CLASS'
+        ## mkak 2017.03.29 
         if self.trim:
             xi = self.rngpl.ch_xaxis.GetSelection()
             indicies = [i for i,value in enumerate(self.raw_data[xi]) if value>=self.xmin and value<=self.xmax]
@@ -745,10 +737,10 @@ class Fitting1DXRD(BasePanel):
 
         ## this creates self.bgr and self.bgr_info
         xi = self.rngpl.ch_xaxis.GetSelection()
-        self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3], exponent=self.exponent,
-                           compress=self.compress, width=self.width)
+        kwargs = {'exponent':self.exponent,'compress':self.compress,'width':self.width}
+        self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3],**kwargs)
 
-        self.bgr_data    = np.copy(self.plt_data[:,:np.shape(self.bgr)[0]])
+        self.bgr_data    = np.copy(self.plt_data[:,:self.bgr.shape[0]])
         self.bgr_data[3] = self.bgr
 
         self.bkgdpl.ck_bkgd.Enable()
@@ -781,9 +773,8 @@ class Fitting1DXRD(BasePanel):
 
         if self.bgr is not None and self.subtracted is False:
             xi = self.rngpl.ch_xaxis.GetSelection()
-            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3], title=self.plttitle,
-                              color='red', label='Background', xlabel=self.xlabel,
-                              ylabel=self.ylabel, marker='', markersize=0, show_legend=True)
+            bgrarg = {'title':self.plttitle,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],**bgrarg)
 
     def background_options(self,event=None):
 
@@ -804,17 +795,15 @@ class Fitting1DXRD(BasePanel):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
         if self.bkgdpl.ck_bkgd.GetValue() == True:
-            if np.shape(self.plt_data)[-1] != np.shape(self.bgr_data)[-1]:
-                if (np.shape(self.plt_data)[-1] - np.shape(self.bgr_data)[-1]) > 2:
+            if self.plt_data.shape[-1] != self.bgr_data.shape[-1]:
+                if (self.plt_data.shape[-1] - self.bgr_data.shape[-1]) > 2:
                     self.fit_background()
-                self.plt_data = self.plt_data[:,:np.shape(self.bgr_data)[-1]]
+                self.plt_data = self.plt_data[:,:self.bgr_data.shape[-1]]
             self.plt_data[3] = self.plt_data[3] - self.bgr_data[3]
             self.subtracted = True
-
-            self.plot1D.plot(self.plt_data[xi],self.plt_data[3], title=self.plttitle,
-                             color='blue', label='Background subtracted',
-                             xlabel=self.xlabel, ylabel=self.ylabel,
-                             marker='', markersize=0, show_legend=True)
+            
+            bgrarg = {'title':self.plttitle,'color':'blue','label':'Background subtracted','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**bgrarg)
 
             self.bkgdpl.btn_fbkgd.Disable()
             self.bkgdpl.btn_obkgd.Disable()
@@ -906,21 +895,32 @@ class Fitting1DXRD(BasePanel):
 
     def fit_peaks(self,event=None):
         
-        peaktwth,peakFWHM,peakinty = peakfitter(self.ipeaks,
-                                                self.plt_data[1],self.plt_data[3],
+        pktwth,pkFWHM,pkI = peakfitter(self.ipeaks,self.plt_data[1],self.plt_data[3],
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
         print('\nFit results:')
-        for i,(twthi,fwhmi,inteni) in enumerate(zip(peaktwth,peakFWHM,peakinty)):
+        for i,(twthi,fwhmi,inteni) in enumerate(zip(pktwth,pkFWHM,pkI)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
         print
+        
+        ## Updates variable and plot with fit results
+        wavelength = self.xrd1dgrp.wavelength
+        self.plt_peaks = np.zeros((4,len(pktwth)))
+        self.plt_peaks[0] = q_from_twth(pktwth,wavelength)
+        self.plt_peaks[1] = pktwth
+        self.plt_peaks[2] = d_from_twth(pktwth,wavelength)
+        self.plt_peaks[3] = pkI
+
+        self.peak_display()
+        self.plot_data()
+        self.plot_peaks()
 
     def plot_peaks(self):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3], marker='o', color='red', markersize=8,
-                          linewidth=0, label='Found peaks', show_legend=True)
+        pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
+        self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
         self.plot1D.cursor_mode = 'zoom'
 
     def remove_all_peaks(self,event=None):
@@ -1175,6 +1175,7 @@ class Fitting1DXRD(BasePanel):
     def filter_database(self,event=None):
 
         myDlg = XRDSearchGUI(self)
+        
 
         filter = False
         if myDlg.ShowModal() == wx.ID_OK:
@@ -1194,30 +1195,25 @@ class Fitting1DXRD(BasePanel):
 
         list_amcsd = None
         if filter == True:
+            cif = self.owner.cifdatabase
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
-                list_amcsd = self.owner.cifdatabase.amcsd_by_chemistry(include=self.elem_include,
-                                                                       exclude=self.elem_exclude,
-                                                                       list=list_amcsd)
+                list_amcsd = cif.amcsd_by_chemistry(include=self.elem_include,
+                                                    exclude=self.elem_exclude,
+                                                    list=list_amcsd)
             if self.mnrl_include is not None:
-                list_amcsd = self.owner.cifdatabase.amcsd_by_mineral(include=self.mnrl_include,
-                                                                     list=list_amcsd)
+                list_amcsd = cif.amcsd_by_mineral(include=self.mnrl_include,
+                                                  list=list_amcsd)
             if self.auth_include is not None:
-                list_amcsd = self.owner.cifdatabase.amcsd_by_author(include=self.auth_include,
-                                                                    list=list_amcsd)
-
-
-
-
+                list_amcsd = cif.amcsd_by_author(include=self.auth_include,
+                                                 list=list_amcsd)
         self.displayMATCHES(list_amcsd)
 
 
-
     def onMatch(self,event=None):
-        
+
         fracq = float(self.val_gdnss.GetValue())
         list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],ipks=self.ipeaks,
                                     cifdatabase=self.owner.cifdatabase)
-                  
         self.displayMATCHES(list_amcsd)
         
     def displayMATCHES(self,list_amcsd):
@@ -1228,7 +1224,7 @@ class Fitting1DXRD(BasePanel):
 
         if list_amcsd is not None:
             for amcsd in list_amcsd:
-                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd,verbose=False)
+                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
                 entry = '%i : %s' % (amcsd,name)
                 self.amcsdlistbox.Append(entry)
             if len(list_amcsd) == 1:
@@ -1726,11 +1722,8 @@ class Viewer1DXRD(wx.Panel):
         self.icif.append(len(self.plotlist))
         xi = self.ch_xaxis.GetSelection()
 
-        self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],
-                                               self.cif_plot[-1][3],
-                                               xlabel=self.xlabel, ylabel=self.ylabel,
-                                               label=datalabel,
-                                               marker='', markersize=0, show_legend=True))
+        cifarg = {'xlabel':self.xlabel,'ylabel':self.ylabel,'label':datalabel,'marker':'','markersize':0,'show_legend':True}
+        self.plotlist.append(self.plot1D.oplot(self.cif_plot[-1][xi],self.cif_plot[-1][3],**cifarg))
 
         ## Use correct x-axis units
         self.check1Daxis()
@@ -1769,18 +1762,12 @@ class Viewer1DXRD(wx.Panel):
         return [q,twth,d,I]
 
     def onResetE(self,event=None):
-    
-        
+
         xi = self.ch_xaxis.GetSelection()
         for i,cif_no in enumerate(self.icif):
-            
-            self.cif_plot[i] = self.readCIF(self.cif_path[i],
-                                            cifscale=self.cif_scale[i])
-            
-            self.plot1D.update_line(cif_no,
-                                    np.array(self.cif_plot[i][xi]),
-                                    np.array(self.cif_plot[i][3]))
-                                    
+            self.cif_plot[i] = self.readCIF(self.cif_path[i],cifscale=self.cif_scale[i])
+            self.plot1D.update_line(cif_no,np.array(self.cif_plot[i][xi]),
+                                           np.array(self.cif_plot[i][3]))
         self.plot1D.canvas.draw()
 
     def onEorLSel(self,event=None):
@@ -1833,11 +1820,8 @@ class Viewer1DXRD(wx.Panel):
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
-
-        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi], self.xy_plot[-1][3],
-                                               xlabel=self.xlabel, ylabel=self.ylabel,
-                                               label=datalabel, marker='',
-                                               show_legend=True))
+        datarg = {'xlabel':self.xlabel,'ylabel':self.ylabel,'label':datalabel,'marker':'','show_legend':True}
+        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],self.xy_plot[-1][3],**datarg))
 
         ## Use correct x-axis units
         self.check1Daxis(yaxis=True)
@@ -1990,8 +1974,6 @@ class Viewer1DXRD(wx.Panel):
         self.rescale1Daxis(xaxis=False,yaxis=True)
         
         self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
-
-
 
     def set_xview(self, x1, x2):
 
@@ -2332,9 +2314,6 @@ class DatabasePanel(wx.Panel):
         self.parent = parent
         self.owner = owner
 
-        ## Default information
-
-
         matchpanel = self.SearchMatchTools()
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
@@ -2347,11 +2326,11 @@ class DatabasePanel(wx.Panel):
         btn_db = wx.Button(self,label='Database info')
         btn_srch = wx.Button(self,label='Filter database')
 
-        btn_db.Bind(wx.EVT_BUTTON,          self.owner.database_info)
-        btn_srch.Bind(wx.EVT_BUTTON,        self.owner.filter_database)
+        btn_db.Bind(wx.EVT_BUTTON,    self.owner.database_info)
+        btn_srch.Bind(wx.EVT_BUTTON,  self.owner.filter_database)
 
-        vbox.Add(btn_db,          flag=wx.BOTTOM, border=8)
-        vbox.Add(btn_srch,        flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_db,   flag=wx.BOTTOM, border=8)
+        vbox.Add(btn_srch, flag=wx.BOTTOM, border=8)
 
         return vbox
 
@@ -2392,8 +2371,8 @@ class RefinementPanel(wx.Panel):
         self.btn_mtch = wx.Button(self,label='Search based on q')
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
         
-        vbox.Add(self.btn_mtch,   flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,            flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
         self.owner.val_gdnss.Disable()
@@ -2438,7 +2417,7 @@ class ResultsPanel(wx.Panel):
         btn_clr.Bind(wx.EVT_BUTTON, None)
         hbox.Add(btn_clr, flag=wx.RIGHT, border=8)
         
-        vbox.Add(hbox,  flag=wx.BOTTOM, border=4)
+        vbox.Add(hbox, flag=wx.BOTTOM, border=4)
 
 
         return vbox
@@ -2477,7 +2456,8 @@ class Calc1DPopup(wx.Dialog):
 
         wsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        self.wedge_arrow = wx.SpinButton(self.panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        spstyle = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
+        self.wedge_arrow = wx.SpinButton(self.panel, style=spstyle)
 
         self.wedge_arrow.Bind(wx.EVT_SPIN, self.onSPIN)
 
@@ -2722,30 +2702,30 @@ class XRDSearchGUI(wx.Dialog):
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
         self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
-        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals,  size=(270, -1), style=wx.TE_PROCESS_ENTER)
+        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## Author search
         lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
-        self.Author  = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
-        self.atrslct = wx.Button(self.panel,     label='Select...')
+        self.Author  = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+        self.atrslct = wx.Button(self.panel, label='Select...')
 
         ## Chemistry search
         lbl_Chemistry  = wx.StaticText(self.panel, label='Chemistry:' )
-        self.Chemistry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
-        self.chmslct  = wx.Button(self.panel,     label='Specify...')
+        self.Chemistry = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+        self.chmslct  = wx.Button(self.panel, label='Specify...')
 
         ## Cell parameter symmetry search
         lbl_Symmetry  = wx.StaticText(self.panel, label='Symmetry/unit cell:' )
-        self.Symmetry = wx.TextCtrl(self.panel,   size=(175, -1), style=wx.TE_PROCESS_ENTER)
-        self.symslct  = wx.Button(self.panel,     label='Specify...')
+        self.Symmetry = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+        self.symslct  = wx.Button(self.panel, label='Specify...')
 
         ## Category search
         opts = wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
-        lbl_Category  = wx.StaticText(self.panel,  label='Category:', style=wx.TE_PROCESS_ENTER)
+        lbl_Category  = wx.StaticText(self.panel, label='Category:', style=wx.TE_PROCESS_ENTER)
         self.Category = wx.ListBox(self.panel, style=opts, choices=CATEGORIES, size=(270, -1))
         
         ## General search
-        lbl_Keyword  = wx.StaticText(self.panel,  label='Keyword search:' )
+        lbl_Keyword  = wx.StaticText(self.panel, label='Keyword search:' )
         self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## Define buttons
@@ -2938,7 +2918,7 @@ class PeriodicTableSearch(wx.Dialog):
                                          onselect=self.onSelectElement,
                                          highlight=True)
 
-        okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'   )
+        okBtn  = wx.Button(panel, wx.ID_OK,     label='Search selected'    )
         exBtn  = wx.Button(panel,               label='Exclude all others' )
         rstBtn = wx.Button(panel,               label='Clear'              )
         canBtn = wx.Button(panel, wx.ID_CANCEL                             )

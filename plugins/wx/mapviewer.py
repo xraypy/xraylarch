@@ -72,7 +72,7 @@ from larch.wxlib import LarchPanel, LarchFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame,CalXRD
-from larch_plugins.xrd import integrate_xrd,lambda_from_E,E_from_lambda,xrd1d
+from larch_plugins.xrd import lambda_from_E,E_from_lambda,xrd1d # ,integrate_xrd
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
@@ -1267,6 +1267,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.calc_1D(save=save,verbose=True)
             
             if show:
+                ## need to change this to read from group; also needs to add in cake
+                ## mkak 2017.03.29
                 self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
         
@@ -1607,6 +1609,9 @@ class MapViewerFrame(wx.Frame):
     def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
         'displays 1D XRD pattern in diFFit viewer'
 
+        print 'this is where we need to pass in cake information'
+        ## mkak 2017.03.29 - needs this updated? should pass in group?
+        
         data1dxrd = xrd1d(label=label,
                           energy=energy,
                           wavelength=lambda_from_E(energy))
