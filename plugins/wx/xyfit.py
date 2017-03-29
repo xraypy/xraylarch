@@ -404,7 +404,7 @@ class ProcessPanel(wx.Panel):
 
     def process(self, gname,  **kws):
         """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
-        larch group '_y1_' attribute to be plotted
+        larch group 'x' and 'y' attributes to be plotted
         """
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
@@ -577,22 +577,34 @@ class XYFitController():
         if proc_opts is not None:
             dgroup.proc_opts.update(proc_opts)
 
-        opts = dgroup.proc_opts
+        opts = {'group': dgroup.groupname}
+        opts.update(dgroup.proc_opts)
+
         # scaling
-        dgroup.x = opts['xscale']*(dgroup.xdat - opts['xshift'])
-        dgroup.y = opts['yscale']*(dgroup.ydat - opts['yshift'])
+        cmds = ["{group:s}.x = {xscale:f}*({group:s}.xdat + {xshift:f})",
+                "{group:s}.y = {yscale:f}*({group:s}.ydat + {yshift:f})"]
+
 
         # smoothing
         smop = opts['smooth_op'].lower()
-        cform = str(opts['smooth_conv'].lower())
+        smcmd = None
         if smop.startswith('box'):
-            dgroup.y = boxcar(dgroup.y, opts['smooth_c0'])
+            opts['smooth_c0'] = int(opts['smooth_c0'])
+            smcmd = "boxcar({group:s}.y, {smooth_c0:d})"
         elif smop.startswith('savit'):
-            winsize = 2*opts['smooth_c0'] + 1
-            dgroup.y = savitzky_golay(dgroup.y, winsize, opts['smooth_c1'])
+            opts['smooth_c0'] = int(opts['smooth_c0'])
+            opts['smooth_c1'] = int(opts['smooth_c1'])
+            smcmd = "savitzky_golay({group:s}.y, {smooth_c0:d}, {smooth_c1:d})"
         elif smop.startswith('conv'):
-            dgroup.y = smooth(dgroup.x, dgroup.y,
-                              sigma=opts['smooth_sig'], form=cform)
+            cform = str(opts['smooth_conv'].lower())
+            smcmd = "smooth({group:s}.x, {group:s}.y, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
+
+        if smcmd is not None:
+            cmds.append("{group:s}.y = " + smcmd)
+
+        for cmd in cmds:
+            self.larch.eval(cmd.format(**opts))
+
 
         # xas
         if dgroup.datatype.startswith('xas'):
@@ -600,21 +612,24 @@ class XYFitController():
             dgroup.energy = dgroup.x
             dgroup.mu = dgroup.y
 
-            preopts = {'e0': None, 'step': None, 'make_flat':False,
-                      '_larch':self.larch}
+            popts = dict(group=dgroup.groupname, e0='None', step='None',
+                         make_flat='False')
 
             if not opts['auto_e0']:
                 _e0 = opts['e0']
                 if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                    preopts['e0'] = float(_e0)
+                    popts['e0'] = "%.f" % float(_e0)
 
             if not opts['auto_step']:
-                preopts['step'] = opts['step']
+                popts['step'] = "%.f" % opts['step']
 
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                preopts[attr]  = opts[attr]
+                popts[attr]  = "%.f" % opts[attr]
 
-            pre_edge(dgroup, **preopts)
+            cmd = """pre_edge({group:s}, e0={e0:s}, step={step:s}, pre1={pre1:s}, pre2={pre2:s},
+         norm1={norm1:s}, norm2={norm2:s}, nnorm={nnorm:s}, nvict={nvict:s})""".format(**popts)
+
+            self.larch.eval(cmd)
 
             for attr in  ('e0', 'edge_step'):
                 opts[attr] = getattr(dgroup, attr)
@@ -707,10 +722,11 @@ class XYFitFrame(wx.Frame):
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
+
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch = self.larch_buffer._larch
-        self.controller = XYFitController(wxparent=self, _larch=self.larch)
+        self.controller = XYFitController(wxparent=self, _larch=self.larch_buffer.larchshell)
 
         self.subframes = {}
         self.plotframe = None
