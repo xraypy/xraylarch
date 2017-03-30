@@ -2,7 +2,7 @@ from .xrd import XRD,xrd1d
 from .xrd_bgr import xrd_background
 from .xrd_hkl import generate_hkl
 from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,
-                          data_gaussian_fit,instrumental_fit_uvw)
+                          data_gaussian_fit,instrumental_fit_uvw,size_broadening)
 from .xrd_pyFAI import integrate_xrd,read_lambda
 from .xrd_xutil import calcCIFpeaks
 from .xrd_etc import (d_from_q,d_from_twth,twth_from_d,twth_from_q,

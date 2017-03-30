@@ -31,7 +31,7 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGR
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                E_from_lambda,calcCIFpeaks,d_from_twth,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
-                               peakfilter,xrd_background,xrd1d)
+                               peakfilter,xrd_background,xrd1d,size_broadening)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -870,6 +870,10 @@ class Fitting1DXRD(BasePanel):
 
             self.pkpl.btn_rpks.Enable()
             self.pkpl.btn_fitpks.Enable()
+            
+            print 'checking...'
+            print 'self.plt_peaks',type(self.plt_peaks),np.shape(self.plt_peaks)
+            size_broadening(self.plt_peaks, self.plt_data[1], self.xrd1dgrp.wavelength)
 
     def peak_display(self):
 

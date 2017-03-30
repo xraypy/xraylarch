@@ -270,10 +270,12 @@ def patternbroadening(data_q,nsize):
     return calc_int
 
 
-def size_broadening(pkqlist, q, wavelength,
+def size_broadening(pklist, twth, wavelength,
                     instr_u=1.0, instr_v=1.0, instr_w=1.0,
                     C=1.0, D=None):
     '''
+    == Broadening calculation performed in 2theta - not q ==
+
     pkqlist - location of peaks in range
     q - axis
     wavelength - in units A
@@ -283,19 +285,9 @@ def size_broadening(pkqlist, q, wavelength,
     D - particle size in units A (if D is None, no size broadening)
     '''
 
-    print 'pkqlist',len(pkqlist)
-    print np.shape(pkqlist)
-    print 'q',len(q)
-    print np.shape(q)
-
-    lenlist = np.shape(pkqlist)[1]
-    
-    ## Broadening calculation performed in 2theta - not q
-    twth = twth_from_q(q,wavelength)
-    twthlist = twth_from_q(pkqlist[0],wavelength)
 
     ## TERMS FOR INSTRUMENTAL BROADENING
-    thrad = np.radians(twthlist/2)
+    thrad = np.radians(pklist[1]/2)
     Bi = np.sqrt( u*(np.tan(thrad))**2 + v*pn.tan(thrad) + w )
 
     ## TERMS FOR SIZE BROADENING
@@ -310,14 +302,15 @@ def size_broadening(pkqlist, q, wavelength,
     intenB = np.zeros(np.shape(q)[0])
     
     ## Loop through all peaks
-    for i in range(lenlist):
+    for i,peak in enumerate(pklist):
+        print i,type(peak),np.shape(peak),len(peak)
     
-        if pkqlist[0][i] > np.min(q) and pkqlist[0][i] < np.max(q):
+        if peak[1] > twth.min and peak[1] < twth.max:
 
             ## Create Gaussian of correct width
             ## FWHM = abs(2*np.sqrt(2*math.log1p(2))*c)
-            A = pkqlist[1][i]   ## intensity
-            B = twthlist[i]     ## position (in 2theta)
+            A = peak[3]   ## intensity
+            B = peak[1]   ## position (in 2theta)
         
             ## INSTRUMENT contribution
             c_i = Bi[i]/abs(2*np.sqrt(2*math.log1p(2)))
