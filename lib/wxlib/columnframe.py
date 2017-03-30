@@ -227,9 +227,13 @@ class SelectColumnFrame(wx.Frame) :
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bsizer.Add(Button(bpanel, 'OK', action=self.onOK), 4)
-        bsizer.Add(Button(bpanel, 'Cancel', action=self.onCancel), 4)
-        bsizer.Add(Button(bpanel, 'Edit Array Names', action=self.onEditNames), 4)
+        _ok    = Button(bpanel, 'OK', action=self.onOK)
+        _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
+        _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
+        bsizer.Add(_ok)
+        bsizer.Add(_cancel)
+        bsizer.Add(_edit)
+        _ok.SetDefault()
         pack(bpanel, bsizer)
 
         sizer = wx.GridBagSizer(4, 8)
@@ -288,7 +292,7 @@ class SelectColumnFrame(wx.Frame) :
                                size=(400, 250))
 
         ftext.SetValue(group.text)
-        ftext.SetFont(Font(11))
+        ftext.SetFont(Font(10))
 
         textsizer = wx.BoxSizer(wx.VERTICAL)
         textsizer.Add(ftext, 1, LCEN|wx.GROW, 1)
@@ -318,7 +322,7 @@ class SelectColumnFrame(wx.Frame) :
         with open(path, 'r') as fh:
             lines = fh.readlines()
 
-        text = '\n'.join(lines)
+        text = ''.join(lines)
         line1 = lines[0].lower()
 
         reader = 'read_ascii'
