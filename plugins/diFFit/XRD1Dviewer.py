@@ -245,8 +245,7 @@ class diFFit1DFrame(wx.Frame):
         else:
             index = -1
             loadXYfile(parent=self,xrdviewer=xrdv)
-            okay = True
-
+            if len(xrdv.xy_data) > 0: okay = True
         if okay:
             seldat = xrdv.xy_data[index]
             self.nb.SetSelection(1) ## switches to fitting panel
@@ -1821,6 +1820,11 @@ class Viewer1DXRD(wx.Panel):
 
 
     def add1Ddata(self,data1dxrd):
+
+        try:
+            len(data1dxrd.q)
+        except:
+            return
 
         self.xy_data.append(data1dxrd)
 
