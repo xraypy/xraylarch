@@ -37,7 +37,7 @@ def depart_figtable_html(self, node):
     self.body.append('</center></div>')
 
 class FigTableDirective(Directive):
-    
+
     has_content = True
     optional_arguments = 5
     final_argument_whitespace = True
@@ -54,30 +54,30 @@ class FigTableDirective(Directive):
         caption = self.options.get('caption', None)
         alt = self.options.get('alt', None)
         nofig = 'nofig' in self.options
-        
+
         figtable_node = figtable('', ids=[label] if label is not None else [])
         figtable_node['nofig'] = nofig
-        
+
         if spec is not None:
             table_spec_node = addnodes.tabular_col_spec()
             table_spec_node['spec'] = spec
             figtable_node.append(table_spec_node)
-        
+
         node = nodes.Element()
         self.state.nested_parse(self.content, self.content_offset, node)
         tablenode = node[0]
         if alt is not None:
             tablenode['alt'] = alt
         figtable_node.append(tablenode)
-        
+
         if caption is not None:
             caption_node = nodes.caption('', '', nodes.Text(caption))
             figtable_node.append(caption_node)
-        
+
         if label is not None:
             targetnode = nodes.target('', '', ids=[label])
             figtable_node.append(targetnode)
-        
+
         return [figtable_node]
 
 def setup(app):

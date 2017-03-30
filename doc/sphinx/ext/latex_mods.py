@@ -14,12 +14,15 @@ from sphinx.util.texescape import tex_escape_map
 import sphinx.writers.latex
 
 # remove usepackage for sphinx here, we add it later in the preamble in conf.py
-sphinx.writers.latex.HEADER = sphinx.writers.latex.HEADER.replace('\usepackage{sphinx}', '')
+# sphinx.writers.latex.HEADER = sphinx.writers.latex.HEADER.replace('\usepackage{sphinx}', '')
 
 BaseTranslator = sphinx.writers.latex.LaTeXTranslator
 
 class DocTranslator(BaseTranslator):
 
+    def __init__(self, *args, **kwargs):
+        BaseTranslator.__init__(self, *args, **kwargs)
+        self.verbatim = None
     def visit_caption(self, node):
         caption_idx = node.parent.index(node)
         if caption_idx > 0:
@@ -38,7 +41,6 @@ class DocTranslator(BaseTranslator):
         self.in_caption -= 1
 
     def visit_Text(self, node):
-        if not hasattr(self, 'verbatim'): self.verbatim = None
         if self.verbatim is not None:
             self.verbatim += node.astext()
         else:
@@ -169,7 +171,7 @@ class DocTranslator(BaseTranslator):
                 self.body.append('\\capstart\n')
             self.context.append(ids + align_end + '\\end{figure}\n')
 
-sphinx.writers.latex.LaTeXTranslator = DocTranslator
+# sphinx.writers.latex.LaTeXTranslator = DocTranslator
 
 class CustomLaTeXTranslator(DocTranslator):
     def astext(self):
@@ -202,23 +204,20 @@ class CustomLaTeXBuilder(sphinx.builders.latex.LaTeXBuilder):
         sphinx.writers.latex.BEGIN_DOC = ''
 
         # output these as include files
-        tmp = '''
         for docname in ['abstract', 'dedication', 'acknowledgements']:
             destination = FileOutput(
-                destination_path=os.path.join(self.outdir, '%s.inc' % docname),
-                encoding='utf-8')
+                    destination_path=os.path.join(self.outdir, '%s.inc' % docname),
+                    encoding='utf-8')
 
             docwriter = LaTeXWriter(self)
-            try:
-                doctree = self.env.get_doctree(docname)
-                docsettings = OptionParser(
-                    defaults=self.env.settings,
-                    components=(docwriter,)).get_default_values()
-                doctree.settings = docsettings
-                docwriter.write(doctree, destination)
-            except IOError:
-                pass
-        '''
+            doctree = self.env.get_doctree(docname)
+
+            docsettings = OptionParser(
+                defaults=self.env.settings,
+                components=(docwriter,)).get_default_values()
+            doctree.settings = docsettings
+            docwriter.write(doctree, destination)
+
         sphinx.writers.latex.LaTeXTranslator = backup_translator
         sphinx.writers.latex.BEGIN_DOC = backup_doc
 
@@ -234,4 +233,4 @@ class CustomLaTeXBuilder(sphinx.builders.latex.LaTeXBuilder):
             self.info()
 
 # monkey patch the shit out of it
-sphinx.builders.latex.LaTeXBuilder = CustomLaTeXBuilder
+# sphinx.builders.latex.LaTeXBuilder = CustomLaTeXBuilder
