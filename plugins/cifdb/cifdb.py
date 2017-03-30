@@ -581,7 +581,7 @@ class cifDB(object):
                  )
         ###################################################
         ## Add all to file
-        self.metadata.create_all()  ## if not exists function... can call even when already there
+        self.metadata.create_all() ## if not exists function (callable when exists)
 
         ###################################################
         ## Define 'add/insert' functions for each table
@@ -680,13 +680,18 @@ class cifDB(object):
         '''
             ## Adds cifile into database
             When reading in new CIF:
-            -->  put entire cif into field
-            -->  read _database_code_amcsd - write 'amcsd_id' to 'cif data'
-            -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'cif data'
-            -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'cif data'
-            -->  read author name(s) - find/add in 'authorlist' - write 'author_id','amcsd_id' to 'authref'
-            -->  read _chemical_formula_sum - write 'z' (atomic no.),'amcsd_id' to 'compref'
-            -->  calculate q - find each corresponding 'q_id' for all peaks - in write 'q_id','amcsd_id' to 'qpeak'
+            i.   put entire cif into field
+            ii.  read _database_code_amcsd; write 'amcsd_id' to 'cif data'
+            iii. read _chemical_name_mineral; find/add in' minerallist'; write
+                 'mineral_id' to 'cif data'
+            iv.  read _symmetry_space_group_name_H-M - find in 'spacegroup'; write
+                 iuc_id to 'cif data'
+            v.   read author name(s) - find/add in 'authorlist'; write 'author_id',
+                 'amcsd_id' to 'authref'
+            vi.  read _chemical_formula_sum; write 'z' (atomic no.), 'amcsd_id'
+                 to 'compref'
+            vii. calculate q - find each corresponding 'q_id' for all peaks; in write
+                 'q_id','amcsd_id' to 'qpeak'
         '''
 
         if not HAS_CifFile or not HAS_XRAYUTIL:
@@ -1645,7 +1650,7 @@ def match_database(fracq=0.75, pk_wid=0.05, q=None, ipks=None,
             p_ids += [pk_id]
 
     matches,count = cifdatabase.amcsd_by_q(peaks)
-    goodness = np.zeros(np.shape(count))       
+    goodness = np.zeros(len(count))
 
     for i, (amcsd,cnt) in enumerate(zip(matches,count)):
         peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))

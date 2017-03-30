@@ -60,10 +60,10 @@ def peakfinder(y, regions=20, gapthrsh=5):
 
 
 def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
-
+    
     peaktwth,peakFWHM,peakinty = [],[],[]
     for j in ipeaks:
-        if j > halfwidth and (np.shape(twth)[0]-j) > halfwidth:
+        if j > halfwidth and (len(twth)-j) > halfwidth:
             minval = int(j - halfwidth)
             maxval = int(j + halfwidth)
 
@@ -282,6 +282,11 @@ def size_broadening(pkqlist, q, wavelength,
     C - shape factor (1 for sphere)
     D - particle size in units A (if D is None, no size broadening)
     '''
+
+    print 'pkqlist',len(pkqlist)
+    print np.shape(pkqlist)
+    print 'q',len(q)
+    print np.shape(q)
 
     lenlist = np.shape(pkqlist)[1]
     
