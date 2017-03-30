@@ -42,12 +42,6 @@ if not deps_ok:
     print( 'Checking dependencies....')
     for desc, mods in recommended_modules.items():
         for mod in mods:
-            if mod == 'wx':
-                try:
-                    import wxversion
-                    wxversion.ensureMinimal('2.9')
-                except:
-                    pass
             if mod not in modules_imported:
                 modules_imported[mod] = False
             try:
