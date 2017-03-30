@@ -166,7 +166,9 @@ class XYFitPanel(wx.Panel):
         models_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        rsizer.Add(SimpleText(models_row, ' Add Model: '), 0, LCEN, 3)
+        rsizer.Add(SimpleText(models_row, ' Add Model Type: '), 0, LCEN, 3)
+
+
         rsizer.Add(Choice(models_row, size=(150, -1), choices=PeakChoices,
                           action=self.addModel), 0, LCEN, 3)
         rsizer.Add(Choice(models_row, size=(150, -1), choices=StepChoices,
@@ -210,7 +212,7 @@ class XYFitPanel(wx.Panel):
         prefix = curmodels[0]
 
         label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s" % (prefix[:-1], (model+' '*4)[:5])
+        title = "%s: %s" % (prefix[:-1], (model+' '*8)[:8])
         mclass_kws = {'prefix': prefix}
         if is_step:
             form = model.lower()
