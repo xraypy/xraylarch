@@ -31,7 +31,7 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,SPACEGR
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
                                E_from_lambda,calcCIFpeaks,d_from_twth,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
-                               peakfilter,xrd_background,xrd1d,size_broadening)
+                               peakfilter,xrd_background,xrd1d,calc_broadening)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -871,9 +871,26 @@ class Fitting1DXRD(BasePanel):
             self.pkpl.btn_rpks.Enable()
             self.pkpl.btn_fitpks.Enable()
             
-            print 'checking...'
-            print 'self.plt_peaks',type(self.plt_peaks),np.shape(self.plt_peaks)
-            size_broadening(self.plt_peaks, self.plt_data[1], self.xrd1dgrp.wavelength)
+            print 'NEED TO REMOVE THIS FROM HERE...'
+            wavelength = self.xrd1dgrp.wavelength
+            xi = self.rngpl.ch_xaxis.GetSelection()
+
+            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951)
+            pkarg = {'markersize':0,'linewidth':2,'label':'inst. broadening','show_legend':True}
+            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)  
+
+            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=100)
+            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 100 A','show_legend':True}
+            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
+
+            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=10)
+            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 10 A','show_legend':True}
+            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
+
+            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=1)
+            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 1 A','show_legend':True}
+            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
+            
 
     def peak_display(self):
 

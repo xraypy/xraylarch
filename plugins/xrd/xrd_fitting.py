@@ -12,7 +12,7 @@ mkak 2017.02.06 (originally written spring 2016)
 import math
 
 import numpy as np
-from scipy import optimize,signal
+from scipy import optimize,signal,interpolate
 
 from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth)
@@ -197,7 +197,7 @@ def trim_range(data,min,max,axis=0):
     return data[:,mini:maxi]
 
 def interpolate_for_y(x,x0,y0):
-    t = interpolate.splrep(x0,y0,s=0)
+    t = interpolate.splrep(x0,y0)
     return interpolate.splev(x,t,der=0)
 
 def calc_peak(): 
@@ -242,7 +242,8 @@ def scale_100(intensity):
 
 
 def find_max(x,y):
-    return [x[i] for i,yi in enumerate(y) if yi == np.max(y)]
+    return [xi for xi,yi in zip(x,y) if yi == np.max(y)][0]
+
 
 
 def calcRsqu(y,ycalc):
@@ -259,25 +260,12 @@ def calcRsqu(y,ycalc):
     return (1 - (ss_res/ss_tot))
 
 
-def patternbroadening(data_q,nsize):
-
-    ## Particle size broadening and instrumental broadening
-    calc_int = size_broadening(pkQlist,data_q,instrU,instrV,instrW,nsize)
-
-    ## Instrumental broadening
-#     calc_int = instr_broadening(pkQlist,data_q,DATA_INT,instrU,instrV,instrW)
-
-    return calc_int
-
-
-def size_broadening(pklist, twth, wavelength,
-                    instr_u=1.0, instr_v=1.0, instr_w=1.0,
-                    C=1.0, D=None):
+def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None, verbose=False):
     '''
     == Broadening calculation performed in 2theta - not q ==
 
-    pkqlist - location of peaks in range
-    q - axis
+    pklist     - location of peaks in range [q,2th,d,I]
+    twth       -  2-theta axis
     wavelength - in units A
     
     u,v,w - instrumental broadening parameters
@@ -285,133 +273,67 @@ def size_broadening(pklist, twth, wavelength,
     D - particle size in units A (if D is None, no size broadening)
     '''
 
-
     ## TERMS FOR INSTRUMENTAL BROADENING
     thrad = np.radians(pklist[1]/2)
-    Bi = np.sqrt( u*(np.tan(thrad))**2 + v*pn.tan(thrad) + w )
+    Bi = np.sqrt( u*(np.tan(thrad))**2 + v*np.tan(thrad) + w )
 
     ## TERMS FOR SIZE BROADENING
     ## FWHM(2th) = (C*wavelength)/(D*math.cos(math.radians(twth/2)))
     ## FWHM(q)   = (C*wavelength)/D*(1/np.sqrt(1-termB))
-    
-    termB = ((wavelength*pkqlist[0])/(2*math.pi))**2
-    Bs = (C*wavelength)/D*(1/np.sqrt(1-termB))
-    
+    if D is not None:
+        termB = ((wavelength*pklist[0])/(2*math.pi))**2
+        Bs = (C*wavelength)/D*(1/np.sqrt(1-termB))
         
     ## Define intensity array for broadened peaks
-    intenB = np.zeros(np.shape(q)[0])
+    Itot = np.zeros(len(twth))
+    
+    step = twth[1]-twth[0]
     
     ## Loop through all peaks
-    for i,peak in enumerate(pklist):
-        print i,type(peak),np.shape(peak),len(peak)
-    
-        if peak[1] > twth.min and peak[1] < twth.max:
+    for i,peak in enumerate(zip(*pklist)):
+        if peak[1] > min(twth) and peak[1] < max(twth):
+            A = peak[3]
+            B = peak[1]
 
-            ## Create Gaussian of correct width
-            ## FWHM = abs(2*np.sqrt(2*math.log1p(2))*c)
-            A = peak[3]   ## intensity
-            B = peak[1]   ## position (in 2theta)
-        
-            ## INSTRUMENT contribution
             c_i = Bi[i]/abs(2*np.sqrt(2*math.log1p(2)))
-            ## SIZE contribution
-            c_s = Bs[i]/abs(2*np.sqrt(2*math.log1p(2)))
-            
-            Bm = np.sqrt(Bi[i]**2+Bs[i]**2)
-            c_m = Bm/abs(2*np.sqrt(2*math.log1p(2)))
-      
-            width1 = np.max(Bs[i],Bi[i])
-            width2 = np.min(Bs[i],Bi[i])
 
-            ## Define 2th axis for calculation
+            if D is not None: c_s = Bs[i]/abs(2*np.sqrt(2*math.log1p(2)))
+
+            #    Bm = np.sqrt(Bi[i]**2+Bs[i]**2)
+            #else:
+            #    Bm = np.sqrt(Bi[i]**2)
+
+            #c_m = Bm/abs(2*np.sqrt(2*math.log1p(2)))
+
+            width1 = max(Bs[i],Bi[i]) if D is not None else Bi[i]
+            width2 = min(Bs[i],Bi[i]) if D is not None else Bi[i]
+
             min2th = B-2*width1
             max2th = B+2*width1
-            twthG = np.arange(max2th,min2th,-width2/400)
 
-            ## Calculate peak for corresponding width
+            num = abs((max2th-min2th)/step)
+            twthG = np.linspace(max2th,min2th,num)
+
             intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
-            intBs = A*np.exp(-(twthG-B)**2/(2*c_s**2))
-            intBm = A*np.exp(-(twthG-B)**2/(2*c_m**2))
-            
-            noplot = 1
-            if i < 10 and noplot == 0:
-                plt_str = 'inst = %0.6f\nsize = %0.6f\n comb = %0.6f'
-                print(plt_str % (Bi[i],Bs[i],Bm))
-            
-            new_intensity = np.convolve(intBs,intBi,'same')
-            ## Normalize to correct intensity
+            if D is not None: intBs = A*np.exp(-(twthG-B)**2/(2*c_s**2))
+            #intBm = A*np.exp(-(twthG-B)**2/(2*c_m**2))
+
+            if D is not None:
+                new_intensity = np.convolve(intBs,intBi,'same')
+            else:
+                new_intensity = intBi
+
             new_intensity = norm_pattern(new_intensity,A)
-        
-            shift2th = find_max(twthG,new_intensity)
-            twthG = twthG - (B-shift2th)
-
-            qG = q_from_twth(twthG,wavelength)
-                        
-            nintensity = interpolate_for_y(q,qG,new_intensity)        
-        
-            ## Interpolate peak onto q scale and add
-            for j in range(np.shape(intenB)[0]):
-                intenB[j] = nintensity[j] + intenB[j]
-
-
-            print('2theda shift is %0.4f' %(B-shift2th))
-                
-    intenB = scale_100(intenB)
             
-
-    return(intenB)
-
-
-def instr_broadening(pkqlist,q,wavelength,intensity,u,v,w): 
-
-    lenlist = np.shape(pkqlist)[1]
-    
-    ## Broadening calculation performed in 2theta - not q
-    twthlist = twth_from_q(pkqlist[0],wavelength)
-    twth = twth_from_q(q,wavelength)
-
-    ## TERMS FOR INSTRUMENTAL BROADENING
-    Bi = np.zeros(lenlist)
-    for i in range(lenlist):
-        thrad = math.radians(twthlist[i]/2)
-        Bi[i] = np.sqrt(u*(math.tan(thrad))**2+v*math.tan(thrad)+w)
-        
-    ## Define intensity array for broadened peaks
-    intenB = np.zeros(np.shape(q)[0])
-    
-    ## Loop through all peaks
-    for i in range(lenlist):
-
-        ## Create Gaussian of correct width
-        A = pkqlist[1][i]   ## intensity
-        B = twthlist[i]     ## position (in 2theta)
-        
-        ## FWHM = abs(2*np.sqrt(2*math.log1p(2))*c)
-        
-        ## INSTRUMENT contribution
-        c_i = Bi[i]/abs(2*np.sqrt(2*math.log1p(2)))      
-        
-        width = Bi[i]
-
-        ## Define 2th axis for calculation
-        min2th = B-2*width
-        max2th = B+2*width        
-        twthG = np.arange(max2th,min2th,-width/200)
-        qG = q_from_twth(twthG,wavelength)
-
-        ## Calculate peak for corresponding width
-        intBi = A*np.exp(-(twthG-B)**2/(2*c_i**2))
-        ## Normalize to correct intensity
-        intBi = norm_pattern(intBi,A)
-
-        ## Interpolate peak onto q scale and add
-        nintensity = interpolate_for_y(q,qG,intBi)        
-        for j in range(np.shape(intenB)[0]):
-            intenB[j] = nintensity[j] + intenB[j]
+            X = twthG
+            Y = new_intensity
             
-    intenB = norm_pattern(intenB,intensity)
+            bins = len(twth)
+            idx  = np.digitize(X,twth)
+            Ii    = [np.sum(Y[idx==k]) for k in range(bins)]
+            Itot = Itot + Ii
 
-    return(intenB)
+    return Itot
 
 ##########################################################################
 # def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
