@@ -25,7 +25,7 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
 
 
 from larch import Interpreter, Group
-from larch.utils import index_of, savitzky_golay, smooth, boxcar
+from larch.utils import index_of
 
 from larch.larchlib import read_workdir, save_workdir
 
@@ -37,7 +37,7 @@ from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
 
-from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
+from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
@@ -356,14 +356,25 @@ class ProcessPanel(wx.Panel):
             self.smooth_sig.Disable()
             self.smooth_msg.SetLabel('')
             self.smooth_c0.SetMin(1)
-
+            self.smooth_c0.odd_only = False
             if choice.startswith('box'):
                 self.smooth_c0.Enable()
             elif choice.startswith('savi'):
                 self.smooth_c0.Enable()
                 self.smooth_c1.Enable()
-                self.smooth_c0.SetMin(3)
+                self.smooth_c0.Enable()
+                self.smooth_c0.odd_only = True
+
+                c0 = int(self.smooth_c0.GetValue())
+                c1 = int(self.smooth_c1.GetValue())
+                x0 = max(c1+1, c0)
+                if x0 % 2 == 0:
+                    x0 += 1
+                self.smooth_c0.SetMin(c1+1)
+                if c0 != x0:
+                    self.smooth_c0.SetValue(x0)
                 self.smooth_msg.SetLabel('n must odd and  > order+1')
+
             elif choice.startswith('conv'):
                 self.smooth_conv.Enable()
                 self.smooth_sig.Enable()
@@ -538,9 +549,8 @@ class XYFitController():
         wintitle='Larch XYFit Array Plot Window'
         if stacked:
             win = 2
-            wintitle='Larch XYFit Plot Window'
+            wintitle='Larch XYFit Fit Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win)
-
         out = self.symtable._plotter.get_display(**opts)
         return out
 
