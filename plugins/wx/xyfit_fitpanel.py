@@ -34,15 +34,17 @@ CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
-StepChoices = ('<Add Step Model>', 'Linear', 'Arctan', 'ErrorFunction',
-               'Logistic')
+ModelTypes = ('Peaks', 'Steps', 'Other')
 
-PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
-               'PseudoVoigt', 'Pearson7', 'StudentsT', 'SkewedGaussian',
+StepChoices = ('<Steps Models>', 'Linear Step', 'Arctan Step', 'ErrorFunction Step',
+               'Logistic Step')
+
+PeakChoices = ('<Peak Models>', 'Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt',
+               'DampedOscillator', 'Pearson7', 'StudentsT', 'SkewedGaussian',
                'Moffat', 'BreitWigner', 'Donaich', 'Lognormal')
 
-ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
-               'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
+OtherChoices = ('<Other Models>', 'Constant', 'Linear', 'Quadratic',
+               'Exponential', 'PowerLaw', 'Rectangle')
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
@@ -166,15 +168,17 @@ class XYFitPanel(wx.Panel):
         models_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        self.model_choice = Choice(models_row, size=(200, -1),
+                                   choices=PeakChoices,  action=self.addModel)
+
         rsizer.Add(SimpleText(models_row, ' Add Model Type: '), 0, LCEN, 3)
 
+        rsizer.Add(Choice(models_row, size=(100, -1), choices=ModelTypes,
+                          action=self.onModelTypes), 0, LCEN, 3)
 
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=PeakChoices,
-                          action=self.addModel), 0, LCEN, 3)
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=StepChoices,
-                         action=partial(self.addModel, is_step=True)), 0, LCEN, 3)
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=ModelChoices,
-                          action=self.addModel), 0, LCEN, 3)
+        rsizer.Add(SimpleText(models_row, ' Model: '), 0, LCEN, 3)
+
+        rsizer.Add(self.model_choice, 0, LCEN, 3)
 
         pack(models_row, rsizer)
 
@@ -190,15 +194,20 @@ class XYFitPanel(wx.Panel):
 
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
-        print(" NB Changed ", idx, self.mod_nb.GetPage(idx), self.param_panel)
         if self.mod_nb.GetPage(idx) is self.param_panel:
             self.build_fitmodel()
             self.param_panel.show_parameters(self.fit_params, self.user_added_params)
 
+    def onModelTypes(self, event=None):
+        modtype = event.GetString().lower()
+        choices = OtherChoices
+        if modtype.startswith('peak'):
+            choices = PeakChoices
+        elif modtype.startswith('step'):
+            choices = StepChoices
+            self.model_choice.SetChoices(choices)
 
-
-
-    def addModel(self, event=None, model=None, is_step=False):
+    def addModel(self, event=None, model=None):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
@@ -214,8 +223,9 @@ class XYFitPanel(wx.Panel):
         label = "%s(prefix='%s')" % (model, prefix)
         title = "%s: %s" % (prefix[:-1], (model+' '*8)[:8])
         mclass_kws = {'prefix': prefix}
-        if is_step:
-            form = model.lower()
+        if 'step' in model.lower():
+            form = model.lower().replace('step', '').strip()
+
             if form.startswith('err'): form = 'erf'
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
             title = "%s: Step %s" % (prefix[:-1], form[:3])
@@ -353,6 +363,7 @@ class XYFitPanel(wx.Panel):
         try:
             plotframe = self.controller.get_display(stacked=False)
             curhist = plotframe.cursor_hist[:]
+            plotframe.Raise()
         except:
             return
 
