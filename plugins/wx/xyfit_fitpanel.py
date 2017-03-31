@@ -36,15 +36,16 @@ FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
 ModelTypes = ('Peaks', 'Steps', 'Other')
 
-StepChoices = ('<Steps Models>', 'Linear Step', 'Arctan Step', 'ErrorFunction Step',
-               'Logistic Step')
-
-PeakChoices = ('<Peak Models>', 'Gaussian', 'Lorentzian', 'Voigt', 'PseudoVoigt',
-               'DampedOscillator', 'Pearson7', 'StudentsT', 'SkewedGaussian',
-               'Moffat', 'BreitWigner', 'Donaich', 'Lognormal')
-
-OtherChoices = ('<Other Models>', 'Constant', 'Linear', 'Quadratic',
-               'Exponential', 'PowerLaw', 'Rectangle')
+ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
+                          'ErrorFunction Step', 'Logistic Step'),
+                'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
+                          'Voigt', 'PseudoVoigt', 'DampedOscillator',
+                          'Pearson7', 'StudentsT', 'SkewedGaussian',
+                          'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
+                'other': ('<Other Models>', 'Constant', 'Linear',
+                          'Quadratic', 'Exponential', 'PowerLaw',
+                          'Rectangle')
+                }
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
@@ -169,7 +170,7 @@ class XYFitPanel(wx.Panel):
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.model_choice = Choice(models_row, size=(200, -1),
-                                   choices=PeakChoices,  action=self.addModel)
+                                   choices=ModelChoices['peaks'],  action=self.addModel)
 
         rsizer.Add(SimpleText(models_row, ' Add Model Type: '), 0, LCEN, 3)
 
@@ -200,12 +201,7 @@ class XYFitPanel(wx.Panel):
 
     def onModelTypes(self, event=None):
         modtype = event.GetString().lower()
-        choices = OtherChoices
-        if modtype.startswith('peak'):
-            choices = PeakChoices
-        elif modtype.startswith('step'):
-            choices = StepChoices
-            self.model_choice.SetChoices(choices)
+        self.model_choice.SetChoices(ModelChoices[modtype])
 
     def addModel(self, event=None, model=None):
         if model is None and event is not None:
@@ -494,20 +490,24 @@ class XYFitPanel(wx.Panel):
     def build_fitmodel(self):
         """ use fit components to build model"""
         dgroup = self.get_datagroup()
-        model = None
+        fullmodel = None
         params = Parameters()
         self.summary = {'components': [], 'options': {}}
+        print("Build Model: ", )
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     params.add(parwids.param)
                 self.summary['components'].append((comp.mclass.__name__, comp.mclass_kws))
                 thismodel = comp.mclass(**comp.mclass_kws)
-                if model is None:
-                    model = thismodel
+                if fullmodel is None:
+                   fullmodel = thismodel
                 else:
-                    model += thismodel
-        self.fit_model = model
+                    fullmodel += thismodel
+                print(" -- ", thismodel)
+        print(" Build Model -> ", fullmodel)
+
+        self.fit_model = fullmodel
         self.fit_params = params
 
         if dgroup is not None:
@@ -605,6 +605,8 @@ class XYFitPanel(wx.Panel):
                                                        x=dgroup.xfit)
         self.plot_fitmodel(dgroup, show_resid=True, with_components=False)
 
+        print(" == fit model == ", self.fit_model)
+        print(" == fit result == ", result)
         self.controller.show_report(result.fit_report())
 
         # fill parameters with best fit values
