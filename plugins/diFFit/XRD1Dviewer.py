@@ -348,7 +348,6 @@ class Fitting1DXRD(BasePanel):
         self.xrd1dgrp   = None
 
         self.bgr        = None
-        self.bgr_info   = None
 
         self.ipeaks     = None
         self.plt_peaks  = None
@@ -604,7 +603,6 @@ class Fitting1DXRD(BasePanel):
 
         self.bgr_data = None
         self.bgr = None
-        self.bgr_info = None
         self.subtracted = False
 
         if self.ipeaks is not None:
@@ -688,6 +686,8 @@ class Fitting1DXRD(BasePanel):
     def trim_data(self):
 
         print 'THIS SHOULD BE REPLACED BY FUNCTION IN xrd1d CLASS'
+#         self.raw_data.set_trim(self,xmin,xmax,xtype)
+        
         ## mkak 2017.03.29 
         if self.trim:
             xi = self.rngpl.ch_xaxis.GetSelection()
@@ -734,7 +734,7 @@ class Fitting1DXRD(BasePanel):
 
         self.delete_background()
 
-        ## this creates self.bgr and self.bgr_info
+        ## this creates self.bgr
         xi = self.rngpl.ch_xaxis.GetSelection()
         kwargs = {'exponent':self.exponent,'compress':self.compress,'width':self.width}
         self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3],**kwargs)
@@ -765,7 +765,6 @@ class Fitting1DXRD(BasePanel):
 
         self.bgr_data = None
         self.bgr = None
-        self.bgr_info = None
         self.subtracted = False
 
     def plot_background(self,event=None):
