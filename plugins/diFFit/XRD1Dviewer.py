@@ -886,6 +886,10 @@ class Fitting1DXRD(BasePanel):
             pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 10 A','show_legend':True}
             self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
 
+            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=10,smooth=True)
+            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 10 A-smoothed','show_legend':True}
+            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
+
             y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=1)
             pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 1 A','show_legend':True}
             self.plot1D.oplot(self.plt_data[xi],y,**pkarg)

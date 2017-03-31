@@ -260,12 +260,9 @@ def calcRsqu(y,ycalc):
     return (1 - (ss_res/ss_tot))
 
 
-def outliers(y,per=0.2):
-
-    scale = per
-    
+def outliers(y,scale=0.2):
     for i,yi in enumerate(y):
-        if i > 0 and i < len(y):
+        if i > 0 and i < (len(y)-1):
 #             if yi > y[i-1]*scale and yi > y[i+1]*scale:
 #                 y[i] = (y[i-1]+y[i+1])/2
             if abs(yi-y[i-1]) > yi/scale and abs(yi - y[i+1]) > yi/scale:
@@ -274,7 +271,7 @@ def outliers(y,per=0.2):
     return y    
     
 
-def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None, verbose=False):
+def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None, verbose=False,smooth=False):
     '''
     == Broadening calculation performed in 2theta - not q ==
 
@@ -347,8 +344,9 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
             Ii    = [np.sum(Y[idx==k]) for k in range(bins)]
             Itot = Itot + Ii
 
-    
-    return outliers(Itot)
+    if smooth:
+        Itot = outliers(Itot)
+    return Itot
 
 ##########################################################################
 # def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
