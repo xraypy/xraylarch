@@ -116,8 +116,8 @@ class EditColumnFrame(wx.Frame) :
             self.on_ok(array_labels)
         self.Destroy()
 
-class SelectColumnFrame(wx.Frame) :
-    """Set Column Labels for a file"""
+class ColumnDataFileFrame(wx.Frame) :
+    """Column Data File, select columns"""
     def __init__(self, parent, filename=None, groupname=None,
                  last_array_sel=None, read_ok_cb=None,
                  edit_groupname=True, _larch=None):
