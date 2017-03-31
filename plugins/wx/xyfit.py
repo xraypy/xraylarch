@@ -29,7 +29,7 @@ from larch.utils import index_of
 
 from larch.larchlib import read_workdir, save_workdir
 
-from larch.wxlib import (LarchPanel, LarchFrame, SelectColumnFrame, ReportFrame,
+from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame, ReportFrame,
                          BitmapButton, FileCheckList, FloatCtrl, SetTip)
 
 
@@ -906,10 +906,6 @@ class XYFitFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
-        MenuItem(self, fmenu, "Re-select Data Columns\tCtrl+R",
-                 "Change which data columns used for this file",
-                 self.onSelectColumns)
-
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
@@ -992,7 +988,7 @@ class XYFitFrame(wx.Frame):
 
     def onSelectColumns(self, evt=None):
         dgroup = self.controller.get_group(self.controller.groupname)
-        self.show_subframe('selectcol', SelectColumnFrame,
+        self.show_subframe('readfile', ColumnDataFileFrame,
                            group=dgroup.raw,
                            last_array_sel=self.last_array_sel,
                            _larch=self.larch,
@@ -1037,7 +1033,7 @@ class XYFitFrame(wx.Frame):
         if is_athena_project(path):
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
-            self.show_subframe('selectcol', SelectColumnFrame, **kwargs)
+            self.show_subframe('readfile', ColumnDataFileFrame, **kwargs)
 
 
     def onRead_OK(self, datagroup, array_sel=None, overwrite=False):
