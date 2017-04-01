@@ -20,6 +20,9 @@ import sys
 import numpy
 from optparse import OptionParser
 
+# note: this is useful to avoid import errors later on, especially on Mac
+import pkg_resources
+
 usage = "usage: %prog [options] file(s)"
 
 parser = OptionParser(usage=usage, prog="larch",
