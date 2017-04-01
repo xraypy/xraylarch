@@ -41,49 +41,40 @@ apps = (('Larch',          'larch',          'larch',      'Larch Command Line',
         ('1D XRD Viewer',  'diFFit1D',       'larch',      '1D XRD Viewer', True),
         )
 
-mac_script_header = """#!/bin/bash
-## Run X-ray Larch script with anaconda or system Python
+mac_script_gui = """#!/bin/bash
+## Run X-ray Larch script with Python that created this script
 
-APP={0}
-PYEXE=pythonw
-PYBIN=/usr/bin
-if      [ -d ~/anaconda2/bin ] ; then  PYBIN=~/anaconda2/bin
-else if [ -d ~/anaconda/bin  ] ; then  PYBIN=~/anaconda/bin
-fi fi
+export PYTHONEXECUTABLE={prefix:s}/bin/python
+{pyexe:s} {prefix:s}/bin/{script:s}
 """
 
-mac_script_gui = """
-"$PYBIN/$PYEXE" "$PYBIN/$APP"
-"""
+mac_script_terminal = """#!/bin/bash
+## Run X-ray Larch script with Python that created this script
 
-mac_script_terminal = """
-osascript -e 'tell application "Terminal" to do script "'$PYBIN/$PYEXE\ $PYBIN/$APP'"'
+export PYTHONEXECUTABLE={prefix:s}/bin/python
+
+osascript -e 'tell application "Terminal" to do script "'{pyexe:s}\ {prefix:s}/bin/{script:s}'"'
 """
 
 mac_info = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-  <key>CFBundleGetInfoString</key> <string>{0}</string>
-  <key>CFBundleName</key> <string>{0}</string>
-  <key>CFBundleExecutable</key> <string>{0}</string>
-  <key>CFBundleIconFile</key> <string>{0}</string>
+  <key>CFBundleGetInfoString</key> <string>{name:s}</string>
+  <key>CFBundleName</key> <string>{name:s}</string>
+  <key>CFBundleExecutable</key> <string>{name:s}</string>
+  <key>CFBundleIconFile</key> <string>{name:s}</string>
   <key>CFBundlePackageType</key> <string>APPL</string>
   </dict>
 </plist>
 """
 
 if sys.platform == 'darwin':
-    old = '''
-    appdir = os.path.join(root, 'share', 'larch', 'apps')
-    appfiles = glob("%s/*.app" % appdir)
-    for app in appfiles:
-        _, aname = os.path.split(app)
-        dest = os.path.join(top_folder, aname)
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
-        shutil.copytree(app, dest)
-    '''
+    prefix = sys.prefix
+    pyexe = sys.executable
+    if 'anaconda' in prefix.lower():
+        pyexe = "{prefix:s}/python.app/Contents/MacOS/python".format(prefix=prefix)
+
     def make_shortcut(name, script, desc, icon, isgui):
         """create minimal Mac App"""
         dest = os.path.join(top_folder, name + '.app')
@@ -93,22 +84,22 @@ if sys.platform == 'darwin':
         os.mkdir(os.path.join(dest, 'Contents'))
         os.mkdir(os.path.join(dest, 'Contents', 'MacOS'))
         os.mkdir(os.path.join(dest, 'Contents', 'Resources'))
+        opts = dict(name=name, script=script, prefix=prefix, pyexe=pyexe)
+
         script_name = os.path.join(dest, 'Contents', 'MacOS', name)
-
-        fout = open(script_name, 'w')
-        fout.write(mac_script_header.format(script))
-        if isgui:
-            fout.write(mac_script_gui)
-        else:
-            fout.write("\n%s\n" % mac_script_terminal)
-
-        fout.close()
-        os.chmod(script_name, 493) ## 0755 / octal 755 / rwxr-xr-x
-
         info_plist = os.path.join(dest, 'Contents', 'Info.plist')
-        fout = open(info_plist, 'w')
-        fout.write(mac_info.format(name))
-        fout.close()
+
+        with open(info_plist, 'w') as fout:
+            fout.write(mac_info.format(**opts))
+
+        text = mac_script_terminal
+        if isgui:
+            text = mac_script_gui
+
+        with open(script_name, 'w') as fout:
+            fout.write(text.format(**opts))
+
+        os.chmod(script_name, 493) ## 0755 / octal 755 / rwxr-xr-x
 
 
         icon_dest = os.path.join(dest, 'Contents', 'Resources', name + '.icns')
@@ -126,7 +117,6 @@ elif os.name == 'nt':
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
         pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
-        print("Make Shortcut ", path, target)
         # add several checks for valid ways to run each script, including
         # accounting for Anaconda's automagic renaming and creation of exes.
         target_exe = '%s.exe' % target
