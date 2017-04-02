@@ -253,22 +253,22 @@ class diFFit1DFrame(wx.Frame):
             adddata = True
             if xrdf.raw_data is not None:
                 question = 'Replace current data file %s with selected file %s?' % \
-                               (xrdf.plttitle,name)
+                               (xrdf.xrd1dgrp.label,name)
                 adddata = YesNo(self,question,caption='Overwrite warning')
 
             if adddata:
 
-                if xrdf.raw_data is not None:
+                if xrdf.xrd1dgrp is not None:
                     xrdf.reset_fitting()
 
-                xrdf.plttitle = seldat.label
-                xrdf.raw_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
-                xrdf.plt_data = np.array([seldat.q,seldat.twth,seldat.d,seldat.I])
+                xrdf.xrd1dgrp = seldat
+                xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
+                xrdf.plt_data = xrdf.xrd1dgrp.plot()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
                 xrdf.xmax     = np.max(xrdf.plt_data[xi])
                 
-                xrdf.xrd1dgrp = seldat
+
 
                 xrdf.optionsON()
                 xrdv.optionsON()
@@ -341,11 +341,8 @@ class Fitting1DXRD(BasePanel):
         self.owner = owner
 
         ## Default information
-        self.raw_data   = None
-        self.plt_data   = None
-        self.bgr_data   = None
-        
         self.xrd1dgrp   = None
+        self.plt_data   = None
 
         self.bgr        = None
 
@@ -361,7 +358,7 @@ class Fitting1DXRD(BasePanel):
         self.xmin       = None
         self.xmax       = None
 
-        self.plttitle   = ''
+        self.xrd1dgrp.label   = ''
 
         self.xlabel     = 'q (1/$\AA$)' #'q (A^-1)'
         self.ylabel     = 'Intensity (a.u.)'
@@ -416,7 +413,7 @@ class Fitting1DXRD(BasePanel):
             Fall = Fall/max(Fall)*maxI
             cifpks = np.array([qall,Fall])
             
-            cifargs = {'label':cifname,'title':self.plttitle,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
             self.plot1D.oplot(*cifpks,**cifargs)
 
             ## self.plot1D.update_line(2,*cifpks, label=cifname)
@@ -558,19 +555,9 @@ class Fitting1DXRD(BasePanel):
     def plot_data(self,event=None):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.subtracted:
-            datargs = {'title':self.plttitle,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-            self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**datargs)
-        else:
-            if self.trim:
-                rawargs = {'title':self.plttitle,'color':'grey','label':'Raw data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-                trmargs = {'title':self.plttitle,'color':'blue','label':'Trimmed data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],**rawargs)
-                self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],**trmargs)
-            else:
-                rawargs = {'title':self.plttitle,'color':'blue','label':'Raw data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-                self.plot1D.plot(self.raw_data[xi],self.raw_data[3],**rawargs)
-            self.plot_background()
+        pltargs = {'title':self.xrd1dgrp.label,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+        self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],**pltargs)
+        self.plot_background()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
 
@@ -579,9 +566,9 @@ class Fitting1DXRD(BasePanel):
 
     def reset_fitting(self,name=None,min=0,max=1):
 
-        self.plttitle = name
-        self.rngpl.val_qmin.SetValue('%0.3f' % min)
-        self.rngpl.val_qmax.SetValue('%0.3f' % max)
+        self.xrd1dgrp.label = name
+        self.rngpl.val_xmin.SetValue('%0.3f' % min)
+        self.rngpl.val_xmax.SetValue('%0.3f' % max)
         self.rngpl.ch_xaxis.SetSelection(0)
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.btn_fbkgd.Enable()
@@ -611,23 +598,19 @@ class Fitting1DXRD(BasePanel):
         self.SetFittingDefaults()
         self.rescale1Daxis(xaxis=True,yaxis=False)
 
-    def onChangeRange(self,event=None):
+    def onSetRange(self,event=None):
 
-        self.set_range()
+        xmax = self.rngpl.val_xmax
+        xmin = self.rngpl.val_xmin
 
-    def set_range(self,event=None):
+        if self.xmax != float(xmax.GetValue()) or self.xmin != float(xmin.GetValue()):
+            if float(xmax.GetValue()) < float(xmin.GetValue()):
+                min = float(xmax.GetValue())
+                max = float(xmin.GetValue())
+                xmin.SetValue('%0.3f' % min)
+                xmax.SetValue('%0.3f' % max)
 
-        qmax = self.rngpl.val_qmax
-        qmin = self.rngpl.val_qmin
-
-        if self.xmax != float(qmax.GetValue()) or self.xmin != float(qmin.GetValue()):
-            if float(qmax.GetValue()) < float(qmin.GetValue()):
-                min = float(qmax.GetValue())
-                max = float(qmin.GetValue())
-                qmin.SetValue('%0.3f' % min)
-                qmax.SetValue('%0.3f' % max)
-
-            self.plt_data = np.copy(self.raw_data)
+            self.plt_data = self.xrd1dgrp.plot()
             self.check_range()
             self.trim_data()
 
@@ -637,28 +620,31 @@ class Fitting1DXRD(BasePanel):
     def check_range(self,event=None):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        self.trim = True
-        if float(self.rngpl.val_qmin.GetValue()) - np.min(self.raw_data[xi]) > 0.005:
-            self.xmin = float(self.rngpl.val_qmin.GetValue())
+        if float(self.rngpl.val_xmin.GetValue()) - np.min(self.raw_data[xi]) > 0.005:
+            self.xmin = float(self.rngpl.val_xmin.GetValue())
         else:
             self.xmin = np.min(self.raw_data[xi])
 
-        if np.max(self.raw_data[xi]) - float(self.rngpl.val_qmax.GetValue()) > 0.005:
-            self.xmax = float(self.rngpl.val_qmax.GetValue())
+        if np.max(self.raw_data[xi]) - float(self.rngpl.val_xmax.GetValue()) > 0.005:
+            self.xmax = float(self.rngpl.val_xmax.GetValue())
         else:
             self.xmax = np.max(self.raw_data[xi])
         if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
-        self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
-        self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
+        self.rngpl.val_xmin.SetValue('%0.3f' % self.xmin)
+        self.rngpl.val_xmax.SetValue('%0.3f' % self.xmax)
 
         if np.max(self.raw_data[xi])-self.xmax < 0.005 and \
-           self.xmin-np.min(self.raw_data[xi]) < 0.005:
-            self.trim = False
+            self.xmin-np.min(self.raw_data[xi]) < 0.005:
+           self.reset_range()
 
     def onReset(self,event=None):
 
+        self.ipeaks,self.plt_peaks = None,None
+        self.peaklist = []
+
         self.reset_range()
+        self.plot_data()
 
     def reset_range(self,event=None):
 
@@ -667,112 +653,63 @@ class Fitting1DXRD(BasePanel):
         self.xmax = np.max(self.raw_data[xi])
         if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
-        self.rngpl.val_qmin.SetValue('%0.3f' % self.xmin)
-        self.rngpl.val_qmax.SetValue('%0.3f' % self.xmax)
+        self.rngpl.val_xmin.SetValue('%0.3f' % self.xmin)
+        self.rngpl.val_xmax.SetValue('%0.3f' % self.xmax)
 
-        self.trim = False
         self.trim_data()
         if self.bgr is not None:
-            self.fit_background()
-
-        self.plot_data()
-
-        if self.ipeaks is not None:
-            self.ipeaks     = None
-            self.plt_peaks  = None
-            self.peaklist   = []
-
-
-    def trim_data(self):
-
-        print 'THIS SHOULD BE REPLACED BY FUNCTION IN xrd1d CLASS'
-#         self.raw_data.set_trim(self,xmin,xmax,xtype)
-        
-        ## mkak 2017.03.29 
-        if self.trim:
-            xi = self.rngpl.ch_xaxis.GetSelection()
-            indicies = [i for i,value in enumerate(self.raw_data[xi]) if value>=self.xmin and value<=self.xmax]
-            if len(indicies) > 0:
-                q    = [self.raw_data[0,i] for i in indicies]
-                twth = [self.raw_data[1,i] for i in indicies]
-                d    = [self.raw_data[2,i] for i in indicies]
-                I    = [self.raw_data[3,i] for i in indicies]
-                self.plt_data = np.array([q,twth,d,I])
-            else:
-                self.plt_data = np.copy(self.raw_data)
-                self.reset_range()
-        else:
-            self.plt_data = np.copy(self.raw_data)
+            self.xrd1dgrp.fit_background()
 
 
 ##############################################
 #### BACKGROUND FUNCTIONS
 
-    def onBackground(self,event=None):
+    def onFitBkgd(self,event=None):
 
-        self.background_fit()
+        self.xrd1dgrp.fit_background()
+        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
 
-    def onSubtract(self,event=None):
-
-        self.subtract_background()
-
-    def onRemove(self,event=None):
-
-        self.remove_background()
-
-    def background_fit(self,event=None):
-
-        if self.bgr is not None:
-            self.plot_data()
-            if self.ipeaks is not None:
-                self.define_peaks()
-                self.plot_peaks()
-        self.fit_background()
-        self.plot_background()
-
-    def fit_background(self,event=None):
-
-        self.delete_background()
-
-        ## this creates self.bgr
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        kwargs = {'exponent':self.exponent,'compress':self.compress,'width':self.width}
-        self.bgr = xrd_background(self.plt_data[xi],self.plt_data[3],**kwargs)
-
-        self.bgr_data    = np.copy(self.plt_data[:,:self.bgr.shape[0]])
-        self.bgr_data[3] = self.bgr
-
-        self.bkgdpl.ck_bkgd.Enable()
-        self.bkgdpl.btn_rbkgd.Enable()
-
-    def remove_background(self,event=None):
-
-        self.delete_background()
         self.plot_data()
+        self.plot_background()
+        if self.ipeaks is not None:
+            self.define_peaks()
+            self.plot_peaks()
 
+        self.xrd1dgrp.fit_background()
+
+    def onSbtrctBkgd(self,event=None):
+
+        self.plt_data = self.xrd1dgrp.plot(bkgd=True)
+
+        self.plot_data()
+        if self.ipeaks is not None:
+            self.define_peaks()
+            self.plot_peaks()
+
+    def onRmvBkgd(self,event=None):
+
+        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
+
+        self.plot_data()
         if self.ipeaks is not None:
             self.define_peaks()
             self.plot_peaks()
 
     def delete_background(self,event=None):
 
-        if self.bkgdpl.ck_bkgd.GetValue():
-            self.bkgdpl.ck_bkgd.SetValue(False)
-            self.subtract_background()
+        self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
         self.bkgdpl.btn_rbkgd.Disable()
         self.bkgdpl.btn_fbkgd.Enable()
 
-        self.bgr_data = None
-        self.bgr = None
-        self.subtracted = False
+        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
+        self.plot_data()
 
     def plot_background(self,event=None):
 
-        if self.bgr is not None and self.subtracted is False:
-            xi = self.rngpl.ch_xaxis.GetSelection()
-            bgrarg = {'title':self.plttitle,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-            self.plot1D.oplot(self.bgr_data[xi],self.bgr_data[3],**bgrarg)
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+        self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
 
     def background_options(self,event=None):
 
@@ -787,41 +724,7 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
 
         if fit:
-            self.background_fit()
-
-    def subtract_background(self,event=None):
-
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.bkgdpl.ck_bkgd.GetValue() == True:
-            if self.plt_data.shape[-1] != self.bgr_data.shape[-1]:
-                if (self.plt_data.shape[-1] - self.bgr_data.shape[-1]) > 2:
-                    self.fit_background()
-                self.plt_data = self.plt_data[:,:self.bgr_data.shape[-1]]
-            self.plt_data[3] = self.plt_data[3] - self.bgr_data[3]
-            self.subtracted = True
-            
-            bgrarg = {'title':self.plttitle,'color':'blue','label':'Background subtracted','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-            self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**bgrarg)
-
-            self.bkgdpl.btn_fbkgd.Disable()
-            self.bkgdpl.btn_obkgd.Disable()
-            self.rescale1Daxis(xaxis=True,yaxis=False)
-
-        else:
-            if self.subtracted:
-                self.plt_data[3] = self.plt_data[3] + self.bgr_data[3]
-                self.subtracted = False
-
-            self.bkgdpl.btn_rbkgd.Enable()
-            self.bkgdpl.btn_fbkgd.Enable()
-            self.bkgdpl.btn_obkgd.Enable()
-            self.plot_data()
-
-        if self.ipeaks is not None:
-            self.define_peaks()
-            self.plot_peaks()
-
-
+            self.onFitBkgd()
 
 
 ##############################################
@@ -835,7 +738,7 @@ class Fitting1DXRD(BasePanel):
             self.dbgpl.owner.val_gdnss.Enable()
             self.rfgpl.btn_mtch.Enable()
 
-    def onRemoveAll(self,event=None,filter=False):
+    def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
         self.dbgpl.owner.val_gdnss.Disable()
@@ -1043,8 +946,8 @@ class Fitting1DXRD(BasePanel):
 
         ## RangeToolsPanel
         self.rngpl.ch_xaxis.Enable()
-        self.rngpl.val_qmin.Enable()
-        self.rngpl.val_qmax.Enable()
+        self.rngpl.val_xmin.Enable()
+        self.rngpl.val_xmax.Enable()
         self.rngpl.btn_rngreset.Enable()
         ## BackgroundToolsPanel
         self.bkgdpl.btn_fbkgd.Enable()
@@ -1060,8 +963,12 @@ class Fitting1DXRD(BasePanel):
 
     def check1Daxis(self,event=None,yaxis=False):
 
-#         self.plot1D.unzoom_all()
         xi = self.rngpl.ch_xaxis.GetSelection()
+        minx,maxx = np.min(self.plt_data[xi]),np.max(self.plt_data[xi])
+        if xi == 2: maxx = min(maxx,self.dlimit)
+                
+        self.rngpl.val_xmin.SetValue('%0.3f' % minx)
+        self.rngpl.val_xmax.SetValue('%0.3f' % maxx)
 
         ## d
         if xi == 2:
@@ -1075,51 +982,21 @@ class Fitting1DXRD(BasePanel):
         else:
             self.xlabel = 'q (1/$\AA$)'
             self.xunit = '1/A' #'1/$\AA$'
-
-
-        if self.trim:
-            minx = np.min(self.plt_data[xi])
-            maxx = np.max(self.plt_data[xi])
-        else:
-            minx = np.min(self.raw_data[xi])
-            maxx = np.max(self.raw_data[xi])
-        if xi == 2: maxx = min(maxx,self.dlimit)
-        self.rngpl.val_qmin.SetValue('%0.3f' % minx)
-        self.rngpl.val_qmax.SetValue('%0.3f' % maxx)
-
-        self.rngpl.unit_qmin.SetLabel(self.xunit)
-        self.rngpl.unit_qmax.SetLabel(self.xunit)
-#         self.plot1D.set_xlabel(self.xlabel)
-#         self.plot1D.set_ylabel(self.ylabel)
-
+        self.rngpl.unit_xmin.SetLabel(self.xunit)
+        self.rngpl.unit_xmax.SetLabel(self.xunit)
 
         self.plot_data()
         if self.ipeaks:
             self.peak_display()
             self.plot_peaks()
 
-#         self.rescale1Daxis(xaxis=True,yaxis=yaxis)
-
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.subtracted:
-            x = self.plt_data[xi]
-            y = self.plt_data[3]
-        else:
-            x = self.raw_data[xi]
-            y = self.raw_data[3]
+        x,y = self.plt_data[xi],self.plt_data[3]
 
-        if xaxis:
-            xmax = np.max(x)
-            xmin = np.min(x)
-            self.set_xview(xmin, xmax)
-
-        if yaxis:
-            ymax = np.max(y)
-            ymin = np.min(y)
-            self.set_yview(ymin, ymax)
-
+        if xaxis: self.set_xview(np.min(x), np.max(x))
+        if yaxis: self.set_yview(np.min(y), np.max(y))
 
     def set_xview(self, x1, x2):
 
@@ -1153,9 +1030,6 @@ class Fitting1DXRD(BasePanel):
         self.plot1D.axes.set_ylim((y1, y2))
 
         self.plot1D.canvas.draw()
-
-
-
 
 ##############################################
 #### DATABASE FUNCTIONS
@@ -1825,7 +1699,7 @@ class Viewer1DXRD(wx.Panel):
     def add1Ddata(self,data1dxrd):
 
         try:
-            len(data1dxrd.q)
+            len(data1dxrd.I)
         except:
             return
 
@@ -1841,7 +1715,7 @@ class Viewer1DXRD(wx.Panel):
         self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(self.xy_data[-1].I))
 
-        self.xy_plot.append([self.xy_data[-1].plot])
+        self.xy_plot.append(self.xy_data[-1].plot())
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
@@ -1965,22 +1839,31 @@ class Viewer1DXRD(wx.Panel):
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
 
-    def reset1Dscale(self,event=None):
+    def trim_data(self):
+
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        self.xrd1dgrp.set_trim(self.xmin,self.xmax,xi=xi)
+        self.plt_data = self.xrd1dgrp.plot()
+
+    def reset1Dscale(self,event=None,xaxis=False,yaxis=True):
 
         plt_no = self.ch_data.GetSelection()
         xi = self.ch_xaxis.GetSelection()
 
-        self.xy_plot[plt_no][3] = self.xy_data[plt_no].I
-        self.plot1D.update_line(int(self.idata[plt_no]),
-                                np.array(self.xy_plot[plt_no][xi]),
-                                np.array(self.xy_plot[plt_no][3]))
+        if yaxis:
+            self.xy_plot[plt_no][3] = self.xy_data[plt_no].I
+            self.plot1D.update_line(int(self.idata[plt_no]),
+                                    np.array(self.xy_plot[plt_no][xi]),
+                                    np.array(self.xy_plot[plt_no][3]))
+            self.xy_scale[plt_no] = np.max(self.xy_data[plt_no].I)
+            self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
+        if xaxis:
+            print 'rescaling x-axis'
+
         self.plot1D.canvas.draw()
-
         self.plot1D.unzoom_all()
+        self.rescale1Daxis(xaxis=xaxis,yaxis=xaxis)
 
-        self.rescale1Daxis(xaxis=False,yaxis=True)
-        self.xy_scale[plt_no] = np.max(self.xy_data[plt_no].I)
-        self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
 
     def resetCIFscale(self,event=None):
 
@@ -2136,9 +2019,9 @@ class RangeToolsPanel(wx.Panel):
         ## Range tools
         vbox_rng = wx.BoxSizer(wx.VERTICAL)
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
-        hbox_qmin = wx.BoxSizer(wx.HORIZONTAL)
-        hbox_qmax = wx.BoxSizer(wx.HORIZONTAL)
-        hbox_qset = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_xmin = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_xmax = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_xset = wx.BoxSizer(wx.HORIZONTAL)
 
         ###########################
         ## X-Scale
@@ -2152,36 +2035,36 @@ class RangeToolsPanel(wx.Panel):
 
         ###########################
         ## X-Range
-        ttl_qmin = wx.StaticText(self, label='minimum')
-        self.val_qmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.unit_qmin = wx.StaticText(self, label=self.owner.xunit)
-        self.val_qmin.Bind(wx.EVT_TEXT_ENTER, self.owner.onChangeRange)
-        hbox_qmin.Add(ttl_qmin, flag=wx.RIGHT, border=8)
-        hbox_qmin.Add(self.val_qmin, flag=wx.RIGHT, border=8)
-        hbox_qmin.Add(self.unit_qmin, flag=wx.RIGHT, border=8)
+        ttl_xmin = wx.StaticText(self, label='minimum')
+        self.val_xmin = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.unit_xmin = wx.StaticText(self, label=self.owner.xunit)
+        self.val_xmin.Bind(wx.EVT_TEXT_ENTER, self.owner.onSetRange)
+        hbox_xmin.Add(ttl_xmin, flag=wx.RIGHT, border=8)
+        hbox_xmin.Add(self.val_xmin, flag=wx.RIGHT, border=8)
+        hbox_xmin.Add(self.unit_xmin, flag=wx.RIGHT, border=8)
 
-        ttl_qmax= wx.StaticText(self, label='maximum')
-        self.val_qmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.unit_qmax = wx.StaticText(self, label=self.owner.xunit)
-        self.val_qmax.Bind(wx.EVT_TEXT_ENTER, self.owner.onChangeRange)
-        hbox_qmax.Add(ttl_qmax, flag=wx.RIGHT, border=8)
-        hbox_qmax.Add(self.val_qmax, flag=wx.RIGHT, border=8)
-        hbox_qmax.Add(self.unit_qmax, flag=wx.RIGHT, border=8)
+        ttl_xmax= wx.StaticText(self, label='maximum')
+        self.val_xmax = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.unit_xmax = wx.StaticText(self, label=self.owner.xunit)
+        self.val_xmax.Bind(wx.EVT_TEXT_ENTER, self.owner.onSetRange)
+        hbox_xmax.Add(ttl_xmax, flag=wx.RIGHT, border=8)
+        hbox_xmax.Add(self.val_xmax, flag=wx.RIGHT, border=8)
+        hbox_xmax.Add(self.unit_xmax, flag=wx.RIGHT, border=8)
 
         self.btn_rngreset = wx.Button(self,label='reset')
         self.btn_rngreset.Bind(wx.EVT_BUTTON, self.owner.onReset)
 
-        hbox_qset.Add(self.btn_rngreset, flag=wx.RIGHT, border=8)
+        hbox_xset.Add(self.btn_rngreset, flag=wx.RIGHT, border=8)
 
         vbox_rng.Add(hbox_xaxis, flag=wx.ALL, border=10)
-        vbox_rng.Add(hbox_qmin, flag=wx.BOTTOM, border=8)
-        vbox_rng.Add(hbox_qmax, flag=wx.BOTTOM, border=8)
-        vbox_rng.Add(hbox_qset, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
+        vbox_rng.Add(hbox_xmin, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_xmax, flag=wx.BOTTOM, border=8)
+        vbox_rng.Add(hbox_xset, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
 
         ## until data is loaded:
         self.ch_xaxis.Disable()
-        self.val_qmin.Disable()
-        self.val_qmax.Disable()
+        self.val_xmin.Disable()
+        self.val_xmax.Disable()
         self.btn_rngreset.Disable()
 
         return vbox_rng
@@ -2217,7 +2100,7 @@ class BackgroundToolsPanel(wx.Panel):
         hbox_bkgd = wx.BoxSizer(wx.HORIZONTAL)
 
         self.btn_fbkgd = wx.Button(self,label='Fit')
-        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.owner.onBackground)
+        self.btn_fbkgd.Bind(wx.EVT_BUTTON,   self.owner.onFitBkgd)
         hbox_bkgd.Add(self.btn_fbkgd, flag=wx.RIGHT, border=8)
 
         self.btn_obkgd = wx.Button(self,label='Options')
@@ -2225,13 +2108,13 @@ class BackgroundToolsPanel(wx.Panel):
         hbox_bkgd.Add(self.btn_obkgd, flag=wx.RIGHT, border=8)
 
         self.btn_rbkgd = wx.Button(self,label='Remove')
-        self.btn_rbkgd.Bind(wx.EVT_BUTTON,   self.owner.onRemove)
+        self.btn_rbkgd.Bind(wx.EVT_BUTTON,   self.owner.onRmvBkgd)
 
         vbox_bkgd.Add(hbox_bkgd, flag=wx.BOTTOM, border=8)
         vbox_bkgd.Add(self.btn_rbkgd, flag=wx.BOTTOM, border=8)
 
         self.ck_bkgd = wx.CheckBox(self,label='Subtract')
-        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.owner.onSubtract)
+        self.ck_bkgd.Bind(wx.EVT_CHECKBOX,  self.owner.onSbtrctBkgd)
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)
 
         ## until data is loaded:
@@ -2302,7 +2185,7 @@ class PeakToolsPanel(wx.Panel):
 
 
         self.btn_rpks = wx.Button(self,label='Remove all')
-        self.btn_rpks.Bind(wx.EVT_BUTTON, self.owner.onRemoveAll)
+        self.btn_rpks.Bind(wx.EVT_BUTTON, self.owner.onRmvPksAll)
         hbox4_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
 
         self.btn_fitpks = wx.Button(self,label='Fit peaks')

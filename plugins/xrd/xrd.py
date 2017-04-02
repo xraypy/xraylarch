@@ -67,7 +67,7 @@ class xrd1d(grpobjt):
     mkak 2017.03.15
     '''
 
-    def __init__(self,file=None,label=None,q=None,twth=None,d=None,I=None,
+    def __init__(self,file=None,label=None,x=None,xtype=None,I=None,
                  wavelength=None,energy=None):
 
         self.filename = file
@@ -99,18 +99,19 @@ class xrd1d(grpobjt):
             self.normalization = None
 
             if I is not None:
-                if q is not None:
+                if xytq is not None:
                     self.xrd_from_2d([q,I],'q')
                 elif twth is not None:
                     self.xrd_from_2d([twth,I],'2th')
                 elif d is not None:
                     self.xrd_from_2d([d,I],'d')
         
-            self.bkgd = np.zeros(np.shape(self.I))
-            if self.q is not None:
-                self.plot = [self.q,self.twth,self.d,self.I,self.bkgd]
+                self.bkgd = np.zeros(np.shape(self.I))
             else:
-                self.plot = None
+                self.q    = None
+                self.twth = None
+                self.d    = None
+                self.I    = None
                 self.bkgd = None
 
         
@@ -194,18 +195,41 @@ class xrd1d(grpobjt):
             self.imin,self.imax = 0,len(self.q)
             self.bkgd = np.zeros(np.shape(self.I))
 
-        self.plot = [self.q,self.twth,self.d,self.I,self.bkgd]
-        
-    def set_trim(self,xmin,xmax,xtype):
+    def plot(self,reset=False,bkgd=False):
+
+        if reset: self.imin,self.imax = 0,len(self.I)
+        if bkgd:
+            return [self.q[self.imin:self.imax],
+                    self.twth[self.imin:self.imax],
+                    self.d[self.imin:self.imax],
+                    self.I[self.imin:self.imax]-self.bkgd[self.imin:self.imax],
+                    self.bkgd[self.imin:self.imax]]
+        return [self.q[self.imin:self.imax],
+                self.twth[self.imin:self.imax],
+                self.d[self.imin:self.imax],
+                self.I[self.imin:self.imax],
+                self.bkgd[self.imin:self.imax]]
+               
+    def reset_bkgd(self):
+         self.bkgd = np.zeros(np.shape(self.I))
+
+    return [self.q[self.imin:self.imax],
+            self.twth[self.imin:self.imax],
+            self.d[self.imin:self.imax],
+            self.I[self.imin:self.imax]-self.bkgd[self.imin:self.imax],
+            self.bkgd[self.imin:self.imax]]
+
     
-        if xtype.startswith('q'):
+    def set_trim(self,xmin,xmax,xtype='',xi=None):
+    
+        if xtype.startswith('q') or xi == 0:
             x = self.q
-        elif xtype.startswith('2th'):
+        elif xtype.startswith('2th') or xi == 1:
             x = self.twth
-        elif xtype.startswith('d'):
+        elif xtype.startswith('d') or xi == 2:
             x = self.d
         else:
-            print('The provided x-axis label (%s) not correct.' % xtype)
+            print('The provided x-axis label (%s or &i) not correct.' % (xtype,xi))
             return
             
         self.imin,self.imax = 0,len(x)-1
@@ -214,11 +238,7 @@ class xrd1d(grpobjt):
         if xmax < np.max(x):
             self.imax = (np.abs(x-xmax)).argmin()
             
-        self.plot = [self.q[self.imin:self.imax],
-                     self.twth[self.imin:self.imax],
-                     self.d[self.imin:self.imax],
-                     self.I[self.imin:self.imax],
-                     self.bkgd[self.imin:self.imax]]
+
 
     def trim(self,axis):
 
@@ -237,15 +257,9 @@ class xrd1d(grpobjt):
             print('The provided axis label (%s) not correct.' % axis)
             return
             
-    def fit_background(self,trim=False):
+    def fit_background(self):
     
-        if trim:
-            x = self.trim('q')
-            y = self.trim('I')
-        else:
-            x = self.q
-            y = self.I
-
+        x,y = self.q[self.imin:self.imax],self.I[self.imin:self.imax]
         self.bkgd = xrd_background(x,y)
         if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
         
