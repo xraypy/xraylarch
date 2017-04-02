@@ -1841,10 +1841,7 @@ class Viewer1DXRD(wx.Panel):
         self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(self.xy_data[-1].I))
 
-        self.xy_plot.append([self.xy_data[-1].q,
-                             self.xy_data[-1].twth,
-                             self.xy_data[-1].d,
-                             self.xy_data[-1].I])
+        self.xy_plot.append([self.xy_data[-1].plot])
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()

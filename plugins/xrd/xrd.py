@@ -73,30 +73,53 @@ class xrd1d(grpobjt):
         self.filename = file
         self.label    = label
 
-        self.q    = q
-        self.twth = twth
-        self.d    = d
-        self.I    = I
+        ## Need to figure out how to set these properly
+        ## mkak 2017.04.01
 
-        self.wavelength = wavelength
-        self.energy     = energy
+    #         self.q    = q
+    #         self.twth = twth
+    #         self.d    = d
+    #         self.I    = I
 
-        ## Default values
-        self.distance      = None
-        self.poni          = None
-        self.rotation      = None
-        self.pixelsize     = None
-        self.splinefile    = None
-        self.polarization  = None
-        self.normalization = None
         
+        
+        if file is not None:
+            self.xrd_from_file(file)
+        else:
+            self.wavelength = wavelength
+            self.energy     = energy
+
+            ## Default values
+            self.distance      = None
+            self.poni          = None
+            self.rotation      = None
+            self.pixelsize     = None
+            self.splinefile    = None
+            self.polarization  = None
+            self.normalization = None
+
+            if I is not None:
+                if q is not None:
+                    self.xrd_from_2d([q,I],'q')
+                elif twth is not None:
+                    self.xrd_from_2d([twth,I],'2th')
+                elif d is not None:
+                    self.xrd_from_2d([d,I],'d')
+        
+            self.bkgd = np.zeros(np.shape(self.I))
+            if self.q is not None:
+                self.plot = [self.q,self.twth,self.d,self.I,self.bkgd]
+            else:
+                self.plot = None
+                self.bkgd = None
+
+        
+        ## Analysis parameters - set defaults
         self.uvw  = None
         self.pki = None
 
         self.imin = None
         self.imax = None
-        
-        self.bkgd = None
 
         self.qpks    = None
         self.twthpks = None
@@ -104,18 +127,14 @@ class xrd1d(grpobjt):
         self.Ipks    = None     
 
         self.matches = None
-        
+    
         self.xrd2d   = None
         self.cake    = None    
 
-        
-        if file is not None:
-            self.xrd_from_file(file)
-        
         if HAS_larch:
            Group.__init__(self)
 
-
+    
     def xrd_from_2d(self,xy,xtype,verbose=True):
         self.set_xy_data(xy,xtype)
 
@@ -172,8 +191,10 @@ class xrd1d(grpobjt):
             self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
             self.I = np.array(y).squeeze()
         
-            if self.imin is None or self.imax is None:
-                self.imin,self.imax = 0,len(self.q)
+            self.imin,self.imax = 0,len(self.q)
+            self.bkgd = np.zeros(np.shape(self.I))
+
+        self.plot = [self.q,self.twth,self.d,self.I,self.bkgd]
         
     def set_trim(self,xmin,xmax,xtype):
     
@@ -187,11 +208,17 @@ class xrd1d(grpobjt):
             print('The provided x-axis label (%s) not correct.' % xtype)
             return
             
-        self.imin,self.imax = 0,len(x)
+        self.imin,self.imax = 0,len(x)-1
         if xmin > np.min(x):
             self.imin = (np.abs(x-xmin)).argmin()
         if xmax < np.max(x):
             self.imax = (np.abs(x-xmax)).argmin()
+            
+        self.plot = [self.q[self.imin:self.imax],
+                     self.twth[self.imin:self.imax],
+                     self.d[self.imin:self.imax],
+                     self.I[self.imin:self.imax],
+                     self.bkgd[self.imin:self.imax]]
 
     def trim(self,axis):
 
