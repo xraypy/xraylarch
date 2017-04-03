@@ -117,6 +117,7 @@ class xrd1d(grpobjt):
         
         ## Analysis parameters - set defaults
         self.uvw = None
+        self.D   = None
         self.pki = []
 
         self.imin = None

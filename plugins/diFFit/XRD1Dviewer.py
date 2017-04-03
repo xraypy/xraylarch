@@ -414,7 +414,8 @@ class Fitting1DXRD(BasePanel):
                     if F != 0: cif.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), F])
                 cif = np.array(zip(*cif))
                 u,v,w = self.xrd1dgrp.uvw
-                F = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w)
+                D = self.xrd1dgrp.D
+                F = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
                 self.plot1D.oplot(self.plt_data[xi],F,**cifargs)  
             except:
                 cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Fall])
@@ -429,15 +430,15 @@ class Fitting1DXRD(BasePanel):
         self.pnb = wx.Notebook(parent)
         self.pnbpanels = []
 
-        self.dbgpl = DatabasePanel(self.pnb, owner=self)
-        self.rfgpl = RefinementPanel(self.pnb, owner=self)
+        self.srchpl = SearchPanel(self.pnb, owner=self)
+        self.instpl = InstrPanel(self.pnb, owner=self)
         self.rtgpl = ResultsPanel(self.pnb, owner=self)
-        for p in (self.dbgpl, self.rfgpl, self.rtgpl):
+        for p in (self.instpl, self.srchpl, self.rtgpl):
             self.pnb.AddPage(p,p.label.title(),True)
             self.pnbpanels.append(p)
             p.SetSize((300,600))
 
-        self.pnb.SetSelection(0)
+        self.pnb.SetSelection(1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(pattern_title, 0, ALL_CEN)
         sizer.Add(self.pnb,1, wx.ALL|wx.EXPAND)
@@ -502,7 +503,7 @@ class Fitting1DXRD(BasePanel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         
         self.txt_amcsd_cnt = wx.StaticText(self, label='')
-        vbox.Add(self.txt_amcsd_cnt, flag=wx.ALL, border=10)
+        vbox.Add(self.txt_amcsd_cnt, flag=wx.LEFT, border=10)
         
         return vbox
 
@@ -517,7 +518,7 @@ class Fitting1DXRD(BasePanel):
         vbox.Add(filtools,flag=wx.TOP|wx.LEFT,border=10)
         
         matchbx = self.MatchPanel(self)
-        vbox.Add(matchbx,flag=wx.TOP|wx.LEFT,border=10)        
+        vbox.Add(matchbx,flag=wx.LEFT,border=10)        
 
         return vbox
 
@@ -726,8 +727,8 @@ class Fitting1DXRD(BasePanel):
         self.find_peaks(filter=filter)
 
         if len(self.xrd1dgrp.pki) > 0:
-            self.dbgpl.owner.val_gdnss.Enable()
-            self.rfgpl.btn_mtch.Enable()
+            self.srchpl.owner.val_gdnss.Enable()
+            self.srchpl.btn_mtch.Enable()
 
     def onAddPks(self,event=None):
         
@@ -741,8 +742,8 @@ class Fitting1DXRD(BasePanel):
     def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
-        self.dbgpl.owner.val_gdnss.Disable()
-        self.rfgpl.btn_mtch.Disable()
+        self.srchpl.owner.val_gdnss.Disable()
+        self.srchpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
 
@@ -780,6 +781,42 @@ class Fitting1DXRD(BasePanel):
             self.peaklistbox.Append(peakname)
         self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
 
+    def onClrInstr(self,event=None):
+            
+        self.xrd1dgrp.uvw = None
+        self.instpl.val_u.SetValue('1.0')
+        self.instpl.val_v.SetValue('1.0')
+        self.instpl.val_w.SetValue('1.0')
+
+    def onClrSize(self,event=None):
+            
+        self.xrd1dgrp.D = None
+        self.instpl.val_D.SetValue('')
+
+    def onGetSize(self,event=None):
+            
+        try:
+            self.xrd1dgrp.D = float(self.instpl.val_D.GetValue())
+        except:
+            self.onClrSize()
+
+    def onSetInstr(self,event=None):
+        u,v,w = self.xrd1dgrp.uvw
+        self.instpl.val_u.SetValue('%0.6f' % u)
+        self.instpl.val_v.SetValue('%0.6f' % v)
+        self.instpl.val_w.SetValue('%0.6f' % w)
+
+    def onGetInstr(self,event=None):
+            
+        try:
+            self.xrd1dgrp.uvw = (float(self.instpl.val_u.GetValue()),
+                                 float(self.instpl.val_v.GetValue()),
+                                 float(self.instpl.val_w.GetValue()))
+            self.onSetInstr()
+        except:
+            self.onClrInstr()
+            
+
     def fit_instrumental(self,event=None):
 
         try:
@@ -787,6 +824,7 @@ class Fitting1DXRD(BasePanel):
                                                      self.plt_data[1],self.plt_data[3],
                                                      halfwidth=self.halfwidth,
                                                      verbose=False)
+            self.onSetInstr()
         except:
             pass
 
@@ -920,6 +958,13 @@ class Fitting1DXRD(BasePanel):
         self.pkpl.val_intthr.Enable()
         self.pkpl.btn_rmvpks.Disable() #Enable()
         self.pkpl.btn_addpks.Enable()
+        ## InstrumentToolsPanel
+        self.instpl.val_u.Enable()
+        self.instpl.val_v.Enable()
+        self.instpl.val_w.Enable()
+        self.instpl.val_D.Enable()
+        self.instpl.btn_clrinst.Enable()
+        self.instpl.btn_clrsize.Enable()
 
 
     def check1Daxis(self,event=None,yaxis=False):
@@ -2155,7 +2200,7 @@ class PeakToolsPanel(wx.Panel):
 
         return vbox_pks
 
-class DatabasePanel(wx.Panel):
+class SearchPanel(wx.Panel):
     '''
     Panel for housing range tools in fitting panel
     '''
@@ -2168,9 +2213,11 @@ class DatabasePanel(wx.Panel):
         self.owner = owner
 
         matchpanel = self.SearchMatchTools()
+        refpanel = self.RefinementTools()
 
-        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D = wx.BoxSizer(wx.VERTICAL)
         panel1D.Add(matchpanel,flag=wx.ALL,border=10)
+        panel1D.Add(refpanel,flag=wx.ALL,border=10)
         self.SetSizer(panel1D)
 
     def SearchMatchTools(self):
@@ -2186,29 +2233,6 @@ class DatabasePanel(wx.Panel):
         vbox.Add(btn_srch, flag=wx.BOTTOM, border=8)
 
         return vbox
-
-
-
-class RefinementPanel(wx.Panel):
-    '''
-    Panel for housing background tools in fitting panel
-    '''
-    label='Refinement'
-    def __init__(self,parent,owner=None,_larch=None):
-
-        wx.Panel.__init__(self, parent)
-
-        self.parent = parent
-        self.owner = owner
-
-        ## Default information
-
-
-        refpanel = self.RefinementTools()
-
-        panel1D = wx.BoxSizer(wx.HORIZONTAL)
-        panel1D.Add(refpanel,flag=wx.ALL,border=10)
-        self.SetSizer(panel1D)
 
     def RefinementTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -2230,6 +2254,101 @@ class RefinementPanel(wx.Panel):
         ## until peaks are available to search
         self.owner.val_gdnss.Disable()
         self.btn_mtch.Disable()
+
+        return vbox
+
+
+
+class InstrPanel(wx.Panel):
+    '''
+    Panel for housing background tools in fitting panel
+    '''
+    label='Width'
+    def __init__(self,parent,owner=None,_larch=None):
+
+        wx.Panel.__init__(self, parent)
+
+        self.parent = parent
+        self.owner = owner
+
+        instrpanel = self.InstrumentTools()
+
+        panel1D = wx.BoxSizer(wx.HORIZONTAL)
+        panel1D.Add(instrpanel,flag=wx.ALL,border=10)
+        self.SetSizer(panel1D)
+
+    def InstrumentTools(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        hbox_inst = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_u    = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_v    = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_w    = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_size = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_D    = wx.BoxSizer(wx.HORIZONTAL)
+        
+        ttl_inst = wx.StaticText(self, label='Instrumental')
+        ttl_u    = wx.StaticText(self, label='u')
+        ttl_v    = wx.StaticText(self, label='v')
+        ttl_w    = wx.StaticText(self, label='w')
+        ttl_size = wx.StaticText(self, label='Size broadening')
+        ttl_D    = wx.StaticText(self, label='D (A)')        
+
+        self.val_u = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_v = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_w = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_D = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+
+        self.btn_clrinst = wx.Button(self,label='Clear')
+        self.btn_clrsize = wx.Button(self,label='Clear')
+
+        self.val_u.Bind(wx.EVT_TEXT_ENTER, self.owner.onGetInstr)
+        self.val_v.Bind(wx.EVT_TEXT_ENTER, self.owner.onGetInstr)
+        self.val_w.Bind(wx.EVT_TEXT_ENTER, self.owner.onGetInstr)
+        self.val_D.Bind(wx.EVT_TEXT_ENTER, self.owner.onGetSize)
+        
+        self.btn_clrinst.Bind(wx.EVT_BUTTON, self.owner.onClrInstr)
+        self.btn_clrsize.Bind(wx.EVT_BUTTON, self.owner.onClrSize)
+
+        hbox_inst.Add(ttl_inst,         flag=wx.RIGHT, border=8)
+        hbox_inst.Add(self.btn_clrinst, flag=wx.RIGHT, border=8)
+
+        hbox_u.Add(ttl_u,      flag=wx.RIGHT, border=8)
+        hbox_u.Add(self.val_u, flag=wx.RIGHT, border=8)
+
+        hbox_v.Add(ttl_v,      flag=wx.RIGHT, border=8)
+        hbox_v.Add(self.val_v, flag=wx.RIGHT, border=8)
+        
+        hbox_w.Add(ttl_w,      flag=wx.RIGHT, border=8)
+        hbox_w.Add(self.val_w, flag=wx.RIGHT, border=8)
+
+        hbox_size.Add(ttl_size,         flag=wx.RIGHT, border=8)
+        hbox_size.Add(self.btn_clrsize, flag=wx.RIGHT, border=8)
+        
+        hbox_D.Add(ttl_D,      flag=wx.RIGHT, border=8)
+        hbox_D.Add(self.val_D, flag=wx.RIGHT, border=8)
+
+        vbox.Add(hbox_inst, flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_u,    flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_v,    flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_w,    flag=wx.BOTTOM, border=8)
+
+        vbox.Add(hbox_size, flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_D,    flag=wx.BOTTOM, border=8)
+
+        self.val_u.SetValue('1.0')
+        self.val_v.SetValue('1.0')
+        self.val_w.SetValue('1.0')
+        self.val_D.SetValue('')
+
+        self.val_u.Disable()
+        self.val_v.Disable()
+        self.val_w.Disable()
+        self.val_D.Disable()
+        
+        self.btn_clrinst.Disable()
+        self.btn_clrsize.Disable()
+
 
         return vbox
 
@@ -2256,7 +2375,7 @@ class ResultsPanel(wx.Panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,-1))
+        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
 
         self.btn_clr = wx.Button(self,label='Clear list')
         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)

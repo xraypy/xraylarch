@@ -36,7 +36,7 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='none',
+    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='vertical',
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
@@ -90,6 +90,19 @@ class diFFit2DFrame(wx.Frame):
         '''write a message to the Status Bar'''
         self.SetStatusText(s, panel)
 
+    def optionsON(self):
+    
+        self.ch_clr.Enable()
+        self.sldr_min.Enable()
+        self.entr_min.Enable()
+        self.sldr_max.Enable()
+        self.entr_max.Enable()
+        self.btn_ct1.Enable()
+        self.ch_flp.Enable()
+        self.ch_scl.Enable()
+        self.btn_mask.Enable()
+        self.btn_bkgd.Enable()
+
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
@@ -124,9 +137,9 @@ class diFFit2DFrame(wx.Frame):
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.data_images[img_no]
-        self.displayIMAGE(reset=True)
+        self.displayIMAGE()
            
-    def displayIMAGE(self,reset=False):
+    def displayIMAGE(self):
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
@@ -135,7 +148,9 @@ class diFFit2DFrame(wx.Frame):
         self.autoContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
-                         (np.min(self.plt_img),np.max(self.plt_img))) 
+                         (np.min(self.plt_img),np.max(self.plt_img)))
+
+        self.optionsON()
 
     def redrawIMAGE(self):
         self.flipIMAGE()
@@ -759,6 +774,16 @@ class diFFit2DFrame(wx.Frame):
         self.ch_clr.SetStringSelection(self.color)
         self.ch_flp.SetStringSelection(self.flip)
         self.ch_msk.Disable()
+        self.ch_clr.Disable()
+        self.sldr_min.Disable()
+        self.entr_min.Disable()
+        self.sldr_max.Disable()
+        self.entr_max.Disable()
+        self.btn_ct1.Disable()
+        self.ch_flp.Disable()
+        self.ch_scl.Disable()
+        self.btn_mask.Disable()
+        self.btn_bkgd.Disable()
         
         return vbox    
 

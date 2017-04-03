@@ -1415,8 +1415,6 @@ class MapViewerFrame(wx.Frame):
 #             xrmfile = self.current_file
 #         ##aname = xrmfile.add_area(mask)
 #         ##self.sel_xrd = xrmfile.get_xrd_area(aname)
-#         print 'in get_xrd_area'
-#         print np.shape(xrmfile.xrd2d)
 #         self.sel_xrd = xrmfile.xrd2d[50,50,]
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None,
