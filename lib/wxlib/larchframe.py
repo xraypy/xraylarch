@@ -201,7 +201,7 @@ class LarchPanel(wx.Panel):
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
         self.input = ReadlineTextCtrl(ipanel, -1,  '', size=(525,-1),
-                                      historyfile=historyfile, mode='emacs',
+                                      historyfile=historyfile,
                                       style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
