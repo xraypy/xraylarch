@@ -537,7 +537,10 @@ class XYFitController():
             del self.report_frame
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
+
+        self.report_frame.SetFont(Font(8))
         self.report_frame.set_text(text)
+        self.report_frame.SetFont(Font(8))
         self.report_frame.Raise()
 
     def get_iconfile(self):
@@ -722,11 +725,11 @@ class XYFitFrame(wx.Frame):
 
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, parent=None, size=(825, 650), _larch=None, **kws):
+    def __init__(self, parent=None, size=(875, 550), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
-        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
+        title = "Larch XYFit (BETA!!): XY Data Viewing & Curve Fitting"
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -766,7 +769,7 @@ class XYFitFrame(wx.Frame):
 
         def Btn(msg, x, act):
             b = Button(ltop, msg, size=(x, 30),  action=act)
-            b.SetFont(Font(11))
+            b.SetFont(Font(10))
             return b
 
         plot_one = Btn('Plot One',      120, self.onPlotOne)
