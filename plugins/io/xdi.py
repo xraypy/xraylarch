@@ -246,7 +246,7 @@ class XDIFile(object):
                 self.irefer = self.itrans * exp(-self.murefer)
 
 @ValidateLarchPlugin
-def read_xdi(fname, _larch=None):
+def read_xdi(fname, labels=None, _larch=None):
     """simple mapping of XDI file to larch groups"""
     x = XDIFile(fname)
     group = _larch.symtable.create_group()
@@ -258,6 +258,11 @@ def read_xdi(fname, _larch=None):
     group.__name__ ='XDI file %s' % fname
     doc = ['%i arrays, %i npts' % (x.narrays, x.npts)]
     arr_labels = getattr(x, 'array_labels', None)
+    if labels is not None:
+        ulabs = [x.strip() for x in labels.split(',')]
+        arr_labels[:len(ulabs)] = ulabs
+        setattr(x, 'array_labels', arr_labels)
+
     if arr_labels is not None:
         doc.append("Array Labels: %s" % repr(arr_labels))
     group.__doc__ = '\n'.join(doc)

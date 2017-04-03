@@ -185,7 +185,7 @@ class StdWriter(object):
         """write text to writer
         write('hello')
         """
-        if self.textstyle is not None:
+        if self.textstyle is not None and HAS_TERMCOLOR:
             text = colored(text, **self.textstyle)
         self.writer.write(text)
 

@@ -11,36 +11,41 @@ Larch
 
 Larch is an open-source library and toolkit for processing and analyzing
 scientific data.  Initially designed for X-ray spectroscopic and scattering
-data collected at modern synchrotron sources, Larch provides a wide
-selection of algorithms for processing such X-ray data.  It also provides
-many tools for organizing complex data sets and general-purpose tools for
-processing and analyzing arrays of scientific data.
+data collected at modern synchrotron sources, Larch provides a wide selection
+of algorithms for processing such X-ray data.  It also provides many tools for
+organizing complex data sets and processing and analyzing arrays of scientific
+data.
 
-Larch is written in Python, relies heavily on the wonderful `numpy`_,
-`scipy`_, `h5py`_, and `matplotlib`_ libraries. It can be used directly as
-a Python library, and it can be extended using Python.  In addition, Larch
-provides a Python-like language (a *macro language*, or *domain specific
-language*) that is intended to be very easy to use for novices while also
-being complete enough for advanced data processing and analysis.
+Larch is written in Python and relies heavily on the wonderful `numpy`_,
+`scipy`_, `h5py`_, and `matplotlib`_ libraries. It can be used directly as a
+Python library, and it can be extended using Python.  Larch also provides a
+Python-like language (a *macro language*, or *domain specific language*) that
+is intended to be very easy to use for novices while also being complete
+enough for advanced data processing and analysis. In addition, several GUIs
+are included with Larch for visualization and analysis of scientific data
+sets.
 
-Larch has several related target application areas, including:
+
+Larch has several related target application areas:
 
   * XAFS analysis, becoming version 2 of the Ifeffit Package for EXAFS analysis.
-  * Visualizing and analyzing micro-X-ray fluorescence maps.
+  * Visualizing and analyzing micro-X-ray fluorescence and X-ray diffraction maps.
   * Quantitative X-ray fluorescence analysis.
-  * X-ray standing waves and surface scattering analysis.
   * Data collection software for synchrotron data.
 
-The central idea is that having these otherwise different application areas
-connected by a common *macro language* will strengthen the tools available
-for all of them.  The macro language can provide a very shallow barrier for
-those interested in scripting the manipulation and analysis of their data,
-and become the framework upon which new analysis tools can be built.
+A key idea is that these otherwise different application areas can share many
+components and algorithms.  Connecting these through a common *macro language*
+will strengthen the tools available for all of these areas.  In addition, the
+macro language can provide a very shallow barrier for those interested in
+scripting the manipulation and analysis of their data, while providing a
+scripted, reproducible, and extensible analysis that can become the framework
+upon which new analysis tools can be built.
 
-Currently, Larch provides a complete set of XAFS Analysis tools (replacing
-all of the Ifeffit package), has some support for visualizing and analyzing
-XRF maps and spectra, and has many extra tools for X-ray spectral analysis,
-data handling, and general-purpose data modeling.
+Currently, Larch provides a complete set of XAFS Analysis tools (replacing all
+of the Ifeffit package), has some support for visualizing and analyzing XRF
+and XRD maps, and has many extra tools for X-ray spectral analysis, data
+handling, and general-purpose data modeling.  Larch is under active and open
+development, and has support from the U. S. National Science Foundation.
 
 .. toctree::
    :maxdepth: 1

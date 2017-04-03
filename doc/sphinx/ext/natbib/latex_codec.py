@@ -40,7 +40,7 @@ def _registry(encoding):
         encoding = encoding[6:]
     else:
         return None
-        
+
     class Codec(codecs.Codec):
         def encode(self,input,errors='strict'):
             """Convert unicode string to latex."""
@@ -57,7 +57,7 @@ def _registry(encoding):
                 else:
                     output += ['{\\char', str(ord(c)), '}']
             return ''.join(output), len(input)
-            
+
         def decode(self,input,errors='strict'):
             """Convert latex source string to unicode."""
             if encoding:
@@ -70,10 +70,10 @@ def _registry(encoding):
             # to be producing unicode output anyway.
             x = map(unicode,_unlatex(input))
             return u''.join(x), len(input)
-    
+
     class StreamWriter(Codec,codecs.StreamWriter):
         pass
-            
+
     class StreamReader(Codec,codecs.StreamReader):
         pass
 
@@ -131,9 +131,9 @@ class _unlatex:
     def __init__(self,tex):
         """Create a new token converter from a string."""
         self.tex = tuple(_tokenize(tex))  # turn tokens into indexable list
-        self.pos = 0                    # index of first unprocessed token 
+        self.pos = 0                    # index of first unprocessed token
         self.lastoutput = 'x'           # lastoutput must always be nonempty string
-    
+
     def __getitem__(self,n):
         """Return token at offset n from current pos."""
         p = self.pos + n
@@ -149,7 +149,7 @@ class _unlatex:
             nextoutput = ' ' + nextoutput   # add extra space to terminate csname
         self.lastoutput = nextoutput
         return nextoutput
-    
+
     def chunk(self):
         """Grab another set of input tokens and convert them to an output string."""
         for delta,c in self.candidates(0):
@@ -162,11 +162,11 @@ class _unlatex:
             elif len(c) == 1 and c[0].startswith('\\char') and c[0][5:].isdigit():
                 self.pos += delta
                 return unichr(int(c[0][5:]))
-    
+
         # nothing matches, just pass through token as-is
         self.pos += 1
         return self[-1]
-    
+
     def candidates(self,offset):
         """Generate pairs delta,c where c is a token or tuple of tokens from tex
         (after deleting extraneous brackets starting at pos) and delta
@@ -278,7 +278,7 @@ latex_equivalents = {
     0x00fc: '{\\"u}',
     0x00fd: "{\\'y}",
     0x00ff: '{\\"y}',
-    
+
     0x0100: '{\\=A}',
     0x0101: '{\\=a}',
     0x0102: '{\\u{A}}',
@@ -437,13 +437,13 @@ latex_equivalents = {
     0x02dd: '{\\H{}}',
     0x02db: '{\\c{}}',
     0x02c7: '{\\v{}}',
-    
+
     0x03c0: '{\\mbox{$\\pi$}}',
     # consider adding more Greek here
-    
+
     0xfb01: '{fi}',
     0xfb02: '{fl}',
-    
+
     0x2013: '{--}',
     0x2014: '{---}',
     0x2018: "{`}",

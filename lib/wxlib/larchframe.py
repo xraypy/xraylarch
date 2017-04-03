@@ -14,7 +14,7 @@ from wxutils import (Button, MenuItem, Choice, Font)
 
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
-from .columnframe import EditColumnFrame
+from .columnframe import ColumnDataFileFrame
 from . import inputhook
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
@@ -201,7 +201,7 @@ class LarchPanel(wx.Panel):
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
         self.input = ReadlineTextCtrl(ipanel, -1,  '', size=(525,-1),
-                                      historyfile=historyfile, mode='emacs',
+                                      historyfile=historyfile,
                                       style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
@@ -400,7 +400,7 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
         if dgroup is not None:
             self.show_subframe(name='coledit', event=None,
-                               creator=EditColumnFrame,
+                               creator=ColumnDataFileFrame,
                                group=dgroup,
                                last_array_sel=self.last_array_sel,
                                read_ok_cb=self.onReadScan_Success)

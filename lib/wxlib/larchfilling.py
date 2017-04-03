@@ -155,7 +155,7 @@ class FillingTree(wx.TreeCtrl):
             try:
                 for key, val in obj.items():
                     d[key] = val
-            except AttributeError, ValueError:
+            except (AttributeError, ValueError):
                 pass
         elif isinstance(obj, h5py.Dataset):
             d = obj

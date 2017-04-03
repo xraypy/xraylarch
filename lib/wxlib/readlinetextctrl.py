@@ -8,17 +8,16 @@ import os
 import time
 
 DEFAULT_HISTORYFILE = '.wxlarch_hist'
-MAX_HISTORY = 1000
+MAX_HISTORY = 5000
 
 class ReadlineTextCtrl(wx.TextCtrl):
     def __init__(self, parent=None, id=-1, value='', size=(400,-1),
-                 historyfile = None, mode = 'emacs',
+                 historyfile=None,
                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER, **kws):
         wx.TextCtrl.__init__(self, parent, id, value=value,
                              size=size, style=style, **kws)
 
         self._val = value
-        self._mode = mode
 
         self.hist_file = historyfile
         self.hist_buff = []

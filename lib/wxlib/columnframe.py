@@ -45,8 +45,10 @@ class EditColumnFrame(wx.Frame) :
 
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(4, 4)
-        if not hasattr(group, 'orig_array_labels'):
-            group.orig_array_labels = group.array_labels[:]
+        # if not hasattr(group, 'orig_array_labels'):
+        #     group.orig_array_labels = group.array_labels[:]
+
+        # print("EDIT COLUMN NAMES ", group.array_labels)
 
         self.SetMinSize((600, 600))
 
@@ -76,7 +78,7 @@ class EditColumnFrame(wx.Frame) :
 
             # cnew.Bind(wx.EVT_TEXT,       partial(self.update3, index=i))
 
-            arr = getattr(group, name)
+            arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
             cinfo = SimpleText(self, label=info_str)
             self.wids[i] = cnew
@@ -110,11 +112,12 @@ class EditColumnFrame(wx.Frame) :
             array_labels.append(newname)
 
         if callable(self.on_ok):
+            # print(' -> on_ok ', self.on_ok, array_labels)
             self.on_ok(array_labels)
         self.Destroy()
 
-class SelectColumnFrame(wx.Frame) :
-    """Set Column Labels for a file"""
+class ColumnDataFileFrame(wx.Frame) :
+    """Column Data File, select columns"""
     def __init__(self, parent, filename=None, groupname=None,
                  last_array_sel=None, read_ok_cb=None,
                  edit_groupname=True, _larch=None):
@@ -124,14 +127,14 @@ class SelectColumnFrame(wx.Frame) :
 
         group = self.group = self.read_column_file(self.path)
 
-        self.array_labels = group.array_labels
+        # self.array_labels = group.array_labels
 
         self.subframes = {}
         self.outgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype'):
             setattr(self.outgroup, attr, getattr(group, attr, None))
 
-        arr_labels = [l.lower() for l in self.array_labels]
+        arr_labels = [l.lower() for l in self.group.array_labels]
         if self.outgroup.datatype is None:
             self.outgroup.datatype = 'raw'
             if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
@@ -227,9 +230,13 @@ class SelectColumnFrame(wx.Frame) :
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bsizer.Add(Button(bpanel, 'OK', action=self.onOK), 4)
-        bsizer.Add(Button(bpanel, 'Cancel', action=self.onCancel), 4)
-        bsizer.Add(Button(bpanel, 'Edit Array Names', action=self.onEditNames), 4)
+        _ok    = Button(bpanel, 'OK', action=self.onOK)
+        _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
+        _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
+        bsizer.Add(_ok)
+        bsizer.Add(_cancel)
+        bsizer.Add(_edit)
+        _ok.SetDefault()
         pack(bpanel, bsizer)
 
         sizer = wx.GridBagSizer(4, 8)
@@ -288,7 +295,7 @@ class SelectColumnFrame(wx.Frame) :
                                size=(400, 250))
 
         ftext.SetValue(group.text)
-        ftext.SetFont(Font(11))
+        ftext.SetFont(Font(10))
 
         textsizer = wx.BoxSizer(wx.VERTICAL)
         textsizer.Add(ftext, 1, LCEN|wx.GROW, 1)
@@ -318,7 +325,7 @@ class SelectColumnFrame(wx.Frame) :
         with open(path, 'r') as fh:
             lines = fh.readlines()
 
-        text = '\n'.join(lines)
+        text = ''.join(lines)
         line1 = lines[0].lower()
 
         reader = 'read_ascii'
@@ -369,7 +376,8 @@ class SelectColumnFrame(wx.Frame) :
                            on_ok=self.set_array_labels)
 
     def set_array_labels(self, arr_labels):
-        self.array_labels = arr_labels
+        self.group.array_labels = arr_labels
+        # print(" SET ARRAY LABELS ", arr_labels)
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['<index>']
         def update(wid, choices):
@@ -404,12 +412,11 @@ class SelectColumnFrame(wx.Frame) :
         # if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
         #     array_labels = datagroup.array_labels
 
-
         leval = self._larch.eval
 
         cmd = "'%s'" % self.path
-        if self.array_labels is not None:
-            cmd = "%s, labels='%s'" % (cmd, ', '.join(self.array_labels))
+        if self.group.array_labels is not None:
+            cmd = "%s, labels='%s'" % (cmd, ', '.join(self.group.array_labels))
 
         leval("%s = %s(%s)" % (groupname, self.reader, cmd))
         self.outgroup.groupname = groupname

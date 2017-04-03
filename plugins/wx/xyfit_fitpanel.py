@@ -15,7 +15,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      FRAMESTYLE, Font, FileSave)
 
 import lmfit.models as lm_models
-from lmfit import Parameter, Parameters
+from lmfit import Parameter, Parameters, fit_report
 
 from larch import Group
 from larch.utils import index_of
@@ -24,7 +24,6 @@ from larch.utils.jsonutils import encode4js, decode4js
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, SetTip)
 
-from larch.fitting import fit_report
 from larch_plugins.std import group2dict
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
@@ -34,15 +33,17 @@ CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
-StepChoices = ('<Add Step Model>', 'Linear', 'Arctan', 'ErrorFunction',
-               'Logistic')
+ModelTypes = ('Peaks', 'General', 'Steps')
 
-PeakChoices = ('<Add Peak Model>', 'Gaussian', 'Lorentzian', 'Voigt',
-               'PseudoVoigt', 'Pearson7', 'StudentsT', 'SkewedGaussian',
-               'Moffat', 'BreitWigner', 'Donaich', 'Lognormal')
-
-ModelChoices = ('<Add Other Model>', 'Constant', 'Linear', 'Quadratic',
-               'Exponential', 'PowerLaw', 'Rectangle', 'DampedOscillator')
+ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
+                          'ErrorFunction Step', 'Logistic Step', 'Rectangle'),
+                'general': ('<Generalr Models>', 'Constant', 'Linear',
+                            'Quadratic', 'Exponential', 'PowerLaw'),
+                'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
+                          'Voigt', 'PseudoVoigt', 'DampedOscillator',
+                          'Pearson7', 'StudentsT', 'SkewedGaussian',
+                          'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
+                }
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
@@ -141,7 +142,7 @@ class XYFitPanel(wx.Panel):
         rsizer.Add(xmax_sel, 0, LCEN, 3)
         rsizer.Add(self.xmax, 0, LCEN, 3)
         rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(Button(range_row, 'Use Full Data Range', size=(150, -1),
+        rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
                           action=self.onResetRange), 0, LCEN, 3)
 
         pack(range_row, rsizer)
@@ -154,8 +155,10 @@ class XYFitPanel(wx.Panel):
 
         rsizer.Add(Button(action_row, 'Run Fit',
                           size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
-        rsizer.Add(Button(action_row, 'Save Fit',
-                         size=(100, -1), action=self.onSaveFit), 0, LCEN, 3)
+        savebtn = Button(action_row, 'Save Fit',
+                         size=(100, -1), action=self.onSaveFit)
+        savebtn.Disable()
+        rsizer.Add(savebtn, 0, LCEN, 3)
 
         rsizer.Add(Button(action_row, 'Plot Current Model',
                           size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
@@ -166,13 +169,17 @@ class XYFitPanel(wx.Panel):
         models_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        rsizer.Add(SimpleText(models_row, ' Add Model: '), 0, LCEN, 3)
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=PeakChoices,
-                          action=self.addModel), 0, LCEN, 3)
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=StepChoices,
-                         action=partial(self.addModel, is_step=True)), 0, LCEN, 3)
-        rsizer.Add(Choice(models_row, size=(150, -1), choices=ModelChoices,
-                          action=self.addModel), 0, LCEN, 3)
+        self.model_choice = Choice(models_row, size=(200, -1),
+                                   choices=ModelChoices['peaks'],  action=self.addModel)
+
+        rsizer.Add(SimpleText(models_row, ' Add Model Type: '), 0, LCEN, 3)
+
+        rsizer.Add(Choice(models_row, size=(100, -1), choices=ModelTypes,
+                          action=self.onModelTypes), 0, LCEN, 3)
+
+        rsizer.Add(SimpleText(models_row, ' Model: '), 0, LCEN, 3)
+
+        rsizer.Add(self.model_choice, 0, LCEN, 3)
 
         pack(models_row, rsizer)
 
@@ -188,15 +195,15 @@ class XYFitPanel(wx.Panel):
 
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
-        print(" NB Changed ", idx, self.mod_nb.GetPage(idx), self.param_panel)
         if self.mod_nb.GetPage(idx) is self.param_panel:
             self.build_fitmodel()
             self.param_panel.show_parameters(self.fit_params, self.user_added_params)
 
+    def onModelTypes(self, event=None):
+        modtype = event.GetString().lower()
+        self.model_choice.SetChoices(ModelChoices[modtype])
 
-
-
-    def addModel(self, event=None, model=None, is_step=False):
+    def addModel(self, event=None, model=None):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
@@ -210,10 +217,11 @@ class XYFitPanel(wx.Panel):
         prefix = curmodels[0]
 
         label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s" % (prefix[:-1], (model+' '*4)[:5])
+        title = "%s: %s" % (prefix[:-1], (model+' '*8)[:8])
         mclass_kws = {'prefix': prefix}
-        if is_step:
-            form = model.lower()
+        if 'step' in model.lower():
+            form = model.lower().replace('step', '').strip()
+
             if form.startswith('err'): form = 'erf'
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
             title = "%s: Step %s" % (prefix[:-1], form[:3])
@@ -226,14 +234,14 @@ class XYFitPanel(wx.Panel):
 
         panel = GridPanel(self.mod_nb, ncols=1, nrows=1, pad=1, itemstyle=CEN)
 
-        def SLabel(label, size=(75, -1), **kws):
+        def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         usebox = Check(panel, default=True, label='Use?', size=(75, -1))
         delbtn = Button(panel, 'Delete Model', size=(120, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
         pick2msg = SimpleText(panel, "    ", size=(75, -1))
-        pick2btn = Button(panel, 'Pick Data Range', size=(125, -1),
+        pick2btn = Button(panel, 'Pick Data Range', size=(135, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
@@ -276,8 +284,8 @@ class XYFitPanel(wx.Panel):
             if 'expr' in hints:
                 par.expr = hints['expr']
 
-            pwids = ParameterWidgets(panel, par, name_size=80, expr_size=150,
-                                     float_size=70, prefix=prefix,
+            pwids = ParameterWidgets(panel, par, name_size=80, expr_size=175,
+                                     float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
             parwids[par.name] = pwids
@@ -291,7 +299,7 @@ class XYFitPanel(wx.Panel):
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
 
                 pwids = ParameterWidgets(panel, par, name_size=80, expr_size=275,
-                                         float_size=70, prefix=prefix,
+                                         float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'vary', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
@@ -351,6 +359,7 @@ class XYFitPanel(wx.Panel):
         try:
             plotframe = self.controller.get_display(stacked=False)
             curhist = plotframe.cursor_hist[:]
+            plotframe.Raise()
         except:
             return
 
@@ -481,7 +490,7 @@ class XYFitPanel(wx.Panel):
     def build_fitmodel(self):
         """ use fit components to build model"""
         dgroup = self.get_datagroup()
-        model = None
+        fullmodel = None
         params = Parameters()
         self.summary = {'components': [], 'options': {}}
         for comp in self.fit_components.values():
@@ -490,11 +499,12 @@ class XYFitPanel(wx.Panel):
                     params.add(parwids.param)
                 self.summary['components'].append((comp.mclass.__name__, comp.mclass_kws))
                 thismodel = comp.mclass(**comp.mclass_kws)
-                if model is None:
-                    model = thismodel
+                if fullmodel is None:
+                   fullmodel = thismodel
                 else:
-                    model += thismodel
-        self.fit_model = model
+                    fullmodel += thismodel
+
+        self.fit_model = fullmodel
         self.fit_params = params
 
         if dgroup is not None:
@@ -582,7 +592,6 @@ class XYFitPanel(wx.Panel):
                      'nfree', 'nvarys', 'init_values'):
             self.summary[attr] = getattr(result, attr)
         self.summary['params'] = result.params
-        self.summary['report'] = result.fit_report()
 
         dgroup.fit_history = []
         dgroup.fit_history.append(self.summary)
@@ -590,9 +599,23 @@ class XYFitPanel(wx.Panel):
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
                                                        x=dgroup.xfit)
-        self.plot_fitmodel(dgroup, show_resid=True, with_components=False)
 
-        self.controller.show_report(result.fit_report())
+
+        with_components = (self.plot_comps.IsChecked() and len(dgroup.ycomps) > 1)
+
+        self.plot_fitmodel(dgroup, show_resid=True, with_components=with_components)
+
+        # print(" == fit model == ", self.fit_model)
+        # print(" == fit result == ", result)
+
+        model_repr = self.fit_model._reprstring(long=True)
+        report = fit_report(result, show_correl=True,
+                            min_correl=0.25, sort_pars=True)
+
+        report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
+        self.summary['report'] = report
+
+        self.controller.show_report(report)
 
         # fill parameters with best fit values
         allparwids = {}

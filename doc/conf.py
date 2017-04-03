@@ -33,13 +33,13 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
               'sphinx.ext.intersphinx']
 
 # from sphinxtr
-
 extensions.extend(['fix_equation_ref', 'subfig', 'numfig', 'numsec',
                    'natbib', 'figtable', 'singlehtml_toc', 'singletext'])
 
-
-intersphinx_mapping = {'py': ('http://docs.python.org/', None)}
-
+intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+                       }
 
 # Turns on numbered figures for HTML output
 number_figures = True
@@ -154,7 +154,7 @@ html_theme = 'larchdoc'
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-html_theme_options = {'collapsiblesidebar': False}
+# html_theme_options = {'collapsiblesidebar': False}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -222,7 +222,7 @@ html_domain_indices = False
 #latex_paper_size = 'letter'
 
 # The font size ('10pt', '11pt' or '12pt').
-latex_font_size = '11pt'
+# latex_font_size = '11pt'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
@@ -244,14 +244,14 @@ latex_logo = '_static/larchcones.png'
 #latex_appendices = []
 
 # If false, no module index is generated.
-latex_use_modindex = False
+# latex_use_modindex = False
 
 latex_additional_files = [
-    #    'sphinx/tex/puthesis.cls',
-    'sphinx/tex/preamble._tex',
+    # 'sphinx/tex/puthesis.cls',
+    # 'sphinx/tex/preamble._tex',
     'sphinx/tex/refstyle.bst',
     'sphinx/tex/biblio.tex',
-    'sphinx/tex/sphinx.sty',
+    # 'sphinx/tex/sphinx.sty',
     'larch.bib',
 ]
 
@@ -259,14 +259,10 @@ latex_additional_files = [
 ## \setcounter{tocdepth}{2}
 
 latex_elements = {'pointsizee': '11pt',
-                  'preamble': """
-\input{preamble._tex}
-\usepackage{sphinx}
-""",
-                 'footer':"""
-input{biblio.tex}
-"""
-}
+                   'preamble': """
+ \input{preamble._tex}
+ \usepackage{sphinx}
+ """}
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -288,4 +284,4 @@ input{biblio.tex}
 # If false, no module index is generated.
 latex_domain_indices = False
 
-latex_use_modindex = False
+# latex_use_modindex = False

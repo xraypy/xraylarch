@@ -10,23 +10,31 @@ Downloading and Installation
 
 The latest release version of Larch is |release|.  Larch is in active and
 continuing development, and the intention is to tag a new release version
-every six months or so.  Of course, there may be bugs and unintended
+every three to six months.  Of course, there may be bugs and unintended
 features, and some missing or incomplete desired features.  Still, most of
-what is in Larch is working, stable, and ready for use.
+what is in Larch is working and ready for use.  New and in-development
+features and application will be explicitly described as "beta".
 
-There are several ways to download and install Larch.  Starting with Larch
-0.9.27, the **recommended** way to install and run Larch on Windows and Mac
-OS X is with `Anaconda Python`_ (version 2.7).  In addition, Larch can be
-installed from its source code, which works easily on most modern Linux and
-Mac OS X systems, but the Anaconda package is certainly easier to use.
+Larch is written in Python and requires and existing Python interpreter to be
+installed on your computer, along with a handful of common libraries for
+scientific computing.
 
-Starting With version 0.9.30, Larch is starting to work with Python 3,
-including GUIs using the unreleased Phoenix version of wxPython.  Thorough
-testing with Python 3 is still in progress, and some bugs may still be
-present when using Python 3, but most of the code is working, and all unit
-tests of functionality pass.  Still, for the time being, Larch with Python
-3 should be considered experimental.
+The **recommended** way to install and run Larch is with `Anaconda Python`_
+version 2.7.  Larch can be installed from its source code, which can work
+fairly easily on most computers and operating systems, but the Anaconda
+package is certainly easier to use and comes with the packages that Larch
+needs already installed or automatically fetched when installing Larch.
 
+Python Versions: 2.7 or 3.6?
+================================
+
+As of this writing (Spring, 2017) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch can now work with either version
+of Python, though the main GUI toolkit (wxPython) used by Larch is still not
+officially released for Python 3, Larch works well with the in-development
+version of wxPython.  Support for Larch running with Python 3.6 should be
+considered experimental, but we eager to migrate to Python 3.6, and expect to
+do so within year or so.
 
 
 Using Anaconda Python
@@ -69,12 +77,9 @@ An advantage of using Anaconda is that updates can be installed with::
 Source Installation
 =========================
 
-Larch can be installed from source code.  If not using Anaconda, this is
-necessary for Linux, and can be done for other systems as well.
-
-The latest releases of the source code will be available from `Larch
-releases (github.com)`_.  In addition, you can use `git` to grab the latest
-development version of the source code::
+Larch can be installed from source code.  The latest releases of the source
+code will be available from `Larch releases (github.com)`_.  In addition, you
+can use `git` to grab the latest development version of the source code::
 
    git clone http://github.com/xraypy/xraylarch.git
 
@@ -82,8 +87,8 @@ development version of the source code::
 Prerequisites
 ----------------------
 
-Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
-good, but requires the not-yet-supported Phoenix branch of wxPython, and
+Larch requires Python version 2.7.1 or higher.  Larch works with Python 3.5
+and 3.6, but requires the not-yet-supported Phoenix branch of wxPython, and
 should be considered experimental.
 
 The following Python packages are all required for Larch: numpy, scipy,
@@ -117,7 +122,6 @@ National Science Foundation - Earth Sciences (EAR-1128799), and Department
 of Energy GeoSciences (DE-FG02-94ER14466).  In addition, funding
 specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).
-
 
 
 Acknowledgements

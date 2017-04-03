@@ -16,7 +16,7 @@ def doctree_resolved(app, doctree, fromdocname):
             docname = filenode['docname']
             if docname not in secnums:
                 continue
-            
+
             doc_secnums = secnums[docname]
             first_title_node = filenode.next_node(nodes.title)
             if first_title_node is not None and '' in doc_secnums:
@@ -24,7 +24,7 @@ def doctree_resolved(app, doctree, fromdocname):
                 title_text_node = first_title_node.children[0]
                 newtext = file_secnum + ' ' + title_text_node.astext()
                 first_title_node.replace(title_text_node, nodes.Text(newtext))
-            
+
             for section_node in filenode.traverse(nodes.section):
                 for id in section_node['ids']:
                     if '#' + id in doc_secnums:

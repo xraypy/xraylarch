@@ -25,11 +25,11 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
 
 
 from larch import Interpreter, Group
-from larch.utils import index_of, savitzky_golay, smooth, boxcar
+from larch.utils import index_of
 
 from larch.larchlib import read_workdir, save_workdir
 
-from larch.wxlib import (LarchPanel, LarchFrame, SelectColumnFrame, ReportFrame,
+from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame, ReportFrame,
                          BitmapButton, FileCheckList, FloatCtrl, SetTip)
 
 
@@ -37,7 +37,7 @@ from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
 
-from larch_plugins.wx.plotter import _newplot, _plot, _getDisplay
+from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
@@ -356,14 +356,25 @@ class ProcessPanel(wx.Panel):
             self.smooth_sig.Disable()
             self.smooth_msg.SetLabel('')
             self.smooth_c0.SetMin(1)
-
+            self.smooth_c0.odd_only = False
             if choice.startswith('box'):
                 self.smooth_c0.Enable()
             elif choice.startswith('savi'):
                 self.smooth_c0.Enable()
                 self.smooth_c1.Enable()
-                self.smooth_c0.SetMin(3)
+                self.smooth_c0.Enable()
+                self.smooth_c0.odd_only = True
+
+                c0 = int(self.smooth_c0.GetValue())
+                c1 = int(self.smooth_c1.GetValue())
+                x0 = max(c1+1, c0)
+                if x0 % 2 == 0:
+                    x0 += 1
+                self.smooth_c0.SetMin(c1+1)
+                if c0 != x0:
+                    self.smooth_c0.SetValue(x0)
                 self.smooth_msg.SetLabel('n must odd and  > order+1')
+
             elif choice.startswith('conv'):
                 self.smooth_conv.Enable()
                 self.smooth_sig.Enable()
@@ -404,7 +415,7 @@ class ProcessPanel(wx.Panel):
 
     def process(self, gname,  **kws):
         """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
-        larch group '_y1_' attribute to be plotted
+        larch group 'x' and 'y' attributes to be plotted
         """
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
@@ -526,7 +537,10 @@ class XYFitController():
             del self.report_frame
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
+
+        self.report_frame.SetFont(Font(8))
         self.report_frame.set_text(text)
+        self.report_frame.SetFont(Font(8))
         self.report_frame.Raise()
 
     def get_iconfile(self):
@@ -538,9 +552,8 @@ class XYFitController():
         wintitle='Larch XYFit Array Plot Window'
         if stacked:
             win = 2
-            wintitle='Larch XYFit Plot Window'
+            wintitle='Larch XYFit Fit Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win)
-
         out = self.symtable._plotter.get_display(**opts)
         return out
 
@@ -577,22 +590,34 @@ class XYFitController():
         if proc_opts is not None:
             dgroup.proc_opts.update(proc_opts)
 
-        opts = dgroup.proc_opts
+        opts = {'group': dgroup.groupname}
+        opts.update(dgroup.proc_opts)
+
         # scaling
-        dgroup.x = opts['xscale']*(dgroup.xdat - opts['xshift'])
-        dgroup.y = opts['yscale']*(dgroup.ydat - opts['yshift'])
+        cmds = ["{group:s}.x = {xscale:f}*({group:s}.xdat + {xshift:f})",
+                "{group:s}.y = {yscale:f}*({group:s}.ydat + {yshift:f})"]
+
 
         # smoothing
         smop = opts['smooth_op'].lower()
-        cform = str(opts['smooth_conv'].lower())
+        smcmd = None
         if smop.startswith('box'):
-            dgroup.y = boxcar(dgroup.y, opts['smooth_c0'])
+            opts['smooth_c0'] = int(opts['smooth_c0'])
+            smcmd = "boxcar({group:s}.y, {smooth_c0:d})"
         elif smop.startswith('savit'):
-            winsize = 2*opts['smooth_c0'] + 1
-            dgroup.y = savitzky_golay(dgroup.y, winsize, opts['smooth_c1'])
+            opts['smooth_c0'] = int(opts['smooth_c0'])
+            opts['smooth_c1'] = int(opts['smooth_c1'])
+            smcmd = "savitzky_golay({group:s}.y, {smooth_c0:d}, {smooth_c1:d})"
         elif smop.startswith('conv'):
-            dgroup.y = smooth(dgroup.x, dgroup.y,
-                              sigma=opts['smooth_sig'], form=cform)
+            cform = str(opts['smooth_conv'].lower())
+            smcmd = "smooth({group:s}.x, {group:s}.y, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
+
+        if smcmd is not None:
+            cmds.append("{group:s}.y = " + smcmd)
+
+        for cmd in cmds:
+            self.larch.eval(cmd.format(**opts))
+
 
         # xas
         if dgroup.datatype.startswith('xas'):
@@ -600,21 +625,24 @@ class XYFitController():
             dgroup.energy = dgroup.x
             dgroup.mu = dgroup.y
 
-            preopts = {'e0': None, 'step': None, 'make_flat':False,
-                      '_larch':self.larch}
+            popts = dict(group=dgroup.groupname, e0='None', step='None',
+                         make_flat='False')
 
             if not opts['auto_e0']:
                 _e0 = opts['e0']
                 if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                    preopts['e0'] = float(_e0)
+                    popts['e0'] = "%.f" % float(_e0)
 
             if not opts['auto_step']:
-                preopts['step'] = opts['step']
+                popts['step'] = "%.f" % opts['step']
 
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                preopts[attr]  = opts[attr]
+                popts[attr]  = "%.f" % opts[attr]
 
-            pre_edge(dgroup, **preopts)
+            cmd = """pre_edge({group:s}, e0={e0:s}, step={step:s}, pre1={pre1:s}, pre2={pre2:s},
+         norm1={norm1:s}, norm2={norm2:s}, nnorm={nnorm:s}, nvict={nvict:s})""".format(**popts)
+
+            self.larch.eval(cmd)
 
             for attr in  ('e0', 'edge_step'):
                 opts[attr] = getattr(dgroup, attr)
@@ -697,20 +725,21 @@ class XYFitFrame(wx.Frame):
 
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, parent=None, size=(825, 650), _larch=None, **kws):
+    def __init__(self, parent=None, size=(875, 550), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
-        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
+        title = "Larch XYFit (BETA!!): XY Data Viewing & Curve Fitting"
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
+
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch = self.larch_buffer._larch
-        self.controller = XYFitController(wxparent=self, _larch=self.larch)
+        self.controller = XYFitController(wxparent=self, _larch=self.larch_buffer.larchshell)
 
         self.subframes = {}
         self.plotframe = None
@@ -740,7 +769,7 @@ class XYFitFrame(wx.Frame):
 
         def Btn(msg, x, act):
             b = Button(ltop, msg, size=(x, 30),  action=act)
-            b.SetFont(Font(11))
+            b.SetFont(Font(10))
             return b
 
         plot_one = Btn('Plot One',      120, self.onPlotOne)
@@ -880,10 +909,6 @@ class XYFitFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
-        MenuItem(self, fmenu, "Re-select Data Columns\tCtrl+R",
-                 "Change which data columns used for this file",
-                 self.onSelectColumns)
-
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
@@ -966,7 +991,7 @@ class XYFitFrame(wx.Frame):
 
     def onSelectColumns(self, evt=None):
         dgroup = self.controller.get_group(self.controller.groupname)
-        self.show_subframe('selectcol', SelectColumnFrame,
+        self.show_subframe('readfile', ColumnDataFileFrame,
                            group=dgroup.raw,
                            last_array_sel=self.last_array_sel,
                            _larch=self.larch,
@@ -1011,7 +1036,7 @@ class XYFitFrame(wx.Frame):
         if is_athena_project(path):
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
-            self.show_subframe('selectcol', SelectColumnFrame, **kwargs)
+            self.show_subframe('readfile', ColumnDataFileFrame, **kwargs)
 
 
     def onRead_OK(self, datagroup, array_sel=None, overwrite=False):
