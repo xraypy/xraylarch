@@ -202,25 +202,18 @@ class xrd1d(grpobjt):
             return [self.q[self.imin:self.imax],
                     self.twth[self.imin:self.imax],
                     self.d[self.imin:self.imax],
-                    self.I[self.imin:self.imax]-self.bkgd[self.imin:self.imax],
-                    self.bkgd[self.imin:self.imax]]
+                    self.I[self.imin:self.imax]-self.bkgd,
+                    self.bkgd]
         return [self.q[self.imin:self.imax],
                 self.twth[self.imin:self.imax],
                 self.d[self.imin:self.imax],
                 self.I[self.imin:self.imax],
-                self.bkgd[self.imin:self.imax]]
+                self.bkgd]
                
     def reset_bkgd(self):
          self.bkgd = np.zeros(np.shape(self.I))
 
-    return [self.q[self.imin:self.imax],
-            self.twth[self.imin:self.imax],
-            self.d[self.imin:self.imax],
-            self.I[self.imin:self.imax]-self.bkgd[self.imin:self.imax],
-            self.bkgd[self.imin:self.imax]]
-
-    
-    def set_trim(self,xmin,xmax,xtype='',xi=None):
+    def slct_xaxis(self,xtype='',xi=None):
     
         if xtype.startswith('q') or xi == 0:
             x = self.q
@@ -231,6 +224,12 @@ class xrd1d(grpobjt):
         else:
             print('The provided x-axis label (%s or &i) not correct.' % (xtype,xi))
             return
+        
+        return x
+    
+    def set_trim(self,xmin,xmax,xtype='',xi=None):
+    
+        x = self.slct_xaxis(xtype=xtype,xi=xi)
             
         self.imin,self.imax = 0,len(x)-1
         if xmin > np.min(x):
@@ -238,24 +237,20 @@ class xrd1d(grpobjt):
         if xmax < np.max(x):
             self.imax = (np.abs(x-xmax)).argmin()
             
+    def all_data(self,reset=False,bkgd=False):
 
-
-    def trim(self,axis):
-
-        if self.imin is None or self.imax is None:
-            self.imin,self.imax = 0,len(self.I)
-            
-        if axis.startswith('q'):
-            return self.q[self.imin:self.imax]
-        elif axis.startswith('2th'):
-            return self.twth[self.imin:self.imax]
-        elif axis.startswith('d'):
-            return self.d[self.imin:self.imax]
-        elif axis.startswith('I'):
-            return self.I[self.imin:self.imax]
-        else:
-            print('The provided axis label (%s) not correct.' % axis)
-            return
+        if reset: self.imin,self.imax = 0,len(self.I)
+        if bkgd:
+            return [self.q[self.imin:self.imax],
+                    self.twth[self.imin:self.imax],
+                    self.d[self.imin:self.imax],
+                    self.I[self.imin:self.imax]-self.bkgd,
+                    self.bkgd]
+        return [self.q[self.imin:self.imax],
+                self.twth[self.imin:self.imax],
+                self.d[self.imin:self.imax],
+                self.I[self.imin:self.imax],
+                self.bkgd]
             
     def fit_background(self):
     
@@ -263,36 +258,22 @@ class xrd1d(grpobjt):
         self.bkgd = xrd_background(x,y)
         if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
         
-    def set_data_range(self,trim,bkgd):
+    def find_peaks(self,bkgd=False,threshold=None,**kwargs):
     
-        if trim:
-            I = self.trim('I')
-            q,twth,d = self.trim('q'),self.trim('2th'),self.trim('d')
-        else:
-            I = self.I
-            q,twth,d = self.q,self.twth,self.d
-        if bkgd and len(I) == len(self.bkgd):
-            I = I-self.bkgd
-            
-        return q,twth,d,I
-    
-    
-    def find_peaks(self,trim=False,bkgd=False,threshold=None,**kwargs):
-    
-        q,twth,d,I = self.set_data_range(trim,bkgd)
-    
-        self.pki = peakfinder(I,**kwargs)
-        if threshold is not None:
-            self.pki = peakfilter(threshold,self.pki,I)
+        all_data = np.array(self.all_data(bkgd=bkgd))
 
-        self.qpks    = peaklocater(self.pki,q)
-        self.twthpks = peaklocater(self.pki,twth)
-        self.dpks    = peaklocater(self.pki,d)
-        self.Ipks    = peaklocater(self.pki,I)
+        self.pki = peakfinder(all_data[3],**kwargs)
+        if threshold is not None: self.pki = peakfilter(threshold,self.pki,all_data[3])
+
+        pk_data = np.zeros((5,len(self.pki)))
+        for i,pki in enumerate(self.pki): pk_data[:,i] = all_data[:,pki]
+            
+        return pk_data
+
         
     def refine_peaks(self,trim=False,bkgd=False):
     
-        q,twth,d,I = self.set_data_range(trim,bkgd)
+        q,twth,d,I = self.trim_all(trim,bkgd)
         
         pktwth,pkfwhm,self.Ipks = peakfitter(self.pki,twth,I,fittype='double')
         #self.peaks = zip(pkfwhm,pkI)

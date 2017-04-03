@@ -27,11 +27,10 @@ def peakfilter(intthrsh,ipeaks,y,verbose=False):
     from peakfilter() with the option of setting a minimum intensity
     threshold for filtering peaks
     '''
+
     ipks = []
     ipks += [i for i in ipeaks if y[i] > intthrsh]
-
-    if verbose:
-        print('Peaks under intensity %i filtered out.' % intthrsh)
+    if verbose: print('Peaks under intensity %i filtered out.' % intthrsh)
     
     return ipks
 

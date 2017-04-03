@@ -251,7 +251,7 @@ class diFFit1DFrame(wx.Frame):
             self.nb.SetSelection(1) ## switches to fitting panel
 
             adddata = True
-            if xrdf.raw_data is not None:
+            if xrdf.xrd1dgrp is not None:
                 question = 'Replace current data file %s with selected file %s?' % \
                                (xrdf.xrd1dgrp.label,name)
                 adddata = YesNo(self,question,caption='Overwrite warning')
@@ -263,7 +263,7 @@ class diFFit1DFrame(wx.Frame):
 
                 xrdf.xrd1dgrp = seldat
                 xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
-                xrdf.plt_data = xrdf.xrd1dgrp.plot()
+                xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
                 xrdf.xmax     = np.max(xrdf.plt_data[xi])
@@ -344,21 +344,11 @@ class Fitting1DXRD(BasePanel):
         self.xrd1dgrp   = None
         self.plt_data   = None
 
-        self.bgr        = None
-
-        self.ipeaks     = None
         self.plt_peaks  = None
         self.peaklist   = []
 
-        self.trim       = False
-        self.indicies   = None
-
-        self.subtracted = False
-
         self.xmin       = None
         self.xmax       = None
-
-        self.xrd1dgrp.label   = ''
 
         self.xlabel     = 'q (1/$\AA$)' #'q (A^-1)'
         self.ylabel     = 'Intensity (a.u.)'
@@ -556,8 +546,10 @@ class Fitting1DXRD(BasePanel):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
         pltargs = {'title':self.xrd1dgrp.label,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot(self.plt_data[xi],self.plt_data[3],**pltargs)
+        self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**pltargs)
+        
         self.plot_background()
+        self.plot_peaks()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
 
@@ -571,76 +563,58 @@ class Fitting1DXRD(BasePanel):
         self.rngpl.val_xmax.SetValue('%0.3f' % max)
         self.rngpl.ch_xaxis.SetSelection(0)
         self.bkgdpl.ck_bkgd.SetValue(False)
-        self.bkgdpl.btn_fbkgd.Enable()
-        self.bkgdpl.btn_rbkgd.Disable()
-        self.bkgdpl.ck_bkgd.Disable()
-        self.bkgdpl.btn_obkgd.Enable()
-        self.pkpl.btn_fpks.Enable()
-        self.pkpl.btn_opks.Enable()
+#         self.bkgdpl.btn_fbkgd.Enable()
+#         self.bkgdpl.btn_rbkgd.Disable()
+#         self.bkgdpl.btn_obkgd.Enable()
+#         self.pkpl.btn_fpks.Enable()
+#         self.pkpl.btn_opks.Enable()
         self.bkgdpl.ck_bkgd.SetValue(False)
-        self.bkgdpl.ck_bkgd.Disable()
-        self.bkgdpl.btn_rbkgd.Disable()
-        self.bkgdpl.btn_fbkgd.Enable()
-
-        self.trim     = False
-        self.indicies = None
+#         self.bkgdpl.ck_bkgd.Disable()
+#         self.bkgdpl.btn_rbkgd.Disable()
+#         self.bkgdpl.btn_fbkgd.Enable()
 
         self.xmin     = min
         self.xmax     = max
-
-        self.bgr_data = None
-        self.bgr = None
-        self.subtracted = False
-
-        if self.ipeaks is not None:
-            self.delete_all_peaks()
+        self.trim_data()
+        self.delete_all_peaks()
+        self.remove_background()
 
         self.SetFittingDefaults()
-        self.rescale1Daxis(xaxis=True,yaxis=False)
+        self.plot_data()
 
     def onSetRange(self,event=None):
 
-        xmax = self.rngpl.val_xmax
-        xmin = self.rngpl.val_xmin
-
-        if self.xmax != float(xmax.GetValue()) or self.xmin != float(xmin.GetValue()):
-            if float(xmax.GetValue()) < float(xmin.GetValue()):
-                min = float(xmax.GetValue())
-                max = float(xmin.GetValue())
-                xmin.SetValue('%0.3f' % min)
-                xmax.SetValue('%0.3f' % max)
-
-            self.plt_data = self.xrd1dgrp.plot()
-            self.check_range()
-            self.trim_data()
-
-            self.delete_background()
-            self.remove_all_peaks()
+        self.check_range()
+        self.trim_data()
+#         self.delete_all_peaks()
+#         self.remove_background()
+        
+        self.plot_data()
 
     def check_range(self,event=None):
 
+        xmin,xmax = self.rngpl.val_xmin,self.rngpl.val_xmax
+        minval,maxval = float(xmin.GetValue()),float(xmax.GetValue())
+
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if float(self.rngpl.val_xmin.GetValue()) - np.min(self.raw_data[xi]) > 0.005:
-            self.xmin = float(self.rngpl.val_xmin.GetValue())
-        else:
-            self.xmin = np.min(self.raw_data[xi])
+        x = self.xrd1dgrp.slct_xaxis(xi=xi)
 
-        if np.max(self.raw_data[xi]) - float(self.rngpl.val_xmax.GetValue()) > 0.005:
-            self.xmax = float(self.rngpl.val_xmax.GetValue())
-        else:
-            self.xmax = np.max(self.raw_data[xi])
-        if xi == 2: self.xmax = min(self.xmax,self.dlimit)
+        if abs(self.xmax-maxval) > 0.005 or abs(self.xmin-minval) > 0.005:
+            if xmax < xmin: xmin,xmax = float(xmax.GetValue()),float(xmin.GetValue())
+            self.xmin = max(minval,np.min(x))
+            self.xmax = min(maxval,np.max(x))
 
-        self.rngpl.val_xmin.SetValue('%0.3f' % self.xmin)
-        self.rngpl.val_xmax.SetValue('%0.3f' % self.xmax)
+            if xi == 2: self.xmax = min(self.xmax,self.dlimit)
+            
+            self.delete_all_peaks()
+            self.remove_background()
 
-        if np.max(self.raw_data[xi])-self.xmax < 0.005 and \
-            self.xmin-np.min(self.raw_data[xi]) < 0.005:
-           self.reset_range()
+        xmin.SetValue('%0.3f' % self.xmin)
+        xmax.SetValue('%0.3f' % self.xmax)
 
     def onReset(self,event=None):
 
-        self.ipeaks,self.plt_peaks = None,None
+        self.xrd1dgrp.pki,self.plt_peaks = None,None
         self.peaklist = []
 
         self.reset_range()
@@ -649,17 +623,22 @@ class Fitting1DXRD(BasePanel):
     def reset_range(self,event=None):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        self.xmin = np.min(self.raw_data[xi])
-        self.xmax = np.max(self.raw_data[xi])
+        x = self.xrd1dgrp.slct_xaxis(xi=xi)
+
+        self.xmin,self.xmax = np.min(x),np.max(x)
         if xi == 2: self.xmax = min(self.xmax,self.dlimit)
 
         self.rngpl.val_xmin.SetValue('%0.3f' % self.xmin)
         self.rngpl.val_xmax.SetValue('%0.3f' % self.xmax)
 
         self.trim_data()
-        if self.bgr is not None:
-            self.xrd1dgrp.fit_background()
+        self.remove_background()
 
+    def trim_data(self):
+
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        self.xrd1dgrp.set_trim(self.xmin,self.xmax,xi=xi)
+        self.plt_data = self.xrd1dgrp.all_data()
 
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -670,46 +649,37 @@ class Fitting1DXRD(BasePanel):
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
 
         self.plot_data()
-        self.plot_background()
-        if self.ipeaks is not None:
-            self.define_peaks()
-            self.plot_peaks()
-
-        self.xrd1dgrp.fit_background()
 
     def onSbtrctBkgd(self,event=None):
 
-        self.plt_data = self.xrd1dgrp.plot(bkgd=True)
-
+        self.plt_data = self.xrd1dgrp.plot(bkgd=self.bkgdpl.ck_bkgd.GetValue())
         self.plot_data()
-        if self.ipeaks is not None:
-            self.define_peaks()
-            self.plot_peaks()
+
 
     def onRmvBkgd(self,event=None):
 
-        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
-
+        self.remove_background()
         self.plot_data()
-        if self.ipeaks is not None:
-            self.define_peaks()
-            self.plot_peaks()
 
-    def delete_background(self,event=None):
+    def remove_background(self,event=None):
+
+        self.xrd1dgrp.reset_bkgd()
+        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
 
         self.bkgdpl.ck_bkgd.SetValue(False)
-        self.bkgdpl.ck_bkgd.Disable()
-        self.bkgdpl.btn_rbkgd.Disable()
-        self.bkgdpl.btn_fbkgd.Enable()
+#         self.bkgdpl.ck_bkgd.Disable()
+#         self.bkgdpl.btn_rbkgd.Disable()
+#         self.bkgdpl.btn_fbkgd.Enable()
 
-        self.plt_data = self.xrd1dgrp.plot(bkgd=False)
-        self.plot_data()
+
 
     def plot_background(self,event=None):
 
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
+        if self.xrd1dgrp is not None and not self.bkgdpl.ck_bkgd.GetValue():
+            if np.max(self.plt_data[4]) > 0:
+                xi = self.rngpl.ch_xaxis.GetSelection()
+                bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
 
     def background_options(self,event=None):
 
@@ -734,20 +704,21 @@ class Fitting1DXRD(BasePanel):
 
         self.find_peaks(filter=filter)
 
-        if self.ipeaks is not None:
-            self.dbgpl.owner.val_gdnss.Enable()
-            self.rfgpl.btn_mtch.Enable()
+        print 'turn on enable/disable'
+#         if self.xrd1dgrp.pki is not None:
+#             self.dbgpl.owner.val_gdnss.Enable()
+#             self.rfgpl.btn_mtch.Enable()
 
     def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
-        self.dbgpl.owner.val_gdnss.Disable()
-        self.rfgpl.btn_mtch.Disable()
+#         self.dbgpl.owner.val_gdnss.Disable()
+#         self.rfgpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
 
         newpeaks = True
-        if self.ipeaks is not None:
+        if self.xrd1dgrp.pki is not None:
             question = 'Are you sure you want to remove current peaks and search again?'
             newpeaks = YesNo(self,question,caption='Replace peaks warning')
 
@@ -757,46 +728,15 @@ class Fitting1DXRD(BasePanel):
             ## clears previous searches
             self.remove_all_peaks()
 
-            self.ipeaks = peakfinder(self.plt_data[3],
-                                     regions=self.iregions,
-                                     gapthrsh=self.gapthrsh)
-
-
-            if filter:
-                self.intthrsh = int(self.pkpl.val_intthr.GetValue())
-                self.ipeaks = peakfilter(self.intthrsh,self.ipeaks,self.plt_data[3])
-
+            self.intthrsh = int(self.pkpl.val_intthr.GetValue())
+            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),threshold=self.intthrsh)
+                    
             self.peak_display()
             self.plot_peaks()
 
-            self.pkpl.btn_rpks.Enable()
-            self.pkpl.btn_fitpks.Enable()
+#             self.pkpl.btn_rpks.Enable()
+#             self.pkpl.btn_fitpks.Enable()
             
-            print 'NEED TO REMOVE THIS FROM HERE...'
-            wavelength = self.xrd1dgrp.wavelength
-            xi = self.rngpl.ch_xaxis.GetSelection()
-
-            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951)
-            pkarg = {'markersize':0,'linewidth':2,'label':'inst. broadening','show_legend':True}
-            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)  
-
-            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=100)
-            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 100 A','show_legend':True}
-            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
-
-            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=10)
-            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 10 A','show_legend':True}
-            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
-
-            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=10,smooth=True)
-            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 10 A-smoothed','show_legend':True}
-            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
-
-            y = calc_broadening(self.plt_peaks,self.plt_data[1],self.xrd1dgrp.wavelength,u=0.31198612,v=-0.11436822,w=0.02110951,D=1)
-            pkarg = {'markersize':0,'linewidth':2,'label':'size broadening, D = 1 A','show_legend':True}
-            self.plot1D.oplot(self.plt_data[xi],y,**pkarg)
-            
-
     def peak_display(self):
 
         self.define_peaks()
@@ -806,22 +746,22 @@ class Fitting1DXRD(BasePanel):
 
         str = 'Peak (%6d cts @ %2.3f %s )'
         xi = self.rngpl.ch_xaxis.GetSelection()
-        for i,ii in enumerate(self.ipeaks):
+        for i,ii in enumerate(self.xrd1dgrp.pki):
             peakname = str % (self.plt_peaks[3,i],self.plt_peaks[xi,i],self.xunit)
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
-        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
+        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
 
     def fit_instrumental(self,event=None):
 
-        u,v,w = instrumental_fit_uvw(self.ipeaks,
+        u,v,w = instrumental_fit_uvw(self.xrd1dgrp.pki,
                                      self.plt_data[1],self.plt_data[3],
                                      halfwidth=self.halfwidth,
                                      verbose=True)
 
     def fit_peaks(self,event=None):
         
-        pktwth,pkFWHM,pkI = peakfitter(self.ipeaks,self.plt_data[1],self.plt_data[3],
+        pktwth,pkFWHM,pkI = peakfitter(self.xrd1dgrp.pki,self.plt_data[1],self.plt_data[3],
                                                 halfwidth=self.halfwidth,
                                                 fittype='double',
                                                 verbose=True)
@@ -838,30 +778,30 @@ class Fitting1DXRD(BasePanel):
         self.plt_peaks[2] = d_from_twth(pktwth,wavelength)
         self.plt_peaks[3] = pkI
 
-        self.peak_display()
         self.plot_data()
-        self.plot_peaks()
 
     def plot_peaks(self):
 
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-        self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
-        self.plot1D.cursor_mode = 'zoom'
+        if self.xrd1dgrp.pki is not None:
+            self.define_peaks()
+
+            xi = self.rngpl.ch_xaxis.GetSelection()
+            pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
+            self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
+            self.plot1D.cursor_mode = 'zoom'
 
     def remove_all_peaks(self,event=None):
 
         self.delete_all_peaks()
         self.plot_data()
 
-        self.pkpl.btn_rpks.Disable()
+        #self.pkpl.btn_rpks.Disable()
         #self.pkpl.btn_fitpks.Disable()
 
     def delete_all_peaks(self,event=None):
 
-        self.plt_peaks = None
-        self.ipeaks = None
-        # self.peaklistbox.Destroy()
+        self.plt_peaks,self.xrd1dgrp.pki = None,None
+
         self.peaklist = []
         self.peaklistbox.Clear()
         self.pkpl.ttl_cntpks.SetLabel('Total: 0 peaks')
@@ -895,9 +835,9 @@ class Fitting1DXRD(BasePanel):
 
     def define_peaks(self):
     
-        peaks=np.zeros((4,len(self.ipeaks)))
+        peaks=np.zeros((5,len(self.xrd1dgrp.pki)))
         for axis,data in enumerate(self.plt_data):
-            peaks[axis] = peaklocater(self.ipeaks,data)
+            peaks[axis] = peaklocater(self.xrd1dgrp.pki,data)
         self.plt_peaks = peaks
     
     def rm_sel_peaks(self, peakname, event=None):
@@ -907,14 +847,13 @@ class Fitting1DXRD(BasePanel):
             pki = self.peaklist.index(peakname)
 
             self.peaklist.pop(pki)
-            self.ipeaks.pop(pki)
+            self.xrd1dgrp.pki.pop(pki)
 
             self.define_peaks()
 
             self.plot_data()
-            self.plot_peaks()
 
-        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.ipeaks)))
+        self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
 
 ##############################################
 #### PLOTPANEL FUNCTIONS
@@ -943,22 +882,24 @@ class Fitting1DXRD(BasePanel):
         self.check1Daxis()
 
     def optionsON(self,event=None):
+        
+        print 'options all turned on right now.'
 
-        ## RangeToolsPanel
-        self.rngpl.ch_xaxis.Enable()
-        self.rngpl.val_xmin.Enable()
-        self.rngpl.val_xmax.Enable()
-        self.rngpl.btn_rngreset.Enable()
-        ## BackgroundToolsPanel
-        self.bkgdpl.btn_fbkgd.Enable()
-        self.bkgdpl.btn_obkgd.Enable()
-        self.bkgdpl.btn_rbkgd.Enable()
-        self.bkgdpl.ck_bkgd.Enable()
-        ## PeakToolsPanel
-        self.pkpl.btn_fpks.Enable()
-        self.pkpl.btn_opks.Enable()
-        self.pkpl.val_intthr.Enable()
-        self.pkpl.btn_rpks.Enable()
+#         ## RangeToolsPanel
+#         self.rngpl.ch_xaxis.Enable()
+#         self.rngpl.val_xmin.Enable()
+#         self.rngpl.val_xmax.Enable()
+#         self.rngpl.btn_rngreset.Enable()
+#         ## BackgroundToolsPanel
+#         self.bkgdpl.btn_fbkgd.Enable()
+#         self.bkgdpl.btn_obkgd.Enable()
+#         self.bkgdpl.btn_rbkgd.Enable()
+#         self.bkgdpl.ck_bkgd.Enable()
+#         ## PeakToolsPanel
+#         self.pkpl.btn_fpks.Enable()
+#         self.pkpl.btn_opks.Enable()
+#         self.pkpl.val_intthr.Enable()
+#         self.pkpl.btn_rpks.Enable()
 
 
     def check1Daxis(self,event=None,yaxis=False):
@@ -986,9 +927,6 @@ class Fitting1DXRD(BasePanel):
         self.rngpl.unit_xmax.SetLabel(self.xunit)
 
         self.plot_data()
-        if self.ipeaks:
-            self.peak_display()
-            self.plot_peaks()
 
     def rescale1Daxis(self,xaxis=True,yaxis=False):
 
@@ -1001,34 +939,20 @@ class Fitting1DXRD(BasePanel):
     def set_xview(self, x1, x2):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-        if self.subtracted:
-            xydata = self.plt_data
-        else:
-            xydata = self.raw_data
-        xmin,xmax = np.min(xydata[xi]),np.max(xydata[xi])
+        xmin,xmax = np.min(self.plt_data[xi]),np.max(self.plt_data[xi])
 
-        x1 = max(xmin,x1)
-        x2 = min(xmax,x2)
-
+        x1,x2 = max(xmin,x1),min(xmax,x2)
         if xi == 2: x2 = min(x2,self.dlimit)
 
         self.plot1D.axes.set_xlim((x1, x2))
-
         self.plot1D.canvas.draw()
 
     def set_yview(self, y1, y2):
 
-        if self.subtracted:
-            xydata = self.plt_data
-        else:
-            xydata = self.raw_data
-        ymin,ymax = np.min(xydata[3]),np.max(xydata[3])
-
-        y1 = max(ymin,y1)
-        y2 = min(ymax,y2)
+        ymin,ymax = np.min(plt_data[3]),np.max(plt_data[3])
+        y1,y2 = max(ymin,y1),min(ymax,y2)
 
         self.plot1D.axes.set_ylim((y1, y2))
-
         self.plot1D.canvas.draw()
 
 ##############################################
@@ -1109,7 +1033,7 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
 
         fracq = float(self.val_gdnss.GetValue())
-        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],ipks=self.ipeaks,
+        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],ipks=self.xrd1dgrp.pki,
                                     cifdatabase=self.owner.cifdatabase)
         self.displayMATCHES(list_amcsd)
         
@@ -1424,8 +1348,8 @@ class Viewer1DXRD(wx.Panel):
         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
         vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
 
-        self.ch_xaxis.Disable()
-        self.ch_yaxis.Disable()
+#         self.ch_xaxis.Disable()
+#         self.ch_yaxis.Disable()
 
         return vbox
 
@@ -1477,8 +1401,8 @@ class Viewer1DXRD(wx.Panel):
         #vbox.Add(hbox_btns, flag=wx.ALL, border=10)
         
         ## Disable until data
-        self.btn_reset.Disable()
-        self.val_scale.Disable()
+#         self.btn_reset.Disable()
+#         self.val_scale.Disable()
         #self.btn_rmv.Disable()
         
         return vbox   
@@ -1528,8 +1452,8 @@ class Viewer1DXRD(wx.Panel):
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         ## Disable until data
-        self.val_cifscale.Disable()
-        self.btn_cifreset.Disable()
+#         self.val_cifscale.Disable()
+#         self.btn_cifreset.Disable()
 
         return vbox
 
@@ -1685,15 +1609,16 @@ class Viewer1DXRD(wx.Panel):
 
     def optionsON(self,data=True,cif=False):
 
-        self.ch_xaxis.Enable()
-        self.ch_yaxis.Enable()
-        if data:
-            self.val_scale.Enable()
-            self.btn_reset.Enable()
-            #self.btn_rmv.Enable()
-        if cif:
-            self.val_cifscale.Enable()
-            self.btn_cifreset.Enable()
+        print 'optionsON'
+#         self.ch_xaxis.Enable()
+#         self.ch_yaxis.Enable()
+#         if data:
+#             self.val_scale.Enable()
+#             self.btn_reset.Enable()
+#             #self.btn_rmv.Enable()
+#         if cif:
+#             self.val_cifscale.Enable()
+#             self.btn_cifreset.Enable()
 
 
     def add1Ddata(self,data1dxrd):
@@ -1715,7 +1640,7 @@ class Viewer1DXRD(wx.Panel):
         self.idata.append(len(self.plotlist))
         self.xy_scale.append(np.max(self.xy_data[-1].I))
 
-        self.xy_plot.append(self.xy_data[-1].plot())
+        self.xy_plot.append(self.xy_data[-1].all_data())
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
@@ -1838,12 +1763,6 @@ class Viewer1DXRD(wx.Panel):
         if xi == 2: xmax = min(xmax,self.dlimit)
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
-
-    def trim_data(self):
-
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        self.xrd1dgrp.set_trim(self.xmin,self.xmax,xi=xi)
-        self.plt_data = self.xrd1dgrp.plot()
 
     def reset1Dscale(self,event=None,xaxis=False,yaxis=True):
 
@@ -2062,10 +1981,10 @@ class RangeToolsPanel(wx.Panel):
         vbox_rng.Add(hbox_xset, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
 
         ## until data is loaded:
-        self.ch_xaxis.Disable()
-        self.val_xmin.Disable()
-        self.val_xmax.Disable()
-        self.btn_rngreset.Disable()
+#         self.ch_xaxis.Disable()
+#         self.val_xmin.Disable()
+#         self.val_xmax.Disable()
+#         self.btn_rngreset.Disable()
 
         return vbox_rng
 
@@ -2118,10 +2037,10 @@ class BackgroundToolsPanel(wx.Panel):
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)
 
         ## until data is loaded:
-        self.btn_fbkgd.Disable()
-        self.btn_obkgd.Disable()
-        self.btn_rbkgd.Disable()
-        self.ck_bkgd.Disable()
+#         self.btn_fbkgd.Disable()
+#         self.btn_obkgd.Disable()
+#         self.btn_rbkgd.Disable()
+#         self.ck_bkgd.Disable()
 
         return vbox_bkgd
 
@@ -2200,13 +2119,13 @@ class PeakToolsPanel(wx.Panel):
         vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
 
         self.val_intthr.SetValue(str(self.owner.intthrsh))
-        self.btn_fitpks.Disable()
+#         self.btn_fitpks.Disable()
 
         ## until data is loaded:
-        self.btn_fpks.Disable()
-        self.btn_opks.Disable()
-        self.val_intthr.Disable()
-        self.btn_rpks.Disable()
+#         self.btn_fpks.Disable()
+#         self.btn_opks.Disable()
+#         self.val_intthr.Disable()
+#         self.btn_rpks.Disable()
 
         return vbox_pks
 
@@ -2283,8 +2202,8 @@ class RefinementPanel(wx.Panel):
         vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
-        self.owner.val_gdnss.Disable()
-        self.btn_mtch.Disable()
+#         self.owner.val_gdnss.Disable()
+#         self.btn_mtch.Disable()
 
         return vbox
 
@@ -2475,11 +2394,11 @@ class Calc1DPopup(wx.Dialog):
 
 
     def onCHECK(self,event=None):
-
-        if self.ch_save.GetValue() or self.ch_plot.GetValue():
-           self.okBtn.Enable()
-        else:
-            self.okBtn.Disable()
+        print 'onCHECK'
+#         if self.ch_save.GetValue() or self.ch_plot.GetValue():
+#            self.okBtn.Enable()
+#         else:
+#             self.okBtn.Disable()
 
     def setDefaults(self):
 
@@ -2492,15 +2411,15 @@ class Calc1DPopup(wx.Dialog):
 
         self.wedge_arrow.SetRange(1, 10)
         self.wedge_arrow.SetValue(1)
-        self.okBtn.Disable()
-
-        self.ymin.Disable()
-        self.ymax.Disable()
-        self.xmin.Disable()
-        self.xmax.Disable()
-        self.wedges.Disable()
-        self.wedge_arrow.Disable()
-        self.ch_xunit.Disable()
+#         self.okBtn.Disable()
+# 
+#         self.ymin.Disable()
+#         self.ymax.Disable()
+#         self.xmin.Disable()
+#         self.xmax.Disable()
+#         self.wedges.Disable()
+#         self.wedge_arrow.Disable()
+#         self.ch_xunit.Disable()
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
