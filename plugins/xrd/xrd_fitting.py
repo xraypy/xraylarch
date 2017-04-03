@@ -14,7 +14,7 @@ import math
 import numpy as np
 from scipy import optimize,signal,interpolate
 
-from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
+from larch_plugins.xrd.xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth)
 
 

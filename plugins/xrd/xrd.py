@@ -13,7 +13,7 @@ Authors/Modifications:
 import os
 import numpy as np
 
-from larch_plugins.xrd.xrd_etc import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
+from larch_plugins.xrd.xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
 from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
 from larch_plugins.xrd.xrd_bgr import xrd_background
@@ -61,8 +61,17 @@ class xrd1d(grpobjt):
     
     # Data fitting parameters
     * self.uvw           = [0.313, -0.109, 0.019] # instrumental broadening parameters
+    * self.D             = None                   # particle size broadening (units: A)
     * self.pki           = [8, 254, 3664]         # list of peak indecides
 
+    * self.imin          = None                   # range for trimmed data
+    * self.imax          = None                   # range for trimmed data
+    * self.bkgd          = None                   # fit background for data
+
+    * self.matches       = None                   # list of amcsd matches from database
+    
+    * self.xrd2d         = None                   # 2D data
+    * self.cake          = None                   # 2D cake
 
     mkak 2017.03.15
     '''
@@ -73,16 +82,6 @@ class xrd1d(grpobjt):
         self.filename = file
         self.label    = label
 
-        ## Need to figure out how to set these properly
-        ## mkak 2017.04.01
-
-    #         self.q    = q
-    #         self.twth = twth
-    #         self.d    = d
-    #         self.I    = I
-
-        
-        
         if file is not None:
             self.xrd_from_file(file)
         else:

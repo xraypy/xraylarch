@@ -27,7 +27,7 @@ from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
 
 ###################################
 
-VERSION = '0 (14-March-2017)'
+VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
