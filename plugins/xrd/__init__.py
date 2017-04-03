@@ -1,8 +1,10 @@
-from .xrd import XRD
+from .xrd import XRD,xrd1d
 from .xrd_bgr import xrd_background
-from .XRDCalc import d_from_q,d_from_twth,twth_from_d,twth_from_q
-from .XRDCalc import E_from_lambda,lambda_from_E,q_from_d,q_from_twth
-from .XRDCalc import integrate_xrd,xy_file_reader
-from .XRDCalc import peakfinder,peaklocater,peakfitter,peakfilter
-from .XRDCalc import data_gaussian_fit
-from .XRDCalc import generate_hkl,instrumental_fit_uvw
+from .xrd_hkl import generate_hkl
+from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,
+                          data_gaussian_fit,instrumental_fit_uvw,calc_broadening)
+from .xrd_pyFAI import integrate_xrd,read_lambda
+from .xrd_xutil import calcCIFpeaks
+from .xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
+                        E_from_lambda,lambda_from_E,q_from_d,q_from_twth)
+

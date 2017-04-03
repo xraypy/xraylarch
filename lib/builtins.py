@@ -295,7 +295,6 @@ def _addplugin(plugin, _larch=None, verbose=False, **kws):
                 path = site_config.plugins_path
 
         for p_path in path:
-            # print(" -- find_plugin ", plugin)
             is_pkg, mod = _find_plugin(plugin, p_path)
             if is_pkg is not None:
                 break

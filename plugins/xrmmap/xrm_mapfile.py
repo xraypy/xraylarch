@@ -16,15 +16,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
-from larch_plugins.xrd.xrd import XRD
-from larch_plugins.xrd.XRDCalc import E_from_lambda
-
-HAS_pyFAI = False
-try:
-    import pyFAI
-    HAS_pyFAI = True
-except ImportError:
-    pass
+from larch_plugins.xrd import XRD,E_from_lambda
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
@@ -602,8 +594,7 @@ class GSEXRM_MapFile(object):
         self.masterfile_mtime = -1
 
         self.calibration = None
-        self.xrdmask = None
-        self.xrdbkgd = None
+        self.energy      = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
 
@@ -751,26 +742,6 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def readEDFfile(self,name='mask',keyword='maskfile'):
-
-        edffile = self.xrmmap['xrd'].attrs[keyword]
-        print('Reading %s file: %s' % (name,edffile))
-
-        import matplotlib.pyplot as plt
-        rawdata = plt.imread(edffile) ## or? tifffile.imread(edffile)
-#         try:
-#             import fabio
-#             rawdata = fabio.open(edffile).data
-#         except:
-#             print('File must be .edf format; user must have fabio installed.')
-        print('\t Shape: %s' % str(np.shape(rawdata)))
-
-        try:
-            del self.xrmmap['xrd'][name]
-        except:
-            pass
-        self.xrmmap['xrd'].create_dataset(name, data=np.array(rawdata))
-
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
@@ -784,41 +755,11 @@ class GSEXRM_MapFile(object):
 
         xrdcal = False
         if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
-            print('New calibration file detected: %s' % self.calibration)
-            xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
-            if os.path.exists(xrdgrp.attrs['calfile']):
-                xrdcal = True
-
-
-        if HAS_pyFAI and xrdcal:
-            try:
-                ai = pyFAI.load(xrdgrp.attrs['calfile'])
-            except:
-                print('Not recognized as a pyFAI calibration file: %s' % self.calibration)
-                pass
-
-            try:
-                xrdgrp.attrs['detector'] = ai.detector.name
-            except:
-                xrdgrp.attrs['detector'] = ''
-            try:
-                xrdgrp.attrs['spline']   = ai.detector.splineFile
-            except:
-                xrdgrp.attrs['spline']   = ''
-            xrdgrp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgrp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgrp.attrs['distance']   = ai._dist ## units: m
-            xrdgrp.attrs['poni1']      = ai._poni1
-            xrdgrp.attrs['poni2']      = ai._poni2
-            xrdgrp.attrs['rot1']       = ai._rot1
-            xrdgrp.attrs['rot2']       = ai._rot2
-            xrdgrp.attrs['rot3']       = ai._rot3
-            xrdgrp.attrs['wavelength'] = ai._wavelength ## units: m
-            xrdgrp.attrs['energy']     = E_from_lambda(ai._wavelength,lambda_units='m') ## units: keV
-
+            if os.path.exists(self.calibration):
+                print('New calibration file: %s' % self.calibration)
+                xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
         print('')
         self.h5root.flush()
-
 
     def add_data(self, group, name, data, attrs=None, **kws):
         """ creata an hdf5 dataset"""
@@ -1112,15 +1053,6 @@ class GSEXRM_MapFile(object):
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             xrdgrp['data2D'][thisrow,] = row.xrd2d
-
-            if hasattr(self.xrmmap['xrd'],'maskfile'):
-                mask = xrdgrp.attrs['maskfile']
-            else:
-                mask = None
-            if hasattr(xrdgrp,'bkgdfile'):
-                bkgd = xrdgrp.attrs['bkgdfile']
-            else:
-                bkgd = None
 
         t2 = time.time()
         if verbose:
@@ -1480,20 +1412,6 @@ class GSEXRM_MapFile(object):
                 if desc == group[name].attrs['description']:
                     return group[name]
         return None
-
-    def get_calibration(self, verbose=True):
-        """
-        return name of calibration file
-        """
-        try:
-            calibration = self.xrmmap['xrd'].attrs['calfile']
-            if verbose:
-                print('Calibration file: %s' % calibration)
-                if HAS_pyFAI:
-                    print(pyFAI.load(calibration))
-        except:
-            return None
-        return calibration
 
     def get_area_stats(self, name=None, desc=None):
         """return statistics for all raw detector counts/sec values
@@ -2172,10 +2090,10 @@ class GSEXRM_MapFile(object):
             pattern = pattern.sum(axis=0)
         return pattern.sum(axis=0)
 
-    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, nchan=5001):
+    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, steps=5001):
 
         name = ('xrd: %s' % areaname)
-        _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, nchan=nchan, name=name)
+        _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
 
         _1Dxrd.areaname = _1Dxrd.title = name
         path, fname = os.path.split(self.filename)

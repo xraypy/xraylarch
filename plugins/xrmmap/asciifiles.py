@@ -37,6 +37,9 @@ def readEnvironFile(fname):
     h, d = readASCII(fname, nskip=0, isnumeric=False)
     return h
 
+def read1DXRDFile(fname,metadata=True):
+    return readASCII(fname, nskip=0, isnumeric=True)
+
 def parseEnviron(text):
     """ split Environ data into desc, addr, val arrays """
     env_desc, env_addr, env_vals = [], [], []

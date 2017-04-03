@@ -52,9 +52,9 @@ MODNAME = '_plotter'
 MODDOC = '''
 General Plotting and Image Display Functions
 
-The functions here include (but are not limited too):
+The functions here include (but are not limited to):
 
-function         descrption
+function         description
 ------------     ------------------------------
 plot             2D (x, y) plotting, with many, many options
 plot_text        add text to a 2D plot

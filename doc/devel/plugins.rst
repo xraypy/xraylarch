@@ -102,7 +102,7 @@ run, this provides a convenient way to develop and debug plugins.
 
 Many plugins are installed into the Larch system folder.  These are
 organized into sub-folders, and generally each plugin folder contains
-mulitple files (modules) providing Larch functionality.
+multiple files (modules) providing Larch functionality.
 
 
 Customizing Plugins and  Folders of Plugins

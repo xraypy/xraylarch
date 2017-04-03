@@ -319,34 +319,34 @@ class MaskToolsPopup(wx.Frame):
             self.btn_clear.Disable()
             self.btn_save.Disable()
 
-class diFFit_XRDmask(wx.App):
-    def __init__(self):
-        wx.App.__init__(self)
-
-    def run(self):
-        self.MainLoop()
-
-    def createApp(self):
-        frame = MaskToolsPopup(None)
-        frame.Show()
-        self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.createApp()
-        return True
-
-def registerLarchPlugin():
-    return ('_diFFit', {})
-
-class DebugViewer(diFFit_XRDmask):
-    def __init__(self, **kws):
-        diFFit_XRDmask.__init__(self, **kws)
-
-    def OnInit(self):
-        #self.Init()
-        self.createApp()
-        #self.ShowInspectionTool()
-        return True
-
-if __name__ == '__main__':
-    diFFit_XRDmask().run()
+# class diFFit_XRDmask(wx.App):
+#     def __init__(self):
+#         wx.App.__init__(self)
+# 
+#     def run(self):
+#         self.MainLoop()
+# 
+#     def createApp(self):
+#         frame = MaskToolsPopup(None)
+#         frame.Show()
+#         self.SetTopWindow(frame)
+# 
+#     def OnInit(self):
+#         self.createApp()
+#         return True
+# 
+# def registerLarchPlugin():
+#     return ('_diFFit', {})
+# 
+# class DebugViewer(diFFit_XRDmask):
+#     def __init__(self, **kws):
+#         diFFit_XRDmask.__init__(self, **kws)
+# 
+#     def OnInit(self):
+#         #self.Init()
+#         self.createApp()
+#         #self.ShowInspectionTool()
+#         return True
+# 
+# if __name__ == '__main__':
+#     diFFit_XRDmask().run()

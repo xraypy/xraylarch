@@ -17,7 +17,7 @@ import numpy as np
 from itertools import groupby
 
 import larch
-from larch_plugins.xrd.XRDCalc import generate_hkl
+from larch_plugins.xrd import generate_hkl,peaklocater
 
 from sqlalchemy import (create_engine,MetaData,
                         Table,Column,Integer,String,Unicode,
@@ -581,7 +581,7 @@ class cifDB(object):
                  )
         ###################################################
         ## Add all to file
-        self.metadata.create_all()  ## if not exists function... can call even when already there
+        self.metadata.create_all() ## if not exists function (callable when exists)
 
         ###################################################
         ## Define 'add/insert' functions for each table
@@ -680,13 +680,18 @@ class cifDB(object):
         '''
             ## Adds cifile into database
             When reading in new CIF:
-            -->  put entire cif into field
-            -->  read _database_code_amcsd - write 'amcsd_id' to 'cif data'
-            -->  read _chemical_name_mineral - find/add in' minerallist' - write 'mineral_id' to 'cif data'
-            -->  read _symmetry_space_group_name_H-M - find in 'spacegroup' - write iuc_id to 'cif data'
-            -->  read author name(s) - find/add in 'authorlist' - write 'author_id','amcsd_id' to 'authref'
-            -->  read _chemical_formula_sum - write 'z' (atomic no.),'amcsd_id' to 'compref'
-            -->  calculate q - find each corresponding 'q_id' for all peaks - in write 'q_id','amcsd_id' to 'qpeak'
+            i.   put entire cif into field
+            ii.  read _database_code_amcsd; write 'amcsd_id' to 'cif data'
+            iii. read _chemical_name_mineral; find/add in' minerallist'; write
+                 'mineral_id' to 'cif data'
+            iv.  read _symmetry_space_group_name_H-M - find in 'spacegroup'; write
+                 iuc_id to 'cif data'
+            v.   read author name(s) - find/add in 'authorlist'; write 'author_id',
+                 'amcsd_id' to 'authref'
+            vi.  read _chemical_formula_sum; write 'z' (atomic no.), 'amcsd_id'
+                 to 'compref'
+            vii. calculate q - find each corresponding 'q_id' for all peaks; in write
+                 'q_id','amcsd_id' to 'qpeak'
         '''
 
         if not HAS_CifFile or not HAS_XRAYUTIL:
@@ -1016,9 +1021,15 @@ class cifDB(object):
         print(' ===================== ')
         print('')
 
+    def return_cif(self,amcsd_id):
+
+        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
+        for row in search_cif.execute():
+            return row.cif
+
 ##################################################################################
 
-    def all_by_amcsd(self,amcsd_id,verbose=True):
+    def all_by_amcsd(self,amcsd_id,verbose=False):
 
         mineral_id,iuc_id,cifstr = self.cif_by_amcsd(amcsd_id,all=True)
         
@@ -1608,7 +1619,58 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
             
-                
+def match_database(fracq=0.75, pk_wid=0.05, q=None, ipks=None,
+                   cifdatabase=None, verbose=False):
+    '''
+    fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+    pk_wid : maximum range in q which qualifies as a match between fitted and ideal
+
+    '''
+
+    q_pks = peaklocater(ipks,q)
+    minq = np.min(q)
+    maxq = np.max(q)
+
+    qstep = QSTEP ## these quantities come from cifdb.py
+
+    peaks = []
+    p_ids = []
+
+    for pk_q in q_pks:
+        pk_id = cifdatabase.search_for_q(pk_q)
+
+        ## performs peak broadening here
+        if pk_wid > 0:
+            st = int(pk_wid/qstep/2)
+            for p in np.arange(-1*st,st+1):
+                peaks += [pk_q+p*qstep]
+                p_ids += [pk_id+p]
+        else:
+            peaks += [pk_q]
+            p_ids += [pk_id]
+
+    matches,count = cifdatabase.amcsd_by_q(peaks)
+    goodness = np.zeros(len(count))
+
+    for i, (amcsd,cnt) in enumerate(zip(matches,count)):
+        peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
+        if len(peak_id) > 0:
+            goodness[i] = float(cnt)/len(peak_id)
+
+    try:
+        matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
+    except:
+        matches,count,goodness = [],[],[]
+
+    for i,amcsd in enumerate(matches):
+        if verbose:
+            str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
+                     cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
+                     count[i],count[i]/goodness[i])
+            print(str)
+
+               
+    return matches
                 
                           
                 

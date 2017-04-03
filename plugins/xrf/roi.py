@@ -15,9 +15,9 @@ from larch import Group
 MODDOC = '''
 X-ray Fluorescence Routines
 
-The functions here include (but are not limited too):
+The functions here include (but are not limited to):
 
-function         descrption
+function         description
 ------------     ------------------------------
 create_roi       create an ROI
 read_xmap_netcdf read netcdf file from XIA XMap DXP

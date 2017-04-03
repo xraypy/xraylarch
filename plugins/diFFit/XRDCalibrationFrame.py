@@ -10,7 +10,7 @@ import wx
 
 from wxmplot.imagepanel import ImagePanel
 from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
-from larch_plugins.xrd.XRDCalc import lambda_from_E,E_from_lambda
+from larch_plugins.xrd import lambda_from_E,E_from_lambda
 
 from larch_plugins.io import tifffile
 
@@ -460,34 +460,286 @@ class CalibrationPopup(wx.Frame):
             self.entr_cntrx.SetValue('%0.3f' % cenx)
             self.entr_cntry.SetValue('%0.3f' % ceny)
 
-class diFFit_XRDcal(wx.App):
+class CalXRD(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
     def __init__(self):
-        wx.App.__init__(self)
 
-    def run(self):
-        self.MainLoop()
+        if HAS_pyFAI:
+            ## Constructor
+            dialog = wx.Dialog.__init__(self, None, title='XRD Calibration',size=(460, 440))
+            ## remember: size=(width,height)
+            self.panel = wx.Panel(self)
 
-    def createApp(self):
-        frame = CalibrationPopup()
-        frame.Show()
-        self.SetTopWindow(frame)
+            self.InitUI()
+            self.Centre()
+            self.Show()
 
-    def OnInit(self):
-        self.createApp()
-        return True
+            ## Sets some typical defaults specific to GSE 13-ID procedure
+            self.pixel.SetValue('400')     ## binned pixels (2x200um)
+            self.EorL.SetValue('19.0')     ## 19.0 keV
+            self.Distance.SetValue('0.5')  ## 0.5 m
+            self.detslct.SetSelection(22)  ## Perkin detector
+            self.calslct.SetSelection(20)  ## CeO2
 
-def registerLarchPlugin():
-    return ('_diFFit', {})
+            if self.slctDorP.GetSelection() == 0:
+                self.sizer.Hide(self.pixel)
 
-class DebugViewer(diFFit_XRDcal):
-    def __init__(self, **kws):
-        diFFit_XRDcal.__init__(self, **kws)
+            ## Do not need flags if defaults are set
+            #self.FlagCalibrant = False
+            #self.FlagDetector  = False
+            self.FlagCalibrant = True
+            self.FlagDetector  = True
 
-    def OnInit(self):
-        #self.Init()
-        self.createApp()
-        #self.ShowInspectionTool()
-        return True
+        else:
+            print('pyFAI must be available for calibration.')
+            return        
 
-if __name__ == '__main__':
-    diFFit_XRDcal().run()
+    def InitUI(self):
+
+
+        ## Establish lists from pyFAI
+        clbrnts = [] #['None']
+        self.dets = [] #['None']
+        for key,value in pyFAI.detectors.ALL_DETECTORS.items():
+            self.dets.append(key)
+        for key,value in pyFAI.calibrant.ALL_CALIBRANTS.items():
+            clbrnts.append(key)
+        self.CaliPath = None
+
+
+        ## Calibration Image selection
+        caliImg     = wx.StaticText(self.panel,  label='Calibration Image:' )
+        self.calFil = wx.TextCtrl(self.panel, size=(190, -1))
+        fileBtn1    = wx.Button(self.panel,      label='Browse...'             )
+
+        ## Calibrant selection
+        self.calslct = wx.Choice(self.panel,choices=clbrnts)
+        CalLbl = wx.StaticText(self.panel, label='Calibrant:' ,style=LEFT)
+
+        ## Detector selection
+        self.slctDorP = wx.Choice(self.panel,choices=['Detector','Pixel size (um)'])
+        self.detslct  = wx.Choice(self.panel, choices=self.dets)
+        self.pixel    = wx.TextCtrl(self.panel, size=(140, -1))
+
+        ## Energy or Wavelength
+        self.slctEorL = wx.Choice(self.panel,choices=['Energy (keV)','Wavelength (A)'])
+        self.EorL = wx.TextCtrl(self.panel, size=(140, -1))
+
+        ## Refine label
+        RefLbl = wx.StaticText(self.panel, label='To be refined...' ,style=LEFT)
+
+        ## Distance
+        self.Distance = wx.TextCtrl(self.panel, size=(140, -1))
+        DstLbl = wx.StaticText(self.panel, label='Distance (m):' ,style=LEFT)
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE1,  fileBtn1 )
+        self.calslct.Bind(wx.EVT_CHOICE,  self.onCalSel)
+        self.detslct.Bind(wx.EVT_CHOICE,  self.onDetSel)
+        self.slctDorP.Bind(wx.EVT_CHOICE, self.onDorPSel)
+        self.slctEorL.Bind(wx.EVT_CHOICE, self.onEorLSel)
+
+        self.sizer = wx.GridBagSizer(3, 3)
+
+        self.sizer.Add(caliImg,       pos = ( 1,1)               )
+        self.sizer.Add(self.calFil,   pos = ( 1,2), span = (1,2) )
+        self.sizer.Add(fileBtn1,      pos = ( 1,4)               )
+        self.sizer.Add(CalLbl,        pos = ( 3,1)               )
+        self.sizer.Add(self.calslct,  pos = ( 3,2), span = (1,2) )
+
+        self.sizer.Add(self.slctDorP, pos = ( 4,1)               )
+        self.sizer.Add(self.detslct,  pos = ( 4,2), span = (1,4) )
+        self.sizer.Add(self.pixel,    pos = ( 5,2), span = (1,2) )
+
+        self.sizer.Add(self.slctEorL, pos = ( 6,1)               )
+        self.sizer.Add(self.EorL,     pos = ( 6,2), span = (1,2) )
+
+        self.sizer.Add(RefLbl,        pos = ( 8,1)               )
+        self.sizer.Add(DstLbl,        pos = ( 9,1)               )
+        self.sizer.Add(self.Distance, pos = ( 9,2), span = (1,2) )
+
+        self.sizer.Add(hlpBtn,        pos = (11,1)               )
+        self.sizer.Add(canBtn,        pos = (11,2)               )
+        self.sizer.Add(okBtn,         pos = (11,3)               )
+
+        self.FindWindowById(wx.ID_OK).Disable()
+
+        self.panel.SetSizer(self.sizer)
+
+
+    def onCalSel(self,event=None):
+        #if self.calslct.GetSelection() == 0:
+        #    self.FlagCalibrant = False
+        #else:
+        #    self.FlagCalibrant = True
+        self.checkOK()
+
+    def onDetSel(self,event=None):
+        #if self.detslct.GetSelection() == 0:
+        #    self.FlagDetector = False
+        #else:
+        #    self.FlagDetector = True
+        self.checkOK()
+
+    def onCheckOK(self,event=None):
+        self.checkOK()
+
+    def checkOK(self):
+        if self.FlagCalibrant and self.CaliPath is not None:
+            if self.slctDorP.GetSelection() == 1:
+                self.FindWindowById(wx.ID_OK).Enable()
+            else:
+                if self.FlagDetector:
+                    self.FindWindowById(wx.ID_OK).Enable()
+                else:
+                    self.FindWindowById(wx.ID_OK).Disable()
+        else:
+            self.FindWindowById(wx.ID_OK).Disable()
+
+    def onEorLSel(self,event=None):
+
+        if self.slctEorL.GetSelection() == 1:
+            energy = float(self.EorL.GetValue()) ## units keV
+            wavelength = lambda_from_E(energy) ## units: A
+            self.EorL.SetValue(str(wavelength))
+        else:
+            wavelength = float(self.EorL.GetValue()) ## units: A
+            energy = E_from_lambda(wavelength) ## units: keV
+            self.EorL.SetValue(str(energy))
+
+        self.checkOK()
+
+    def onDorPSel(self,event=None):
+        if self.slctDorP.GetSelection() == 0:
+            self.sizer.Hide(self.pixel)
+            self.sizer.Show(self.detslct)
+        else:
+            self.sizer.Hide(self.detslct)
+            self.sizer.Show(self.pixel)
+
+        self.checkOK()
+
+    def onBROWSE1(self,event=None):
+        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose XRD calibration file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.calFil.Clear()
+            self.calFil.SetValue(os.path.split(path)[-1])
+            self.CaliPath = path
+            self.checkOK()
+
+# # # # # # # WAS IN mapviewer.py ; needs to be corrected or removed
+# 
+# # # # def onCalXRD(self, evt=None):
+# # # #     """
+# # # #     Perform calibration with pyFAI
+# # # #     mkak 2016.09.16
+# # # #     """
+# # # #     
+# # # #     ### can this pop up pyFAI or Dioptas GUI instead of creating own?
+# # # #     
+# # # #     myDlg = CalXRD()
+# # # # 
+# # # #     path, read = None, False
+# # # #     if myDlg.ShowModal() == wx.ID_OK:
+# # # #         read = True
+# # # # 
+# # # #     myDlg.Destroy()
+# # # # 
+# # # #     if read:
+# # # # 
+# # # #         usr_calimg = myDlg.CaliPath
+# # # # 
+# # # #         if myDlg.slctEorL.GetSelection() == 1:
+# # # #             usr_lambda = float(myDlg.EorL.GetValue())*1e-10 ## units: m
+# # # #             usr_E = E_from_lambda(usr_lambda,lambda_units='m') ## units: keV
+# # # #         else:
+# # # #             usr_E = float(myDlg.EorL.GetValue()) ## units keV
+# # # #             usr_lambda = lambda_from_E(usr_E,lambda_units='m') ## units: m
+# # # # 
+# # # #         if myDlg.slctDorP.GetSelection() == 1:
+# # # #             usr_pixel = float(myDlg.pixel.GetValue())*1e-6
+# # # #         else:
+# # # #             usr_det  = myDlg.detslct.GetString(myDlg.detslct.GetSelection())
+# # # #         usr_clbrnt  = myDlg.calslct.GetString(myDlg.calslct.GetSelection())
+# # # #         usr_dist = float(myDlg.Distance.GetValue())
+# # # # 
+# # # #         verbose = True #False
+# # # #         if verbose:
+# # # #             print('\n=== Calibration input ===')
+# # # #             print('XRD image: %s' % usr_calimg)
+# # # #             print('Calibrant: %s' % usr_clbrnt)
+# # # #             if myDlg.slctDorP.GetSelection() == 1:
+# # # #                 print('Pixel size: %0.1f um' % (usr_pixel*1e6))
+# # # #             else:
+# # # #                 print('Detector: %s' % usr_det)
+# # # #             print('Incident energy: %0.2f keV (%0.4f A)' % (usr_E,usr_lambda*1e10))
+# # # #             print('Starting distance: %0.3f m' % usr_dist)
+# # # #             print('=========================\n')
+# # # # 
+# # # #         ## Adapted from pyFAI-calib
+# # # #         ## note: -l:units mm; -dist:units m
+# # # #         ## mkak 2016.09.19
+# # # # 
+# # # #         if myDlg.slctDorP.GetSelection() == 1:
+# # # #             pform1 = 'pyFAI-calib -c %s -p %s -e %0.1f -dist %0.3f %s'
+# # # #             command1 = pform1 % (usr_clbrnt,usr_pixel,usr_E,usr_dist,usr_calimg)
+# # # #         else:
+# # # #             pform1 = 'pyFAI-calib -c %s -D %s -e %0.1f -dist %0.3f %s'
+# # # #             command1 = pform1 % (usr_clbrnt,usr_det,usr_E,usr_dist,usr_calimg)
+# # # #         pform2 = 'pyFAI-recalib -i %s -c %s %s'
+# # # #         command2 = pform2 % (usr_calimg.split('.')[0]+'.poni',usr_clbrnt,usr_calimg)
+# # # # 
+# # # #         if verbose:
+# # # #             print('\nNot functioning within code yet... but you could execute:')
+# # # #             print('\t $ %s' % command1)
+# # # #             print('\t $ %s\n\n' % command2)
+
+
+
+
+# class diFFit_XRDcal(wx.App):
+#     def __init__(self):
+#         wx.App.__init__(self)
+# 
+#     def run(self):
+#         self.MainLoop()
+# 
+#     def createApp(self):
+#         frame = CalibrationPopup()
+#         frame.Show()
+#         self.SetTopWindow(frame)
+# 
+#     def OnInit(self):
+#         self.createApp()
+#         return True
+# 
+# def registerLarchPlugin():
+#     return ('_diFFit', {})
+# 
+# class DebugViewer(diFFit_XRDcal):
+#     def __init__(self, **kws):
+#         diFFit_XRDcal.__init__(self, **kws)
+# 
+#     def OnInit(self):
+#         #self.Init()
+#         self.createApp()
+#         #self.ShowInspectionTool()
+#         return True
+# 
+# if __name__ == '__main__':
+#     diFFit_XRDcal().run()
