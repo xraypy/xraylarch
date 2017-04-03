@@ -349,6 +349,7 @@ class Fitting1DXRD(BasePanel):
 
         self.xmin       = None
         self.xmax       = None
+        self.x, self.y  = 0,0
 
         self.xlabel     = 'q (1/$\AA$)' #'q (A^-1)'
         self.ylabel     = 'Intensity (a.u.)'
@@ -724,13 +725,18 @@ class Fitting1DXRD(BasePanel):
 
         self.find_peaks(filter=filter)
 
-        if self.xrd1dgrp.pki is not None:
+        if len(self.xrd1dgrp.pki) > 0:
             self.dbgpl.owner.val_gdnss.Enable()
             self.rfgpl.btn_mtch.Enable()
 
     def onAddPks(self,event=None):
-    
-        print 'trying to add - need to grab coordinates'
+        
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        idx = (np.abs(self.plt_data[xi]-self.x)).argmin()
+        self.xrd1dgrp.pki.append(idx)
+
+        self.peak_display()
+        self.plot_data()
     
     def onRmvPksAll(self,event=None,filter=False):
 
@@ -741,7 +747,7 @@ class Fitting1DXRD(BasePanel):
     def find_peaks(self,event=None,filter=False):
 
         newpeaks = True
-        if self.xrd1dgrp.pki is not None:
+        if len(self.xrd1dgrp.pki) > 0:
             question = 'Are you sure you want to remove current peaks and search again?'
             newpeaks = YesNo(self,question,caption='Replace peaks warning')
 
@@ -807,13 +813,12 @@ class Fitting1DXRD(BasePanel):
 
     def plot_peaks(self):
 
-        if self.xrd1dgrp.pki is not None:
+        if len(self.xrd1dgrp.pki) > 0:
             self.define_peaks()
 
             xi = self.rngpl.ch_xaxis.GetSelection()
             pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
             self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
-            self.plot1D.cursor_mode = 'zoom'
 
     def remove_all_peaks(self,event=None):
 
@@ -824,7 +829,7 @@ class Fitting1DXRD(BasePanel):
 
     def delete_all_peaks(self,event=None):
 
-        self.plt_peaks,self.xrd1dgrp.pki = None,None
+        self.plt_peaks,self.xrd1dgrp.pki = None,[]
 
         self.peaklist = []
         self.peaklistbox.Clear()
@@ -877,14 +882,12 @@ class Fitting1DXRD(BasePanel):
 #### PLOTPANEL FUNCTIONS
     def plot1DXRD(self,panel):
 
-        self.plot1D = PlotPanel(panel,size=(1000, 500))
-        self.plot1D.messenger = self.owner.write_message
-
-
-        ## Set defaults for plotting
-#         self.plot1D.set_ylabel(self.ylabel)
-#         self.plot1D.set_xlabel(self.xlabel)
+        self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
+        self.plot1D.cursor_callback = self.on_cursor
+
+    def on_cursor(self,x=None, y=None, **kw):
+        self.x,self.y = x,y
 
     def onSAVEfig(self,event=None):
         self.plot1D.save_figure()
@@ -1474,6 +1477,8 @@ class Viewer1DXRD(wx.Panel):
         ## Disable until data
         self.val_cifscale.Disable()
         self.btn_cifreset.Disable()
+        self.slctEorL.Disable()
+        self.val_cifE.Disable()
 
         return vbox
 
@@ -1519,9 +1524,7 @@ class Viewer1DXRD(wx.Panel):
 #### PLOTPANEL FUNCTIONS
     def plot1DXRD(self,panel):
 
-        self.plot1D = PlotPanel(panel,size=(1000, 500))
-        self.plot1D.messenger = self.owner.write_message
-        
+        self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
   
     def onSAVEfig(self,event=None):
@@ -1637,6 +1640,8 @@ class Viewer1DXRD(wx.Panel):
         if cif:
             self.val_cifscale.Enable()
             self.btn_cifreset.Enable()
+            self.slctEorL.Enable()
+            self.val_cifE.Enable()
 
     def add1Ddata(self,data1dxrd):
 

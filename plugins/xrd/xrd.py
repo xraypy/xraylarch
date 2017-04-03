@@ -116,16 +116,11 @@ class xrd1d(grpobjt):
 
         
         ## Analysis parameters - set defaults
-        self.uvw  = None
-        self.pki = None
+        self.uvw = None
+        self.pki = []
 
         self.imin = None
         self.imax = None
-
-        self.qpks    = None
-        self.twthpks = None
-        self.dpks    = None
-        self.Ipks    = None     
 
         self.matches = None
     
@@ -273,14 +268,14 @@ class xrd1d(grpobjt):
         return pk_data
 
         
-    def refine_peaks(self,trim=False,bkgd=False):
-    
-        q,twth,d,I = self.trim_all(trim,bkgd)
-        
-        pktwth,pkfwhm,self.Ipks = peakfitter(self.pki,twth,I,fittype='double')
-        #self.peaks = zip(pkfwhm,pkI)
-
-        self.qpks,self.twthpks,self.dpks = calculate_xvalues(pktwth,'2th',self.wavelength)
+#     def refine_peaks(self,trim=False,bkgd=False):
+#     
+#         q,twth,d,I = self.trim_all(trim,bkgd)
+#         
+#         pktwth,pkfwhm,self.Ipks = peakfitter(self.pki,twth,I,fittype='double')
+#         #self.peaks = zip(pkfwhm,pkI)
+# 
+#         self.qpks,self.twthpks,self.dpks = calculate_xvalues(pktwth,'2th',self.wavelength)
 
 #     def fit_pattern(self):
 #         ## This isn't written yet

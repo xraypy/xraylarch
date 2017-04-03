@@ -36,7 +36,8 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, *args, **kw):
+    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='none',
+                 *args, **kw):
         
         screenSize = wx.DisplaySize()
         x,y = 1200, 720
@@ -70,7 +71,7 @@ class diFFit2DFrame(wx.Frame):
         self.xrddisplay1D = xrd1Dviewer
         
         self.color = 'bone'
-        self.flip = 'none'
+        self.flip = flip
 
         self.XRD2DMenuBar()
         self.Panel2DViewer()

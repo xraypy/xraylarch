@@ -1591,13 +1591,14 @@ class MapViewerFrame(wx.Frame):
         imd.Raise()
 
     def display_2Dxrd(self, map, title='image 0', xrmfile=None):
-        'displays 2D XRD pattern in diFFit viewer'
-
+        '''
+        displays 2D XRD pattern in diFFit viewer
+        '''
         if self.xrddisplay2D is None:
             poni = self.current_file.xrmmap['xrd'].attrs['calfile']
             if not os.path.exists(poni): poni = None
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,ponifile=poni,
-                                              xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip='vertical',
+                                              xrd1Dviewer=self.xrddisplay1D,ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
             self.xrddisplay2D.Show()
@@ -1607,11 +1608,9 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.Show()
 
     def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
-        'displays 1D XRD pattern in diFFit viewer'
-
-        print 'this is where we need to pass in cake information'
-        ## mkak 2017.03.29 - needs this updated? should pass in group?
-        
+        '''
+        displays 1D XRD pattern in diFFit viewer
+        '''
         data1dxrd = xrd1d(label=label,
                           energy=energy,
                           wavelength=lambda_from_E(energy))
