@@ -338,21 +338,25 @@ class diFFit2DFrame(wx.Frame):
 
     def on1DXRD(self,event=None):
         
-        myDlg = Calc1DPopup(self,self.plt_img)
-        
         read, save, plot = False, False, False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read = True
-            save = myDlg.ch_save.GetValue()
-            plot = myDlg.ch_plot.GetValue()
+        if self.calfile is not None and self.plot_img is not None:
+            myDlg = Calc1DPopup(self,self.plt_img)
+        
 
-            attrs = {'calccake':True,'calc1d':True}
-            if int(myDlg.xstep.GetValue()) < 1:
-                attrs.update({'steps':5001})
-            else:
-                attrs.update({'steps':int(myDlg.steps)})
+            if myDlg.ShowModal() == wx.ID_OK:
+                read = True
+                save = myDlg.ch_save.GetValue()
+                plot = myDlg.ch_plot.GetValue()
 
-        myDlg.Destroy()
+                attrs = {'calccake':True,'calc1d':True}
+                if int(myDlg.xstep.GetValue()) < 1:
+                    attrs.update({'steps':5001})
+                else:
+                    attrs.update({'steps':int(myDlg.steps)})
+
+            myDlg.Destroy()
+        else:
+            print('Data and calibration files must be available for this function.')
             
         if read:
             if save:
@@ -390,6 +394,7 @@ class diFFit2DFrame(wx.Frame):
                     self.xrddisplay1D = diFFit1DFrame()
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
+
             
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -414,20 +419,15 @@ class diFFit2DFrame(wx.Frame):
             try:
                 self.calfile = path
                 print('Loading calibration file: %s' % path)
-                #self.showPONI()
                 self.btn_integ.Enable()
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
 
    
-    def showPONI(self,event=None):
-        
-        print('Calibration file: %s' % self.calfile)
-
 ##############################################
 #### BACKGROUND FUNCTIONS
     def clearBkgd(self,event=None):
-        print 'self.raw_img',type(self.raw_img)
+
         self.bkgd = np.zeros(self.raw_img.shape)
         self.checkIMAGE()
 
@@ -480,7 +480,7 @@ class diFFit2DFrame(wx.Frame):
         print('Popup to create mask!')
 
     def clearMask(self,event=None):
-        print 'self.raw_img',type(self.raw_img)
+
         self.msk_img = np.zeros(self.raw_img.shape)
         self.checkIMAGE()
 
@@ -525,9 +525,9 @@ class diFFit2DFrame(wx.Frame):
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
-        MenuItem(self, diFFitMenu, '&Save settings', '', None)
-        MenuItem(self, diFFitMenu, '&Load settings', '', None)
-        MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
+#         MenuItem(self, diFFitMenu, '&Save settings', '', None)
+#         MenuItem(self, diFFitMenu, '&Load settings', '', None)
+#         MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
 
         menubar.Append(diFFitMenu, '&diFFit2D')
@@ -541,7 +541,7 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, ProcessMenu, 'C&reate mas&k', '', self.createMask)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
-        MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', None)
+        MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', self.clearBkgd)
         
         menubar.Append(ProcessMenu, '&Process')
 
@@ -551,9 +551,9 @@ class diFFit2DFrame(wx.Frame):
         
         MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
         MenuItem(self, AnalyzeMenu, 'Load cali&bration file', '', self.openPONI)
-        MenuItem(self, AnalyzeMenu, 'Show current calibratio&n', '', self.showPONI)
+#         MenuItem(self, AnalyzeMenu, 'Show current calibratio&n', '', None)
         AnalyzeMenu.AppendSeparator()
-        MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', None)
+        MenuItem(self, AnalyzeMenu, '&Integrate (open 1D viewer)', '', self.on1DXRD)
 
         menubar.Append(AnalyzeMenu, 'Anal&yze')
 

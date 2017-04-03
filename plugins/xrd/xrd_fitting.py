@@ -145,10 +145,10 @@ def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
-        print('\nInstrumental broadening parameters:')
-        print('---  U  : %0.8f'   % u)
-        print('---  V  : %0.8f'   % v)
-        print('---  W  : %0.8f\n' % w)
+    print('\nInstrumental broadening parameters:')
+    print('---  U  : %0.8f'   % u)
+    print('---  V  : %0.8f'   % v)
+    print('---  W  : %0.8f\n' % w)
 
     return(u,v,w)
 

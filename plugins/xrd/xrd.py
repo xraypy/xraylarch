@@ -240,6 +240,8 @@ class xrd1d(grpobjt):
     def all_data(self,reset=False,bkgd=False):
 
         if reset: self.imin,self.imax = 0,len(self.I)
+        if len(self.I[self.imin:self.imax]) != len(self.bkgd):
+            self.bkgd = np.zeros(len(self.I[self.imin:self.imax]))
         if bkgd:
             return [self.q[self.imin:self.imax],
                     self.twth[self.imin:self.imax],
@@ -280,11 +282,13 @@ class xrd1d(grpobjt):
 
         self.qpks,self.twthpks,self.dpks = calculate_xvalues(pktwth,'2th',self.wavelength)
 
-    def fit_pattern(self):
-    
-        fit = np.zeros(len(self.I))
-        for i,j in enumerate(self.pki):
-            print i,j
+#     def fit_pattern(self):
+#         ## This isn't written yet
+#         ## mkak 2017.04.03
+#         fit = np.zeros(len(self.I))
+#         for i,j in enumerate(self.pki):
+#             a = None
+        
 
 
         

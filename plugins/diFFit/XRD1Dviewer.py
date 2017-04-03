@@ -162,9 +162,9 @@ class diFFit1DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
         MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
-        MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
+#         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
-
+        
         menubar.Append(diFFitMenu, '&diFFit1D')
 
 
@@ -389,26 +389,35 @@ class Fitting1DXRD(BasePanel):
 
     def showCIF(self, event=None, **kws):
 
-        if event is not None:
+        if event is not None and self.xrd1dgrp is not None:
             cifname = event.GetString()
             amcsd_id = int(cifname.split()[0])
             ciffile = '/%s' % cifname
             
             energy = self.xrd1dgrp.energy
+            wavelength = self.xrd1dgrp.wavelength
             maxI = np.max(self.plt_data[3])*0.8
             maxq = np.max(self.plt_data[0])*1.05
+            
+            xi = self.rngpl.ch_xaxis.GetSelection()
         
             cifmatch = self.owner.cifdatabase.return_cif(amcsd_id)
             qall,Fall = calcCIFpeaks(ciffile,energy,verbose=True,fid=StringIO(cifmatch),qmax=maxq)
-            Fall = Fall/max(Fall)*maxI
-            cifpks = np.array([qall,Fall])
-            
-            cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-            self.plot1D.oplot(*cifpks,**cifargs)
+            Fall = Fall/max(Fall)*maxI            
 
-            ## self.plot1D.update_line(2,*cifpks, label=cifname)
-            print 'NEED TO FIGURE OUT HOW TO DELETE A DATASET WITHOUT REPLOTTING ALL'
-            ## mkak 2017.03.28
+            self.plot_data()
+            cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+            try:
+                cif = []
+                for i,F in enumerate(Fall):
+                    if F != 0: cif.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), F])
+                cif = np.array(zip(*cif))
+                u,v,w = self.xrd1dgrp.uvw
+                F = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w)
+                self.plot1D.oplot(self.plt_data[xi],F,**cifargs)  
+            except:
+                cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Fall])
+                self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
 
     
     def createFittingPanels(self,parent):
@@ -485,16 +494,29 @@ class Fitting1DXRD(BasePanel):
 
         return vbox
 
+    def MatchPanel(self,panel):
+        '''
+        Matches
+        '''
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        self.txt_amcsd_cnt = wx.StaticText(self, label='')
+        vbox.Add(self.txt_amcsd_cnt, flag=wx.ALL, border=10)
+        
+        return vbox
 
     def LeftSidePanel(self,panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         pattools = self.PatternTools(self)
-        vbox.Add(pattools,flag=wx.ALL,border=10)
+        vbox.Add(pattools,flag=wx.TOP|wx.LEFT,border=10)
        
         filtools = self.FilterTools(self)
-        vbox.Add(filtools,flag=wx.ALL,border=10)
+        vbox.Add(filtools,flag=wx.TOP|wx.LEFT,border=10)
+        
+        matchbx = self.MatchPanel(self)
+        vbox.Add(matchbx,flag=wx.TOP|wx.LEFT,border=10)        
 
         return vbox
 
@@ -559,20 +581,20 @@ class Fitting1DXRD(BasePanel):
     def reset_fitting(self,name=None,min=0,max=1):
 
         self.xrd1dgrp.label = name
+
         self.rngpl.val_xmin.SetValue('%0.3f' % min)
         self.rngpl.val_xmax.SetValue('%0.3f' % max)
         self.rngpl.ch_xaxis.SetSelection(0)
-        self.bkgdpl.ck_bkgd.SetValue(False)
-#         self.bkgdpl.btn_fbkgd.Enable()
-#         self.bkgdpl.btn_rbkgd.Disable()
-#         self.bkgdpl.btn_obkgd.Enable()
-#         self.pkpl.btn_fpks.Enable()
-#         self.pkpl.btn_opks.Enable()
-        self.bkgdpl.ck_bkgd.SetValue(False)
-#         self.bkgdpl.ck_bkgd.Disable()
-#         self.bkgdpl.btn_rbkgd.Disable()
-#         self.bkgdpl.btn_fbkgd.Enable()
 
+        self.pkpl.btn_fdpks.Enable()
+        self.pkpl.btn_opks.Enable()
+
+        self.bkgdpl.btn_obkgd.Enable()
+        self.bkgdpl.btn_fbkgd.Enable()
+        self.bkgdpl.btn_rbkgd.Disable()
+        self.bkgdpl.ck_bkgd.SetValue(False)
+        self.bkgdpl.ck_bkgd.Disable()
+        
         self.xmin     = min
         self.xmax     = max
         self.trim_data()
@@ -586,8 +608,6 @@ class Fitting1DXRD(BasePanel):
 
         self.check_range()
         self.trim_data()
-#         self.delete_all_peaks()
-#         self.remove_background()
         
         self.plot_data()
 
@@ -649,6 +669,9 @@ class Fitting1DXRD(BasePanel):
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
 
         self.plot_data()
+        
+        self.bkgdpl.btn_rbkgd.Enable()
+        self.bkgdpl.ck_bkgd.Enable()
 
     def onSbtrctBkgd(self,event=None):
 
@@ -667,11 +690,8 @@ class Fitting1DXRD(BasePanel):
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
 
         self.bkgdpl.ck_bkgd.SetValue(False)
-#         self.bkgdpl.ck_bkgd.Disable()
-#         self.bkgdpl.btn_rbkgd.Disable()
-#         self.bkgdpl.btn_fbkgd.Enable()
-
-
+        self.bkgdpl.ck_bkgd.Disable()
+        self.bkgdpl.btn_rbkgd.Disable()
 
     def plot_background(self,event=None):
 
@@ -704,16 +724,19 @@ class Fitting1DXRD(BasePanel):
 
         self.find_peaks(filter=filter)
 
-        print 'turn on enable/disable'
-#         if self.xrd1dgrp.pki is not None:
-#             self.dbgpl.owner.val_gdnss.Enable()
-#             self.rfgpl.btn_mtch.Enable()
+        if self.xrd1dgrp.pki is not None:
+            self.dbgpl.owner.val_gdnss.Enable()
+            self.rfgpl.btn_mtch.Enable()
 
+    def onAddPks(self,event=None):
+    
+        print 'trying to add - need to grab coordinates'
+    
     def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
-#         self.dbgpl.owner.val_gdnss.Disable()
-#         self.rfgpl.btn_mtch.Disable()
+        self.dbgpl.owner.val_gdnss.Disable()
+        self.rfgpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
 
@@ -734,8 +757,7 @@ class Fitting1DXRD(BasePanel):
             self.peak_display()
             self.plot_peaks()
 
-#             self.pkpl.btn_rpks.Enable()
-#             self.pkpl.btn_fitpks.Enable()
+            self.pkpl.btn_rmvpks.Enable()
             
     def peak_display(self):
 
@@ -754,31 +776,34 @@ class Fitting1DXRD(BasePanel):
 
     def fit_instrumental(self,event=None):
 
-        u,v,w = instrumental_fit_uvw(self.xrd1dgrp.pki,
-                                     self.plt_data[1],self.plt_data[3],
-                                     halfwidth=self.halfwidth,
-                                     verbose=True)
+        try:
+            self.xrd1dgrp.uvw = instrumental_fit_uvw(self.xrd1dgrp.pki,
+                                                     self.plt_data[1],self.plt_data[3],
+                                                     halfwidth=self.halfwidth,
+                                                     verbose=False)
+        except:
+            pass
 
-    def fit_peaks(self,event=None):
-        
-        pktwth,pkFWHM,pkI = peakfitter(self.xrd1dgrp.pki,self.plt_data[1],self.plt_data[3],
-                                                halfwidth=self.halfwidth,
-                                                fittype='double',
-                                                verbose=True)
-        print('\nFit results:')
-        for i,(twthi,fwhmi,inteni) in enumerate(zip(pktwth,pkFWHM,pkI)):
-            print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
-        print
-        
-        ## Updates variable and plot with fit results
-        wavelength = self.xrd1dgrp.wavelength
-        self.plt_peaks = np.zeros((4,len(pktwth)))
-        self.plt_peaks[0] = q_from_twth(pktwth,wavelength)
-        self.plt_peaks[1] = pktwth
-        self.plt_peaks[2] = d_from_twth(pktwth,wavelength)
-        self.plt_peaks[3] = pkI
-
-        self.plot_data()
+#     def fit_peaks(self,event=None):
+#         
+#         pktwth,pkFWHM,pkI = peakfitter(self.xrd1dgrp.pki,self.plt_data[1],self.plt_data[3],
+#                                                 halfwidth=self.halfwidth,
+#                                                 fittype='double',
+#                                                 verbose=True)
+#         print('\nFit results:')
+#         for i,(twthi,fwhmi,inteni) in enumerate(zip(pktwth,pkFWHM,pkI)):
+#             print('Peak %i @ %0.2f deg. (fwhm %0.3f deg, %i counts)' % (i,twthi,fwhmi,inteni))
+#         print
+#         
+#         ## Updates variable and plot with fit results
+#         wavelength = self.xrd1dgrp.wavelength
+#         self.plt_peaks = np.zeros((4,len(pktwth)))
+#         self.plt_peaks[0] = q_from_twth(pktwth,wavelength)
+#         self.plt_peaks[1] = pktwth
+#         self.plt_peaks[2] = d_from_twth(pktwth,wavelength)
+#         self.plt_peaks[3] = pkI
+# 
+#         self.plot_data()
 
     def plot_peaks(self):
 
@@ -795,8 +820,7 @@ class Fitting1DXRD(BasePanel):
         self.delete_all_peaks()
         self.plot_data()
 
-        #self.pkpl.btn_rpks.Disable()
-        #self.pkpl.btn_fitpks.Disable()
+        self.pkpl.btn_rmvpks.Disable()
 
     def delete_all_peaks(self,event=None):
 
@@ -805,10 +829,6 @@ class Fitting1DXRD(BasePanel):
         self.peaklist = []
         self.peaklistbox.Clear()
         self.pkpl.ttl_cntpks.SetLabel('Total: 0 peaks')
-
-    def edit_peaks(self,event=None):
-
-        print('Not implemented: edit_peaks function')
 
     def peak_options(self,event=None):
 
@@ -830,8 +850,6 @@ class Fitting1DXRD(BasePanel):
 
         if peakname is None and evt is not None:
             peakname = evt.GetString()
-##      if pki is None and evt is not None:
-##          pki = self.peaklistbox.GetSelections()
 
     def define_peaks(self):
     
@@ -882,24 +900,23 @@ class Fitting1DXRD(BasePanel):
         self.check1Daxis()
 
     def optionsON(self,event=None):
-        
-        print 'options all turned on right now.'
 
-#         ## RangeToolsPanel
-#         self.rngpl.ch_xaxis.Enable()
-#         self.rngpl.val_xmin.Enable()
-#         self.rngpl.val_xmax.Enable()
-#         self.rngpl.btn_rngreset.Enable()
-#         ## BackgroundToolsPanel
-#         self.bkgdpl.btn_fbkgd.Enable()
-#         self.bkgdpl.btn_obkgd.Enable()
-#         self.bkgdpl.btn_rbkgd.Enable()
-#         self.bkgdpl.ck_bkgd.Enable()
-#         ## PeakToolsPanel
-#         self.pkpl.btn_fpks.Enable()
-#         self.pkpl.btn_opks.Enable()
-#         self.pkpl.val_intthr.Enable()
-#         self.pkpl.btn_rpks.Enable()
+        ## RangeToolsPanel
+        self.rngpl.ch_xaxis.Enable()
+        self.rngpl.val_xmin.Enable()
+        self.rngpl.val_xmax.Enable()
+        self.rngpl.btn_rngreset.Enable()
+        ## BackgroundToolsPanel
+        self.bkgdpl.btn_fbkgd.Enable()
+        self.bkgdpl.btn_obkgd.Enable()
+        self.bkgdpl.btn_rbkgd.Disable()
+        self.bkgdpl.ck_bkgd.Disable()
+        ## PeakToolsPanel
+        self.pkpl.btn_fdpks.Enable()
+        self.pkpl.btn_opks.Enable()
+        self.pkpl.val_intthr.Enable()
+        self.pkpl.btn_rmvpks.Disable() #Enable()
+        self.pkpl.btn_addpks.Enable()
 
 
     def check1Daxis(self,event=None,yaxis=False):
@@ -1032,8 +1049,11 @@ class Fitting1DXRD(BasePanel):
 
     def onMatch(self,event=None):
 
-        fracq = float(self.val_gdnss.GetValue())
-        list_amcsd = match_database(fracq=fracq,q=self.plt_data[0],ipks=self.xrd1dgrp.pki,
+        gdness = float(self.val_gdnss.GetValue())
+        if gdness > 1 or gdness < 0:
+            self.val_gdnss.SetValue('0.85')
+            gdness = float(self.val_gdnss.GetValue())
+        list_amcsd = match_database(fracq=gdness,q=self.plt_data[0],ipks=self.xrd1dgrp.pki,
                                     cifdatabase=self.owner.cifdatabase)
         self.displayMATCHES(list_amcsd)
         
@@ -1041,20 +1061,31 @@ class Fitting1DXRD(BasePanel):
         '''
         Populates Results Panel with list
         '''
-        self.amcsdlistbox.Clear()
+        self.rtgpl.amcsdlistbox.Clear()
 
         if list_amcsd is not None:
             for amcsd in list_amcsd:
                 elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
                 entry = '%i : %s' % (amcsd,name)
-                self.amcsdlistbox.Append(entry)
+                self.rtgpl.amcsdlistbox.Append(entry)
             if len(list_amcsd) == 1:
                 self.txt_amcsd_cnt.SetLabel('1 MATCH')
             elif len(list_amcsd) > 1:
                 self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
             else:
                 self.txt_amcsd_cnt.SetLabel('')
+                
+        self.rtgpl.btn_clr.Enable()
 
+    def clearMATCHES(self,list_amcsd):
+        '''
+        Populates Results Panel with list
+        '''
+        self.rtgpl.amcsdlistbox.Clear()
+        self.txt_amcsd_cnt.SetLabel('')
+        self.rtgpl.btn_clr.Disable()        
+        
+        self.plot_data()
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
@@ -1348,8 +1379,8 @@ class Viewer1DXRD(wx.Panel):
         hbox_yaxis.Add(self.ch_yaxis, flag=wx.EXPAND, border=8)
         vbox.Add(hbox_yaxis, flag=wx.ALL, border=10)
 
-#         self.ch_xaxis.Disable()
-#         self.ch_yaxis.Disable()
+        self.ch_xaxis.Disable()
+        self.ch_yaxis.Disable()
 
         return vbox
 
@@ -1390,20 +1421,9 @@ class Viewer1DXRD(wx.Panel):
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
-        ###########################
-        ## Hide/show and reset
-        #hbox_btns = wx.BoxSizer(wx.HORIZONTAL)
-        
-        #self.btn_rmv   = wx.Button(self,label='remove')
-        #self.btn_rmv.Bind(wx.EVT_BUTTON,   self.remove1Ddata)
-
-        #hbox_btns.Add(self.btn_rmv,   flag=wx.RIGHT, border=8)
-        #vbox.Add(hbox_btns, flag=wx.ALL, border=10)
-        
         ## Disable until data
-#         self.btn_reset.Disable()
-#         self.val_scale.Disable()
-        #self.btn_rmv.Disable()
+        self.btn_reset.Disable()
+        self.val_scale.Disable()
         
         return vbox   
 
@@ -1452,8 +1472,8 @@ class Viewer1DXRD(wx.Panel):
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
         ## Disable until data
-#         self.val_cifscale.Disable()
-#         self.btn_cifreset.Disable()
+        self.val_cifscale.Disable()
+        self.btn_cifreset.Disable()
 
         return vbox
 
@@ -1609,17 +1629,14 @@ class Viewer1DXRD(wx.Panel):
 
     def optionsON(self,data=True,cif=False):
 
-        print 'optionsON'
-#         self.ch_xaxis.Enable()
-#         self.ch_yaxis.Enable()
-#         if data:
-#             self.val_scale.Enable()
-#             self.btn_reset.Enable()
-#             #self.btn_rmv.Enable()
-#         if cif:
-#             self.val_cifscale.Enable()
-#             self.btn_cifreset.Enable()
-
+        self.ch_xaxis.Enable()
+        self.ch_yaxis.Enable()
+        if data:
+            self.val_scale.Enable()
+            self.btn_reset.Enable()
+        if cif:
+            self.val_cifscale.Enable()
+            self.btn_cifreset.Enable()
 
     def add1Ddata(self,data1dxrd):
 
@@ -1644,8 +1661,10 @@ class Viewer1DXRD(wx.Panel):
 
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
-        datarg = {'xlabel':self.xlabel,'ylabel':self.ylabel,'label':datalabel,'marker':'','show_legend':True}
-        self.plotlist.append(self.plot1D.oplot(self.xy_plot[-1][xi],self.xy_plot[-1][3],**datarg))
+        datarg = {'xlabel':self.xlabel,'ylabel':self.ylabel,'label':datalabel,'marker':'',
+                  'show_legend':True}
+        x,y = self.xy_plot[-1][xi],self.xy_plot[-1][3]
+        self.plotlist.append(self.plot1D.oplot(x,y,**datarg))
 
         ## Use correct x-axis units
         self.check1Daxis(yaxis=True)
@@ -1656,9 +1675,8 @@ class Viewer1DXRD(wx.Panel):
         ## Update toolbox panel
         self.val_scale.SetValue('%i' % self.xy_scale[-1])
         self.optionsON(data=True,cif=False)
-        #self.owner.nb.SetSelection(0) ## switches to viewer panel
         self.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (self.xy_data[-1].energy,
-                                                                  self.xy_data[-1].wavelength))
+                                                             self.xy_data[-1].wavelength))
 
     def normalize1Ddata(self,event=None,cif=False):
 
@@ -1685,18 +1703,25 @@ class Viewer1DXRD(wx.Panel):
         self.rescale1Daxis(xaxis=False,yaxis=True)
 
 #     def remove1Ddata(self,event=None):
-#         
-#         ## Needs pop up warning: "Do you really want to delete this data set from plotter?
-#         ## Current settings will not be saved."
 #         ## mkak 2016.11.10
-#         
-#         plt_no = self.ch_data.GetSelection()        
-#         print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
+#         try:
+#             plt_no = self.ch_data.GetSelection()
+#             name = self.data_name[plt_no]
+#             question = 'Remove %s from XRD 1D viewer?' % name
+#             rmdata = YesNo(self,question,caption='Overwrite warning')
+#         except:
+#             pass
+#             
+#         if rmdata:
+#             print 'EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no]
 # 
-#         ## removing name from list works... do not activate till rest is working
-#         ## mkak 2016.11.10
-# #         self.data_name.remove(self.data_name[plt_no])
-# #         self.ch_data.Set(self.data_name)
+#             ## removing name from list works... do not activate till rest is working
+#             ## mkak 2016.11.10
+#             self.data_name.remove(self.data_name[plt_no])
+#             self.ch_data.Set(self.data_name)
+#             
+#             if len(self.data_name) < 1:
+#                 print 'HERE: remove all buttons that need data to exist'
 
     def onSELECT(self,event=None):
 
@@ -1764,20 +1789,17 @@ class Viewer1DXRD(wx.Panel):
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
 
-    def reset1Dscale(self,event=None,xaxis=False,yaxis=True):
+    def reset1Dscale(self,event=None):
 
         plt_no = self.ch_data.GetSelection()
         xi = self.ch_xaxis.GetSelection()
 
-        if yaxis:
-            self.xy_plot[plt_no][3] = self.xy_data[plt_no].I
-            self.plot1D.update_line(int(self.idata[plt_no]),
+        self.xy_plot[plt_no][3] = self.xy_data[plt_no].I
+        self.plot1D.update_line(int(self.idata[plt_no]),
                                     np.array(self.xy_plot[plt_no][xi]),
                                     np.array(self.xy_plot[plt_no][3]))
-            self.xy_scale[plt_no] = np.max(self.xy_data[plt_no].I)
-            self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
-        if xaxis:
-            print 'rescaling x-axis'
+        self.xy_scale[plt_no] = np.max(self.xy_data[plt_no].I)
+        self.val_scale.SetValue('%i' % self.xy_scale[plt_no])
 
         self.plot1D.canvas.draw()
         self.plot1D.unzoom_all()
@@ -1790,6 +1812,7 @@ class Viewer1DXRD(wx.Panel):
         xi = self.ch_xaxis.GetSelection()
 
         self.cif_scale[cif_no] = CIFSCALE
+        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
         self.normalize1Ddata(cif=True)
         
         self.plot1D.update_line(int(self.icif[cif_no]),
@@ -1800,7 +1823,7 @@ class Viewer1DXRD(wx.Panel):
         
         self.rescale1Daxis(xaxis=False,yaxis=True)
         
-        self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
+#         self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
 
     def set_xview(self, x1, x2):
 
@@ -1981,10 +2004,10 @@ class RangeToolsPanel(wx.Panel):
         vbox_rng.Add(hbox_xset, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=8)
 
         ## until data is loaded:
-#         self.ch_xaxis.Disable()
-#         self.val_xmin.Disable()
-#         self.val_xmax.Disable()
-#         self.btn_rngreset.Disable()
+        self.ch_xaxis.Disable()
+        self.val_xmin.Disable()
+        self.val_xmax.Disable()
+        self.btn_rngreset.Disable()
 
         return vbox_rng
 
@@ -2037,10 +2060,10 @@ class BackgroundToolsPanel(wx.Panel):
         vbox_bkgd.Add(self.ck_bkgd, flag=wx.BOTTOM, border=8)
 
         ## until data is loaded:
-#         self.btn_fbkgd.Disable()
-#         self.btn_obkgd.Disable()
-#         self.btn_rbkgd.Disable()
-#         self.ck_bkgd.Disable()
+        self.btn_fbkgd.Disable()
+        self.btn_obkgd.Disable()
+        self.btn_rbkgd.Disable()
+        self.ck_bkgd.Disable()
 
         return vbox_bkgd
 
@@ -2076,9 +2099,9 @@ class PeakToolsPanel(wx.Panel):
         hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox4_pks = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.btn_fpks = wx.Button(self,label='Find peaks')
-        self.btn_fpks.Bind(wx.EVT_BUTTON, partial(self.owner.onPeaks, filter=True))
-        hbox1_pks.Add(self.btn_fpks, flag=wx.RIGHT, border=8)
+        self.btn_fdpks = wx.Button(self,label='Find peaks')
+        self.btn_fdpks.Bind(wx.EVT_BUTTON, partial(self.owner.onPeaks, filter=True))
+        hbox1_pks.Add(self.btn_fdpks, flag=wx.RIGHT, border=8)
 
         self.btn_opks = wx.Button(self,label='Search options')
         self.btn_opks.Bind(wx.EVT_BUTTON, self.owner.peak_options)
@@ -2102,15 +2125,13 @@ class PeakToolsPanel(wx.Panel):
         self.ttl_cntpks = wx.StaticText(self, label=('Total: 0 peaks'))
         hbox3_pks.Add(self.ttl_cntpks, flag=wx.EXPAND|wx.ALL, border=8)
 
+        self.btn_addpks = wx.Button(self,label='Add last click')
+        self.btn_addpks.Bind(wx.EVT_BUTTON, self.owner.onAddPks)
+        hbox4_pks.Add(self.btn_addpks, flag=wx.RIGHT, border=8)
 
-        self.btn_rpks = wx.Button(self,label='Remove all')
-        self.btn_rpks.Bind(wx.EVT_BUTTON, self.owner.onRmvPksAll)
-        hbox4_pks.Add(self.btn_rpks, flag=wx.RIGHT, border=8)
-
-        self.btn_fitpks = wx.Button(self,label='Fit peaks')
-        self.btn_fitpks.Bind(wx.EVT_BUTTON, self.owner.fit_peaks)
-        hbox4_pks.Add(self.btn_fitpks, flag=wx.RIGHT, border=8)
-
+        self.btn_rmvpks = wx.Button(self,label='Remove all')
+        self.btn_rmvpks.Bind(wx.EVT_BUTTON, self.owner.onRmvPksAll)
+        hbox4_pks.Add(self.btn_rmvpks, flag=wx.RIGHT, border=8)
 
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
@@ -2119,13 +2140,13 @@ class PeakToolsPanel(wx.Panel):
         vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
 
         self.val_intthr.SetValue(str(self.owner.intthrsh))
-#         self.btn_fitpks.Disable()
 
         ## until data is loaded:
-#         self.btn_fpks.Disable()
-#         self.btn_opks.Disable()
-#         self.val_intthr.Disable()
-#         self.btn_rpks.Disable()
+        self.btn_fdpks.Disable()
+        self.btn_opks.Disable()
+        self.val_intthr.Disable()
+        self.btn_rmvpks.Disable()
+        self.btn_addpks.Disable()
 
         return vbox_pks
 
@@ -2188,22 +2209,22 @@ class RefinementPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        ttl_gdnss = wx.StaticText(self, label='min. fraction')
+        self.btn_mtch = wx.Button(self,label='Search based on q')
+        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+
+        ttl_gdnss = wx.StaticText(self, label='Goodness')
         self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
         hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
         hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
 
         self.owner.val_gdnss.SetValue('0.85')
 
-        self.btn_mtch = wx.Button(self,label='Search based on q')
-        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-        
         vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
         vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
-#         self.owner.val_gdnss.Disable()
-#         self.btn_mtch.Disable()
+        self.owner.val_gdnss.Disable()
+        self.btn_mtch.Disable()
 
         return vbox
 
@@ -2227,25 +2248,18 @@ class ResultsPanel(wx.Panel):
         self.SetSizer(panel1D)
 
     def ResultsTools(self):
+
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.owner.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,-1))
-        self.owner.txt_amcsd_cnt = wx.StaticText(self, label='')
+        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,-1))
 
-        vbox.Add(self.owner.txt_amcsd_cnt, flag=wx.BOTTOM, border=8)
-        vbox.Add(self.owner.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+        self.btn_clr = wx.Button(self,label='Clear list')
+        self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        btn_prv = wx.Button(self,label='Preview CIF')
-        btn_prv.Bind(wx.EVT_BUTTON, None)
-        hbox.Add(btn_prv, flag=wx.RIGHT, border=8)
-
-        btn_clr = wx.Button(self,label='Clear Results')
-        btn_clr.Bind(wx.EVT_BUTTON, None)
-        hbox.Add(btn_clr, flag=wx.RIGHT, border=8)
+        vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
         
-        vbox.Add(hbox, flag=wx.BOTTOM, border=4)
-
+        self.btn_clr.Disable()
 
         return vbox
 
@@ -2394,11 +2408,10 @@ class Calc1DPopup(wx.Dialog):
 
 
     def onCHECK(self,event=None):
-        print 'onCHECK'
-#         if self.ch_save.GetValue() or self.ch_plot.GetValue():
-#            self.okBtn.Enable()
-#         else:
-#             self.okBtn.Disable()
+        if self.ch_save.GetValue() or self.ch_plot.GetValue():
+           self.okBtn.Enable()
+        else:
+            self.okBtn.Disable()
 
     def setDefaults(self):
 
@@ -2411,15 +2424,15 @@ class Calc1DPopup(wx.Dialog):
 
         self.wedge_arrow.SetRange(1, 10)
         self.wedge_arrow.SetValue(1)
-#         self.okBtn.Disable()
-# 
-#         self.ymin.Disable()
-#         self.ymax.Disable()
-#         self.xmin.Disable()
-#         self.xmax.Disable()
-#         self.wedges.Disable()
-#         self.wedge_arrow.Disable()
-#         self.ch_xunit.Disable()
+        self.okBtn.Disable()
+
+        self.ymin.Disable()
+        self.ymax.Disable()
+        self.xmin.Disable()
+        self.xmax.Disable()
+        self.wedges.Disable()
+        self.wedge_arrow.Disable()
+        self.ch_xunit.Disable()
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
