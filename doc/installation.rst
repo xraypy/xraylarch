@@ -48,28 +48,30 @@ remove components.  Anaconda includes a robust package manager called
 *conda* that makes it easy to update to the latest versions of Larch when
 you are ready.
 
-So, begin by installing the latest version of Anaconda Python 2.7 from
+So, begin by installing the latest version of Anaconda Python 2.7 (Please from
 their `Anaconda Downloads`_ site.  Once that is installed, you can open a
 Terminal (on Linux or Mac OSX) or the Anaconda prompt (on Windows) and
 type::
 
     conda install -yc newville xraylarch
 
-    # on Windows or Mac OSX
-    larch_makeicons
 
 This will install all the software needed to run Larch and all its
-components.  The `larch_makeicons` command will create a Folder called
-*Larch* on your desktop that includes shortcuts (Windows) or small Apps (Mac
-OSX) to run the following Larch programs:
+components.  On Windows and Mac OSX, it will also create a Folder called
+*Larch* on your desktop that includes shortcuts (Windows) or small Apps
+(Mac OSX) to run the following Larch programs:
 
    * `larch`  -- simplest command-line interface.
    * `larch_gui` -- Enhanced command-line interface with GUI data browser.
-   * `xrfdisplay` -- Display XRF Spectrum.
    * `gse_mapviewer` -- XRF Mapviewer for GSECARS XRF Map data.
    * `gse_scanviewer` -- Simple XAFS and Scan viewer for GSECARS data.
+   * `xrfdisplay` -- Display XRF Spectrum.
+   * `xyfit` -- Display and Peak Fitting of XANES and other 1D spectra (beta).
+   * `1D XRD Viewer` -- Display and work with XRD diffraction patterns (beta).
+   * `2D XRD Viewer` -- Display and work with XRD diffraction images (beta).
 
-An advantage of using Anaconda is that updates can be installed with::
+A key advantage of using Anaconda is that once installed, updates can be
+installed with::
 
     conda update -yc newville xraylarch
 
