@@ -40,18 +40,20 @@ do so within year or so.
 Using Anaconda Python
 ================================
 
-`Anaconda Python`_ provides a free and
-well-supported version of Python for scientific work with many useful
-packages included.  By default, Anaconda Python installs into your own home
-folder and does not require extra permissions to install, upgrade, or
-remove components.  Anaconda includes a robust package manager called
-*conda* that makes it easy to update to the latest versions of Larch when
-you are ready.
+`Anaconda Python`_ provides a free and well-supported version of Python for
+scientific work with many useful packages included.  By default, Anaconda
+Python installs into your own home folder (on Windows, it will use the
+`APPDATA` location, which is typically something like
+`C:\Users\YourName\AppData\Local\Continuum\Anaconda2`).  Installing does
+not require extra permissions to install, upgrade, or remove components.
+Anaconda includes a robust package manager called *conda* that makes it
+easy to update the packages it manages, including Larch.
 
-So, begin by installing the latest version of Anaconda Python 2.7 (Please from
-their `Anaconda Downloads`_ site.  Once that is installed, you can open a
-Terminal (on Linux or Mac OSX) or the Anaconda prompt (on Windows) and
-type::
+Begin by installing the latest version of Anaconda Python (as described
+above Python 2.7 is currently recommended over Python 3.6 except for the
+most adventerous users) from the `Anaconda Downloads`_ site.  Once that is
+installed, you can open a Terminal (on Linux or Mac OSX) or the Anaconda
+prompt (on Windows) and type::
 
     conda install -yc newville xraylarch
 
@@ -89,7 +91,7 @@ can use `git` to grab the latest development version of the source code::
 Prerequisites
 ----------------------
 
-Larch requires Python version 2.7.1 or higher.  Larch works with Python 3.5
+Larch requires Python version 2.7 or higher.  Larch works with Python 3.5
 and 3.6, but requires the not-yet-supported Phoenix branch of wxPython, and
 should be considered experimental.
 
