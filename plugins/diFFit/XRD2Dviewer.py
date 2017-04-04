@@ -170,7 +170,8 @@ class diFFit2DFrame(wx.Frame):
         self.calcIMAGE()
         
         self.xrd2Dviewer.plot2D.display(self.plt_img)
-
+        self.displayCAKE()
+                
         self.autoContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
@@ -191,6 +192,7 @@ class diFFit2DFrame(wx.Frame):
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.data_images[img_no]
         self.displayIMAGE()
+        
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
