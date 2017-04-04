@@ -102,7 +102,7 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.openDB(dbname='amcsd_cif.db')
+#         self.openDB(dbname='amcsd_cif.db')
 
         ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
