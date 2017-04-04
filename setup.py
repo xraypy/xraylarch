@@ -252,6 +252,20 @@ if deps_ok and not os.path.exists('.deps'):
     f.write('1\n')
     f.close()
 
+# create desktop icons
+if (cmdline_args[0] == 'install' and 'Anaconda' in sys.version and
+    (sys.platform == 'darwin' or os.name == 'nt')):
+    sdir = 'Scripts'
+    pyexe = 'python.exe'
+    if sys.platform == 'darwin':
+        pyexe = os.path.join('bin', 'python')
+        sdir = 'bin'
+    cmd ="%s %s" % (os.path.join(sys.exec_prefix, pyexe),
+                    os.path.join(sys.exec_prefix, sdir, 'larch_makeicons'))
+    os.system(cmd)
+
+
+
 if len(missing) > 0:
     msg = """
 #==============================================================#
