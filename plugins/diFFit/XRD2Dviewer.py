@@ -355,7 +355,7 @@ class diFFit2DFrame(wx.Frame):
     def on1DXRD(self,event=None):
         
         read, save, plot = False, False, False
-        if self.calfile is not None and self.plot_img is not None:
+        if self.calfile is not None and self.plt_img is not None:
             myDlg = Calc1DPopup(self,self.plt_img)
         
 
