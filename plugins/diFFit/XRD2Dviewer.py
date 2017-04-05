@@ -40,7 +40,7 @@ class diFFit2DFrame(wx.Frame):
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1200, 720
+        x,y = 1000, 720
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
