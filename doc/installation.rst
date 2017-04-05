@@ -55,8 +55,7 @@ most adventerous users) from the `Anaconda Downloads`_ site.  Once that is
 installed, you can open a Terminal (on Linux or Mac OSX) or the Anaconda
 prompt (on Windows) and type::
 
-    conda install -yc newville xraylarch
-
+    conda install -yc GSECARS xraylarch
 
 This will install all the software needed to run Larch and all its
 components.  On Windows and Mac OSX, it will also create a Folder called
@@ -75,7 +74,12 @@ components.  On Windows and Mac OSX, it will also create a Folder called
 A key advantage of using Anaconda is that once installed, updates can be
 installed with::
 
-    conda update -yc newville xraylarch
+    conda update -yc GSECARS xraylarch
+
+As of this writing, some functionality -- notably X-ray diffraction -- may
+need additional libraries installed, and some of these libraries may not be
+available for Python3.6 or for all platforms.   We're working on this, but
+if you need help, please contact us.
 
 
 Source Installation
