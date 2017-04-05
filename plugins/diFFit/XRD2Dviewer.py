@@ -145,8 +145,12 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            print('Reading file: %s' % path)
-            newimg = tifffile.imread(path)
+            try:
+                newimg = tifffile.imread(path)
+                print('Reading file: %s' % path)
+            except:
+                print('Cannot read as an image file: %s' % path)
+                return
             
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
