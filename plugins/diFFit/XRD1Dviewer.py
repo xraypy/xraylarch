@@ -1628,7 +1628,7 @@ class Viewer1DXRD(wx.Panel):
     
         energy = self.getE()
         
-        maxq = 5
+        maxq = 5.
         for i,data in enumerate(self.xy_plot):
             if 1.05*np.max(data[0]) > maxq:
                 maxq = 1.05*np.max(data[0])
@@ -1853,7 +1853,7 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D.canvas.draw()
         self.plot1D.unzoom_all()
-        self.rescale1Daxis(xaxis=xaxis,yaxis=xaxis)
+        self.rescale1Daxis(xaxis=False,yaxis=True)
 
 
     def resetCIFscale(self,event=None):

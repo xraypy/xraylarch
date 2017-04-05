@@ -117,7 +117,6 @@ def data_gaussian_fit(x,y,fittype='single'):
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt[2])
         pkint  = np.max(gaussian(x,*popt))
 
-   
     return pkpos,pkfwhm,pkint
     
 
@@ -131,9 +130,9 @@ def doublegaussian(x,a1,b1,c1,a2,b2,c2):
     return a1*np.exp(-(x-b1)**2/(2*c1**2))+a2*np.exp(-(x-b2)**2/(2*c2**2))
 
 
-def instrumental_fit_uvw(ipeaks, twth, I, halfwidth=40, verbose=True):
+def instrumental_fit_uvw(ipeaks, twthaxis, I, halfwidth=40, verbose=True):
 
-    twth,FWHM,inten = peakfitter(ipeaks,twth,I,halfwidth=halfwidth,
+    twth,FWHM,inten = peakfitter(ipeaks,twthaxis,I,halfwidth=halfwidth,
                            fittype='double',verbose=verbose)
 
     tanth = np.tan(np.radians(twth/2))
