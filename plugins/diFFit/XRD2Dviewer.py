@@ -41,8 +41,13 @@ class diFFitCakePanel(wx.Panel):
 
         wx.Panel.__init__(self, parent)
         self.owner = owner
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=(500, 500))
         self.plot2D.messenger = self.owner.write_message
+        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        
+        self.SetSizer(vbox)
         
 class diFFit2DPanel(wx.Panel):
     '''
@@ -53,8 +58,13 @@ class diFFit2DPanel(wx.Panel):
 
         wx.Panel.__init__(self, parent)
         self.owner = owner
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=(500, 500))
         self.plot2D.messenger = self.owner.write_message
+        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        
+        self.SetSizer(vbox)
 
 class diFFit2DFrame(wx.Frame):
     '''
