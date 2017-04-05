@@ -15,7 +15,7 @@ import numpy as np
 
 from larch_plugins.xrd.xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                                        q_from_d, q_from_twth, E_from_lambda)
-from larch_plugins.xrd.xrd_pyFAI import integrate_xrd
+from larch_plugins.xrd.xrd_pyFAI import integrate_xrd,calc_cake
 from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
@@ -348,7 +348,7 @@ class XRD(grpobjt):
             
     def calc_1D(self,save=False,calccake=True,calc1d=True,verbose=False):
     
-        kwargs = {'steps':self.steps,'calccake':calccake,'calc1d':calc1d}
+        kwargs = {'steps':self.steps}
         
         if save:
             file = self.save_1D()
@@ -356,8 +356,9 @@ class XRD(grpobjt):
                     
         if os.path.exists(self.calfile):
             if len(self.data2D) > 0:
-                self.data1D,self.cake = integrate_xrd(self.data2D,self.calfile,
-                                                      verbose=verbose,**kwargs)
+                self.data1D = integrate_xrd(self.data2D,self.calfile,
+                                            verbose=verbose,**kwargs)
+                self.cake = calc_cake(self.data2D,self.calfile, unit='q')
             else:
                 if verbose:
                     print('No 2D XRD data provided.')
