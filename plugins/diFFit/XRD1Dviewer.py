@@ -1628,7 +1628,7 @@ class Viewer1DXRD(wx.Panel):
     
         energy = self.getE()
         
-        maxq = 5
+        maxq = 5.
         for i,data in enumerate(self.xy_plot):
             if 1.05*np.max(data[0]) > maxq:
                 maxq = 1.05*np.max(data[0])
