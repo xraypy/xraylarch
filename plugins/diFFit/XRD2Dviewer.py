@@ -20,7 +20,7 @@ from wxutils import MenuItem
 import larch
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda
+from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -31,6 +31,40 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 
 ###################################
+
+class diFFitCakePanel(wx.Panel):
+    '''
+    Panel for housing 2D XRD image
+    '''
+    label='Cake'
+    def __init__(self,parent,owner=None,_larch=None):
+
+        wx.Panel.__init__(self, parent)
+        self.owner = owner
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot2D = ImagePanel(self,size=(500, 500))
+        self.plot2D.messenger = self.owner.write_message
+        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        
+        self.SetSizer(vbox)
+        
+class diFFit2DPanel(wx.Panel):
+    '''
+    Panel for housing 2D XRD cake
+    '''
+    label='2D XRD'
+    def __init__(self,parent,owner=None,_larch=None):
+
+        wx.Panel.__init__(self, parent)
+        self.owner = owner
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot2D = ImagePanel(self,size=(500, 500))
+        self.plot2D.messenger = self.owner.write_message
+        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        
+        self.SetSizer(vbox)
 
 class diFFit2DFrame(wx.Frame):
     '''
@@ -58,6 +92,7 @@ class diFFit2DFrame(wx.Frame):
         self.raw_img = np.zeros((2048,2048))
         self.flp_img = np.zeros((2048,2048))
         self.plt_img = np.zeros((2048,2048))
+        self.cake    = None
         
         self.msk_img  = np.ones((2048,2048))
         self.bkgd_img = np.zeros((2048,2048))
@@ -126,7 +161,6 @@ class diFFit2DFrame(wx.Frame):
             except:
                 print('Cannot read as an image file: %s' % path)
                 return
-
             
             self.plot2Dxrd(newimg,os.path.split(path)[-1])
             
@@ -149,7 +183,9 @@ class diFFit2DFrame(wx.Frame):
         self.checkIMAGE()
         self.calcIMAGE()
         
-        self.plot2D.display(self.plt_img)
+        self.xrd2Dviewer.plot2D.display(self.plt_img)
+        self.displayCAKE()
+                
         self.autoContrast()
 
         self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
@@ -163,12 +199,14 @@ class diFFit2DFrame(wx.Frame):
         self.calcIMAGE()
         self.colorIMAGE()
         
-        self.plot2D.redraw()
+        self.xrd2Dviewer.plot2D.redraw()
+        self.displayCAKE()
 
     def selectIMAGE(self,event=None):
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.data_images[img_no]
         self.displayIMAGE()
+        
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
@@ -235,8 +273,12 @@ class diFFit2DFrame(wx.Frame):
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
 
     def colorIMAGE(self):
-        self.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-        self.plot2D.display(self.plt_img)
+        self.xrd2Dviewer.plot2D.conf.cmap[0] = getattr(colormap, self.color)
+        self.xrd2Dviewer.plot2D.display(self.plt_img)
+
+        if self.cake is not None:
+            self.xrd2Dcake.plot2D.conf.cmap[0] = getattr(colormap, self.color)
+            self.xrd2Dcake.plot2D.display(self.cake[0])
 
     def setCOLOR(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
@@ -246,13 +288,20 @@ class diFFit2DFrame(wx.Frame):
     def setFLIP(self,event=None):
         self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
         self.redrawIMAGE()
+        
                
     def setZSCALE(self,event=None):
         if self.ch_scl.GetSelection() == 1: ## log
-            self.plot2D.conf.log_scale = True
+            self.xrd2Dviewer.plot2D.conf.log_scale = True
+            if self.cake is not None:
+                self.xrd2Dcake.plot2D.conf.log_scale = True
         else:  ## linear
-            self.plot2D.conf.log_scale = False
-        self.plot2D.redraw()
+            self.xrd2Dviewer.plot2D.conf.log_scale = False
+            if self.cake is not None:
+                self.xrd2Dcake.plot2D.conf.log_scale = False
+        self.xrd2Dviewer.plot2D.redraw()
+        if self.cake is not None:
+            self.xrd2Dcake.plot2D.redraw()
     
 
 ##############################################
@@ -327,14 +376,21 @@ class diFFit2DFrame(wx.Frame):
         self.sldr_min.SetValue(self.minCURRENT)
         self.sldr_max.SetValue(self.maxCURRENT)
 
-        self.plot2D.conf.auto_intensity = False        
-        self.plot2D.conf.int_lo[0] = self.minCURRENT
-        self.plot2D.conf.int_hi[0] = self.maxCURRENT
+        self.xrd2Dviewer.plot2D.conf.auto_intensity = False        
+        self.xrd2Dviewer.plot2D.conf.int_lo[0] = self.minCURRENT
+        self.xrd2Dviewer.plot2D.conf.int_hi[0] = self.maxCURRENT
         
-        self.plot2D.redraw()
+        self.xrd2Dviewer.plot2D.redraw()
             
         self.entr_min.SetLabel(str(self.minCURRENT))
         self.entr_max.SetLabel(str(self.maxCURRENT))
+
+        if self.cake is not None:
+            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
+            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.minCURRENT
+            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.maxCURRENT
+        
+            self.xrd2Dcake.plot2D.redraw()
 
 
 ##############################################
@@ -362,19 +418,15 @@ class diFFit2DFrame(wx.Frame):
         read, save, plot = False, False, False
         if self.calfile is not None and self.plt_img is not None:
             myDlg = Calc1DPopup(self,self.plt_img)
-        
-
             if myDlg.ShowModal() == wx.ID_OK:
                 read = True
                 save = myDlg.ch_save.GetValue()
                 plot = myDlg.ch_plot.GetValue()
 
-                attrs = {'calccake':True,'calc1d':True}
                 if int(myDlg.xstep.GetValue()) < 1:
-                    attrs.update({'steps':5001})
+                    attrs = {'steps':5001}
                 else:
-                    attrs.update({'steps':int(myDlg.steps)})
-
+                    attrs = {'steps':int(myDlg.steps)}
             myDlg.Destroy()
         else:
             print('Data and calibration files must be available for this function.')
@@ -393,9 +445,9 @@ class diFFit2DFrame(wx.Frame):
                     attrs.update({'file':path,'save':save})
                 dlg.Destroy()
 
-            data1D,cake = integrate_xrd(self.plt_img,self.calfile,**attrs)
+            data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
             
-            ##self.plot2D.display(cake[0])                   
+            ##self.xrd2Dcake.plot2D.display(cake[0])                   
 
             if plot:
                 if self.xrddisplay1D is None:
@@ -443,7 +495,24 @@ class diFFit2DFrame(wx.Frame):
                 self.btn_integ.Enable()
             except:
                 print('Not recognized as a pyFAI calibration file: %s' % path)
+            self.displayCAKE()
 
+    def displayCAKE(self):
+    
+        if self.plt_img is not None and self.calfile is not None:
+            self.cake = calc_cake(self.plt_img, self.calfile, unit='q') #, mask=self.msk_img, dark=self.bkgd)
+            self.xrd2Dcake.plot2D.display(self.cake[0])
+            
+            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
+            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
+            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
+        
+            self.xrd2Dcake.plot2D.redraw()
+
+            
+            ## set to same contrast as 2D viewer
+            ## call again anytime changing something like flip or mask or background
+        
    
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -794,14 +863,30 @@ class diFFit2DFrame(wx.Frame):
 
     def panel2DXRDplot(self,panel):
     
-        self.plot2D = ImagePanel(panel,size=(500, 500))
-        self.plot2D.messenger = self.write_message
+        self.nb = wx.Notebook(panel)
+        
+        ## create the page windows as children of the notebook
+        self.xrd2Dviewer = diFFit2DPanel(self.nb,owner=self)
+        self.xrd2Dcake   = diFFitCakePanel(self.nb,owner=self)
+
+        ## add the pages to the notebook with the label to show on the tab
+        self.nb.AddPage(self.xrd2Dviewer, '2D Image')
+        self.nb.AddPage(self.xrd2Dcake,   'Cake')
+
+        ## put the notebook in a sizer for the panel to manage the layout
+        sizer = wx.BoxSizer()
+        sizer.Add(self.nb, -1, wx.EXPAND)
+        panel.SetSizer(sizer)
+
+#         self.plot2D = ImagePanel(panel,size=(500, 500))
+#         self.plot2D.messenger = self.write_message
 
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.panel2DXRDplot(panel)
         btnbox = self.QuickButtons(panel)
-        vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+#         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(self.nb,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
 
