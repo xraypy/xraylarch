@@ -41,7 +41,7 @@ class diFFitCakePanel(wx.Panel):
 
         wx.Panel.__init__(self, parent)
         self.owner = owner
-        self.plot2D = ImagePanel(self)
+        self.plot2D = ImagePanel(self,size=(500, 500))
         self.plot2D.messenger = self.owner.write_message
         
 class diFFit2DPanel(wx.Panel):
@@ -53,7 +53,7 @@ class diFFit2DPanel(wx.Panel):
 
         wx.Panel.__init__(self, parent)
         self.owner = owner
-        self.plot2D = ImagePanel(self)
+        self.plot2D = ImagePanel(self,size=(500, 500))
         self.plot2D.messenger = self.owner.write_message
 
 class diFFit2DFrame(wx.Frame):
@@ -64,7 +64,7 @@ class diFFit2DFrame(wx.Frame):
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1200, 720
+        x,y = 1000, 720
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
