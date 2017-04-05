@@ -489,12 +489,9 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            try:
-                self.calfile = path
-                print('Loading calibration file: %s' % path)
-                self.btn_integ.Enable()
-            except:
-                print('Not recognized as a pyFAI calibration file: %s' % path)
+            self.calfile = path
+            print('Loading calibration file: %s' % path)
+            self.btn_integ.Enable()
             self.displayCAKE()
 
     def displayCAKE(self):
@@ -535,8 +532,14 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            self.bkgd = tifffile.imread(path)
-            self.checkIMAGE()
+            try:
+                self.bkgd_img = np.array(tifffile.imread(path))
+                self.checkIMAGE()
+                print('Reading background: %s' % path)
+            except:
+                print('Cannot read as an image file: %s' % path)
+                return
+
 
 ##############################################
 #### MASK FUNCTIONS
@@ -554,20 +557,26 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            #raw_mask = tifffile.imread(path)
-            import fabio
-            raw_mask = fabio.open(path).data
-            self.msk_img = np.ones(raw_mask.shape)-raw_mask
-
-            self.checkIMAGE()
+            try:
+                try:
+                    raw_mask = np.array(tifffile.imread(path))
+                except:
+                    import fabio
+                    raw_mask = fabio.open(path).data
+                self.msk_img = np.ones(raw_mask.shape)-raw_mask
+                self.checkIMAGE()
+                print('Reading mask: %s' % path)
+            except:
+                print('Cannot read as mask file: %s' % path)
+                return
 
         self.ch_msk.SetValue(True)
         self.applyMask(event=True)
 
-    def createMask(self,event=None):
-        
-        MaskToolsPopup(self)
-        print('Popup to create mask!')
+#     def createMask(self,event=None):
+#         
+#         MaskToolsPopup(self)
+#         print('Popup to create mask!')
 
     def clearMask(self,event=None):
 
@@ -628,7 +637,7 @@ class diFFit2DFrame(wx.Frame):
         
         MenuItem(self, ProcessMenu, 'Load &mask file', '', self.openMask)
         MenuItem(self, ProcessMenu, 'Remove current mas&k', '', self.clearMask)
-        MenuItem(self, ProcessMenu, 'C&reate mas&k', '', self.createMask)
+#         MenuItem(self, ProcessMenu, 'C&reate mas&k', '', self.createMask)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
         MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', self.clearBkgd)
@@ -639,7 +648,7 @@ class diFFit2DFrame(wx.Frame):
         ## Analyze
         AnalyzeMenu = wx.Menu()
         
-        MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
+#         MenuItem(self, AnalyzeMenu, '&Calibrate', '', self.Calibrate)
         MenuItem(self, AnalyzeMenu, 'Load cali&bration file', '', self.openPONI)
 #         MenuItem(self, AnalyzeMenu, 'Show current calibratio&n', '', None)
         AnalyzeMenu.AppendSeparator()
