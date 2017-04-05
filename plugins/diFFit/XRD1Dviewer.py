@@ -622,7 +622,7 @@ class Fitting1DXRD(BasePanel):
         x = self.xrd1dgrp.slct_xaxis(xi=xi)
 
         if abs(self.xmax-maxval) > 0.005 or abs(self.xmin-minval) > 0.005:
-            if xmax < xmin: xmin,xmax = float(xmax.GetValue()),float(xmin.GetValue())
+            if xmax < minval: minval,maxval = float(xmax.GetValue()),float(xmin.GetValue())
             self.xmin = max(minval,np.min(x))
             self.xmax = min(maxval,np.max(x))
 
@@ -636,7 +636,7 @@ class Fitting1DXRD(BasePanel):
 
     def onReset(self,event=None):
 
-        self.xrd1dgrp.pki,self.plt_peaks = None,None
+        self.plt_peaks,self.xrd1dgrp.pki = None,[]
         self.peaklist = []
 
         self.reset_range()

@@ -1279,6 +1279,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             if show:
                 title = '%s: %s' % (os.path.split(self._xrd.filename)[-1], label)
                 self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile)
+                
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1599,11 +1600,11 @@ class MapViewerFrame(wx.Frame):
                                               xrd1Dviewer=self.xrddisplay1D,ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
-            self.xrddisplay2D.Show()
         except PyDeadObjectError:
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
             self.xrddisplay2D.plot2Dxrd(map,title)
-            self.xrddisplay2D.Show()
+        self.xrddisplay2D.Show()
+        self.xrddisplay2D.displayCAKE()
 
     def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
         '''
