@@ -131,7 +131,7 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
                 continue
         dmembers.append((item, obj))
     write = _larch.writer.write
-    color_output = hasattr(_larch.writer, 'set_colormode')
+    color_output = hasattr(_larch.writer, 'set_textstyle')
     title_fmt = '== %s: %i methods, %i attributes ==\n'
     write(title_fmt % (title, nmethods, len(dmembers)-nmethods))
 
@@ -150,11 +150,11 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
             except:
                 dval = obj
         if color_output:
-            _larch.writer.set_colormode({True:'text', False:'text2'}[(count%2)==1])
+            _larch.writer.set_textstyle({True:'text', False:'text2'}[(count%2)==1])
         count += 1
         write('  %s: %s\n' % (item, dval))
     if color_output:
-        _larch.writer.set_colormode('text')
+        _larch.writer.set_textstyle('text')
 
     _larch.writer.flush()
 
