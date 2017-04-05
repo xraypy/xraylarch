@@ -1853,7 +1853,7 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D.canvas.draw()
         self.plot1D.unzoom_all()
-        self.rescale1Daxis(xaxis=xaxis,yaxis=xaxis)
+        self.rescale1Daxis(xaxis=False,yaxis=True)
 
 
     def resetCIFscale(self,event=None):
