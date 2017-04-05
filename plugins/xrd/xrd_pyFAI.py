@@ -27,7 +27,7 @@ def read_lambda(calfile):
     return ai._wavelength*1e10 ## units A
 
 def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
-                  calccake=False, calc1d=True, verbose=False):
+                  verbose=False):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
@@ -41,9 +41,6 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
     mask    : mask array for image
     dark    : dark image array
     '''
-    
-    xrd1d = None
-    cake  = None
     
     if HAS_pyFAI:
         try:
@@ -62,20 +59,43 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
         if dark:
             if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
 
-        if calccake:
-            
-            cake = calcXRDcake(xrd2d,ai,attrs)
-        
-        if calc1d:
-            if file is not '':
-                if verbose:
-                    print('\nSaving %s data to file: %s' % (unit,file))
-                attrs.update({'filename':file})
-            xrd1d = calcXRD1d(xrd2d,ai,steps,attrs)
+        if file is not '':
+            if verbose:
+                print('\nSaving %s data to file: %s' % (unit,file))
+            attrs.update({'filename':file})
+        return calcXRD1d(xrd2d,ai,steps,attrs)
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
 
-    return xrd1d,cake
+def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
+    '''
+
+    '''
+    
+    if HAS_pyFAI:
+        try:
+            ai = pyFAI.load(calfile)
+        except:
+            print('Provided calibration file could not be loaded.')
+            return
+        
+        attrs = {}
+        if unit.startswith('2th'):
+            attrs.update({'unit':'2th_deg'})
+        else:
+            attrs.update({'unit':'q_A^-1'})
+        if mask:
+            if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
+        if dark:
+            if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
+
+        return calcXRDcake(xrd2d,ai,attrs)
+        
+    else:
+        print('pyFAI not imported. Cannot calculate 1D integration.')
+
+
+
 
 
 def calcXRD1d(xrd2d,ai,steps,attrs):
@@ -88,6 +108,8 @@ def calcXRDcake(xrd2d,ai,attrs):
     #cakeeta = res[2]
     return ai.integrate2d(xrd2d,2048,2048,**attrs)
     
+
+
     
     
 
