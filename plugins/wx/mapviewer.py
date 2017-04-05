@@ -71,7 +71,7 @@ from larch.wxlib import LarchPanel, LarchFrame
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
-from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame,CalXRD
+from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
 from larch_plugins.xrd import lambda_from_E,E_from_lambda,xrd1d
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
@@ -1695,8 +1695,6 @@ class MapViewerFrame(wx.Frame):
 
         MenuItem(self, fmenu, '&Load XRD calibration file',
                  'Load XRD calibration file',  self.openPONI)
-#         MenuItem(self, fmenu, 'Perform XRD &Calibration',
-#                  'Calibrate XRD Detector',  self.onCalXRD)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()

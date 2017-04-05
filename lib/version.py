@@ -19,7 +19,8 @@ def make_banner():
 Larch %s (%s) M. Newville, M. Koker, B. Ravel, and others
 Python %s,
 numpy %s, scipy %s, matplotlib %s, wxpython %s
-%s"""
+%s
+"""
 
     return banner % (lines, __version__, __date__, sys.version,
                     numpy.__version__, scipy.__version__,
