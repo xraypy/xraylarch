@@ -53,14 +53,17 @@ Begin by installing the latest version of Anaconda Python (as described
 above Python 2.7 is currently recommended over Python 3.6 except for the
 most adventerous users) from the `Anaconda Downloads`_ site.  Once that is
 installed, you can open a Terminal (on Linux or Mac OSX) or the Anaconda
-prompt (on Windows) and type::
+prompt (on Windows) and type these 2 commands::
 
     conda install -yc GSECARS xraylarch
 
+    larch_makeicons
+
 This will install all the software needed to run Larch and all its
-components.  On Windows and Mac OSX, it will also create a Folder called
-*Larch* on your desktop that includes shortcuts (Windows) or small Apps
-(Mac OSX) to run the following Larch programs:
+components.  On Windows and Mac OSX, the second command will also create a
+Folder called *Larch* on your desktop that includes shortcuts (Windows) or
+small Apps (Mac OSX) that you can click on to run the following Larch
+applications:
 
    * `larch`  -- simplest command-line interface.
    * `larch_gui` -- Enhanced command-line interface with GUI data browser.
