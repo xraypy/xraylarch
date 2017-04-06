@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>1. Downloading and Installation &#8212; larch 0.9.32 documentation</title>
+    <title>1. Downloading and Installation &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -27,7 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="index.html" />
     <link rel="next" title="2. Larch Community and Support" href="community.html" />
     <link rel="prev" title="Larch" href="index.html" />
   <script type="text/x-mathjax-config">
@@ -82,16 +82,17 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
-<li><a class="reference internal" href="#using-anaconda-python">1.1. Using Anaconda Python</a></li>
-<li><a class="reference internal" href="#source-installation">1.2. Source Installation</a><ul>
-<li><a class="reference internal" href="#prerequisites">1.2.1. Prerequisites</a></li>
-<li><a class="reference internal" href="#installation-from-source">1.2.2. Installation from Source</a></li>
+<li><a class="reference internal" href="#python-versions-2-7-or-3-6">1.1. Python Versions: 2.7 or 3.6?</a></li>
+<li><a class="reference internal" href="#using-anaconda-python">1.2. Using Anaconda Python</a></li>
+<li><a class="reference internal" href="#source-installation">1.3. Source Installation</a><ul>
+<li><a class="reference internal" href="#prerequisites">1.3.1. Prerequisites</a></li>
+<li><a class="reference internal" href="#installation-from-source">1.3.2. Installation from Source</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#documentation-and-examples">1.3. Documentation and Examples</a></li>
-<li><a class="reference internal" href="#funding-and-support">1.4. Funding and Support</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.5. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.6. License</a></li>
+<li><a class="reference internal" href="#documentation-and-examples">1.4. Documentation and Examples</a></li>
+<li><a class="reference internal" href="#funding-and-support">1.5. Funding and Support</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.6. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.7. License</a></li>
 </ul>
 </li>
 </ul>
@@ -105,7 +106,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/installation.txt"
+      <li><a href="_sources/installation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -129,73 +130,89 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.32.  Larch is in active and
+<p>The latest release version of Larch is 0.9.33.  Larch is in active and
 continuing development, and the intention is to tag a new release version
-every six months or so.  Of course, there may be bugs and unintended
+every three to six months.  Of course, there may be bugs and unintended
 features, and some missing or incomplete desired features.  Still, most of
-what is in Larch is working, stable, and ready for use.</p>
-<p>There are several ways to download and install Larch.  Starting with Larch
-0.9.27, the <strong>recommended</strong> way to install and run Larch on Windows and Mac
-OS X is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> (version 2.7).  In addition, Larch can be
-installed from its source code, which works easily on most modern Linux and
-Mac OS X systems, but the Anaconda package is certainly easier to use.</p>
-<p>Starting With version 0.9.30, Larch is starting to work with Python 3,
-including GUIs using the unreleased Phoenix version of wxPython.  Thorough
-testing with Python 3 is still in progress, and some bugs may still be
-present when using Python 3, but most of the code is working, and all unit
-tests of functionality pass.  Still, for the time being, Larch with Python
-3 should be considered experimental.</p>
+what is in Larch is working and ready for use.  New and in-development
+features and application will be explicitly described as &quot;beta&quot;.</p>
+<p>Larch is written in Python and requires and existing Python interpreter to be
+installed on your computer, along with a handful of common libraries for
+scientific computing.</p>
+<p>The <strong>recommended</strong> way to install and run Larch is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a>
+version 2.7.  Larch can be installed from its source code, which can work
+fairly easily on most computers and operating systems, but the Anaconda
+package is certainly easier to use and comes with the packages that Larch
+needs already installed or automatically fetched when installing Larch.</p>
+<div class="section" id="python-versions-2-7-or-3-6">
+<h2>1.1. Python Versions: 2.7 or 3.6?<a class="headerlink" href="#python-versions-2-7-or-3-6" title="Permalink to this headline">¶</a></h2>
+<p>As of this writing (Spring, 2017) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch can now work with either version
+of Python, though the main GUI toolkit (wxPython) used by Larch is still not
+officially released for Python 3, Larch works well with the in-development
+version of wxPython.  Support for Larch running with Python 3.6 should be
+considered experimental, but we eager to migrate to Python 3.6, and expect to
+do so within year or so.</p>
+</div>
 <div class="section" id="using-anaconda-python">
-<h2>1.1. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and
-well-supported version of Python for scientific work with many useful
-packages included.  By default, Anaconda Python installs into your own home
-folder and does not require extra permissions to install, upgrade, or
-remove components.  Anaconda includes a robust package manager called
-<em>conda</em> that makes it easy to update to the latest versions of Larch when
-you are ready.</p>
-<p>So, begin by installing the latest version of Anaconda Python 2.7 from
-their <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is installed, you can open a
-Terminal (on Linux or Mac OSX) or the Anaconda prompt (on Windows) and
-type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">newville</span> <span class="n">xraylarch</span>
+<h2>1.2. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and well-supported version of Python for
+scientific work with many useful packages included.  By default, Anaconda
+Python installs into your own home folder (on Windows, it will use the
+<cite>APPDATA</cite> location, which is typically something like
+<cite>C:UsersYourNameAppDataLocalContinuumAnaconda2</cite>).  Installing does
+not require extra permissions to install, upgrade, or remove components.
+Anaconda includes a robust package manager called <em>conda</em> that makes it
+easy to update the packages it manages, including Larch.</p>
+<p>Begin by installing the latest version of Anaconda Python (as described
+above Python 2.7 is currently recommended over Python 3.6 except for the
+most adventerous users) from the <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is
+installed, you can open a Terminal (on Linux or Mac OSX) or the Anaconda
+prompt (on Windows) and type these 2 commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
 
-<span class="c1"># on Windows or Mac OSX</span>
 <span class="n">larch_makeicons</span>
 </pre></div>
 </div>
 <p>This will install all the software needed to run Larch and all its
-components.  The <cite>larch_makeicons</cite> command will create a Folder called
-<em>Larch</em> on your desktop that includes shortcuts (Windows) or small Apps (Mac
-OSX) to run the following Larch programs:</p>
+components.  On Windows and Mac OSX, the second command will also create a
+Folder called <em>Larch</em> on your desktop that includes shortcuts (Windows) or
+small Apps (Mac OSX) that you can click on to run the following Larch
+applications:</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>larch</cite>  -- simplest command-line interface.</li>
 <li><cite>larch_gui</cite> -- Enhanced command-line interface with GUI data browser.</li>
-<li><cite>xrfdisplay</cite> -- Display XRF Spectrum.</li>
 <li><cite>gse_mapviewer</cite> -- XRF Mapviewer for GSECARS XRF Map data.</li>
 <li><cite>gse_scanviewer</cite> -- Simple XAFS and Scan viewer for GSECARS data.</li>
+<li><cite>xrfdisplay</cite> -- Display XRF Spectrum.</li>
+<li><cite>xyfit</cite> -- Display and Peak Fitting of XANES and other 1D spectra (beta).</li>
+<li><cite>1D XRD Viewer</cite> -- Display and work with XRD diffraction patterns (beta).</li>
+<li><cite>2D XRD Viewer</cite> -- Display and work with XRD diffraction images (beta).</li>
 </ul>
 </div></blockquote>
-<p>An advantage of using Anaconda is that updates can be installed with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">newville</span> <span class="n">xraylarch</span>
+<p>A key advantage of using Anaconda is that once installed, updates can be
+installed with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
+<p>As of this writing, some functionality -- notably X-ray diffraction -- may
+need additional libraries installed, and some of these libraries may not be
+available for Python3.6 or for all platforms.   We're working on this, but
+if you need help, please contact us.</p>
 </div>
 <div class="section" id="source-installation">
-<h2>1.2. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
-<p>Larch can be installed from source code.  If not using Anaconda, this is
-necessary for Linux, and can be done for other systems as well.</p>
-<p>The latest releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch
-releases (github.com)</a>.  In addition, you can use <cite>git</cite> to grab the latest
-development version of the source code:</p>
+<h2>1.3. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
+<p>Larch can be installed from source code.  The latest releases of the source
+code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases (github.com)</a>.  In addition, you
+can use <cite>git</cite> to grab the latest development version of the source code:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <div class="section" id="prerequisites">
-<h3>1.2.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
-<p>Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
-good, but requires the not-yet-supported Phoenix branch of wxPython, and
+<h3>1.3.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>Larch requires Python version 2.7 or higher.  Larch works with Python 3.5
+and 3.6, but requires the not-yet-supported Phoenix branch of wxPython, and
 should be considered experimental.</p>
 <p>The following Python packages are all required for Larch: numpy, scipy,
 matplotlib, h5py, sqlalchemy, and wxPython.  Except for wxPython, these all
@@ -203,7 +220,7 @@ come as part of the core Anaconda package, and all are easily installed as
 standard packages on almost all platforms.</p>
 </div>
 <div class="section" id="installation-from-source">
-<h3>1.2.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<h3>1.3.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
 <p>If installing from source, first unpack the source distribution kit, move
 into the created xraylarch-VERSION directory, and type:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
@@ -212,13 +229,13 @@ into the created xraylarch-VERSION directory, and type:</p>
 </div>
 </div>
 <div class="section" id="documentation-and-examples">
-<h2>1.3. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
+<h2>1.4. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
 <p>The source kit includes sources for documentation in the <cite>docs</cite> folder and
 several examples (including all those shown in this documentation) in the
 <cite>examples</cite> folder.</p>
 </div>
 <div class="section" id="funding-and-support">
-<h2>1.4. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
+<h2>1.5. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
 <p>Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
@@ -227,7 +244,7 @@ specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).</p>
 </div>
 <div class="section" id="acknowledgements">
-<h2>1.5. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2>1.6. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable
 influence on the design and implementation of this code and has provided
@@ -257,7 +274,7 @@ read the X-ray Scattering data from the Elam Tables was modified from code
 originally written by Darren S. Dale.  Refined values for anomalous
 scattering factors have been provided directly by Christopher T. Chantler.
 Further details of the origin of much of the tabularized X-ray data is
-given in <a class="reference internal" href="xray/index.html#xraydb-chapter">9</a>.</p>
+given in <a class="reference internal" href="xray/index.html#xraydb-chapter"><span class="std std-ref">9</span></a>.</p>
 <p>As Larch depends on the fantastic scientific librarie written and
 maintained in python, especially the numpy, scipy, and matplotlib, the
 entire scientific python community deserves a hearty thanks.  In
@@ -270,7 +287,7 @@ uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
 <div class="section" id="license">
-<h2>1.6. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>1.7. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
@@ -340,7 +357,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

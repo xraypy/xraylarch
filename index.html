@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch &#8212; larch 0.9.32 documentation</title>
+    <title>Larch &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -27,7 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="#" />
     <link rel="next" title="1. Downloading and Installation" href="installation.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
@@ -75,7 +75,7 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>0.9.32</b></p>
+<p>Current version: <b>0.9.33</b></p>
 
 &nbsp; &nbsp;
 <a href="installation.html"> Install Latest Version</a>  <br>
@@ -115,35 +115,39 @@
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch is an open-source library and toolkit for processing and analyzing
 scientific data.  Initially designed for X-ray spectroscopic and scattering
-data collected at modern synchrotron sources, Larch provides a wide
-selection of algorithms for processing such X-ray data.  It also provides
-many tools for organizing complex data sets and general-purpose tools for
-processing and analyzing arrays of scientific data.</p>
-<p>Larch is written in Python, relies heavily on the wonderful <a class="reference external" href="http://numpy.scipy.org/">numpy</a>,
-<a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a> libraries. It can be used directly as
-a Python library, and it can be extended using Python.  In addition, Larch
-provides a Python-like language (a <em>macro language</em>, or <em>domain specific
-language</em>) that is intended to be very easy to use for novices while also
-being complete enough for advanced data processing and analysis.</p>
-<p>Larch has several related target application areas, including:</p>
+data collected at modern synchrotron sources, Larch provides a wide selection
+of algorithms for processing such X-ray data.  It also provides many tools for
+organizing complex data sets and processing and analyzing arrays of scientific
+data.</p>
+<p>Larch is written in Python and relies heavily on the wonderful <a class="reference external" href="http://numpy.scipy.org/">numpy</a>,
+<a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a> libraries. It can be used directly as a
+Python library, and it can be extended using Python.  Larch also provides a
+Python-like language (a <em>macro language</em>, or <em>domain specific language</em>) that
+is intended to be very easy to use for novices while also being complete
+enough for advanced data processing and analysis. In addition, several GUIs
+are included with Larch for visualization and analysis of scientific data
+sets.</p>
+<p>Larch has several related target application areas:</p>
 <blockquote>
 <div><ul class="simple">
 <li>XAFS analysis, becoming version 2 of the Ifeffit Package for EXAFS analysis.</li>
-<li>Visualizing and analyzing micro-X-ray fluorescence maps.</li>
+<li>Visualizing and analyzing micro-X-ray fluorescence and X-ray diffraction maps.</li>
 <li>Quantitative X-ray fluorescence analysis.</li>
-<li>X-ray standing waves and surface scattering analysis.</li>
 <li>Data collection software for synchrotron data.</li>
 </ul>
 </div></blockquote>
-<p>The central idea is that having these otherwise different application areas
-connected by a common <em>macro language</em> will strengthen the tools available
-for all of them.  The macro language can provide a very shallow barrier for
-those interested in scripting the manipulation and analysis of their data,
-and become the framework upon which new analysis tools can be built.</p>
-<p>Currently, Larch provides a complete set of XAFS Analysis tools (replacing
-all of the Ifeffit package), has some support for visualizing and analyzing
-XRF maps and spectra, and has many extra tools for X-ray spectral analysis,
-data handling, and general-purpose data modeling.</p>
+<p>A key idea is that these otherwise different application areas can share many
+components and algorithms.  Connecting these through a common <em>macro language</em>
+will strengthen the tools available for all of these areas.  In addition, the
+macro language can provide a very shallow barrier for those interested in
+scripting the manipulation and analysis of their data, while providing a
+scripted, reproducible, and extensible analysis that can become the framework
+upon which new analysis tools can be built.</p>
+<p>Currently, Larch provides a complete set of XAFS Analysis tools (replacing all
+of the Ifeffit package), has some support for visualizing and analyzing XRF
+and XRD maps, and has many extra tools for X-ray spectral analysis, data
+handling, and general-purpose data modeling.  Larch is under active and open
+development, and has support from the U. S. National Science Foundation.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Downloading and Installation</a></li>
@@ -188,7 +192,7 @@ data handling, and general-purpose data modeling.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.6. XAFS: Reading and using Feff Paths &#8212; larch 0.9.32 documentation</title>
+    <title>8.6. XAFS: Reading and using Feff Paths &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -27,8 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="../index.html" />
-    <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.7. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
     <link rel="prev" title="8.5. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
   <script type="text/x-mathjax-config">
@@ -106,7 +105,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/xafs/feffpaths.txt"
+      <li><a href="../_sources/xafs/feffpaths.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -283,7 +282,7 @@ values or fitting Parameters as defined by <a class="reference internal" href=".
 <em>Output array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal"><span class="pre">path2chi()</span></code></a>.
 Finally, the sub-group <code class="docutils literal"><span class="pre">_feffdat</span></code> contains the low-level data as read
 directly from the <em>feffNNNN.dat</em> file, which is detailed in the next
-section, <a class="reference internal" href="#xafs-feffdat-sec">8.6.4</a>.</p>
+section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std std-ref">8.6.4</span></a>.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -437,7 +436,7 @@ at 0 and extending to (and including) <code class="docutils literal"><span class
 <p>The calculated <span class="math">\(\chi\)</span> array is placed in the Feff Path Group <code class="docutils literal"><span class="pre">path</span></code> as
 <code class="docutils literal"><span class="pre">path.chi</span></code>.  In addition calculated arrays for <span class="math">\(k\)</span>, <span class="math">\(p\)</span>, and
 <span class="math">\(\rm{Im}(\chi)\)</span> are placed in the variables <code class="docutils literal"><span class="pre">path.k</span></code>, <code class="docutils literal"><span class="pre">path.p</span></code>, and
-<code class="docutils literal"><span class="pre">path.chi_imag</span></code>, respectively.  See <a class="reference internal" href="#xafs-exafsequation-sec">8.6.5</a> for the
+<code class="docutils literal"><span class="pre">path.chi_imag</span></code>, respectively.  See <a class="reference internal" href="#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a> for the
 detailed definitions of the quantities.</p>
 <p>If specified, <code class="docutils literal"><span class="pre">paramgroup</span></code> is used as the Parameter Group -- the group
 used for evaluating parameter expressions (ie, constraints using named
@@ -955,7 +954,7 @@ values in a fit of XAFS data to such a sum of paths.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

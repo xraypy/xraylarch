@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.2. Tutorial: Basic and Complex Data Types &#8212; larch 0.9.32 documentation</title>
+    <title>4.2. Tutorial: Basic and Complex Data Types &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -27,8 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="../index.html" />
-    <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
     <link rel="prev" title="4.1. Tutorial: Getting Started" href="start.html" />
   <script type="text/x-mathjax-config">
@@ -114,7 +113,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/datatypes.txt"
+      <li><a href="../_sources/tutorial/datatypes.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -385,7 +384,7 @@ contents:</p>
 </pre></div>
 </div>
 <p>(The '0x1b8cbfb0' is the default name, discussed in more detail below in
-<a class="reference internal" href="#tutor-objectids-sec">4.2.4</a>).  The <a class="reference internal" href="builtins.html#group" title="group"><code class="xref py py-func docutils literal"><span class="pre">group()</span></code></a> function can take arguments
+<a class="reference internal" href="#tutor-objectids-sec"><span class="std std-ref">4.2.4</span></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><code class="xref py py-func docutils literal"><span class="pre">group()</span></code></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
@@ -961,7 +960,7 @@ another variable that points to the same value.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

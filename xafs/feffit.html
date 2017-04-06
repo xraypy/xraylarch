@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.7. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.32 documentation</title>
+    <title>8.7. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -27,8 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="../index.html" />
-    <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="diffkk.html" />
     <link rel="prev" title="8.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
   <script type="text/x-mathjax-config">
@@ -110,7 +109,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/xafs/feffit.txt"
+      <li><a href="../_sources/xafs/feffit.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -146,7 +145,7 @@ process, and those sections will be referenced here.</p>
 sum of scattering paths that will be compared to experimentally derived
 <span class="math">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
-As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec">8.6</a>, these FEFF Paths have a fixed
+As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec"><span class="std std-ref">8.6</span></a>, these FEFF Paths have a fixed
 set of physically meaningful parameters than can be modified to alter the
 predicted contribution to <span class="math">\(\chi(k)\)</span>.  Any of these values can be
 defined as algebraic expressions of Larch Parameters defined by
@@ -154,14 +153,14 @@ defined as algebraic expressions of Larch Parameters defined by
 as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></code></a> to refine the values of the variable
 parameters in the model so as to best match the experimental data.  Because
 <span class="math">\(\chi(k)\)</span> has known properties and <span class="math">\(k\)</span> dependencies, it is
-common to weight and Fourier transform (as described in <a class="reference internal" href="xafsft.html#xafs-ft-sec">8.4</a>)
+common to weight and Fourier transform (as described in <a class="reference internal" href="xafsft.html#xafs-ft-sec"><span class="std std-ref">8.4</span></a>)
 for the analysis.  In general term, the the refinement process will compare
 experimental and model <span class="math">\(\chi(k)\)</span> after a <em>Transformation</em>.</p>
 <p>The model for <span class="math">\(\chi(k)\)</span> used to compare to data is</p>
 <div class="math">
 \[\chi(k) = \sum_{j} \chi_{j}(k, p_j)\]</div>
 <p>where <span class="math">\(\chi_j\)</span> is the EXAFS contribution for a FEFF Path, as given in
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">8.6.5</a> for path <span class="math">\(j\)</span>, where <span class="math">\(p_j\)</span> is the
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a> for path <span class="math">\(j\)</span>, where <span class="math">\(p_j\)</span> is the
 set of adjustable Path Parameters (<span class="math">\(S_0^2\)</span>, <span class="math">\(E_0\)</span>,
 <span class="math">\(\delta{R}\)</span>, <span class="math">\(\sigma^2\)</span>, and so on) listed as <code class="docutils literal"><span class="pre">Adjustable</span></code> in
 the <a class="reference internal" href="feffpaths.html#xafs-pathparams-table"><span class="std std-ref">Table of Feff Path Parameters</span></a>.</p>
@@ -211,12 +210,12 @@ recommended.</p>
 <div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
 <h2>8.7.2. Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
 <p>The fit done by <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a> is conceptually very similar to the fits
-described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec">7.3</a>.   Therefore, many of the
-statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec">7.4</a> are also generated for
+described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec"><span class="std std-ref">7.3</span></a>.   Therefore, many of the
+statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">7.4</span></a> are also generated for
 <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>. In view of the limited amount of information, some of the
 traditional statistical definitions need to be carefully examid, and
 possibly altered slightly.   For example, the typical <span class="math">\(\chi^2\)</span>
-statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec">7.1</a>) is</p>
+statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec"><span class="std std-ref">7.1</span></a>) is</p>
 <div class="math">
 \[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
 <p>seems simple enough, but actually raises several questions, as we have to
@@ -544,14 +543,14 @@ FeffPath group.</p>
 <p>A final note on the outputs of <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>: the <code class="docutils literal"><span class="pre">param</span></code> sub-group in
 the output is truly identical to the input <code class="docutils literal"><span class="pre">paramgroup</span></code>.  It is not a
 copy but points to the same group of values (see
-<a class="reference internal" href="../tutorial/datatypes.html#tutor-objectids-sec">4.2.4</a>).</p>
+<a class="reference internal" href="../tutorial/datatypes.html#tutor-objectids-sec"><span class="std std-ref">4.2.4</span></a>).</p>
 </dd></dl>
 
 <blockquote id="xafs-feffit-stats-table">
 <span id="index-1"></span><div><p>Table of Feffit Output Statistics.  These values will be written to the
 <code class="docutils literal"><span class="pre">paramgroup</span></code> group. Listed here are the group component name and a
 description of its content.  Many of these are described in more detail
-in <a class="reference internal" href="../fitting/results.html#fitting-results-sec">7.4</a></p>
+in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">7.4</span></a></p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -749,9 +748,9 @@ commands.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
    <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span><span class="o">=</span> <span class="mi">104</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">100</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">1005.6072</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">89.305678</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.0028522677</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">147.3511</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">13.085915</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.0028192795</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -760,19 +759,19 @@ commands.</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feffcu01.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="mf">0.000150</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.007111</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="mf">0.000550</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.018481</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">15.260</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.930936</span> <span class="o">+/-</span> <span class="mf">0.040207</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">3.860734</span> <span class="o">+/-</span> <span class="mf">0.525036</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
-   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.005996</span> <span class="o">+/-</span> <span class="mf">0.002679</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.008670</span> <span class="o">+/-</span> <span class="mf">0.000317</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.928555</span> <span class="o">+/-</span> <span class="mf">0.039837</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.364102</span> <span class="o">+/-</span> <span class="mf">0.520364</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
+   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.005980</span> <span class="o">+/-</span> <span class="mf">0.002660</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.008669</span> <span class="o">+/-</span> <span class="mf">0.000315</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2</span>            <span class="o">=</span>  <span class="mf">0.929</span> 
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">del_r</span>        <span class="o">=</span>  <span class="mf">0.921</span> 
+   <span class="n">del_e0</span><span class="p">,</span> <span class="n">del_r</span>        <span class="o">=</span>  <span class="mf">0.920</span> 
    <span class="n">del_r</span><span class="p">,</span> <span class="n">sig2</span>          <span class="o">=</span>  <span class="mf">0.159</span> 
    <span class="n">amp</span><span class="p">,</span> <span class="n">del_r</span>           <span class="o">=</span>  <span class="mf">0.138</span> 
  
@@ -783,10 +782,10 @@ commands.</p>
            <span class="n">Cu</span>    <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">Degen</span>  <span class="o">=</span>  <span class="mf">12.00000</span>
-     <span class="n">S02</span>    <span class="o">=</span>  <span class="mf">0.93094</span> <span class="o">+/-</span>  <span class="mf">0.04021</span>
-     <span class="n">E0</span>     <span class="o">=</span>  <span class="mf">3.86073</span> <span class="o">+/-</span>  <span class="mf">0.52504</span>
-     <span class="n">R</span>      <span class="o">=</span>  <span class="mf">2.54180</span> <span class="o">+/-</span>  <span class="mf">0.00268</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.00600</span> <span class="o">+/-</span>  <span class="mf">0.00268</span>
+     <span class="n">S02</span>    <span class="o">=</span>  <span class="mf">0.92855</span> <span class="o">+/-</span>  <span class="mf">0.03984</span>
+     <span class="n">E0</span>     <span class="o">=</span>  <span class="mf">4.36410</span> <span class="o">+/-</span>  <span class="mf">0.52036</span>
+     <span class="n">R</span>      <span class="o">=</span>  <span class="mf">2.54182</span> <span class="o">+/-</span>  <span class="mf">0.00266</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.00598</span> <span class="o">+/-</span>  <span class="mf">0.00266</span>
      <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00867</span> <span class="o">+/-</span>  <span class="mf">0.00032</span>
 
 <span class="o">=======================================================</span>
@@ -1718,7 +1717,7 @@ parameters.</p>
 <p id="index-3">EXAFS is known to be sensitive to the atomic number <span class="math">\(Z\)</span> of the
 scattering atom.  This is due to the <span class="math">\(Z\)</span> dependence of the scattering
 amplitude and phase shift (<span class="math">\(f(k)\)</span> and <span class="math">\(\delta(k)\)</span> in the EXAFS
-Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">8.6.5</a>).  A rule-of-thumb that
+Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>).  A rule-of-thumb that
 is often stated is that EXAFS is sensitive to <span class="math">\(Z \pm 5\)</span>, or perhaps
 pessimistically to <em>row of the Periodic Table</em>, but not as sensitive as
 <span class="math">\(Z \pm 1\)</span>.  Occassionally, you may see work that claims very fine
@@ -2053,7 +2052,7 @@ scattering phase from the Feff calculation to correct the data.  This
 correction is done in the <code class="docutils literal"><span class="pre">phase_correct()</span></code> procedure, where the data from
 the <em>feffNNNN.dat</em> file (in the <code class="docutils literal"><span class="pre">_feffdat</span></code> group) is used to construct the
 Feff phase shift (<span class="math">\(\delta(k)\)</span> in the EXAFS Equation of Section
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">8.6.5</a>), and apply it to the data.  Because this uses
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>), and apply it to the data.  Because this uses
 complex math, we use the <a class="reference internal" href="xafsft.html#_xafs.xftf_fast" title="_xafs.xftf_fast"><code class="xref py py-func docutils literal"><span class="pre">xftf_fast()</span></code></a> function to the complex Fourier
 transform and build the magnitude of the transform explicitly.</p>
 <p>The phase corrected transforms are shown in black in Figure
@@ -2065,7 +2064,7 @@ test on whether the bond distance and <span class="math">\(Z\)</span> of the sca
 correct.  That is, in order for the phase-correction to give the correct
 interatomic distance, the total phase-shift has to be correct, which means
 that the <span class="math">\(Z\)</span> for the scatterer has to be correct (see the EXAFS
-Equation in Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">8.6.5</a>).  So, we can compare the
+Equation in Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>).  So, we can compare the
 refined distance with the peak in the phase-corrected transform -- if they
 agree, it gives good confidence that the scatterer is correct.</p>
 <p>Since the spacing of points in <span class="math">\(R\)</span> is <span class="math">\(\sim 0.03\rm\AA\)</span>, using
@@ -2122,7 +2121,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.2. Parameters &#8212; larch 0.9.32 documentation</title>
+    <title>7.2. Parameters &#8212; larch 0.9.33 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,10 +15,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.32',
+        VERSION:     '0.9.33',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -27,8 +28,6 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="larch 0.9.32 documentation" href="../index.html" />
-    <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.3. minimize() and Objective Functions" href="minimize.html" />
     <link rel="prev" title="7.1. Fitting Overview" href="overview.html" />
   <script type="text/x-mathjax-config">
@@ -100,7 +99,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/fitting/parameters.txt"
+      <li><a href="../_sources/fitting/parameters.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -165,7 +164,7 @@ expression to use to evaluate its value as a <strong>constrained Parameter</stro
 <li><strong>vary</strong> -- flag telling whether Parameter is to be varied during a  fit (<code class="docutils literal"><span class="pre">True</span></code>, <code class="docutils literal"><span class="pre">False</span></code>) [<code class="docutils literal"><span class="pre">False</span></code>]</li>
 <li><strong>min</strong> -- minimum value the Parameter can take.</li>
 <li><strong>max</strong> -- maximum value the Parameter can take.</li>
-<li><strong>expr</strong> -- algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label">7.2.2</a>  for details.</li>
+<li><strong>expr</strong> -- algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label"><span class="std std-ref">7.2.2</span></a>  for details.</li>
 </ul>
 </td>
 </tr>
@@ -294,7 +293,7 @@ a model function that implemented such constraints.</p>
 a more general approach, allowing Parameters to get their value from an
 algebraic expression.  Thus, one might define an objective function for a
 sum of two Gaussian functions (discussed in more detail in
-<a class="reference internal" href="lineshapes.html#lineshape-functions-label">7.5</a>), as:</p>
+<a class="reference internal" href="lineshapes.html#lineshape-functions-label"><span class="std std-ref">7.5</span></a>), as:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
             <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
@@ -323,7 +322,7 @@ parameters to add to 1 and each be between 0 and 1 as:</p>
 expression is allowed.</p>
 <p class="rubric" id="fitting-namespace-sec"><span id="index-0"></span>Namespaces for algebraic expressions</p>
 <p>It's worth asking what variables and functions are available for writing
-algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label">4.6.2</a>
+algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label"><span class="std std-ref">4.6.2</span></a>
 gives a partial explanation, but we'll be a bit more explicit here.
 During a fit, the <em>paramgroup</em> given to <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code></a> will be assigned
 to <cite>_sys.paramGroup</cite> and will be the first place variables are looked for.
@@ -403,7 +402,7 @@ propagating errors.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>
