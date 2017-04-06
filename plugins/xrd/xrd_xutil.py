@@ -85,7 +85,7 @@ from larch_plugins.xrd.xrd_hkl import generate_hkl
 # 
 #     return E,F
 
-def calcCIFpeaks(path,energy,verbose=True,fid=None,plotable=True,qmax=6):
+def calcCIFpeaks(path,energy,verbose=True,fid=None,plotable=False,qmax=6):
 
     try:
         cif = xu.materials.Crystal.fromCIF(path,fid=fid)
@@ -99,23 +99,59 @@ def calcCIFpeaks(path,energy,verbose=True,fid=None,plotable=True,qmax=6):
     hkllist = generate_hkl()
 
     qlist = cif.Q(hkllist)
+    print 
+    print 'cif.StructureFactorForQ(qlist,energy)'
+    print 'qlist',np.shape(qlist),type(qlist)
     Flist = cif.StructureFactorForQ(qlist,energy)
-
+    print 'Flist',np.shape(Flist),type(Flist)
+    print 
+    
     Fall = []
     qall = []
-    hklall = []
-    for i,hkl in enumerate(hkllist):
-        if np.abs(Flist[i]) > 0.01:
-            Fadd = np.abs(Flist[i])
+    for i,F in enumerate(Flist):
+        if np.abs(F) > 0.01:
+            Fadd = np.abs(F)
             qadd = np.linalg.norm(qlist[i])
             if qadd not in qall and qadd < qmax:
                 if plotable:
                     Fall.extend((0,Fadd,0))
                     qall.extend((qadd,qadd,qadd))
                 else:
-                    Fall.extend(Fadd)
-                    qall.extend(qadd)                    
-                
+                    Fall += [Fadd]
+                    qall += [qadd]
+    print 'qall',qall
+    print 'Fall',Fall
+    
+    ## For each hkl, calculate q and F
+    qlist, Flist = [],[]
+    for hkl in hkllist:
+        qvec = cif.Q(hkl) ## 
+        F = cif.StructureFactor(qvec,energy)
+        qlist += [np.linalg.norm(qvec)]
+        Flist += [np.abs(F)]
+    print
+    print 'cif.StructureFactor(qlist,energy)'
+    print 'qlist',np.shape(qlist),type(qlist)
+    print 'Flist',np.shape(Flist),type(Flist)
+    print
+    
+    Fall = []
+    qall = []
+    for i,F in enumerate(Flist):
+        if np.abs(F) > 0.01:
+            Fadd = np.abs(F)
+            qadd = np.linalg.norm(qlist[i])
+            if qadd not in qall and qadd < qmax:
+                if plotable:
+                    Fall.extend((0,Fadd,0))
+                    qall.extend((qadd,qadd,qadd))
+                else:
+                    Fall += [Fadd]
+                    qall += [qadd]
+    print 'qall',qall
+    print 'Fall',Fall
+    
+      
     return np.array(qall),np.array(Fall)
 
 
