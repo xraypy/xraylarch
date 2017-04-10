@@ -298,7 +298,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
         dtime = self.det.get_deadtime(mca=self.det_fore)
-        self.wids['deadtime'].SetLabel("%.1f" % dtime)
+        if dtime is not None:
+            self.wids['deadtime'].SetLabel("%.1f" % dtime)
         self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
@@ -473,8 +474,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 self.mca = self.det.get_mca(mca=self.det_fore)
 
             dtime = self.det.get_deadtime(mca=self.det_fore)
-
-            self.wids['deadtime'].SetLabel("%.1f" % dtime)
+            if dtime is not None:
+                self.wids['deadtime'].SetLabel("%.1f" % dtime)
 
             counts = self.det.get_array(mca=self.det_fore)*1.0
             energy = self.det.get_energy(mca=self.det_fore)
@@ -496,16 +497,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det.elapsed_real = nframes * ftime
 
         mca_counts = self.det.mcas[self.det_fore-1].get('VAL')
-        cps =  mca_counts[left:right].sum() / ftime
+        sum =  mca_counts[left:right].sum()
+        # print("ROI STATUS ", name, ftime, nframes, sum, cps, mca_counts.sum(),  mca_counts)
         if name in (None, ''):
             name = 'Selected'
         else:
             for roi in self.det.mcas[self.det_fore-1].rois:
                 if name.lower() == roi.name.lower():
-                    _counts = roi.sum
-                    cps = _counts/ftime
-
+                    try:
+                        sum = roi.sum
+                    except:
+                        pass
+        cps = sum/ftime
         if cps < 0: cps = 0
+        # print("ROI STATUS ", name, _counts, cps)
         fmt = " {:s}: Cts={:10,.0f} :{:10,.1f} Hz"
         self.write_message(fmt.format(name, sum, cps), panel=panel)
 
