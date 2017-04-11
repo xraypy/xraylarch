@@ -3,7 +3,6 @@ lmfit/_version.py export-subst
 # Auto detect text files and perform LF normalization
 * text=auto eol=lf
 
-feff6l* - text
 *.nib -text
 *.jpg -text
 *.png -text
