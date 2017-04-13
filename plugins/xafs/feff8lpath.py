@@ -4,9 +4,7 @@ from ctypes import POINTER, pointer, c_int, c_long, c_char, c_char_p, c_double
 
 ## from matplotlib import pylab
 
-LIBFEFF8 = '/Users/Newville/local/lib/libonepath.dylib'
-
-F8LIB = ctypes.cdll.LoadLibrary(LIBFEFF8)
+F8LIB = None
 
 FEFF_maxpts = 150  # nex
 FEFF_maxpot = 11   # nphx
@@ -252,6 +250,17 @@ class Feff8L_XAFSPath(object):
 
 def feff8_xafs(phase_file, _larch=None):
     return Feff8L_XAFSPath(phase_file=phase_file)
+
+
+def initializeLarchPlugin(_larch=None):
+    """initialize F8LIB"""
+    if _larch is not None:
+        global F8LIB
+        try:
+            LIBFEFF8 = '/Users/Newville/local/lib/libonepath.dylib'
+            F8LIB = ctypes.cdll.LoadLibrary(LIBFEFF8)
+        except:
+            F8LIB = None
 
 def registerLarchPlugin():
     return ('_xafs', {'feff8_xafs': feff8_xafs})
