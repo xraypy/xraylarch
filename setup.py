@@ -1,21 +1,31 @@
 #!/usr/bin/env python
-
+"""
+Setup.py for xraylarch
+"""
 from __future__ import print_function
 from distutils.core import setup
-# from setuptools import setup
 
 import time
 import os
 import sys
 import site
-import shutil
+import platform
 from glob import glob
+
+from lib import version
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
+INSTALL =  (cmdline_args[0] == 'install')
 
-required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six', 'PIL', 'requests']
+##
+## Dependencies: required and recommended modules
+##
+
+required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
+                    'PIL', 'requests']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
+
 xrd_modules = ['pyFAI','xrayutilities','CifFile', 'requests', 'fabio']
 
 recommended_modules = {'basic analysis': required_modules,
@@ -66,15 +76,44 @@ if not deps_ok:
         sys.exit()
     deps_ok = len(missing) == 0
 
-##
+
 ## For Travis-CI, need to write a local site config file
 ##
 if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
 
-from lib import version
-# system-wide larchdir
-larchdir = os.path.join(sys.exec_prefix, 'share', 'larch')
+
+##
+
+isdir = os.path.isdir
+pjoin = os.path.join
+pexists = os.path.exists
+
+
+# system-wide larch directory
+larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
+
+##
+## determine this platform for dlls and exes
+
+nbits = platform.architecture()[0].replace('bit', '')
+
+uname  = 'linux'
+libfmt = 'lib%s.so'
+bindir = 'bin'
+pyexe = pjoin(bindir, 'python')
+is_anaconda = 'Anaconda' in sys.version
+
+if os.name == 'nt':
+    uname  = 'win'
+    libfmt = '%s.dll'
+    bindir = 'Scripts'
+    pyexe = 'python.exe'
+elif sys.platform == 'darwin':
+    uname  = 'darwin'
+    libfmt = 'lib%s.dylib'
+
+uname = "%s%s" % (uname, nbits)
 
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
@@ -89,50 +128,23 @@ if DEBUG:
 # this includes the larch executable files, and all the larch modules
 # and plugins
 
-larchico_dir = os.path.join(larchdir, 'icons')
-larchmod_dir = os.path.join(larchdir, 'modules')
+scripts  =  glob('bin/*')
+if not uname.startswith('win'):
+    scripts = [s for s in scripts if not s.endswith('.bat')]
 
-sysbin_dir = 'Scripts'
-scripts    =  glob('bin/*')
+scripts.extend(glob("%s/*" % pjoin('exes', uname)))
 
-mac_apps = []
-_scripts = []
-for s in scripts:
-    if s.endswith('.app'):
-        mac_apps.append(s)
-    else:
-        _scripts.append(s)
-scripts = _scripts
+larch_mods = glob('modules/*.lar') + glob('modules/*.py')
+larch_icos = glob('icons/*.ic*')
 
-if os.name != 'nt':
-    _scripts = []
-    sysbin_dir = 'bin'
-    for s in scripts:
-        if not s.endswith('.bat'):
-            _scripts.append(s)
-    scripts = _scripts
+larch_dlls = glob("%s/*" % pjoin('dlls', uname))
 
-data_files = [(sysbin_dir,   scripts),
-              (larchico_dir, glob('icons/*.ic*')),
-              (larchmod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
+data_files = [(bindir,  scripts),
+              (pjoin(larchdir, 'icons'),       larch_icos),
+              (pjoin(larchdir, 'modules'),     larch_mods),
+              (pjoin(larchdir, 'dlls', uname), larch_dlls)]
 
-#dlls
-dll_maindir = os.path.join(larchdir, 'dlls')
-archs = []
-if os.name == 'nt':
-    archs.extend(['win32', 'win64'])
-else:
-    if sys.platform.lower().startswith('linux'):
-        archs.extend(['linux32', 'linux64'])
-    elif sys.platform.lower().startswith('darwin'):
-        archs.append('darwin')
-
-for dx in archs:
-    dlldir = os.path.join(dll_maindir, dx)
-    dllfiles = glob('dlls/%s/*' % dx)
-    data_files.append((dlldir, dllfiles))
-
-plugin_dir = os.path.join(larchdir, 'plugins')
+plugin_dir = pjoin(larchdir, 'plugins')
 pluginfiles = []
 pluginpaths = []
 for fname in glob('plugins/*'):
@@ -154,12 +166,10 @@ for pdir in pluginpaths:
             print('Warning -- not walking subdirectories for Plugins!!')
         else:
             pfiles.append(fname)
-    data_files.append((os.path.join(larchdir, pdir), pfiles))
+    data_files.append((pjoin(larchdir, pdir), pfiles))
 
 
-if (cmdline_args[0] == 'install' and
-    sys.platform == 'darwin' and
-    'Anaconda' in sys.version):
+if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:
         fh = open(fname, 'r')
         lines = fh.readlines()
@@ -198,7 +208,7 @@ setup(name = 'xraylarch',
 def remove_cruft(basedir, filelist):
     """remove files from base directory"""
     def remove_file(base, fname):
-        fullname = os.path.join(base, fname)
+        fullname = pjoin(base, fname)
         if os.path.exists(fullname):
             try:
                 os.unlink(fullname)
@@ -211,8 +221,7 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'o')
 
 
-if (cmdline_args[0] == 'install' and sys.platform == 'darwin' and
-    'Anaconda' in sys.version):
+if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:
         fh = open(fname, 'r')
         lines = fh.readlines()
@@ -241,10 +250,10 @@ def fix_permissions(dirname, stat=None):
     for top, dirs, files in os.walk(dirname):
         set_perms(top)
         for d in dirs+files:
-            set_perms(os.path.join(top, d))
+            set_perms(pjoin(top, d))
 
 
-if cmdline_args[0] == 'install':
+if INSTALL:
     remove_cruft(larchdir, historical_cruft)
 
 if deps_ok and not os.path.exists('.deps'):
@@ -253,17 +262,10 @@ if deps_ok and not os.path.exists('.deps'):
     f.close()
 
 # create desktop icons
-if (cmdline_args[0] == 'install' and 'Anaconda' in sys.version and
-    (sys.platform == 'darwin' or os.name == 'nt')):
-    sdir = 'Scripts'
-    pyexe = 'python.exe'
-    if sys.platform == 'darwin':
-        pyexe = os.path.join('bin', 'python')
-        sdir = 'bin'
-    cmd ="%s %s" % (os.path.join(sys.exec_prefix, pyexe),
-                    os.path.join(sys.exec_prefix, sdir, 'larch_makeicons'))
+if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
+    cmd ="%s %s" % (pjoin(sys.exec_prefix, pyexe),
+                    pjoin(sys.exec_prefix, bindir, 'larch_makeicons'))
     os.system(cmd)
-
 
 
 if len(missing) > 0:
