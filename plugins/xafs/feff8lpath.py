@@ -171,6 +171,9 @@ class Feff8L_XAFSPath(object):
         if F8LIB is None:
             raise ValueError("Feff8 Dynamic library not found")
 
+        if len(self.atoms) < 1:
+            self.read_atoms()
+
         class args:
             pass
 
