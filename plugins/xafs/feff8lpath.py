@@ -115,26 +115,34 @@ class Feff8L_XAFSPath(object):
         self.lam      = np.zeros(FEFF_maxpts, **dargs)
         self.rep      = np.zeros(FEFF_maxpts, **dargs)
         self.nleg = 1
+        self.atoms = []
 
         if self.phase_file is not None:
+            self.read_atoms()
             self.set_absorber()
 
     @with_phase_file
-    def list_scatterers(self, phase_file=None):
-        """list Feff Potentials atoms ('ipots') fo phase file"""
-        atoms = []
+    def read_atoms(self):
+        """read atoms ipot, iz, symbol"""
+        self.atoms = []
         with open(self.phase_file,'r') as fh:
             line1_words = fh.readline().strip().split()
             text = fh.readlines()
-        nphases = int(line1_words[4])
+        npots = int(line1_words[4])
         for line in text[4:]:
-            if line.startswith('$'): continue
-            words = line.split()
-            atoms.append((int(words[1]), words[2]))
-            if len(atoms) > nphases:
+            if not line.startswith('$'):
+                words = line.split()
+                self.atoms.append((int(words[1]), words[2]))
+            if len(self.atoms) > npots:
                 break
+
+    @with_phase_file
+    def list_atoms(self):
+        """list Feff Potentials atoms ('ipots') fo phase file"""
+        if len(self.atoms) < 1:
+            self.read_atoms()
         out = ["# Potential   Z   Symbol"]
-        for ipot, atom in enumerate(atoms):
+        for ipot, atom in enumerate(self.atoms):
             out.append("    %2i      %3i     %s" % (ipot, atom[0], atom[1]))
         return "\n".join(out)
 
@@ -163,11 +171,6 @@ class Feff8L_XAFSPath(object):
         if F8LIB is None:
             raise ValueError("Feff8 Dynamic library not found")
 
-        print 'calculate xafs ', self.phase_file, self.nleg
-        # print 'Atom  IPOT   X, Y, Z'
-        # for i in range(self.nleg):
-        #    print i, self.ipot[i], self.rat[:,i]
-
         class args:
             pass
 
@@ -187,10 +190,8 @@ class Feff8L_XAFSPath(object):
             setattr(args, attr, pointer(c_double(getattr(self, attr))))
 
         # integer arrays
-        for attr in ('ipot', 'iz'):
-            arr = getattr(self, attr)
-            cdata = arr.ctypes.data_as(POINTER(arr.size*c_int))
-            setattr(args, attr, cdata)
+        args.ipot = self.ipot.ctypes.data_as(POINTER(self.ipot.size*c_int))
+        args.iz = self.iz.ctypes.data_as(POINTER(self.iz.size*c_int))
 
         # double arrays
         self.rat = self.rat/BOHR
@@ -245,7 +246,7 @@ class Feff8L_XAFSPath(object):
         self.amp = self.red_fact * self.mag_feff
 
         # unpack arrays of length 'nleg':
-        for attr in ('ipot', 'iz', 'beta', 'eta', 'ri'):
+        for attr in ('ipot', 'beta', 'eta', 'ri'):
             cdata = getattr(args, attr).contents[:nleg]
             setattr(self, attr, np.array(cdata))
 
@@ -266,10 +267,10 @@ class Feff8L_XAFSPath(object):
         self.geom = []
         rmass  = 0.
         for i in range(nleg):
-            ipot = self.ipot[i]
-            iz   = self.iz[ipot]
-            sym  = atomic_symbol(iz, _larch=self._larch)
+            ipot = int(self.ipot[i])
+            iz, sym = self.atoms[ipot]
             mass = atomic_mass(iz, _larch=self._larch)
+
             x, y, z = self.rat[i][0], self.rat[i][1], self.rat[i][2]
             self.geom.append((str(sym), iz, ipot, x, y, z))
             rmass += 1.0/max(1.0, mass)
