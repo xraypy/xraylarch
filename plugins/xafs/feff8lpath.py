@@ -2,6 +2,9 @@ import numpy as np
 import ctypes
 from ctypes import POINTER, pointer, c_int, c_long, c_char, c_char_p, c_double
 
+import larch
+from larch.larchlib import get_dll
+from larch_plugins.xray.xraydb_plugin import atomic_symbol, atomic_mass
 ## from matplotlib import pylab
 
 F8LIB = None
@@ -10,6 +13,7 @@ FEFF_maxpts = 150  # nex
 FEFF_maxpot = 11   # nphx
 FEFF_maxleg = 9    # legtot
 BOHR = 0.52917721067
+RYDBERG = 13.605698
 
 def with_phase_file(fcn):
     """decorator to ensure that the wrapped function either
@@ -45,7 +49,7 @@ class Feff8L_XAFSPath(object):
        # create path
        path  = Feff8L_XAFSPath(phase_file='phase.pad')
 
-       # list 'ipot' and labels for absorber, scattererers
+       # list 'ipot' and labels for absorber, scatterers
        path.list_scatterers()
 
        # set coords for absorbing atom
@@ -58,13 +62,18 @@ class Feff8L_XAFSPath(object):
        path.calcuate_xafs()
 
     """
-    def __init__(self, phase_file=None):
-        self.phase_file = phase_file
-        self.clear()
+    def __init__(self, phase_file=None, title='', _larch=None):
+        self._larch = _larch
+        global F8LIB
+        if F8LIB is None:
+            F8LIB = get_dll('onepath')
+        self.reset(phase_file=phase_file, title=title)
 
-    def clear(self):
+    def reset(self, phase_file=None, title=''):
         """reset all path data"""
-
+        self.phase_file = None
+        if phase_file is not None:
+            self.phase_file = phase_file
         self.index   = 9999
         self.degen   = 1.
         self.nnnn_out = False
@@ -74,15 +83,17 @@ class Feff8L_XAFSPath(object):
         self.ellip  = 0.
         self.nepts  = 0
         self.genfmt_order = 2
-        self.genfmt_vers  = ""
-        self.exch_label   = ""
-        self.rs     = 0.
+        self.version= ""
+        self.exch   = ""
+        self.title  = title
+        self.filename  = "%s_%s" % (self.phase_file, self.title)
+        self.rs_int = 0.
         self.vint   = 0.
-        self.xmu    = 0.
+        self.mu     = 0.
         self.edge   = 0.
         self.kf     = 0.
         self.rnorman = 0.
-        self.gamach = 0.
+        self.gam_ch = 0.
         self.nepts  = FEFF_maxpts
 
         dargs = dict(dtype=np.float64, order='F')
@@ -96,7 +107,7 @@ class Feff8L_XAFSPath(object):
         self.ri     = np.zeros(FEFF_maxleg, **dargs)
         self.rat    = np.zeros((3, 2+FEFF_maxleg), **dargs)
         self.iz     = np.zeros(1+FEFF_maxpot, **largs)
-        self.kfeff  = np.zeros(FEFF_maxpts, **dargs)
+        self.k      = np.zeros(FEFF_maxpts, **dargs)
         self.real_phc = np.zeros(FEFF_maxpts, **dargs)
         self.mag_feff = np.zeros(FEFF_maxpts, **dargs)
         self.pha_feff = np.zeros(FEFF_maxpts, **dargs)
@@ -107,7 +118,6 @@ class Feff8L_XAFSPath(object):
 
         if self.phase_file is not None:
             self.set_absorber()
-
 
     @with_phase_file
     def list_scatterers(self, phase_file=None):
@@ -150,6 +160,9 @@ class Feff8L_XAFSPath(object):
 
     @with_phase_file
     def calculate_xafs(self, phase_file=None):
+        if F8LIB is None:
+            raise ValueError("Feff8 Dynamic library not found")
+
         print 'calculate xafs ', self.phase_file, self.nleg
         # print 'Atom  IPOT   X, Y, Z'
         # for i in range(self.nleg):
@@ -169,8 +182,8 @@ class Feff8L_XAFSPath(object):
             setattr(args, attr, pointer(c_long(int(getattr(self, attr)))))
 
         # doubles
-        for attr in ('degen', 'rs', 'vint', 'xmu', 'edge', 'kf', 'rnorman',
-                     'gamach', 'ellip'):
+        for attr in ('degen', 'rs_int', 'vint', 'mu', 'edge', 'kf', 'rnorman',
+                     'gam_ch', 'ellip'):
             setattr(args, attr, pointer(c_double(getattr(self, attr))))
 
         # integer arrays
@@ -182,34 +195,35 @@ class Feff8L_XAFSPath(object):
         # double arrays
         self.rat = self.rat/BOHR
         for attr in ('evec', 'xivec', 'rat', 'ri', 'beta', 'eta',
-                     'kfeff', 'real_phc', 'mag_feff', 'pha_feff',
+                     'k', 'real_phc', 'mag_feff', 'pha_feff',
                      'red_fact', 'lam', 'rep'):
             arr = getattr(self, attr)
             cdata = arr.ctypes.data_as(POINTER(arr.size*c_double))
             setattr(args, attr, cdata)
 
-        x = F8LIB.onepath_(args.phase_file, args.index, args.nleg,
-                           args.degen, args.genfmt_order, args.exch_label,
-                           args.rs, args.vint, args.xmu, args.edge, args.kf,
-                           args.rnorman, args.gamach, args.genfmt_version,
-                           args.ipot, args.rat, args.iz, args.ipol,
-                           args.evec, args.ellip, args.xivec, args.nnnn_out,
-                           args.json_out, args.verbose, args.ri, args.beta,
-                           args.eta, args.nepts, args.kfeff, args.real_phc,
-                           args.mag_feff, args.pha_feff, args.red_fact,
-                           args.lam, args.rep)
+        onepath = F8LIB.onepath_
+        x = onepath(args.phase_file, args.index, args.nleg, args.degen,
+                    args.genfmt_order, args.exch_label, args.rs_int, args.vint,
+                    args.mu, args.edge, args.kf, args.rnorman,
+                    args.gam_ch, args.genfmt_version, args.ipot, args.rat,
+                    args.iz, args.ipol, args.evec, args.ellip, args.xivec,
+                    args.nnnn_out, args.json_out, args.verbose, args.ri,
+                    args.beta, args.eta, args.nepts, args.k,
+                    args.real_phc, args.mag_feff, args.pha_feff,
+                    args.red_fact, args.lam, args.rep)
 
-        self.exch_label   = args.exch_label.strip()
-        self.genfmt_version = args.genfmt_version.strip()
+        self.exch   = args.exch_label.strip()
+        self.version = args.genfmt_version.strip()
 
         # unpack integers/floats
-        for attr in ('index', 'nleg', 'genfmt_order', 'degen', 'rs',
-                     'vint', 'xmu', 'edge', 'kf', 'rnorman', 'gamach',
+        for attr in ('index', 'nleg', 'genfmt_order', 'degen', 'rs_int',
+                     'vint', 'mu', 'edge', 'kf', 'rnorman', 'gam_ch',
                      'ipol', 'ellip', 'nnnn_out', 'json_out', 'verbose',
                      'nepts'):
             setattr(self, attr, getattr(args, attr).contents.value)
 
         # some data needs recasting, reformatting
+        self.mu *= (2*RYDBERG)
         self.nnnn_out = bool(self.nnnn_out)
         self.json_out = bool(self.json_out)
         self.verbose  = bool(self.verbose)
@@ -223,10 +237,12 @@ class Feff8L_XAFSPath(object):
         nepts = self.nepts
 
         # arrays of length 'nepts'
-        for attr in ('kfeff', 'mag_feff', 'pha_feff', 'red_fact',
-                     'lam', 'rep'):
+        for attr in ('k', 'real_phc', 'mag_feff', 'pha_feff',
+                     'red_fact', 'lam', 'rep'):
             cdata = getattr(args, attr).contents[:nepts]
             setattr(self, attr, np.array(cdata))
+        self.pha = self.real_phc + self.pha_feff
+        self.amp = self.red_fact * self.mag_feff
 
         # unpack arrays of length 'nleg':
         for attr in ('ipot', 'iz', 'beta', 'eta', 'ri'):
@@ -247,20 +263,30 @@ class Feff8L_XAFSPath(object):
 
         self.reff = reff /2.0
 
+        self.geom = []
+        rmass  = 0.
+        for i in range(nleg):
+            ipot = self.ipot[i]
+            iz   = self.iz[ipot]
+            sym  = atomic_symbol(iz, _larch=self._larch)
+            mass = atomic_mass(iz, _larch=self._larch)
+            x, y, z = self.rat[i][0], self.rat[i][1], self.rat[i][2]
+            self.geom.append((str(sym), iz, ipot, x, y, z))
+            rmass += 1.0/max(1.0, mass)
+
+        self.rmass = 1./rmass
+
 
 def feff8_xafs(phase_file, _larch=None):
-    return Feff8L_XAFSPath(phase_file=phase_file)
+    return Feff8L_XAFSPath(phase_file=phase_file, _larch=_larch)
 
 
 def initializeLarchPlugin(_larch=None):
     """initialize F8LIB"""
     if _larch is not None:
         global F8LIB
-        try:
-            LIBFEFF8 = '/Users/Newville/local/lib/libonepath.dylib'
-            F8LIB = ctypes.cdll.LoadLibrary(LIBFEFF8)
-        except:
-            F8LIB = None
+        if F8LIB is None:
+            F8LIB = get_dll('onepath')
 
 def registerLarchPlugin():
     return ('_xafs', {'feff8_xafs': feff8_xafs})
@@ -273,5 +299,5 @@ def registerLarchPlugin():
 #     path.calculate_xafs()
 #
 #
-#     pylab.plot(path.kfeff[:path.nepts], path.mag_feff[:path.nepts])
+#     pylab.plot(path.k[:path.nepts], path.mag_feff[:path.nepts])
 #     pylab.show()
