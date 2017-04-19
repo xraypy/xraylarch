@@ -3,18 +3,20 @@
    feffit sums Feff paths to match xafs data
 """
 from collections import Iterable
-from copy import copy
+from copy import copy, deepcopy
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.optimize import leastsq as scipy_leastsq
 
-from larch import (Group, Parameter, isParameter, Minimizer,
-                   ValidateLarchPlugin, isNamedClass)
+from lmfit import Parameters, Parameter, Minimizer, asteval
+
+from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
 
 from larch.utils import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
-                                set_xafsGroup, FeffPathGroup, _ff2chi)
+                                set_xafsGroup, FeffPathGroup, _ff2chi, store_feffdat)
+
 
 # use larch's uncertainties package
 from larch.fitting import correlated_values, eval_stderr
@@ -425,7 +427,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         chir_im      imaginary part of chi(R).
     """
 
-    def _resid(params, datasets=None, _larch=None, **kwargs):
+    def _resid(fit_params, datasets=None, _larch=None, **kwargs):
         """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
@@ -436,7 +438,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
             print( "feffit needs a list of FeffitDataSets")
             return
     fitkws = dict(datasets=datasets)
-    fit = Minimizer(_resid, params, fcn_kws=fitkws,
+    fit = Minimizer(_resid,  params, fcn_kws=fitkws,
                     scale_covar=True,  _larch=_larch, **kws)
 
     fit.leastsq()
@@ -490,9 +492,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
-                _larch.symtable._sys.paramGroup._feffdat = copy(p._feffdat)
-                _larch.symtable._sys.paramGroup.reff = p._feffdat.reff
-
+                store_feffdat(feffdat, _larch)
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
                     obj = getattr(p, param)
@@ -655,8 +655,22 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append('='*len(topline))
     return '\n'.join(out)
 
+
+def reset_fiteval(_larch=None):
+    """resets the symbol table of the `fiteval` asteval Interpreter
+    to its original state
+    """
+    if _larch is None:
+        return
+    fiteval  = _larch.symtable._sys.fiteval
+    fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
+
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
+
+def initializeLarchPlugin(_larch=None):
+    _larch.symtable._sys.fiteval = fiteval = asteval.Interpreter()
+    _larch.symtable._sys.__fit_orig_symtable = deepcopy(fiteval.symtable)
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
