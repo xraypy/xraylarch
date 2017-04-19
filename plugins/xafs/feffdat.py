@@ -24,6 +24,12 @@ from larch_plugins.xray import atomic_mass, atomic_symbol
 
 SMALL = 1.e-6
 
+def store_feffdat(feffdat, _larch):
+    fiteval = _larch.symtable._sys.fiteval
+    fiteval.symtable._feffdat = (feffdat.geom, feffdat.rmass, feffdat.rnorman)
+    fiteval.symtable.reff = feffdat.reff
+    return fiteval
+
 class FeffDatFile(Group):
     def __init__(self, filename=None, _larch=None, **kws):
         self._larch = _larch
@@ -217,50 +223,29 @@ class FeffPathGroup(Group):
         return '<FeffPath Group (empty)>'
 
     def _pathparams(self, paramgroup=None, **kws):
-        """evaluate path parameter value
+        """evaluate path parameter value.  Returns
+        (degen, s02, e0, ei, deltar, sigma2, third, fourth)
         """
-        # degen, s02, e0, ei, deltar, sigma2, third, fourth
-        if (paramgroup is not None and
-            self._larch.symtable.isgroup(paramgroup)):
-            self._larch.symtable._sys.paramGroup = paramgroup
-        self._larch.symtable._fix_searchGroups()
-
-        # put 'reff' and '_feffdat' into the paramGroup so that
-        # 'reff' can be used in constraint expressions and
-        # '_feffdat' can be used inside Debye and Eins functions
-        stable = self._larch.symtable
-        if stable.isgroup(stable._sys.paramGroup):
-            stable._sys.paramGroup.reff = self._feffdat.reff
-            stable._sys.paramGroup._feffdat = self._feffdat
+        # put 'reff' and '_feffdat' into the symboltable so that
+        # they can be used in constraint expressions, and get
+        # fiteval evaluator
+        feval = store_feffdat(self._feffdat, self._larch)
 
         out = []
         for param in ('degen', 's02', 'e0', 'ei',
                       'deltar', 'sigma2', 'third', 'fourth'):
             val = getattr(self, param)
-            if param in kws:
-                if kws[param] is not None:
-                    val = kws[param]
+            if param in kws and kws[param] is not None:
+                val = kws[param]
             if isinstance(val, six.string_types):
-                thispar = Parameter(expr=val, _larch=self._larch)
-
-                #if isinstance(thispar, Parameter):
-                #    thispar = thispar.value
-                setattr(self, param, thispar)
-                val = getattr(self, param)
-            out.append(param_value(val))
+                val = feval.eval(val)
+                setattr(self, param, val)
+            out.append(val)
         return out
 
     def report(self):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
-
-        # put 'reff' into the paramGroup so that it can be used in
-        # constraint expressions
-        reff = self._feffdat.reff
-        self._larch.symtable._sys.paramGroup._feffdat = self._feffdat
-        self._larch.symtable._sys.paramGroup.reff = reff
-
-
         geomlabel  = '          Atom     x        y        z     ipot'
         geomformat = '           %s   % .4f, % .4f, % .4f  %i'
         out = ['   feff.dat file = %s' % self.filename]
@@ -328,11 +313,9 @@ class FeffPathGroup(Group):
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
         reff = fdat.reff
-        # put 'reff' into the paramGroup so that it can be used in
-        # constraint expressions
-        if self._larch.symtable._sys.paramGroup is not None:
-            self._larch.symtable._sys.paramGroup._feffdat = fdat
-            self._larch.symtable._sys.paramGroup.reff = fdat.reff
+        # put 'reff' and feffdat into the symbol table so they
+        # can be used in constraint expressions
+        store_feffdat(fdat, self._larch)
 
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
@@ -408,12 +391,6 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
-    if _larch is not None:
-        if (paramgroup is not None and
-            _larch.symtable.isgroup(paramgroup)):
-            _larch.symtable._sys.paramGroup = paramgroup
-        elif not hasattr(_larch.symtable._sys, 'paramGroup'):
-            _larch.symtable._sys.paramGroup = Group()
     path._calc_chi(**kws)
 
 @ValidateLarchPlugin
@@ -437,9 +414,6 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
 
     """
     msg = _larch.writer.write
-    if (paramgroup is not None and _larch is not None and
-         _larch.symtable.isgroup(paramgroup)):
-        _larch.symtable._sys.paramGroup = paramgroup
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
             msg('%s is not a valid Feff Path' % path)
