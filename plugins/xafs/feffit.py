@@ -15,7 +15,7 @@ from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
 
 from larch.utils import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
-                                set_xafsGroup, FeffPathGroup, _ff2chi, store_feffdat)
+                                set_xafsGroup, FeffPathGroup, _ff2chi)
 
 
 # use larch's uncertainties package
@@ -182,15 +182,19 @@ class FeffitDataSet(Group):
                              pathlist=self.pathlist[:],
                              transform=self.transform.__deepcopy__(memo),
                              _larch=self._larch)
+
     def prepare_fit(self):
+        """prepare for fit with this dataset"""
+
         trans = self.transform
         trans.make_karrays()
         ikmax = int(1.01 + max(self.data.k)/trans.kstep)
+
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
-        # print(" Prepare fit " , getattr(self.data, 'epsilon_k', None))
+
         if getattr(self.data, 'epsilon_k', None) is not None:
             eps_k = self.data.epsilon_k
             if isinstance(eps_k, np.ndarray):
@@ -208,6 +212,14 @@ class FeffitDataSet(Group):
                 _dchi = interp(self.model.k, self.data.k, self.data.delta_chi)
                 eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
                 self.set_epsilon_k(eps_k)
+
+        # for each path in the pathlist, setup the Path Parameters to
+        # use the current fiteval namespace
+        for path in self.pathlist:
+            path.create_path_params()
+            if path.spline_coefs is None:
+                path.create_spline_coefs()
+
         self.__prepared = True
         # print('Prepare fit done', self.epsilon_k, self.epsilon_r)
 
@@ -283,9 +295,9 @@ class FeffitDataSet(Group):
         residual = self.transform.apply(data_chi - model_chi)
         where model_chi is the result of ff2chi(pathlist)
         """
-        if (paramgroup is not None and
-            self._larch.symtable.isgroup(paramgroup)):
-            self._larch.symtable._sys.paramGroup = paramgroup
+        #if (paramgroup is not None and
+        #    self._larch.symtable.isgroup(paramgroup)):
+        #    self._larch.symtable._sys.paramGroup = paramgroup
         if not isNamedClass(self.transform, TransformGroup):
             return
         if not self.__prepared:
@@ -396,7 +408,7 @@ def feffit_transform(_larch=None, **kws):
     return TransformGroup(_larch=_larch, **kws)
 
 @ValidateLarchPlugin
-def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws):
+def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **kws):
     """execute a Feffit fit: a fit of feff paths to a list of datasets
 
     Parameters:
@@ -427,23 +439,39 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         chir_im      imaginary part of chi(R).
     """
 
-    def _resid(fit_params, datasets=None, _larch=None, **kwargs):
+
+    def _resid(params, datasets=None, _larch=None, **kwargs):
         """ this is the residual function"""
-        return concatenate([d._residual() for d in datasets])
+        return concatenate([d._residual(params) for d in datasets])
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
+
+    fiteval = reset_fiteval(_larch=_larch)
+    params = Parameters(asteval=fiteval)
+
+    for name in dir(paramgroup):
+        par = getattr(paramgroup, name)
+        if isParameter(par):
+            params.add(name, value=par.value, vary=par.vary, min=par.min,
+                       max=par.max, expr=par.expr,
+                       brute_step=par.brute_step)
+        else:
+            fiteval.symtable[name] = par
+
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
             return
-    fitkws = dict(datasets=datasets)
-    fit = Minimizer(_resid,  params, fcn_kws=fitkws,
+        ds.prepare_fit()
+
+    fit = Minimizer(_resid,  params,
+                    fcn_kws=dict(datasets=datasets),
                     scale_covar=True,  _larch=_larch, **kws)
 
-    fit.leastsq()
-    dat = concatenate([d._residual(data_only=True) for d in datasets])
-    params.rfactor = (params.fit_details.fvec**2).sum() / (dat**2).sum()
+    result = fit.leastsq()
+    dat = concatenate([d._residual(result.params, data_only=True) for d in datasets])
+    rfactor = (result.residual**2).sum() / (dat**2).sum()
 
     # remove temporary parameters for _feffdat and reff
     # that had been placed by _pathparams()
@@ -456,50 +484,50 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         n_idp += ds.n_idp
 
     # here we rescale chi-square and reduced chi-square to n_idp
-    npts =  len(params.residual)
-    params.chi_square *=  n_idp*1.0 / npts
-    params.chi_reduced =  params.chi_square/(n_idp*1.0 - params.nvarys)
+    npts =  len(result.residual)
+    result.chi_square *=  n_idp*1.0 / npts
+    result.chi_reduced =  result.chi_square/(n_idp*1.0 - result.nvarys)
 
     # With scale_covar = True, Minimizer() scales the uncertainties
     # by reduced chi-square assuming params.nfree is the correct value
     # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
     # so we rescale uncertainties here.
 
-    covar = getattr(params, 'covar', None)
+    covar = getattr(result, 'covar', None)
     if covar is not None:
-        err_scale = (params.nfree / (n_idp - params.nvarys))
-        for name in dir(params):
-            p = getattr(params, name)
+        err_scale = (result.nfree / (n_idp - result.nvarys))
+        for name in dir(result.var_names):
+            p = getattr(result.params, name)
             if isParameter(p) and p.vary:
                 p.stderr *= sqrt(err_scale)
 
         # next, propagate uncertainties to constraints and path parameters.
-        params.covar *= err_scale
+        result.covar *= err_scale
         vsave, vbest = {}, []
         # 1. save current params
-        for vname in params.covar_vars:
-            par = getattr(params, vname)
+        for vname in result.var_names:
+            par = getattr(result.params, vname)
             vsave[vname] = par
             vbest.append(par.value)
 
         # 2. get correlated uncertainties, set params accordingly
-        uvars = correlated_values(vbest, params.covar)
+        uvars = correlated_values(vbest, result.params.covar)
         # 3. evaluate constrained params, save stderr
-        for nam in dir(params):
-            obj = getattr(params, nam)
-            eval_stderr(obj, uvars,  params.covar_vars, vsave, _larch)
+        for nam in dir(result.params):
+            obj = getattr(result.params, nam)
+            eval_stderr(obj, uvars,  result.var_names, vsave, _larch)
 
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
-                store_feffdat(feffdat, _larch)
+                p.store_feffdat()
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
                     obj = getattr(p, param)
-                    eval_stderr(obj, uvars,  params.covar_vars, vsave, _larch)
+                    eval_stderr(obj, uvars,  result.var_names, vsave, _larch)
 
         # restore saved parameters again
-        for vname in params.covar_vars:
+        for vname in result.var_names:
             setattr(params, vname, vsave[vname])
 
         # clear any errors evaluting uncertainties
@@ -664,6 +692,7 @@ def reset_fiteval(_larch=None):
         return
     fiteval  = _larch.symtable._sys.fiteval
     fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
+    return fiteval
 
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
