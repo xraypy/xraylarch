@@ -25,7 +25,7 @@ def _sigma2_clean_args(t, theta, path, _larch):
         except:
             pass
     try:
-        geom, rmass, rnorman = path._feffdat
+        geom, rmass, rnorman = path['_feffdat']
     except:
         geom, rmass, rnorman = None, 0, 0
 
