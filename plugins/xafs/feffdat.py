@@ -22,6 +22,7 @@ from larch import (Group, Parameter, isParameter,
 
 from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch_plugins.xray import atomic_mass, atomic_symbol
+from larch.fitting import group2params
 
 SMALL = 1.e-6
 
@@ -425,16 +426,18 @@ def _path2chi(path, _larch=None, **kws):
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
+    path.create_path_params()
     path._calc_chi(**kws)
 
 @ValidateLarchPlugin
-def _ff2chi(pathlist, group=None,  _larch=None,
+def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
     """sum chi(k) for a list of FeffPath Groups.
 
     Parameters:
     ------------
       pathlist:    a list of FeffPath Groups
+      paramgroup:  a Parameter Group for calculating Path Parameters [None]
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
       k:           explicit array of k values to calculate chi.
@@ -446,11 +449,14 @@ def _ff2chi(pathlist, group=None,  _larch=None,
     pathlist and writes the resulting arrays to group.k and group.chi.
 
     """
+    params = group2params(paramgroup, _larch=_larch)
+
     msg = _larch.writer.write
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
             msg('%s is not a valid Feff Path' % path)
             return
+        path.create_path_params()
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
     k = pathlist[0].k[:]
     out = np.zeros_like(k)
