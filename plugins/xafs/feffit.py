@@ -19,7 +19,7 @@ from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
 
 
 # use larch's uncertainties package
-from larch.fitting import correlated_values, eval_stderr
+from larch.fitting import correlated_values, eval_stderr, group2params
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -447,17 +447,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
 
-    fiteval = reset_fiteval(_larch=_larch)
-    params = Parameters(asteval=fiteval)
-
-    for name in dir(paramgroup):
-        par = getattr(paramgroup, name)
-        if isParameter(par):
-            params.add(name, value=par.value, vary=par.vary, min=par.min,
-                       max=par.max, expr=par.expr,
-                       brute_step=par.brute_step)
-        else:
-            fiteval.symtable[name] = par
+    params = group2params(paramgroup, _larch=_larch)
 
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
