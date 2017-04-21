@@ -319,8 +319,8 @@ class Interpreter:
         ret = self.input.putfile(filename)
         if ret is not None:
             exc, msg = ret
-            err = LarchException(node=None, exc=IOError,
-                                 msg='Cannot read %s' % filename)
+            err = LarchExceptionHolder(node=None, exc=IOError,
+                                       msg='Cannot read %s' % filename)
             self.error.append(err)
             self.symtable._sys.last_error = err
             return
