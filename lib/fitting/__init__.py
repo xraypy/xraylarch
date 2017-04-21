@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 import six
+from copy import copy, deepcopy
 import wx
 import matplotlib
 matplotlib.use("WXAgg")
 
-from lmfit import (Parameter, Minimizer, minimize, fit_report,
-                   conf_interval, ci_report, conf_interval2d,
-                   ufloat, correlated_values)
+from lmfit import (Parameter, Parameters, Minimizer, minimize, fit_report,
+                   conf_interval, ci_report, conf_interval2d, ufloat,
+                   correlated_values)
 
 from lmfit.minimizer import eval_stderr
 from lmfit.confidence import f_compare
@@ -91,6 +92,34 @@ def guess(value,  **kws):
     kws.update({'vary':True})
     return param(value, **kws)
 
+
 def is_param(obj, _larch=None, **kws):
     """return whether an object is a Parameter"""
     return isParameter(obj)
+
+
+def group2params(paramgroup, _larch=None):
+    """take a Group of Parameter objects (and maybe other things)
+    and put them into Larch's current fiteval namespace
+
+    returns a lmfit Parameters set, ready for use in fitting
+    """
+    if _larch is None:
+        return None
+
+
+    fiteval  = _larch.symtable._sys.fiteval
+    fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
+
+    params = Parameters(asteval=fiteval)
+
+    if paramgroup is not None:
+        for name in dir(paramgroup):
+            par = getattr(paramgroup, name)
+            if isParameter(par):
+                params.add(name, value=par.value, vary=par.vary,
+                           min=par.min, max=par.max, expr=par.expr,
+                           brute_step=par.brute_step)
+            else:
+                fiteval.symtable[name] = par
+    return params
