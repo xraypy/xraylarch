@@ -3067,10 +3067,14 @@ class XRDSymmetrySearch(wx.Dialog):
 
         hm_notations = ['']
         ## Displays all space groups
-        for spgrp in SPACEGROUPS:
-            iuc_id,name = spgrp
-            hm = '%s: %s' % (str(iuc_id),name)
-            hm_notations += [hm]
+        for spgrp_no in sorted(SPACEGROUPS.keys()):
+            for spgrp_name in sorted(SPACEGROUPS[spgrp_no]):
+                hm_notations += ['%s : %s' % (spgrp_no,spgrp_name)]
+#         for spgrp in SPACEGROUPS:
+#             iuc_id,name = spgrp
+#             hm = '%s: %s' % (str(iuc_id),name)
+#             hm_notations += [hm]
+#         hm_notations = sorted(hm_notations)
 
         lbl_SG    = wx.StaticText(self.panel, label='Space group:')
         self.SG   = wx.Choice(self.panel,     choices=SG_list)
@@ -3198,8 +3202,8 @@ class XRDSymmetrySearch(wx.Dialog):
 
         i = self.HMsg.GetSelection()
         if i > 0:
-            iuc_id, name = SPACEGROUPS[i-1]
-            self.SG.SetSelection(int(iuc_id))
+            slct = int(self.HMsg.GetString(self.HMsg.GetSelection()).split()[0])
+            self.SG.SetSelection(slct)
         else:
             self.SG.SetSelection(0)
         
