@@ -406,7 +406,7 @@ class FeffPathGroup(Group):
         self.chi_imag = -cchi.real
 
 @ValidateLarchPlugin
-def _path2chi(path, _larch=None, **kws):
+def _path2chi(path, paramgroup=None, _larch=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
     output chi array will be written to path group
@@ -423,6 +423,8 @@ def _path2chi(path, _larch=None, **kws):
       None - outputs are written to path group
 
     """
+    params = group2params(paramgroup, _larch=_larch)
+
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
