@@ -123,3 +123,12 @@ def group2params(paramgroup, _larch=None):
             else:
                 fiteval.symtable[name] = par
     return params
+
+def params2group(params, paramgroup):
+    """fill Parameter objects in paramgroup with
+    values from lmfit.Parameters
+    """
+    for name, param in params.items():
+        this = getattr(paramgroup, name, None)
+        if is_param(this):
+            this.value = param.value
