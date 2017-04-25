@@ -28,10 +28,10 @@ from wxutils import MenuItem,pack,EditableListBox,SimpleText
 import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,calcCIFpeaks,d_from_twth,
+                               E_from_lambda,d_from_twth,
                                instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
                                peakfilter,xrd_background,xrd1d,calc_broadening,
-                               SPACEGROUPS)
+                               SPACEGROUPS,create_cif)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -89,6 +89,22 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
             return data1dxrd
         else:
             xrdviewer.add1Ddata(data1dxrd)
+
+def plot_sticks(x,y):
+
+    xy = np.zeros((2,len(x)*3+2))
+
+    xstep = (x[1]-x[0])/2
+    xy[0,0] = x[0]-xstep
+    xy[0,-1] = x[-1]+xstep
+
+    for i,xyi in enumerate(zip(x,y)):
+        ii = i*3
+        xy[0,ii+1:ii+4] = xyi[0]
+        xy[1,ii+2] = xyi[1]
+    
+    return xy
+
 
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
@@ -401,24 +417,25 @@ class Fitting1DXRD(BasePanel):
             maxq = np.max(self.plt_data[0])*1.05
             
             xi = self.rngpl.ch_xaxis.GetSelection()
-        
-            cifmatch = self.owner.cifdatabase.return_cif(amcsd_id)
-            qall,Fall = calcCIFpeaks(ciffile,energy,verbose=True,fid=StringIO(cifmatch),qmax=maxq)
-            Fall = Fall/max(Fall)*maxI            
+
+            cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
+            cif.structure_factors(wvlgth=wavelength,q_max=maxq)
+            qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
+            Iall = Iall/max(Iall)*maxI
 
             self.plot_data()
             cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
             try:
                 cif = []
-                for i,F in enumerate(Fall):
-                    if F != 0: cif.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), F])
+                for i,I in enumerate(Iall):
+                    cif.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), I])
                 cif = np.array(zip(*cif))
                 u,v,w = self.xrd1dgrp.uvw
                 D = self.xrd1dgrp.D
-                F = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
-                self.plot1D.oplot(self.plt_data[xi],F,**cifargs)  
+                I = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
+                self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
             except:
-                cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Fall])
+                cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
                 self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
 
     
@@ -1629,21 +1646,22 @@ class Viewer1DXRD(wx.Panel):
         energy = self.getE()
         
         maxq = 5.
+        minq = 1.
         for i,data in enumerate(self.xy_plot):
             if 1.05*np.max(data[0]) > maxq:
                 maxq = 1.05*np.max(data[0])
+            if minq < 1.05*np.min(data[0]):
+                minq = 1.05*np.min(data[0])
 
-        qall,Fall = calcCIFpeaks(path,energy,verbose=verbose,qmax=maxq)
+        cif = create_cif(cifile=path)
+        cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=minq,q_max=maxq)
+        qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
         
-        if len(Fall) > 0:
-        
-            Fall = Fall/np.max(Fall)*cifscale
-
-            wavelength = lambda_from_E(energy)
+        if len(Iall) > 0:
             q    = qall
-            twth = twth_from_q(q,wavelength)
+            twth = twth_from_q(q,lambda_from_E(energy))
             d    = d_from_q(q)
-            I    = Fall
+            I    = Iall/np.max(Iall)*cifscale
         else:
             print('No real structure factors found in range.')
             return
