@@ -18,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from larch_plugins.xrd.xrd_hkl import generate_hkl
+from larch_plugins.xrd.xrd_tools import generate_hkl
 
 ##########################################################################
 # FUNCTIONS
