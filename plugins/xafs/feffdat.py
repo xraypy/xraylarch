@@ -189,7 +189,6 @@ class FeffPathGroup(Group):
         self.k = None
         self.chi = None
         if self._feffdat is not None:
-            self.create_path_params()
             self.create_spline_coefs()
 
     def __copy__(self):
