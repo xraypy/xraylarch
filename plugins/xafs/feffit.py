@@ -9,7 +9,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.optimize import leastsq as scipy_leastsq
 
-from lmfit import Parameters, Parameter, Minimizer, asteval
+from lmfit import Parameters, Parameter, Minimizer, asteval, fit_report
 
 from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
 
@@ -19,7 +19,8 @@ from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
 
 
 # use larch's uncertainties package
-from larch.fitting import correlated_values, eval_stderr, group2params
+from larch.fitting import (correlated_values, eval_stderr,
+                           group2params, params2group)
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -290,20 +291,17 @@ class FeffitDataSet(Group):
             self.epsilon_r = eps_r
 
 
-    def _residual(self, paramgroup=None, data_only=False, **kws):
+    def _residual(self, paramgroup, data_only=False, **kws):
         """return the residual for this data set
         residual = self.transform.apply(data_chi - model_chi)
         where model_chi is the result of ff2chi(pathlist)
         """
-        #if (paramgroup is not None and
-        #    self._larch.symtable.isgroup(paramgroup)):
-        #    self._larch.symtable._sys.paramGroup = paramgroup
         if not isNamedClass(self.transform, TransformGroup):
             return
         if not self.__prepared:
             self.prepare_fit()
 
-        _ff2chi(self.pathlist, k=self.model.k,
+        _ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
         eps_k = self.epsilon_k
@@ -440,9 +438,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     """
 
 
-    def _resid(params, datasets=None, _larch=None, **kwargs):
+    def _resid(params, datasets=None, paramgroup=None,
+               _larch=None, **kwargs):
         """ this is the residual function"""
-        return concatenate([d._residual(params) for d in datasets])
+        params2group(params, paramgroup)
+        return concatenate([d._residual(paramgroup) for d in datasets])
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -455,12 +455,19 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             return
         ds.prepare_fit()
 
-    fit = Minimizer(_resid,  params,
-                    fcn_kws=dict(datasets=datasets),
-                    scale_covar=True,  _larch=_larch, **kws)
+    fit = Minimizer(_resid, params,
+                    fcn_kws=dict(datasets=datasets,
+                                 paramgroup=paramgroup),
+                    scale_covar=True, **kws)
 
     result = fit.leastsq()
-    dat = concatenate([d._residual(result.params, data_only=True) for d in datasets])
+    # print(fit_report(result))
+
+    # print(dir(result))
+
+    params2group(result.params, paramgroup)
+
+    dat = concatenate([d._residual(paramgroup, data_only=True) for d in datasets])
     rfactor = (result.residual**2).sum() / (dat**2).sum()
 
     # remove temporary parameters for _feffdat and reff
@@ -475,9 +482,9 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     # here we rescale chi-square and reduced chi-square to n_idp
     npts =  len(result.residual)
-    result.chi_square *=  n_idp*1.0 / npts
-    result.chi_reduced =  result.chi_square/(n_idp*1.0 - result.nvarys)
-
+    result.chi_square  = result.chisqr * n_idp*1.0 / npts
+    result.chi_reduced = result.chi_square/(n_idp*1.0 - result.nvarys)
+    result.rfactor     = rfactor
     # With scale_covar = True, Minimizer() scales the uncertainties
     # by reduced chi-square assuming params.nfree is the correct value
     # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
@@ -486,8 +493,10 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     covar = getattr(result, 'covar', None)
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
-        for name in dir(result.var_names):
-            p = getattr(result.params, name)
+        # print("RESULT VARS: ", result.var_names)
+        for name in result.var_names:
+            # p = getattr(result.params, name)
+            p = result.params[name]
             if isParameter(p) and p.vary:
                 p.stderr *= sqrt(err_scale)
 
@@ -496,16 +505,17 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         vsave, vbest = {}, []
         # 1. save current params
         for vname in result.var_names:
-            par = getattr(result.params, vname)
+            # par = getattr(result.params, vname)
+            par = result.params[vname]
             vsave[vname] = par
             vbest.append(par.value)
 
         # 2. get correlated uncertainties, set params accordingly
-        uvars = correlated_values(vbest, result.params.covar)
+        uvars = correlated_values(vbest, result.covar)
         # 3. evaluate constrained params, save stderr
-        for nam in dir(result.params):
-            obj = getattr(result.params, nam)
-            eval_stderr(obj, uvars,  result.var_names, vsave, _larch)
+        for nam, obj in result.params.items():
+            # obj = getattr(result.params, nam)
+            eval_stderr(obj, uvars,  result.var_names, vsave) # , _larch)
 
         # 3. evaluate path params, save stderr
         for ds in datasets:
@@ -514,11 +524,12 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
                     obj = getattr(p, param)
-                    eval_stderr(obj, uvars,  result.var_names, vsave, _larch)
+                    eval_stderr(obj, uvars,  result.var_names, vsave) # , _larch)
 
         # restore saved parameters again
         for vname in result.var_names:
-            setattr(params, vname, vsave[vname])
+            # setattr(params, vname, vsave[vname])
+            params[vname] = vsave[vname]
 
         # clear any errors evaluting uncertainties
         if len(_larch.error) > 0:
@@ -528,7 +539,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
     return Group(name='feffit fit results', fit=fit, params=params,
-                 datasets=datasets)
+                 datasets=datasets, fit_details=result)
 
 @ValidateLarchPlugin
 def feffit_report(result, min_correl=0.1, with_paths=True,
@@ -563,13 +574,14 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     exprformat = '   %12s = % f +/- %s  = \'%s\''
     out = [topline, header % 'Statistics']
 
-    npts = len(params.residual)
+    details = result.fit_details
+    npts = len(details.residual)
 
-    out.append('   npts, nvarys, nfree= %i, %i, %i' % (npts, params.nvarys,
-                                                       params.nfree))
-    out.append('   chi_square         = %.8g'  % (params.chi_square))
-    out.append('   reduced chi_square = %.8g'  % (params.chi_reduced))
-    out.append('   r-factor           = %.8g'  % (params.rfactor))
+    out.append('   npts, nvarys, nfree= %i, %i, %i' % (npts, details.nvarys,
+                                                       details.nfree))
+    out.append('   chi_square         = %.8g'  % (details.chi_square))
+    out.append('   reduced chi_square = %.8g'  % (details.chi_reduced))
+    out.append('   r-factor           = %.8g'  % (details.rfactor))
     out.append(' ')
     if len(datasets) == 1:
         out.append(header % 'Data')
@@ -616,24 +628,27 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         #
     out.append(' ')
     out.append(header % 'Variables')
+    # print("VARIABLES ", params)
+    # print("VARIABLES ", dir(params))
 
     exprs = []
-    for name in dir(params):
-        var = getattr(params, name)
+    for name, par in params.items():
+        # var = getattr(params, name)
+        # print(name, par, dir(par))
         if len(name) < 14:
             name = (name + ' '*14)[:14]
-        if isParameter(var):
-            if var.vary:
+        if isParameter(par):
+            if par.vary:
                 stderr = 'unknown'
-                if var.stderr is not None: stderr = "%f" % var.stderr
-                out.append(varformat % (name, var.value,
-                                        stderr, var._initval))
+                if par.stderr is not None: stderr = "%f" % par.stderr
+                out.append(varformat % (name, par.value,
+                                        stderr, par.init_value))
 
-            elif var.expr is not None:
+            elif par.expr is not None:
                 stderr = 'unknown'
-                if var.stderr is not None: stderr = "%f" % var.stderr
-                exprs.append(exprformat % (name, var.value,
-                                           stderr, var.expr))
+                if par.stderr is not None: stderr = "%f" % par.stderr
+                exprs.append(exprformat % (name, par.value,
+                                           stderr, par.expr))
     if len(exprs) > 0:
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
