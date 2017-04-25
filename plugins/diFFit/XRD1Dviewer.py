@@ -1137,8 +1137,8 @@ class Fitting1DXRD(BasePanel):
                 self.txt_amcsd_cnt.SetLabel('1 MATCH')
             elif len(list_amcsd) > 1:
                 self.txt_amcsd_cnt.SetLabel('%i MATCHES' % len(list_amcsd))
-            else:
-                self.txt_amcsd_cnt.SetLabel('')
+        else:
+            self.txt_amcsd_cnt.SetLabel('')
                 
         self.rtgpl.btn_clr.Enable()
 
