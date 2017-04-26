@@ -2608,9 +2608,9 @@ class CIFcls(object):
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
                     f0 = xraydb.f0(el, qhkl[i]/(4*math.pi)) # xraydb.f0(el, 1/(2*dhkl[i]))
-                    if f0 is None:
-                        print 'eventually remove...'
-                        print 'f0',f0,type(f0),el,qhkl[i]/(4*math.pi)
+#                     if f0 is None:
+#                         print 'eventually remove...'
+#                         print 'f0',f0,type(f0),el,qhkl[i]/(4*math.pi)
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
@@ -2651,7 +2651,7 @@ class CIFcls(object):
 
 def check_elemsym(atom):
 
-    print atom,
+#     print atom,
     match_list = []
     loops = 0
     while len(match_list) == 0:
@@ -2670,7 +2670,7 @@ def check_elemsym(atom):
         if loops > 2:
             print
             return atom
-    print '-->',match_list[ai]
+#     print '-->',match_list[ai]
     return match_list[ai]
 
 
