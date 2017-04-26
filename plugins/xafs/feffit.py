@@ -461,20 +461,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                     scale_covar=True, **kws)
 
     result = fit.leastsq()
-    # print(fit_report(result))
-
-    # print(dir(result))
 
     params2group(result.params, paramgroup)
 
     dat = concatenate([d._residual(paramgroup, data_only=True) for d in datasets])
     rfactor = (result.residual**2).sum() / (dat**2).sum()
-
-    # remove temporary parameters for _feffdat and reff
-    # that had been placed by _pathparams()
-    #for pname in ('_feffdat', 'reff'):
-    #    if hasattr(params, pname):
-    #        delattr(params, pname)
 
     n_idp = 0
     for ds in datasets:
@@ -491,11 +482,10 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     # so we rescale uncertainties here.
 
     covar = getattr(result, 'covar', None)
+    # print("COVAR " , covar)
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
-        # print("RESULT VARS: ", result.var_names)
         for name in result.var_names:
-            # p = getattr(result.params, name)
             p = result.params[name]
             if isParameter(p) and p.vary:
                 p.stderr *= sqrt(err_scale)
@@ -503,9 +493,9 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         # next, propagate uncertainties to constraints and path parameters.
         result.covar *= err_scale
         vsave, vbest = {}, []
+
         # 1. save current params
         for vname in result.var_names:
-            # par = getattr(result.params, vname)
             par = result.params[vname]
             vsave[vname] = par
             vbest.append(par.value)
@@ -514,17 +504,18 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         uvars = correlated_values(vbest, result.covar)
         # 3. evaluate constrained params, save stderr
         for nam, obj in result.params.items():
-            # obj = getattr(result.params, nam)
-            eval_stderr(obj, uvars,  result.var_names, vsave) # , _larch)
+            eval_stderr(obj, uvars,  result.var_names, result.params) # vsave) # , _larch)
+            # print("obj",  obj, vsave[nam])
 
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
                 p.store_feffdat()
-                for param in ('degen', 's02', 'e0', 'ei',
+                for pname in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = getattr(p, param)
-                    eval_stderr(obj, uvars,  result.var_names, vsave) # , _larch)
+                    obj = p.params[pname]
+                    eval_stderr(obj, uvars,  result.var_names, result.params)
+
 
         # restore saved parameters again
         for vname in result.var_names:
@@ -653,14 +644,14 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
 
-    covar_vars = getattr(params, 'covar_vars', [])
+    covar_vars = details.var_names
     if len(covar_vars) > 0:
         out.append(' ')
         out.append(header % 'Correlations' +
                    '    (unreported correlations are < % .3f)' % min_correl)
         correls = {}
         for i, name in enumerate(covar_vars):
-            par = getattr(params, name)
+            par = params[name]
             if not par.vary:
                 continue
             if hasattr(par, 'correl') and par.correl is not None:
