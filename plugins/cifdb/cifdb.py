@@ -658,12 +658,12 @@ class cifDB(object):
                     if verbose:
                         print('Saved %s' % file)
                 if addDB:
-                    try:
+                    if 1==1: #try:
                         self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-                    except:
-                        if trackerr:
-                            ftrack.write('%s\n' % url_to_scrape)
-                        pass
+#                     except:
+#                         if trackerr:
+#                             ftrack.write('%s\n' % url_to_scrape)
+#                         pass
 
         if trackerr:
             ftrack.close()
