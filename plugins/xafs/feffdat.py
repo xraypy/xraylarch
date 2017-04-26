@@ -294,42 +294,31 @@ class FeffPathGroup(Group):
             out.append(s)
 
         stderrs = {}
-        out.append('     reff   =  %.5f' % self._feffdat.reff)
-        for param in ('degen', 's02', 'e0', 'ei',
+        out.append('     {:7s}=  {:.5f}'.format('reff', self._feffdat.reff))
+
+        for pname in ('r', 'degen', 's02', 'e0', 'ei',
                       'deltar', 'sigma2', 'third', 'fourth'):
-            val = getattr(self, param)
-            std = 0
-            if isParameter(val):
-                std = val.stderr
-                val = val.value
-                if isParameter(val):
-                    if val.stderr is not None:
-                        std = val.stderr
-            if std is None: std = -1
-            stderrs[param] = std
-
-        def showval(title, par, val, stderrs, ifnonzero=False):
-            if val == 0 and ifnonzero:
-                return
-            s = '     %s=' % title
-            if title.startswith('R  '):
-                val = val + self._feffdat.reff
-            if stderrs[par] == 0:
-                s = '%s % .5f' % (s, val)
+            val = getattr(self, pname, 0)
+            std = None
+            if pname == 'r':
+                par = self.params.get('deltar', None)
+                val = par.value + self._feffdat.reff
+                std = par.stderr
             else:
-                s = '%s % .5f +/- % .5f' % (s, val, stderrs[par])
-            out.append(s)
-        showval('Degen  ', 'degen',  deg,  stderrs)
-        showval('S02    ', 's02',    s02,  stderrs)
-        showval('E0     ', 'e0',     e0,   stderrs)
-        showval('R      ', 'deltar', delr, stderrs)
-        showval('deltar ', 'deltar', delr, stderrs)
-        showval('sigma2 ', 'sigma2', ss2,  stderrs)
-        showval('third  ', 'third',  c3,   stderrs, ifnonzero=True)
-        showval('fourth ', 'fourth', c4,   stderrs, ifnonzero=True)
-        showval('Ei     ', 'ei',     ei,   stderrs, ifnonzero=True)
-
+                par = self.params.get(pname, None)
+                if par is not None:
+                    val = par.value
+                    std = par.stderr
+            if std is None  or std <= 0:
+                svalue = "{: 5f}".format(val)
+            else:
+                svalue = "{: 5f} +/- {: 5f}".format(val, std)
+            svalue = "     {:7s}= {:s}".format(pname, svalue)
+            if val == 0 and pname in ('third', 'fourth', 'ei'):
+                continue
+            out.append(svalue)
         return '\n'.join(out)
+
 
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
