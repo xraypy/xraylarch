@@ -341,7 +341,7 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
             idx  = np.digitize(X,twth)
             Ii    = [np.sum(Y[idx==k]) for k in range(bins)]
             Itot = Itot + Ii
-
+        
     if smooth:
         Itot = outliers(Itot)
     return Itot
