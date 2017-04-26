@@ -6,4 +6,4 @@ from .xrd_pyFAI import integrate_xrd,read_lambda,calc_cake
 from .xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
                         E_from_lambda,lambda_from_E,q_from_d,q_from_twth,qv_from_hkl,
                         d_from_hkl,unit_cell_volume,generate_hkl)
-from .xrd_cif import SPACEGROUPS,CIFcls,create_cif
+from .xrd_cif import SPACEGROUPS,CIFcls,create_cif,check_elemsym
