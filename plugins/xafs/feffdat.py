@@ -63,11 +63,10 @@ class FeffDatFile(Group):
     def rmass(self):
         """reduced mass for a path"""
         if self.__rmass is None:
-            amass = 0
-            for label, iz, ipot, x, y, z in self.geom:
-                m = atomic_mass(iz, _larch=self._larch)
-                amass += 1.0/max(1., m)
-            self.__rmass = 1./amass
+            rmass = 0
+            for label, iz, ipot, amass, x, y, z in self.geom:
+                rmass += 1.0/max(1., amass)
+            self.__rmass = 1./rmass
         return self.__rmass
 
     @rmass.setter
@@ -137,7 +136,8 @@ class FeffDatFile(Group):
                         lab = words[5]
                     else:
                         lab = atomic_symbol(iz, _larch=self._larch)
-                    geom = [lab, iz, ipot] + xyz
+                    amass = atomic_mass(iz, _larch=self._larch)
+                    geom = [lab, iz, ipot, amass] + xyz
                     self.geom.append(tuple(geom))
             elif mode == 'arrays':
                 d = np.array([float(x) for x in line.split()])
@@ -231,7 +231,13 @@ class FeffPathGroup(Group):
         """
         create Path Parameters within the current fiteval
         """
-        self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
+        # print("Create Path Params: ", self.filename, self.reff)
+        # print(" FitEVal : ", feval, len(feval.symtable))
+        # print(" FitEVal : ", feval.user_defined_symbols())
+        # print(" FitEVal : ", 'sigma2_eins' in feval.symtable)
+
+        feval = self._larch.symtable._sys.fiteval
+        self.params = Parameters(asteval=feval)
         self.store_feffdat()
         for pname in PATH_PARS:
             val =  getattr(self, pname)
@@ -256,8 +262,10 @@ class FeffPathGroup(Group):
         """
         fiteval = self._larch.symtable._sys.fiteval
         fdat = self._feffdat
-        fiteval.symtable['_feffdat'] = (fdat.geom, fdat.rmass, fdat.rnorman)
-        fiteval.symtable['reff'] = fdat.reff
+        fiteval.symtable['_feffdat'] = (fdat.geom, fdat.rnorman)
+        fiteval.symtable['pathgeom'] = fdat.geom
+        fiteval.symtable['rnorman']  = fdat.rnorman
+        fiteval.symtable['reff']     = fdat.reff
         return fiteval
 
     def path_params(self, **kws):
@@ -288,7 +296,7 @@ class FeffPathGroup(Group):
             out.append('     label     = %s' % self.label)
         out.append(geomlabel)
 
-        for label, iz, ipot, x, y, z in self.geom:
+        for label, iz, ipot, amass, x, y, z in self.geom:
             s = geomformat % (label, x, y, z, ipot)
             if ipot == 0: s = "%s (absorber)" % s
             out.append(s)
