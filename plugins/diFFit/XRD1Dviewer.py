@@ -420,19 +420,20 @@ class Fitting1DXRD(BasePanel):
 
             cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
             cif.structure_factors(wvlgth=wavelength,q_max=maxq)
-            qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
+            #qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
+            qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
             self.plot_data()
             cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
             try:
-                cif = []
+                cifdata = []
                 for i,I in enumerate(Iall):
-                    cif.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), I])
-                cif = np.array(zip(*cif))
+                    cifdata.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), I])
+                cifdata = np.array(zip(*cifdata))
                 u,v,w = self.xrd1dgrp.uvw
                 D = self.xrd1dgrp.D
-                I = calc_broadening(cif,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
+                I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
                 self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
             except:
                 cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
