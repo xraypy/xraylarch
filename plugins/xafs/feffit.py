@@ -4,6 +4,7 @@
 """
 from collections import Iterable
 from copy import copy, deepcopy
+from functools import partial
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
@@ -17,7 +18,7 @@ from larch.utils import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
                                 set_xafsGroup, FeffPathGroup, _ff2chi)
 
-
+from larch_plugins.xafs.sigma2_models import sigma2_eins, sigma2_debye
 # use larch's uncertainties package
 from larch.fitting import (correlated_values, eval_stderr,
                            group2params, params2group)
@@ -688,7 +689,14 @@ def reset_fiteval(_larch=None):
         return
     fiteval  = _larch.symtable._sys.fiteval
     fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
+    __add_fitfunctions(_larch)
     return fiteval
+
+
+def __add_fitfunctions(_larch):
+    fiteval = _larch.symtable._sys.fiteval
+    # fiteval.symtable['sigma2_eins'] = partial(sigma2_eins)
+    # fiteval.symtable['sigma2_debye'] = partial(sigma2_debye, _larch=_larch)
 
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
@@ -696,6 +704,7 @@ def registereLarchGroups():
 def initializeLarchPlugin(_larch=None):
     _larch.symtable._sys.fiteval = fiteval = asteval.Interpreter()
     _larch.symtable._sys.__fit_orig_symtable = deepcopy(fiteval.symtable)
+    __add_fitfunctions(_larch)
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
