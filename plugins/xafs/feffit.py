@@ -667,7 +667,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
                 break
             if len(name) < 20:
                 name = (name + ' '*20)[:20]
-            out.append('   %s = % .3f ' % (name, val))
+            out.append('   %s = % .3f' % (name, val))
 
     if with_paths:
         out.append(' ')
