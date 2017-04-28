@@ -2408,7 +2408,7 @@ class CIFcls(object):
         if cifile is not None and os.path.exists(cifile):
 
             if verbose:
-                print '\n=== Reading file: %s\n' % cifile
+                print( '\n=== Reading file: %s\n' % cifile)
 
             self.cifile = cifile
             cf = CifFile.ReadCif(cifile)
@@ -2609,8 +2609,8 @@ class CIFcls(object):
                 for el in self.atom.label:  ## loops through each element
                     f0 = xraydb.f0(el, qhkl[i]/(4*math.pi)) # xraydb.f0(el, 1/(2*dhkl[i]))
 #                     if f0 is None:
-#                         print 'eventually remove...'
-#                         print 'f0',f0,type(f0),el,qhkl[i]/(4*math.pi)
+#                         print( 'eventually remove...')
+#                         print( 'f0',f0,type(f0),el,qhkl[i]/(4*math.pi))
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
@@ -2651,7 +2651,7 @@ class CIFcls(object):
 
 def check_elemsym(atom):
 
-#     print atom,
+#     print( atom,)
     match_list = []
     loops = 0
     while len(match_list) == 0:
@@ -2668,9 +2668,9 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
-            print
+            print()
             return atom
-#     print '-->',match_list[ai]
+#     print( '-->',match_list[ai])
     return match_list[ai]
 
 
