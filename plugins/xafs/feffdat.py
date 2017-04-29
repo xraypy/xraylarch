@@ -64,7 +64,7 @@ class FeffDatFile(Group):
         """reduced mass for a path"""
         if self.__rmass is None:
             rmass = 0
-            for label, iz, ipot, amass, x, y, z in self.geom:
+            for atsym, iz, ipot, amass, x, y, z in self.geom:
                 rmass += 1.0/max(1., amass)
             self.__rmass = 1./rmass
         return self.__rmass
@@ -226,18 +226,11 @@ class FeffPathGroup(Group):
             return '<FeffPath Group %s>' % self.filename
         return '<FeffPath Group (empty)>'
 
-
     def create_path_params(self):
         """
         create Path Parameters within the current fiteval
         """
-        # print("Create Path Params: ", self.filename, self.reff)
-        # print(" FitEVal : ", feval, len(feval.symtable))
-        # print(" FitEVal : ", feval.user_defined_symbols())
-        # print(" FitEVal : ", 'sigma2_eins' in feval.symtable)
-
-        feval = self._larch.symtable._sys.fiteval
-        self.params = Parameters(asteval=feval)
+        self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
         self.store_feffdat()
         for pname in PATH_PARS:
             val =  getattr(self, pname)
@@ -262,10 +255,8 @@ class FeffPathGroup(Group):
         """
         fiteval = self._larch.symtable._sys.fiteval
         fdat = self._feffdat
-        fiteval.symtable['_feffdat'] = (fdat.geom, fdat.rnorman)
-        fiteval.symtable['pathgeom'] = fdat.geom
-        fiteval.symtable['rnorman']  = fdat.rnorman
-        fiteval.symtable['reff']     = fdat.reff
+        fiteval.symtable['feffpath'] = fdat
+        fiteval.symtable['reff']  = fdat.reff
         return fiteval
 
     def path_params(self, **kws):
@@ -276,6 +267,7 @@ class FeffPathGroup(Group):
         # they can be used in constraint expressions, and get
         # fiteval evaluator
         self.store_feffdat()
+
         if self.params is None:
             self.create_path_params()
         out = []
@@ -345,10 +337,6 @@ class FeffPathGroup(Group):
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
         reff = fdat.reff
-        # put 'reff' and feffdat into the symbol table so they
-        # can be used in constraint expressions
-        self.store_feffdat()
-
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
                 self.path_params(degen=degen, s02=s02, e0=e0, ei=ei,
