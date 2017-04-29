@@ -175,15 +175,15 @@ class FeffitDataSet(Group):
         return '<FeffitDataSet Group: %s>' % self.__name__
 
     def __copy__(self):
-        return FeffitDataSet(data=self.data.__copy__(),
+        return FeffitDataSet(data=copy(self.data),
                              pathlist=self.pathlist[:],
-                             transform=self.transform.__copy__(),
+                             transform=copy(self.transform),
                              _larch=self._larch)
 
     def __deepcopy__(self, memo):
-        return FeffitDataSet(data=self.data.__deepcopy__(memo),
+        return FeffitDataSet(data=deepcopy(self.data),
                              pathlist=self.pathlist[:],
-                             transform=self.transform.__deepcopy__(memo),
+                             transform=deepcopy(self.transform),
                              _larch=self._larch)
 
     def prepare_fit(self):
