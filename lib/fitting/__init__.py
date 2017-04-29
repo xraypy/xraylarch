@@ -107,10 +107,7 @@ def group2params(paramgroup, _larch=None):
     if _larch is None:
         return None
 
-
     fiteval  = _larch.symtable._sys.fiteval
-    fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
-
     params = Parameters(asteval=fiteval)
 
     if paramgroup is not None:
