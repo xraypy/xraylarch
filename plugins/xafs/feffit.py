@@ -8,6 +8,7 @@ from functools import partial
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
+from scipy import constants
 from scipy.optimize import leastsq as scipy_leastsq
 
 from lmfit import Parameters, Parameter, Minimizer, asteval, fit_report
@@ -18,7 +19,7 @@ from larch.utils import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
                                 set_xafsGroup, FeffPathGroup, _ff2chi)
 
-from larch_plugins.xafs.sigma2_models import sigma2_eins, sigma2_debye
+from larch_plugins.xafs.sigma2_models import sigma2_correldebye, sigma2_debye
 # use larch's uncertainties package
 from larch.fitting import (correlated_values, eval_stderr,
                            group2params, params2group)
@@ -223,7 +224,6 @@ class FeffitDataSet(Group):
                 path.create_spline_coefs()
 
         self.__prepared = True
-        # print('Prepare fit done', self.epsilon_k, self.epsilon_r)
 
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
@@ -620,8 +620,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         #
     out.append(' ')
     out.append(header % 'Variables')
-    # print("VARIABLES ", params)
-    # print("VARIABLES ", dir(params))
 
     exprs = []
     for name, par in params.items():
@@ -688,23 +686,67 @@ def reset_fiteval(_larch=None):
     if _larch is None:
         return
     fiteval  = _larch.symtable._sys.fiteval
-    fiteval.symtable = deepcopy(_larch.symtable._sys.__fit_orig_symtable)
-    __add_fitfunctions(_larch)
+    add_fitfunctions(_larch)
     return fiteval
 
 
-def __add_fitfunctions(_larch):
+def add_fitfunctions(_larch):
     fiteval = _larch.symtable._sys.fiteval
-    # fiteval.symtable['sigma2_eins'] = partial(sigma2_eins)
-    # fiteval.symtable['sigma2_debye'] = partial(sigma2_debye, _larch=_larch)
+    fiteval.symtable['const_hbar'] = constants.hbar
+    fiteval.symtable['const_kboltz'] = constants.k
+    fiteval.symtable['const_amu'] = constants.atomic_mass
+    s2eins_ = """def sigma2_eins(t, theta):
+    EINS_FACTOR = 1.e20*const_hbar**2/(2*const_kboltz*const_amu)
+
+    if feffpath is None:
+         return 0.
+
+    if theta < 1.e-5: theta = 1.e-5
+    if t < 1.e-5:     t = 1.e-5
+
+    rmass = 0.
+    for sym, iz, ipot, amass, x, y, z in feffpath.geom:
+        rmass = rmass + 1.0/max(0.1, amass)
+    rmass = 1.0/max(1.e-12, rmass)
+    return EINS_FACTOR/(theta * rmass * tanh(theta/(2.0*t)))
+"""
+    fiteval(s2eins_)
+    fiteval.symtable['sigma2_correldebye'] = sigma2_correldebye
+
+    s2debye_ = """def sigma2_debye(t, theta):
+    if feffpath is None:
+         return 0.
+
+    if theta < 1.e-5: theta = 1.e-5
+    if t < 1.e-5:     t = 1.e-5
+
+    tempk  = float(t)
+    thetad = float(theta)
+
+    natoms = len(feffpath.geom)
+    rnorm  = feffpath.rnorman
+    atomx, atomy, atomz, atomm = [], [], [], []
+    for sym, iz, ipot, am, x, y, z in feffpath.geom:
+        atomx.append(x)
+        atomy.append(y)
+        atomz.append(z)
+        atomm.append(am)
+
+    return sigma2_correldebye(natoms, tempk, thetad, rnorm,
+                              atomx, atomy, atomz, atomm)
+"""
+    fiteval(s2debye_)
+
+
+
 
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
 
 def initializeLarchPlugin(_larch=None):
     _larch.symtable._sys.fiteval = fiteval = asteval.Interpreter()
-    _larch.symtable._sys.__fit_orig_symtable = deepcopy(fiteval.symtable)
-    __add_fitfunctions(_larch)
+    add_fitfunctions(_larch)
+
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
