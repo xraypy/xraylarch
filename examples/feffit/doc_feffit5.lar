@@ -1,10 +1,9 @@
 ## examples/feffit/doc_feffit5.lar
-
+from copy import copy
 run('doc_feffit4.lar')
 
 pars2 = copy(pars)   # copy parameters
-dset2 = copy(dset)   # copy dataset
-dset2.transform.fitspace = 'q'
+dset.transform.fitspace = 'q'
 
 out2 = feffit(pars2, dset2)
 f = open('doc_feffit5_qr.out', 'w')
@@ -15,16 +14,17 @@ f.write(feffit_report(out2, with_paths=False, min_correl=0.5))
 f.write('\n')
 f.close()
 
+dset.transform.kweight = 2
+dset.transform.fitspace = 'k'
 
 pars3 = copy(pars)   # copy parameters
-dset3 = copy(dset)   # copy dataset
-dset3.transform.kweight = 2
-dset3.transform.fitspace = 'k'
+out3 = feffit(pars3, dset)
 
-out3 = feffit(pars3, dset3)
+rep3 = feffit_report(out3, with_paths=False, min_correl=0.5)
+
 f = open('doc_feffit5_k.out', 'w')
 f.write('*** K Space***\n')
-f.write(feffit_report(out3, with_paths=False, min_correl=0.5))
-f.write('\n')
+f.write("%s\n" % rep3)
 f.close()
+
 ## end examples/feffit/doc_feffit5.lar
