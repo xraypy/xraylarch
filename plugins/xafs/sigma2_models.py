@@ -16,23 +16,6 @@ EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
 
-def _sigma2_clean_args(t, theta, path, _larch):
-    "clean arguments for sigma2_eins, sigma2_debye"
-
-    if path is None:
-        try:
-            path = _larch.symtable._sys.fiteval.symtable
-        except:
-            pass
-    try:
-        geom, rmass, rnorman = path['_feffdat']
-    except:
-        geom, rmass, rnorman = None, 0, 0
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5: t = 1.e-5
-    return (t, theta, geom, rmass, rnorman)
-
 @ValidateLarchPlugin
 def sigma2_eins(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the einstein model
@@ -54,11 +37,24 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     mass_red = reduced mass of Path (in amu)
     FACTOR  = hbarc*hbarc/(2*k_boltz*amu) ~= 24.25 Ang^2 * K * amu
     """
-    t, theta, geom, rmass, _r = _sigma2_clean_args(t, theta, path, _larch)
-    if geom is None:
-        return 0.0
-    tx = theta/(2.0*t)
-    return EINS_FACTOR/(theta * rmass * np.tanh(tx))
+    feffpath = None
+    if path is not None:
+        feffpath = path
+    else:
+        symtable = _larch.symtable._sys.fiteval.symtable
+        feffpath = symtable.get('feffpath', None)
+
+    if feffpath is None:
+        return 0.
+
+    if theta < 1.e-5: theta = 1.e-5
+    if t < 1.e-5:     t = 1.e-5
+
+    rmass = 0.
+    for sym, iz, ipot, amass, x, y, z in feffpath.geom:
+        rmass = rmass + 1.0/max(0.1, amass)
+    rmass = 1.0/max(1.e-12, rmass)
+    return EINS_FACTOR/(theta * rmass * np.tanh(theta/(2.0*t)))
 
 @ValidateLarchPlugin
 def sigma2_debye(t, theta, path=None, _larch=None):
@@ -75,31 +71,35 @@ def sigma2_debye(t, theta, path=None, _larch=None):
     if path is None, the 'current path'
     (_sys.fiteval.symtable._feffdat) is used.
     """
-    global FEFF6LIB
-    if FEFF6LIB is None:
-        FEFF6LIB = get_dll('feff6')
-        FEFF6LIB.sigma2_debye.restype = ctypes.c_double
+    feffpath = None
+    if path is not None:
+        feffpath = path
+    else:
+        symtable = _larch.symtable._sys.fiteval.symtable
+        feffpath = symtable.get('feffpath', None)
 
-    t, theta, geom, rmass, rnorman = _sigma2_clean_args(t, theta, path, _larch)
-    if geom is None:
-        return 0.0
+    if feffpath is None:
+        return 0.
 
-    npts = len(geom)
-    nat  = ctypes.pointer(ctypes.c_int(npts))
-    t    = ctypes.pointer(ctypes.c_double(t))
-    th   = ctypes.pointer(ctypes.c_double(theta))
-    rs   = ctypes.pointer(ctypes.c_double(rnormman))
-    ax   = (npts*ctypes.c_double)()
-    ay   = (npts*ctypes.c_double)()
-    az   = (npts*ctypes.c_double)()
-    am   = (npts*ctypes.c_double)()
-    for i, dat in enumerate(geom):
-        s, iz, ip, x, y, z =  dat
-        ax[i], ay[i], az[i], am[i] = x, y, z, atomic_mass(iz, _larch=_larch)
+    if theta < 1.e-5: theta = 1.e-5
+    if t < 1.e-5:     t = 1.e-5
 
-    return FEFF6LIB.sigma2_debye(nat, t, th, rs, ax, ay, az, am)
+    tempk  = float(t)
+    thetad = float(theta)
 
-def sig2_corrdebye(natoms, tk, theta, rnorm, x, y, z, atwt):
+    natoms = len(feffpath.geom)
+    rnorm  = feffpath.rnorman
+    atomx, atomy, atomz, atomm = [], [], [], []
+    for sym, iz, ipot, am, x, y, z in feffpath.geom:
+        atomx.append(x)
+        atomy.append(y)
+        atomz.append(z)
+        atomm.append(am)
+
+    return sigma2_correldebye(natoms, tempk, thetad, rnorm,
+                              atomx, atomy, atomz, atomm)
+
+def sigma2_correldebye(natoms, tk, theta, rnorm, x, y, z, atwt):
     """calculate the XAFS debye-waller factor for a path based
     on the temperature, debye temperature, average norman radius,
     atoms in the path, and their positions.
@@ -227,9 +227,10 @@ def debfun(w, rx, tx):
 
     debfun = (sin(w*rx)/rx) * coth(w*tx/2)
     """
+    # print(" debfun ", w, rx, tx)
     wmin = 1.e-20
     argmax = 50.0
-    result = 2 / tx
+    result = 2.0 / tx
     #  allow t = 0 without bombing
     if w > wmin:
         result = w
@@ -253,7 +254,7 @@ def debint(rx, tx):
     for discussion and a much fancier version
     """
     MAXITER = 12
-    tol = 1.d-9
+    tol = 1.e-9
     itn = 1
     step = 1.0
     result = 0.0
