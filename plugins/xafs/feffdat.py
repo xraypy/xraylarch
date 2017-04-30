@@ -178,8 +178,8 @@ class FeffPathGroup(Group):
             self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
             self.geom  = self._feffdat.geom
             def_degen  = self._feffdat.degen
-
-        def_label = "path_%s" % (hex(id(self))[2:])
+#
+        def_label = "p%s" % (hex(hash(self))[2:])
         self.label = def_label if label  is None else labe
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -293,10 +293,9 @@ class FeffPathGroup(Group):
     def report(self):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
-        geomlabel  = '          Atom     x        y        z     ipot'
-        geomformat = '           %s   % .4f, % .4f, % .4f  %i'
-        out = ['     Label = %s' % (self.label),
-               '     Feff.dat file = %s' % (self.filename)]
+        geomlabel  = '     atom      x        y        z       ipot'
+        geomformat = '    %4s      % .4f, % .4f, % .4f  %i'
+        out = ['   Path %s, Feff.dat file = %s' % (self.label, self.filename)]
         out.append(geomlabel)
 
         for atsym, iz, ipot, amass, x, y, z in self.geom:
@@ -307,15 +306,16 @@ class FeffPathGroup(Group):
         stderrs = {}
         out.append('     {:7s}=  {:.5f}'.format('reff', self._feffdat.reff))
 
-        for pname in ('degen', 's02', 'e0', 'r' ,
+        for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
-            val = getattr(self, pname, 0)
+            val = strval = getattr(self, pname, 0)
             parname = fix_varname(PATHPAR_FMT % (pname, self.label))
             std = None
             if pname == 'r':
                 parname = fix_varname(PATHPAR_FMT % ('deltar', self.label))
                 par = self.params.get(parname, None)
                 val = par.value + self._feffdat.reff
+                strval = 'reff + ' + getattr(self, 'deltar', 0)
                 std = par.stderr
             else:
                 par = self.params.get(parname, None)
@@ -327,7 +327,11 @@ class FeffPathGroup(Group):
             else:
                 svalue = "{: 5f} +/- {:5f}".format(val, std)
             if pname == 's02': pname = 'n*s02'
+
             svalue = "     {:7s}= {:s}".format(pname, svalue)
+            if isinstance(strval, six.string_types):
+                svalue = "{:s}  '{:s}'".format(svalue, strval)
+
             if val == 0 and pname in ('third', 'fourth', 'ei'):
                 continue
             out.append(svalue)
