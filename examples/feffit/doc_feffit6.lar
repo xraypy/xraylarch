@@ -31,7 +31,8 @@ def rplot_fit(dset, title, win=1):
     plot(dset.model.r,  chir_pha_mag,  win=win, label='phase-corrected data')
 
     # find region around peak in phase-corrected chi(R)
-    irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
+
+    irmax = where(chir_pha_mag == max(chir_pha_mag))[0][0]
     x = dset.model.r[irmax-1: irmax+2]
     y = dset.model.chir_im[irmax-1: irmax+2]
     plot(x, y, win=win, color='black', style='short dashed',
@@ -43,7 +44,6 @@ def phase_correct(dset):
    "calculate phase-corrected FT, find estimate of R"
    nrpts = len(dset.model.r)
    path1 = dset.pathlist[0]
-
    # get phase from Feff path
    feff_pha = interp(path1._feffdat.k, path1._feffdat.pha, dset.model.k)
    # phase-corrected Fourier Transform
@@ -53,7 +53,7 @@ def phase_correct(dset):
    dset.model.chir_phcor = chir_pha
 
    # find region around peak in phase-corrected chi(R)
-   irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
+   irmax = where(chir_pha_mag == max(chir_pha_mag))[0][0]
    x = dset.model.r[irmax-1: irmax+2]
    y = dset.model.chir_im[irmax-1: irmax+2]
    # find where Im[chi(R)_phase_corrected] = 0: use linear regression
@@ -96,11 +96,9 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
 
     out = feffit(pars, dset)
     path1 = out.datasets[0].pathlist[0]
-
     # read scatterer from Feff geometry, to be sure it's correct
     scatt = path1._feffdat.geom[1][0]
     title = 'Path: Zn-%s ' % scatt
-
     r_phcor = phase_correct(out.datasets[0])
     rplot_fit(out.datasets[0], title, win=1+ix)
 
