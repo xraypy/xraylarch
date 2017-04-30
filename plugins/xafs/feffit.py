@@ -20,6 +20,7 @@ from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
                                 set_xafsGroup, FeffPathGroup, _ff2chi)
 
 from larch_plugins.xafs.sigma2_models import sigma2_correldebye, sigma2_debye
+from larch_plugins.xafs.feffdat import PATHPAR_FMT
 # use larch's uncertainties package
 from larch.fitting import (correlated_values, eval_stderr,
                            group2params, params2group)
@@ -514,7 +515,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                 p.store_feffdat()
                 for pname in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = p.params[pname]
+                    obj = p.params[PATHPAR_FMT % (pname, p.label)]
                     eval_stderr(obj, uvars,  result.var_names, result.params)
 
 
