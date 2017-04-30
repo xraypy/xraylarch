@@ -20,6 +20,7 @@ from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
+from larch.utils.strutils import fix_varname
 from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch_plugins.xray import atomic_mass, atomic_symbol
 from larch.fitting import group2params
@@ -157,6 +158,7 @@ class FeffDatFile(Group):
 
 
 PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
+PATHPAR_FMT = "%s__%s"
 
 class FeffPathGroup(Group):
     def __init__(self, filename=None, _larch=None,
@@ -177,15 +179,16 @@ class FeffPathGroup(Group):
             self.geom  = self._feffdat.geom
             def_degen  = self._feffdat.degen
 
-        self.degen = degen if degen is not None else def_degen
-        self.label = label if label is not None else filename
-        self.s02    = 1 if s02    is None else s02
-        self.e0     = 0 if e0     is None else e0
-        self.ei     = 0 if ei     is None else ei
-        self.deltar = 0 if deltar is None else deltar
-        self.sigma2 = 0 if sigma2 is None else sigma2
-        self.third  = 0 if third  is None else third
-        self.fourth = 0 if fourth is None else fourth
+        def_label = "path_%s" % (hex(id(self))[2:])
+        self.label = def_label if label  is None else labe
+        self.degen = def_degen if degen  is None else degen
+        self.s02    = 1.0      if s02    is None else s02
+        self.e0     = 0.0      if e0     is None else e0
+        self.ei     = 0.0      if ei     is None else ei
+        self.deltar = 0.0      if deltar is None else deltar
+        self.sigma2 = 0.0      if sigma2 is None else sigma2
+        self.third  = 0.0      if third  is None else third
+        self.fourth = 0.0      if fourth is None else fourth
         self.k = None
         self.chi = None
         if self._feffdat is not None:
@@ -232,13 +235,15 @@ class FeffPathGroup(Group):
         """
         self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
         self.store_feffdat()
+
         for pname in PATH_PARS:
             val =  getattr(self, pname)
             attr = 'value'
             if isinstance(val, six.string_types):
                 attr = 'expr'
             kws =  {'vary': False, attr: val}
-            self.params.add(pname, **kws)
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            self.params.add(parname, **kws)
 
     def create_spline_coefs(self):
         """pre-calculate spline coefficients for feff data"""
@@ -259,7 +264,7 @@ class FeffPathGroup(Group):
         fiteval.symtable['reff']  = fdat.reff
         return fiteval
 
-    def path_params(self, **kws):
+    def __path_params(self, **kws):
         """evaluate path parameter value.  Returns
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)
         """
@@ -271,48 +276,57 @@ class FeffPathGroup(Group):
         if self.params is None:
             self.create_path_params()
         out = []
-        for name in PATH_PARS:
-            val = kws.get(name, None)
+        for pname in PATH_PARS:
+            val = kws.get(pname, None)
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
             if val is None:
-                val = self.params[name]._getval()
+                val = self.params[parname]._getval()
             out.append(val)
         return out
 
+    def path_paramvals(self, **kws):
+        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
+        return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
+                    sigma2=ss2, third=c3, fourth=c4)
+
+
     def report(self):
         "return  text report of parameters"
-        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.path_params()
+        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
         geomlabel  = '          Atom     x        y        z     ipot'
         geomformat = '           %s   % .4f, % .4f, % .4f  %i'
-        out = ['   feff.dat file = %s' % self.filename]
-        if self.label != self.filename:
-            out.append('     label     = %s' % self.label)
+        out = ['     Label = %s' % (self.label),
+               '     Feff.dat file = %s' % (self.filename)]
         out.append(geomlabel)
 
-        for label, iz, ipot, amass, x, y, z in self.geom:
-            s = geomformat % (label, x, y, z, ipot)
+        for atsym, iz, ipot, amass, x, y, z in self.geom:
+            s = geomformat % (atsym, x, y, z, ipot)
             if ipot == 0: s = "%s (absorber)" % s
             out.append(s)
 
         stderrs = {}
         out.append('     {:7s}=  {:.5f}'.format('reff', self._feffdat.reff))
 
-        for pname in ('r', 'degen', 's02', 'e0', 'ei',
-                      'deltar', 'sigma2', 'third', 'fourth'):
+        for pname in ('degen', 's02', 'e0', 'r' ,
+                      'deltar', 'sigma2', 'third', 'fourth', 'ei'):
             val = getattr(self, pname, 0)
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
             std = None
             if pname == 'r':
-                par = self.params.get('deltar', None)
+                parname = fix_varname(PATHPAR_FMT % ('deltar', self.label))
+                par = self.params.get(parname, None)
                 val = par.value + self._feffdat.reff
                 std = par.stderr
             else:
-                par = self.params.get(pname, None)
+                par = self.params.get(parname, None)
                 if par is not None:
                     val = par.value
                     std = par.stderr
             if std is None  or std <= 0:
                 svalue = "{: 5f}".format(val)
             else:
-                svalue = "{: 5f} +/- {: 5f}".format(val, std)
+                svalue = "{: 5f} +/- {:5f}".format(val, std)
+            if pname == 's02': pname = 'n*s02'
             svalue = "     {:7s}= {:s}".format(pname, svalue)
             if val == 0 and pname in ('third', 'fourth', 'ei'):
                 continue
@@ -339,7 +353,7 @@ class FeffPathGroup(Group):
         reff = fdat.reff
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
-                self.path_params(degen=degen, s02=s02, e0=e0, ei=ei,
+                self.__path_params(degen=degen, s02=s02, e0=e0, ei=ei,
                                  deltar=deltar, sigma2=sigma2,
                                  third=third, fourth=fourth)
 
