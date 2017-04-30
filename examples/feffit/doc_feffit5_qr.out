@@ -1,10 +1,13 @@
 *** R Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 288, 7, 281
-   chi_square         = 34.58273
-   reduced chi_square = 3.4218372
-   r-factor           = 0.015245995
+   nvarys, npts       = 7, 288
+   n_independent      = 17.106
+   chi_square         = 34.5827
+   reduced chi_square = 3.42184
+   r-factor           = 0.01525
+   Akaike info crit   = 26.0412
+   Bayesian info crit = 31.9174
  
 [[Data]]
    fit space          = 'r'
@@ -36,10 +39,13 @@
 *** Q Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 460, 7, 453
-   chi_square         = 70.652938
-   reduced chi_square = 6.990855
-   r-factor           = 0.01021715
+   nvarys, npts       = 7, 460
+   n_independent      = 17.106
+   chi_square         = 70.6529
+   reduced chi_square = 6.99085
+   r-factor           = 0.01022
+   Akaike info crit   = 38.2625
+   Bayesian info crit = 44.1387
  
 [[Data]]
    fit space          = 'q'

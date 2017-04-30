@@ -1,10 +1,13 @@
 *** K Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 230, 7, 223
-   chi_square         = 4707718.9
-   reduced chi_square = 465811.92
-   r-factor           = 0.14493893
+   nvarys, npts       = 7, 230
+   n_independent      = 17.106
+   chi_square         = 4.70772e+06
+   reduced chi_square = 465812
+   r-factor           = 0.14494
+   Akaike info crit   = 228.263
+   Bayesian info crit = 234.139
  
 [[Data]]
    fit space          = 'k'

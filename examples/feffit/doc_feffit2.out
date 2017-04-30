@@ -1,9 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 130, 6, 124
-   chi_square         = 843.76175
-   reduced chi_square = 65.788576
-   r-factor           = 0.0023935584
+   nvarys, npts       = 6, 130
+   n_independent      = 18.825
+   chi_square         = 843.762
+   reduced chi_square = 65.7886
+   r-factor           = 0.00239
+   Akaike info crit   = 83.5865
+   Bayesian info crit = 89.1978
  
 [[Data]]
    fit space          = 'r'
@@ -38,44 +41,41 @@
    alpha, sig2_3        =  0.138
  
 [[Paths]]
-     Label = path_117560950
-     Feff.dat file = feff0001.dat
-          Atom     x        y        z     ipot
-           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-           Cu    0.0000, -1.8016,  1.8016  1
+   Path p12057e59, Feff.dat file = feff0001.dat
+     atom      x        y        z       ipot
+      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+      Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      degen  =  12.000000
-     n*s02  =  0.928995 +/- 0.034710
-     e0     =  3.821553 +/- 0.453974
-     r      =  2.541508 +/- 0.003488
-     deltar = -0.006292 +/- 0.003488
-     sigma2 =  0.008643 +/- 0.000274
+     n*s02  =  0.928995 +/- 0.034710  'amp'
+     e0     =  3.821553 +/- 0.453974  'del_e0'
+     r      =  2.541508 +/- 0.003488  'reff + alpha*reff'
+     deltar = -0.006292 +/- 0.003488  'alpha*reff'
+     sigma2 =  0.008643 +/- 0.000274  'sig2_1'
 
-     Label = path_117560d50
-     Feff.dat file = feff0002.dat
-          Atom     x        y        z     ipot
-           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-           Cu   -3.6032,  0.0000,  0.0000  1
+   Path p1209aafd, Feff.dat file = feff0002.dat
+     atom      x        y        z       ipot
+      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+      Cu      -3.6032,  0.0000,  0.0000  1
      reff   =  3.60320
      degen  =  6.000000
-     n*s02  =  0.928995 +/- 0.034710
-     e0     =  3.821553 +/- 0.453974
-     r      =  3.594301 +/- 0.003488
-     deltar = -0.008899 +/- 0.003488
-     sigma2 =  0.014079 +/- 0.001384
+     n*s02  =  0.928995 +/- 0.034710  'amp'
+     e0     =  3.821553 +/- 0.453974  'del_e0'
+     r      =  3.594301 +/- 0.003488  'reff + alpha*reff'
+     deltar = -0.008899 +/- 0.003488  'alpha*reff'
+     sigma2 =  0.014079 +/- 0.001384  'sig2_2'
 
-     Label = path_1174c0350
-     Feff.dat file = feff0003.dat
-          Atom     x        y        z     ipot
-           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-           Cu    1.8016, -1.8016,  0.0000  1
-           Cu    1.8016,  0.0000, -1.8016  1
+   Path p11af5dcd, Feff.dat file = feff0003.dat
+     atom      x        y        z       ipot
+      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+      Cu       1.8016, -1.8016,  0.0000  1
+      Cu       1.8016,  0.0000, -1.8016  1
      reff   =  3.82180
      degen  =  48.000000
-     n*s02  =  0.928995 +/- 0.034710
-     e0     =  3.821553 +/- 0.453974
-     r      =  3.812361 +/- 0.003488
-     deltar = -0.009439 +/- 0.003488
-     sigma2 =  0.008410 +/- 0.003616
+     n*s02  =  0.928995 +/- 0.034710  'amp'
+     e0     =  3.821553 +/- 0.453974  'del_e0'
+     r      =  3.812361 +/- 0.003488  'reff + alpha*reff'
+     deltar = -0.009439 +/- 0.003488  'alpha*reff'
+     sigma2 =  0.008410 +/- 0.003616  'sig2_3'
 
 =======================================================
