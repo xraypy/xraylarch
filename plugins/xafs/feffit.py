@@ -465,9 +465,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     result = fit.leastsq()
 
     params2group(result.params, paramgroup)
-
     dat = concatenate([d._residual(paramgroup, data_only=True) for d in datasets])
-    rfactor = (result.residual**2).sum() / (dat**2).sum()
 
     n_idp = 0
     for ds in datasets:
@@ -475,9 +473,16 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     # here we rescale chi-square and reduced chi-square to n_idp
     npts =  len(result.residual)
-    result.chi_square  = result.chisqr * n_idp*1.0 / npts
-    result.chi_reduced = result.chi_square/(n_idp*1.0 - result.nvarys)
-    result.rfactor     = rfactor
+    chi_square  = result.chisqr * n_idp*1.0 / npts
+    chi_reduced = chi_square/(n_idp*1.0 - result.nvarys)
+    rfactor = (result.residual**2).sum() / (dat**2).sum()
+    # calculate 'aic', 'bic' rescaled to n_idp
+    # note that neg2_loglikel is -2*log(likelihood)
+    neg2_loglikel = n_idp * np.log(chi_square / n_idp)
+    aic = neg2_loglikel + 2 * result.nvarys
+    bic = neg2_loglikel + np.log(n_idp) * result.nvarys
+
+
     # With scale_covar = True, Minimizer() scales the uncertainties
     # by reduced chi-square assuming params.nfree is the correct value
     # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
@@ -507,7 +512,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         # 3. evaluate constrained params, save stderr
         for nam, obj in result.params.items():
             eval_stderr(obj, uvars,  result.var_names, result.params) # vsave) # , _larch)
-            # print("obj",  obj, vsave[nam])
 
         # 3. evaluate path params, save stderr
         for ds in datasets:
@@ -528,11 +532,23 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         if len(_larch.error) > 0:
             _larch.error = []
 
+    # reset the parameters group with the newly updated uncertainties
+    params2group(result.params, paramgroup)
+
     # here we create outputs arrays for chi(k), chi(r):
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
-    return Group(name='feffit fit results', fit=fit, params=params,
-                 datasets=datasets, fit_details=result)
+
+    out = Group(name='feffit results', datasets=datasets,
+                fit_details=result, chi_square=chi_square,
+                n_independent=n_idp, chi_reduced=chi_reduced,
+                rfactor=rfactor, aic=aic, bic=bic, covar=covar)
+
+    for attr in ('params', 'nvarys', 'nfree', 'ndata', 'var_names', 'nfev',
+                 'success', 'errorbars', 'message', 'lmdif_message'):
+        setattr(out, attr, getattr(result, attr, None))
+    return out
+
 
 @ValidateLarchPlugin
 def feffit_report(result, min_correl=0.1, with_paths=True,
@@ -552,7 +568,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     """
     input_ok = False
     try:
-        fit    = result.fit
         params = result.params
         datasets = result.datasets
         input_ok = True
@@ -564,17 +579,18 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
     varformat  = '   %12s = % f +/- %s   (init= % f)'
+    fixformat  = '   %12s = % f (fixed)'
     exprformat = '   %12s = % f +/- %s  = \'%s\''
     out = [topline, header % 'Statistics']
 
-    details = result.fit_details
-    npts = len(details.residual)
-
-    out.append('   npts, nvarys, nfree= %i, %i, %i' % (npts, details.nvarys,
-                                                       details.nfree))
-    out.append('   chi_square         = %.8g'  % (details.chi_square))
-    out.append('   reduced chi_square = %.8g'  % (details.chi_reduced))
-    out.append('   r-factor           = %.8g'  % (details.rfactor))
+    out.append('   nvarys, npts       = %i, %i' % (result.nvarys,
+                                                   result.ndata))
+    out.append('   n_independent      = %.3f'  % (result.n_independent))
+    out.append('   chi_square         = %.6g'  % (result.chi_square))
+    out.append('   reduced chi_square = %.6g'  % (result.chi_reduced))
+    out.append('   r-factor           = %.5f'  % (result.rfactor))
+    out.append('   Akaike info crit   = %.6g'  % (result.aic))
+    out.append('   Bayesian info crit = %.6g'  % (result.bic))
     out.append(' ')
     if len(datasets) == 1:
         out.append(header % 'Data')
@@ -622,7 +638,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append(' ')
     out.append(header % 'Variables')
 
-    exprs = []
+    # exprs = []
     for name, par in params.items():
         # var = getattr(params, name)
         # print(name, par, dir(par))
@@ -638,13 +654,16 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
             elif par.expr is not None:
                 stderr = 'unknown'
                 if par.stderr is not None: stderr = "%f" % par.stderr
-                exprs.append(exprformat % (name, par.value,
-                                           stderr, par.expr))
-    if len(exprs) > 0:
-        out.append(header % 'Constraint Expressions')
-        out.extend(exprs)
+                out.append(exprformat % (name, par.value,
+                                         stderr, par.expr))
+            else:
+                out.append(fixformat % (name, par.value))
 
-    covar_vars = details.var_names
+    # if len(exprs) > 0:
+    #     out.append(header % 'Constraint Expressions')
+    #     out.extend(exprs)
+
+    covar_vars = result.var_names
     if len(covar_vars) > 0:
         out.append(' ')
         out.append(header % 'Correlations' +
