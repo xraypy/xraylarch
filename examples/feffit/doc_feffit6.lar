@@ -102,7 +102,7 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
     r_phcor = phase_correct(out.datasets[0])
     rplot_fit(out.datasets[0], title, win=1+ix)
 
-    redchi = out.fit_details.chi_reduced
+    redchi = out.chi_reduced
 
     _amp   = '%5.2f(%.2f) ' % (out.params['amp'].value, out.params['amp'].stderr)
     _de0   = '%6.2f(%.2f) ' % (out.params['del_e0'].value,  out.params['del_e0'].stderr)
