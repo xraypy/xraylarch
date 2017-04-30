@@ -5,7 +5,7 @@ run('doc_feffit4.lar')
 pars2 = copy(pars)   # copy parameters
 dset.transform.fitspace = 'q'
 
-out2 = feffit(pars2, dset2)
+out2 = feffit(pars2, dset)
 f = open('doc_feffit5_qr.out', 'w')
 f.write('*** R Space***\n')
 f.write(feffit_report(out, with_paths=False, min_correl=0.5))
