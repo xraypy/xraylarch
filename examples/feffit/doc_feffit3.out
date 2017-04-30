@@ -52,44 +52,44 @@
  
 [[Paths]]
  dataset 1:
-   feff.dat file = feff0001.dat
-     label     = 10d143710
+     Label = path_11766a150
+     Feff.dat file = feff0001.dat
           Atom     x        y        z     ipot
            Cu    0.0000,  0.0000,  0.0000  0 (absorber)
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
-     r      =  2.547667 +/- 0.002643
      degen  =  12.000000
      n*s02  =  0.869628 +/- 0.030026
      e0     =  5.385041 +/- 0.616831
+     r      =  2.547667 +/- 0.002643
      deltar = -0.000133 +/- 0.002643
      sigma2 =  0.003276 +/- 0.000118
 
  dataset 2:
-   feff.dat file = feff0001.dat
-     label     = 11f12d7d0
+     Label = path_11f63c090
+     Feff.dat file = feff0001.dat
           Atom     x        y        z     ipot
            Cu    0.0000,  0.0000,  0.0000  0 (absorber)
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
-     r      =  2.548201 +/- 0.002520
      degen  =  12.000000
      n*s02  =  0.869628 +/- 0.030026
      e0     =  5.385041 +/- 0.616831
+     r      =  2.548201 +/- 0.002520
      deltar =  0.000401 +/- 0.002520
      sigma2 =  0.003339 +/- 0.000131
 
  dataset 3:
-   feff.dat file = feff0001.dat
-     label     = 10d1b2910
+     Label = path_121d7e750
+     Feff.dat file = feff0001.dat
           Atom     x        y        z     ipot
            Cu    0.0000,  0.0000,  0.0000  0 (absorber)
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
-     r      =  2.549536 +/- 0.003005
      degen  =  12.000000
      n*s02  =  0.869628 +/- 0.030026
      e0     =  5.385041 +/- 0.616831
+     r      =  2.549536 +/- 0.003005
      deltar =  0.001736 +/- 0.003005
      sigma2 =  0.005034 +/- 0.000305
 
