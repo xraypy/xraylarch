@@ -35,7 +35,7 @@ class EncodeDecode4Json_Test(unittest.TestCase):
                             x     = np.linspace(0, 10, 21),
                             y     = np.sqrt(np.arange(3)/5.))
 
-        self.group2 = Group(par1 = Parameter(name='p1', value=3.0, min=0.0),
+        self.group2 = Group(par1 = Parameter(name='p1', value=3.0, min=0.0, vary=False),
                             par2 = Parameter(name='p2', value=1.0, vary=True),
                             sub  = Group(label='a label',
                                          x = np.linspace(0, 10, 21)))
@@ -208,6 +208,7 @@ class EncodeDecode4Json_Test(unittest.TestCase):
         assert(out['par1']['__class__'] == 'Parameter')
         assert(out['par1']['name'] == 'p1')
         assert(out['par1']['value'] == 3.0)
+        assert(out['par1']['vary'] == False)
         assert(out['par1']['min'] == 0.0)
         assert(out['par2']['__class__'] == 'Parameter')
         assert(out['par2']['name'] == 'p2')
