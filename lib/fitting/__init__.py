@@ -128,4 +128,6 @@ def params2group(params, paramgroup):
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
         if is_param(this):
-            this.value = param.value
+            for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
+                         'name', 'correl', 'brute_step', 'user_data'):
+                setattr(this, attr, getattr(param, attr, None))
