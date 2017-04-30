@@ -2,13 +2,15 @@
 from copy import copy
 run('doc_feffit4.lar')
 
+f = open('doc_feffit5_qr.out', 'w')
+f.write('*** R Space***\n')
+f.write(feffit_report(out, with_paths=False, min_correl=0.5))
+
 pars2 = copy(pars)   # copy parameters
 dset.transform.fitspace = 'q'
 
 out2 = feffit(pars2, dset)
-f = open('doc_feffit5_qr.out', 'w')
-f.write('*** R Space***\n')
-f.write(feffit_report(out, with_paths=False, min_correl=0.5))
+
 f.write('\n*** Q Space***\n')
 f.write(feffit_report(out2, with_paths=False, min_correl=0.5))
 f.write('\n')
@@ -20,11 +22,10 @@ dset.transform.fitspace = 'k'
 pars3 = copy(pars)   # copy parameters
 out3 = feffit(pars3, dset)
 
-rep3 = feffit_report(out3, with_paths=False, min_correl=0.5)
-
 f = open('doc_feffit5_k.out', 'w')
 f.write('*** K Space***\n')
-f.write("%s\n" % rep3)
+f.write(feffit_report(out3, with_paths=False, min_correl=0.5))
+f.write('\n')
 f.close()
 
 ## end examples/feffit/doc_feffit5.lar
