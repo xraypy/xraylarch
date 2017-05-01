@@ -141,7 +141,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
 
     for attr in ('aic', 'bic', 'covar', 'rfactor', 'params', 'nvarys',
                  'nfree', 'ndata', 'var_names', 'nfev', 'success',
-                 'errorbars', 'message', 'lmdif_message'):
+                 'errorbars', 'message', 'lmdif_message', 'residual'):
         setattr(out, attr, getattr(result, attr, None))
     return out
 
