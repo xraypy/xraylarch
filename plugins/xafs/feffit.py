@@ -540,7 +540,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = Group(name='feffit results', datasets=datasets,
-                fit_details=result, chi_square=chi_square,
+                fitter=fit, fit_details=result, chi_square=chi_square,
                 n_independent=n_idp, chi_reduced=chi_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
 
