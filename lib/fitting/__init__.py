@@ -115,7 +115,8 @@ def params2group(params, paramgroup):
                 setattr(this, attr, getattr(param, attr, None))
 
 def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
-             scale_covar=True, iter_cb=None, reduce_fcn=None, _larch=None, **fit_kws):
+             scale_covar=True, iter_cb=None, reduce_fcn=None, nan_polcy='omit',
+             _larch=None, **fit_kws):
     """
     wrapper around lmfit minimizer for Larch
     """
@@ -131,7 +132,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
         return fcn(paramgroup, *args,  **kws)
 
     fitter = Minimizer(_residual, params, iter_cb=iter_cb,
-                       reduce_fcn=reduce_fcn, **fit_kws)
+                       reduce_fcn=reduce_fcn, nan_policy='omit', **fit_kws)
 
     result = fitter.minimize(method=method)
     params2group(result.params, paramgroup)
