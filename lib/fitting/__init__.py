@@ -149,6 +149,8 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
                        reduce_fcn=reduce_fcn, **fit_kws)
 
     result = fitter.minimize(method=method)
+    result.chi_square = result.chisqr
+    result.chi_reduced = result.redchi
     params2group(result.params, paramgroup)
 
     return result
