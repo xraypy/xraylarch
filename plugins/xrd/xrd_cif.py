@@ -2419,7 +2419,7 @@ class CIFcls(object):
         if cifile is not None and os.path.exists(cifile):
 
             if verbose:
-                print '\n=== Reading file: %s\n' % cifile
+                print( '\n=== Reading file: %s\n' % cifile)
 
             self.cifile = cifile
             cf = CifFile.ReadCif(cifile)
@@ -2681,7 +2681,7 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
-            print
+            print()
             return atom
     print '-->',match_list[ai]
     return match_list[ai]

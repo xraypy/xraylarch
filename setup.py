@@ -37,7 +37,9 @@ recommended_modules = {'basic analysis': required_modules,
                        }
 
 # files that may be left from earlier install(s) and should be removed
-historical_cruft = []
+historical_cruft = ['plugins/xrd/xrd_hkl.py',
+                    'plugins/xrd/xrd_util.py']
+
 modules_imported = {}
 missing = []
 deps_ok = False

@@ -409,7 +409,7 @@ def isNamedClass(obj, cls):
 def get_dll(libname):
     """find and load a shared library"""
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
-    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
+    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so', 'linux': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
     thisdir = os.path.abspath(os.path.join(larchdir, 'dlls',
                                            get_dlldir()))
