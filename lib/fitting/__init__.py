@@ -38,13 +38,8 @@ def confidence_report(conf_vals, **kws):
 
     return ci_report(conf_vals)
 
-def confidence_intervals(minout, sigmas=(1, 2, 3),  **kws):
-    """explicitly calculate the confidence intervals from a fit
-    for supplied sigma values"""
-    return conf_interval(minout, sigmas=sigmas, **kws)
 
-def chi2_map(minout, xname, yname, nx=11, ny=11, xrange=None,
-             yrange=None, sigmas=None, **kws):
+def chi2_map(minout, xname, yname, nx=11, ny=11, _larch=None, **kws):
     """generate a confidence map for any two parameters for a fit
 
     Arguments
@@ -54,15 +49,13 @@ def chi2_map(minout, xname, yname, nx=11, ny=11, xrange=None,
        yname    name of variable parameter for y-axis
        nx       number of steps in x [11]
        ny       number of steps in y [11]
-       xrange   range of calculations for x [x.best +/- 5*x.stderr]
-       yrange   range of calculations for y [y.best +/- 5*y.stderr]
 
     Returns
     =======
         xpts, ypts, map
     """
-    return conf_interval2d(minout, xname, yname, nx=nx, ny=ny,
-                           sigmas=sigmas, **kws)
+    return conf_interval2d(minout.fitter, minout, xname, yname, nx=nx, ny=ny,
+                           **kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -149,8 +142,17 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
                        reduce_fcn=reduce_fcn, **fit_kws)
 
     result = fitter.minimize(method=method)
+    result.fitter = fitter
     result.chi_square = result.chisqr
     result.chi_reduced = result.redchi
     params2group(result.params, paramgroup)
 
     return result
+
+def confidence_intervals(minout, sigmas=(1, 2, 3), _larch=None,  **kws):
+    """calculate the confidence intervals from a fit
+    for supplied sigma values
+
+    wrapper around lmfit.conf_interval
+    """
+    return conf_interval(minout.fitter, minout, sigmas=sigmas, **kws)
