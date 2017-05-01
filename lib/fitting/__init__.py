@@ -148,7 +148,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     fitter = Minimizer(_residual, params, iter_cb=iter_cb,
                        reduce_fcn=reduce_fcn, **fit_kws)
 
-    fitout = fitter.minimize(method=method)
-    # print(" Fit RAN " , fitout)
-    # print(dir(fitout))
-    return fitout
+    result = fitter.minimize(method=method)
+    params2group(result.params, paramgroup)
+
+    return result
