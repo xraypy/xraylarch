@@ -7,7 +7,8 @@ matplotlib.use("WXAgg")
 
 from ..symboltable import Group, isgroup
 
-from lmfit import (Parameter, Parameters, Minimizer, fit_report,
+import lmfit
+from lmfit import (Parameter, Parameters, Minimizer,
                    conf_interval, ci_report, conf_interval2d, ufloat,
                    correlated_values)
 
@@ -38,24 +39,6 @@ def confidence_report(conf_vals, **kws):
 
     return ci_report(conf_vals)
 
-
-def chi2_map(minout, xname, yname, nx=11, ny=11, _larch=None, **kws):
-    """generate a confidence map for any two parameters for a fit
-
-    Arguments
-    ==========
-       minout   output of minimize() fit (must be run first)
-       xname    name of variable parameter for x-axis
-       yname    name of variable parameter for y-axis
-       nx       number of steps in x [11]
-       ny       number of steps in y [11]
-
-    Returns
-    =======
-        xpts, ypts, map
-    """
-    return conf_interval2d(minout.fitter, minout, xname, yname, nx=nx, ny=ny,
-                           **kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -137,22 +120,84 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
         params2group(params, paramgroup)
         return fcn(paramgroup, *args,  **kws)
 
-
     fitter = Minimizer(_residual, params, iter_cb=iter_cb,
                        reduce_fcn=reduce_fcn, **fit_kws)
 
     result = fitter.minimize(method=method)
-    result.fitter = fitter
-    result.chi_square = result.chisqr
-    result.chi_reduced = result.redchi
     params2group(result.params, paramgroup)
 
-    return result
+    out = Group(name='minimize results', fitter=fitter, fit_details=result,
+                chi_square=result.chisqr, chi_reduced=result.redchi)
 
-def confidence_intervals(minout, sigmas=(1, 2, 3), _larch=None,  **kws):
+    for attr in ('aic', 'bic', 'covar', 'rfactor', 'params', 'nvarys',
+                 'nfree', 'ndata', 'var_names', 'nfev', 'success',
+                 'errorbars', 'message', 'lmdif_message'):
+        setattr(out, attr, getattr(result, attr, None))
+    return out
+
+def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
+               sort_pars=False, _larch=None, **kws):
+    """generate a report of fitting results
+    wrapper around lmfit.fit_report
+
+    The report contains the best-fit values for the parameters and their
+    uncertainties and correlations.
+
+    Parameters
+    ----------
+    fit_result : result from fit
+       Input Parameters from fit or MinimizerResult returned from a fit.
+    modelpars : Parameters, optional
+       Known Model Parameters.
+    show_correl : bool, optional
+       Whether to show list of sorted correlations (default is True).
+    min_correl : float, optional
+       Smallest correlation in absolute value to show (default is 0.1).
+    sort_pars : bool or callable, optional
+       Whether to show parameter names sorted in alphanumerical order. If
+       False (default), then the parameters will be listed in the order they
+       were added to the Parameters dictionary. If callable, then this (one
+       argument) function is used to extract a comparison key from each
+       list element.
+
+    Returns
+    -------
+    string
+       Multi-line text of fit report.
+
+
+    """
+    params = getattr(fit_result, 'fit_details', input)
+    return lmfit.fit_report(params, modelpars=modelpars, show_correl=show_correl,
+                            min_correl=min_correl, sort_pars=sort_pars)
+
+
+def confidence_intervals(fit_result, sigmas=(1, 2, 3), _larch=None,  **kws):
     """calculate the confidence intervals from a fit
     for supplied sigma values
 
     wrapper around lmfit.conf_interval
     """
-    return conf_interval(minout.fitter, minout, sigmas=sigmas, **kws)
+    fitter = getattr(fit_result, 'fitter', None)
+    result = getattr(fit_result, 'fit_details', None)
+    return conf_interval(fitter, result, sigmas=sigmas, **kws)
+
+def chi2_map(fit_result, xname, yname, nx=11, ny=11, _larch=None, **kws):
+    """generate a confidence map for any two parameters for a fit
+
+    Arguments
+    ==========
+       minout   output of minimize() fit (must be run first)
+       xname    name of variable parameter for x-axis
+       yname    name of variable parameter for y-axis
+       nx       number of steps in x [11]
+       ny       number of steps in y [11]
+
+    Returns
+    =======
+        xpts, ypts, map
+    """
+    fitter = getattr(fit_result, 'fitter', None)
+    result = getattr(fit_result, 'fit_details', None)
+    return conf_interval2d(fitter, result, xname, yname,
+                           nx=nx, ny=ny, **kws)
