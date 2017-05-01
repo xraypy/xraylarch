@@ -29,9 +29,9 @@ params.amp2.expr = '1 - amp1'
 data.eps  = 0.001
 
 # perform fit
-minimize(resid, params, args=(data,))
+result = minimize(resid, params, args=(data,))
 fit = sum_standards(params, data)
-print fit_report(params)
+print fit_report(result)
 
 
 plot(data.energy, data.mu,   label='data', color='blue', marker='+',

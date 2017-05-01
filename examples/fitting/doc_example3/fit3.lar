@@ -103,10 +103,10 @@ print 'chi_reduced         fit notes'
 print '-------------------------------------'
 best_chi2, best_params = 1.e99, None
 for p in pars:
-    minimize(resid, p, args=(data,))
-    print "  %.4f   %s" % (p.chi_reduced, p.note)
-    if p.chi_reduced < best_chi2:
-        best_params, best_chi2 = p, p.chi_reduced
+    result = minimize(resid, p, args=(data,))
+    print "  %.4f   %s" % (result.chi_reduced, p.note)
+    if result.chi_reduced < best_chi2:
+        best_params, best_result, best_chi2 = p, result, result.chi_reduced
     endif
 endfor
 
@@ -136,8 +136,8 @@ print 'Best Fit:  ', best_params.note
 #        that constraintes are properly evaluated
 
 _sys.paramGroup = best_params
-print fit_report(best_params)
- 
+print fit_report(best_result)
+
 make_plots(best_params, data)
 
 ## end of examples/fitting/doc_example3/fit3.lar

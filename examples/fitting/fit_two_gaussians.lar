@@ -73,19 +73,18 @@ if show_plots:
             mymodel(xdat.x, fitpars.off2, fitpars.amp2, fitpars.cen2, fitpars.wid2)
     update_trace(xdat.x, final, trace=2)
 endif
-print fit_report(fitpars)
+print fit_report(minout)
 print 'Total time for fit = %.3f sec' % (time.time() - t0)
 
 # print 'Calculating Chi-Square map for amp2 and off1:'
-# 
+#
 # # important!!! supress plots, reset counter
 # minout.userkws['plot'] = False
 # minout.userkws['update_rate'] = 1000
 # fitpars.fit_iter = 0
-# 
+#
 # conf_int = confidence_intervals(minout)
 # print confidence_report(conf_int)
-# 
+#
 # xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=11, xrange=[13,17], yrange=[-0.4, -0.0])
 # contour(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
-
