@@ -1,0 +1,13 @@
+This is a slightly modified version of the uncertainties package Eric O. Lebigot.
+
+See the Python Package Index (PyPI) and/or the github source repository (at
+https://github.com/lebigot/uncertainties) for more complete documentations.
+
+The changes here (forked at https://github.com/newville/uncertainties) enhances the
+abilities to calculate uncertainties on arbitrarily complex python functions of
+values with uncertainties.  This is important for Larch, and so the modded code
+is included here.
+
+--Matt Newville
+
+
