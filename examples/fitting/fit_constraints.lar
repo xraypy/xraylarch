@@ -34,5 +34,4 @@ pfit = group(amp_g = guess(10),
 myfit = minimize(resid, pfit,
                  args=(x,), kws={'data':data})
 
-print fit_report(pfit)
-
+print fit_report(myfit)

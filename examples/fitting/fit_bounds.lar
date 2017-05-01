@@ -51,6 +51,6 @@ minout = minimize(resid, params, args=(mdat,), kws={'verbose':True, 'update_rate
 final = params.off  + params.amp*gaussian(mdat.x, params.cen, params.wid)
 plot(mdat.x, final)
 
-print fit_report(params)
+print fit_report(minout)
 
 show(params)
