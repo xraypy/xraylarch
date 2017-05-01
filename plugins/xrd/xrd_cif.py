@@ -2669,6 +2669,8 @@ def check_elemsym(atom):
         loops += 1
         if atom.startswith('Wat'):
             match_list += ['H-H-O']
+        elif atom == 'D': ## this is a type in cif 01158
+            match_list += ['H']
         else:
             for e in elem_symbol:
                 if atom.startswith(e):
