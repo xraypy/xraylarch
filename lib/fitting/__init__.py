@@ -82,15 +82,25 @@ def group2params(paramgroup, _larch=None):
     fiteval  = _larch.symtable._sys.fiteval
     params = Parameters(asteval=fiteval)
 
+
     if paramgroup is not None:
         for name in dir(paramgroup):
             par = getattr(paramgroup, name)
             if isParameter(par):
+
                 params.add(name, value=par.value, vary=par.vary,
-                           min=par.min, max=par.max, expr=par.expr,
+                           min=par.min, max=par.max,
                            brute_step=par.brute_step)
+
             else:
                 fiteval.symtable[name] = par
+
+        # now set any expression (that is, after all symbols are defined)
+        for name in dir(paramgroup):
+            par = getattr(paramgroup, name)
+            if isParameter(par) and par.expr is not None:
+                params[name].expr = par.expr
+
     return params
 
 def params2group(params, paramgroup):
