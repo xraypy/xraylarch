@@ -2342,7 +2342,7 @@ def twth_from_d(d,wavelength,ang_units='degrees'):
     '''
     Converts d axis into 2th (d and wavelength must be in same units)
     2th = 2*sin^-1(lambda/[2*d])
-    
+
     ang_unit : default in degrees; will convert to 'rad' if given
     '''
     twth = 2.*np.arcsin(wavelength/(2.*d))
@@ -2356,7 +2356,7 @@ def twth_from_q(q,wavelength,ang_units='degrees'):
     '''
     Converts q axis into 2th (q and wavelength will have inverse units)
     2th = 2*sin^-1(lambda/[2*d])
-    
+
     ang_unit : default in degrees; will convert to 'rad' if given
     '''
     twth = 2.*np.arcsin((q*wavelength)/(4.*math.pi))
@@ -2378,7 +2378,7 @@ def q_from_twth(twth,wavelength,ang_units='degrees'):
     '''
     Converts 2th axis into q (q returned in inverse units of wavelength)
     q = [(4*PI)/lamda]*sin(2th/2)
-    
+
     ang_unit : default in degrees; will convert from 'rad' if given
     '''
     if not ang_units.startswith('rad'):
@@ -2417,7 +2417,7 @@ def d_from_hkl(hklall,a,b,c,alp,bet,gam):
 def unit_cell_volume(a,b,c,alp,bet,gam):
 
     alp,bet,gam = np.radians(alp),np.radians(bet),np.radians(gam)
-    return a*b*c*(1-np.cos(alp)**2-np.cos(bet)**2-np.cos(gam)**2+2*np.cos(alp)*np.cos(bet)*np.cos(gam))**0.5 
+    return a*b*c*(1-np.cos(alp)**2-np.cos(bet)**2-np.cos(gam)**2+2*np.cos(alp)*np.cos(bet)*np.cos(gam))**0.5
 
 
 def E_from_lambda(wavelength,E_units='keV',lambda_units='A'):
@@ -2480,7 +2480,7 @@ def initializeLarchPlugin(_larch=None):
    if _larch is not None:
        mod = getattr(_larch.symtable, '_xrd')
        mod.__doc__ = MODDOC
-                     
+
 
 def registerLarchPlugin():
     return ('_xrd', {'d_from_q': d_from_q,
@@ -2492,5 +2492,5 @@ def registerLarchPlugin():
                      'E_from_lambda': E_from_lambda,
                      'lambda_from_E': lambda_from_E,
                      'generate_hkl': generate_hkl,
-                     'structure_factors': structure_factors
+                     # 'structure_factors': structure_factors
                       })
