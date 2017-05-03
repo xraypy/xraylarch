@@ -1,7 +1,6 @@
-## add_plugin('minimizer')
 
 def resid(pars, data):
-    model = pars.slope.value * data.x + pars.offset.value
+    model = pars.slope.value * data.x + pars.intercept.value
     pars.iter = pars.iter+1
     return  model - data.y
 enddef
@@ -10,14 +9,12 @@ print 'Fits to line'
 mdat = group()
 mdat.x = arange(100)
 mdat.y = 21.3556 - 0.122*mdat.x + 6.e-4*(mdat.x-40)**2
-mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=2.5)
+mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=1.75)
 
 
 ######
 print '# Version 1: use minimize() -- most general, overkill for linear fit'
-params = group()
-params.slope = guess(-1)
-params.offset= guess(0)
+params = group(slope = guess(-1),  intercept = guess(0))
 params.iter = 0
 model = mdat.y + resid(params, mdat)
 newplot(mdat.x, mdat.y)
@@ -30,7 +27,7 @@ out = minimize(resid, params, args=(mdat,))
 model = resid(params, mdat) + mdat.y
 newplot(mdat.x, mdat.y)
 plot(mdat.x, model)
-print fit_report(params)
+print fit_report(out)
 
 ######
 print '# Version 2: use fitpeak() -- simple wrapper for minimize(), still overkill'
@@ -41,7 +38,7 @@ plot(myfit.x, myfit.y, marker='+', label='data',
 plot(myfit.x, myfit.fit_init, label='init')
 plot(myfit.x, myfit.fit, label='best fit')
 
-print fit_report(myfit.params, min_correl=0.3)
+print fit_report(myfit, min_correl=0.3)
 
 ######
 print '# Version 3: use linregress() for linear regression!'
