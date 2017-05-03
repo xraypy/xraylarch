@@ -27,6 +27,6 @@ from .inputText import InputText
 from .utils import Closure, fixName, nativepath, get_homedir
 from .version import __date__, __version__, make_banner
 from .interpreter import Interpreter
-from .fitting import Minimizer, Parameter, isParameter, param_value, minimize
+from .fitting import Minimizer, Parameter, isParameter, param_value, param_group, minimize
 
 enable_plugins()
