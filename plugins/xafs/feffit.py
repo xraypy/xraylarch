@@ -699,19 +699,10 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     return '\n'.join(out)
 
 
-def reset_fiteval(_larch=None):
-    """resets the symbol table of the `fiteval` asteval Interpreter
-    to its original state
-    """
-    if _larch is None:
-        return
-    fiteval  = _larch.symtable._sys.fiteval
-    add_fitfunctions(_larch)
-    return fiteval
 
-
-def add_fitfunctions(_larch):
-    fiteval = _larch.symtable._sys.fiteval
+@ValidateLarchPlugin
+def reset_fiteval(_larch=None, **kws):
+    fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
     fiteval.symtable['const_hbar'] = constants.hbar
     fiteval.symtable['const_kboltz'] = constants.k
     fiteval.symtable['const_amu'] = constants.atomic_mass
@@ -756,16 +747,14 @@ def add_fitfunctions(_larch):
                               atomx, atomy, atomz, atomm)
 """
     fiteval(s2debye_)
-
-
-
+    for key, val in kws.items():
+        fiteval.symtable[key] = val
 
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
 
 def initializeLarchPlugin(_larch=None):
-    _larch.symtable._sys.fiteval = fiteval = asteval.Interpreter()
-    add_fitfunctions(_larch)
+    _larch.symtable._math.reset_fiteval = partial(reset_fiteval, _larch=_larch)
 
 
 def registerLarchPlugin():
