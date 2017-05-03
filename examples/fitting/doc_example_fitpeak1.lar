@@ -13,6 +13,6 @@ plot(myfit.x, myfit.y, marker='+', label='data',
 plot(myfit.x, myfit.fit_init, label='init')
 plot(myfit.x, myfit.fit, label='best fit')
 
-print fit_report(myfit.params, min_correl=0.3)
+print fit_report(myfit, min_correl=0.3)
 
 ## end examples/fitting/doc_example_fitpeak1.lar
