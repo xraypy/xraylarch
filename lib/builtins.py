@@ -13,6 +13,8 @@ if six.PY3:
     import io
 
 
+from lmfit import asteval
+
 from .helper import Helper
 from . import inputText
 from . import site_config
@@ -491,6 +493,10 @@ def show_history(max_lines=10000, _larch=None):
         _larch.writer.write("%s\n" % hline)
 
 
+def reset_fiteval(_larch=None, **kws):
+    """initiailze fiteval for fitting with lmfit"""
+    fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
+
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
                             'which': _which,
@@ -522,7 +528,9 @@ local_funcs = {'_builtin': {'group':_group,
                         'isparam': fitting.is_param,
                         'minimize': fitting.minimize,
                         'ufloat': _ufloat,
-                        'fit_report': fitting.fit_report},
+                        'fit_report': fitting.fit_report,
+                        'reset_fiteval': reset_fiteval,
+                        },
                }
 
 # list of supported valid commands -- don't need parentheses for these

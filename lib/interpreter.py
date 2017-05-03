@@ -157,6 +157,11 @@ class Interpreter:
                         builtins._addplugin(pdir, _larch=self)
                         loaded_plugins.append(pname)
 
+        reset_fiteval = getattr(mathgroup, 'reset_fiteval', None)
+        if callable(reset_fiteval):
+            reset_fiteval(_larch=self)
+
+
         self.on_try = self.on_tryexcept
         self.on_tryfinally = self.on_tryexcept
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
