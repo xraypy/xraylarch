@@ -2,6 +2,7 @@
 import six
 from copy import copy, deepcopy
 import wx
+import numpy as np
 import matplotlib
 matplotlib.use("WXAgg")
 
@@ -40,6 +41,39 @@ def confidence_report(conf_vals, **kws):
     return ci_report(conf_vals)
 
 
+class ParameterGroup(Group):
+    """
+    Group for Fitting Parameters
+    """
+    def __init__(self, name=None, _larch=None, **kws):
+        if name is not None:
+            self.__name__ = name
+
+        self._larch = _larch
+        self.__params = None
+        if _larch is not None:
+            self.__params = Parameters(asteval=_larch.symtable._sys.fiteval)
+        Group.__init__(self)
+        for key, val in kws.items():
+            self.add(key, val)
+
+    def __repr__(self):
+        return '<Param Group {:s}>'.format(self.__name__)
+
+    def add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
+            expr=None, brute_step=None):
+        if expr is None and isinstance(value, six.string_types):
+            expr = value
+            value = None
+        if self.__params  is not None:
+            self.__params.add(name, value=value, vary=vary, min=min, max=max,
+                            expr=expr, brute_step=brute_step)
+        setattr(self, name, self.__params[name])
+
+def param_group(**kws):
+    "create a parameter group"
+    return ParameterGroup(**kws)
+
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
     if len(args) > 0:
@@ -69,7 +103,6 @@ def is_param(obj, _larch=None, **kws):
     """return whether an object is a Parameter"""
     return isParameter(obj)
 
-
 def group2params(paramgroup, _larch=None):
     """take a Group of Parameter objects (and maybe other things)
     and put them into Larch's current fiteval namespace
@@ -78,6 +111,9 @@ def group2params(paramgroup, _larch=None):
     """
     if _larch is None:
         return None
+
+    if isinstance(paramgroup, ParameterGroup):
+        return paramgroup.__params
 
     fiteval  = _larch.symtable._sys.fiteval
     params = Parameters(asteval=fiteval)
