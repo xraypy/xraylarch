@@ -61,18 +61,23 @@ class ParameterGroup(Group):
         return '<Param Group {:s}>'.format(self.__name__)
 
     def add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
-            expr=None, brute_step=None):
+            expr=None, stderr=None, correl=None, brute_step=None):
         if expr is None and isinstance(value, six.string_types):
             expr = value
             value = None
         if self.__params  is not None:
             self.__params.add(name, value=value, vary=vary, min=min, max=max,
-                            expr=expr, brute_step=brute_step)
-        setattr(self, name, self.__params[name])
+                              expr=expr, brute_step=brute_step)
+            self.__params[name].stderr = stderr
+            self.__params[name].correl = correl
+            setattr(self, name, self.__params[name])
 
-def param_group(**kws):
+    def _getparams(self):
+        return self.__params
+
+def param_group(_larch=None, **kws):
     "create a parameter group"
-    return ParameterGroup(**kws)
+    return ParameterGroup(_larch=_larch, **kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -98,7 +103,6 @@ def guess(value,  **kws):
     kws.update({'vary':True})
     return param(value, **kws)
 
-
 def is_param(obj, _larch=None, **kws):
     """return whether an object is a Parameter"""
     return isParameter(obj)
@@ -113,11 +117,10 @@ def group2params(paramgroup, _larch=None):
         return None
 
     if isinstance(paramgroup, ParameterGroup):
-        return paramgroup.__params
+        return paramgroup._getparams()
 
     fiteval  = _larch.symtable._sys.fiteval
     params = Parameters(asteval=fiteval)
-
 
     if paramgroup is not None:
         for name in dir(paramgroup):
@@ -157,8 +160,14 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     wrapper around lmfit minimizer for Larch
     """
     fiteval  = _larch.symtable._sys.fiteval
-    if isgroup(paramgroup):
+    if isinstance(paramgroup, ParameterGroup):
+        params = paramgroup._getparams()
+    elif isgroup(paramgroup):
         params = group2params(paramgroup, _larch=_larch)
+    elif isinstance(Parameters):
+        params = paramgroup
+    else:
+        raise ValueError('minimize takes ParamterGroup or Group as first argument')
 
     if args is None: args = ()
     if kws is None: kws = {}
@@ -175,6 +184,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
 
     out = Group(name='minimize results', fitter=fitter, fit_details=result,
                 chi_square=result.chisqr, chi_reduced=result.redchi)
+
 
     for attr in ('aic', 'bic', 'covar', 'rfactor', 'params', 'nvarys',
                  'nfree', 'ndata', 'var_names', 'nfev', 'success',
