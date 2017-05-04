@@ -492,10 +492,17 @@ def show_history(max_lines=10000, _larch=None):
     for hline in _larch.history.buffer[-nhist:]:
         _larch.writer.write("%s\n" % hline)
 
-
 def reset_fiteval(_larch=None, **kws):
     """initiailze fiteval for fitting with lmfit"""
     fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
+    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
+    if fiteval_init is not None:
+        for init_item in fiteval_init:
+            if isinstance(init_item, (tuple, list)) and len(init_item) == 2:
+                key, val = init_item
+                fiteval.symtable[key] = val
+            else:
+                fiteval(init_item)
 
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,

@@ -698,15 +698,15 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append('='*len(topline))
     return '\n'.join(out)
 
-
-
-@ValidateLarchPlugin
-def reset_fiteval(_larch=None, **kws):
-    fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
-    fiteval.symtable['const_hbar'] = constants.hbar
-    fiteval.symtable['const_kboltz'] = constants.k
-    fiteval.symtable['const_amu'] = constants.atomic_mass
-    s2eins_ = """def sigma2_eins(t, theta):
+####################################################
+## sigma2_eins and sigma2_debye are set here as
+## Procedures within lmfit's asteval (held in _sys.fiteval)
+## for calculating XAFS sigma2 for a scattering path
+## these use `reff` or `feffpath.geom` which will be updated
+## for each path during an XAFS path calculation
+##
+sigma2xafs_ = """
+def sigma2_eins(t, theta):
     EINS_FACTOR = 1.e20*const_hbar**2/(2*const_kboltz*const_amu)
 
     if feffpath is None:
@@ -720,11 +720,8 @@ def reset_fiteval(_larch=None, **kws):
         rmass = rmass + 1.0/max(0.1, amass)
     rmass = 1.0/max(1.e-12, rmass)
     return EINS_FACTOR/(theta * rmass * tanh(theta/(2.0*t)))
-"""
-    fiteval(s2eins_)
-    fiteval.symtable['sigma2_correldebye'] = sigma2_correldebye
 
-    s2debye_ = """def sigma2_debye(t, theta):
+def sigma2_debye(t, theta):
     if feffpath is None:
          return 0.
 
@@ -746,16 +743,23 @@ def reset_fiteval(_larch=None, **kws):
     return sigma2_correldebye(natoms, tempk, thetad, rnorm,
                               atomx, atomy, atomz, atomm)
 """
-    fiteval(s2debye_)
-    for key, val in kws.items():
-        fiteval.symtable[key] = val
+
+def initializeLarchPlugin(_larch=None):
+    """sets XAFS-specific constants and procedures for fiteval
+    """
+    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
+    if fiteval_init is None:
+        fiteval_init = _larch.symtable._sys.fiteval_init = []
+
+    add = fiteval_init.append
+    add(('const_hbar', constants.hbar))
+    add(('const_kboltz', constants.k))
+    add(('const_amu', constants.atomic_mass))
+    add(('sigma2_correldebye', sigma2_correldebye))
+    add(sigma2xafs_)
 
 def registereLarchGroups():
     return (TransformGroup, FeffitDataSet)
-
-def initializeLarchPlugin(_larch=None):
-    _larch.symtable._math.reset_fiteval = partial(reset_fiteval, _larch=_larch)
-
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
