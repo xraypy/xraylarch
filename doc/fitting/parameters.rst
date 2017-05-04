@@ -149,7 +149,7 @@ parameters to add to 1 and each be between 0 and 1 as::
 of course, one can use more complex expressions -- any valid Larch
 expression is allowed.
 
-.. index:: _sys.paramGroup
+.. index:: _sys.fiteval
 
 .. _fitting-namespace_sec:
 
@@ -211,4 +211,3 @@ the uncertainties automatically propagated to the result.  Note that each
 ``uvalue`` include the correlations between variables, so the propagated
 uncertainties may differ somewhat from using the simplest formulas for
 propagating errors.
-
