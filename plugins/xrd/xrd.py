@@ -169,7 +169,11 @@ class xrd1d(grpobjt):
             if 'Polarization' in line:
                 if line.split()[-1] != 'None': self.polarization = float(line.split()[-1])
             if 'Normalization' in line:
-                self.normalization = float(line.split()[-1])
+                try:
+                    value = float(line.split()[-1])
+                except:
+                    value = 1.0
+                self.normalization = value
 
             if 'q_' in line or '2th_' in line:
                 xtype = line.split()[1]
