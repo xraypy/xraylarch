@@ -3,7 +3,7 @@
 Helper classes for larch interpreter
 """
 from __future__ import division
-import sys, os
+import sys, os, time
 import ast
 import numpy as np
 import traceback
@@ -152,12 +152,14 @@ class LarchExceptionHolder:
         return (exc_name, '\n'.join(out))
 
 
+
 class StdWriter(object):
     """Standard writer method for Larch,
     to be used in place of sys.stdout
 
     supports methods:
-      write(text, color=None, bkg=None, bold=Fals, reverse=False)
+      set_mode(mode) # one of 'text', 'text2', 'error', 'comment'
+      write(text)
       flush()
     """
     valid_termcolors = ('grey', 'red', 'green', 'yellow',
@@ -170,42 +172,21 @@ class StdWriter(object):
         self.has_color = has_color and HAS_TERMCOLOR
         self.writer = stdout
         self._larch = _larch
-        self.termcolor_opts = None
+        self.textstyle = None
 
-    def _getcolor(self, color=None):
-        if self.has_color and color in self.valid_termcolors:
-            return color
-        return None
+    def set_textstyle(self, mode='text'):
+        """ set text style for output """
+        if not self.has_color:
+            self.textstyle = None
+        display_colors = self._larch.symtable._sys.display.colors
+        self.textstyle =  display_colors.get(mode, {})
 
-    def write(self, text, color=None, bkg=None, **kws):
+    def write(self, text):
         """write text to writer
-        write('hello', color='red', bkg='grey', bold=True, blink=True)
+        write('hello')
         """
-        attrs = []
-        for key, val in kws.items():
-            if val and (key in self.termcolor_attrs):
-                attrs.append(key)
-        if self.termcolor_opts is None:
-            try:
-                self.termcolor_opts = \
-                       self._larch.symtable._builtin.get_termcolor_opts
-            except:
-                pass
-        if color is None:
-            color_opts = {'color': None}
-            if callable(self.termcolor_opts) and self._larch is not None:
-                color_opts = self.termcolor_opts('text', _larch=self._larch)
-            color = color_opts.pop('color')
-            for key in color_opts.keys():
-                if key in self.termcolor_attrs:
-                    attrs.append('%s' % key)
-
-        color = self._getcolor(color)
-        if color is not None:
-            bkg = self._getcolor(bkg)
-            if bkg is not None:
-                bkg= 'on_%s' % bkg
-            text = colored(text, color, on_color=bkg, attrs=attrs)
+        if self.textstyle is not None and HAS_TERMCOLOR:
+            text = colored(text, **self.textstyle)
         self.writer.write(text)
 
     def flush(self):
@@ -428,7 +409,7 @@ def isNamedClass(obj, cls):
 def get_dll(libname):
     """find and load a shared library"""
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
-    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
+    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so', 'linux': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
     thisdir = os.path.abspath(os.path.join(larchdir, 'dlls',
                                            get_dlldir()))

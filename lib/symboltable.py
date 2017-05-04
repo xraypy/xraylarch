@@ -15,7 +15,7 @@ class Group(object):
     """
     Generic Group: a container for variables, modules, and subgroups.
     """
-    __private = ('_main', '_larch', '_parents', '__name__', '__doc__', 
+    __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
                  '__private', '_subgroups', '_members')
     def __init__(self, name=None, **kws):
         if name is None:
@@ -149,7 +149,7 @@ class SymbolTable(Group):
         self._sys.moduleGroup = self
         self._sys.paramGroup = None
         self._sys.__cache__  = [None]*5
-
+        self._sys.saverestore_groups = []
         for g in self.core_groups:
             self._sys.searchGroups.append(g)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
@@ -180,7 +180,7 @@ class SymbolTable(Group):
                                  modules_path= site_config.modules_path,
                                  larchdir    = site_config.larchdir,
                                  user_larchdir= site_config.usr_larchdir,
-                                 )
+                                 larch_version= site_config.larch_version)
 
     def save_frame(self):
         " save current local/module group"
@@ -472,9 +472,16 @@ class SymbolTable(Group):
         if not isinstance(plugin, types.ModuleType):
             on_error("%s is not a valid larch plugin" % repr(plugin))
 
+        group_registrar = getattr(plugin, 'registerLarchGroups', None)
+        if callable(group_registrar):
+            savegroups = group_registrar()
+            for group in savegroups:
+                self._sys.saverestore_groups.append(group)
+
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
             return
+
         groupname, syms = registrar()
         if not isinstance(syms, dict):
             raise ValueError('add_plugin requires dictionary of plugins')
@@ -501,6 +508,7 @@ class SymbolTable(Group):
         plugin_init = getattr(plugin, 'initializeLarchPlugin', None)
         if plugin_init is not None:
             plugin_init(_larch=self._larch)
+        return (groupname, syms)
 
     def show_group(self, groupname):
         """display group members --- simple version for tests"""

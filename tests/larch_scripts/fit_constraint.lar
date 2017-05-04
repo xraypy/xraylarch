@@ -4,7 +4,7 @@ doc =  """
 
 def resid(pars, data, verbose=False):
     params.iter = params.iter + 1
-    
+
     off = pars.off.value
     amp1 = pars.amp1.value
     cen1 = pars.cen1.value
@@ -17,9 +17,8 @@ def resid(pars, data, verbose=False):
              amp1*gaussian(data.x, cen1, wid1) +
              amp2*gaussian(data.x, cen2, wid2) )
 
-    print params.iter
-    # print ' >> ', amp1,  cen1, wid1, amp2, cen2, wid2, off
-    if verbose: #  and (params.iter % 5 == 0):
+    if verbose and (params.iter % 2 == 0):
+        print ' >> ', iter, amp1,  cen1, wid1, amp2, cen2, wid2, off
         newplot(data.x, data.y)
         plot(data.x, model, force_draw=True)
     endif
@@ -30,6 +29,9 @@ print resid
 
 
 mdat = group()
+
+random.seed(1230)
+
 mdat.x = arange(201)/20.0
 mdat.y = (-2.0 +
           6.0*gaussian(mdat.x, 3.0, 0.5) +
@@ -37,21 +39,21 @@ mdat.y = (-2.0 +
           random.normal(size=len(mdat.x), scale=0.22) )
 
 params = group()
-params.off  = guess(-1)
-params.amp1 = guess(4, min=.0)
-params.cen1 = guess(2.8)
-params.wid1 = guess(1.2,  min=-0.5)
+params.off  = guess(-2)
+params.amp1 = guess(3, min=.0)
+params.cen1 = guess(3)
+params.wid1 = guess(1,  min=0)
 params.amp2 = param(expr='params.amp1.value/3')
-params.cen2 = guess(4.7)
+params.cen2 = guess(4.5)
 params.wid2 = param(expr='params.wid1.value/2')
 params.iter = 0
 
 
 model = mdat.y + resid(params, mdat)
-verbose = True
-minimize(resid, params, args=(mdat,), kws={'verbose': verbose})
+minimize(resid, params, args=(mdat,))
 
 status = resid(params, mdat, verbose=True)
-print 'Fit finishd: %i function calls' % params.nfcn_calls
+# print('Fit finished: %i function calles' % params.fit_details.nfev)
+
 show(params)
 # plot(mdat.x, model)

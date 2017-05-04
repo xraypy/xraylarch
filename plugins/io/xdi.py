@@ -115,7 +115,7 @@ class XDIFile(object):
         self.xdi_pyversion =  __version__
         self.xdilib = get_xdilib()
         self.comments = []
-        self.rawdata = []
+        self.data = []
         self.attrs = {}
         self.status = None
         if self.filename:
@@ -165,7 +165,7 @@ class XDIFile(object):
             self.attrs[fam][key] = val
 
         parrays = (xdi.narrays*c_void_p).from_address(xdi.array)[:]
-        rawdata = [(xdi.npts*c_double).from_address(p)[:] for p in parrays]
+        self.data = [(xdi.npts*c_double).from_address(p)[:] for p in parrays]
 
         nout = xdi.nouter
         outer, breaks = [], []
@@ -177,10 +177,8 @@ class XDIFile(object):
         self.outer_array    = array(outer)
         self.outer_breakpts = array(breaks)
 
-
-        rawdata = array(rawdata)
-        rawdata.shape = (self.narrays, self.npts)
-        self.rawdata = rawdata
+        self.data = array(self.data)
+        self.data.shape = (self.narrays, self.npts)
         self._assign_arrays()
         for attr in ('nmetadata', 'narray_labels', 'meta_families',
                      'meta_keywords', 'meta_values', 'array'):
@@ -195,10 +193,10 @@ class XDIFile(object):
         xunits = 'eV'
         xname = None
         ix = -1
-        self.rawdata = array(self.rawdata)
+        self.data = array(self.data)
 
         for idx, name in enumerate(self.array_labels):
-            dat = self.rawdata[idx,:]
+            dat = self.data[idx,:]
             setattr(self, name, dat)
             if name in ('energy', 'angle'):
                 ix = idx
@@ -248,7 +246,7 @@ class XDIFile(object):
                 self.irefer = self.itrans * exp(-self.murefer)
 
 @ValidateLarchPlugin
-def read_xdi(fname, _larch=None):
+def read_xdi(fname, labels=None, _larch=None):
     """simple mapping of XDI file to larch groups"""
     x = XDIFile(fname)
     group = _larch.symtable.create_group()
@@ -260,6 +258,11 @@ def read_xdi(fname, _larch=None):
     group.__name__ ='XDI file %s' % fname
     doc = ['%i arrays, %i npts' % (x.narrays, x.npts)]
     arr_labels = getattr(x, 'array_labels', None)
+    if labels is not None:
+        ulabs = [x.strip() for x in labels.split(',')]
+        arr_labels[:len(ulabs)] = ulabs
+        setattr(x, 'array_labels', arr_labels)
+
     if arr_labels is not None:
         doc.append("Array Labels: %s" % repr(arr_labels))
     group.__doc__ = '\n'.join(doc)

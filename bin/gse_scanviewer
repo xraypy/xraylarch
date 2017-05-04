@@ -4,7 +4,7 @@ Viewer App for ASCII Column Data
 """
 import os
 import larch
-from larch_plugins.wx import ScanViewer
+from larch_plugins.wx import XYFitViewer
 
 os.chdir(larch.site_config.home_dir)
-ScanViewer().run()
+XYFitViewer().run()

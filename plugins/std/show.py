@@ -87,7 +87,6 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
     group = None
     symtable = _larch.symtable
     display  = symtable._sys.display
-    get_termcolor_opts = symtable._builtin.get_termcolor_opts
     with_color = with_color and display.use_color
 
     title = sym
@@ -108,8 +107,8 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
         title = 'Group _main'
 
     ## set colors for output
-    colopts1 = get_termcolor_opts('text', _larch=_larch)
-    colopts2 = get_termcolor_opts('text2', _larch=_larch)
+    colopts1 = display.colors['text']
+    colopts2 = display.colors['text2']
     if with_color:
         if color is not None:
             colopts1['color'] = color
@@ -132,7 +131,7 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
                 continue
         dmembers.append((item, obj))
     write = _larch.writer.write
-
+    color_output = hasattr(_larch.writer, 'set_textstyle')
     title_fmt = '== %s: %i methods, %i attributes ==\n'
     write(title_fmt % (title, nmethods, len(dmembers)-nmethods))
 
@@ -150,9 +149,13 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
                 dval = repr(obj)
             except:
                 dval = obj
+        if color_output:
+            _larch.writer.set_textstyle({True:'text', False:'text2'}[(count%2)==1])
         count += 1
-        copts = _copts[count % 2]
-        write('  %s: %s\n' % (item, dval), **copts)
+        write('  %s: %s\n' % (item, dval))
+    if color_output:
+        _larch.writer.set_textstyle('text')
+
     _larch.writer.flush()
 
 @ValidateLarchPlugin
@@ -165,9 +168,7 @@ def get_termcolor_opts(dtype, _larch=None):
     out = {'color': None}
     display  = _larch.symtable._sys.display
     if display.use_color:
-        out['color'] = getattr(display.colors, dtype, None)
-        for attr in getattr(display.colors, '%s_attrs' % dtype, []):
-            out[attr] = True
+        out = getattr(display.colors, dtype, out)
     return out
 
 def initialize_sys_display(_larch=None):
@@ -179,16 +180,15 @@ def initialize_sys_display(_larch=None):
     symtable = _larch.symtable
     if not symtable.has_group('_sys.display'):
         symtable.new_group('_sys.display')
+
+    colors = {}
+    colors['text'] = {'color': None}
+    colors['text2'] = {'color': 'cyan'}
+    colors['comment'] = {'color': 'green'}
+    colors['error'] = {'color': 'red',  'attrs': ['bold']}
+
     display = symtable._sys.display
-
-    defaults = dict(text=None, text2='cyan',
-                    error='red', comment='green')
-    display.colors = Group()
-    for key, val in defaults.items():
-        setattr(display.colors, key, val)
-        setattr(display.colors, "%s_attrs" % key, [])
-
-    display.colors.error_attrs = ['bold']
+    display.colors = colors
     display.use_color = True
     display.terminal = 'xterm'
 

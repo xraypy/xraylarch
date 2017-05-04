@@ -15,9 +15,9 @@ from larch import Group
 MODDOC = '''
 X-ray Fluorescence Routines
 
-The functions here include (but are not limited too):
+The functions here include (but are not limited to):
 
-function         descrption
+function         description
 ------------     ------------------------------
 create_roi       create an ROI
 read_xmap_netcdf read netcdf file from XIA XMap DXP
@@ -81,7 +81,7 @@ class ROI(Group):
                 self.right == getattr(other, 'right', None) and
                 self.bgr_width == getattr(other, 'bgr_width', None) )
 
-    def __ne__(self, other): return not self.__eq__(other) 
+    def __ne__(self, other): return not self.__eq__(other)
     def __lt__(self, other): return self.left <  getattr(other, 'left', None)
     def __le__(self, other): return self.left <= getattr(other, 'left', None)
     def __gt__(self, other): return self.left >  getattr(other, 'left', None)
@@ -151,7 +151,8 @@ def initializeLarchPlugin(_larch=None):
         mod = getattr(_larch.symtable, '_xrf')
         mod.__doc__ = MODDOC
 
+def registerLarchGroups():
+    return (ROI,)
+
 def registerLarchPlugin():
     return ('_xrf', {'create_roi': create_roi})
-
-

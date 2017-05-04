@@ -88,7 +88,7 @@ def read_xrf_netcdf(fname, npixels=None, verbose=False):
         if fh is not None:
             fh.close()
         return None
-    
+
     array_data = fh.variables['array_data']
     t1 = time.time()
 
@@ -166,7 +166,7 @@ def read_xrf_netcdf(fname, npixels=None, verbose=False):
 
 def test_read(fname):
     print( fname,  os.stat(fname))
-    fd = read_xmap_netcdf(fname, verbose=True)
+    fd = read_xrf_netcdf(fname, verbose=True)
     print(fd.counts.shape)
 
 def registerLarchPlugin():

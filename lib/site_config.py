@@ -12,6 +12,7 @@ import sys
 import os
 from os.path import exists, abspath, join
 from .utils import get_homedir, nativepath
+from .version import __version__ as larch_version
 
 def pjoin(*args):
     return nativepath(join(*args))
@@ -35,7 +36,11 @@ if 'LARCHDIR' in os.environ:
 
 ##
 ## names (and loading order) for core plugin modules
-core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
+#core_plugins = ('std', 'math')
+#core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
+core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',  
+                'wx', 'xafs', 'xray', 'xrd', 'xrf', 'xrmmap',  'xsw')
+
 
 # frozen executables, as from cx_freeze, will have
 # these paths to be altered...
@@ -118,6 +123,7 @@ def make_user_larchdirs():
 
 def show_site_config():
     print( """===  Larch Configuration
+  larch version:        %s
   sys executable:       %s
   sys is frozen:        %s
   system larch dir:     %s
@@ -127,7 +133,8 @@ def show_site_config():
   modules search path:  %s
   plugins search path:  %s
 ========================
-""" % (sys.executable, repr(getattr(sys, 'frozen', False)),
+""" % (larch_version, sys.executable,
+       repr(getattr(sys, 'frozen', False)),
        larchdir, usr_larchdir,
        history_file, init_files,
        modules_path, plugins_path))

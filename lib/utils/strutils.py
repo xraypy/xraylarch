@@ -125,11 +125,12 @@ def fix_filename(s):
             idot = t.find('.')
             t = "%s_%s" % (t[:idot], t[idot+1:])
     return t
+
 def fix_varname(s):
     """fix string to be a 'good' variable name."""
     t = str(s).translate(TRANS_VARS)
     if t[0] not in VALID_CHARS1:
-        t[0] = '_'
+        t = '_%s' % t
     while t.endswith('_'):
         t = t[:-1]
     return t

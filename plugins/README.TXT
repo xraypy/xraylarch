@@ -5,7 +5,7 @@ automatically loaded and become part of the standard Larch environment.
 
 On startup, the Larch interpreter will search all subdirectories of this
 folder, and add plugin modules defined there.  The folders here ('std',
-'math', 'xafs', 'xrf', 'xrfmap', etc) are mostly organized by scientific
+'math', 'xafs', 'xrf', 'xrmmap', etc) are mostly organized by scientific
 technique, though there are some overlaps.  The 'local' subdirectory is
 intentionally left empty and is intended for plugins local to this
 installation or for experimental code.

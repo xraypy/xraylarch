@@ -323,5 +323,8 @@ def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
                live_time=live_time, input_counts=input_counts,
                tau=tau, **kws)
 
+def registerLarchGroups():
+    return (MCA,)
+
 def registerLarchPlugin():
     return ('_xrf', {'create_mca': create_mca})

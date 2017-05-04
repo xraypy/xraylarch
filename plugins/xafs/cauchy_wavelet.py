@@ -24,8 +24,7 @@
 
 import numpy as np
 from larch import ValidateLarchPlugin, parse_group_args
-
-from larch_plugins.math import complex_phase
+from larch.utils import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
 @ValidateLarchPlugin

@@ -14,3 +14,4 @@ from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
 from .gse_mcafile import gsemca_group, GSEMCA_File
 from .save_restore import save, restore
 from .tiff_plugin import read_tiff, tiff_object
+from .athena_project import is_athena_project, read_athena

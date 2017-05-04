@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+"""
+XY Viewer and Peak Fittin App
+"""
+import os
+import larch
+import wx
+import matplotlib
+matplotlib.use('WXAgg')
+
+from larch_plugins.wx import XYFitViewer
+
+os.chdir(larch.site_config.home_dir)
+XYFitViewer().MainLoop()

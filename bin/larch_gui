@@ -2,9 +2,11 @@
 
 import sys
 import wx
+import matplotlib
+matplotlib.use('WXAgg')
+
 import larch
 from larch.wxlib import larchframe
-from wxutils import MenuItem
 
 class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
@@ -14,7 +16,6 @@ class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.Init()
         frame = larchframe.LarchFrame(exit_on_close=True, with_inspection=True)
         frame.Show()
-        frame.Bind
         self.SetTopWindow(frame)
         return True
 

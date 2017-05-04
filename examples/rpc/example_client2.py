@@ -1,7 +1,8 @@
 
 import os
-import xmlrpclib
-lserve = xmlrpclib.ServerProxy('http://localhost:4966')
+
+from six.moves.xmlrpc_client import ServerProxy
+lserve = ServerProxy('http://localhost:4966')
 
 # print lserve.system.listMethods()
 
@@ -11,6 +12,5 @@ lserve.chdir(os.path.join(parent, 'feffit'))
 
 lserve.larch("run('doc_feffit1.lar')")
 
-print '## Messages: '
-print lserve.get_messages()
-
+print('## Messages: ')
+print(lserve.get_messages())

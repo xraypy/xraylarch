@@ -17,9 +17,6 @@ try:
 except ImportError:
     raise ImportError('cannot find scipy netcdf module')
 
-## Does this need to change?
-CLOCKTICK = 0.320  # xmap clocktick = 320 ns
-
 def read_xrd_netcdf(fname,verbose=False): #npixels=self.nrows_expected
     ## Reads a netCDF file created for XRD mapping
     

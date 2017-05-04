@@ -3,9 +3,11 @@
 # InputText for  Larch
 
 from __future__ import print_function
-import inspect
-
-from six.moves import queue
+import os
+import time
+import six
+from collections import deque
+from copy import copy
 
 OPENS  = '{(['
 CLOSES = '})]'
@@ -23,6 +25,12 @@ BLOCK_FRIENDS = {'if':    ('else', 'elif'),
                  None: ()}
 
 STARTKEYS = ['if', 'for', 'def', 'try', 'while']
+
+if six.PY2:
+    FILETYPE = file
+else:
+    import io
+    FILETYPE = io.IOBase
 
 def find_eostring(txt, eos, istart):
     """find end of string token for a string"""
@@ -58,7 +66,11 @@ def is_complete(text):
         elif c in CLOSES and len(delims) > 0 and c == delims[-1]:
             delims.pop()
         elif c == COMMENT and eos == '': # comment char outside string
-            itok = len(text)
+            jtok = itok
+            if '\n' in text[itok:]:
+                itok = itok + text[itok:].index('\n')
+            else:
+                itok = len(text)
         itok += 1
     return eos=='' and len(delims)==0 and not text.rstrip().endswith(BSLASH)
 
@@ -115,87 +127,78 @@ def block_end(text):
 
 BLANK_TEXT = ('', '<incomplete input>', -1)
 
+
+class HistoryBuffer(object):
+    """
+    command history buffer
+    """
+    def __init__(self, filename=None, maxlines=5000, title='larch history'):
+        self.filename = filename
+        self.maxlines = maxlines
+        self.title = title
+        self.session_start = 0
+        self.buffer = []
+        if filename is not None:
+            self.load(filename=filename)
+
+    def add(self, text=''):
+        if len(text.strip()) > 0 and not text.startswith('#'):
+            self.buffer.append(text)
+
+    def clear(self):
+        self.buffer = []
+        self.session_start = 0
+
+    def load(self, filename=None):
+        if filename is not None:
+            self.filename = filename
+        if os.path.exists(self.filename):
+            self.clear()
+            with open(self.filename, 'r') as fh:
+                lines = fh.readlines()
+                for hline in lines:
+                    self.add(text=hline[:-1])
+            self.session_start = len(self.buffer)
+
+    def save(self, filename=None, session_only=False,
+             trim_last=False, maxlines=None):
+        if filename is None:
+            filename = self.filename
+        if maxlines is None:
+            maxlines = self.maxlines
+        start_ = -maxlines
+        if session_only:
+            start_ = self.session_start
+        end_ = None
+        if trim_last:
+            end_ = -1
+
+        fout = open(filename, 'w')
+        fout.write("# %s saved %s\n\n" % (self.title, time.ctime()))
+        fout.write('\n'.join([str(s) for s in self.buffer[start_:end_]]))
+        fout.write("\n")
+        fout.close()
+
 class InputText:
-    """input text for larch"""
-    ps1 = "larch> "
-    ps2 = ".....> "
-    valid_cmds = ('print', 'run', 'show', 'help')
-    def __init__(self, _larch=None, **kws):
-        self.queue = queue.Queue()
+    """input text for larch, with history"""
+    def __init__(self, _larch=None, historyfile=None, maxhistory=5000,
+                 prompt='larch> ',prompt2 = ".....> "):
+        self.deque = deque()
         self.filename = '<stdin>'
         self.lineno = 0
         self.curline = 0
         self.curtext = ''
         self.blocks = []
         self.buffer = []
-        self._larch = _larch
+        self.larch = _larch
+        self.prompt = prompt
+        self.prompt2 = prompt2
         self.saved_text = BLANK_TEXT
-
-    def run(self, writer=None):
-        if self._larch is None:
-            raise ValueError("need interpreter to run")
-
-        if self.queue.qsize() == 0:
-            return True
-
-        _larch = self._larch
-        symtable = _larch.symtable
-        if writer is None:
-            writer = _larch.writer
-
-        topts = symtable._builtin.get_termcolor_opts('text')
-        eopts = symtable._builtin.get_termcolor_opts('error')
-
-        if not hasattr(symtable._sys, 'call_stack'):
-            symtable._sys.call_stack = []
-        larch_call_stack = symtable._sys.call_stack
-
-        larch_call_stack.append(None)
-
-        n_larch_stack = len(larch_call_stack)
-
-        complete = False
-        while self.queue.qsize() > 0:
-            block, fname, lineno = self.get()
-            self.buffer.append(block)
-            if len(self.curtext) > 0 or len(self.blocks) > 0:
-                continue
-
-            larch_call_stack[n_larch_stack-1] = (block, fname, lineno)
-            ret = _larch.eval('\n'.join(self.buffer),
-                              fname=fname, lineno=lineno)
-            complete = True
-            if len(self.buffer) > 0:
-                self.buffer = []
-            if _larch.error:
-                self.clear()
-                writer.write('Traceback (most recent calls last): \n', **eopts)
-                for eblock, efname, elineno in larch_call_stack:
-                    text = "File %s, line %i" % (efname, elineno)
-                    if efname != fname and elineno != lineno:
-                        text =  "%s\n    %s" % (text, eblock.split('\n')[0])
-                    writer.write('   %s\n' % (text), **eopts)
-
-                errors_seen = []
-                for err in _larch.error:
-                    exc_name, errmsg = err.get_error()
-                    file_lineno = errmsg.split('\n')[0].strip()
-                    if file_lineno in errors_seen:
-                        continue
-                    errors_seen.append(file_lineno)
-                    writer.write(errmsg, **eopts)
-
-                _larch.error = []
-            elif ret is not None:
-                writer.write("%s\n" % repr(ret), **topts)
-
-        writer.flush()
-        larch_call_stack.pop()
-        return complete
-
+        self.history = HistoryBuffer(filename=historyfile,
+                                     maxlines=maxhistory)
 
     def __len__(self):
-        return self.queue.qsize()
+        return len(self.deque)
 
     def get(self):
         """get compile-able block of python code"""
@@ -204,7 +207,7 @@ class InputText:
         if self.saved_text != BLANK_TEXT:
             txt, filename, lineno = self.saved_text
             out.append(txt)
-        text, fn, ln, done = self.queue.get()
+        text, fn, ln, done = self.deque.popleft()
         out.append(text)
         if filename is None:
             filename = fn
@@ -212,29 +215,71 @@ class InputText:
             linenumber = ln
 
         while not done:
-            if self.queue.qsize() == 0:
+            if len(self.deque) == 0:
                 self.saved_text = ("\n".join(out), filename, linenumber)
                 return BLANK_TEXT
-            text, fn, ln, done = self.queue.get()
+            text, fn, ln, done = self.deque.popleft()
             out.append(text)
         self.saved_text = BLANK_TEXT
         return ("\n".join(out), filename, linenumber)
 
     def clear(self):
-        while not self.queue.empty():
-            self.queue.get()
+        self.deque.clear()
         self.saved_text = BLANK_TEXT
+        self.curtext = ''
+        self.blocks = []
 
-    def put(self, text, filename=None, lineno=None):
-        """add line of input code text"""
+    def putfile(self, filename):
+        """add the content of a file at the top of the stack
+        that is, to be run next, as for   run('myscript.lar')
+
+        Parameters
+        ----------
+        filename  : file object or string of filename
+
+        Returns
+        -------
+        None on success,
+        (exception, message) on failure
+        """
+
+        text = None
+        try:
+            if isinstance(filename, FILETYPE):
+                text = filename.read()
+                filename = filename.name
+            else:
+                text = open(filename).read()
+        except:
+            errtype, errmsg, errtb = sys.exc_info()
+            return (errtype, errmsg)
+
+
+        if text is None:
+            return (IOError, 'cannot read %s' % filename)
+
+        current = None
+        if len(self.deque) > 0:
+            current = copy(self.deque)
+            self.deque.clear()
+        self.put(text, filename=filename, lineno=0, add_history=False)
+
+        if current is not None:
+            self.deque.extend(current)
+
+    def put(self, text, filename=None, lineno=None, add_history=True):
+        """add a line of input code text"""
         if filename is not None:
             self.filename = filename
         if lineno is not None:
             self.lineno = lineno
 
-        if self._larch is not None:
-            getsym = self._larch.symtable.get_symbol
-            self.valid_cmds = getsym('_sys.valid_commands', create=True)
+        if self.larch is not None:
+            getsym = self.larch.symtable.get_symbol
+            self.valid_commands = getsym('_sys.valid_commands', create=True)
+
+        if self.history is not None and add_history:
+            self.history.add(text)
 
         for txt in text.split('\n'):
             self.lineno += 1
@@ -244,6 +289,7 @@ class InputText:
             else:
                 self.curtext = "%s\n%s" % (self.curtext, txt)
 
+            blk_start = False
             if is_complete(self.curtext) and len(self.curtext)>0:
                 blk_start =  block_start(self.curtext)
                 if blk_start:
@@ -264,22 +310,30 @@ class InputText:
 
                 key = get_key(self.curtext)
                 ilevel = len(self.blocks)
-                if ilevel > 0 and (key == _delim or
+                if ilevel > 0 and (blk_start or
                                    key in BLOCK_FRIENDS[_delim]):
                     ilevel = ilevel - 1
 
                 sindent = ' '*4*ilevel
                 pytext = "%s%s" % (sindent, self.curtext.strip())
                 # look for valid commands
-                if key in self.valid_cmds and '\n' not in self.curtext:
+                if key in self.valid_commands and '\n' not in self.curtext:
                     argtext = self.curtext.strip()[len(key):].strip()
                     if not (argtext.startswith('(') and
                             argtext.endswith(')') ):
                         pytext  = "%s%s(%s)" % (sindent, key, argtext)
 
-                self.queue.put((pytext, self.filename, self.curline, 0==len(self.blocks)))
+                self.deque.append((pytext, self.filename,
+                                   self.curline, 0==len(self.blocks)))
+
                 self.curtext = ''
 
     @property
     def complete(self):
         return len(self.curtext)==0 and len(self.blocks)==0
+
+    @property
+    def next_prompt(self):
+        if len(self.curtext)==0 and len(self.blocks)==0:
+            return self.prompt
+        return self.prompt2

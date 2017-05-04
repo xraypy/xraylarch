@@ -1,7 +1,9 @@
 import sys
+import numpy as np
 from math import pi
 import larch
 from larch import Group, ValidateLarchPlugin
+from larch.utils.mathutils import index_nearest
 
 from larch_plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
                                 xrayDB, chemparse)
@@ -13,7 +15,7 @@ Functions for accessing and using data from X-ray Databases and
 Tables.  Many of these take an element as an argument -- this
 can be either the atomic symbol or atomic number Z.
 
-The data and functions here include (but are not limited too):
+The data and functions here include (but are not limited to):
 
 member name     descrption
 ------------    ------------------------------
@@ -406,6 +408,48 @@ def core_width(element=None, edge=None, _larch=None):
     xdb = get_xraydb(_larch)
     return xdb.corehole_width(element=element, edge=edge)
 
+@ValidateLarchPlugin
+def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
+    """guess an element and edge based on energy (in eV)
+
+    Arguments
+    ---------
+    energy (float) : approximate edge energy (in eV)
+    edges (list of strings) : edges to consider ['K', 'L3', 'L2']
+
+    Returns
+    -------
+      (element symbol, edge)
+    """
+    xdb = get_xraydb(_larch)
+    ret = []
+    min_diff = 1e9
+    for edge in edges:
+        tname =  '%s._edges_%s'  % (MODNAME, edge.lower())
+        if _larch.symtable.has_symbol(tname):
+            energies = _larch.symtable.get_symbol(tname)
+        else:
+            energies = np.array(xdb.all_xray_edges(edge))
+            _larch.symtable.set_symbol(tname, energies)
+        iz = index_nearest(energies, energy)
+        diff = energy - energies[iz]
+        if diff < 0: # prefer positive errors
+            diff = -2.0*diff
+        if iz < 10 or iz > 92: # penalize extreme elements
+            diff = 2.0*diff
+        if edge == 'K': # prefer K edge
+            diff = 0.25*diff
+        elif edge == 'L1': # penalize L1 edge
+            diff = 2.0*diff
+        if diff < min_diff:
+            min_diff = diff
+        ret.append((edge, iz, diff))
+
+    for edge, iz, diff in ret:
+        if abs(diff - min_diff) < 2:
+            return (atomic_symbol(iz, _larch=_larch), edge)
+    return (None, None)
+
 
 class Scatterer:
     """Scattering Element
@@ -499,6 +543,7 @@ def registerLarchPlugin():
                       'xray_line': xray_line,
                       'fluo_yield': fluo_yield,
                       'core_width':  core_width,
+                      'guess_edge':  guess_edge,
                       'ck_probability': CK_probability,
                       'xray_delta_beta': xray_delta_beta,
                       })

@@ -1,0 +1,4 @@
+
+print('    in nested_deep.lar, setting variable deep_x')
+
+deep_x = 5.0

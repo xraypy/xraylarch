@@ -164,6 +164,32 @@ endif
         self.isValue('x',  2)
         self.isValue('y', 33)
 
+    def test_nestedif(self):
+        """test of single-line ifs in if blocks"""
+        self.trytext("""
+def xtest(xt, out=None):
+    if out is None:
+        out = 'A'
+        if xt < 9:  out = 'B'
+        if xt < 5:  out = 'C'
+        if xt < 2:  out = 'D'
+    #endif
+    return out
+#enddef
+
+a = xtest(100)
+b = xtest(8)
+c = xtest(4)
+d = xtest(1)
+q = xtest(4, out='Q')
+""")
+        self.isValue('a', 'A')
+        self.isValue('b', 'B')
+        self.isValue('c', 'C')
+        self.isValue('d', 'D')
+        self.isValue('q', 'Q')
+
+
     def test_print(self):
         '''print (ints, str, ....)'''
         out, err  = self.trytext("print(31)")
@@ -479,6 +505,21 @@ endtry
         self.assertTrue(astnode.body[0].value.n == 1)
         dumped = self.session._larch.dump(astnode.body[0])
         self.assertTrue(dumped.startswith('Assign'))
+
+    def test_import(self):
+        '''simple import'''
+        self.trytext("import numpy")
+        self.isTrue("callable(getattr(numpy, 'sqrt'))")
+        self.isTrue("callable(getattr(numpy, 'arange'))")
+        self.isNear("getattr(numpy, 'pi', 0)", 3.14159, places=5)
+
+    def test_import_as(self):
+        '''simple import'''
+        self.trytext("import numpy as np")
+        self.isTrue("callable(getattr(np, 'sqrt'))")
+        self.isTrue("callable(getattr(np, 'arange'))")
+        self.isNear("getattr(np, 'pi', 0)", 3.14159, places=5)
+
 
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestEval,):

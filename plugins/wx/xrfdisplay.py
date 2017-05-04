@@ -36,6 +36,7 @@ except:
     pass
 
 from larch import Interpreter, site_config
+from larch.utils import index_of
 
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -50,7 +51,6 @@ from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
 
 from larch_plugins.wx.xrfdisplay_fitpeaks import FitSpectraFrame
 
-from larch_plugins.math import index_of
 from larch_plugins.io import GSEMCA_File, gsemca_group
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
@@ -1239,8 +1239,10 @@ class XRFDisplayFrame(wx.Frame):
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        elif hasattr(self.mca, 'filename'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
         if hasattr(self.mca, 'areaname'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'areaname'))
+            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
         if deffile == '':
             deffile ='test'
         if not deffile.endswith('.mca'):
@@ -1250,13 +1252,29 @@ class XRFDisplayFrame(wx.Frame):
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
-
         if outfile is not None:
             self.mca.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
-        print( '  onSaveColumnFile not yet implemented  ')
-        pass
+        deffile = ''
+        if hasattr(self.mca, 'sourcefile'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        elif hasattr(self.mca, 'filename'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
+        if hasattr(self.mca, 'areaname'):
+            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
+        if deffile == '':
+            deffile ='test'
+        if not deffile.endswith('.dat'):
+            deffile = deffile + '.dat'
+
+        deffile = fix_filename(str(deffile))
+        ASCII_WILDCARDS = "Data File (*.dat)|*.dat|All files (*.*)|*.*"
+        outfile = FileSave(self, "Save ASCII File for MCA Data",
+                           default_file=deffile,
+                           wildcard=ASCII_WILDCARDS)
+        if outfile is not None:
+            self.mca.save_columnfile(outfile)
 
     def onCalibrateEnergy(self, event=None, **kws):
         try:
@@ -1285,8 +1303,8 @@ class XRFDisplayFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,event):
-        self.Destroy()
+#     def onClose(self,event):
+#         self.Destroy()
 
     def onReadFile(self, event=None):
         dlg = wx.FileDialog(self, message="Read MCA File",
@@ -1319,6 +1337,18 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         frame.Show()
         self.SetTopWindow(frame)
         return True
+
+
+def initializeLarchPlugin(_larch=None):
+    """add ScanFrameViewer to _sys.gui_apps """
+    if _larch is not None:
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
+
+def registerLarchPlugin():
+    return ('_sys.wx', {})
 
 if __name__ == "__main__":
     XRFApp().MainLoop()

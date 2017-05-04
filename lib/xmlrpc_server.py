@@ -10,7 +10,7 @@ from threading import Thread, Timer
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
 
-from larch import Interpreter, InputText
+from larch import Interpreter
 from larch.utils.jsonutils import encode4js
 
 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER = range(3)
@@ -81,7 +81,8 @@ class LarchServer(SimpleXMLRPCServer):
         self.out_buffer = []
 
         self.larch = Interpreter(writer=self)
-        self.input = InputText(prompt='', _larch=self.larch)
+        self.larch.input.prompt = ''
+        self.larch.input.prompt2 = ''
         self.larch.run_init_scripts()
 
         self.larch('_sys.client = group(keepalive_time=%f)' % keepalive_time)
@@ -103,11 +104,11 @@ class LarchServer(SimpleXMLRPCServer):
 
         self.register_introspection_functions()
         self.register_function(self.larch_exec, 'larch')
-        for method in  ('ls', 'chdir', 'cd', 'cwd', 'shutdown',
-                        'set_keepalive_time',
-                        'set_client_info',
-                        'get_client_info',
-                        'get_data', 'get_rawdata', 'get_messages', 'len_messages'):
+
+        for method in ('ls', 'chdir', 'cd', 'cwd', 'shutdown',
+                        'set_keepalive_time', 'set_client_info',
+                        'get_client_info', 'get_data', 'get_rawdata',
+                        'get_messages', 'len_messages'):
             self.register_function(getattr(self, method), method)
 
         # sys.stdout = self
@@ -116,7 +117,9 @@ class LarchServer(SimpleXMLRPCServer):
         self.activity_thread = Thread(target=self.check_activity)
 
     def write(self, text, **kws):
-        self.out_buffer.append(text)
+        if text is None:
+            text = ''
+        self.out_buffer.append(str(text))
 
     def flush(self):
         pass
@@ -218,10 +221,10 @@ class LarchServer(SimpleXMLRPCServer):
         if text in ('quit', 'exit', 'EOF'):
             self.shutdown()
         else:
-            self.input.put(text, lineno=0)
-            if self.input.complete:
-                self.larch('_sys.client.last_event = %i' % time())
-                self.input.run()
+            ret = self.larch.eval(text, lineno=0)
+            if ret is not None:
+                self.write(repr(ret))
+            self.client.last_event = time()
             self.flush()
         return 1
 

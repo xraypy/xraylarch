@@ -1,6 +1,6 @@
 from numpy import arcsin, cos, inf, nan, sin, sqrt
 import json
-from ..larchlib import isNamedClass
+# from ..larchlib import isNamedClass
 
 # use local version of uncertainties package
 from . import uncertainties
@@ -168,7 +168,7 @@ class Parameter(object):
 
     def __repr__(self):
         val = self._getval()
-        if isNamedClass(val, Parameter):
+        if isinstance(val, Parameter):
             val = val._getval()
         w = []
         if self.name is not None:

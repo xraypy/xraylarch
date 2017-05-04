@@ -16,14 +16,14 @@ class CustomStandardDomain(sphinx.domains.std.StandardDomain):
                      typ, target, node, contnode):
         res = super(CustomStandardDomain, self).resolve_xref(env, fromdocname, builder,
                                                             typ, target, node, contnode)
-        
+
         if res is None:
             return res
-        
+
         if typ == 'ref' and not node['refexplicit']:
             docname, labelid, sectname = self.data['labels'].get(target, ('','',''))
             res['refdocname'] = docname
-        
+
         return res
 
 def doctree_resolved(app, doctree, docname):
@@ -33,18 +33,18 @@ def doctree_resolved(app, doctree, docname):
             refdocname = node['refdocname']
             if refdocname in secnums:
                 secnum = secnums[refdocname]
-                emphnode = node.children[0]
-                textnode = emphnode.children[0]
-                
                 toclist = app.builder.env.tocs[refdocname]
-                anchorname = None
-                for refnode in toclist.traverse(nodes.reference):
-                    if refnode.astext() == textnode.astext():
-                        anchorname = refnode['anchorname']
-                if anchorname is None:
-                    continue
-                linktext = '.'.join(map(str, secnum[anchorname]))
-                node.replace(emphnode, nodes.Text(linktext))
+                for child in node.traverse():
+                    if isinstance(child, nodes.Text):
+                        text = child.astext()
+                        anchorname = None
+                        for refnode in toclist.traverse(nodes.reference):
+                            if refnode.astext() == text:
+                                anchorname = refnode['anchorname']
+                        if anchorname is None:
+                            continue
+                        linktext = '.'.join(map(str, secnum[anchorname]))
+                        child.parent.replace(child, nodes.Text(linktext))
 
 def setup(app):
     app.override_domain(CustomStandardDomain)

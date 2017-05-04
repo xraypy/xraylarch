@@ -12,8 +12,7 @@ from glob import glob
 
 import numpy as np
 from larch import Group
-from larch.utils.strutils import bytes2str
-from larch_plugins.io import fix_varname
+from larch.utils.strutils import bytes2str, fix_varname
 
 if sys.version[0] == '2':
     from string import maketrans
@@ -26,6 +25,21 @@ def perl2json(text):
 
 
 ERR_MSG = "Error reading Athena Project File"
+
+def is_athena_project(filename):
+    """tests whether file is a valid Athena Project file"""
+    result = False
+    if os.path.exists(filename):
+        try:
+            fh = GzipFile(filename)
+            line1 = bytes2str(fh.readline())
+            result = "Athena project file -- Demeter version" in line1
+        except:
+            pass
+        finally:
+            fh.close()
+    return result
+
 def read_athena(filename, match=None, do_preedge=True,
                 do_bkg=True, do_fft=True, use_hashkey=False, _larch=None):
     """read athena project file
@@ -51,7 +65,7 @@ def read_athena(filename, match=None, do_preedge=True,
         3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
            pre-edge, background subtraction, and FFT from Athena by using
            the parameters saved in the project file.
-        2. use_hashkey=True will name groups from the internal 5 character 
+        2. use_hashkey=True will name groups from the internal 5 character
            string used by Athena, instead of the group label.
 
     Example:
@@ -91,7 +105,7 @@ def read_athena(filename, match=None, do_preedge=True,
         raise ValueError("%s '%s': file is too old to read" % (ERR_MSG, filename))
 
     for t in lines:
-        if t.startswith('#') or len(t) < 2:
+        if t.startswith('#') or len(t) < 2 or 'undef' in t:
             continue
         key = t.split(' ')[0].strip()
         key = key.replace('$', '').replace('@', '')
@@ -102,16 +116,16 @@ def read_athena(filename, match=None, do_preedge=True,
             dat = {'name':''}
         elif key == 'args':
             dat['args'] = perl2json(t)
-        elif key in ('x', 'y', 'i0'):
+        elif key in ('x', 'y', 'i0', 'signal'):
             dat[key] = np.array([float(x) for x in perl2json(t)])
 
     if match is not None:
         match = match.lower()
 
     out = Group()
-    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)    
+    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
     for dat in athenagroups:
-        label = dat['name']
+        label = dat.get('name', 'unknown')
         this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
                      bkg_params=Group(), fft_params = Group(),
                      athena_params=Group())

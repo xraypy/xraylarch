@@ -130,10 +130,11 @@ def scan_from_db(scanname, filename='scan.001',  _larch=None):
     if _larch.symtable._scan._scandb is None:
         return
     scandb = _larch.symtable._scan._scandb
+    print(" Scan From DB ", scanname, scandb)
     try:
-        scan = scandb.make_scan(scanname)
+        scan = scandb.make_scan(scanname, larch=_larch)
         scan.filename = filename
-    except ScandDBException:
+    except ScanDBException:
         raise ScanDBException("no scan definition '%s' found" % scanname)
     return scan
 
@@ -222,6 +223,7 @@ def registerLarchPlugin():
     if HAS_EPICSSCAN:
         symbols = {'scan_from_db':   scan_from_db,
                    'do_scan': do_scan,
+                   'do_slewscan': do_scan,
                    'get_dbinfo': get_dbinfo}
 
     return (MODNAME, symbols)

@@ -363,6 +363,8 @@ class Epics_MultiXMAP(object):
         self.elapsed_real = None
         self.elapsed_textwidget = None
         self.needs_refresh = False
+        self.frametime = 1.0
+        self.nframes = 1
         if self.prefix is not None:
             self.connect()
 
@@ -395,12 +397,13 @@ class Epics_MultiXMAP(object):
     def onRealTime(self, pvname, value=None, char_value=None, **kws):
         self.elapsed_real = value
         self.needs_refresh = True
+        self.frametime = value
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
 
     def get_deadtime(self, mca=1):
         """return deadtime info"""
-        return self._xmap.get("Deadtime")
+        return self._xmap.get("DeadTime")
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:

@@ -18,8 +18,10 @@ def nullfunction(*args, **kwargs):
 class LarchSession(object):
     def __init__(self):
         self._larch = Interpreter()
-        self.input  = InputText(prompt='test>', _larch=self._larch)
+        self.input  = self._larch.input
+        #  InputText(prompt='test>', _larch=self._larch)
         self.symtable = self._larch.symtable
+        self.symtable.set_symbol('testdir',  os.getcwd())
         self.symtable.set_symbol('_plotter.newplot',  nullfunction)
         self.symtable.set_symbol('_plotter.plot',     nullfunction)
         self.symtable.set_symbol('_plotter.oplot',    nullfunction)
@@ -27,31 +29,29 @@ class LarchSession(object):
         self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
         self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
         self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
+        self.set_stdout()
 
-        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+    def set_stdout(self, fname='_stdout_'):
+        self._outfile = os.path.abspath(fname)
+
+        self._larch.writer = open(self._outfile, 'w')
 
     def read_stdout(self):
-        sys.stdout.flush()
+        self._larch.writer.flush()
+        t0 = time.time()
         time.sleep(0.1)
-        with open(sys.stdout.name) as inp:
+        while (not os.path.exists(self._outfile) and
+               (time.time() - t0)< 5.0):
+            time.sleep(0.1)
+
+        with open(self._outfile) as inp:
             out = inp.read()
-        sys.stdout.close()
-        self._larch.writer = sys.stdout = open('_stdout_', 'w')
+        os.unlink(self._outfile)
+        self._larch.writer =  open(self._outfile, 'w')
         return out
 
     def run(self, text):
-        self.input.put(text)
-        ret = None
-        buff = []
-        while len(self.input) > 0:
-            block, fname, lineno = self.input.get()
-            buff.append(block)
-            if not self.input.complete:
-                continue
-            ret = self._larch.eval("\n".join(buff), fname=fname, lineno=lineno)
-            if self._larch.error:
-                break
-        return ret
+        return self._larch.eval(text, fname='test', lineno=0)
 
     def get_errors(self):
         return self._larch.error
@@ -76,24 +76,21 @@ class TestCase(unittest.TestCase):
         os.chdir(origdir)
 
     def trytext(self, text):
+        self.session.set_stdout()
         ret = self.session.run(text)
         out = self.session.read_stdout()
         err = self.session.get_errors()
         return out, err
 
     def tearDown(self):
-        sys.stdout.close()
-        try:
-            os.unlink(sys.stdout.name)
-        except:
-            pass
+        pass
 
     def getSym(self, sym):
         return self.session.get_symbol(sym)
 
     def isValue(self, sym, val):
         '''assert that a symboltable symbol has a particular value'''
-        testval = self.getSym(sym)
+        testval = self.session.get_symbol(sym)
         if isinstance(val, np.ndarray):
             return self.assertTrue(np.all(testval == val))
         else:

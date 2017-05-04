@@ -1,11 +1,9 @@
-import sys
 import os
 import socket
 import time
 import datetime
 import h5py
 import numpy as np
-from scipy import constants
 import scipy.stats as stats
 import json
 import larch
@@ -14,26 +12,25 @@ from larch.utils.debugtime import debugtime
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 
-from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
-                                  read_xsp3_hdf5, readASCII,
-                                  readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf) #, read_xrd_hdf5)
-                            
-from larch_plugins.xrd import XRD
-from larch_plugins.xrd import integrate_xrd
-
-HAS_pyFAI = False
-try:
-    import pyFAI
-    HAS_pyFAI = True
-except ImportError:
-    pass
+from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
+                                  readASCII, readMasterFile, readROIFile,
+                                  readEnvironFile, parseEnviron, read_xrd_netcdf,
+                                  read_xrd_hdf5)
+from larch_plugins.xrd import XRD,E_from_lambda
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
+
+def h5str(obj):
+    """strings stored in an HDF5 from Python2 may look like
+     "b'xxx'", that is containg "b".  strip these out here
+    """
+    out = str(obj)
+    if out.startswith("b'") and out.endswith("'"):
+        out = out[2:-1]
+    return out
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
@@ -57,7 +54,7 @@ def getFileStatus(filename, root=None, folder=None):
         return status, top, vers
 
     # see if file is empty/too small(signifies "read from folder")
-    if os.stat(filename).st_size < 512:
+    if os.stat(filename).st_size < 1024:
         return GSEXRM_FileStatus.empty, top, vers
 
     # see if file is an H5 file
@@ -105,6 +102,9 @@ def isGSEXRM_MapFolder(fname):
         if f not in flist:
             return False
     has_xrfdata = False
+    ## This should read Master.dat for file name and check that it exist.
+    ## If file name is listed as __unused__ then flag should be false.
+    ## mkak 2017.03.10
     for f in ('xmap.0001', 'xsp3.0001'):
         if f in flist: has_xrfdata = True
     return has_xrfdata
@@ -115,9 +115,12 @@ def isGSEXRM_XRDMapFolder(fname):
         not os.path.isdir(fname)):
         return False
     flist = os.listdir(fname)
+    for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
+        if f not in flist:
+            return False
     has_xrddata = False
-    for f in ('xrd_001.nc','xrd_001.h5'):
-        if f in flist: has_xrddata = True
+    header, rows = readMasterFile('%/Master.dat' % fname)
+    if rows[0,4] in flist: has_xrddata = True
     return has_xrddata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -150,9 +153,9 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)
-    
+
     xrmmap.create_group('flags')
-    
+
     for key, val in attrs.items():
         xrmmap.attrs[key] = str(val)
 
@@ -166,18 +169,32 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     ROI definitions, MCA calibration, Environment Data, etc'''
 
     xrmmap.create_group('areas')
+    xrmmap.create_group('work')
     xrmmap.create_group('positions')
 
     conf = xrmmap['config']
     for name in ('scan', 'general', 'environ', 'positioners',
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
-        
+
     xrmmap.create_group('xrd')
     xrmmap['xrd'].attrs['desc'] = 'xrd detector calibration and data'
     xrmmap['xrd'].attrs['type'] = 'xrd detector'
 
     h5root.flush()
+
+def checkFORattrs(attrib,group):
+    try:
+        group.attrs[attrib]
+    except:
+        group.attrs[attrib] = ''
+
+def checkFORsubgroup(subgroup,group):
+    try:
+        group[subgroup]
+    except:
+         group.create_group(subgroup)
+
 
 class GSEXRM_Exception(Exception):
     """GSEXRM Exception: General Errors"""
@@ -200,8 +217,9 @@ class GSEXRM_MapRow:
     read one row worth of data:
     """
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
-                 reverse=False, ixaddr=0, dimension=2,
+                 reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
+                 masterfile = None, xrftype=None, xrdtype=None,
                  FLAGxrf = True, FLAGxrd = False):
 
         if not FLAGxrf and not FLAGxrd:
@@ -210,7 +228,7 @@ class GSEXRM_MapRow:
         self.read_ok = False
         self.nrows_expected = nrows_expected
 
-        npts_offset = 0
+        ioff = ioffset
 
         self.npts = npts
         self.irow = irow
@@ -220,17 +238,29 @@ class GSEXRM_MapRow:
         self.sisfile = sisfile
         self.xrdfile = xrdfile
 
+        if masterfile is not None:
+            header, rows = readMasterFile(masterfile)
+            for row in header:
+                if row.startswith('#XRF.filetype'): xrftype = row.split()[-1]
+                if row.startswith('#XRD.filetype'): xrdtype = row.split()[-1]
+
         if FLAGxrf:
-            xrf_reader = read_xsp3_hdf5
-            if not xrffile.startswith('xsp'):
-                xrf_reader = read_xmap_netcdf
-        
+            if xrftype is None:
+                xrftype = 'netcdf'
+                if xrffile.startswith('xsp3'):
+                    xrftype = 'hdf5'
+            if xrftype == 'netcdf':
+                xrf_reader = read_xrf_netcdf
+            else:
+                xrf_reader = read_xsp3_hdf5
+
         if FLAGxrd:
-            xrd_reader = read_xrd_netcdf
-            ## not yet implemented for hdf5 files
-            ## mkak 2016.07.27
-            #if not xrdfile.endswith('nc'):
-            #    xrd_reader = read_xrd_hdf5
+            if xrdtype == 'hdf5':
+                xrd_reader = read_xrd_hdf5
+            elif xrdtype == 'netcdf' or xrdfile.endswith('nc'):
+                xrd_reader = read_xrd_netcdf
+            else:
+                xrd_reader = read_xrd_netcdf
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -248,6 +278,8 @@ class GSEXRM_MapRow:
                 time.sleep(0.25)
             try:
                 shead, sdata = readASCII(os.path.join(folder, sisfile))
+                if ioff > 0:
+                    sdata = sdata[ioff:]
                 sis_ok = len(sdata) > 1
             except IOError:
                 if (time.time() - t0) > 5.0:
@@ -292,29 +324,40 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
-        if FLAGxrf: 
-            self.counts    = xrfdat.counts # [:]
-            self.inpcounts = xrfdat.inputCounts[:]
-            self.outcounts = xrfdat.outputCounts[:]
-            
+        if FLAGxrf:
+            self.counts    = xrfdat.counts[ioff:]
+            self.inpcounts = xrfdat.inputCounts[ioff:]
+            self.outcounts = xrfdat.outputCounts[ioff:]
+
             # times are extracted from the netcdf file as floats of ms
             # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrfdat.liveTime[:]).astype('int')
-            self.realtime  = (xrfdat.realTime[:]).astype('int')
+            self.livetime  = (xrfdat.liveTime[ioff:]).astype('int')
+            self.realtime  = (xrfdat.realTime[ioff:]).astype('int')
 
-            dt_denom = xrfdat.outputCounts*xrfdat.liveTime
+            dt_denom = xrfdat.outputCounts[ioff:]*xrfdat.liveTime[ioff:]
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrfdat.inputCounts*xrfdat.realTime/dt_denom
-               
+            self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
+
         ## SPECIFIC TO XRD data
+        ## is this the correct way to handle collected number of frames per row?
+        ## mkak 2017.02.08
         if FLAGxrd:
-            self.xrd2d     = xrddat
+            if self.npts == xrddat.shape[0]:
+                self.xrd2d     = xrddat
+            elif self.npts > xrddat.shape[0]:
+                self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
+                self.xrd2d[0:xrddat.shape[0]] = xrddat
+                ## should change to [1:...] if skipping first frame
+                ## mkak 2017.02.08
+            else:
+                self.xrd2d = xrddat[0:self.npts]
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
+        # print(" Row ", gnpts, ngather, snpts, xnpts, self.npts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -337,6 +380,12 @@ class GSEXRM_MapRow:
                 self.xrd2d = self.xrd2d[:self.npts]
 
         points = range(1, self.npts+1)
+        # auto-reverse: counter-intuitively (because stage is upside-down and so
+        # backwards wrt optical view), left-to-right scans from high to low value
+        # so reverse those that go from low to high value
+        if reverse is None:
+            reverse = gdata[0, 0] < gdata[-1, 0]
+
         if reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]
@@ -376,7 +425,7 @@ class GSEXRM_MapRow:
             self.livetime = self.livetime.transpose()
             self.realtime = self.realtime.transpose()
             self.counts   = self.counts.swapaxes(0, 1)
-        
+
         self.read_ok = True
 
 class GSEMCA_Detector(object):
@@ -523,8 +572,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 calibration=None, mask=None, bkgd=None,
-                 FLAGxrf=False, FLAGxrd=False, xchannels=5001, xwedge=1):
+                 FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -544,25 +592,23 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
-        self.xchan            = xchannels
-        self.xwedge           = xwedge
-        
 
-        self.calibration = calibration
-        self.xrdmask = mask
-        self.xrdbkgd = bkgd
+        self.calibration = None
+        self.energy      = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
-        
+
         # initialize from filename or folder
         if self.filename is not None:
-            
+
             self.status,self.root,self.version = getFileStatus(self.filename, root=root)
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
+                if '/' in self.folder:
+                    self.folder = self.folder.split('/')[-1]
                 ftmp.close()
                 os.unlink(self.filename)
 
@@ -607,7 +653,7 @@ class GSEXRM_MapFile(object):
                 cfile.config['scan']['filename'] = self.filename
                 cfile.Save(os.path.join(self.folder, self.ScanFile))
             self.h5root = h5py.File(self.filename)
-            
+
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
 
@@ -621,30 +667,12 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
-    def copy_hdf5(self, newfile):
-        """
-        copy current GSEXRM HDF5 File without 2D XRD data
-        
-        this **must** be called for an existing, valid GSEXRM HDF5 File!!
-        """
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-      
-        newh5root = h5py.File(newfile, 'w')
+    def __repr__(self):
+        fname = ''
+        if self.filename is not None:
+            fpath, fname = os.path.split(self.filename)
 
-        self.h5root.copy('xrmmap', newh5root)
-
-        xrdgrp = newh5root['xrmmap/xrd']
-        if 'data2D' in xrdgrp:
-            if 'data1D' not in xrdgrp:
-                print('shape of data2D: ',xrdgrp['data2D'].shape) ## mkak 2016.09.15
-#                xrdgrp.create_dataset('data1D', data=integrate_xrd(xrdgrp['data2D'], 
-#                                                    unit='q', AI = xrdgrp, save=False),
-#                                                    compression=COMPRESSION_LEVEL)
-            xrdgrp.__delitem__('data2D')
-            newh5root.flush()
-        newh5root.close()
-
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nEnd: %Y-%m-%d %H:%M:%S'))      
+        return "GSEXRM_MapFile('%s')" % fname
 
     def get_det(self, index):
         return GSEMCA_Detector(self.xrmmap, index=index)
@@ -660,11 +688,11 @@ class GSEXRM_MapFile(object):
     def get_coarse_stages(self):
         """return coarse stage positions for map"""
         stages = []
-        env_addrs = list(self.xrmmap['config/environ/address'])
-        env_vals  = list(self.xrmmap['config/environ/value'])
+        env_addrs = [h5str(s) for s in self.xrmmap['config/environ/address']]
+        env_vals  = [h5str(s) for s in self.xrmmap['config/environ/value']]
         for addr, pname in self.xrmmap['config/positioners'].items():
-            name = str(pname.value)
-            addr = str(addr)
+            name = h5str(pname.value)
+            addr = h5str(addr)
             val = ''
             if not addr.endswith('.VAL'):
                 addr = '%s.VAL' % addr
@@ -674,7 +702,7 @@ class GSEXRM_MapFile(object):
             stages.append((addr, val, name))
 
         return stages
-      
+
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
         with check_status=False, this **must** be called
@@ -717,65 +745,21 @@ class GSEXRM_MapFile(object):
     def add_calibration(self):
         """
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
-        mkak 2016.08.30
-        restructured
-        mkak 2016.09.09
+        mkak 2016.11.16
         """
-        try:
-            self.xrmmap['xrd']
-        except:
-            self.xrmmap.create_group('xrd')
-        xrdgp = self.xrmmap['xrd']
 
-        xrdgp.attrs['calfile'] = '%s' % (self.calibration)
+        checkFORsubgroup('xrd',self.xrmmap)
+        xrdgrp = self.xrmmap['xrd']
+
+        checkFORattrs('calfile',xrdgrp)
+
         xrdcal = False
-        if HAS_pyFAI:
-            try:
-                ai = pyFAI.load(self.calibration)
-                print('New calibration file detected: %s' % self.calibration)
-                xrdcal = True
-            except:
-                raise ValueError('Not recognized as a pyFAI calibration file: %s' % \
-                                               self.calibration)
-                return
-
-        try:
-            xrdgp.attrs['maskfile'] = str(self.xrdmask)
-        except:
-            xrdgp.attrs['maskfile'] = ''
-        
-        try:
-            xrdgp.attrs['bkgdfile'] = str(self.xrdbkgd)
-        except:
-            xrdgp.attrs['bkgdfile'] = ''
-
-
-        if xrdcal:
-            print('Updating calibration parameters...')
-            try:
-                xrdgp.attrs['detector'] = ai.detector.name
-            except:
-                xrdgp.attrs['detector'] = ''
-            try:
-                xrdgp.attrs['spline']   = ai.detector.splineFile
-            except:
-                xrdgp.attrs['spline']   = ''
-            xrdgp.attrs['ps1']        = ai.detector.pixel1 ## units: m
-            xrdgp.attrs['ps2']        = ai.detector.pixel2 ## units: m
-            xrdgp.attrs['distance']   = ai._dist ## units: m
-            xrdgp.attrs['poni1']      = ai._poni1
-            xrdgp.attrs['poni2']      = ai._poni2
-            xrdgp.attrs['rot1']       = ai._rot1
-            xrdgp.attrs['rot2']       = ai._rot2
-            xrdgp.attrs['rot3']       = ai._rot3
-            xrdgp.attrs['wavelength'] = ai._wavelength ## units: m
-            ## E = hf ; E = hc/lambda
-            hc = constants.value(u'Planck constant in eV s') * \
-                   constants.value(u'speed of light in vacuum') * 1e-3 ## units: keV-m
-            xrdgp.attrs['energy']    = hc/(ai._wavelength) ## units: keV
-
+        if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
+            if os.path.exists(self.calibration):
+                print('New calibration file: %s' % self.calibration)
+                xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
+        print('')
         self.h5root.flush()
-
 
     def add_data(self, group, name, data, attrs=None, **kws):
         """ creata an hdf5 dataset"""
@@ -868,7 +852,7 @@ class GSEXRM_MapFile(object):
         self.build_schema(row,verbose=True)
 
         self.add_rowdata(row)
-        
+
         self.status = GSEXRM_FileStatus.hasdata
 
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
@@ -929,36 +913,51 @@ class GSEXRM_MapFile(object):
             self.flag_xrf
         except:
             self.reset_flags()
-        
-        
+
+
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
 
         if self.folder is None or irow >= len(self.rowdata):
             return
 
-        if self.flag_xrf and self.flag_xrd:
+        scan_version = getattr(self, 'scan_version', 1.00)
+
+        if scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+            if xrff.startswith('None'):
+                xrff = xrff.replace('None', 'xsp3')
+            if sisf.startswith('None'):
+                sisf = sisf.replace('None', 'struck')
+            if xpsf.startswith('None'):
+                xpsf = xpsf.replace('None', 'xps')
+            if xrdf.startswith('None'):
+                xrdf = xrdf.replace('None', 'pexrd')
+
         elif self.flag_xrf:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
             xrdf = ''
         else:
             raise IOError('No XRF or XRD flags provided.')
             return
-        reverse = (irow % 2 != 0)
-        
+        reverse = None # (irow % 2 != 0)
+
+        ioffset = 0
+        if scan_version > 1.35:
+            ioffset = 1
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse,
+                             npts=self.npts, reverse=reverse, ioffset=ioffset,
+                             masterfile = self.masterfile,
                              FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
 
-       
+
     def add_rowdata(self, row, verbose=True):
         """adds a row worth of real data"""
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-            
+
         if not self.flag_xrf and not self.flag_xrd:
             return
 
@@ -972,7 +971,7 @@ class GSEXRM_MapFile(object):
 
         t0 = time.time()
         if self.flag_xrf:
-       
+
             nmca, xnpts, nchan = row.counts.shape
             xrm_dets = []
 
@@ -1002,7 +1001,7 @@ class GSEXRM_MapFile(object):
 
             pos    = self.xrmmap['positions/pos']
             rowpos = np.array([p[:npts] for p in row.posvals])
-        
+
             tpos = rowpos.transpose()
 
             pos[thisrow, :npts, :] = tpos[:npts, :]
@@ -1023,7 +1022,7 @@ class GSEXRM_MapFile(object):
             if self.roi_slices is None:
                 lims = self.xrmmap['config/rois/limits'].value
                 nrois, nmca, nx = lims.shape
-        
+
                 self.roi_slices = []
                 for iroi in range(nrois):
                     x = [slice(lims[iroi, i, 0],
@@ -1046,43 +1045,14 @@ class GSEXRM_MapFile(object):
             sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
         t1 = time.time()
-        
+
         if self.flag_xrd:
             ## Unneccessary at this point BUT convenient if two xrd detectors are used
             ## mkak 2016.08.03
-            xrd_dets = []
-            map_items = sorted(self.xrmmap.keys())
-            for gname in map_items:
-                g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'xrd detector' :
-                    xrd_dets.append(g)
-                    
-            if hasattr(self.xrmmap['xrd'],'maskfile'):
-                mask = self.xrmmap['xrd'].attrs['maskfile']
-            else:
-                mask = None
-            if hasattr(self.xrmmap['xrd'],'bkgdfile'):
-                bkgd = self.xrmmap['xrd'].attrs['bkgdfile']
-            else:
-                bkgd = None
+            xrdgrp = self.xrmmap['xrd']
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            for idet, grp in enumerate(xrd_dets):
-                grp['data2D'][thisrow,] = row.xrd2d
-                
-                t1a = time.time()
-                ### HOW TO DO THIS WITHOUT LOOPING?
-## temp. test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#                if hasattr(self.xrmmap['xrd'],'calfile'):    
-#                    grp['data1D'][thisrow,] = integrate_xrd(row.xrd2d,
-#                                        unit='q', steps=grp['data1D'].shape[-1],
-#                                        mask=mask, dark=bkgd,
-#                                        #calfile=self.xrmmap['xrd'].attrs['calfile'],
-#                                        AI = self.xrmmap['xrd'], 
-#                                        save=False)
-
+            xrdgrp['data2D'][thisrow,] = row.xrd2d
 
         t2 = time.time()
         if verbose:
@@ -1092,13 +1062,13 @@ class GSEXRM_MapFile(object):
             elif self.flag_xrd and self.flag_xrf:
                 pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
                 print(pform % (t1-t0,t2-t1,t2-t0))
-            elif self.flag_xrf: 
-                pform = '\tTime: %0.2f s'
-                print(pform % (t2-t0))
-            elif self.flag_xrd: 
+            #elif self.flag_xrf:
+            #    pform = '\tTime: %0.2f s'
+            #    print(pform % (t2-t0))
+            elif self.flag_xrd:
                 pform = '\t2D XRD: %0.2f s; 1D XRD %0.2f s; Total: %0.2f s'
                 print(pform % (t1a-t0,t2-t1a,t2-t0))
-                
+
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
         self.h5root.flush()
@@ -1110,11 +1080,11 @@ class GSEXRM_MapFile(object):
 
         print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
-        
+
         flaggp = xrmmap['flags']
         flaggp.attrs['xrf'] = self.flag_xrf
         flaggp.attrs['xrd'] = self.flag_xrd
-         
+
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
@@ -1126,7 +1096,7 @@ class GSEXRM_MapFile(object):
             if verbose:
                 prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
                 print(prtxt % (npts, row.npts, nmca, nchan))
-                
+
             if self.chunksize is None:
                 if xnpts < 10: xnpts=10
                 nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
@@ -1140,8 +1110,8 @@ class GSEXRM_MapFile(object):
             slope  = conf['mca_calib/slope'].value
             quad   = conf['mca_calib/quad'].value
 
-            roi_names = list(conf['rois/name'])
-            roi_addrs = list(conf['rois/address'])
+            roi_names = [h5str(s) for s in conf['rois/name']]
+            roi_addrs = [h5str(s) for s in conf['rois/address']]
             roi_limits = conf['rois/limits'].value
             for imca in range(nmca):
                 dname = 'det%i' % (imca+1)
@@ -1230,7 +1200,7 @@ class GSEXRM_MapFile(object):
                                     compression=COMPRESSION_LEVEL,
                                     chunks=(2, npts, nx),
                                     maxshape=(None, npts, nx))
-        
+
             # positions
             pos = xrmmap['positions']
             for pname in ('mca realtime', 'mca livetime'):
@@ -1258,45 +1228,46 @@ class GSEXRM_MapFile(object):
             xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
                                    chunks = self.chunksize_2DXRD,
                                    compression=COMPRESSION_LEVEL)
-## temporary test:
-## don't calculate 1D until stripping 2D or when plotting
-## mkak 2016.09.09
-#            xchan = self.xchan
-#            xwedge = self.xwedge
-#            self.chunksize_1DXRD    = (1, 1, xwedge+1, xchan)             
-#            ## what resolution should be used for q/2th integration?
-#            ## how many wedges for 1D integration?
-#            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, xwedge+1, xchan), 
-#                                   np.int16, chunks = self.chunksize_1DXRD,
-#                                   compression=COMPRESSION_LEVEL)
 
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))      
-        
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+
+        self.h5root.flush()
+
+    def check_flags(self):
+        '''
+        check if any XRD OR XRF data in mapfile
+        mkak 2016.10.13
+        '''
+        print( 'running: self.check_flags()')
+
+        try:
+            xrdgp = self.xrmmap['xrd']
+            xrddata = xrdgp['data2D']
+            self.flag_xrd = True
+        except:
+            self.flag_xrd = False
+        try:
+            xrfgp = self.xrmmap['xrf']
+            xrfdata = xrdgp['det1']
+            self.flag_xrf = True
+        except:
+            self.flag_xrf = False
+
+        self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
+        self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
         self.h5root.flush()
 
     def reset_flags(self):
         '''
-        Resets the flags according to hdf5 values or defaults for compatibility with
-        older versions; add in flags to hdf5 files missing them.
+        Resets the flags according to hdf5; add in flags to hdf5 files missing them.
         mkak 2016.08.30
         '''
         xrmmap = self.xrmmap
-        try: 
+        try:
             xrmmap['flags']
         except:
-            ## Compatible with older maps (did not have xrd data)
-            self.flag_xrf = True
-            self.flag_xrd = False
-            print('Setting flags to defaults.\n  XRF: %s\n  XRD: %s' % (self.flag_xrf,
-                                                                        self.flag_xrd))
-            xrmmap.create_group('flags')
-            flaggp = xrmmap['flags']
-            flaggp.attrs['xrf'] = self.flag_xrf
-            flaggp.attrs['xrd'] = self.flag_xrd
-            h5root.flush()
-            
-            return
-    
+            check_flags(self)
+
         self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
         self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
 
@@ -1332,6 +1303,55 @@ class GSEXRM_MapFile(object):
             old, npts, nx = g.shape
             g.resize((nrow, npts, nx))
         self.h5root.flush()
+
+    def ensure_workgroup(self):
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        return self.xrmmap['work']
+
+    def add_work_array(self, data, name, **kws):
+        """
+        add an array to the work group of processed arrays
+        """
+        workgroup = self.ensure_workgroup()
+        if name is None:
+            name = 'array_%3.3i' % (1+len(workgroup))
+        if name in workgroup:
+            raise ValueError("array name '%s' exists in work arrays" % name)
+        ds = workgroup.create_dataset(name, data=data)
+        for key, val in kws.items():
+            ds.attrs[key] = val
+        self.h5root.flush()
+
+    def del_work_array(self, name):
+        """
+        delete an array to the work group of processed arrays
+        """
+        workgroup = self.ensure_workgroup()
+        name = h5str(name)
+        if name in workgroup:
+            del workgroup[name]
+            self.h5root.flush()
+
+    def get_work_array(self, name):
+        """
+        get an array from the work group of processed arrays by index or name
+        """
+        workgroup = self.ensure_workgroup()
+        dat = None
+        name = h5str(name)
+        if name in workgroup:
+            dat = workgroup[name]
+        return dat
+
+    def work_array_names(self):
+        """
+        return list of work array descriptions
+        """
+        workgroup = self.ensure_workgroup()
+        return [h5str(g) for g in workgroup.keys()]
 
     def add_area(self, mask, name=None, desc=None):
         """add a selected area, with optional name
@@ -1392,20 +1412,6 @@ class GSEXRM_MapFile(object):
                 if desc == group[name].attrs['description']:
                     return group[name]
         return None
-
-    def get_calibration(self, verbose=True):
-        """
-        return name of calibration file
-        """
-        try:
-            calibration = self.xrmmap['xrd'].attrs['calfile']
-            if verbose:
-                print('Calibration file: %s' % calibration)
-                if HAS_pyFAI:
-                    print(pyFAI.load(calibration))
-        except:
-            return None
-        return calibration
 
     def get_area_stats(self, name=None, desc=None):
         """return statistics for all raw detector counts/sec values
@@ -1525,12 +1531,18 @@ class GSEXRM_MapFile(object):
                 "cannot read Master file from '%s'" % self.masterfile)
 
         self.master_header = header
-        self.rowdata = rows
-        if self.flag_xrd:
-            xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
-            for i,addxrd in enumerate(xrd_files):
-                self.rowdata[i].insert(4,addxrd)
-        self.scan_version = '1.0'
+        # carefully read rows to avoid repeated rows due to bad collection
+        self.rowdata = []
+        _yl, _xl = None, None
+        for row in rows:
+            yval, xrff = row[0], row[1]
+            il = len(self.rowdata)-1
+            if il > -1:
+                _yl, _xl = self.rowdata[il][0], self.rowdata[il][1]
+
+            if yval != _yl and xrff != _xl:  # skip repeated rows in master file
+                self.rowdata.append(row)
+        self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
         for line in header:
@@ -1541,9 +1553,14 @@ class GSEXRM_MapFile(object):
                 self.scan_version = words[1].strip()
             elif 'scan.nrows_expected' in words[0].lower():
                 self.nrows_expected = int(words[1].strip())
-
+        self.scan_version = float(self.scan_version)
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
+
+        if self.scan_version < 1.35 and self.flag_xrd:
+            xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
+            for i,addxrd in enumerate(xrd_files):
+                self.rowdata[i].insert(4,addxrd)
 
         cfile = FastMapConfig()
         cfile.Read(os.path.join(self.folder, self.ScanFile))
@@ -1871,6 +1888,19 @@ class GSEXRM_MapFile(object):
         _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
 
+    def check_xrf(self):
+        """
+        check if any XRF data in mapfile; returns flags
+        mkak 2016.10.06
+        """
+
+        try:
+            xrfgp = self.xrmmap['xrf']
+            data = xrfgp['det1']
+        except:
+            return False
+        return True
+
     def check_xrd(self):
         """
         check if any XRD data in mapfile; returns flags for 1D and 2D XRD data
@@ -1878,20 +1908,20 @@ class GSEXRM_MapFile(object):
         """
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            data2D = xrdgp['data2D']
+            xrdgrp = self.xrmmap['xrd']
+            data2D = xrdgrp['data2D']
             flag2D = True
         except:
-            flag2D = False 
+            flag2D = False
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            xrdgp['data1D']
+            xrdgrp = self.xrmmap['xrd']
+            xrdgrp['data1D']
             flag1D = True
         except:
             if flag2D:
                 try:
-                    xrdgp.attrs['calfile']
+                    xrdgrp.attrs['calfile']
                     flag1D = True
                 except:
                     flag1D = False
@@ -1922,7 +1952,7 @@ class GSEXRM_MapFile(object):
 
         mapdat = self.xrmmap['xrd']
         ix, iy, xpix, ypix = mapdat['data2D'].shape
-        
+
         npix = len(np.where(area)[0])
         if npix < 1:
             return None
@@ -1987,14 +2017,14 @@ class GSEXRM_MapFile(object):
         """
         if mapdat is None:
             mapdat = self.xrmmap['xrd']
-            
+
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
         ix, iy, xpix, ypix = mapdat['data2D'].shape
         #ix, iy, nmca = mapdat['counts'].shape
-        
+
         cell   = mapdat['data2D'].regionref[sy, sx, :]
         frames = mapdat['data2D'][cell]
         frames = frames.reshape(ny, nx, xpix, ypix)
@@ -2007,7 +2037,7 @@ class GSEXRM_MapFile(object):
         return frames.sum(axis=0)
 
     def _getXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):
-    
+
         name = ('xrd: %s' % areaname)
         _2Dxrd = XRD(data2D=frames, xpixels=xpixels, ypixels=ypixels, name=name)
 
@@ -2017,7 +2047,7 @@ class GSEXRM_MapFile(object):
         fmt = "Data from File '%s', detector '%s', area '%s'"
         mapname = map.name.split('/')[-1]
         _2Dxrd.info  =  fmt % (self.filename, mapname, name)
-        
+
         return _2Dxrd
 
     def get_pattern_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
@@ -2049,7 +2079,7 @@ class GSEXRM_MapFile(object):
         sy = slice(ymin, ymax)
 
         ix, iy, nwedge, nchan = mapdat['data1D'].shape
-        
+
         cell    = mapdat['data1D'].regionref[sy, sx, :]
         pattern = mapdat['data1D'][cell]
         pattern = pattern.reshape(ny, nx, nwedge, nchan)
@@ -2060,10 +2090,10 @@ class GSEXRM_MapFile(object):
             pattern = pattern.sum(axis=0)
         return pattern.sum(axis=0)
 
-    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, nchan=5001):
-    
+    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, steps=5001):
+
         name = ('xrd: %s' % areaname)
-        _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, nchan=nchan, name=name)
+        _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
 
         _1Dxrd.areaname = _1Dxrd.title = name
         path, fname = os.path.split(self.filename)
@@ -2120,10 +2150,12 @@ class GSEXRM_MapFile(object):
         ndarray for ROI data
         """
         imap = -1
-        roi_names = [r.lower() for r in self.xrmmap['config/rois/name']]
-        det_names = [r.lower() for r in self.xrmmap['roimap/sum_name']]
+        roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
+        det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+        work_names = self.work_array_names()
         dat = 'roimap/sum_raw'
-
+        scan_version = getattr(self, 'scan_version', 1.00)
+        no_hotcols = no_hotcols and scan_version < 1.36
         # scaler, non-roi data
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())
@@ -2131,6 +2163,11 @@ class GSEXRM_MapFile(object):
                 return self.xrmmap[dat][:, 1:-1, imap]
             else:
                 return self.xrmmap[dat][:, :, imap]
+        elif name in work_names:
+            map = self.get_work_array(name)
+            if no_hotcols and len(map.shape)==2:
+                map = map[:, 1:-1]
+            return map
 
         dat = 'roimap/sum_raw'
         if dtcorrect:
@@ -2141,7 +2178,7 @@ class GSEXRM_MapFile(object):
 
         if det in range(1, self.ndet+1):
             name = '%s (mca%i)' % (name, det)
-            det_names = [r.lower() for r in self.xrmmap['roimap/det_name']]
+            det_names = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
             dat = 'roimap/det_raw'
             if dtcorrect:
                 dat = 'roimap/det_cor'
@@ -2264,4 +2301,3 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-

@@ -8,11 +8,24 @@ label_chir  = r'$|\chi(R)| \rm\,(\AA^{-%i})$'
 label_chirre  = r'${\rm Re}[\chi(R)] \rm\,(\AA^{-%i})$'
 label_chirim  = r'${\rm Im}[\chi(R)] \rm\,(\AA^{-%i})$'
 label_chirpha = r'${\rm Phase}[\chi(R)] \rm\,(\AA^{-%i})$'
+
+def get_kweight(dataset, kweight=None):
+    """extract kweight from dataset that may have multiple kweights
+    """
+    if kweight is None:
+        kweight = dataset.transform.kweight
+    #endif
+    if isinstance(kweight, (list, tuple)):
+        kweight = kweight[0]
+    #endif
+    return int(kweight)
+#enddef
+
 def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit',
                 win=1, show_legend=True):
     """show chi(k) and chi(r) data and best-fit for a dataset"""
     # make k-weighted chi(k)
-    kw = int(kweight)
+    kw = get_kweight(dataset, kweight=kweight)
     data_chi_kw  = dataset.data.chi * dataset.data.k**kw
     model_chi_kw = dataset.model.chi * dataset.model.k**kw
 
@@ -29,7 +42,7 @@ def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit',
     plot(dataset.model.r, dataset.model.chir_mag, color='red',  label='fit',  win=win+1)
     plot(dataset.model.r, dataset.data.chir_re,   color='blue', label='',     win=win+1)
     plot(dataset.model.r, dataset.model.chir_re,  color='red',  label='',     win=win+1)
-enddef
+#enddef
 
 
 def plot_path_k(dataset, ipath, kweight=None, offset=0, label=None, **extra):
@@ -38,24 +51,21 @@ def plot_path_k(dataset, ipath, kweight=None, offset=0, label=None, **extra):
     if label is None:
         label = 'path %i' % (ipath)
     endif
-    if kweight is None:
-        kweight = dataset.transform.kweight
-    endif
-    kw = int(kweight)
+    kw = get_kweight(dataset, kweight=kweight)
     chi_kw = offset + path.chi * path.k**kw
 
     plot(path.k, chi_kw, label=label,
         xlabel=label_k, ylabel=label_chikw % kw, **extra)
+#enddef
 
-enddef
-
-def plot_path_r(dataset, ipath, comp='mag', offset=0, label=None, **extra):
+def plot_path_r(dataset, ipath, comp='mag', scale=1, kweight=None, offset=0, label=None, **extra):
     "plot chi(r) for a particular path in a dataset"
     path = dataset.pathlist[ipath]
     if label is None:
         label = 'path %i' % (ipath)
-    endif
-    kw = int(dataset.transform.kweight)
+    #endif
+    kw = get_kweight(dataset, kweight=kweight)
+
     if comp == 're':
         chir= path.chir_re
         ylabel = label_chirre % kw
@@ -70,7 +80,7 @@ def plot_path_r(dataset, ipath, comp='mag', offset=0, label=None, **extra):
         ylabel = label_chir % kw
     endif
 
-    chir = offset + chir
+    chir = offset + chir*scale
     plot(path.r, chir, label=label, xlabel=label_r, ylabel=ylabel, **extra)
 
 enddef
@@ -80,8 +90,9 @@ def plot_modelpaths_k(dataset, kweight=None, offset=-1, title='Model and Paths',
     # make k-weighted chi(k)
     if kweight is None:
         kweight = dataset.transform.kweight
-    endif
-    kw = int(kweight)
+    #endif
+    kw = get_kweight(dataset, kweight=kweight)
+
     model = dataset.model
 
     model_chi_kw = model.chi * model.k**kw
@@ -95,10 +106,12 @@ def plot_modelpaths_k(dataset, kweight=None, offset=-1, title='Model and Paths',
     endfor
 enddef
 
-def plot_modelpaths_r(dataset, comp='mag', offset=-0.5, title='Model and Paths', **extra):
+def plot_modelpaths_r(dataset, comp='mag', kweight=None,
+                      offset=-0.5, scale=1, title='Model and Paths', **extra):
     """show chi(r) for sum and individual paths"""
     # make k-weighted chi(k)
-    kw = int(dataset.transform.kweight)
+    kw = get_kweight(dataset, kweight=kweight)
+
     model = dataset.model
     if comp == 're':
         chir= model.chir_re
@@ -117,7 +130,7 @@ def plot_modelpaths_r(dataset, comp='mag', offset=-0.5, title='Model and Paths',
     newplot(model.r, chir, label='sum', xlabel=label_r, ylabel=ylabel, title=title, **extra)
 
     for ipath in range(len(dataset.pathlist)):
-        plot_path_r(dataset, ipath, comp=comp, offset=(ipath+1)*offset)
+        plot_path_r(dataset, ipath, scale=scale,comp=comp, offset=(ipath+1)*offset)
     endfor
 enddef
 
@@ -133,4 +146,3 @@ def write_report(filename, out):
 enddef
 
 ## end of examples/feffit/doc_macros.lar
-

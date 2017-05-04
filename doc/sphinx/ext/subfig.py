@@ -73,19 +73,19 @@ class SubFigEndDirective(Directive):
     option_spec = {'label': directives.uri,
                    'alt': directives.unchanged,
                    'width': directives.unchanged_required}
-    
+
     def run(self):
         label = self.options.get('label', None)
         width = self.options.get('width', None)
         alt = self.options.get('alt', None)
-        
+
         node = subfigend('', ids=[label] if label is not None else [])
-        
+
         if width is not None:
             node['width'] = width
         if alt is not None:
             node['alt'] = alt
-        
+
         if self.content:
             anon = nodes.Element()
             self.state.nested_parse(self.content, self.content_offset, anon)
@@ -94,17 +94,17 @@ class SubFigEndDirective(Directive):
                 caption = nodes.caption(first_node.rawsource, '',
                                         *first_node.children)
                 node += caption
-        
+
         if label is not None:
             targetnode = nodes.target('', '', ids=[label])
             node.append(targetnode)
-        
+
         return [node]
 
 class SubFigStartDirective(Directive):
     has_content = False
     optional_arguments = 0
-    
+
     def run(self):
         node = subfigstart()
         return [node]
@@ -113,17 +113,17 @@ def doctree_read(app, doctree):
     secnums = app.builder.env.toc_secnumbers
     for node in doctree.traverse(subfigstart):
         parentloc = node.parent.children.index(node)
-        
+
         subfigendloc = parentloc
         while subfigendloc < len(node.parent.children):
             n = node.parent.children[subfigendloc]
             if isinstance(n, subfigend):
                 break
             subfigendloc += 1
-        
+
         if subfigendloc == len(node.parent.children):
             return
-        
+
         between_nodes = node.parent.children[parentloc:subfigendloc]
         subfigend_node = node.parent.children[subfigendloc]
         node['subfigend'] = subfigend_node
@@ -160,5 +160,5 @@ def setup(app):
 
     app.add_directive('subfigstart', SubFigStartDirective)
     app.add_directive('subfigend', SubFigEndDirective)
-    
+
     app.connect('doctree-read', doctree_read)

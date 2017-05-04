@@ -2780,7 +2780,7 @@ def main(argv=None):
     if images and not settings.noplot:
         try:
             import matplotlib
-            matplotlib.use('TkAgg')
+            # matplotlib.use('TkAgg')
             from matplotlib import pyplot
         except ImportError as e:
             warnings.warn("failed to import matplotlib.\n%s" % e)

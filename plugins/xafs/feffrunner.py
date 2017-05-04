@@ -236,6 +236,8 @@ def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     """
     return FeffRunner(feffinp=feffinp, verbose=verbose, repo=repo, _larch=_larch)
 
+def registerLarchGroups():
+    return (FeffRunner,)
 
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'feffrunner': feffrunner })

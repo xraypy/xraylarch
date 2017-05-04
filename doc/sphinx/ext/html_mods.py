@@ -7,12 +7,12 @@ class CustomHTMLTranslator(BaseTranslator):
     def visit_tabular_col_spec(self, node):
         self.table_spec = re.split(r'[\s\|]+', node['spec'])
         raise nodes.SkipNode
-    
+
     def bulk_text_processor(self, text):
         if '~' in text:
             text = text.replace('~', '&nbsp;')
         return text
-    
+
     def visit_entry(self, node):
         atts = {'class': []}
         if isinstance(node.parent.parent, nodes.thead):
@@ -30,24 +30,24 @@ class CustomHTMLTranslator(BaseTranslator):
         if (tagname == 'td' or tagname == 'th') and table_spec is not None:
             if len(table_spec) > node.parent.column:
                 colspec = table_spec[node.parent.column]
-                
+
                 horiz_align = ''
                 vert_align = ''
-                
+
                 if 'raggedright' in colspec or colspec == 'l':
                     horiz_align = ' align-left'
                 elif 'raggedleft' in colspec or colspec == 'r':
                     horiz_align = ' align-right'
                 elif 'center' in colspec or colspec == 'c':
                     horiz_align = ' align-center'
-                
+
                 if 'p{' in colspec:
                     vert_align = ' align-top'
                 elif 'm{' in colspec:
                     vert_align = ' align-middle'
                 elif 'b{' in colspec:
                     vert_align = ' align-bottom'
-                
+
                 align_type = {'l': 'left',
                               'r': 'right',
                               'c': 'center'}

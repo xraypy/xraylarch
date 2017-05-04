@@ -11,9 +11,9 @@ ETOK = 1.0/KTOE
 MODDOC = '''
 XAFS Functions for Larch, essentially Ifeffit 2
 
-The functions here include (but are not limited too):
+The functions here include (but are not limited to):
 
-function         descrption
+function         description
 ------------     ------------------------------
 pre_edge         pre_edge subtraction, normalization
 autobk           XAFS background subtraction (mu(E) to chi(k))

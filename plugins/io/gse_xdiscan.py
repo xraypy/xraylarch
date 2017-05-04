@@ -28,9 +28,6 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     group.filename = fname
     group.npts = xdi.npts
     group.bad_channels = bad
-    group.dtc_taus = XSPRESS3_TAUS
-    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
-        group.dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     for family in ('scan', 'mono', 'facility'):
         for key, val in xdi.attrs.get(family, {}).items():
@@ -55,27 +52,63 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
 
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
+    dtc_taus = XSPRESS3_TAUS
+    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+        dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+
+    dtc_mode = 'icr/ocr'
     for i in range(nmca):
-        ocr = getattr(xdi, 'OutputCounts_mca%i' % (i+1), None)
+        mca = "mca%i" % (i+1)
+        ocr    = getattr(xdi, 'OutputCounts_%s' % mca, None)
+        clock  = getattr(xdi, 'Clock_%s'        % mca, None)
+        icr    = getattr(xdi, 'InputCounts_%s'  % mca, None)
+        dtfact = getattr(xdi, 'DTFactor_%s'     % mca, None)
+        resets = getattr(xdi, 'ResetTicks_%s'   % mca, None)
+        allevt = getattr(xdi, 'AllEvent_%s'     % mca, None)
         if ocr is None:
             ocr = ctime
         ocr = ocr/ctime
-        icr = getattr(xdi, 'InputCounts_mca%i' % (i+1), None)
         if icr is not None:
             icr = icr/ctime
-        else:
+
+        # Get ICR from one of several alternatives:
+        # 1. InputCounts_mca was given
+        # 2. DTFactor_mca was given
+        # 3. ResetTicks_mca and AllEvets_mca were given
+        # 4. Use "known values" for tau
+        if icr is None:
+            if dtfact is not None:
+                icr = ocr * dtfact
+                dtc_mode = 'dtfactor'
+            elif (clock is not None and
+                  resets is not None and
+                  allevt is not None):
+                dtfact = clock/(clock - (6*allevt + resets))
+                icr = ocr * dtfact
+                dtc_mode = 'resets'
+        # finally estimate from measured values of tau:
+        if icr is None:
             icr = 1.0*ocr
+            dtc_mode = 'none'
             if is_xspress3:
-                tau = group.dtc_taus[i]
+                tau = dtc_taus[i]
                 icr = estimate_icr(ocr*1.00, tau, niter=7)
+                dtc_mode = 'saved_taus'
         ocrs.append(ocr)
         icrs.append(icr)
+
+    group.dtc_mode =  dtc_mode
+    if dtc_mode == 'saved_taus':
+        group.dtc_taus = dtc_taus
+
     labels = []
     sums = OrderedDict()
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
         aname = sumname = rawname = arrname.lower()
-        if ('_mca' in aname and 'outputcounts' not in aname and
+        if ('_mca' in aname and 
+            'outputcounts' not in aname and
+            'dtfactor' not in aname and
             'clock' not in aname):
             sumname, imca = sumname.split('_mca')
             imca = int(imca) - 1
@@ -109,16 +142,19 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         if sname not in labels:
             labels.append(sname)
 
+    data = []
+    for name in labels:
+        data.append(getattr(group, name))
+    group.data = np.array(data)
+
     for imca in range(nmca):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
         setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
-
-
     group.array_labels = labels
     return group
 
 
-DTC_header = '''# XDI/1.0  GSE/1.0
+DTC_header = '''# XDI/1.1  Epics StepScan File/2.0
 # Beamline.name:  13-ID-E, GSECARS
 # Monochromator.name:  %(mono_cut)s, LN2 Cooled
 # Monochromator.dspacing:  %(mono_dspace)s
@@ -183,12 +219,18 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         out.ifluor_raw  = getattr(xdi, arrname_raw)
 
     out.mufluor = out.ifluor / out.i0
-    if hasattr(out, 'i1'):
-        out.mutrans = -np.log(out.i1 / out.i0)
-
+    TINY  = 2.e-20
+    if hasattr(out, 'i1') or hasattr(out, 'itrans'):
+        i1 = getattr(out, 'i1', None)
+        if i1 is None:
+            i1 = getattr(out, 'itrans', None)
+        if i1 is not None:
+            i1[np.isnan(i1)] = TINY
+            i1 = i1 / out.i0
+            i1[np.where(i1<TINY)] = TINY
+            out.mutrans = -np.log(i1)
 
     npts   = len(out.energy)
-
     buff =  ['# XDI/1.0  GSE/1.0']
 
     header = OrderedDict()
