@@ -1,7 +1,10 @@
+
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+
 .. _fitting-minimize-sec:
 
 ==============================================
-:func:`minimize` and Objective Functions
+:func:`minimize` and objective Functions
 ==============================================
 
 .. module:: _math
@@ -46,7 +49,7 @@ itself.  Here is the function call using the objective function
 defined above, assuming you have a group called ``data`` containing
 the data you are trying to fit::
 
-    minimize(residual, params, kws={'xdata': data.x, 'ydata':data.y})
+    result = minimize(residual, params, kws={'xdata': data.x, 'ydata':data.y})
 
 As the fit proceeds, the values the Parameter values will be updated, and
 the objective function will be called to recalculate the residual array.
@@ -71,15 +74,11 @@ procedure decides it has found the best solution that it can.
     :param kws:  a dictionary of keyword/value arguments to pass to the objective function.
     :param method:  name (case insensitive) of minimization method to use (default='leastsq')
     :param extra_kws:  additional keywords to pass to fitting method.
-    :returns:      a :class:`minimizer` object that can be re-used under certain conditions.
-
-    returns fit object that can be used to modify or re-run fit.  Most results
-    of interest are written back to ``paramgroup`` itself.
+    :returns:   a Group containing several fitting statisics and best-fit parameters.
 
     The ``method`` argument gives the name of the fitting method to be
     used.  Several methods are available, as described below in
     :ref:`Table of Fitting Methods <minimize-methods_table>`.
-
 
 .. _minimize-methods_table:
 
@@ -106,8 +105,42 @@ procedure decides it has found the best solution that it can.
     ============= ==================================================================
 
 Further information on these methods, including full lists of extra
-parameters that can be passed to them, can be found at `scipy.optimize
-<http://docs.scipy.org/doc/scipy/reference/optimize.html>`_.
+parameters that can be passed to them, can be found at
+:lmfitdoc:`fitting`.
+
+
+.. _minimize-results_table:
+
+   Table of Results contained in the return value of :func:`minimize`.
+
+   Listed are the names and description of items in the fit result group
+   returned by the :func:`minimize` function.  Many of these items are
+   directly from `lmfit`_.
+
+    ============== ======================================================================
+     name           Description
+    ============== ======================================================================
+    fitter          lmfit :lmfitx:`Minimizer <fitting.html#lmfit.minimizer.Minimizer>`
+    fit_details     lmfit :lmfitx:`MinimizerResult <fitting.html#lmfit.minimizer.MinimizerResult>`
+    nvarys          number of variable parameters in the fit
+    ndata           number of data points
+    nfree           ndata - nfree
+    var_names       list of variable parameter names
+    covar           covariance matrix (ordered according to `var_names`).
+    residual        final residual array
+    chi_square      chi-square: :math:`\chi^2 = \sum_i^N [{\rm Resid}_i]^2`
+    chi_reduced     reduced chi-square: :math:`\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}` |
+    rfactor         R factor: :math:`\cal R = \sum_i^N [{\rm Resid}_i]^2 /\sum_i^N [{\rm Data}_i]^2`
+    aic             :lmfitx:`Akaike Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
+    bic             :lmfitx:`Bayesian Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
+    params          lmfit :lmfitx:`Parameters <parameters.html#lmfit.parameter.Parameters>`
+    nfev            number of evaluations of the fit residual function.
+    success         bool (`True` or `False`) for whether fit appeared to succeed.
+    errorbars       bool (`True` or `False`) for whether uncertainties were estimated.
+    message         text message from fit
+    lmdif_message   text message from Fortran least-squares function
+    ============== ======================================================================
+
 
 It should be noted that the Levenberg-Marquardt algorithm is almost always
 the fastest of the methods listed (often by 10x), and is generally fairly

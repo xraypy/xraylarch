@@ -106,22 +106,22 @@ the uncertainty in any of the other Parameters in the fit.
 
 ..  _param-constraints-label:
 
-algebraic constraints
-~~~~~~~~~~~~~~~~~~~~~~
+algebraic constraints and `fiteval`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is often useful to be able to build a fitting model in which Parameters
 in the model are related to one another.  As a simple example, it might be
 useful to fit a spectrum with a sum of two lineshapes that have different
 centroids, but the same width.  As a second example, it might be useful to
 fit a spectrum to a sum of two model spectra where the relative weight of
-the model spectra must add to 1.  For each of these cases, one could write
-a model function that implemented such constraints.
+the model spectra must add to 1.
 
-Rather than trying to capture and encourage such special cases, Larch takes
-a more general approach, allowing Parameters to get their value from an
-algebraic expression.  Thus, one might define an objective function for a
-sum of two Gaussian functions (discussed in more detail in
-:ref:`lineshape-functions-label`), as::
+For each of these cases, one could write a model function that implemented
+such constraints.  Rather than trying to capture and encourage such special
+cases, Larch takes a more general approach, allowing Parameters to get
+their value from an algebraic expression.  Thus, one might define an
+objective function for a sum of two Gaussian functions (discussed in more
+detail in :ref:`lineshape-functions-label`), as::
 
     def fit_2gauss(params, data):
         model = params.amp1 * gaussian(data.x, params.cen1, params.wid1) + \
@@ -129,7 +129,7 @@ sum of two Gaussian functions (discussed in more detail in
         return (data.y - model)
     enddef
 
-This is general and does not put any relations between the parameter values
+This is general and does not impose any relations between the parameter values
 within the objective function.  But one can place such relations in the
 definitions of the parameters and have them obeyed within the fit.  That
 is, one could constrain the two widths of the Gaussians to be the same
@@ -139,19 +139,23 @@ value with::
     params.wid2 = param(expr='wid1')
 
 and the value of `params.wid2` will have the same value as `params.wid1`
-every time the objective is called, but won't be an independent variable in
-the fit.  As a second  example, one could constrain the two amplitude
+every time the objective is called, and will not be an independent variable
+in the fit.  For the second example, one could constrain the two amplitude
 parameters to add to 1 and each be between 0 and 1 as::
 
     params.amp1 = guess(0.5, min=0, max=1)
     params.amp2 = param(expr='1 - amp1')
 
-of course, one can use more complex expressions -- any valid Larch
-expression is allowed.
+.. index:: _sys.fiteval
 
-.. index:: _sys.paramGroup
+of course, one can use more complex expressions. Essentially any valid
+Python/Larch expression is allowed.  In fact, Larch uses a
+
 
 .. _fitting-namespace_sec:
+
+.. versionchanged:: 0.9.34
+ `_sys.paramGroup` is no longer used.  For fitting, use `_sys.fiteval` instead.
 
 .. rubric:: Namespaces for algebraic expressions
 
@@ -211,4 +215,3 @@ the uncertainties automatically propagated to the result.  Note that each
 ``uvalue`` include the correlations between variables, so the propagated
 uncertainties may differ somewhat from using the simplest formulas for
 propagating errors.
-
