@@ -435,7 +435,7 @@ class cifDB(object):
         self.ciftbl  = Table('ciftbl', self.metadata)
         
         
-    def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1):
+    def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1,file=None):
         '''
             ## Adds cifile into database
             When reading in new CIF:
@@ -478,13 +478,15 @@ class cifDB(object):
             if url:
                 print('AMCSD %i already exists in database %s: %s' % 
                      (amcsd_id,self.dbname,cifile))
-                ftrack.write('AMCSD %i already exists in database %s: %s\n' % 
-                     (amcsd_id,self.dbname,cifile))
+                if file is not None:
+                    file.write('AMCSD %i already exists in database %s: %s\n' % 
+                         (amcsd_id,self.dbname,cifile))
             else:
                 print('%s: AMCSD %i already exists in database %s.' % 
                      (os.path.split(cifile)[-1],amcsd_id,self.dbname))
-                ftrack.write('%s: AMCSD %i already exists in database %s.\n' % 
-                     (os.path.split(cifile)[-1],amcsd_id,self.dbname))
+                if file is not None:
+                    file.write('%s: AMCSD %i already exists in database %s.\n' % 
+                         (os.path.split(cifile)[-1],amcsd_id,self.dbname))
             return
 
         ## Read elements
@@ -655,7 +657,7 @@ class cifDB(object):
                         print('Saved %s' % file)
                 if addDB:
                     if 1==1: #try:
-                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
+                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i,file=ftrack)
 #                     except:
 #                         if trackerr:
 #                             ftrack.write('%s\n' % url_to_scrape)
