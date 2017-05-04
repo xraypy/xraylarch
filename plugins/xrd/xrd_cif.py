@@ -2668,7 +2668,7 @@ def check_elemsym(atom):
         loops += 1
         if atom.startswith('Wat'):
             match_list += ['H-H-O']
-        elif atom.startswith('OH')
+        elif atom.startswith('OH'):
             match_list += ['H-O']        
         elif atom.startswith('D'): ## this is a type in cif 01158,02658
             match_list += ['H']
