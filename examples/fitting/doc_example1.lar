@@ -6,10 +6,10 @@ mdat.y = 1.0 + 12.0 * gaussian(mdat.x, 1.5, 2.0) + \
          random.normal(size=len(mdat.x), scale=0.050)
 
 # create a group of fit parameters
-params = group(off = guess(0),
-               amp = guess(5, min=0),
-               cen = guess(2),
-               wid = guess(1, min=0))
+params = param_group(off = guess(0),
+                     amp = guess(5, min=0),
+                     cen = guess(2),
+                     wid = guess(1, min=0))
 
 init = params.off + params.amp * \
        gaussian(mdat.x, params.cen, params.wid)
