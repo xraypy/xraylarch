@@ -2576,8 +2576,8 @@ class CIFcls(object):
         else:
             self.symm_key = [str(self.symmetry.no)]
 
-        ## cheating for now - just picks last in list
-        self.symm_key = self.symm_key[-1]
+        ## cheating for now - just picks first in list
+        self.symm_key = self.symm_key[0]
 
         if self.atom.symm_wyckoff is None and self.atom.label is not None:
             self.atom.symm_wyckoff = []
@@ -2666,6 +2666,9 @@ class CIFcls(object):
         self.LAP = self.correction_factor(self.twthhkl)
         
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
+        
+#         for i,row in enumerate(zip(self.hkl,self.qhkl,self.twthhkl,self.Ihkl)):
+#             print i,row
         
     def correction_factor(self,twth):
         ## calculates Lorentz and Polarization corrections
