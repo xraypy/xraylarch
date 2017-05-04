@@ -2662,13 +2662,14 @@ class CIFcls(object):
 
 def check_elemsym(atom):
 
-    print atom,
     match_list = []
     loops = 0
     while len(match_list) == 0:
         loops += 1
         if atom.startswith('Wat'):
             match_list += ['H-H-O']
+        elif atom.startswith('OH')
+            match_list += ['H-O']        
         elif atom.startswith('D'): ## this is a type in cif 01158,02658
             match_list += ['H']
         else:
@@ -2681,9 +2682,7 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
-            print()
             return atom
-    print '-->',match_list[ai]
     return match_list[ai]
 
 
