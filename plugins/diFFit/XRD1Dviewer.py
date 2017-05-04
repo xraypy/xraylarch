@@ -1646,13 +1646,11 @@ class Viewer1DXRD(wx.Panel):
     
         energy = self.getE()
         
-        maxq = 5.
-        minq = 1.
+        maxq = 6.0
+        minq = 0.2
         for i,data in enumerate(self.xy_plot):
-            if 1.05*np.max(data[0]) > maxq:
-                maxq = 1.05*np.max(data[0])
-            if minq < 1.05*np.min(data[0]):
-                minq = 1.05*np.min(data[0])
+            maxq = 1.05*np.max(data[0])
+            minq = 0.95*np.min(data[0])
 
         cif = create_cif(cifile=path)
         cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=minq,q_max=maxq)

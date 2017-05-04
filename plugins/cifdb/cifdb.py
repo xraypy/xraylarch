@@ -478,8 +478,12 @@ class cifDB(object):
             if url:
                 print('AMCSD %i already exists in database %s: %s' % 
                      (amcsd_id,self.dbname,cifile))
+                ftrack.write('AMCSD %i already exists in database %s: %s\n' % 
+                     (amcsd_id,self.dbname,cifile))
             else:
                 print('%s: AMCSD %i already exists in database %s.' % 
+                     (os.path.split(cifile)[-1],amcsd_id,self.dbname))
+                ftrack.write('%s: AMCSD %i already exists in database %s.\n' % 
                      (os.path.split(cifile)[-1],amcsd_id,self.dbname))
             return
 
@@ -554,19 +558,11 @@ class cifDB(object):
             search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == mineral_name)
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
-                match = True
 
         ## Find symmetry_name
-        match = False
         search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == re.sub(' ','',hm_notation))
         for row in search_spgrp.execute():
             iuc_id = row.iuc_id
-            match = True
-        if match is False:
-            ## need a real way to deal with this trouble
-            ## mkak 2016.11.04
-            iuc_id = 0
-            print('\tSpace group? ----> %s (amcsd: %i)' % (hm_notation,int(amcsd_id)))
 
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=int(amcsd_id),

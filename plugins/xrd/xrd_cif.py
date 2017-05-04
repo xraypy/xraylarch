@@ -2436,18 +2436,18 @@ class CIFcls(object):
                     self.id_no = int(cf[key][k])
 
                 ## unit cell information
-                elif k == '_cell_angle_alpha':
-                    self.unitcell[3] = cf[key][k]
-                elif k == '_cell_angle_beta':
-                    self.unitcell[4] = cf[key][k]
-                elif k == '_cell_angle_gamma':
-                    self.unitcell[5] = cf[key][k]
                 elif k == '_cell_length_a':
                     self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_cell_length_b':
                     self.unitcell[1] =re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_cell_length_c':
                     self.unitcell[2] = re.sub(r"\(\w*\)", r"", cf[key][k])
+                elif k == '_cell_angle_alpha':
+                    self.unitcell[3] = re.sub(r"\(\w*\)", r"", cf[key][k])
+                elif k == '_cell_angle_beta':
+                    self.unitcell[4] = re.sub(r"\(\w*\)", r"", cf[key][k])
+                elif k == '_cell_angle_gamma':
+                    self.unitcell[5] = re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_exptl_crystal_density_diffrn':
                     self.density = cf[key][k]
                 elif k == '_cell_volume':
@@ -2473,11 +2473,14 @@ class CIFcls(object):
                 elif k == '_atom_site_type_symbol' or  k == '_atom_type_symbol':
                     self.atom.label2 = cf[key][k] 
                 elif k == '_atom_site_fract_x':
-                    self.atom.fract_x = [float(x) for x in cf[key][k]]
+                    self.atom.fract_x = [float(re.sub(r"\(\w*\)", r"", x)) for x in cf[key][k]]
+                    #self.atom.fract_x = [float(x) for x in cf[key][k]]
                 elif k == '_atom_site_fract_y':
-                    self.atom.fract_y = [float(y) for y in cf[key][k]]
+                    self.atom.fract_y = [float(re.sub(r"\(\w*\)", r"", y)) for y in cf[key][k]]
+                    #self.atom.fract_y = [float(y) for y in cf[key][k]]
                 elif k == '_atom_site_fract_z':
-                    self.atom.fract_z = [float(z) for z in cf[key][k]]
+                    self.atom.fract_z = [float(re.sub(r"\(\w*\)", r"", z)) for z in cf[key][k]]
+                    #self.atom.fract_z = [float(z) for z in cf[key][k]]
                 elif k == '_atom_site_wyckoff_symbol':
                     self.atom.symm_wyckoff = cf[key][k]
                 elif k == '_atom_type_oxidation_number':
@@ -2550,7 +2553,12 @@ class CIFcls(object):
             el,sym = atom
             coor_list = []
             x,y,z = self.atom.fract_x[i],self.atom.fract_y[i],self.atom.fract_z[i]
-            for coord in SPGRP_SYMM[str(self.symmetry.no)][sym]:
+
+            if sym not in SPGRP_SYMM[self.symm_key].keys(): 
+                sym = self.atom.symm_multi[i]+sym
+                self.atom.symm_wyckoff[i]  = sym
+
+            for coord in SPGRP_SYMM[self.symm_key][sym]:
                 a = list(coord)
                 for i,ai in enumerate(a):
                     if type(ai) == str:
@@ -2560,22 +2568,26 @@ class CIFcls(object):
     
     def wyckoff(self):
 
+        self.symm_key = []
+        if str(self.symmetry.no) not in SPGRP_SYMM.keys():
+             for key in SPGRP_SYMM.keys():
+                 if key.startswith(str(self.symmetry.no)+':'):
+                     self.symm_key += [key]
+        else:
+            self.symm_key = [str(self.symmetry.no)]
+
+        ## cheating for now - just picks last in list
+        self.symm_key = self.symm_key[-1]
+
         if self.atom.symm_wyckoff is None and self.atom.label is not None:
             self.atom.symm_wyckoff = []
-
-            spgrp = str(self.symmetry.no)
-            if spgrp not in SPGRP_SYMM.keys():
-                for no in SPGRP_SYMM.keys():
-                   check = no.split(':')[0]
-                   if check == spgrp:
-                       spgrp = no
 
             for i,atom in enumerate(self.atom.label):
                 x,y,z = self.atom.fract_x[i],self.atom.fract_y[i],self.atom.fract_z[i]
                 min_match = 4
                 match = None
-                for key in SPGRP_SYMM[spgrp].keys():
-                    a = list(SPGRP_SYMM[spgrp][key][0])
+                for key in SPGRP_SYMM[self.symm_key].keys():
+                    a = list(SPGRP_SYMM[self.symm_key][key][0])
                     str_ct = 0
                     for i,ai in enumerate(a):
                         if type(ai) == str:
@@ -2586,7 +2598,7 @@ class CIFcls(object):
                         min_match,match = str_ct,key
                 if match is not None:
                     self.atom.symm_wyckoff += [match]
-                    self.symmetry.no = spgrp
+                    self.symmetry.no = self.symm_key
                 else:
                     self.atom.symm_wyckoff += ['error']
                     
@@ -2600,7 +2612,7 @@ class CIFcls(object):
                     self.symmetry.no = no
                     return
 
-    def structure_factors(self, wvlgth=1.54056, q_min=1.76, q_max=5.55):
+    def structure_factors(self, wvlgth=1.54056, q_min=1.0, q_max=5.5):
 
         hkl_list = generate_hkl()
         xraydb = xrayDB()
