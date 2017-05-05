@@ -97,6 +97,8 @@ def param(*args, **kws):
         args = args[1:]
     if '_larch' in kws:
         kws.pop('_larch')
+    if 'vary' not in kws:
+        kws['vary'] = False
     return Parameter(*args, **kws)
 
 def guess(value,  **kws):
@@ -156,6 +158,9 @@ def params2group(params, paramgroup):
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
                          'name', 'correl', 'brute_step', 'user_data'):
                 setattr(this, attr, getattr(param, attr, None))
+            if this.stderr is not None:
+                this.uvalue = ufloat((this.value, this.stderr))
+
 
 def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
              scale_covar=True, iter_cb=None, reduce_fcn=None, nan_polcy='omit',
