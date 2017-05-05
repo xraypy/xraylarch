@@ -1,5 +1,8 @@
 .. _fitting-parameters_sec:
 
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+.. _asteval: https://lmfit.github.io/asteval
+
 ===============
 Parameters
 ===============
@@ -149,7 +152,8 @@ parameters to add to 1 and each be between 0 and 1 as::
 .. index:: _sys.fiteval
 
 of course, one can use more complex expressions. Essentially any valid
-Python/Larch expression is allowed.  In fact, Larch uses a
+Python/Larch expression is allowed.
+
 
 
 .. _fitting-namespace_sec:
@@ -160,33 +164,17 @@ Python/Larch expression is allowed.  In fact, Larch uses a
 .. rubric:: Namespaces for algebraic expressions
 
 It's worth asking what variables and functions are available for writing
-algebraic constraints.  The discussion on :ref:`tut-namespaces-label`
-gives a partial explanation, but we'll be a bit more explicit here.
-During a fit, the *paramgroup* given to :func:`minimize` will be assigned
-to `_sys.paramGroup` and will be the first place variables are looked for.
-The variables defined inside the objective function will be in
-`_sys.localGroup`, and which will also be searched for variables.  After
-that, names are looked up with the normal procedures.  In essence, this
-means that the variables and functions available for algebraic expressions
-during a fit include
+algebraic constraints.  Larch use an isolated, embedded interpreter (very
+similar to Larch itself, based on `asteval`_ and `lmfit`_.) for evaluating
+the constraint expressions.  This interpreter is held in the Larch system
+variable `_sys.fiteval`.  The set of available functions and variables is
+in its symbol table, `_sys.fiteval.symtable`, which has more than 400 named
+functions and variables available, most of them from numpy.
 
-1. First, all the other Parameters (and any other variables) defined in the
-*parameter group* for a fit.
+During a fit, all the components of the *paramgroup* given to
+:func:`minimize` will be put into the `_sys.fiteval` symbol table.  Any of
+these variables can be used in the constraint expressions.
 
-2. All the variables defined in the objective function, including those
-passed in via the argument list.
-
-3. All the normal functions and variable names available in Larch,
-including all the mathematical functions.
-
-As we said, `_sys.paramGroup` is set during a fit, by :func:`minimize`.  It
-is left set at the end of the fit -- it is not cleared or reset.  However,
-note that `_sys.paramGroup` may be unset or set to the wrong group (say,
-from a previous fit) when setting up a new fit (before you call
-:func:`minimize`).  Of course, you can explicitly assign a group to
-`_sys.paramGroup` when setting up a fit, so that you might be able to
-sensibly call the objective function yourself, prior to doing a
-minimization.
 
 
 working with uncertainties
@@ -206,12 +194,15 @@ values of correlation with that variable.  In addition, the two-dimensional
 covariance matrix will be held in the ``covar`` attribute of the parameter
 group for each fit.
 
-In addition, each Parameter will have a ``uvalue`` attribute which is a
+Note that the uncertainties calculated for constrained parameters involving
+more than one variable will encapsulate not only the simple propogation of
+errors for the independent variables, but also their correlation.  This can
+have a significant impact on the uncertainties for constrained parameters.
+
+
+Finally, each Parameter will have a ``uvalue`` attribute which is a
 special object from the `uncertainties`_ package that holds both the
 best-fit value and standard error.  A key feature of these ``uvalue``
 attributes is that they can be used in simple mathematical expressions
-(addition, subtraction, multiplication, division, exponentiation) and have
-the uncertainties automatically propagated to the result.  Note that each
-``uvalue`` include the correlations between variables, so the propagated
-uncertainties may differ somewhat from using the simplest formulas for
-propagating errors.
+(addition, subtraction, multiplication, division, exponentiation) and
+propogate the uncertainties to the result (ignoring correlations).
