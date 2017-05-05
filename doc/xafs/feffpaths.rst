@@ -434,7 +434,10 @@ well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
 organic ligands.
 
-..  function:: sigma2_eins(t, theta, path=None)
+..versionchanged:: 0.9.34
+    removed `_sys.paramGroup`, now using `fiteval`
+
+..  function:: sigma2_eins(t, theta)
 
     calculate :math:`\sigma^2` in the Einstein model.
 
@@ -443,8 +446,9 @@ organic ligands.
     :param path:   a FeffPath Group  [``None``]
 
 The `path` argument can be left ``None``.  This will try to use the
-''current FeffData group", (`_sys.paramGroup._feffdat`), which is updated
-during fits with :func:`feffit` and when summing paths with :func:`ff2chi`.
+''current FeffData group", (`_sys.fiteval.symtable._feffdat`), which is
+updated during fits with :func:`feffit` and when summing paths with
+:func:`ff2chi`.
 
 ..  function:: sigma2_debye(t, theta, path=None)
 
@@ -455,7 +459,7 @@ during fits with :func:`feffit` and when summing paths with :func:`ff2chi`.
     :param path:   a FeffPath Group  [``None``]
 
 As with :func:`sigma2_eins, the `path` argument can be left ``None``, and the
-''current FeffData group", (`_sys.paramGroup._feffdat`), will be used.
+''current FeffData group", (`_sys.fiteval.symtable._feffdat`), will be used.
 
 Example:  Reading a FEFF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -572,19 +576,15 @@ parameters.   At this point, the strings ``del_e0`` and ``amp`` for the
 path parameters for path 1 and 2 are converted into Parameters and
 evaluated.
 
-.. index:: _sys.paramGroup; with Feff paths
+..versionchanged:: 0.9.34
+    removed `_sys.paramGroup`, now using `fiteval`
+
+.. index:: _sys.fiteval with Feff paths
 
 After plotting the results, we then change the values of the parameters.
 We could re-run :func:`ff2chi`, but we can also just run :func:`path2chi`
 on the paths for which we want to recalculate :math:`\chi`.  Note that we
-specify the ``paramgroup`` to :func:`path2chi` here.  Strictly speaking,
-this is not necessary, as both :func:`path2chi` and :func:`ff2chi` set the
-value of ``_sys.paramGroup``, which is the default group used for looking
-up names for expression in parameters.  That is, after the first call to
-:func:`ff2chi`, ``sys.paramGroup`` is set to our parameter group ``pars``
-and any subsequent need to evaluate parameters will use that until
-overridden by resetting ``_sys.paramGroup``, which can be done by passing a
-``paramgroup`` argument to :func:`path2chi` or :func:`ff2chi`.
+specify the ``paramgroup`` to :func:`path2chi` here.
 
 .. _xafs_fig15:
 
