@@ -39,7 +39,7 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     """
     feffpath = None
     if path is not None:
-        feffpath = path
+        feffpath = path._feffdat
     else:
         symtable = _larch.symtable._sys.fiteval.symtable
         feffpath = symtable.get('feffpath', None)
@@ -73,7 +73,7 @@ def sigma2_debye(t, theta, path=None, _larch=None):
     """
     feffpath = None
     if path is not None:
-        feffpath = path
+        feffpath = path._feffdat
     else:
         symtable = _larch.symtable._sys.fiteval.symtable
         feffpath = symtable.get('feffpath', None)
