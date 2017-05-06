@@ -13,7 +13,7 @@ from lmfit import (Parameter, Parameters, Minimizer,
                    conf_interval, ci_report, conf_interval2d, ufloat,
                    correlated_values)
 
-from lmfit.minimizer import eval_stderr
+from lmfit.minimizer import eval_stderr, MinimizerResult
 from lmfit.confidence import f_compare
 
 def isParameter(x):
@@ -212,7 +212,7 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
     Parameters
     ----------
     fit_result : result from fit
-       Input Parameters from fit or MinimizerResult returned from a fit.
+       Fit Group output from fit, or lmfit.MinimizerResult returned from a fit.
     modelpars : Parameters, optional
        Known Model Parameters.
     show_correl : bool, optional
@@ -233,9 +233,26 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
 
 
     """
-    params = getattr(fit_result, 'fit_details', input)
-    return lmfit.fit_report(params, modelpars=modelpars, show_correl=show_correl,
-                            min_correl=min_correl, sort_pars=sort_pars)
+    result = getattr(fit_result, 'fit_details', fit_result)
+    if isinstance(result,  MinimizerResult):
+        return lmfit.fit_report(result, modelpars=modelpars,
+                                show_correl=show_correl,
+                                min_correl=min_correl, sort_pars=sort_pars)
+    else:
+        result = getattr(fit_result, 'params', fit_result)
+        if isinstance(result,  Parameters):
+            return lmfit.fit_report(result, modelpars=modelpars,
+                                    show_correl=show_correl,
+                                    min_correl=min_correl, sort_pars=sort_pars)
+        else:
+            try:
+                result = group2params(fit_result, _larch=_larch)
+                return lmfit.fit_report(result, modelpars=modelpars,
+                                        show_correl=show_correl,
+                                        min_correl=min_correl, sort_pars=sort_pars)
+            except ValueError, AttributeError:
+                pass
+    return "Cannot make fit report with %s" % repr(fit_result)
 
 
 def confidence_intervals(fit_result, sigmas=(1, 2, 3), _larch=None,  **kws):
