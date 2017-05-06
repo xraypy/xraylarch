@@ -1,12 +1,19 @@
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+
 .. _fitting-results-sec:
 
 ============================
 Fit Results and Outputs
 ============================
 
+.. versionchanged:: 0.9.34
+   :func:`minimize` returns a result group containing fit statistics.
+
 After the fit has completed, several statistics are output and available to
 describe the quality of the fit and the estimated values for the Parameter
-values and uncertainties.  The main statistics are written to *paramgroup*.
+values and uncertainties.  The main statistics are written to group
+returned by :func:`minimize`, while the parameter values in *paramgroup*
+are updated to their best-fit values.
 
 The estimated values, uncertainties, and correlations for each varied
 Parameter are written as attributes of that Parameter.  Thus, after a fit,
@@ -16,43 +23,53 @@ uncertainty (1-:math:`\sigma` standard error), and ``par.correl`` will hold
 a dictionary of correlation values with the other variable Parameters.
 
 General Fit statistics describing the quality of the fit and details about
-how the fit proceeded will be put into components of *paramgroup*, with
+how the fit proceeded will be put into the result group with
 variable names and meanings as outlines in
 :ref:`Table of Fit Statistics <minimize-stats_table>`.  For advanced users,
-the full residual vector,
-covarance matrix, and jacobian matrix from the fit, as well as several more
-esoteric outputs from MINPACK's lmdif function are put in
-*paramgroup.lmdif*.
+the fitting class instance and result from `lmfit` are available.
 
 .. _minimize-stats_table:
 
-   Table of Fit Statistics.
-   Listed are the name of the variable added to the fit *paramgroup*, and
-   the statistical quantity it holds.
+   Table of Fit Statistics and Results contained in the return value of :func:`minimize`.
 
-    ======================= ==================================================
-     *attribute*               *statistical quantity or other output*
-    ======================= ==================================================
-     residual                final array returned from objective function
-     nvarys                  number of independent variables
-     nfree                   number of free parameters (len(residual) - nvarys)
-     chi_square              :math:`\chi^2`, chi-square
-     chi_reduced             :math:`\chi_\nu^2`, reduced chi-square
-     message                 an output message about fit
-     errorbars               flag for whether errorbars were calculated
-     fit_details             Group containing output data from fitting method
-     fit_details.method      name of fitting method used.
-     fit_details.nfev        number of calls to (evaluations of) objective function
-    ======================= ==================================================
+   Listed are the names and description of items in the fit result group
+   returned by the :func:`minimize` function.  Many of these items are
+   directly from `lmfit`_.
 
-Additional outputs written to the ``fit_details`` group vary for each
-fitting method.
 
-.. function:: fit_report(paramgroup, show_correl=True, min_correl=0.1)
+    ============== ======================================================================
+     name           Description of Statistical Quantity or Output
+    ============== ======================================================================
+    nvarys          number of variable parameters in the fit
+    ndata           number of data points
+    nfree           ndata - nfree
+    chi_square      chi-square: :math:`\chi^2 = \sum_i^N [{\rm Resid}_i]^2`
+    chi_reduced     reduced chi-square: :math:`\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}` |
+    rfactor         R factor: :math:`\cal R = \sum_i^N [{\rm Resid}_i]^2 /\sum_i^N [{\rm Data}_i]^2`
+    aic             :lmfitx:`Akaike Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
+    bic             :lmfitx:`Bayesian Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
+    residual        final residual array
+    covar           covariance matrix (ordered according to `var_names`).
+    var_names       list of variable parameter names
+    params          lmfit :lmfitx:`Parameters <parameters.html#lmfit.parameter.Parameters>`
+    fitter          lmfit :lmfitx:`Minimizer <fitting.html#lmfit.minimizer.Minimizer>`
+    fit_details     lmfit :lmfitx:`MinimizerResult <fitting.html#lmfit.minimizer.MinimizerResult>`
+    nfev            number of evaluations of the fit residual function.
+    success         bool (`True` or `False`) for whether fit appeared to succeed.
+    errorbars       bool (`True` or `False`) for whether uncertainties were estimated.
+    message         text message from fit
+    lmdif_message   text message from Fortran least-squares function
+    ============== ======================================================================
+
+
+.. versionchanged:: 0.9.34
+   :func:`fit_report` uses a result group returned by :func:`minimize`
+
+.. function:: fit_report(result, show_correl=True, min_correl=0.1)
 
    returns a fit report for a fit given a parameter group.
 
-   :param paramgroup:  parameter group, after being used in a fit.
+   :param result:      fit result group, returned by :func:`minimize`.
    :param show_correl: flag (``True``/``False``) to show parameter correlations.
    :param min_correl:  smallest absolute value of correlation to show.
    :returns:   string of fit report.   This can be printed or stored.
@@ -60,7 +77,7 @@ fitting method.
 
 A typical result from :func:`fit_report` would look like this::
 
-    larch> print fit_report(params)
+    larch> print fit_report(result)
     ===================== FIT RESULTS =====================
     [[Statistics]]    Fit succeeded,  method = 'leastsq'.
        Message from fit    = Fit succeeded.
@@ -80,4 +97,3 @@ A typical result from :func:`fit_report` would look like this::
        amp, wid             =  0.812
        off, wid             = -0.699
     =======================================================
-

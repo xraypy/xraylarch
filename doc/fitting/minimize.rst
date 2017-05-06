@@ -1,6 +1,4 @@
 
-.. _lmfit: https://lmfit.github.io/lmfit-py/
-
 .. _fitting-minimize-sec:
 
 ==============================================
@@ -56,6 +54,9 @@ the objective function will be called to recalculate the residual array.
 Thus the objective function may be called many times before the fitting
 procedure decides it has found the best solution that it can.
 
+.. versionchanged:: 0.9.34
+   :func:`minimize` returns a result group containing fit statistics.
+
 .. function:: minimize(fcn, paramgroup, args=None, kws=None, method='leastsq', **extra_kws)
 
     find the best-fit values for the Parameters in ``paramgroup`` such that the
@@ -107,39 +108,6 @@ procedure decides it has found the best solution that it can.
 Further information on these methods, including full lists of extra
 parameters that can be passed to them, can be found at
 :lmfitdoc:`fitting`.
-
-
-.. _minimize-results_table:
-
-   Table of Results contained in the return value of :func:`minimize`.
-
-   Listed are the names and description of items in the fit result group
-   returned by the :func:`minimize` function.  Many of these items are
-   directly from `lmfit`_.
-
-    ============== ======================================================================
-     name           Description
-    ============== ======================================================================
-    fitter          lmfit :lmfitx:`Minimizer <fitting.html#lmfit.minimizer.Minimizer>`
-    fit_details     lmfit :lmfitx:`MinimizerResult <fitting.html#lmfit.minimizer.MinimizerResult>`
-    nvarys          number of variable parameters in the fit
-    ndata           number of data points
-    nfree           ndata - nfree
-    var_names       list of variable parameter names
-    covar           covariance matrix (ordered according to `var_names`).
-    residual        final residual array
-    chi_square      chi-square: :math:`\chi^2 = \sum_i^N [{\rm Resid}_i]^2`
-    chi_reduced     reduced chi-square: :math:`\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}` |
-    rfactor         R factor: :math:`\cal R = \sum_i^N [{\rm Resid}_i]^2 /\sum_i^N [{\rm Data}_i]^2`
-    aic             :lmfitx:`Akaike Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
-    bic             :lmfitx:`Bayesian Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
-    params          lmfit :lmfitx:`Parameters <parameters.html#lmfit.parameter.Parameters>`
-    nfev            number of evaluations of the fit residual function.
-    success         bool (`True` or `False`) for whether fit appeared to succeed.
-    errorbars       bool (`True` or `False`) for whether uncertainties were estimated.
-    message         text message from fit
-    lmdif_message   text message from Fortran least-squares function
-    ============== ======================================================================
 
 
 It should be noted that the Levenberg-Marquardt algorithm is almost always

@@ -1,7 +1,9 @@
-.. _fitting-parameters_sec:
+
 
 .. _lmfit: https://lmfit.github.io/lmfit-py/
 .. _asteval: https://lmfit.github.io/asteval
+
+.. _fitting-parameters_sec:
 
 ===============
 Parameters
@@ -109,8 +111,8 @@ the uncertainty in any of the other Parameters in the fit.
 
 ..  _param-constraints-label:
 
-algebraic constraints and `fiteval`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+using algebraic constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is often useful to be able to build a fitting model in which Parameters
 in the model are related to one another.  As a simple example, it might be
@@ -151,30 +153,44 @@ parameters to add to 1 and each be between 0 and 1 as::
 
 .. index:: _sys.fiteval
 
-of course, one can use more complex expressions. Essentially any valid
-Python/Larch expression is allowed.
-
-
-
-.. _fitting-namespace_sec:
+One can use more complex expressions, and also access built-in values and
+common mathematical functions, like `pi`, `sin`, and `log`.  Essentially
+any valid Python/Larch expression is allowed, including slicing of arrays
+and array methods. Some additional details are discussed below
+(:ref:`fitting-fiteval_sec`),
 
 .. versionchanged:: 0.9.34
- `_sys.paramGroup` is no longer used.  For fitting, use `_sys.fiteval` instead.
+   `_sys.paramGroup` is no longer used, and `_sys.fiteval` is used instead.
 
-.. rubric:: Namespaces for algebraic expressions
 
-It's worth asking what variables and functions are available for writing
-algebraic constraints.  Larch use an isolated, embedded interpreter (very
-similar to Larch itself, based on `asteval`_ and `lmfit`_.) for evaluating
-the constraint expressions.  This interpreter is held in the Larch system
-variable `_sys.fiteval`.  The set of available functions and variables is
-in its symbol table, `_sys.fiteval.symtable`, which has more than 400 named
-functions and variables available, most of them from numpy.
+.. _fitting-fiteval_sec:
+
+`fiteval` and details about algebraic constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Beginning with version 0.9.34, Larch uses the `lmfit`_ python library to do
+all the fitting.  This project is related to and very similar to Larch
+itself, but is maintained and developed separately.  Lmfit supports
+algebraic constraints like those discussed in the previous section, using
+an isolated, embedded mini-interpreter (very similar to Larch itself, based
+on `asteval`_).  Within Larch, this embedded expression interpreter for
+fitting constraints is held in the Larch system variable `_sys.fiteval`.
+The set of available functions and variables is in its symbol table,
+`_sys.fiteval.symtable`, which has more than 400 named functions and
+variables available, most of them from numpy.
+
 
 During a fit, all the components of the *paramgroup* given to
-:func:`minimize` will be put into the `_sys.fiteval` symbol table.  Any of
-these variables can be used in the constraint expressions.
+:func:`minimize` will be put put into the `_sys.fiteval` symbol table.  Any
+of these variables can be used in the constraint expressions.  In addition,
+all the true parameters in the *paramgroup* will be converted into
+`lmfit.Parameters`.  After the fit is complete, the updated parameter
+values will be put back into the
 
+There are a few
+
+
+.. _fitting-uncertainties_sec:
 
 
 working with uncertainties
