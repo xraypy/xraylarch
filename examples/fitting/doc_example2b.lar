@@ -26,8 +26,8 @@ def make_model(pars, data, components=False):
     return sum
 enddef
 
-# create group for parameters
-params = group(
+# create a parameter group for the fit:
+params = param_group(
     cen1 = param(7113.25, vary=True, min=7111, max=7115),
     cen2 = param(7116.0, vary=True, min=7115, max=7120),
 

@@ -16,12 +16,12 @@ def resid(pars, data):
     return out
 enddef
 
-params = group(amp1 = param(0.4, vary=True, min=0, max=1),
-               amp2 = param(0.4, vary=True, min=0, max=1),
-               amp3 = param(0.0, min=0, max=1),
-               amp4 = param(0.0, min=0, max=1),
-               amp5 = param(0.0, min=0, max=1),
-               amp6 = param(0.0, min=0, max=1),  note = '')
+params = param_group(amp1 = param(0.4, vary=True, min=0, max=1),
+                     amp2 = param(0.4, vary=True, min=0, max=1),
+                     amp3 = param(0.0, min=0, max=1),
+                     amp4 = param(0.0, min=0, max=1),
+                     amp5 = param(0.0, min=0, max=1),
+                     amp6 = param(0.0, min=0, max=1),  note = '')
 
 # make multiple copies of this parameter group:
 pars = []
@@ -98,17 +98,19 @@ data.eps  = 0.001
 
 
 ## Now loop over parameter groups, performing fit and comparing
-## the value of reduced chi-square
-print 'chi_reduced         fit notes'
-print '-------------------------------------'
+## the value of reduced chi-square, AIC and BIC
+print '  chi_reduced |  A I C  |  B I C | Notes'
+print '--------------+---------+--------+----------------------------'
 best_chi2, best_params = 1.e99, None
+fmt = '   %8.1f   | %6.1f  | %6.1f |  %s'
 for p in pars:
-    result = minimize(resid, p, args=(data,))
-    print "  %.4f   %s" % (result.chi_reduced, p.note)
-    if result.chi_reduced < best_chi2:
-        best_params, best_result, best_chi2 = p, result, result.chi_reduced
-    endif
-endfor
+    ret = minimize(resid, p, args=(data,))
+    print fmt % (ret.chi_reduced, ret.aic, ret.bic, p.note)
+    if ret.chi_reduced < best_chi2:
+        best_params, best_result, best_chi2 = p, ret, ret.chi_reduced
+    #endif
+#endfor
+print '--------------+---------+--------+----------------------------'
 
 def make_plots(pars, d):
     "generates best-fit plots for a parameter group"
