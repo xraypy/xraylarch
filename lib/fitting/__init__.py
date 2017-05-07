@@ -50,9 +50,9 @@ class ParameterGroup(Group):
             self.__name__ = name
 
         self._larch = _larch
-        self._params = None
+        self.__params__ = None
         if _larch is not None:
-            self._params = Parameters(asteval=_larch.symtable._sys.fiteval)
+            self.__params__ = Parameters(asteval=_larch.symtable._sys.fiteval)
         Group.__init__(self)
         for key, val in kws.items():
             self.__add(key, val)
@@ -62,9 +62,9 @@ class ParameterGroup(Group):
 
     def __setattr__(self, name, val):
         if isinstance(val, Parameter):
-            self._params.add(name, value=val.value, vary=val.vary, min=val.min,
+            self.__params__.add(name, value=val.value, vary=val.vary, min=val.min,
                               max=val.max, expr=val.expr, brute_step=val.brute_step)
-            val = self._params[name]
+            val = self.__params__[name]
         self.__dict__[name] = val
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
@@ -72,12 +72,12 @@ class ParameterGroup(Group):
         if expr is None and isinstance(value, six.string_types):
             expr = value
             value = None
-        if self._params  is not None:
-            self._params.add(name, value=value, vary=vary, min=min, max=max,
+        if self.__params__  is not None:
+            self.__params__.add(name, value=value, vary=vary, min=min, max=max,
                               expr=expr, brute_step=brute_step)
-            self._params[name].stderr = stderr
-            self._params[name].correl = correl
-            self.__dict__[name] = self._params[name]
+            self.__params__[name].stderr = stderr
+            self.__params__[name].correl = correl
+            self.__dict__[name] = self.__params__[name]
 
 
 def param_group(_larch=None, **kws):
@@ -124,7 +124,7 @@ def group2params(paramgroup, _larch=None):
         return None
 
     if isinstance(paramgroup, ParameterGroup):
-        return paramgroup._params
+        return paramgroup.__params__
 
     fiteval  = _larch.symtable._sys.fiteval
     params = Parameters(asteval=fiteval)
@@ -170,7 +170,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     """
     fiteval  = _larch.symtable._sys.fiteval
     if isinstance(paramgroup, ParameterGroup):
-        params = paramgroup._params
+        params = paramgroup.__params__
     elif isgroup(paramgroup):
         params = group2params(paramgroup, _larch=_larch)
     elif isinstance(Parameters):
