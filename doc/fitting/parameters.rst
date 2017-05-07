@@ -59,7 +59,7 @@ or give additional information about its value:
       attribute      meaning                    default       set by which functions:
      ============== ========================== ============= =============================
       value          value                                     :func:`param`
-      vary           can change in fit          ``False``      :func:`param`
+      vary           value can change in fit    ``False``      :func:`param`
       min            lower bound                ``None``       :func:`param`
       max            upper bound                ``None``       :func:`param`
       name           optional name              ``None``       :func:`param`
@@ -163,6 +163,50 @@ and array methods. Some additional details are discussed below
    `_sys.paramGroup` is no longer used, and `_sys.fiteval` is used instead.
 
 
+:func:`param_group`: making a specialized Group for fitting constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While the examples of constraint expressions above will work during a fit,
+the constraint values will not be updated immediately in the main Larch
+interpreter.  That is, doing::
+
+    larch> params = group(amp1=guess(0.6, min=0, max=1),
+                          amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 0.6, bounds=[0:1]>, <Parameter -inf, bounds=[-inf:inf], expr='1-amp1'>)
+
+That is, the value of constrained parameter `amp2` is not properly set yet.
+To be clear, a fit with this group of parameters will work, but it's
+sometimes useful to see the values for the constrained parameters.
+
+The function :func:`param_group` will create a "live, working" group of
+parameters::
+
+    larch> params = param_group(amp1=guess(0.6, min=0, max=1),
+                                amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.6, bounds=[0:1]>, <Parameter 'amp2', 0.4, bounds=[-inf:inf], expr='1-amp1'>)
+
+In addition, you can change the value of `params.amp1`, with the value of
+`params.amp2` being automatically updated:
+
+    larch> params.amp1.value = 0.2
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.2, bounds=[0:1]>, <Parameter 'amp2', 0.8, bounds=[-inf:inf], expr='1-amp1'>)
+
+.. function:: param_group(**kws)
+
+
+    :param kws:  optional keyword/argument values
+    :returns:    a new Parameter Group with working constraint expressions.
+
+    creates a special *Parameter Group* with a working evaluator for
+    constraint expressions.
+
+For backward compatibility, a simple group containing parameters will work
+with fitting, but a :func:`param_group` is recommended for many cases.
+
+
 .. _fitting-fiteval_sec:
 
 `fiteval` and details about algebraic constraints
@@ -187,7 +231,35 @@ all the true parameters in the *paramgroup* will be converted into
 `lmfit.Parameters`.  After the fit is complete, the updated parameter
 values will be put back into the
 
-There are a few
+The :func:`param_group` function discussed above keeps an internal link to
+`_sys.fiteval` and uses that for evaluating constraint expressions.  That
+is, following the above example, one can see the current values for
+`params.amp1` and `params.amp2` within the `_sys.fiteval` symbol table::
+
+
+    larch> params = param_group(amp1=guess(0.6, min=0, max=1),
+                                amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.6, bounds=[0:1]>, <Parameter 'amp2', 0.4, bounds=[-inf:inf], expr='1-amp1'>)
+    larch> print(_sys.fiteval.symtable.amp2)
+    0.4
+    larch> params1.amp.value = 0.1
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.1, bounds=[0:1]>, <Parameter 'amp2', 0.9, bounds=[-inf:inf], expr='1-amp1'>)
+    larch> print(_sys.fiteval.symtable.amp2)
+    0.9
+
+
+Because `_sys.fiteval` is used for all fits with :func:`minimize` (and for
+XAFS, with :func:`feffit`), you may find yourself wanting to clear or reset
+the fitting symbol table for a new fit.  This should not be necessary, but
+it is available with the function :func:`reset_fiteval`:
+
+
+.. function:: reset_fiteval()
+
+     clear and reset `_sys.fiteval` for a new fit.   This function takes no
+     arguments.
 
 
 .. _fitting-uncertainties_sec:
