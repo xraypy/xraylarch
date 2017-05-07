@@ -54,8 +54,18 @@ class ParameterGroup(Group):
         if _larch is not None:
             self.__params__ = Parameters(asteval=_larch.symtable._sys.fiteval)
         Group.__init__(self)
+        self.__exprsave__ = {}
+
         for key, val in kws.items():
-            self.__add(key, val)
+            expr = getattr(val, 'expr', None)
+            if expr is not None:
+                self.__exprsave__[key] =  expr
+                val.expr = None
+            setattr(self, key, val)
+
+        for key, val in self.__exprsave__.items():
+            self.__params__[key].expr = val
+
 
     def __repr__(self):
         return '<Param Group {:s}>'.format(self.__name__)
