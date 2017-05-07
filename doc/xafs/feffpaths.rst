@@ -258,7 +258,7 @@ detailed definitions of the quantities.
 If specified, ``paramgroup`` is used as the Parameter Group -- the group
 used for evaluating parameter expressions (ie, constraints using named
 variables).  This is similar to the use for :func:`_math.minimize` as discussed
-in :ref:`Namespaces for algebraic expressions <fitting-namespace_sec>`.
+in :ref:`fitting-parameters_sec`.
 
 ..  function:: ff2chi(pathlist, paramgroup=None, group=None, k=None, kmax=None, kstep=0.05)
 
