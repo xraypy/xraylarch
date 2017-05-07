@@ -41,7 +41,7 @@ xdat.var =  mymodel(xdat.x, -0.2, 15.0, 11.0, .5) + \
             random.normal(size=len(xdat.x), scale=.20)
 
 # create group for parameters
-fitpars = group(off1 = param(0, vary=True),
+fitpars = param_group(off1 = param(0, vary=True),
                 cen1 = param(10.0, vary=True),
                 amp1 = param(30.0, vary=True),
                 wid1 = param(2.0, vary=True),
@@ -51,9 +51,6 @@ fitpars = group(off1 = param(0, vary=True),
                 amp2 = param(50.0, vary = True),
                 wid2 = param(expr='wid1*4'),
                 fit_iter=0)
-
-_sys.paramGroup = fitpars
-
 
 if show_plots:
     init = mymodel(xdat.x, fitpars.off1, fitpars.amp1, fitpars.cen1, fitpars.wid1) + \

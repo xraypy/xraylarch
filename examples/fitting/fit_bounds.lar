@@ -35,11 +35,11 @@ mdat.y = 2.2 + 12.0*gaussian(mdat.x, 11.0, 2.0) + \
          random.normal(size=len(mdat.x), scale=0.250)
 
 # create group for parameters
-params = group(off = param(-3.1,   max=10, vary=True),
-               amp = param(10.0,   max=17.8, min=0, vary=True),
-               cen = param(10.80, min=10., max=12., vary=True),
-               wid = param(1.0,  min=-0, max=9, vary=True),
-               fit_iter = 0)
+params = param_group(off = param(-3.1,   max=10, vary=True),
+                     amp = param(10.0,   max=17.8, min=0, vary=True),
+                     cen = param(10.80, min=10., max=12., vary=True),
+                     wid = param(1.0,  min=-0, max=9, vary=True),
+                     fit_iter = 0)
 
 init = params.off  + params.amp*gaussian(mdat.x, params.cen, params.wid)
 newplot(mdat.x, mdat.y)

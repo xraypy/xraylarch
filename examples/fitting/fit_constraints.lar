@@ -21,15 +21,15 @@ data = (21*gaussian(x,  8.1, 1.2) +
         random.normal(scale=0.23,  size=n) +
         x*0.5)
 
-pfit = group(amp_g = guess(10),
-              cen_g = guess(9),
-              wid_g = guess(1),
-              amp_tot = guess(20),
-              amp_l   = param(expr='amp_tot - amp_g'),
-              cen_l   = param(expr='1.5+cen_g'),
-              wid_l   = param(expr='2*wid_g'),
-              line_slope = guess(0),
-              line_off = guess(0.2))
+pfit = param_group(amp_g = guess(10),
+                   cen_g = guess(9),
+                   wid_g = guess(1),
+                   amp_tot = guess(20),
+                   amp_l   = param(expr='amp_tot - amp_g'),
+                   cen_l   = param(expr='1.5+cen_g'),
+                   wid_l   = param(expr='2*wid_g'),
+                   line_slope = guess(0),
+                   line_off = guess(0.2))
 
 myfit = minimize(resid, pfit,
                  args=(x,), kws={'data':data})

@@ -21,7 +21,7 @@ mdat.x = arange(201)/20.0
 mdat.y = -2.0 + 5.0*lorentzian(mdat.x, cen=3.0, sigma=0.5)
 mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=0.1)
 
-params = group()
+params = param_group()
 params.offset= guess(-1)
 params.amp   = guess(8.0)
 params.cen   = guess(3.50)

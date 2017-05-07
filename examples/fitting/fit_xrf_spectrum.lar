@@ -9,7 +9,7 @@ xrf_plot(mca)
 xrf_background(mca)
 xrf_calib_fitrois(mca)
 
-params = group()
+params = param_group()
 params.sig_slope  = guess(0.01, min=0)
 params.sig_offset = guess(0.04, min=0)
 init = mca.bgr

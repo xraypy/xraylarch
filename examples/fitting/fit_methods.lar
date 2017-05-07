@@ -19,7 +19,7 @@ def compare_fit(method):
         print "use one of: %s" % (', ').join(meths)
         return
     endif
-    
+
     n = 601
     xmin = 0.
     xmax = 20.0
@@ -27,39 +27,32 @@ def compare_fit(method):
 
     data = 27*gaussian(x, 9.3, 1.5) + random.normal(scale=0.35,  size=n) + x*.3 - 0.1
 
-    pfit = group(amp = guess(21),
-                 cen = guess(11),
-                 wid = guess(0.5),
-                 slope = guess(0),
-                 off = guess(0),
-                 iter = 0)
-    pfit2 = group(amp = guess(21),
-                  cen = guess(11),
-                  wid = guess(0.5),
-                  slope = guess(0),
-                  off = guess(0),
-                  iter=0)
+    pfit = param_group(amp = guess(21), cen = guess(11), wid = guess(0.5),
+                 slope = guess(0), off = guess(0), iter = 0)
+
+    pfit2 = param_group(amp = guess(21), cen = guess(11), wid = guess(0.5),
+                  slope = guess(0), off = guess(0), iter=0)
 
     t0 = time.time()
     myfit = minimize(resid, pfit2, args=(x,), kws={'data':data})
     print 'Fit time = %.3f sec' % (time.time()-t0)
     print fit_report(pfit2)
     newplot(x, data, linewidth=0, marker='+', color='blue', label='data', show_legend=True)
-    
+
     lfit = pfit2.amp * gaussian(x, pfit2.cen, pfit2.wid) + x*pfit2.slope + pfit2.off
     plot(x, lfit, linewidth=2, color='red', label=pfit2.fit_details.method)
-    
-    
-    
+
+
+
     t0 = time.time()
     myfit = minimize(resid, pfit, method=method,  args=(x,), kws={'data':data})
     print 'Fit time = %.3f sec' % (time.time()-t0)
     print fit_report(pfit)
 
-    
+
     sfit = pfit.amp * gaussian(x, pfit.cen, pfit.wid) + x*pfit.slope + pfit.off
     plot(x, sfit, linewidth=2, color='black', style='dashed', label=pfit.fit_details.method)
-    
+
     diff= 10000*(sfit-lfit)
     plot(x, diff, color='blue', label='diff x 10,000')
 
@@ -69,5 +62,5 @@ def compare_fit(method):
 #         count = count + 1
 #     endwhile
 #    plot(x, diff, color='blue', label='diff x 10^(%i)' % (count))
-    
+
 enddef

@@ -6,10 +6,10 @@ random.seed(1)
 dat = group(x = linspace(0, 10, 101))
 dat.y = 3*exp(-dat.x/2) - 5*exp(-dat.x/9) + random.normal(size=len(dat.x), scale=0.05)
 
-fitparams = group(a1 = guess(3.5),
-                  a2 = guess(-9.5),
-                  t1 = guess(3),
-                  t2 = guess(15))
+fitparams = param_group(a1 = guess(3.5),
+                        a2 = guess(-9.5),
+                        t1 = guess(3),
+                        t2 = guess(15))
 
 def fit_exp(pars, dat):
     model = pars.a1 * exp(-dat.x / pars.t1) + pars.a2 * exp(-dat.x / pars.t2)

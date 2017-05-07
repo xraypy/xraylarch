@@ -14,7 +14,7 @@ mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=1.75)
 
 ######
 print '# Version 1: use minimize() -- most general, overkill for linear fit'
-params = group(slope = guess(-1),  intercept = guess(0))
+params = param_group(slope = guess(-1),  intercept = guess(0))
 params.iter = 0
 model = mdat.y + resid(params, mdat)
 newplot(mdat.x, mdat.y)
