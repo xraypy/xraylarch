@@ -1,7 +1,7 @@
 
 from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, pearson7,
                          wofz, lognormal, gammaln, breit_wigner,
-                         damped_oscillator, exgaussian, donaich,
+                         damped_oscillator, expgaussian, donaich,
                          skewed_voigt, students_t, logistic, erf, erfc)
 
 # from .mathutils import (as_ndarray, index_nearest, index_of, realimag,

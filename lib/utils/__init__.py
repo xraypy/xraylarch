@@ -14,5 +14,5 @@ from .mathutils import (linregress, polyfit, realimag, as_ndarray,
 from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          pearson7, lognormal, gammaln,
                          breit_wigner, damped_oscillator,
-                         exgaussian, donaich, skewed_voigt,
+                         expgaussian, donaich, skewed_voigt,
                          students_t, logistic, erf, erfc, wofz)
