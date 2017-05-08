@@ -6,14 +6,14 @@ def make_rect_data(x, noise_scale=0.01):
     x0 = 30
     dx = 7
     sig = dx*0.6
-    y = y + 68*gaussian(x, x0+0*dx,  1.2*sig)
-    y = y + 60*gaussian(x, x0+1*dx,  1.1*sig)
-    y = y + 71*gaussian(x, x0+2*dx,  sig)
-    y = y + 75*gaussian(x, x0+3*dx,  sig)
-    y = y + 70*gaussian(x, x0+4*dx,  sig)
-    y = y + 65*gaussian(x, x0+5*dx,  sig)
-    y = y + 72*gaussian(x, x0+6*dx,  sig)
-    y = y + 61*gaussian(x, x0+7*dx,  0.9*sig)
+    y = y + gaussian(x, amplitude=68, center=x0+0*dx, sigma=1.2*sig)
+    y = y + gaussian(x, amplitude=60, center=x0+1*dx, sigma=1.1*sig)
+    y = y + gaussian(x, amplitude=71, center=x0+2*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=75, center=x0+3*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=70, center=x0+4*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=65, center=x0+5*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=72, center=x0+6*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=61, center=x0+7*dx, sigma=0.9*sig)
     return y
 #enddef
 

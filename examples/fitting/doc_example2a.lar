@@ -14,8 +14,8 @@ dat.y = dat.norm[i1+1:i2+1]
 
 def make_model(pars, data, components=False):
     """make model of spectra: 2 peak functions, 1 erf function, offset"""
-    p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
-    p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
+    p1 = gaussian(data.e, pars.amp1, pars.cen1, pars.wid1)
+    p2 = gaussian(data.e, pars.amp2, pars.cen2, pars.wid2)
 
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
     sum = p1 + p2 + e1

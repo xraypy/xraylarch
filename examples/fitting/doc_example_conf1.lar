@@ -2,7 +2,7 @@
 # create mock data
 mdat = group()
 mdat.x = linspace(-10, 10, 201)
-mdat.y = 1.0 + 12.0 * gaussian(mdat.x, 1.5, 2.0) + \
+mdat.y = 1.0 + gaussian(mdat.x, 12.0, 1.5, 2.0) + \
          random.normal(size=len(mdat.x), scale=0.050)
 
 
@@ -14,7 +14,7 @@ params = param_group(off = guess(0),
 
 # define objective function for fit residual
 def myresid(p, data):
-    return data.y - (p.off + p.amp * gaussian(data.x, p.cen, p.wid))
+    return data.y - (p.off + gaussian(data.x, p.amp, p.cen, p.wid))
 #enddef
 
 # perform fit
