@@ -67,8 +67,8 @@ requirements are
   of squares of the residual.  These must be **parameters** (discussed
   below) that are held in a single **parameter group**.  This can either be
   simple Larch group or a specialized `ParameterGroup` (see
-  :ref:`param-constraints-label`).  With both options, the group can
-  contain non-parameter values as well as parameters.
+  :ref:`param-parm_group-label`).  With both options, the group can contain
+  non-parameter values as well as parameters.
 
   2. An **objective function** to calculate the residual array.  This
   will be a Larch function that takes the **parameter group** described
@@ -96,7 +96,7 @@ We'll jump in with a simple example fit to a line, with this script::
     dat.y = 1.0 + 2.5 * dat.x + random.normal(size=51, scale=1)
 
     # create a group of fit parameters
-    params = group(off = guess(0), slope = guess(0))
+    params = param_group(off = guess(0), slope = guess(0))
 
     init = params.off + params.slope * dat.x
 
@@ -111,7 +111,7 @@ We'll jump in with a simple example fit to a line, with this script::
     # create final model using best-fit values for the parameters.
     final = params.off + params.slope * dat.x
 
-Here `params` is the parameter group, with both `params.off` and
+Here `params` is the aarameter group, with both `params.off` and
 `params.slope` as Parameters that will be adjusted in the fit.  `fitresid`
 is the objective function that calculates and returns the residual array
 (data - model) from the values of the Parameters.  The :func:`minimize`

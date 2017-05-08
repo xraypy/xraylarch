@@ -78,22 +78,20 @@ the fitting class instance and result from `lmfit` are available.
 A typical result from :func:`fit_report` would look like this::
 
     larch> print fit_report(result)
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 501, 4, 497
-       nfev (func calls)   = 26
-       chi_square          = 30.650777
-       reduced chi_square  = 0.061672
-
+    [[Fit Statistics]]
+        # function evals   = 28
+        # data points      = 201
+        # variables        = 4
+        chi-square         = 0.50471
+        reduced chi-square = 0.002562
+        Akaike info crit   = -1195.4
+        Bayesian info crit = -1182.2
     [[Variables]]
-       amp            =  12.053707 +/- 0.383248 (init=  10.000000)
-       cen            =  10.943759 +/- 0.052711 (init=  10.800000)
-       off            =  2.209804 +/- 0.022001 (init= -3.100000)
-       wid            =  2.013217 +/- 0.052131 (init=  1.000000)
-
-    [[Correlations]]     (unreported correlations are <  0.100)
-       amp, off             = -0.864
-       amp, wid             =  0.812
-       off, wid             = -0.699
-    =======================================================
+        amp:   12.0312835 +/- 0.076725 (0.64%) (init= 5)
+        wid:   2.01663402 +/- 0.011920 (0.59%) (init= 1)
+        off:   0.99188155 +/- 0.005226 (0.53%) (init= 0)
+        cen:   1.49995279 +/- 0.010144 (0.68%) (init= 2)
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(amp, off)                  = -0.730
+        C(amp, wid)                  =  0.719
+        C(wid, off)                  = -0.525

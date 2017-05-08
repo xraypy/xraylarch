@@ -26,8 +26,8 @@ best approach.
 
 A simple objective function that models data as a line might look like this::
 
-    params = group(offset = param(0., vary=True),
-                   slope = param(200, min=0, vary=True))
+    params = param_group(offset = param(0., vary=True),
+                 	 slope = param(200, min=0, vary=True))
 
     def residual(pars, xdata=None, ydata=None):
         model = pars.offset + pars.slope * xdata

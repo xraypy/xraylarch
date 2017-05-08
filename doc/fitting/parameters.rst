@@ -162,8 +162,9 @@ and array methods. Some additional details are discussed below
 .. versionchanged:: 0.9.34
    `_sys.paramGroup` is no longer used, and `_sys.fiteval` is used instead.
 
+..  _param-param_group-label:
 
-:func:`param_group`: making a specialized Group for fitting constraints
+:func:`param_group`: creating a Parameter Group for fitting constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While the examples of constraint expressions above will work during a fit,
@@ -196,12 +197,14 @@ In addition, you can change the value of `params.amp1`, with the value of
 
 .. function:: param_group(**kws)
 
+    create and return a *Parameter Group* that uses `_sys.fiteval` for
+    constraint expression.
 
-    :param kws:  optional keyword/argument values
+    :param kws:  optional keyword/argument values for parameters
     :returns:    a new Parameter Group with working constraint expressions.
 
-    creates a special *Parameter Group* with a working evaluator for
-    constraint expressions.
+    The Parameter Group can contain non-Parameter values as well as fitting Parameters.
+
 
 For backward compatibility, a simple group containing parameters will work
 with fitting, but a :func:`param_group` is recommended for many cases.
