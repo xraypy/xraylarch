@@ -2111,7 +2111,7 @@ SPGRP_SYMM = {'1': {'1a': [['x', 'y', 'z']]},
 ## 168 - 194 : Hexagonal
 ## 195 - 230 : Cubic
 SPACEGROUPS = {1:['B1','C1','A1','F1','I1'],
-               2:['B-1','C-1','P-1','A-1','F-1','I-1','P1'],
+               2:['B-1','C-1','P-1','A-1','F-1','I-1','P1','P111'],
                3:['B121','C112','P2','A211','P112','P121','P211'],
                4:['B1211','C1121','P21','A2111','P1121','P1211','P2111'],
                5:['A121','B112','C2','A112','B211','C121','C211','F112','F121','F211','I112','I121','I211'],
@@ -2682,9 +2682,11 @@ def check_elemsym(atom):
         if atom.startswith('Wat'):
             match_list += ['H-H-O']
         elif atom.startswith('OH'):
-            match_list += ['H-O']        
+            match_list += ['H-O']
         elif atom.startswith('D'): ## this is a type in cif 01158,02658
             match_list += ['H']
+        elif atom.startswith('CH4'): ## this is a type in cif 04526
+            match_list += ['C-H-H-H-H']
         else:
             for e in elem_symbol:
                 if atom.startswith(e):
