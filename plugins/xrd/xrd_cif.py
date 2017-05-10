@@ -2531,6 +2531,7 @@ class CIFcls(object):
                 ## '_refine_ls_r_factor_all' : not sure what this is (kit)
 
         self.spacegroup()
+        
         self.wyckoff()
         self.check_atoms()
 
@@ -2577,7 +2578,7 @@ class CIFcls(object):
             self.symm_key = [str(self.symmetry.no)]
 
         ## cheating for now - just picks first in list
-        self.symm_key = self.symm_key[0]
+        self.symm_key = sorted(np.array(self.symm_key))[0]
 
         if self.atom.symm_wyckoff is None and self.atom.label is not None:
             self.atom.symm_wyckoff = []
@@ -2638,7 +2639,7 @@ class CIFcls(object):
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
             if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
-
+        
         ## removes zero value structure factors
         jj = F2hkl > 0.001
         ii = ii*jj
@@ -2666,9 +2667,6 @@ class CIFcls(object):
         self.LAP = self.correction_factor(self.twthhkl)
         
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
-        
-#         for i,row in enumerate(zip(self.hkl,self.qhkl,self.twthhkl,self.Ihkl)):
-#             print i,row
         
     def correction_factor(self,twth):
         ## calculates Lorentz and Polarization corrections
