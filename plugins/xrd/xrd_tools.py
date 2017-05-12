@@ -162,7 +162,7 @@ def lambda_from_E(E,E_units='keV',lambda_units='A'):
     elif lambda_units == 'nm':
         return (PLANCK_HC/E)*1e-4
     else:
-        return PLANCK_HC/E*1e3 # A
+        return PLANCK_HC/E*1e-3 # A
 
 def generate_hkl(hmax=10,kmax=10,lmax=10):
     hklall = np.mgrid[-hmax:hmax+1, -kmax:kmax+1, -lmax:lmax+1].reshape(3, -1).T

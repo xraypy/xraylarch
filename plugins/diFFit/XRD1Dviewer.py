@@ -8,6 +8,7 @@ import numpy as np
 import sys
 import time
 import re
+import math
 
 from threading import Thread
 from functools import partial
@@ -1645,20 +1646,21 @@ class Viewer1DXRD(wx.Panel):
     def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
     
         energy = self.getE()
+        wavelength = lambda_from_E(energy)
         
-        maxq = 6.0
-        minq = 0.2
+        minq,maxq = 0.2,6.0
         for i,data in enumerate(self.xy_plot):
             maxq = 1.05*np.max(data[0])
             minq = 0.95*np.min(data[0])
+            if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
 
         cif = create_cif(cifile=path)
-        cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=minq,q_max=maxq)
+        cif.structure_factors(wvlgth=wavelength,q_min=minq,q_max=maxq)
         qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
-        
+       
         if len(Iall) > 0:
             q    = qall
-            twth = twth_from_q(q,lambda_from_E(energy))
+            twth = twth_from_q(q,wavelength)
             d    = d_from_q(q)
             I    = Iall/np.max(Iall)*cifscale
         else:
