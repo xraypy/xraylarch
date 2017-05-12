@@ -2678,12 +2678,6 @@ class CIFcls(object):
         
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
         
-#         print '\n\ni,h,k,l,q,twth,I'
-#         for i,q in enumerate(self.qhkl):
-#             h,k,l=self.hkl[i]
-#             print i,h,k,l,q,twth_from_q(q,wvlgth),self.Ihkl[i]
-#         print '\n\n'
-        
     def correction_factor(self,twth):
         ## calculates Lorentz and Polarization corrections
         twth = np.radians(twth)
@@ -2693,7 +2687,6 @@ def check_elemsym(atom):
 
     match_list = []
     loops = 0
-#     print atom,
     while len(match_list) == 0:
         loops += 1
         if atom.startswith('Wat'):
@@ -2714,9 +2707,7 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
-#             print ' ---> ',atom
             return atom
-#     print ' ---> ',match_list[ai]
     return match_list[ai]
 
 
