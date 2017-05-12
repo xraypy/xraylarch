@@ -142,9 +142,10 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
+# class CIFTable(_BaseTable):
+#     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
 class CIFTable(_BaseTable):
-    (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
-
+    (amcsd_id, mineral_id, iuc_id, cif, qstr) = [None]*5
 
 class cifDB(object):
     '''
@@ -326,7 +327,8 @@ class cifDB(object):
                  Column('amcsd_id', Integer, primary_key=True),
                  Column('mineral_id', Integer),
                  Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
-                 Column('cif', String(25)) ## , nullable=True
+                 Column('cif', String(25)), ## , nullable=True
+                 Column('qstr',String(25))
                  )
         ###################################################
         ## Add all to file
@@ -471,7 +473,7 @@ class cifDB(object):
         cif.structure_factors(wvlgth=lambda_from_E(energy))
 
         ### WORKING RIGHT HERE... IN PROGRESS!!!
-        qstr = self.boolean_q_array(cif.qhkl)
+        qbool = self.boolean_q_array(cif.qhkl)
 
         peak_qid = []
         for i,qi in enumerate(cif.qhkl):
@@ -515,7 +517,8 @@ class cifDB(object):
         new_cif.execute(amcsd_id=cif.id_no,
                              mineral_id=int(mineral_id),
                              iuc_id=iuc_id,
-                             cif=cifstr)    
+                             cif=cifstr,
+                             qstr=json.dumps(qbool.tolist(),default=str))    
 
         ## Find composition (loop over all elements)
         for element in set(cif.atom.label):
@@ -946,15 +949,32 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
+    def return_q_matches(self):
+    
+        q_results = self.query(self.ciftbl.c.qstr).all()
+        q_all = [json.loads(qrow[0]) for qrow in q_results]
+
+        id_results = self.query(self.ciftbl.c.amcsd_id).all()
+        id_all = [id[0] for id in id_results]
+        
+        return id_all,q_all
+    
+#         tab = ChantlerTable
+#         row = self.query(tab.energy).all()
+#         E = [json.loads(r[0]) for r in row]
+
+
     def boolean_q_array(self,q):
     
-        bool_q = np.zeros(len(QAXIS))
+        bool_q = np.zeros(len(QAXIS),dtype=int)
         for qn in q:
             i = np.abs(QAXIS-qn).argmin()
             bool_q[i] = 1
-#         return json.dumps(bool_q)
-        return json.dumps(encode4js(bool_q),encoding='UTF-8',default=str)
-     
+        return bool_q
+
+##################################################################################
+
+
     def search_for_element(self,element,id_no=True,verbose=False):
         '''
         searches elements for match in symbol, name, or atomic number; match must be 
