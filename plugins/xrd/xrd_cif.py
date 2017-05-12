@@ -2416,13 +2416,19 @@ class CIFcls(object):
 
             
     def read_cifile(self,cifile,verbose=False):
-    
+
+        if not HAS_CifFile:
+            print('Missing required package(s) for this function:')
+            print('Have CifFile? %r' % HAS_CifFile)
+            return
+
         if cifile is not None and os.path.exists(cifile):
 
             if verbose:
                 print( '\n=== Reading file: %s\n' % cifile)
 
             self.cifile = cifile
+           
             cf = CifFile.ReadCif(cifile)
             key = cf.keys()[0]
 
