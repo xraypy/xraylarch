@@ -1780,7 +1780,7 @@ class Viewer1DXRD(wx.Panel):
 #             pass
 #             
 #         if rmdata:
-#             print 'EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no]
+#             print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
 # 
 #             ## removing name from list works... do not activate till rest is working
 #             ## mkak 2016.11.10
@@ -1788,7 +1788,7 @@ class Viewer1DXRD(wx.Panel):
 #             self.ch_data.Set(self.data_name)
 #             
 #             if len(self.data_name) < 1:
-#                 print 'HERE: remove all buttons that need data to exist'
+#                 print('HERE: remove all buttons that need data to exist')
 
     def onSELECT(self,event=None):
 

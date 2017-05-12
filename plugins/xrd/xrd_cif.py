@@ -2642,9 +2642,9 @@ class CIFcls(object):
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
                     f0 = xraydb.f0(el, qhkl[i]/(4*math.pi)) # xraydb.f0(el, 1/(2*dhkl[i]))
-                    if f0 is None:
-                        print 'eventually remove...'
-                        print 'f0',f0,type(f0),el,qhkl[i]/(4*math.pi)
+#                     if f0 is None:
+#                         print('eventually remove...')
+#                         print('f0',f0,type(f0),el,qhkl[i]/(4*math.pi))
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
@@ -2678,12 +2678,6 @@ class CIFcls(object):
         
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
         
-#         print '\n\ni,h,k,l,q,twth,I'
-#         for i,q in enumerate(self.qhkl):
-#             h,k,l=self.hkl[i]
-#             print i,h,k,l,q,twth_from_q(q,wvlgth),self.Ihkl[i]
-#         print '\n\n'
-        
     def correction_factor(self,twth):
         ## calculates Lorentz and Polarization corrections
         twth = np.radians(twth)
@@ -2693,7 +2687,6 @@ def check_elemsym(atom):
 
     match_list = []
     loops = 0
-#     print atom,
     while len(match_list) == 0:
         loops += 1
         if atom.startswith('Wat'):
@@ -2714,9 +2707,7 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
-#             print ' ---> ',atom
             return atom
-#     print ' ---> ',match_list[ai]
     return match_list[ai]
 
 
