@@ -476,8 +476,7 @@ class cifDB(object):
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
             if url:
-                print('AMCSD %i already exists in database %s: %s' % 
-                     (amcsd_id,self.dbname,cifile))
+                print('AMCSD %i already exists in database.\n' % amcsd_id)
                 if file is not None:
                     file.write('AMCSD %i already exists in database %s: %s\n' % 
                          (amcsd_id,self.dbname,cifile))
@@ -620,7 +619,7 @@ class cifDB(object):
                 print('File : %s' % os.path.split(cifile)[-1])
 
     def url_to_cif(self,verbose=False,savecif=False,trackerr=False,
-                     addDB=True,url=None,all=False):
+                     addDB=True,url=None,all=False,minval=None):
     
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
@@ -633,9 +632,11 @@ class cifDB(object):
         
         ## Defines url range for searching and adding to cif database
         if all == True:
-            iindex = range(99999)
+            iindex = range(99999) ## trolls whole database online
+        elif minval is not None:
+            iindex = np.arange(minval,99999) ## starts at given min and counts up
         else:
-            iindex = np.arange(13600,13700)
+            iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
         
         for i in iindex:
             url_to_scrape = url % i

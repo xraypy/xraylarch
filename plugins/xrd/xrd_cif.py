@@ -2461,12 +2461,15 @@ class CIFcls(object):
                         if atmlbl not in elem_symbol:
                             if '-' in atmlbl:
                                 for e,echatm in enumerate(atmlbl.split('-')):
-                                    addatm = check_elemsym(echatm)
-                                    if e == 0:
-                                        newlbl = addatm
-                                    else:
-                                        newlbl = '%s-%s' % (newlbl,addatm)
-                                atmlbl = newlbl
+                                    try:
+                                        junk = int(echatm) ## skip this - not an element
+                                    except:
+                                        addatm = check_elemsym(echatm)
+                                        if e == 0:
+                                            newlbl = addatm
+                                        else:
+                                            newlbl = '%s-%s' % (newlbl,addatm)
+                                        atmlbl = newlbl
                             else:
                                 atmlbl = check_elemsym(atmlbl)
                             atoms[a] = atmlbl
@@ -2684,6 +2687,7 @@ def check_elemsym(atom):
 
     match_list = []
     loops = 0
+#     print atom,
     while len(match_list) == 0:
         loops += 1
         if atom.startswith('Wat'):
@@ -2704,7 +2708,9 @@ def check_elemsym(atom):
         if len(match_list) == 0:
             atom = re.sub(r'([0-9])', r'', atom).title()
         if loops > 2:
+#             print ' ---> ',atom
             return atom
+#     print ' ---> ',match_list[ai]
     return match_list[ai]
 
 
