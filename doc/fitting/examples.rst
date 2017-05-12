@@ -65,26 +65,24 @@ some detail.
 
 The printed output from ``fit_report(params)`` will look like this::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 201, 4, 197
-       nfev (func calls)   = 26
-       chi_square          = 0.498818
-       reduced chi_square  = 0.002532
 
+    [[Fit Statistics]]
+        # function evals   = 28
+        # data points      = 201
+        # variables        = 4
+        chi-square         = 0.53784
+        reduced chi-square = 0.0027302
+        Akaike info crit   = -1182.6
+        Bayesian info crit = -1169.4
     [[Variables]]
-       amp            =  12.102080 +/- 0.122022 (init=  5.000000)
-       cen            =  1.476801 +/- 0.016932 (init=  2.000000)
-       off            =  0.996424 +/- 0.006977 (init=  0.000000)
-       wid            =  2.022030 +/- 0.016608 (init=  1.000000)
-
-    [[Correlations]]     (unreported correlations are <  0.100)
-       amp, off             = -0.861
-       amp, wid             =  0.808
-       off, wid             = -0.692
-    =======================================================
-
+        amp:   11.9259429 +/- 0.078146 (0.66%) (init= 5)
+        wid:   1.99121482 +/- 0.012135 (0.61%) (init= 1)
+        off:   1.00495225 +/- 0.005356 (0.53%) (init= 0)
+        cen:   1.50726422 +/- 0.010365 (0.69%) (init= 2)
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(amp, off)                  = -0.726
+        C(amp, wid)                  =  0.717
+        C(wid, off)                  = -0.520
 
 And the plot of data and fit will look like this:
 
@@ -130,27 +128,25 @@ so they can't go too far astray.
 
 The fit gives a report (ignoring correlations) like this::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 51, 10, 41
-       nfev (func calls)   = 214
-       chi_square          = 0.001194
-       reduced chi_square  = 0.000029
-
+    [[Fit Statistics]]
+        # function evals   = 170
+        # data points      = 51
+        # variables        = 10
+        chi-square         = 0.0012762
+        reduced chi-square = 3.1126e-05
+        Akaike info crit   = -520.38
+        Bayesian info crit = -501.06
     [[Variables]]
-       amp1           =  0.078636 +/- 0.015419 (init=  0.250000)
-       amp2           =  0.406155 +/- 0.044061 (init=  0.250000)
-       cen1           =  7113.212401 +/- 0.074142 (init=  7113.250000)
-       cen2           =  7115.571111 +/- 0.297302 (init=  7116.000000)
-       erf_amp        =  0.375339 +/- 0.008897 (init=  0.500000)
-       erf_cen        =  7122.242846 +/- 0.075486 (init=  7123.500000)
-       erf_wid        =  0.289039 +/- 0.012431 (init=  0.500000)
-       off            =  0.386845 +/- 0.009081 (init=  0.500000)
-       wid1           =  0.489783 +/- 0.068186 (init=  0.600000)
-       wid2           =  1.877520 +/- 0.166384 (init=  1.200000)
-    =======================================================
-
+        off:       0.39565509 +/- 0.010346 (2.62%) (init= 0.5)
+        cen2:      7116.46195 +/- 0.279419 (0.00%) (init= 7116)
+        cen1:      7113.28403 +/- 0.143034 (0.00%) (init= 7113.25)
+        erf_amp:   0.38223607 +/- 0.010433 (2.73%) (init= 0.5)
+        erf_wid:   0.27474480 +/- 0.011462 (4.17%) (init= 0.5)
+        wid1:      1.07507112 +/- 0.105954 (9.86%) (init= 0.6)
+        wid2:      1.58457992 +/- 0.307342 (19.40%) (init= 1.2)
+        amp2:      0.21393220 +/- 0.048193 (22.53%) (init= 0.25)
+        erf_cen:   7122.29627 +/- 0.097868 (0.00%) (init= 7123.5)
+        amp1:      0.19742004 +/- 0.037564 (19.03%) (init= 0.25)
 
 and the plots of the resulting best-fit and components look like these:
 
@@ -162,7 +158,7 @@ and the plots of the resulting best-fit and components look like these:
     :target: ../_images/fit_example2a1.png
     :width: 100%
     :align: center
-  
+
     fit with residual.
 
 .. _fig-fit2b:
@@ -178,11 +174,11 @@ and the plots of the resulting best-fit and components look like these:
     :width: 0.45
     :alt: a fig
     :label: fig-fit2
-    
-    Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions 
+
+    Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
     and an Error function.
 
-and we see the fit is pretty good.  
+and we see the fit is pretty good.
 
 Looking more closely, however, there is a hint in the data and the residual
 that we may have missed a third peak at around E = 7122 eV.  We can add
@@ -256,7 +252,7 @@ moved significantly, as can be seen in the plots for this fit:
     :target: ../_images/fit_example2b1.png
     :width: 100%
     :align: center
-  
+
     fit with residual.
 
 .. _fig-fit3b:
@@ -271,8 +267,8 @@ moved significantly, as can be seen in the plots for this fit:
 .. subfigend::
     :width: 0.45
     :label: fig-fit3
-    
-    Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions 
+
+    Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
     and an Error function.
 
 
@@ -324,7 +320,7 @@ For completeness,  the plots from this fit look like this:
     :target: ../_images/fit_example2c1.png
     :width: 100%
     :align: center
-  
+
     fit with residual.
 
 .. _fig-fit4b:
@@ -339,8 +335,8 @@ For completeness,  the plots from this fit look like this:
 .. subfigend::
     :width: 0.45
     :label: fig-fit4
-    
-    Fit to Fe K-edge pre-edge and edge with 3 Voigt functions 
+
+    Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
     and an Error function.
 
 
@@ -393,7 +389,7 @@ important component.
     :target: ../_images/fit_example3a.png
     :width: 100%
     :align: center
-  
+
     components used for linear combinations.
 
 .. _fig-fit5b:
@@ -408,7 +404,7 @@ important component.
 .. subfigend::
     :width: 0.45
     :label: fig-fit5
-    
+
     Linear Combination Fit of gold XANES in cyanobacteria, after
     :cite:ts:`Lengke2006`.
 
@@ -531,7 +527,7 @@ and the output plots for the best model look like this:
     :target: ../_images/fit_example3c1.png
     :width: 100%
     :align: center
-  
+
     linear combination fit and residual.
 
 .. _fig-fit6b:
@@ -546,7 +542,7 @@ and the output plots for the best model look like this:
 .. subfigend::
     :width: 0.45
     :label: fig-fit6
-    
+
     Linear Combination XANES Fit of gold components in cyanobacteria with
     species *s1*, *s2*, and *s5*.
 
@@ -635,7 +631,7 @@ The plots resulting from both sets of Parameters are shown:
     :target: ../_images/fit_example3d1.png
     :width: 100%
     :align: center
-  
+
     linear combination fit and residual.
 
 .. _fig-fit7b:
@@ -650,7 +646,7 @@ The plots resulting from both sets of Parameters are shown:
 .. subfigend::
     :width: 0.45
     :label: fig-fit7
-    
+
     Linear Combination XANES Fit of gold components in cyanobacteria
     with species *s1*, *s2*, *s3*, and *s6*.
 
@@ -663,7 +659,7 @@ The plots resulting from both sets of Parameters are shown:
     :target: ../_images/fit_example3e1.png
     :width: 100%
     :align: center
-  
+
     linear combination fit and residual.
 
 .. _fig-fit8b:
@@ -678,7 +674,7 @@ The plots resulting from both sets of Parameters are shown:
 .. subfigend::
     :width: 0.45
     :label: fig-fit8
-    
+
     Linear Combination XANES Fit of gold components in cyanobacteria
     with species *s1*, *s2*, *s3*, and *s5*.
 
