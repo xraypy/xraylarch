@@ -2508,7 +2508,8 @@ class CIFcls(object):
                 elif k == '_symmetry_int_tables_number':
                     self.symmetry.no = cf[key][k]
                 elif k == '_symmetry_space_group_name_h-m':
-                    self.symmetry.name = cf[key][k]
+                    self.symmetry.name = re.sub(' ','',cf[key][k])
+                    #self.symmetry.name = cf[key][k]
                 elif k == '_chemical_name_structure_type':
                     self.symmetry.type = cf[key][k]
                 elif k == '_space_group_symop_operation_xyz' or k == '_symmetry_equiv_pos_as_xyz':

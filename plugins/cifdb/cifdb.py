@@ -4,20 +4,14 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 '''
 
 import os
-import re
 import requests
-
-try:
-    from cStringIO import StringIO #python 2
-except:
-    from io import StringIO #python 3
 
 import numpy as np
 
 from itertools import groupby
 
 import larch
-from larch_plugins.xrd import generate_hkl,peaklocater,create_cif,SPACEGROUPS,lambda_from_E
+from larch_plugins.xrd import peaklocater,create_cif,SPACEGROUPS,lambda_from_E,CIFcls
 
 from sqlalchemy import (create_engine,MetaData,
                         Table,Column,Integer,String,Unicode,
@@ -28,13 +22,6 @@ from sqlalchemy import (create_engine,MetaData,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,mapper,clear_mappers,relationship
 from sqlalchemy.pool import SingletonThreadPool
-
-HAS_CifFile = False
-try:
-    import CifFile
-    HAS_CifFile = True
-except ImportError:
-    pass
 
 SYMMETRIES = ['triclinic',
               'monoclinic',
@@ -453,78 +440,32 @@ class cifDB(object):
                  'q_id','amcsd_id' to 'qpeak'
         '''
 
-        if not HAS_CifFile:
-            print('Missing required package(s) for this function:')
-            print('Have CifFile? %r' % HAS_CifFile)
-            return
-            
-        cf = CifFile.ReadCif(cifile)
-
-        key = cf.keys()[0]
-
-        ## Read icsd_id
-        amcsd_id = None
-        try:
-            amcsd_id = int(cf[key][u'_database_code_icsd'])
-        except:
-            amcsd_id = int(cf[key][u'_database_code_amcsd'])
-
-
-        ## check for amcsd in file already
-        ## Find amcsd_id in database
-        self.ciftbl = Table('ciftbl', self.metadata)
-        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
-        for row in search_cif.execute():
-            if url:
-                print('AMCSD %i already exists in database.\n' % amcsd_id)
-                if file is not None:
-                    file.write('AMCSD %i already exists in database %s: %s\n' % 
-                         (amcsd_id,self.dbname,cifile))
-            else:
-                print('%s: AMCSD %i already exists in database %s.' % 
-                     (os.path.split(cifile)[-1],amcsd_id,self.dbname))
-                if file is not None:
-                    file.write('%s: AMCSD %i already exists in database %s.\n' % 
-                         (os.path.split(cifile)[-1],amcsd_id,self.dbname))
-            return
-
-        ## Read elements
-        ALLelements = cf[key][u'_chemical_formula_sum'].split()
-        for e0,element in enumerate(ALLelements):
-            element= re.sub('[(){}<>.]', '', element)
-            element = re.sub(r'([0-9])', r'', element)
-            ALLelements[e0] = element
-
-        ## Read mineral name
-        mineral_name = None
-        try:
-            mineral_name = cf[key][u'_chemical_name_mineral']
-        except:
-            try:
-                mineral_name = cf[key][u'_amcsd_formula_title']
-            except:
-                pass
-            pass
-
-        ## Read Hermann-Mauguin/space group
-        hm_notation = cf[key][u'_symmetry_space_group_name_h-m']
-
-        ## Read author names    
-        authors = cf[key][u'_publ_author_name']
-        for i,author in enumerate(authors):
-            author = re.sub(r"[.]", r"", author)
-            authors[i] = re.sub(r"[,]", r"", author)
-
-
-
         if url:
             cifstr = requests.get(cifile).text
         else:
             with open(cifile,'r') as file:
                 cifstr = str(file.read())
-
-        energy = 8048 # units eV
         cif = create_cif(cifstr=cifstr)
+
+        ## check for amcsd in file already
+        ## Find amcsd_id in database
+        self.ciftbl = Table('ciftbl', self.metadata)
+        search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == cif.id_no)
+        for row in search_cif.execute():
+            if url:
+                print('AMCSD %i already exists in database.\n' % cif.id_no)
+                if file is not None:
+                    file.write('AMCSD %i already exists in database %s: %s\n' % 
+                         (cif.id_no,self.dbname,cifile))
+            else:
+                print('%s: AMCSD %i already exists in database %s.' % 
+                     (os.path.split(cifile)[-1],cif.id_no,self.dbname))
+                if file is not None:
+                    file.write('%s: AMCSD %i already exists in database %s.\n' % 
+                         (os.path.split(cifile)[-1],cif.id_no,self.dbname))
+            return
+
+        energy = 19000 ## 8048 # units eV
         cif.structure_factors(wvlgth=lambda_from_E(energy))
 
         peak_qid = []
@@ -550,41 +491,41 @@ class cifDB(object):
 
         ## Find mineral_name
         match = False
-        search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == mineral_name)
+        search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
         for row in search_mineral.execute():
             mineral_id = row.mineral_id
             match = True
         if match is False:
-            def_name.execute(mineral_name=mineral_name)
-            search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == mineral_name)
+            def_name.execute(mineral_name=cif.label)
+            search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
 
         ## Find symmetry_name
-        search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == re.sub(' ','',hm_notation))
+        search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == cif.symmetry.name)
         for row in search_spgrp.execute():
             iuc_id = row.iuc_id
 
         ## Save CIF entry into database
-        new_cif.execute(amcsd_id=int(amcsd_id),
+        new_cif.execute(amcsd_id=cif.id_no,
                              mineral_id=int(mineral_id),
                              iuc_id=iuc_id,
                              cif=cifstr)    
 
         ## Find composition (loop over all elements)
-        for element in ALLelements:
+        for element in set(cif.atom.label):
             search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
             for row in search_elements.execute():
                 z = row.z
             try:
-                add_comp.execute(z=z,amcsd_id=int(amcsd_id))
+                add_comp.execute(z=z,amcsd_id=cif.id_no)
             except:
-                print('could not find element: %s (amcsd: %i)' % (element,int(amcsd_id)))
+                print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
                 pass
 
 
         ## Find author_name
-        for author_name in authors:
+        for author_name in cif.publication.author:
             match = False
             search_author = self.authtbl.select(self.authtbl.c.author_name == author_name)
             for row in search_author.execute():
@@ -598,23 +539,23 @@ class cifDB(object):
                     match = True
             if match == True:
                 add_auth.execute(author_id=author_id,
-                                   amcsd_id=int(amcsd_id))
+                                   amcsd_id=cif.id_no)
 
 
         for calc_q_id in peak_qid:
-            add_q.execute(q_id=calc_q_id,amcsd_id=int(amcsd_id))
+            add_q.execute(q_id=calc_q_id,amcsd_id=cif.id_no)
             
 
     #     ## not ready for defined categories
     #     cif_category.execute(category_id='none',
-    #                          amcsd_id=int(amcsd_id))
+    #                          amcsd_id=cif.id_no)
 
         if url:
             if verbose:
-                self.print_amcsd_info(amcsd_id,no_qpeaks=len(peak_qid))
+                self.print_amcsd_info(cif.id_no,no_qpeaks=len(peak_qid))
         else:
             if verbose:
-                self.print_amcsd_info(amcsd_id,no_qpeaks=len(peak_qid),cifile=cifile)
+                self.print_amcsd_info(cif.id_no,no_qpeaks=len(peak_qid),cifile=cifile)
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
@@ -629,6 +570,8 @@ class cifDB(object):
             dir = os.getcwd()
             ftrack = open('%s/trouble_cif.txt' % dir,'a+')
             ftrack.write('using URL : %s\n\n' % url)
+        else:
+            ftrack=None
         
         ## Defines url range for searching and adding to cif database
         if all == True:
@@ -1271,40 +1214,6 @@ class SearchCIFdb(object):
                 s = '%s)' % s
         return s
                 
-    def read_chemistry(self,s,clear=True):
-       
-        if clear:
-            self.elem_incl,self.elem_excl = [],[]
-        chem_incl,chem_excl = [],[]
-
-        chemstr = re.sub('[( )]','',s)
-        ii = -1
-        for i,s in enumerate(chemstr):
-            if s == '-':
-                ii = i
-        if ii > 0:
-            chem_incl = chemstr[0:ii].split(',')
-            if len(chemstr)-ii == 1:
-                for elem in self.allelem:
-                    if elem not in chem_incl:
-                        chem_excl += [elem]
-            elif ii < len(chemstr)-1:
-                chem_excl = chemstr[ii+1:].split(',')
-        else:
-            chem_incl = chemstr.split(',')
-
-        for elem in chem_incl:
-            elem = capitalize_string(elem)
-            if elem in self.allelem and elem not in self.elem_incl:
-                self.elem_incl += [elem]
-                if elem in self.elem_excl:
-                    j = self.elem_excl.index(elem)
-                    self.elem_excl.pop(j)
-        for elem in chem_excl:
-            elem = capitalize_string(elem)
-            if elem in self.allelem and elem not in self.elem_excl and elem not in self.elem_incl:
-                self.elem_excl += [elem]
-
     def print_geometry(self,unit='A'):
 
         s = ''
