@@ -11,7 +11,10 @@ import numpy as np
 from itertools import groupby
 
 import larch
-from larch_plugins.xrd import peaklocater,create_cif,SPACEGROUPS,lambda_from_E,CIFcls
+from larch_plugins.xrd import peaklocater,create_cif,SPACEGROUPS,lambda_from_E
+
+import json
+from larch.utils.jsonutils import encode4js, decode4js
 
 from sqlalchemy import (create_engine,MetaData,
                         Table,Column,Integer,String,Unicode,
@@ -78,7 +81,7 @@ CATEGORIES = ['soil',
 QMIN = 0.2
 QMAX = 10.0
 QSTEP = 0.01
-QWIDTH = 0.05
+QAXIS = np.arange(QMIN,QMAX+QSTEP,QSTEP)
 
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
@@ -385,8 +388,7 @@ class cifDB(object):
             def_cat.execute(category_name=cat)
 
         ## Adds qrange
-        qrange = np.arange(QMIN,QMAX+QSTEP,QSTEP)
-        for q in qrange:
+        for q in QAXIS:
             def_q.execute(q=float('%0.2f' % q))
 
         ## Adds all space groups
@@ -468,9 +470,12 @@ class cifDB(object):
         energy = 19000 ## 8048 # units eV
         cif.structure_factors(wvlgth=lambda_from_E(energy))
 
+        ### WORKING RIGHT HERE... IN PROGRESS!!!
+        qstr = self.boolean_q_array(cif.qhkl)
+
         peak_qid = []
         for i,qi in enumerate(cif.qhkl):
-            qid = self.search_for_q(qi)
+            qid = (np.abs(QAXIS-qi).argmin())+1
             if qid not in peak_qid:
                 peak_qid.append(qid)
 
@@ -799,8 +804,7 @@ class cifDB(object):
         
         if len(include) > 0:
             for q in include:
-                q  = round_value(q,base=QSTEP)
-                id = self.search_for_q(q)
+                id = (np.abs(QAXIS-q).argmin())+1
                 if id is not None and id not in id_incld:
                     id_incld += [id]
                         
@@ -942,32 +946,21 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
-
-    def search_for_q(self,q,qstep=None):
-        '''
-        searches q-reference table for match q value.
-        '''
-        if qstep is None:
-            q1 = self.query(self.qtbl).filter(self.qtbl.c.q_id == 1)
-            q2 = self.query(self.qtbl).filter(self.qtbl.c.q_id == 2)
-            for qi,qj in zip(q1.all(),q2.all()):
-                qstep = float(qj.q)-float(qi.q)
-            
-        q = round_value(q,base=qstep) 
-     
-        qrow = self.query(self.qtbl).filter(self.qtbl.c.q == q)
-        if len(qrow.all()) == 1:
-            for q0 in qrow.all():
-                q_id = q0.q_id
-                return q_id
-        return
+    def boolean_q_array(self,q):
+    
+        bool_q = np.zeros(len(QAXIS))
+        for qn in q:
+            i = np.abs(QAXIS-qn).argmin()
+            bool_q[i] = 1
+#         return json.dumps(bool_q)
+        return json.dumps(encode4js(bool_q),encoding='UTF-8',default=str)
      
     def search_for_element(self,element,id_no=True,verbose=False):
         '''
         searches elements for match in symbol, name, or atomic number; match must be 
         exact.
         '''
-        element = capitalize_string(element)
+        element = element.title()
         elemrow = self.query(self.elemtbl)\
                       .filter(or_(self.elemtbl.c.z == element,
                                   self.elemtbl.c.element_symbol == element,
@@ -1080,16 +1073,6 @@ class cifDB(object):
         
         return sorted(names)
 
-def round_value(x, prec=2, base=0.05):
-  return round(base * round(float(x)/base),prec)
-
-def capitalize_string(s):
-
-    try:
-        return s[0].upper() + s[1:].lower()
-    except:
-        return s
-    
 def filter_int_and_str(s,exact=False):
 
         try: i = int(s)
@@ -1275,19 +1258,17 @@ def match_database(fracq=0.75, pk_wid=0.05, q=None, ipks=None,
     minq = np.min(q)
     maxq = np.max(q)
 
-    qstep = QSTEP ## these quantities come from cifdb.py
-
     peaks = []
     p_ids = []
 
     for pk_q in q_pks:
-        pk_id = cifdatabase.search_for_q(pk_q)
+        pk_id = (np.abs(QAXIS-pk_q).argmin())+1
 
         ## performs peak broadening here
         if pk_wid > 0:
-            st = int(pk_wid/qstep/2)
+            st = int(pk_wid/QSTEP/2)
             for p in np.arange(-1*st,st+1):
-                peaks += [pk_q+p*qstep]
+                peaks += [pk_q+p*QSTEP]
                 p_ids += [pk_id+p]
         else:
             peaks += [pk_q]
