@@ -51,16 +51,16 @@ def peakfinder(y, regions=20, gapthrsh=5):
     ttlpnts = len(y)
     widths = np.arange(1,int(ttlpnts/regions))
 
-    import peakutils
-    peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=10)
-    print 'peakutils.indexes'
+#     import peakutils
+#     peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=10)
+#     print 'peakutils.indexes'
 #     peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=100)
-#     peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
+    peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
 #     print 'signal.find_peaks_cwt'
-    print 
-    print 'peaks'
-    print peak_indices
-    print
+#     print 
+#     print 'peaks'
+#     print peak_indices
+#     print
 # # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 
