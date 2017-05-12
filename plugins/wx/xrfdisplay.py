@@ -288,6 +288,7 @@ class XRFDisplayFrame(wx.Frame):
         pan = PlotPanel(self, fontsize=7,
                         axisbg='#FEFEFE',
                         # axissize=[0.01, 0.11, 0.97, 0.87],
+                        with_data_process=False,
                         output_title='test.xrf',
                         messenger=self.write_message)
         pan.conf.grid_color='#E5E5C0'
@@ -1039,11 +1040,12 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
             self.panel.conf.show_grid = False
 
-        if init:
+        xview_range = self.panel.axes.get_axes().get_xlim()
+
+        if init or xview_range == (0.0, 1.0):
             self.xview_range = (min(self.mca.energy), max(self.mca.energy))
         else:
-            self.xview_range = self.panel.axes.get_axes().get_xlim()
-
+            self.xview_range = xview_range
 
         atitles = []
         if self.mca is not None:
@@ -1085,7 +1087,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
         mca = self.mca
         panel = self.panel
-        panel.canvas.Freeze()
+
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
@@ -1101,6 +1103,8 @@ class XRFDisplayFrame(wx.Frame):
         ydat = 1.0*y[:] + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
         kwargs['ymin'] = 0.9
+        kwargs['xmax'] = max(self.xdata)
+        kwargs['xmin'] = min(self.xdata)
         if self.xview_range is not None:
             kwargs['xmin'] = self.xview_range[0]
             kwargs['xmax'] = self.xview_range[1]
@@ -1109,7 +1113,7 @@ class XRFDisplayFrame(wx.Frame):
             xnpts = 1.0/len(self.mca.energy)
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
-            yroi = -1*np.ones(len(y))
+            yroi = -1.0*np.ones(len(y))
             for r in mca.rois:
                 if (r.left, r.right) in ((0, 0), (-1, -1)):
                     continue
@@ -1119,10 +1123,8 @@ class XRFDisplayFrame(wx.Frame):
                 ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
-
         panel.plot(x, ydat, label='spectra',  **kwargs)
 
-        self.unzoom_all()
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
@@ -1130,11 +1132,7 @@ class XRFDisplayFrame(wx.Frame):
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
 
-        a, b, c, d = self._getlims()
-        self.panel.axes.set_xlim((c, d))
         self.draw()
-
-        panel.canvas.Thaw()
         panel.canvas.Refresh()
 
     def update_mca(self, counts, energy=None, with_rois=True,
@@ -1213,7 +1211,7 @@ class XRFDisplayFrame(wx.Frame):
         fnew= None
         if dlg.ShowModal() == wx.ID_OK:
             fnew = os.path.abspath(dlg.GetPath())
-        dlg.Destroy()
+        dlg.Destro()
 
         if fnew is None:
             return
