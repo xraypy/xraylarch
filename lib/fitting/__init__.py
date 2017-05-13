@@ -14,6 +14,7 @@ from lmfit import (Parameter, Parameters, Minimizer,
                    correlated_values)
 
 from lmfit.minimizer import eval_stderr, MinimizerResult
+from lmfit.model import ModelResult
 from lmfit.confidence import f_compare
 
 def isParameter(x):
@@ -204,15 +205,14 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     out = Group(name='minimize results', fitter=fitter, fit_details=result,
                 chi_square=result.chisqr, chi_reduced=result.redchi)
 
-
-    for attr in ('aic', 'bic', 'covar', 'rfactor', 'params', 'nvarys',
+    for attr in ('aic', 'bic', 'covar', 'params', 'nvarys',
                  'nfree', 'ndata', 'var_names', 'nfev', 'success',
                  'errorbars', 'message', 'lmdif_message', 'residual'):
         setattr(out, attr, getattr(result, attr, None))
     return out
 
 def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
-               sort_pars=False, _larch=None, **kws):
+               sort_pars=True, _larch=None, **kws):
     """generate a report of fitting results
     wrapper around lmfit.fit_report
 
@@ -231,7 +231,7 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
        Smallest correlation in absolute value to show (default is 0.1).
     sort_pars : bool or callable, optional
        Whether to show parameter names sorted in alphanumerical order. If
-       False (default), then the parameters will be listed in the order they
+       False, then the parameters will be listed in the order they
        were added to the Parameters dictionary. If callable, then this (one
        argument) function is used to extract a comparison key from each
        list element.
@@ -248,6 +248,10 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
         return lmfit.fit_report(result, modelpars=modelpars,
                                 show_correl=show_correl,
                                 min_correl=min_correl, sort_pars=sort_pars)
+    elif isinstance(result,  ModelResult):
+        return result.fit_report(modelpars=modelpars,
+                                 show_correl=show_correl,
+                                 min_correl=min_correl, sort_pars=sort_pars)
     else:
         result = getattr(fit_result, 'params', fit_result)
         if isinstance(result,  Parameters):
