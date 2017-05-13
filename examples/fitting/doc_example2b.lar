@@ -13,7 +13,7 @@ dat.e = dat.energy[i1+1:i2+1]
 dat.y = dat.norm[i1+1:i2+1]
 
 def make_model(pars, data, components=False):
-    """make model of spectra: 2 peak functions, 1 erf function, offset"""
+    """make model of spectra: 3 peak functions, 1 erf function, offset"""
     p1 = gaussian(data.e, pars.amp1, pars.cen1, pars.wid1)
     p2 = gaussian(data.e, pars.amp2, pars.cen2, pars.wid2)
     p3 = gaussian(data.e, pars.amp3, pars.cen3, pars.wid3)
