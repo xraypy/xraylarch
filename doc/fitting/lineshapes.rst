@@ -153,7 +153,6 @@ scalar or array, depending on the input ``x``.
         f(x; A, \mu, \sigma) = \frac{A e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}
 
 
-
 Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.

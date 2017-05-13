@@ -76,9 +76,9 @@ The printed output from ``fit_report(params)`` will look like this::
         Bayesian info crit = -1169.4
     [[Variables]]
         amp:   11.9259429 +/- 0.078146 (0.66%) (init= 5)
-        wid:   1.99121482 +/- 0.012135 (0.61%) (init= 1)
-        off:   1.00495225 +/- 0.005356 (0.53%) (init= 0)
         cen:   1.50726422 +/- 0.010365 (0.69%) (init= 2)
+        off:   1.00495225 +/- 0.005356 (0.53%) (init= 0)
+        wid:   1.99121482 +/- 0.012135 (0.61%) (init= 1)
     [[Correlations]] (unreported correlations are <  0.100)
         C(amp, off)                  = -0.726
         C(amp, wid)                  =  0.717
@@ -137,16 +137,16 @@ The fit gives a report (ignoring correlations) like this::
         Akaike info crit   = -520.38
         Bayesian info crit = -501.06
     [[Variables]]
-        off:       0.39565509 +/- 0.010346 (2.62%) (init= 0.5)
-        cen2:      7116.46195 +/- 0.279419 (0.00%) (init= 7116)
+        amp1:      0.19742004 +/- 0.037564 (19.03%) (init= 0.25)
+        amp2:      0.21393220 +/- 0.048193 (22.53%) (init= 0.25)
         cen1:      7113.28403 +/- 0.143034 (0.00%) (init= 7113.25)
+        cen2:      7116.46195 +/- 0.279419 (0.00%) (init= 7116)
         erf_amp:   0.38223607 +/- 0.010433 (2.73%) (init= 0.5)
+        erf_cen:   7122.29627 +/- 0.097868 (0.00%) (init= 7123.5)
         erf_wid:   0.27474480 +/- 0.011462 (4.17%) (init= 0.5)
+        off:       0.39565509 +/- 0.010346 (2.62%) (init= 0.5)
         wid1:      1.07507112 +/- 0.105954 (9.86%) (init= 0.6)
         wid2:      1.58457992 +/- 0.307342 (19.40%) (init= 1.2)
-        amp2:      0.21393220 +/- 0.048193 (22.53%) (init= 0.25)
-        erf_cen:   7122.29627 +/- 0.097868 (0.00%) (init= 7123.5)
-        amp1:      0.19742004 +/- 0.037564 (19.03%) (init= 0.25)
 
 and the plots of the resulting best-fit and components look like these:
 
@@ -186,10 +186,10 @@ this by simply adding another peak function to the ``make_models()``
 function::
 
     def make_model(pars, data, components=False):
-        """make model of spectra: 2 peak functions, 1 erf function, offset"""
-        p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
-        p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
-        p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)
+        """make model of spectra: 3 peak functions, 1 erf function, offset"""
+        p1 = gaussian(data.e, pars.amp1, pars.cen1, pars.wid1)
+        p2 = gaussian(data.e, pars.amp2, pars.cen2, pars.wid2)
+        p3 = gaussian(data.e, pars.amp3, pars.cen3, pars.wid3)
 
         e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
         sum = p1 + p2 + p3 + e1
@@ -204,7 +204,7 @@ and 3 more fitting parameters to the parameter group:
 
 .. code-block:: python
 
-    params = group(
+    params = param_group(
         ...
         cen3 = param(7122.0, vary=True, min=7120, max=7124),
         amp3 = param(0.5,    vary=True, min=0),
@@ -213,34 +213,34 @@ and 3 more fitting parameters to the parameter group:
 
 The fit now has 13 variables, and gives a report like this::
 
-
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 51, 13, 38
-       nfev (func calls)   = 775
-       chi_square          = 0.000103
-       reduced chi_square  = 0.000003
-
+    [[Fit Statistics]]
+        # function evals   = 504
+        # data points      = 51
+        # variables        = 13
+        chi-square         = 0.00010278
+        reduced chi-square = 2.7046e-06
+        Akaike info crit   = -642.85
+        Bayesian info crit = -617.74
     [[Variables]]
-       amp1           =  0.080092 +/- 0.005012 (init=  0.250000)
-       amp2           =  0.384458 +/- 0.017113 (init=  0.250000)
-       amp3           =  0.111112 +/- 0.016366 (init=  0.500000)
-       cen1           =  7113.234596 +/- 0.023044 (init=  7113.250000)
-       cen2           =  7115.416637 +/- 0.136760 (init=  7116.000000)
-       cen3           =  7122.300480 +/- 0.039187 (init=  7122.000000)
-       erf_amp        =  0.476421 +/- 0.022186 (init=  0.500000)
-       erf_cen        =  7123.374345 +/- 0.215044 (init=  7123.500000)
-       erf_wid        =  0.230234 +/- 0.009485 (init=  0.500000)
-       off            =  0.487636 +/- 0.022221 (init=  0.500000)
-       wid1           =  0.496794 +/- 0.021434 (init=  0.600000)
-       wid2           =  1.896698 +/- 0.064887 (init=  1.200000)
-       wid3           =  0.614099 +/- 0.040220 (init=  1.200000)
-    =======================================================
+        amp1:      0.08005336 +/- 0.005009 (6.26%) (init= 0.25)
+        amp2:      0.38406912 +/- 0.017093 (4.45%) (init= 0.25)
+        amp3:      0.11105163 +/- 0.016357 (14.73%) (init= 0.5)
+        cen1:      7113.23457 +/- 0.023040 (0.00%) (init= 7113.25)
+        cen2:      7115.41657 +/- 0.136728 (0.00%) (init= 7116)
+        cen3:      7122.30049 +/- 0.039190 (0.00%) (init= 7122)
+        erf_amp:   0.47613623 +/- 0.022176 (4.66%) (init= 0.5)
+        erf_cen:   7123.37448 +/- 0.215089 (0.00%) (init= 7123.5)
+        erf_wid:   0.23023512 +/- 0.009484 (4.12%) (init= 0.5)
+        off:       0.48707800 +/- 0.022211 (4.56%) (init= 0.5)
+        wid1:      0.70260153 +/- 0.030309 (4.31%) (init= 0.6)
+        wid2:      2.68190137 +/- 0.091739 (3.42%) (init= 1.2)
+        wid3:      0.86847656 +/- 0.056876 (6.55%) (init= 1.2)
 
 
 Adding the third peak here reduced :math:`\chi^2` by a factor of 10, from
-0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
+0.001276 to 0.000103, and so seems to be a significant improvement.
+Reduced chi-square also dropped by an order of magnitude and both the
+Akaike and Bayesian information criteria dropped by more than 100.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:
 
@@ -283,33 +283,34 @@ section, we simply change ``make_models()`` to use::
 
 The fit report now reads::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 51, 13, 38
-       nfev (func calls)   = 441
-       chi_square          = 0.000093
-       reduced chi_square  = 0.000002
-
+    [[Fit Statistics]]
+        # function evals   = 476
+        # data points      = 51
+        # variables        = 13
+        chi-square         = 9.2875e-05
+        reduced chi-square = 2.4441e-06
+        Akaike info crit   = -648.02
+        Bayesian info crit = -622.91
     [[Variables]]
-       amp1           =  0.146617 +/- 0.012757 (init=  0.250000)
-       amp2           =  0.445953 +/- 0.035927 (init=  0.250000)
-       amp3           =  0.193669 +/- 0.032386 (init=  0.500000)
-       cen1           =  7113.237795 +/- 0.020992 (init=  7113.250000)
-       cen2           =  7115.912912 +/- 0.134734 (init=  7116.000000)
-       cen3           =  7122.320641 +/- 0.037579 (init=  7122.000000)
-       erf_amp        =  0.490162 +/- 0.023101 (init=  0.500000)
-       erf_cen        =  7123.580458 +/- 0.227496 (init=  7123.500000)
-       erf_wid        =  0.228310 +/- 0.008306 (init=  0.500000)
-       off            =  0.497919 +/- 0.023158 (init=  0.500000)
-       wid1           =  0.528196 +/- 0.027222 (init=  0.600000)
-       wid2           =  1.676269 +/- 0.093116 (init=  1.200000)
-       wid3           =  0.642993 +/- 0.047203 (init=  1.200000)
-    =======================================================
+        amp1:      0.14657959 +/- 0.012760 (8.71%) (init= 0.25)
+        amp2:      0.44536523 +/- 0.035916 (8.06%) (init= 0.25)
+        amp3:      0.19354556 +/- 0.032364 (16.72%) (init= 0.5)
+        cen1:      7113.23780 +/- 0.020989 (0.00%) (init= 7113.25)
+        cen2:      7115.91312 +/- 0.134712 (0.00%) (init= 7116)
+        cen3:      7122.32066 +/- 0.037577 (0.00%) (init= 7122)
+        erf_amp:   0.48986689 +/- 0.023086 (4.71%) (init= 0.5)
+        erf_cen:   7123.58055 +/- 0.227490 (0.00%) (init= 7123.5)
+        erf_wid:   0.22831037 +/- 0.008305 (3.64%) (init= 0.5)
+        off:       0.49735544 +/- 0.023143 (4.65%) (init= 0.5)
+        wid1:      0.52826663 +/- 0.027231 (5.15%) (init= 0.6)
+        wid2:      1.67565399 +/- 0.093190 (5.56%) (init= 1.2)
+        wid3:      0.64297551 +/- 0.047200 (7.34%) (init= 1.2)
 
-and we see that the already very low
-:math:`\chi^2` reduces by another 10%, which suggests a real improvement.
-For completeness,  the plots from this fit look like this:
+
+
+and we see that the already very low :math:`\chi^2` reduces by another 10%,
+and improvements of the two information criteria.  which suggests a real
+improvement.  For completeness, the plots from this fit look like this:
 
 
 .. subfigstart::
@@ -355,7 +356,6 @@ spectra with a large selection of candidate model spectra, taking the
 result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.
-
 
 The example here is borrowed from Bruce Ravel's data and tutorials, and
 based on the work published by :cite:ts:`Lengke2006`, The goal here is not
@@ -434,25 +434,25 @@ note that we define an uncertainty in the data that we use to scale the
 to be 0.001, that is 0.1% of the typical data value.  The
 results of this fit are::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 160, 1, 159
-       nfev (func calls)   = 5
-       chi_square          = 9339.070954
-       reduced chi_square  = 58.736295
-
+    [[Fit Statistics]]
+        # function evals   = 7
+        # data points      = 160
+        # variables        = 1
+        chi-square         = 9339.1
+        reduced chi-square = 58.736
+        Akaike info crit   = 652.69
+        Bayesian info crit = 655.76
     [[Variables]]
-       amp1           =  0.470660 +/- 0.004709 (init=  0.500000)
-    [[Constraint Expressions]]
-       amp2           =  0.529340 +/- 0.004709 = '1 - amp1'
+        amp1:   0.47066003 +/- 0.004708 (1.00%) (init= 0.5)
+        amp2:   0.52933996 +/- 0.004708 (0.89%)  == '1 - amp1'
+        amp3:   0 (fixed)
+        amp4:   0 (fixed)
+        amp5:   0 (fixed)
+        amp6:   0 (fixed)
 
-    =======================================================
-
-
-and the result for this fit is shown in Figure :num:`fig-fit5`.
-This demonstrates the use of simple constraints for Parameters in fits:
-we've used an algebraic expression to ensure that the weights for the two
+and the result for this fit is shown in Figure :num:`fig-fit5`.  This
+demonstrates the use of simple constraints for Parameters in fits: we've
+used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.
 
 The fit here is not perfect, and we suspect there may be another standard
@@ -485,37 +485,38 @@ There are several points worth noting here:
     the desired constraint.
 
  c) The loop over Parameter groups runs the fit for each set of
-    Parameters, and checks for the lowest value of ``chi_reduced``.
-
+    Parameters, and checks for the lowest value of ``chi_reduced``,
+    ``aic``, and ``bic``.
 
 The output of running this gives::
 
-    chi_reduced         fit notes
-    -------------------------------------
-      58.7363   2 component fit:  s1, s2
-      40.1796   3 component fit:  s1, s2, s3
-      37.1932   3 component fit:  s1, s2, s4
-      32.1411   3 component fit:  s1, s2, s5
-      37.2007   3 component fit:  s1, s2, s6
-    Best Fit:   3 component fit:  s1, s2, s5
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 160, 2, 158
-       nfev (func calls)   = 10
-       chi_square          = 5078.292601
-       reduced chi_square  = 32.141092
 
+    chi_reduced |  A I C  |  B I C | Notes
+    ------------+---------+--------+----------------------------
+         58.7   |  652.7  |  655.8 |  2 components:  s1, s2
+         40.2   |  592.9  |  599.1 |  3 components:  s1, s2, s3
+         37.2   |  580.6  |  586.7 |  3 components:  s1, s2, s4
+         32.1   |  557.2  |  563.4 |  3 components:  s1, s2, s5
+         37.2   |  580.6  |  586.8 |  3 components:  s1, s2, s6
+    ------------+---------+--------+----------------------------
+    Best Fit:   3 components:  s1, s2, s5
+    [[Fit Statistics]]
+        # function evals   = 12
+        # data points      = 160
+        # variables        = 2
+        chi-square         = 5078.3
+        reduced chi-square = 32.141
+        Akaike info crit   = 557.21
+        Bayesian info crit = 563.36
     [[Variables]]
-       amp1           =  0.278665 +/- 0.017035 (init=  0.400000)
-       amp2           =  0.532070 +/- 0.003491 (init=  0.400000)
-    [[Constraint Expressions]]
-       amp5           =  0.189264 +/- 0.016438 = '1 - amp1 - amp2'
-
-    [[Correlations]]     (unreported correlations are <  0.100)
-       amp1, amp2           = -0.270
-    =======================================================
-
+        amp1:   0.27866516 +/- 0.017035 (6.11%) (init= 0.4)
+        amp2:   0.53207041 +/- 0.003491 (0.66%) (init= 0.4)
+        amp3:   0 (fixed)
+        amp4:   0 (fixed)
+        amp5:   0.18926442 +/- 0.016438 (8.69%)  == '1 - amp1 - amp2'
+        amp6:   0 (fixed)
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(amp1, amp2)                = -0.270
 
 and the output plots for the best model look like this:
 
@@ -557,39 +558,39 @@ though still assuming that *s1* and *s2* are components.
 
 The output gives this::
 
-    chi_reduced         fit notes
-    -------------------------------------
-      58.7363   2 component fit:  s1, s2
-      40.1796   3 component fit:  s1, s2, s3
-      37.1932   3 component fit:  s1, s2, s4
-      32.1411   3 component fit:  s1, s2, s5
-      37.2007   3 component fit:  s1, s2, s6
-      59.2220   4 component fit:  s1, s2, s3, s4
-      14.7269   4 component fit:  s1, s2, s3, s5
-      13.3452   4 component fit:  s1, s2, s3, s6
-      30.1274   4 component fit:  s1, s2, s4, s5
-      32.3537   4 component fit:  s1, s2, s5, s6
-      34.3471   4 component fit:  s1, s2, s4, s6
+    chi_reduced |  A I C  |  B I C | Notes
+    ------------+---------+--------+----------------------------
+         58.7   |  652.7  |  655.8 |  2 component fit:  s1, s2
+         40.2   |  592.9  |  599.1 |  3 component fit:  s1, s2, s3
+         37.2   |  580.6  |  586.7 |  3 component fit:  s1, s2, s4
+         32.1   |  557.2  |  563.4 |  3 component fit:  s1, s2, s5
+         37.2   |  580.6  |  586.8 |  3 component fit:  s1, s2, s6
+         59.2   |  656.0  |  665.2 |  4 component fit:  s1, s2, s3, s4
+         14.7   |  433.3  |  442.5 |  4 component fit:  s1, s2, s3, s5
+         13.3   |  417.6  |  426.8 |  4 component fit:  s1, s2, s3, s6
+         30.1   |  547.8  |  557.1 |  4 component fit:  s1, s2, s4, s5
+         32.4   |  559.2  |  568.5 |  4 component fit:  s1, s2, s5, s6
+         34.3   |  568.8  |  578.0 |  4 component fit:  s1, s2, s4, s6
+    ------------+---------+--------+----------------------------
     Best Fit:   4 component fit:  s1, s2, s3, s6
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 160, 3, 157
-       nfev (func calls)   = 22
-       chi_square          = 2095.190450
-       reduced chi_square  = 13.345162
-
+    [[Fit Statistics]]
+        # function evals   = 37
+        # data points      = 160
+        # variables        = 3
+        chi-square         = 2095.2
+        reduced chi-square = 13.345
+        Akaike info crit   = 417.56
+        Bayesian info crit = 426.78
     [[Variables]]
-       amp1           =  0.327883 +/- 0.009491 (init=  0.400000)
-       amp2           =  0.465013 +/- 0.005625 (init=  0.400000)
-       amp3           =  0.063834 +/- 0.003834 (init=  0.000000)
-    [[Constraint Expressions]]
-       amp6           =  0.143270 +/- 0.008020 = '1 - amp1 - amp2 - amp3'
-
-    [[Correlations]]     (unreported correlations are <  0.100)
-       amp2, amp3           = -0.890
-       amp1, amp2           = -0.340
-    =======================================================
+        amp1:   0.32788267 +/- 0.009491 (2.89%) (init= 0.4)
+        amp2:   0.46501286 +/- 0.005624 (1.21%) (init= 0.4)
+        amp3:   0.06384062 +/- 0.003749 (5.87%) (init= 0)
+        amp4:   0 (fixed)
+        amp5:   0 (fixed)
+        amp6:   0.14326383 +/- 0.008029 (5.60%)  == '1 - amp1 - amp2 - amp3'
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(amp2, amp3)                = -0.890
+        C(amp1, amp2)                = -0.340
 
 You might notice that, whereas the 3 component fit favored adding *s5*, the
 four component fit favors *s3* and *s6*.  You might further notice that the
@@ -597,27 +598,28 @@ four component fit with *s3* and *s5* has reduced chi-square of 14.7, only
 slightly worse than the best value.  For completeness, the parameters for
 that are::
 
-    larch> print fit_report(pars[6])
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 160, 3, 157
-       nfev (func calls)   = 18
-       chi_square          = 2312.121664
-       reduced chi_square  = 14.726890
+    larch> ret6 = minimize(resid, pars[6], args=(data,))
+    larch> print fit_report(ret6)
 
+    [[Fit Statistics]]
+        # function evals   = 7
+        # data points      = 160
+        # variables        = 3
+        chi-square         = 2312.1
+        reduced chi-square = 14.727
+        Akaike info crit   = 433.32
+        Bayesian info crit = 442.55
     [[Variables]]
-       amp1           =  0.303043 +/- 0.011665 (init=  0.400000)
-       amp2           =  0.458358 +/- 0.005875 (init=  0.400000)
-       amp3           =  0.054293 +/- 0.003941 (init=  0.000000)
-    [[Constraint Expressions]]
-       amp5           =  0.184307 +/- 0.011130 = '1 - amp1 - amp2 - amp3'
-
-    [[Correlations]]     (unreported correlations are <  0.100)
-       amp2, amp3           = -0.916
-       amp1, amp2           = -0.247
-       amp1, amp3           =  0.152
-    =======================================================
+        amp1:   0.30304286 +/- 0.011667 (3.85%) (init= 0.3030429)
+        amp2:   0.45835749 +/- 0.005874 (1.28%) (init= 0.4583575)
+        amp3:   0.05429199 +/- 0.003961 (7.30%) (init= 0.05429198)
+        amp4:   0 (fixed)
+        amp5:   0.18430763 +/- 0.011132 (6.04%)  == '1 - amp1 - amp2 - amp3'
+        amp6:   0 (fixed)
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(amp2, amp3)                = -0.916
+        C(amp1, amp2)                = -0.247
+        C(amp1, amp3)                =  0.152
 
 
 The plots resulting from both sets of Parameters are shown:

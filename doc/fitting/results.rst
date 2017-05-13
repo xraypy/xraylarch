@@ -45,7 +45,6 @@ the fitting class instance and result from `lmfit` are available.
     nfree           ndata - nfree
     chi_square      chi-square: :math:`\chi^2 = \sum_i^N [{\rm Resid}_i]^2`
     chi_reduced     reduced chi-square: :math:`\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}` |
-    rfactor         R factor: :math:`\cal R = \sum_i^N [{\rm Resid}_i]^2 /\sum_i^N [{\rm Data}_i]^2`
     aic             :lmfitx:`Akaike Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
     bic             :lmfitx:`Bayesian Information Criteria <fitting.html#akaike-and-bayesian-information-criteria>`
     residual        final residual array
