@@ -4,7 +4,7 @@ Basic Fitting Models for 1-D data, simplifying fits to many standard line shapes
   usage:
   ------
   param_group = fit_peak(x, y, model, dy=None,
-                         background='linear', step='linear')
+                         background='linear', form='linear')
 
   arguments:
   ---------
@@ -18,7 +18,7 @@ Basic Fitting Models for 1-D data, simplifying fits to many standard line shapes
   background  name of background model to use. One of (case insensitive)
                  None, 'constant', 'linear', or 'quadratic'
               this is ignored when model is 'linear' or 'quadratic'
-  step        name of step model to use for 'step' and 'rectangle' models.
+  form        name of form to use for 'step' and 'rectangle' models.
               One of (case insensitive):
                  'linear', 'erf', or 'atan'
   output:
@@ -146,12 +146,12 @@ StepModel.guess = step_guess
 RectangleModel.guess = rect_guess
 
 @ValidateLarchPlugin
-def fit_peak(x, y, model, dy=None, background=None, step=None,
+def fit_peak(x, y, model, dy=None, background=None, form=None, step=None,
              negative=False, use_gamma=False, _larch=None):
     """fit peak to one a selection of simple 1d models
 
     out = fit_peak(x, y, model, dy=None,
-                   background='linear', step='linear')
+                   background='linear', form='linear')
 
     arguments:
     ---------
@@ -164,7 +164,7 @@ def fit_peak(x, y, model, dy=None, background=None, step=None,
     background  name of background model to use. One of (case insensitive)
                      None, 'constant', 'linear', or 'quadratic'
                 this is ignored when model is 'linear' or 'quadratic'
-    step        name of step model to use for 'step' and 'rectangle' models.
+    form        name of form to use for 'step' and 'rectangle' models.
                 One of (case insensitive):
                     'linear', 'erf', or 'atan'
     negative    True/False for whether peak or steps are expected to go down.
@@ -174,8 +174,10 @@ def fit_peak(x, y, model, dy=None, background=None, step=None,
     -------
     Group with fit parameters, and more...
     """
+    if form is None and step is not None:
+        form = step
     out = Group(name='fit_peak result', x=x*1.0, y=y*1.0, dy=1.0,
-                model=model, background=background, step=step)
+                model=model, background=background, form=form)
 
     weight = None
     if dy is not None:
@@ -187,7 +189,7 @@ def fit_peak(x, y, model, dy=None, background=None, step=None,
         return None
 
     kwargs = dict(negative=negative, background=background,
-                  step=step, weight=weight, _larch=_larch)
+                  form=form, weight=weight, _larch=_larch)
 
     fitclass = MODELS[model.lower()]
     if fitclass == VoigtModel:
@@ -223,7 +225,6 @@ def fit_peak(x, y, model, dy=None, background=None, step=None,
     if background is not None:
         comps = mod.eval_components(x=out.x)
         out.bkg = comps['bkg_']
-
     return out
 
 def registerLarchPlugin():
