@@ -99,10 +99,10 @@ data.eps  = 0.001
 
 ## Now loop over parameter groups, performing fit and comparing
 ## the value of reduced chi-square, AIC and BIC
-print '  chi_reduced |  A I C  |  B I C | Notes'
-print '--------------+---------+--------+----------------------------'
+print 'chi_reduced |  A I C  |  B I C | Notes'
+print '------------+---------+--------+----------------------------'
 best_chi2, best_params = 1.e99, None
-fmt = '   %8.1f   | %6.1f  | %6.1f |  %s'
+fmt = ' %8.1f   | %6.1f  | %6.1f |  %s'
 for p in pars:
     ret = minimize(resid, p, args=(data,))
     print fmt % (ret.chi_reduced, ret.aic, ret.bic, p.note)
@@ -110,7 +110,7 @@ for p in pars:
         best_params, best_result, best_chi2 = p, ret, ret.chi_reduced
     #endif
 #endfor
-print '--------------+---------+--------+----------------------------'
+print '------------+---------+--------+----------------------------'
 
 def make_plots(pars, d):
     "generates best-fit plots for a parameter group"
