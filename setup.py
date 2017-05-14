@@ -26,7 +26,7 @@ required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
                     'PIL', 'requests']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
 
-xrd_modules = ['pyFAI','xrayutilities','CifFile', 'requests', 'fabio']
+xrd_modules = ['pyFAI','CifFile', 'requests', 'fabio']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,
@@ -37,7 +37,10 @@ recommended_modules = {'basic analysis': required_modules,
                        }
 
 # files that may be left from earlier install(s) and should be removed
-historical_cruft = []
+historical_cruft = ['plugins/xrd/xrd_hkl.py',
+                    'plugins/xrd/xrd_util.py',
+                    'plugins/xrd/xrd_xutil.py']
+
 modules_imported = {}
 missing = []
 deps_ok = False
@@ -212,16 +215,17 @@ def remove_cruft(basedir, filelist):
     def remove_file(base, fname):
         fullname = pjoin(base, fname)
         if os.path.exists(fullname):
+            print( " removing %s " %  fullname)
             try:
                 os.unlink(fullname)
             except:
                 pass
+
     for fname in filelist:
         remove_file(basedir, fname)
         if fname.endswith('.py'):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
-
 
 if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:

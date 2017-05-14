@@ -203,11 +203,10 @@ In addition, you can change the value of `params.amp1`, with the value of
     :param kws:  optional keyword/argument values for parameters
     :returns:    a new Parameter Group with working constraint expressions.
 
-    The Parameter Group can contain non-Parameter values as well as fitting Parameters.
-
-
-For backward compatibility, a simple group containing parameters will work
-with fitting, but a :func:`param_group` is recommended for many cases.
+A Parameter Group can contain non-Parameter values as well as fitting
+Parameters.  For backward compatibility, a simple group containing
+parameters will work with fitting, but a :func:`param_group` is recommended
+for many cases.
 
 
 .. _fitting-fiteval_sec:
@@ -290,10 +289,9 @@ more than one variable will encapsulate not only the simple propogation of
 errors for the independent variables, but also their correlation.  This can
 have a significant impact on the uncertainties for constrained parameters.
 
-
-Finally, each Parameter will have a ``uvalue`` attribute which is a
-special object from the `uncertainties`_ package that holds both the
-best-fit value and standard error.  A key feature of these ``uvalue``
-attributes is that they can be used in simple mathematical expressions
-(addition, subtraction, multiplication, division, exponentiation) and
-propogate the uncertainties to the result (ignoring correlations).
+Finally, each Parameter will have a ``uvalue`` attribute which is a special
+object from the `uncertainties`_ package that holds both the best-fit value
+and standard error.  A key feature of these ``uvalue`` attributes is that
+they can be used in simple mathematical expressions (addition, subtraction,
+multiplication, division, exponentiation) and propogate the uncertainties
+to the result (ignoring correlations).
