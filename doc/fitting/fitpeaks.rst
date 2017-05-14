@@ -103,30 +103,32 @@ plot the results and print the report of parameters.  Note that the fit is
 pretty good at finding the peak center and shape, even though the model is
 not strictly correct.
 
-The printed output from ``fit_report(params)`` will look like this::
+The printed output from ``fit_report(myfit)`` will look like this::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 51, 5, 46
-       nfev (func calls)   = 160
-       chi_square          =  0.741381
-       reduced chi_square  =  0.016117
-
+    [[Model]]
+        (Model(gaussian) + Model(linear, prefix='bkg_'))
+    [[Fit Statistics]]
+        # function evals   = 33
+        # data points      = 51
+        # variables        = 5
+        chi-square         = 0.62209
+        reduced chi-square = 0.013524
+        Akaike info crit   = -214.73
+        Bayesian info crit = -205.07
     [[Variables]]
-       amplitude      =  110.316958 +/- 1.724332 (init=  35.002462)
-       bkg_offset     =  8.128759 +/- 0.038694 (init=  5.450067)
-       bkg_slope      = -0.026001 +/- 0.000614 (init=  0.000000)
-       center         =  44.303784 +/- 0.088638 (init=  44.000000)
-       sigma          =  4.173981 +/- 0.066834 (init=  15.000000)
-    [[Constraint Expressions]]
-       fwhm           =  9.828974 +/- 0.157382 = '2.354820*sigma'
+        amplitude:       75.4295207 +/- 1.085962 (1.44%) (init= 143.506)
+        bkg_intercept:   8.10849304 +/- 0.035243 (0.43%) (init= 0)
+        bkg_slope:      -0.02506582 +/- 0.000562 (2.24%) (init= 0)
+        center:          44.3598293 +/- 0.079202 (0.18%) (init= 43)
+        fwhm:            13.3776066 +/- 0.198318 (1.48%)  == '2.3548200*sigma'
+        height:          5.29700921 +/- 0.065021 (1.23%)  == 0.3989423*amplitude/max(1.e-15, sigma)'
+        sigma:           5.68094659 +/- 0.084218 (1.48%) (init= 7)
+    [[Correlations]] (unreported correlations are <  0.300)
+        C(bkg_intercept, bkg_slope)  = -0.835
+        C(amplitude, sigma)          =  0.647
+        C(amplitude, bkg_intercept)  = -0.402
 
-    [[Correlations]]     (unreported correlations are <  0.300)
-       bkg_offset, bkg_slope = -0.834
-       amplitude, sigma     =  0.651
-       amplitude, bkg_offset = -0.412
-    =======================================================
+
 
 And the plot of data and fit will look like this:
 
@@ -154,38 +156,31 @@ The fit is to a function that takes a step up and a step down.
 
 Again, we first create mock data that's fairly noisy.  The data is clearly
 not exactly rectangular, but we ask it to be fit to a rectangular function
-plus a linear background.  The printed output from ``fit_report(params)``
+plus a linear background.  The printed output from ``fit_report(myfit)``
 will look like this::
 
-    ===================== FIT RESULTS =====================
-    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
-       Message from fit    = Fit succeeded.
-       npts, nvarys, nfree = 81, 7, 74
-       nfev (func calls)   = 99
-       chi_square          =  11.867568
-       reduced chi_square  =  0.160373
-
+    [[Model]]
+        (Model(rectangle, form='erf') + Model(constant, prefix='bkg_'))
+    [[Fit Statistics]]
+        # function evals   = 67
+        # data points      = 321
+        # variables        = 6
+        chi-square         = 23.405
+        reduced chi-square = 0.074301
+        Akaike info crit   = -828.54
+        Bayesian info crit = -805.91
     [[Variables]]
-       bkg_offset     =  5.923729 +/- 0.152985 (init=  5.072026)
-       bkg_slope      = -0.000659 +/- 0.001301 (init=  0.000000)
-       center1        =  27.751278 +/- 0.392722 (init=  40.000000)
-       center2        =  83.203400 +/- 0.190616 (init=  120.000000)
-       height         =  10.224378 +/- 0.137845 (init=  12.021120)
-       width1         =  11.596238 +/- 0.698650 (init=  19.200000)
-       width2         =  4.262621 +/- 0.378333 (init=  19.200000)
-    [[Constraint Expressions]]
-       midpoint       =  55.477339 +/- 0.207626 = '(center1+center2)/2.0'
+        amplitude:   9.95178246 +/- 0.038770 (0.39%) (init= 11.34094)
+        bkg_c:       5.90041256 +/- 0.020680 (0.35%) (init= 0)
+        center1:     27.1354829 +/- 0.095553 (0.35%) (init= 26.5)
+        center2:     82.0689673 +/- 0.071565 (0.09%) (init= 81.5)
+        midpoint:    54.6022251 +/- 0.055873 (0.10%)  == '(center1+center2)/2.0'
+        sigma1:      8.14570023 +/- 0.186184 (2.29%) (init= 32)
+        sigma2:      4.88414083 +/- 0.140778 (2.88%) (init= 32)
+    [[Correlations]] (unreported correlations are <  0.300)
+        C(amplitude, bkg_c)          = -0.566
+        C(amplitude, sigma1)         =  0.341
 
-    [[Correlations]]     (unreported correlations are <  0.300)
-       bkg_offset, bkg_slope = -0.915
-       bkg_offset, height   = -0.654
-       bkg_offset, center1  =  0.542
-       height, width1       =  0.508
-       bkg_slope, center1   = -0.502
-       bkg_slope, height    =  0.500
-       bkg_offset, width1   = -0.403
-       bkg_slope, width1    =  0.345
-    =======================================================
 
 .. _fig-fitpeak2:
 
@@ -202,3 +197,29 @@ selection of simple shapes.  Such fits can be very useful for preliminary
 data visualization and analysis. Of course, one should be cautious about
 treating the results of such an automated approach as a final and best
 analysis of any data.
+
+Using :lmfitx:`lmfit.Model <model.html>`
+================================================================
+
+Note that the :func:`fit_peak` function gives a simple wrapping of
+:lmfitx:`lmfit.Model <model.html>`.  For a wider selection of builtin
+Models and more sophisticated model building including adding bounds and
+constraints between parameters one can import and use :lmfitx:`lmfit.Model
+<model.html>` directly with larch.  As an example, the above fit can be
+replicated with::
+
+    larch> from lmfit.models import RectangleModel, ConstantModel
+    larch> model = RectangleModel(form='erf') + ConstantModel(prefix='bkg_')
+    larch> params = model.make_params(bkg_c=0, sigma1=10, sigma2=10,
+                                      center1=20, center20=80, amplitude=10)
+    larch> out = model.fit(y, params, x=x)
+    larch> print(out.fit_report(sorted_pars=True))
+
+Here, a model is built as the sum of two components: a rectangle and a
+constant background. :lmfitx:`lmfit.Parameters <parameters.html>` are made
+from this composite model and the parameter names, giving initial values
+for each parameter.  The model can then be used to fit the data ``y`` with
+the parameters ``params``, and the independent variable ``x``.  While
+directly using :lmfitx:`lmfit.Model <model.html>` does require providing
+initial values for all parameters, it also gives complete access to the
+parameters, and allows building more complex models.

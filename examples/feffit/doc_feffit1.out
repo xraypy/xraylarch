@@ -1,9 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 104, 4, 100
-   chi_square         = 147.3511
-   reduced chi_square = 13.085915
-   r-factor           = 0.0028192795
+   nvarys, npts       = 4, 104
+   n_independent      = 15.260
+   chi_square         = 18.3144
+   reduced chi_square = 1.62646
+   r-factor           = 0.00282
+   Akaike info crit   = 10.784
+   Bayesian info crit = 13.685
  
 [[Data]]
    fit space          = 'r'
@@ -12,33 +15,33 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
-   epsilon_k          = 0.000550
-   epsilon_r          = 0.018481
+   epsilon_k          = Array(mean=0.001560, std=0.003287)
+   epsilon_r          = 0.052420
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.928555 +/- 0.039837   (init=  1.000000)
-   del_e0         =  4.364102 +/- 0.520364   (init=  0.100000)
+   amp            =  0.928535 +/- 0.039730   (init=  1.000000)
+   del_e0         =  4.364173 +/- 0.520423   (init=  0.100000)
    del_r          = -0.005980 +/- 0.002660   (init=  0.000000)
-   sig2           =  0.008669 +/- 0.000315   (init=  0.002000)
+   sig2           =  0.008669 +/- 0.000313   (init=  0.002000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
-   amp, sig2            =  0.929 
-   del_e0, del_r        =  0.920 
-   del_r, sig2          =  0.159 
-   amp, del_r           =  0.138 
+   amp, sig2            =  0.928
+   del_e0, del_r        =  0.920
+   del_r, sig2          =  0.159
+   amp, del_r           =  0.137
  
 [[Paths]]
-   feff.dat file = feffcu01.dat
-          Atom     x        y        z     ipot
-           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-           Cu    0.0000, -1.8016,  1.8016  1
+   Path p1297de41, Feff.dat file = feffcu01.dat
+     atom      x        y        z       ipot
+      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+      Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
-     Degen  =  12.00000
-     S02    =  0.92855 +/-  0.03984
-     E0     =  4.36410 +/-  0.52036
-     R      =  2.54182 +/-  0.00266
-     deltar = -0.00598 +/-  0.00266
-     sigma2 =  0.00867 +/-  0.00032
+     degen  =  12.000000
+     n*s02  =  0.928535 +/- 0.039730  'amp'
+     e0     =  4.364173 +/- 0.520423  'del_e0'
+     r      =  2.541820 +/- 0.002660  'reff + del_r'
+     deltar = -0.005980 +/- 0.002660  'del_r'
+     sigma2 =  0.008669 +/- 0.000313  'sig2'
 
 =======================================================

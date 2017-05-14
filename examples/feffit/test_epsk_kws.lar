@@ -40,18 +40,16 @@ for eps_k in test_epsk:
             dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
             result  = feffit(fitparams, dataset)
             out.append((fitspace, kw, eps_type,
-                        fitparams.fit_details.nfev,
-                        fitparams.chi_reduced,
+                        result.nfev,
+                        result.chi_reduced,
                         fitparams.amp.value, fitparams.amp.stderr,
                         fitparams.delr.value, fitparams.delr.stderr,
                         fitparams.ss2.value, fitparams.ss2.stderr,
                         fitparams.de0.value, fitparams.de0.stderr))
         #endfor
     #endfor
-
 #endfor
 
-
-#
-# for i in out: print(i)
-#
+for a in out:
+    print(a)
+#endfor

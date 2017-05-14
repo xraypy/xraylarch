@@ -1,5 +1,7 @@
 .. _fitting-chapter:
 
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+
 =================================
 Fitting and Modeling Data
 =================================
@@ -18,6 +20,13 @@ spectra and data.  Of course, Larch can provides other, specific functions
 for doing fits, such as the EXAFS procedures :func:`_xafs.autobk` and
 :func:`_xafs.feffit`.  Many of these concepts (and the underlying fitting
 algorithms) are used for those other functions as well.
+
+.. versionchanged:: 0.9.34
+   Several changes in the implementation of fitting were made in
+   0.9.34. All fitting now uses the `lmfit`_ package.  The use of
+   `_sys.paramGroup` as a group to hold default fitting parameters is no
+   longer used.  For constraint expressions, `_sys.fiteval` now holds the
+   expression evaluator used.
 
 .. toctree::
    :maxdepth: 2

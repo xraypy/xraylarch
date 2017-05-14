@@ -14,8 +14,8 @@ def resid(pars, data, verbose=False):
     wid2 = pars.wid2.value
 
     model = (off +
-             amp1*gaussian(data.x, cen1, wid1) +
-             amp2*gaussian(data.x, cen2, wid2) )
+             gaussian(data.x, amplitude=amp1, center=cen1, sigma=wid1) +
+             gaussian(data.x, amplitude=amp2, center=cen2, sigma=wid2) )
 
     if verbose and (params.iter % 2 == 0):
         print ' >> ', iter, amp1,  cen1, wid1, amp2, cen2, wid2, off
@@ -25,7 +25,7 @@ def resid(pars, data, verbose=False):
     return  model - data.y
 enddef
 
-print resid
+# print resid
 
 
 mdat = group()
@@ -34,8 +34,8 @@ random.seed(1230)
 
 mdat.x = arange(201)/20.0
 mdat.y = (-2.0 +
-          6.0*gaussian(mdat.x, 3.0, 0.5) +
-          2.0*gaussian(mdat.x, 4.9, 0.25) +
+          gaussian(mdat.x, amplitude=6.0, center=3.0, sigma=0.5) +
+          gaussian(mdat.x, amplitude=2.0, center=4.9, sigma=0.25) +
           random.normal(size=len(mdat.x), scale=0.22) )
 
 params = group()
@@ -43,17 +43,16 @@ params.off  = guess(-2)
 params.amp1 = guess(3, min=.0)
 params.cen1 = guess(3)
 params.wid1 = guess(1,  min=0)
-params.amp2 = param(expr='params.amp1.value/3')
+params.amp2 = param(expr='amp1/3')
 params.cen2 = guess(4.5)
-params.wid2 = param(expr='params.wid1.value/2')
+params.wid2 = param(expr='wid1/2')
 params.iter = 0
 
-
 model = mdat.y + resid(params, mdat)
-minimize(resid, params, args=(mdat,))
+out = minimize(resid, params, args=(mdat,))
 
 status = resid(params, mdat, verbose=True)
 # print('Fit finished: %i function calles' % params.fit_details.nfev)
 
-show(params)
+# show(params)
 # plot(mdat.x, model)

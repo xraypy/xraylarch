@@ -19,13 +19,13 @@ this is expressed as
 
 where the experimental data is expressed as :math:`y(x)` that is discretely
 sampled at :math:`N` points, :math:`f(x, \vec\beta)` is a model function of
-some dependent data :math:`x` and :math:`\vec\beta`, a set of parameters in the
-model.  As a simple example, a linear model of data would be written as
+some dependent data :math:`x` and :math:`\vec\beta`, a set of parameters in
+the model.  As a simple example, a linear model of data would be written as
 :math:`f = \beta_0 + \beta_1{x}`.  Of course, models can be arbitrary
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
 minimal values of :math:`S`.  These justifcations are not without criticism
-or caveats, but we'll leave that aside for now.
+or caveats, but we'll leave those topics aside for now.
 
 It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
@@ -62,26 +62,25 @@ so that the sum to be minimized is a simple sum of this function, :math:`s
 with a few key components required.  Specifically, for Larch, the
 requirements are
 
-  1. A set of Parameters, :math:`{\vec{\beta}}`, that are used in the model,
-  and are to be adjusted to find the least-square value of the sum of
-  squares of the residual.  These must be **parameters** (discussed below)
-  that are held in a single **parameter group**.  This is a regular Larch
-  group, and so can contain other values as well.
+  1. A set of Parameters, :math:`{\vec{\beta}}`, that are used in the
+  model, and are to be adjusted to find the least-square value of the sum
+  of squares of the residual.  These must be **parameters** (discussed
+  below) that are held in a single **parameter group**.  This can either be
+  simple Larch group or a specialized `ParameterGroup` (see
+  :ref:`param-param_group-label`).  With both options, the group can contain
+  non-parameter values as well as parameters.
 
   2. An **objective function** to calculate the residual array.  This
   will be a Larch function that takes the **parameter group** described
   above as its first argument, and an unlimited set of optional arguments.
-  The arrays for the data should passed in by these optional arguments.
   This function should return the residual array, :math:`r` that will be
-  minimized in the least-squares sense.
+  minimized in the least-squares sense.   The arrays for the data can
+  be passed into this function either by the optional arguments or by
+  putting these  data in the **parameter group**.
 
-Note that the use of additional data in the **parameter group** makes this
-one way to pass in data to the objective function.  After the fit has
-completed, several statistical results describing the fit quality and the
-values and uncertainties found for the parameters will be written to thie
-**parameter group**.  Though the description so far as been somewhat
-formal, the process is not as hard as it sounds, and all the topics
-outlined so far will be discussed in more detail below.
+After the fit has completed, several statistical results describing the fit
+quality and the values and uncertainties found for the parameters will be
+stored the result.
 
 Because the objective function will be called by the fitting process, it
 needs to follow fairly strict guidelines in its inputs and outputs.
@@ -97,7 +96,7 @@ We'll jump in with a simple example fit to a line, with this script::
     dat.y = 1.0 + 2.5 * dat.x + random.normal(size=51, scale=1)
 
     # create a group of fit parameters
-    params = group(off = guess(0), slope = guess(0))
+    params = param_group(off = guess(0), slope = guess(0))
 
     init = params.off + params.slope * dat.x
 
@@ -107,7 +106,7 @@ We'll jump in with a simple example fit to a line, with this script::
     enddef
 
     # perform fit
-    minimize(fitresid, params, args=(dat,))
+    result = minimize(fitresid, params, args=(dat,))
 
     # create final model using best-fit values for the parameters.
     final = params.off + params.slope * dat.x
