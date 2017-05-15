@@ -59,7 +59,7 @@ def peakfinder(y, regions=20, gapthrsh=5):
 #     print 'signal.find_peaks_cwt'
 #     print 
 #     print 'peaks'
-#     print peak_indices
+#     print y[peak_indices]
 #     print
 # # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)

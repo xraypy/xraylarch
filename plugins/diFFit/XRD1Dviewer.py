@@ -28,11 +28,11 @@ from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_database)
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,d_from_twth,
-                               instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
-                               peakfilter,xrd_background,xrd1d,calc_broadening,
-                               SPACEGROUPS,create_cif)
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
+                               E_from_lambda,d_from_twth,calc_broadening,
+                               instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
+                               SPACEGROUPS,create_cif,
+                               peakfinder,peakfilter,xrd_background)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
