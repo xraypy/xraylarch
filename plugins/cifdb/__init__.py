@@ -1,1 +1,1 @@
-from .cifdb import cifDB,QSTEP,QMIN,CATEGORIES,SearchCIFdb,match_database
+from .cifdb import cifDB,SearchCIFdb,match_database,CATEGORIES,QSTEP,QMIN,QMAX,QAXIS
