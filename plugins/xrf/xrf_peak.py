@@ -78,11 +78,6 @@ class XRFPeak(Group):
     def _peakparams(self, paramgroup=None, **kws):
         """evaluate peak parameter values        """
         # sigma, amplitude, center
-        if (paramgroup is not None and
-            self._larch.symtable.isgroup(paramgroup)):
-            self._larch.symtable._sys.paramGroup = paramgroup
-        self._larch.symtable._fix_searchGroups()
-
         out = []
         for parname in ('amplitude', 'sigma', 'center'):
             val = getattr(self, parname)

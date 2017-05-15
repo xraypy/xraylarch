@@ -14,4 +14,3 @@ from .diffkk import diffkk
 from .fluo import fluo_corr
 
 from .feffrunner import FeffRunner
-

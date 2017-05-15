@@ -1,3 +1,8 @@
+
+
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+.. _asteval: https://lmfit.github.io/asteval
+
 .. _fitting-parameters_sec:
 
 ===============
@@ -54,7 +59,7 @@ or give additional information about its value:
       attribute      meaning                    default       set by which functions:
      ============== ========================== ============= =============================
       value          value                                     :func:`param`
-      vary           can change in fit          ``False``      :func:`param`
+      vary           value can change in fit    ``False``      :func:`param`
       min            lower bound                ``None``       :func:`param`
       max            upper bound                ``None``       :func:`param`
       name           optional name              ``None``       :func:`param`
@@ -106,22 +111,22 @@ the uncertainty in any of the other Parameters in the fit.
 
 ..  _param-constraints-label:
 
-algebraic constraints
-~~~~~~~~~~~~~~~~~~~~~~
+using algebraic constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is often useful to be able to build a fitting model in which Parameters
 in the model are related to one another.  As a simple example, it might be
 useful to fit a spectrum with a sum of two lineshapes that have different
 centroids, but the same width.  As a second example, it might be useful to
 fit a spectrum to a sum of two model spectra where the relative weight of
-the model spectra must add to 1.  For each of these cases, one could write
-a model function that implemented such constraints.
+the model spectra must add to 1.
 
-Rather than trying to capture and encourage such special cases, Larch takes
-a more general approach, allowing Parameters to get their value from an
-algebraic expression.  Thus, one might define an objective function for a
-sum of two Gaussian functions (discussed in more detail in
-:ref:`lineshape-functions-label`), as::
+For each of these cases, one could write a model function that implemented
+such constraints.  Rather than trying to capture and encourage such special
+cases, Larch takes a more general approach, allowing Parameters to get
+their value from an algebraic expression.  Thus, one might define an
+objective function for a sum of two Gaussian functions (discussed in more
+detail in :ref:`lineshape-functions-label`), as::
 
     def fit_2gauss(params, data):
         model = params.amp1 * gaussian(data.x, params.cen1, params.wid1) + \
@@ -129,7 +134,7 @@ sum of two Gaussian functions (discussed in more detail in
         return (data.y - model)
     enddef
 
-This is general and does not put any relations between the parameter values
+This is general and does not impose any relations between the parameter values
 within the objective function.  But one can place such relations in the
 definitions of the parameters and have them obeyed within the fit.  That
 is, one could constrain the two widths of the Gaussians to be the same
@@ -139,50 +144,127 @@ value with::
     params.wid2 = param(expr='wid1')
 
 and the value of `params.wid2` will have the same value as `params.wid1`
-every time the objective is called, but won't be an independent variable in
-the fit.  As a second  example, one could constrain the two amplitude
+every time the objective is called, and will not be an independent variable
+in the fit.  For the second example, one could constrain the two amplitude
 parameters to add to 1 and each be between 0 and 1 as::
 
     params.amp1 = guess(0.5, min=0, max=1)
     params.amp2 = param(expr='1 - amp1')
 
-of course, one can use more complex expressions -- any valid Larch
-expression is allowed.
-
 .. index:: _sys.fiteval
 
-.. _fitting-namespace_sec:
+One can use more complex expressions, and also access built-in values and
+common mathematical functions, like `pi`, `sin`, and `log`.  Essentially
+any valid Python/Larch expression is allowed, including slicing of arrays
+and array methods. Some additional details are discussed below
+(:ref:`fitting-fiteval_sec`),
 
-.. rubric:: Namespaces for algebraic expressions
+.. versionchanged:: 0.9.34
+   `_sys.paramGroup` is no longer used, and `_sys.fiteval` is used instead.
 
-It's worth asking what variables and functions are available for writing
-algebraic constraints.  The discussion on :ref:`tut-namespaces-label`
-gives a partial explanation, but we'll be a bit more explicit here.
-During a fit, the *paramgroup* given to :func:`minimize` will be assigned
-to `_sys.paramGroup` and will be the first place variables are looked for.
-The variables defined inside the objective function will be in
-`_sys.localGroup`, and which will also be searched for variables.  After
-that, names are looked up with the normal procedures.  In essence, this
-means that the variables and functions available for algebraic expressions
-during a fit include
+..  _param-param_group-label:
 
-1. First, all the other Parameters (and any other variables) defined in the
-*parameter group* for a fit.
+:func:`param_group`: creating a Parameter Group for fitting constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-2. All the variables defined in the objective function, including those
-passed in via the argument list.
+While the examples of constraint expressions above will work during a fit,
+the constraint values will not be updated immediately in the main Larch
+interpreter.  That is, doing::
 
-3. All the normal functions and variable names available in Larch,
-including all the mathematical functions.
+    larch> params = group(amp1=guess(0.6, min=0, max=1),
+                          amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 0.6, bounds=[0:1]>, <Parameter -inf, bounds=[-inf:inf], expr='1-amp1'>)
 
-As we said, `_sys.paramGroup` is set during a fit, by :func:`minimize`.  It
-is left set at the end of the fit -- it is not cleared or reset.  However,
-note that `_sys.paramGroup` may be unset or set to the wrong group (say,
-from a previous fit) when setting up a new fit (before you call
-:func:`minimize`).  Of course, you can explicitly assign a group to
-`_sys.paramGroup` when setting up a fit, so that you might be able to
-sensibly call the objective function yourself, prior to doing a
-minimization.
+That is, the value of constrained parameter `amp2` is not properly set yet.
+To be clear, a fit with this group of parameters will work, but it's
+sometimes useful to see the values for the constrained parameters.
+
+The function :func:`param_group` will create a "live, working" group of
+parameters::
+
+    larch> params = param_group(amp1=guess(0.6, min=0, max=1),
+                                amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.6, bounds=[0:1]>, <Parameter 'amp2', 0.4, bounds=[-inf:inf], expr='1-amp1'>)
+
+In addition, you can change the value of `params.amp1`, with the value of
+`params.amp2` being automatically updated:
+
+    larch> params.amp1.value = 0.2
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.2, bounds=[0:1]>, <Parameter 'amp2', 0.8, bounds=[-inf:inf], expr='1-amp1'>)
+
+.. function:: param_group(**kws)
+
+    create and return a *Parameter Group* that uses `_sys.fiteval` for
+    constraint expression.
+
+    :param kws:  optional keyword/argument values for parameters
+    :returns:    a new Parameter Group with working constraint expressions.
+
+A Parameter Group can contain non-Parameter values as well as fitting
+Parameters.  For backward compatibility, a simple group containing
+parameters will work with fitting, but a :func:`param_group` is recommended
+for many cases.
+
+
+.. _fitting-fiteval_sec:
+
+`fiteval` and details about algebraic constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Beginning with version 0.9.34, Larch uses the `lmfit`_ python library to do
+all the fitting.  This project is related to and very similar to Larch
+itself, but is maintained and developed separately.  Lmfit supports
+algebraic constraints like those discussed in the previous section, using
+an isolated, embedded mini-interpreter (very similar to Larch itself, based
+on `asteval`_).  Within Larch, this embedded expression interpreter for
+fitting constraints is held in the Larch system variable `_sys.fiteval`.
+The set of available functions and variables is in its symbol table,
+`_sys.fiteval.symtable`, which has more than 400 named functions and
+variables available, most of them from numpy.
+
+
+During a fit, all the components of the *paramgroup* given to
+:func:`minimize` will be put put into the `_sys.fiteval` symbol table.  Any
+of these variables can be used in the constraint expressions.  In addition,
+all the true parameters in the *paramgroup* will be converted into
+`lmfit.Parameters`.  After the fit is complete, the updated parameter
+values will be put back into the
+
+The :func:`param_group` function discussed above keeps an internal link to
+`_sys.fiteval` and uses that for evaluating constraint expressions.  That
+is, following the above example, one can see the current values for
+`params.amp1` and `params.amp2` within the `_sys.fiteval` symbol table::
+
+
+    larch> params = param_group(amp1=guess(0.6, min=0, max=1),
+                                amp2=param(expr='1 - amp1'))
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.6, bounds=[0:1]>, <Parameter 'amp2', 0.4, bounds=[-inf:inf], expr='1-amp1'>)
+    larch> print(_sys.fiteval.symtable.amp2)
+    0.4
+    larch> params1.amp.value = 0.1
+    larch> print(params.amp1, params.amp2)
+    (<Parameter 'amp1', 0.1, bounds=[0:1]>, <Parameter 'amp2', 0.9, bounds=[-inf:inf], expr='1-amp1'>)
+    larch> print(_sys.fiteval.symtable.amp2)
+    0.9
+
+
+Because `_sys.fiteval` is used for all fits with :func:`minimize` (and for
+XAFS, with :func:`feffit`), you may find yourself wanting to clear or reset
+the fitting symbol table for a new fit.  This should not be necessary, but
+it is available with the function :func:`reset_fiteval`:
+
+
+.. function:: reset_fiteval()
+
+     clear and reset `_sys.fiteval` for a new fit.   This function takes no
+     arguments.
+
+
+.. _fitting-uncertainties_sec:
 
 
 working with uncertainties
@@ -202,12 +284,14 @@ values of correlation with that variable.  In addition, the two-dimensional
 covariance matrix will be held in the ``covar`` attribute of the parameter
 group for each fit.
 
-In addition, each Parameter will have a ``uvalue`` attribute which is a
-special object from the `uncertainties`_ package that holds both the
-best-fit value and standard error.  A key feature of these ``uvalue``
-attributes is that they can be used in simple mathematical expressions
-(addition, subtraction, multiplication, division, exponentiation) and have
-the uncertainties automatically propagated to the result.  Note that each
-``uvalue`` include the correlations between variables, so the propagated
-uncertainties may differ somewhat from using the simplest formulas for
-propagating errors.
+Note that the uncertainties calculated for constrained parameters involving
+more than one variable will encapsulate not only the simple propogation of
+errors for the independent variables, but also their correlation.  This can
+have a significant impact on the uncertainties for constrained parameters.
+
+Finally, each Parameter will have a ``uvalue`` attribute which is a special
+object from the `uncertainties`_ package that holds both the best-fit value
+and standard error.  A key feature of these ``uvalue`` attributes is that
+they can be used in simple mathematical expressions (addition, subtraction,
+multiplication, division, exponentiation) and propogate the uncertainties
+to the result (ignoring correlations).

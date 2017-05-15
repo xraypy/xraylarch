@@ -67,13 +67,13 @@ class TestScripts(TestCase):
         out, err = self.trytext("run('fit_constraint.lar')")
 
         os.chdir(origdir)
-        self.isTrue('params.fit_details.nfev > 30')
-        self.isTrue('params.fit_details.nfev < 70')
+        self.isTrue('out.nfev > 30')
+        self.isTrue('out.nfev < 70')
         self.isNear('params.amp1.value', 6.05, places=2)
         self.isNear('params.amp2.value', 2.02, places=2)
         self.isNear('params.cen1.value', 3.01, places=2)
         self.isNear('params.cen1.stderr', 0.0073, places=2)
-        self.isNear('params.chi_square', 8.4,places=2)
+        self.isNear('out.chi_square', 8.4,places=2)
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -1,11 +1,8 @@
 import time
 
 def resid(pars, x, sigma=None, data=None):
-    model = pars.amp*gaussian(x,  pars.cen, pars.wid) + pars.off + x * pars.slope
+    model = gaussian(x,  pars.amp, pars.cen, pars.wid) + pars.off + x * pars.slope
     pars.iter += 1
-#     if pars.iter % 25 == 0:
-#         print pars.iter, pars.amp, pars.cen, pars.wid, pars.off, pars.slope
-#     endif
     if data is None:      return model
     if sigma is  None:    return (model - data)
     return (model - data)/sigma
@@ -19,55 +16,36 @@ def compare_fit(method):
         print "use one of: %s" % (', ').join(meths)
         return
     endif
-    
+
     n = 601
     xmin = 0.
     xmax = 20.0
     x = linspace(xmin, xmax, n)
 
-    data = 27*gaussian(x, 9.3, 1.5) + random.normal(scale=0.35,  size=n) + x*.3 - 0.1
+    data = (gaussian(x, amplitude=27, center=9.3, sigma=1.5) +
+            random.normal(scale=0.35,  size=n) + x*.3 - 0.1)
 
-    pfit = group(amp = guess(21),
-                 cen = guess(11),
-                 wid = guess(0.5),
-                 slope = guess(0),
-                 off = guess(0),
-                 iter = 0)
-    pfit2 = group(amp = guess(21),
-                  cen = guess(11),
-                  wid = guess(0.5),
-                  slope = guess(0),
-                  off = guess(0),
-                  iter=0)
+    pfit1 = param_group(amp = guess(21), cen = guess(11), wid = guess(0.5),
+                        slope = guess(0), off = guess(0), iter = 0)
 
-    t0 = time.time()
-    myfit = minimize(resid, pfit2, args=(x,), kws={'data':data})
-    print 'Fit time = %.3f sec' % (time.time()-t0)
-    print fit_report(pfit2)
+    pfit2 = param_group(amp = guess(21), cen = guess(11), wid = guess(0.5),
+                        slope = guess(0), off = guess(0), iter=0)
+
     newplot(x, data, linewidth=0, marker='+', color='blue', label='data', show_legend=True)
-    
-    lfit = pfit2.amp * gaussian(x, pfit2.cen, pfit2.wid) + x*pfit2.slope + pfit2.off
-    plot(x, lfit, linewidth=2, color='red', label=pfit2.fit_details.method)
-    
-    
-    
-    t0 = time.time()
-    myfit = minimize(resid, pfit, method=method,  args=(x,), kws={'data':data})
-    print 'Fit time = %.3f sec' % (time.time()-t0)
-    print fit_report(pfit)
+    results = {}
+    for pars, meth in ((pfit1, 'leastsq'), (pfit2, method)):
+        t0 = time.time()
+        ret = minimize(resid, pars, args=(x,), method=meth, kws={'data':data})
+        print 'Method = %s, Fit time = %.3f sec' % (meth, time.time()-t0)
+        print fit_report(ret)
+        lfit = gaussian(x, pars.amp, pars.cen, pars.wid) + x*pars.slope + pars.off
+        plot(x, lfit, linewidth=2, label=meth)
+        results[meth] = (lfit)
+    #endfor
 
-    
-    sfit = pfit.amp * gaussian(x, pfit.cen, pfit.wid) + x*pfit.slope + pfit.off
-    plot(x, sfit, linewidth=2, color='black', style='dashed', label=pfit.fit_details.method)
-    
-    diff= 10000*(sfit-lfit)
-    plot(x, diff, color='blue', label='diff x 10,000')
+    diff= 10*(results['leastsq'] - results[meth])
 
-#     count = 1
-#     while max(diff) < 0.5:
-#         diff = 10*diff
-#         count = count + 1
-#     endwhile
-#    plot(x, diff, color='blue', label='diff x 10^(%i)' % (count))
-    
-enddef
+    plot(x, diff, color='blue', label='diff x 10')
+#enddef
+
+compare_fit('nelder')

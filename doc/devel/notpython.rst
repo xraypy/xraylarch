@@ -189,14 +189,14 @@ themselves).  These will be changed as the program runs.  They can be
 changed dynamically, this is not encouraged (and can lead to Larch not
 being able to work well).
 
-Larch also has 3 special variables that it uses to hold references to
+.. versionchanged:: 0.9.34
+   `_sys.paramGroup` is no longer used.
+
+Larch also has 2 special variables that it uses to hold references to
 groups that are *always* included in the search of names.  These are
 '_sys.localGroup', which holds the group for a currently running function
 while it is running; '_sys.moduleGroup', which holds the namespace for a
-module associated with a currently running function; and '_sys.paramGroup',
-which holds a group of Parameters used during fits (more on this, and why
-it is needed here in the section on Parameters).
-
+module associated with a currently running function.
 
 
 Unimplemented features
@@ -212,5 +212,3 @@ exhaustive list):
     * global
     * generators, yield
     * decorators
-
-

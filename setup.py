@@ -175,7 +175,10 @@ for pdir in pluginpaths:
 if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:
         fh = open(fname, 'r')
-        lines = fh.readlines()
+        try:
+            lines = fh.readlines()
+        except:
+            lines = ['binary file?']
         fh.close()
         line0 = lines[0].strip()
         if not line0.startswith('#!/usr/bin/env pythonw'):
@@ -197,8 +200,7 @@ setup(name = 'xraylarch',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
-      packages = ['larch', 'larch.utils', 'larch.wxlib',
-                  'larch.fitting', 'larch.fitting.uncertainties'],
+      packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
       data_files  = data_files,
       platforms = ['Windows', 'Linux', 'Mac OS X'],
       classifiers=['Intended Audience :: Science/Research',
@@ -228,7 +230,10 @@ def remove_cruft(basedir, filelist):
 if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:
         fh = open(fname, 'r')
-        lines = fh.readlines()
+        try:
+            lines = fh.readlines()
+        except:
+            lines = ['binary file?']
         fh.close()
         line0 = lines[0].strip()
         if line0.startswith('#!/usr/bin/env pythonw'):

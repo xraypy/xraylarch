@@ -14,8 +14,8 @@ dat.y = dat.norm[i1+1:i2+1]
 
 def make_model(pars, data, components=False):
     """make model of spectra: 2 peak functions, 1 erf function, offset"""
-    p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
-    p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
+    p1 = gaussian(data.e, pars.amp1, pars.cen1, pars.wid1)
+    p2 = gaussian(data.e, pars.amp2, pars.cen2, pars.wid2)
 
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
     sum = p1 + p2 + e1
@@ -25,8 +25,8 @@ def make_model(pars, data, components=False):
     return sum
 enddef
 
-# create group for parameters
-params = group(
+# create a parameter group for the fit:
+params = param_group(
     cen1 = param(7113.25, vary=True, min=7111, max=7115),
     cen2 = param(7116.0, vary=True, min=7115, max=7120),
 
@@ -48,9 +48,9 @@ def resid(pars, data):
     return make_model(pars, data) - data.y
 enddef
 
-m = minimize(resid, params, args=(dat,))
+mfit = minimize(resid, params, args=(dat,))
 
-print fit_report(params, show_correl=False)
+print fit_report(mfit, show_correl=False)
 
 # now plot results (2 different windows)
 final, f1, f2, e1 = make_model(params, dat, components=True)
