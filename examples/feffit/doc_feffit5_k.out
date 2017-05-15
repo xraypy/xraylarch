@@ -1,10 +1,13 @@
 *** K Space***
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   npts, nvarys, nfree= 230, 7, 223
-   chi_square         = 8585518.8
-   reduced chi_square = 849506.32
-   r-factor           = 0.11965559
+   nvarys, npts       = 7, 230
+   n_independent      = 17.106
+   chi_square         = 4.70772e+06
+   reduced chi_square = 465812
+   r-factor           = 0.14494
+   Akaike info crit   = 228.263
+   Bayesian info crit = 234.139
  
 [[Data]]
    fit space          = 'k'
@@ -13,23 +16,23 @@
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 2
-   epsilon_k          = 0.000232
-   epsilon_r          = 0.006196
+   epsilon_k          = Array(mean=0.001450, std=0.003609)
+   epsilon_r          = 0.027393
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.326923 +/- 2.134972   (init= -1.465619)
-   delr_1         = -0.032974 +/- 0.032155   (init= -0.030443)
-   delr_2         =  0.051383 +/- 0.023506   (init=  0.048434)
-   n1             =  4.856597 +/- 1.815980   (init=  5.237592)
-   n2             =  14.332947 +/- 5.435697   (init=  12.037383)
-   sig2_1         =  0.010700 +/- 0.007311   (init=  0.012039)
-   sig2_2         =  0.015012 +/- 0.004406   (init=  0.013301)
+   de0            = -2.178558 +/- 2.990883   (init= -1.748273)
+   delr_1         = -0.032391 +/- 0.032969   (init= -0.031455)
+   delr_2         =  0.043779 +/- 0.025378   (init=  0.046370)
+   n1             =  6.076095 +/- 3.640452   (init=  5.622117)
+   n2             =  11.930058 +/- 4.744492   (init=  12.238350)
+   sig2_1         =  0.013599 +/- 0.008980   (init=  0.012780)
+   sig2_2         =  0.013108 +/- 0.003860   (init=  0.013445)
  
 [[Correlations]]    (unreported correlations are <  0.500)
-   n2, sig2_2           =  0.920 
-   n1, sig2_1           =  0.871 
-   de0, delr_2          =  0.847 
-   de0, delr_1          =  0.751 
-   delr_1, delr_2       =  0.640 
+   n2, sig2_2           =  0.929
+   n1, sig2_1           =  0.899
+   de0, delr_2          =  0.899
+   de0, delr_1          =  0.607
+   delr_1, delr_2       =  0.557
 =======================================================

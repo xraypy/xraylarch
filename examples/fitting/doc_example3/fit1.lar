@@ -1,7 +1,8 @@
 ## examples/fitting/doc_example3/fit1.lar
 run('ReadData.lar')
 
-# create a group of fit parameters
+
+# create a parameter group for the fit:
 params = group(amp1 = param(0.5, min=0, max=1),
                amp2 = param(0.5, min=0, max=1),
                amp3 = param(0.0, min=0, max=1),
@@ -13,11 +14,11 @@ params = group(amp1 = param(0.5, min=0, max=1),
 def sum_standards(pars, data):
     return (pars.amp1*data.s1 + pars.amp2*data.s2 + pars.amp3*data.s3 +
             pars.amp4*data.s4 + pars.amp5*data.s5 + pars.amp6*data.s6 )
-enddef
+#enddef
 
 def resid(pars, data):
     return (data.mu - sum_standards(pars, data))/data.eps
-enddef
+#enddef
 
 # set model here: Amp1 is free,
 # Amp2 is constrained to be 1 - Amp1
@@ -29,9 +30,9 @@ params.amp2.expr = '1 - amp1'
 data.eps  = 0.001
 
 # perform fit
-minimize(resid, params, args=(data,))
+result = minimize(resid, params, args=(data,))
 fit = sum_standards(params, data)
-print fit_report(params)
+print fit_report(result)
 
 
 plot(data.energy, data.mu,   label='data', color='blue', marker='+',

@@ -15,14 +15,18 @@ creates a group that contains the chi(k) for the sum of paths.
 import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
+from lmfit import Parameters
 from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
+from larch.utils.strutils import fix_varname
 from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch_plugins.xray import atomic_mass, atomic_symbol
+from larch.fitting import group2params
 
 SMALL = 1.e-6
+
 
 class FeffDatFile(Group):
     def __init__(self, filename=None, _larch=None, **kws):
@@ -60,11 +64,10 @@ class FeffDatFile(Group):
     def rmass(self):
         """reduced mass for a path"""
         if self.__rmass is None:
-            amass = 0
-            for label, iz, ipot, x, y, z in self.geom:
-                m = atomic_mass(iz, _larch=self._larch)
-                amass += 1.0/max(1., m)
-            self.__rmass = 1./amass
+            rmass = 0
+            for atsym, iz, ipot, amass, x, y, z in self.geom:
+                rmass += 1.0/max(1., amass)
+            self.__rmass = 1./rmass
         return self.__rmass
 
     @rmass.setter
@@ -134,7 +137,8 @@ class FeffDatFile(Group):
                         lab = words[5]
                     else:
                         lab = atomic_symbol(iz, _larch=self._larch)
-                    geom = [lab, iz, ipot] + xyz
+                    amass = atomic_mass(iz, _larch=self._larch)
+                    geom = [lab, iz, ipot, amass] + xyz
                     self.geom.append(tuple(geom))
             elif mode == 'arrays':
                 d = np.array([float(x) for x in line.split()])
@@ -153,6 +157,9 @@ class FeffDatFile(Group):
         self.__rmass = None  # reduced mass of path
 
 
+PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
+PATHPAR_FMT = "%s__%s"
+
 class FeffPathGroup(Group):
     def __init__(self, filename=None, _larch=None,
                  label=None, s02=None, degen=None, e0=None,
@@ -164,22 +171,28 @@ class FeffPathGroup(Group):
         Group.__init__(self, **kwargs)
         self._larch = _larch
         self.filename = filename
+        self.params = None
+        self.spline_coefs = None
         def_degen = 1
         if filename is not None:
             self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
             self.geom  = self._feffdat.geom
             def_degen  = self._feffdat.degen
-        self.degen = degen if degen is not None else def_degen
-        self.label = label if label is not None else filename
-        self.s02    = 1 if s02    is None else s02
-        self.e0     = 0 if e0     is None else e0
-        self.ei     = 0 if ei     is None else ei
-        self.deltar = 0 if deltar is None else deltar
-        self.sigma2 = 0 if sigma2 is None else sigma2
-        self.third  = 0 if third  is None else third
-        self.fourth = 0 if fourth is None else fourth
+#
+        def_label = "p%s" % (hex(hash(self))[2:])
+        self.label = def_label if label  is None else labe
+        self.degen = def_degen if degen  is None else degen
+        self.s02    = 1.0      if s02    is None else s02
+        self.e0     = 0.0      if e0     is None else e0
+        self.ei     = 0.0      if ei     is None else ei
+        self.deltar = 0.0      if deltar is None else deltar
+        self.sigma2 = 0.0      if sigma2 is None else sigma2
+        self.third  = 0.0      if third  is None else third
+        self.fourth = 0.0      if fourth is None else fourth
         self.k = None
         self.chi = None
+        if self._feffdat is not None:
+            self.create_spline_coefs()
 
     def __copy__(self):
         return FeffPathGroup(filename=self.filename, _larch=self._larch,
@@ -216,100 +229,114 @@ class FeffPathGroup(Group):
             return '<FeffPath Group %s>' % self.filename
         return '<FeffPath Group (empty)>'
 
-    def _pathparams(self, paramgroup=None, **kws):
-        """evaluate path parameter value
+    def create_path_params(self):
         """
-        # degen, s02, e0, ei, deltar, sigma2, third, fourth
-        if (paramgroup is not None and
-            self._larch.symtable.isgroup(paramgroup)):
-            self._larch.symtable._sys.paramGroup = paramgroup
-        self._larch.symtable._fix_searchGroups()
+        create Path Parameters within the current fiteval
+        """
+        self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
+        self.store_feffdat()
 
-        # put 'reff' and '_feffdat' into the paramGroup so that
-        # 'reff' can be used in constraint expressions and
-        # '_feffdat' can be used inside Debye and Eins functions
-        stable = self._larch.symtable
-        if stable.isgroup(stable._sys.paramGroup):
-            stable._sys.paramGroup.reff = self._feffdat.reff
-            stable._sys.paramGroup._feffdat = self._feffdat
-
-        out = []
-        for param in ('degen', 's02', 'e0', 'ei',
-                      'deltar', 'sigma2', 'third', 'fourth'):
-            val = getattr(self, param)
-            if param in kws:
-                if kws[param] is not None:
-                    val = kws[param]
+        for pname in PATH_PARS:
+            val =  getattr(self, pname)
+            attr = 'value'
             if isinstance(val, six.string_types):
-                thispar = Parameter(expr=val, _larch=self._larch)
+                attr = 'expr'
+            kws =  {'vary': False, attr: val}
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            self.params.add(parname, **kws)
 
-                #if isinstance(thispar, Parameter):
-                #    thispar = thispar.value
-                setattr(self, param, thispar)
-                val = getattr(self, param)
-            out.append(param_value(val))
+    def create_spline_coefs(self):
+        """pre-calculate spline coefficients for feff data"""
+        self.spline_coefs = {}
+        fdat = self._feffdat
+        self.spline_coefs['pha'] = UnivariateSpline(fdat.k, fdat.pha, s=0)
+        self.spline_coefs['amp'] = UnivariateSpline(fdat.k, fdat.amp, s=0)
+        self.spline_coefs['rep'] = UnivariateSpline(fdat.k, fdat.rep, s=0)
+        self.spline_coefs['lam'] = UnivariateSpline(fdat.k, fdat.lam, s=0)
+
+    def store_feffdat(self):
+        """stores data about this Feff path in the fiteval
+        symbol table for use as `reff` and in sigma2 calcs
+        """
+        fiteval = self._larch.symtable._sys.fiteval
+        fdat = self._feffdat
+        fiteval.symtable['feffpath'] = fdat
+        fiteval.symtable['reff']  = fdat.reff
+        return fiteval
+
+    def __path_params(self, **kws):
+        """evaluate path parameter value.  Returns
+        (degen, s02, e0, ei, deltar, sigma2, third, fourth)
+        """
+        # put 'reff' and '_feffdat' into the symboltable so that
+        # they can be used in constraint expressions, and get
+        # fiteval evaluator
+        self.store_feffdat()
+
+        if self.params is None:
+            self.create_path_params()
+        out = []
+        for pname in PATH_PARS:
+            val = kws.get(pname, None)
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            if val is None:
+                val = self.params[parname]._getval()
+            out.append(val)
         return out
+
+    def path_paramvals(self, **kws):
+        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
+        return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
+                    sigma2=ss2, third=c3, fourth=c4)
+
 
     def report(self):
         "return  text report of parameters"
-        (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
-
-        # put 'reff' into the paramGroup so that it can be used in
-        # constraint expressions
-        reff = self._feffdat.reff
-        self._larch.symtable._sys.paramGroup._feffdat = self._feffdat
-        self._larch.symtable._sys.paramGroup.reff = reff
-
-
-        geomlabel  = '          Atom     x        y        z     ipot'
-        geomformat = '           %s   % .4f, % .4f, % .4f  %i'
-        out = ['   feff.dat file = %s' % self.filename]
-        if self.label != self.filename:
-            out.append('     label     = %s' % self.label)
+        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
+        geomlabel  = '     atom      x        y        z       ipot'
+        geomformat = '    %4s      % .4f, % .4f, % .4f  %i'
+        out = ['   Path %s, Feff.dat file = %s' % (self.label, self.filename)]
         out.append(geomlabel)
 
-        for label, iz, ipot, x, y, z in self.geom:
-            s = geomformat % (label, x, y, z, ipot)
+        for atsym, iz, ipot, amass, x, y, z in self.geom:
+            s = geomformat % (atsym, x, y, z, ipot)
             if ipot == 0: s = "%s (absorber)" % s
             out.append(s)
 
         stderrs = {}
-        out.append('     reff   =  %.5f' % self._feffdat.reff)
-        for param in ('degen', 's02', 'e0', 'ei',
-                      'deltar', 'sigma2', 'third', 'fourth'):
-            val = getattr(self, param)
-            std = 0
-            if isParameter(val):
-                std = val.stderr
-                val = val.value
-                if isParameter(val):
-                    if val.stderr is not None:
-                        std = val.stderr
-            if std is None: std = -1
-            stderrs[param] = std
+        out.append('     {:7s}=  {:.5f}'.format('reff', self._feffdat.reff))
 
-        def showval(title, par, val, stderrs, ifnonzero=False):
-            if val == 0 and ifnonzero:
-                return
-            s = '     %s=' % title
-            if title.startswith('R  '):
-                val = val + self._feffdat.reff
-            if stderrs[par] == 0:
-                s = '%s % .5f' % (s, val)
+        for pname in ('degen', 's02', 'e0', 'r',
+                      'deltar', 'sigma2', 'third', 'fourth', 'ei'):
+            val = strval = getattr(self, pname, 0)
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            std = None
+            if pname == 'r':
+                parname = fix_varname(PATHPAR_FMT % ('deltar', self.label))
+                par = self.params.get(parname, None)
+                val = par.value + self._feffdat.reff
+                strval = 'reff + ' + getattr(self, 'deltar', 0)
+                std = par.stderr
             else:
-                s = '%s % .5f +/- % .5f' % (s, val, stderrs[par])
-            out.append(s)
-        showval('Degen  ', 'degen',  deg,  stderrs)
-        showval('S02    ', 's02',    s02,  stderrs)
-        showval('E0     ', 'e0',     e0,   stderrs)
-        showval('R      ', 'deltar', delr, stderrs)
-        showval('deltar ', 'deltar', delr, stderrs)
-        showval('sigma2 ', 'sigma2', ss2,  stderrs)
-        showval('third  ', 'third',  c3,   stderrs, ifnonzero=True)
-        showval('fourth ', 'fourth', c4,   stderrs, ifnonzero=True)
-        showval('Ei     ', 'ei',     ei,   stderrs, ifnonzero=True)
+                par = self.params.get(parname, None)
+                if par is not None:
+                    val = par.value
+                    std = par.stderr
+            if std is None  or std <= 0:
+                svalue = "{: 5f}".format(val)
+            else:
+                svalue = "{: 5f} +/- {:5f}".format(val, std)
+            if pname == 's02': pname = 'n*s02'
 
+            svalue = "     {:7s}= {:s}".format(pname, svalue)
+            if isinstance(strval, six.string_types):
+                svalue = "{:s}  '{:s}'".format(svalue, strval)
+
+            if val == 0 and pname in ('third', 'fourth', 'ei'):
+                continue
+            out.append(svalue)
         return '\n'.join(out)
+
 
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
@@ -328,15 +355,9 @@ class FeffPathGroup(Group):
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
         reff = fdat.reff
-        # put 'reff' into the paramGroup so that it can be used in
-        # constraint expressions
-        if self._larch.symtable._sys.paramGroup is not None:
-            self._larch.symtable._sys.paramGroup._feffdat = fdat
-            self._larch.symtable._sys.paramGroup.reff = fdat.reff
-
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
-                self._pathparams(degen=degen, s02=s02, e0=e0, ei=ei,
+                self.__path_params(degen=degen, s02=s02, e0=e0, ei=ei,
                                  deltar=deltar, sigma2=sigma2,
                                  third=third, fourth=fourth)
 
@@ -357,10 +378,10 @@ class FeffPathGroup(Group):
             rep = np.interp(q, fdat.k, fdat.rep)
             lam = np.interp(q, fdat.k, fdat.lam)
         else:
-            pha = UnivariateSpline(fdat.k, fdat.pha, s=0)(q)
-            amp = UnivariateSpline(fdat.k, fdat.amp, s=0)(q)
-            rep = UnivariateSpline(fdat.k, fdat.rep, s=0)(q)
-            lam = UnivariateSpline(fdat.k, fdat.lam, s=0)(q)
+            pha = self.spline_coefs['pha'](q)
+            amp = self.spline_coefs['amp'](q)
+            rep = self.spline_coefs['rep'](q)
+            lam = self.spline_coefs['lam'](q)
 
         if debug:
             self.debug_k   = q
@@ -395,7 +416,6 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
     Parameters:
     ------------
       path:        a FeffPath Group
-      paramgroup:  a Parameter Group for calculating Path Parameters [None]
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
       k:           explicit array of k values to calculate chi.
@@ -405,15 +425,12 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
       None - outputs are written to path group
 
     """
+    params = group2params(paramgroup, _larch=_larch)
+
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
-    if _larch is not None:
-        if (paramgroup is not None and
-            _larch.symtable.isgroup(paramgroup)):
-            _larch.symtable._sys.paramGroup = paramgroup
-        elif not hasattr(_larch.symtable._sys, 'paramGroup'):
-            _larch.symtable._sys.paramGroup = Group()
+    path.create_path_params()
     path._calc_chi(**kws)
 
 @ValidateLarchPlugin
@@ -436,14 +453,14 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     pathlist and writes the resulting arrays to group.k and group.chi.
 
     """
+    params = group2params(paramgroup, _larch=_larch)
+
     msg = _larch.writer.write
-    if (paramgroup is not None and _larch is not None and
-         _larch.symtable.isgroup(paramgroup)):
-        _larch.symtable._sys.paramGroup = paramgroup
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
             msg('%s is not a valid Feff Path' % path)
             return
+        path.create_path_params()
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
     k = pathlist[0].k[:]
     out = np.zeros_like(k)

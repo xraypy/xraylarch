@@ -13,6 +13,8 @@ if six.PY3:
     import io
 
 
+from lmfit import asteval
+
 from .helper import Helper
 from . import inputText
 from . import site_config
@@ -490,6 +492,17 @@ def show_history(max_lines=10000, _larch=None):
     for hline in _larch.history.buffer[-nhist:]:
         _larch.writer.write("%s\n" % hline)
 
+def reset_fiteval(_larch=None, **kws):
+    """initiailze fiteval for fitting with lmfit"""
+    fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
+    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
+    if fiteval_init is not None:
+        for init_item in fiteval_init:
+            if isinstance(init_item, (tuple, list)) and len(init_item) == 2:
+                key, val = init_item
+                fiteval.symtable[key] = val
+            else:
+                fiteval(init_item)
 
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
@@ -513,6 +526,7 @@ local_funcs = {'_builtin': {'group':_group,
                             'show_history': show_history},
                '_math':{'param': fitting.param,
                         'guess': fitting.guess,
+                        'param_group': fitting.param_group,
                         'confidence_intervals': fitting.confidence_intervals,
                         'confidence_report': fitting.confidence_report,
                         'f_test': fitting.f_test,
@@ -521,7 +535,9 @@ local_funcs = {'_builtin': {'group':_group,
                         'isparam': fitting.is_param,
                         'minimize': fitting.minimize,
                         'ufloat': _ufloat,
-                        'fit_report': fitting.fit_report},
+                        'fit_report': fitting.fit_report,
+                        'reset_fiteval': reset_fiteval,
+                        },
                }
 
 # list of supported valid commands -- don't need parentheses for these

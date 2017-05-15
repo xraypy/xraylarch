@@ -1,128 +1,156 @@
 
+.. _lmfit: https://lmfit.github.io/lmfit-py/
+
 ..  _lineshape-functions-label:
 
 ==================================
 Some Builtin Line-shape Functions
 ==================================
 
+.. versionchanged:: 0.9.34
+   The definitions of these line shapes are now taken from the
+   `lmfit`_ package, and have a more uniform interface.
+
 Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
 be amended easily.  All these functions return either a floating point
 scalar or array, depending on the input ``x``.
 
-.. function:: gaussian(x, cen=0, sigma=1)
+.. function:: gaussian(x, amplitude=1, center=0, sigma=1)
 
-   a Gaussian or normal distribution function:
+    a Gaussian or normal distribution function (see
+    http://en.wikipedia.org/wiki/Normal_distribution), with three
+    Parameters: ``amplitude``, ``center``, and ``sigma``.
 
-.. math::
+    .. math::
 
-  f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}
+        f(x; A, \mu, \sigma) = \frac{A}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}
 
-where *cen* is used for :math:`\mu`.
-The Full-Width at Half-Maximum is :math:`2\sigma\sqrt{2\ln{2}}`,
-approximately :math:`2.3548\sigma`
+    where the parameter ``amplitude`` corresponds to :math:`A`, ``center`` to
+    :math:`\mu`, and ``sigma`` to :math:`\sigma`.
 
-.. function:: lorentzian(x, cen=0, sigma=1)
+    The full width at half maximum is :math:`2\sigma\sqrt{2\ln{2}}`,
+    approximately :math:`2.3548\sigma`.   The maximum height is
+    :math:`A/(\sigma\sqrt{2\pi})`.
 
-   a Lorentzian or Cauchy-Lorentz distribution function:
+.. function:: lorentzian(x, amplitude=1, center=0, sigma=1)
 
-.. math::
+    A Lorentzian or Cauchy-Lorentz distribution function (see
+    http://en.wikipedia.org/wiki/Cauchy_distribution), with three
+    Parameters: ``amplitude``, ``center``, and ``sigma``.
 
-  f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]
+    .. math::
 
-where *cen* is used for :math:`\mu`. The Full-Width at Half-Maximum is
-:math:`2\sigma`.
+        f(x; A, \mu, \sigma) = \frac{A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]
 
-.. function:: voigt(x, cen=0, sigma=1, gamma=None)
-
-   a Voigt distribution function.   The definition used here is
-
-.. math::
-
-    f(x, \mu, \sigma, \gamma) = \frac{\textrm{Re}[w(z)]}{\sigma\sqrt{2 \pi}}
-
-where
-
-.. math::
-   :nowrap:
-
-   \begin{eqnarray*}
-     z &=& \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
-     w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
-   \end{eqnarray*}
-
-and :func:`erfc` is the complimentary error function.  As above, *cen* is
-used for :math:`\mu` here, *sigma* for :math:`\sigma`, and *gamma* for the
-parameter :math:`\gamma`.  If *gamma* is left as ``None``, it is set equal
-to *sigma*.  For the case when :math:`\gamma = \sigma`, the Full-Width at
-Half-Maximum is approximately :math:`3.6013\sigma`.
-
-.. function:: pvoigt(x, cen=0, sigma=1, frac=0.5)
-
-   a pseudo-Voigt distribution function, which is a weighted sum of a
-   Gaussian and Lorentzian distribution functions with the same values for
-   *cen* (:math:`\mu`) and *sigma* (:math:`\sigma`), and *frac* setting the
-   Lorentzian fraction::
-
-    pvoigt(x, cen, sigma, frac) = (1-frac)*gaussian(x, cen, sigma) + frac*lorentzian(x, cen, sigma)
+    where the parameter ``amplitude`` corresponds to :math:`A`, ``center`` to
+    :math:`\mu`, and ``sigma`` to :math:`\sigma`.  The full width at
+    half maximum is :math:`2\sigma`.  The maximum height is
+    :math:`A/(\sigma\pi)`.
 
 
-.. function:: pearson7(x, cen=0, sigma=1, expon=0.5)
+.. function:: voigt(x, amplitude=1, center=0, sigma=1, gamma=None)
 
-   a Pearson-7 lineshape.  This is another Voigt-like distribution
-   function, defined as
-
-.. math::
-
-    f(x, \mu, \sigma, p) = \frac{s}{\big\{[1 + (\frac{x-\mu}{\sigma})^2] (2^{1/p} -1)  \big\}^p}
+    A Voigt distribution function (see
+    http://en.wikipedia.org/wiki/Voigt_profile), with four Parameters:
+    ``amplitude``, ``center``, ``sigma``, and ``gamma`` defined as:
 
 
-where for *cen* (:math:`\mu`) and *sigma* (:math:`\sigma`) are as for the
-above lineshapes, and *expon* is :math:`p`, and
+    .. math::
 
-.. math::
+        f(x; A, \mu, \sigma, \gamma) = \frac{A \textrm{Re}[w(z)]}{\sigma\sqrt{2\pi}}
 
-    s = \frac{\Gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\Gamma(p-1/2)}
+    where
 
-where :math:`\Gamma(x)` is the gamma function.
+    .. math::
+        :nowrap:
+
+        \begin{eqnarray*}
+             z   &=& \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
+            w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
+        \end{eqnarray*}
+
+    and :func:`erfc` is the complimentary error function.  As above, the
+    parameter ``amplitude`` corresponds to :math:`A`, ``center`` to
+    :math:`\mu`, and ``sigma`` to :math:`\sigma`.  With the default value of
+    ``None``, ``gamma`` (:math:`\gamma`) is constrained to have value equal
+    to ``sigma``, though it can be varied independently.  For the case when
+    :math:`\gamma = \sigma`, the full width at half maximum is approximately
+    :math:`3.6013\sigma`.
+
+.. function:: pvoigt(x, amplitude=1, center=0, sigma=1, fraction=0.5)
+
+    A pseudo-Voigt distribution function, which is a weighted sum of a
+    Gaussian and Lorentzian distribution functions with the same values for
+    ``amplitude`` (:math:`A`) , ``center`` (:math:`\mu`) and the same full
+    width at half maximum (so constrained values of `sigma``,
+    :math:`\sigma`).  A paramater ``fraction`` (:math:`\alpha`) controls
+    controls the relative weight of the Gaussian and Lorentzian components,
+    giving the full definition of
+
+    .. math::
+
+        f(x; A, \mu, \sigma, \alpha) = \frac{(1-\alpha)A}{\sigma_g\sqrt{2\pi}}
+           e^{[{-{(x-\mu)^2}/{{2\sigma_g}^2}}]}
+           + \frac{\alpha A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]
 
 
-.. function:: students_t(x, cen=0, sigma=1)
-
-   Student's t distribution function.
-
-.. math::
-
-    f(x, \mu, \sigma) = \frac{\Gamma(\frac{\sigma+1}{2})} {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})} \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}
+.. function:: pearson7(x, amplitude=1, center=0, sigma=1, exponent=0.5)
 
 
-where :math:`\Gamma(x)` is the gamma function.
+    A Pearson VII distribution function (see
+    http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution),
+    with four parameers: ``amplitude`` (:math:`A`), ``center``
+    (:math:`\mu`), ``sigma`` (:math:`\sigma`), and ``exponent`` (:math:`m`)
+    in
 
-.. function:: breit_wigner(x, cen=0, sigma=1, q=1)
+    .. math::
 
-    Breit-Wigner-Fano distribution function.
+        f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}
 
-.. math::
+   where :math:`\beta` is the beta function (see :scipydoc:`special.beta`
+   in :mod:`scipy.special`).
 
-    f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}
 
 
-.. function:: logistic(x, cen=0, sigma=1)
+.. function:: students_t(x, amplitude=1, center=0, sigma=1)
 
-   Logistic lineshape, a sigmoidal curve
+    A Student's t distribution function (see
+    http://en.wikipedia.org/wiki/Student%27s_t-distribution), with three
+    Parameters: ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`) and
+    ``sigma`` (:math:`\sigma`) in
 
-.. math::
+    .. math::
 
-   f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}
+        f(x; A, \mu, \sigma) = \frac{A \Gamma(\frac{\sigma+1}{2})}
+	    {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})}
+	    \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}
 
+
+    where :math:`\Gamma(x)` is the gamma function.
+
+
+.. function:: breit_wigner(x, amplitude=1, center=0, sigma=1, q=1)
+
+    A Breit-Wigner-Fano distribution function (see
+    http://en.wikipedia.org/wiki/Fano_resonance>), with four Parameters:
+    ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`), ``sigma``
+    (:math:`\sigma`), and ``q`` (:math:`q`) in
+
+    .. math::
+
+        f(x; A, \mu, \sigma, q) = \frac{A (q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}
 
 .. function:: lognormal(x, cen=0, sigma=1)
 
-   log-normal function
+    A Log-normal distribution function (see
+    http://en.wikipedia.org/wiki/Lognormal), with three Parameters
+    ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`) and ``sigma``
+    (:math:`\sigma`) in
 
-.. math::
+    .. math::
 
-    f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}
+        f(x; A, \mu, \sigma) = \frac{A e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}
 
 
 Several builtin special functions can also be used to create lineshapes
@@ -134,23 +162,23 @@ in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.
 
     Table of Useful Line shapes.
 
-    ================================= ======================================
-     *function*                         *description*
-    ================================= ======================================
-    gaussian(x, cen, sigma)           Gaussian, normal distribution
-    lorentzian(x, cen, sigma)         Lorentzian distribution
-    voigt(x, cen, sigma, gamma)       Voigt distribution
-    pvoigt(x, cen, sigma, frac)       pseudo-Voigt distribution
-    pearson7(x, cen, sigma, expon)    Pearson-7 distribution
-    students_t(x, cen, sigma)         Student's t distribution
-    breit_wigner(x, cen, sigma, q)    Breit-Wigner-Fano distribution
-    logistic(x, cen, sigma)           Logistic distribution
-    lognormal(x, cen, sigma)          Log-normal distribution
-    arctan(x)                         Arc-tangent function
-    erf(x)                            Error function
-    erfc(x)                           Complemented Error function (1-erf(x))
-    gammaln(x)                        log of absolute value of gamma(x)
-    ================================= ======================================
+
+    ================================================ ======================================
+     *function*                                       *description*
+    ================================================ ======================================
+    gaussian(x, amplitude, center, sigma)             Gaussian, normal distribution
+    lorentzian(x, amplitude, center, sigma)           Lorentzian distribution
+    voigt(x, amplitude, center, sigma, gamma)         Voigt distribution
+    pvoigt(x, amplitude, center, sigma, fraction)     pseudo-Voigt distribution
+    pearson7(x, amplitude, center, sigma, exponent)   Pearson-7 distribution
+    students_t(x, amplitude, center, sigma)           Student's t distribution
+    breit_wigner(x, amplitude, center, sigma, q)      Breit-Wigner-Fano distribution
+    lognormal(x, amplitude, center, sigma)            Log-normal distribution
+    arctan(x)                                         Arc-tangent function
+    erf(x)                                            Error function
+    erfc(x)                                           Complemented Error function (1-erf(x))
+    gammaln(x)                                        log of absolute value of gamma(x)
+    ================================================ ======================================
 
 
 Other standard special functions (Bessel functions, Legendre polynomials,
@@ -160,4 +188,3 @@ etc) can be accessed from scipy.special::
     from scipy.special import y1 # Bessel function of second kind of order 1
 
 A host of functions to generate other distribution functions can be accessed from scipy.stats.
-

@@ -1,27 +1,32 @@
 ## examples/fitting/doc_example_fitpeak2.lar
 # create mock rectangular data
-x = linspace(0, 160, 81)
-noise = random.normal(size=len(x), scale=0.3)
-y = 6.0 - x*0.001 + noise
-x0 = 30
-dx = 7
-sig = dx*0.6
-y = y + 68*gaussian(x, x0+0*dx,  1.2*sig)
-y = y + 60*gaussian(x, x0+1*dx,  1.1*sig)
-y = y + 71*gaussian(x, x0+2*dx,  sig)
-y = y + 75*gaussian(x, x0+3*dx,  sig)
-y = y + 70*gaussian(x, x0+4*dx,  sig)
-y = y + 73*gaussian(x, x0+5*dx,  sig)
-y = y + 72*gaussian(x, x0+6*dx,  sig)
-y = y + 71*gaussian(x, x0+7*dx,  0.7*sig)
+def make_rect_data(x, noise_scale=0.01):
+    noise = random.normal(size=len(x), scale=noise_scale)
+    y = 6.0 - x*0.001 + noise
+    x0 = 30
+    dx = 7
+    sig = dx*0.6
+    y = y + gaussian(x, amplitude=68, center=x0+0*dx, sigma=1.2*sig)
+    y = y + gaussian(x, amplitude=60, center=x0+1*dx, sigma=1.1*sig)
+    y = y + gaussian(x, amplitude=71, center=x0+2*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=75, center=x0+3*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=70, center=x0+4*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=65, center=x0+5*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=72, center=x0+6*dx, sigma=sig)
+    y = y + gaussian(x, amplitude=61, center=x0+7*dx, sigma=0.9*sig)
+    return y
+#enddef
+
+x = linspace(0, 160, 321)
+y = make_rect_data(x, noise_scale=0.2)
 
 # fit to rectangle shape
-myfit = fit_peak(x, y, 'rectangle', background='linear', step='erf')
+myfit = fit_peak(x, y, 'rectangle', background='constant', step='erf')
 
 plot(myfit.x, myfit.y, marker='+', label='data',
      xlabel='x', ylabel='y', show_legend=True, new=True)
 plot(myfit.x, myfit.fit, label='best fit')
 
-print fit_report(myfit.params, min_correl=0.3)
+print fit_report(myfit, min_correl=0.3)
 
 ## end examples/fitting/doc_example_fitpeak2.lar

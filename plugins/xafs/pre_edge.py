@@ -5,8 +5,10 @@
 
 import numpy as np
 from scipy import polyfit
-from larch import (Group, Parameter, ValidateLarchPlugin,
-                   Make_CallArgs, Minimizer, isgroup,
+from lmfit import Parameters, Minimizer
+
+from larch import (Group, ValidateLarchPlugin,
+                   Make_CallArgs, isgroup,
                    parse_group_args)
 
 # now we can reliably import other std and xafs modules...
@@ -66,9 +68,8 @@ def find_e0(energy, mu=None, group=None, _larch=None):
         group.e0 = e0
     return e0
 
-def flat_resid(pars):
-    c0, c1, c2 =  pars.c0.value,  pars.c1.value,  pars.c2.value
-    return  (pars.mu - (c0 + pars.en * (c1 + pars.en * c2)))
+def flat_resid(pars, en, mu):
+    return (pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu)
 
 
 def preedge(energy, mu, e0=None, step=None,
@@ -269,16 +270,17 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     if make_flat and p2-p1 > 4:
         enx, mux = remove_nans2(energy[p1:p2], norm[p1:p2])
         # enx, mux = (energy[p1:p2], norm[p1:p2])
-        fpars = Group(c0 = Parameter(0, vary=True),
-                      c1 = Parameter(0, vary=True),
-                      c2 = Parameter(0, vary=True),
-                      en=enx, mu=mux)
-        fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-5)
-        try:
-            fit.leastsq()
-        except (TypeError, ValueError):
-            pass
-        fc0, fc1, fc2  = fpars.c0.value, fpars.c1.value, fpars.c2.value
+        fpars = Parameters()
+        fpars.add('c0', value=0, vary=True)
+        fpars.add('c1', value=0, vary=True)
+        fpars.add('c2', value=0, vary=True)
+        fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
+        result = fit.leastsq(xtol=1.e-6, ftol=1.e-6)
+
+        fc0 = result.params['c0'].value
+        fc1 = result.params['c1'].value
+        fc2 = result.params['c2'].value
+
         flat_diff   = fc0 + energy * (fc1 + energy * fc2)
         flat        = norm - flat_diff  + flat_diff[ie0]
         flat[:ie0]  = norm[:ie0]

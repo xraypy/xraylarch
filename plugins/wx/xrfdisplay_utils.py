@@ -375,10 +375,12 @@ class XRFDisplayConfig:
     hold_elinecolor  = '#CAC8DA'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
-    roi_color        = '#AA0000'
-    spectra_color    = '#0000AA'
-    spectra2_color   = '#00DD00'
-    bgr_color        = '#000000'
+    roi_color        = '#d62728'
+    spectra_color    = '#1f77b4'
+    spectra2_color   = '#2ca02c'
+    bgr_color        = '#ff7f0e'
+
+
 
     K_major = ['Ka1', 'Ka2', 'Kb1']
     K_minor = ['Kb3', 'Kb2']

@@ -109,6 +109,9 @@ special list ``_sys.searchGroupObjects`` holding the list of Groups to be
 searched for names.  There are several related variables listed in
 :ref:`Table of Namespace-related Variables <namespace_table>`.
 
+.. versionchanged:: 0.9.34
+   `_sys.paramGroup` is no longer used.  For fitting, use `_sys.fiteval` instead.
+
 .. index:: _sys variables,  namespace-related variables
 .. _namespace_table:
 
@@ -120,7 +123,6 @@ searched for names.  There are several related variables listed in
     ========================= =============================================
      *variable*                  *content*
     ========================= =============================================
-     _sys.paramGroup           group of Parameters, as for a fit
      _sys.localGroup           group for variables passed into or created
                                in a procedure
      _sys.moduleGroup          group for module-wide variables -- those
@@ -134,26 +136,20 @@ searched for names.  There are several related variables listed in
 `_sys.searchGroups` and `_sys.searchGroupObjects` are always kept in sync,
 and always contain the groups named in `_sys.core_groups`.  In addition,
 they always contain (in order, if not ``None``), `_sys.localGroup`,
-`_sys.paramGroup`, `_sys.moduleGroup`.  If not inside a function or module,
+`_sys.moduleGroup`.  If not inside a function or module,
 `_sys.localGroup` and `_sys.moduleGroup` are set to `_main`.
-
 
 Thus, inside a procedure, the way names are looked up are:
 
-1. First, variables defined in the current *parameter group*.  This is
-meant to be used exclusively for fitting procedures. Only during a fit
-should `_sys.paramGroup` have any value other than ``None``.
+1. First, variables defined in the procedure definition, passed in as
+arguments, those created inside the procedure.
 
-2. Second, variables defined in the procedure definition (command-line
-arguments and created inside the procedure.
+2. Second, variable defined at the top-level (not inside other procedures)
+in the same module in which the procedure is defined.
 
-3. Third, variable declared at the top-level in the same module in which the
-procedure is  defined.
-
-4. Finaly, by going through the list of other search groups, including all
-the groups in `_sys.core_groups`, and probably several others brought in
-from some plug-in.
-
+3. Third, by searching through the list of other search groups, including
+all the groups in `_sys.core_groups`, and probably several others brought
+in from some plug-in.
 
 
 In principle, you can alter some of these variables in the `_sys` group.
@@ -328,4 +324,3 @@ With this definition::
     larch> help(safe_sqrt)
       safe sqrt function:
          returns sqrt(abs(x))
-

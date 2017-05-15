@@ -41,6 +41,14 @@ intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
                        }
 
+extlinks = {
+    'scipydoc' : ('http://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html', 'scipy.'),
+    'numpydoc' : ('http://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', 'numpy.'),
+    'lmfitdoc' : ('https://lmfit.github.io/lmfit-py/%s.html', 'lmfit.'),
+    'lmfitx' : ('https://lmfit.github.io/lmfit-py/%s', ' '),
+    }
+
+
 # Turns on numbered figures for HTML output
 number_figures = True
 
