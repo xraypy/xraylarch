@@ -73,6 +73,15 @@ class ParameterGroup(Group):
 
     def __setattr__(self, name, val):
         if isinstance(val, Parameter):
+            if val.name != name:
+                # allow 'a=Parameter(2, ..)' to mean Parameter(name='a', value=2, ...)
+                nval = None
+                try:
+                    nval = float(val.name)
+                except (ValueError, TypeError):
+                    pass
+                if nval is not None:
+                    val.value = nval
             self.__params__.add(name, value=val.value, vary=val.vary, min=val.min,
                               max=val.max, expr=val.expr, brute_step=val.brute_step)
             val = self.__params__[name]
