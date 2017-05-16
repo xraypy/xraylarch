@@ -436,7 +436,10 @@ def get_dll(libname):
         return loaddll(dllpath)
 
     # if not found in the larch dlls tree, try your best!
-    return loaddll(ctypes.util.find_library(libname))
+    dllpath = ctypes.util.find_library(libname)
+    if dllpath is not None and os.path.exists(dllpath):
+        return loaddll(dllpath)
+    return None
 
 
 def read_workdir(conffile):
