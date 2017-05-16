@@ -100,6 +100,46 @@ def sigma2_debye(t, theta, path=None, _larch=None):
                               atomx, atomy, atomz, atomm)
 
 def sigma2_correldebye(natoms, tk, theta, rnorm, x, y, z, atwt):
+    """
+    internal sigma2 calc for a Feff Path wih the correlated Debye model
+
+    these routines come courtesy of jj rehr and si zabinsky.
+
+    Arguments:
+      natoms  *int, lengths for x, y, z, atwt        [in]
+      tk      *double, sample temperature (K)        [in]
+      theta   *double, Debye temperature (K)         [in]
+      rnorm   *double, Norman radius (Ang)           [in]
+      x       *double, array of x coord (Ang)        [in]
+      y       *double, array of y coord (Ang)        [in]
+      x       *double, array of z coord (Ang)        [in]
+      atwt    *double, array of atomic_weight (amu)  [in]
+
+   Returns:
+      sig2_cordby  double, calculated sigma2
+    """
+    global FEFF6LIB
+    if FEFF6LIB is None:
+        FEFF6LIB = get_dll('feff6')
+        FEFF6LIB.sigma2_debye.restype = ctypes.c_double
+
+    na = ctypes.pointer(ctypes.c_int(natoms))
+    t  = ctypes.pointer(ctypes.c_double(tk))
+    th = ctypes.pointer(ctypes.c_double(theta))
+    rs = ctypes.pointer(ctypes.c_double(rnorm))
+
+    ax = (natoms*ctypes.c_double)()
+    ay = (natoms*ctypes.c_double)()
+    az = (natoms*ctypes.c_double)()
+    am = (natoms*ctypes.c_double)()
+
+    for i in range(natoms):
+        ax[i], ay[i], az[i], am[i] = x[i], y[i], z[i], atwt[i]
+
+    return FEFF6LIB.sigma2_debye(na, t, th, rs, ax, ay, az, am)
+
+
+def sigma2_correldebye_py(natoms, tk, theta, rnorm, x, y, z, atwt):
     """calculate the XAFS debye-waller factor for a path based
     on the temperature, debye temperature, average norman radius,
     atoms in the path, and their positions.
@@ -163,6 +203,8 @@ def sigma2_correldebye(natoms, tk, theta, rnorm, x, y, z, atwt):
             sig2 += sig2ij
 
     return sig2/2.0
+
+
 
 def dist(x0, y0, z0, x1, y1, z1):
     """find distance between cartesian points
