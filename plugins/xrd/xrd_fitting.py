@@ -51,7 +51,9 @@ def peakfinder(y, regions=20, gapthrsh=5):
     ttlpnts = len(y)
     widths = np.arange(1,int(ttlpnts/regions))
 
+
     peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
+
 # # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
 # #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
 

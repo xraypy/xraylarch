@@ -2113,7 +2113,7 @@ SPGRP_SYMM = {'1': {'1a': [['x', 'y', 'z']]},
 SPACEGROUPS = {'1':['B1','C1','A1','F1','I1'],
                '2':['B-1','C-1','P-1','A-1','F-1','I-1','P1','P111'],
                '3':['B121','C112','P2','A211','P112','P121','P211'],
-               '4':['B1211','C1121','P21','A2111','P1121','P1211','P2111'],
+               '4':['B1211','C1121','P21','A2111','P1121','P1211','P2111','P12121211'],
                '5':['A121','B112','C2','A112','B211','C121','C211','F112','F121','F211','I112','I121','I211'],
                '6':['B1m1','C11m','Pm','Am11','P11m','P1m1','Pm11'],
                '7':['Ad11','B1a1','C11d','Ab11','B1d1','C11a','P11a','P11b','P11n','P1a1','P1c1','P1n1','Pb11','Pc','Pc11','Pn11'],
@@ -2508,7 +2508,8 @@ class CIFcls(object):
                 elif k == '_symmetry_int_tables_number':
                     self.symmetry.no = cf[key][k]
                 elif k == '_symmetry_space_group_name_h-m':
-                    self.symmetry.name = cf[key][k]
+                    self.symmetry.name = re.sub(' ','',cf[key][k])
+                    #self.symmetry.name = cf[key][k]
                 elif k == '_chemical_name_structure_type':
                     self.symmetry.type = cf[key][k]
                 elif k == '_space_group_symop_operation_xyz' or k == '_symmetry_equiv_pos_as_xyz':
@@ -2544,6 +2545,7 @@ class CIFcls(object):
         
         self.wyckoff()
         self.check_atoms()
+
 
     def check_atoms(self):
 
@@ -2623,7 +2625,7 @@ class CIFcls(object):
                     self.symmetry.no = no
                     return
 
-    def structure_factors(self, wvlgth=1.54056, q_min=1.0, q_max=5.5):
+    def structure_factors(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
 
         hkl_list = generate_hkl()
         xraydb = xrayDB()
@@ -2642,9 +2644,10 @@ class CIFcls(object):
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
                     f0 = xraydb.f0(el, qhkl[i]/(4*math.pi)) # xraydb.f0(el, 1/(2*dhkl[i]))
-#                     if f0 is None:
-#                         print('eventually remove...')
-#                         print('f0',f0,type(f0),el,qhkl[i]/(4*math.pi))
+                    #if f0 is None:
+                    #    ## Remove after debugging - mkak
+                    #    print('eventually remove...')
+                    #    print('f0',f0,type(f0),el,qhkl[i]/(4*math.pi))
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
