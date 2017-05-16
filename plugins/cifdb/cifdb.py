@@ -226,6 +226,7 @@ class cifDB(object):
                  secondaryjoin=(compref.c.z == elemtbl.c.z))))
 
         self.load_database()
+        self.axis = np.array([float(q[0]) for q in self.query(self.qtbl.c.q).all()])
 
 
     def query(self, *args, **kws):
@@ -464,7 +465,7 @@ class cifDB(object):
         
         ## Define q-array for each entry at given energy
         energy = 19000 ## units eV
-        cif.structure_factors(wvlgth=lambda_from_E(energy))
+        cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
         qarr = self.create_q_array(cif.qhkl)
         
         t3 = time.time()
@@ -552,7 +553,8 @@ class cifDB(object):
     #     cif_category.execute(category_id='none',
     #                          amcsd_id=cif.id_no)
 
-        print 'Time total: %1.3f s; Structure factors: %1.3f s.' % ((t9-t0),(t3-t2))
+        ## Remove after debugging - mkak
+        print('Time total: %1.3f s; Structure factors: %1.3f s.' % ((t9-t0),(t3-t2)))
         if url:
             if verbose:
                 self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
@@ -746,19 +748,12 @@ class cifDB(object):
         
         return ALLelements,mineral_name,iuc_id,authors
 
-    def q_by_amcsd(self,amcsd,qmin=None,qmax=None):
+    def q_by_amcsd(self,amcsd_id,qmin=QMIN,qmax=QMAX):
 
-        ## NEEDS TO BE REWRITTEN
-        print('NEEDS TO BE REWRITTEN')
-        usr_qry = self.query(self.ciftbl,self.qtbl)
-        if qmin is not None and qmax is not None:
-            usr_qry = usr_qry.filter(and_(self.qtbl.c.q > qmin,self.qtbl.c.q < qmax))
-        elif qmin is not None:
-            usr_qry = usr_qry.filter(self.qtbl.c.q > qmin)        
-        elif qmax is not None:
-            usr_qry = usr_qry.filter(self.qtbl.c.q < qmax)
-            
-        return [float(row.q) for row in usr_qry.all()]
+        q_results = self.query(self.ciftbl.c.qstr).filter(self.ciftbl.c.amcsd_id == amcsd_id).all()
+        q_all = [json.loads(qrow[0]) for qrow in q_results]
+
+        return [self.axis[i] for i,qi in enumerate(q_all[0]) if qi == 1 and self.axis[i] >= qmin and self.axis[i] <= qmax]
 
     def author_by_amcsd(self,amcsd_id):
 
@@ -803,44 +798,53 @@ class cifDB(object):
 ##################################################################################
 ##################################################################################
 
-    def amcsd_by_q(self,include=[],list=None,verbose=False,minpeaks=2):
+    def amcsd_by_q(self,peaks,qmin=QMIN,qmax=QMAX,qstep=QSTEP,list=None,verbose=False):
 
-        q_incld  = []
-        id_incld = []
+        import time
+        t1 = time.time()
 
-        all_matches = []
-        matches = []
-        count = []
+        ## Defines min/max limits of q-range
+        imin,imax = 0,len(self.axis)
+        if qmax < np.max(self.axis): imax = abs(self.axis-qmax).argmin()
+        if qmin > np.min(self.axis): imin = abs(self.axis-qmin).argmin()
+        qaxis = self.axis[imin:imax]
+        stepq = (qaxis[1]-qaxis[0])
 
-        print('NEEDS TO BE REWRITTEN.')
-        if len(include) > 0:
-            for q in include:
-                id = (np.abs(QAXIS-q).argmin())+1
-                if id is not None and id not in id_incld:
-                    id_incld += [id]
-                        
-        usr_qry = self.query(self.ciftbl,self.qtbl)
-        if list is not None:
-            usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
+        amcsd,q_amcsd = self.return_q_matches(list=list,qmin=qmin,qmax=qmax)
 
-        ##  Searches composition of database entries
+        ## Re-bins data if different step size is specified
+        if qstep > stepq:
+            new_qaxis   = np.arange(np.min(qaxis),np.max(qaxis)+stepq,qstep)
+            new_q_amcsd = np.zeros((np.shape(q_amcsd)[0],np.shape(new_qaxis)[0]))
+            for m,qrow in enumerate(q_amcsd):
+                for n,qn in enumerate(qrow):
+                    if qn == 1:
+                        k = np.abs(new_qaxis-qaxis[n]).argmin()
+                        new_q_amcsd[m][k] = 1
+            qaxis = new_qaxis
+            q_amcsd = new_q_amcsd
+        
 
-        if len(id_incld) > 0:
-            fnl_qry = usr_qry.filter()
+        ## Create data array
+        peaks_weighting = np.ones(len(qaxis),dtype=int)*-1
+        peaks_true = np.zeros(len(qaxis),dtype=int)
+        peaks_false = np.ones(len(qaxis),dtype=int)
+        for p in peaks:
+            i = np.abs(qaxis-p).argmin()
+            peaks_weighting[i],peaks_true[i],peaks_false[i] = 1,1,0
 
-            for row in fnl_qry.all():
+        ## Calculate score/matches/etc.
+        total_peaks = np.sum((q_amcsd),axis=1)
+        match_peaks = np.sum((peaks_true*q_amcsd),axis=1)
+        miss_peaks = np.sum((peaks_false*q_amcsd),axis=1)
+        scores = np.sum((peaks_weighting*q_amcsd),axis=1)
+        
+        t2 = time.time()
 
-                if row.amcsd_id not in matches:
-                    matches += [row.amcsd_id]
-                    count += [1]
-                else:
-                    idx = matches.index(row.amcsd_id)
-                    count[idx] = count[idx]+1
+        ## Remove after debugging - mkak
+        print('Search took %1.3f s.' % (t2-t1))
 
-        amcsd_matches = [x for y, x in sorted(zip(count,matches)) if y > minpeaks]
-        count_matches = [y for y, x in sorted(zip(count,matches)) if y > minpeaks]
-       
-        return amcsd_matches,count_matches
+        return sorted(zip(scores,amcsd,total_peaks,match_peaks,miss_peaks),reverse=True)
 
 
     def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
@@ -953,32 +957,30 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
-    def return_q_matches(self,qmin=QMIN,qmax=QMAX):
+    def return_q_matches(self,list=None,qmin=QMIN,qmax=QMAX):
     
-        q_results = self.query(self.ciftbl.c.qstr).all()
+        if list is not None:
+            qqry = self.query(self.ciftbl.c.qstr)\
+                       .filter(self.ciftbl.c.amcsd_id.in_(list))\
+                       .all()
+            idqry = self.query(self.ciftbl.c.amcsd_id)\
+                       .filter(self.ciftbl.c.amcsd_id.in_(list))\
+                       .all()
+        else:
+            qqry = self.query(self.ciftbl.c.qstr).all()
+            idqry = self.query(self.ciftbl.c.amcsd_id).all()
 
-        imin,imax = 0,len(QAXIS)
-        if qmax < QMAX: imax = abs(QAXIS-qmax).argmin()
-        if qmin > QMIN: imin = abs(QAXIS-qmin).argmin()
+        imin,imax = 0,len(self.axis)
+        if qmax < QMAX: imax = abs(self.axis-qmax).argmin()
+        if qmin > QMIN: imin = abs(self.axis-qmin).argmin()
 
-        q_all = [json.loads(qrow[0])[imin:imax] for qrow in q_results]
-        
-
-        id_results = self.query(self.ciftbl.c.amcsd_id).all()
-        id_all = [id[0] for id in id_results]
-        
-        return id_all,q_all
-    
-#         tab = ChantlerTable
-#         row = self.query(tab.energy).all()
-#         E = [json.loads(r[0]) for r in row]
-
+        return [id[0] for id in idqry],[json.loads(q[0])[imin:imax] for q in qqry]
 
     def create_q_array(self,q):
     
-        q_array = np.zeros(len(QAXIS),dtype=int)
+        q_array = np.zeros(len(self.axis),dtype=int)
         for qn in q:
-            i = np.abs(QAXIS-qn).argmin()
+            i = np.abs(self.axis-qn).argmin()
             q_array[i] = 1
         return q_array
 
@@ -1276,56 +1278,25 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
             
-def match_database(fracq=0.75, pk_wid=0.05, q=None, ipks=None,
-                   cifdatabase=None, verbose=False):
+def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
     '''
     fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
     pk_wid : maximum range in q which qualifies as a match between fitted and ideal
 
     '''
+    stepq = 0.05
+    scores,amcsd,total_peaks,match_peaks,miss_peaks = zip(*cifdatabase.amcsd_by_q(peaks,
+                                                       qmin=minq,qmax=maxq,qstep=stepq,
+                                                       list=None,verbose=False))
 
-    q_pks = peaklocater(ipks,q)
-    minq = np.min(q)
-    maxq = np.max(q)
-
-    peaks = []
-    p_ids = []
-
-    for pk_q in q_pks:
-        pk_id = (np.abs(QAXIS-pk_q).argmin())+1
-
-        ## performs peak broadening here
-        if pk_wid > 0:
-            st = int(pk_wid/QSTEP/2)
-            for p in np.arange(-1*st,st+1):
-                peaks += [pk_q+p*QSTEP]
-                p_ids += [pk_id+p]
-        else:
-            peaks += [pk_q]
-            p_ids += [pk_id]
-
-    matches,count = cifdatabase.amcsd_by_q(peaks)
-    goodness = np.zeros(len(count))
-
-    for i, (amcsd,cnt) in enumerate(zip(matches,count)):
-        peak_id = sorted(cifdatabase.q_by_amcsd(amcsd,qmin=minq,qmax=maxq))
-        if len(peak_id) > 0:
-            goodness[i] = float(cnt)/len(peak_id)
-
-    try:
-        matches,count,goodness = zip(*[(x,y,t) for t,x,y in sorted(zip(goodness,matches,count)) if t > fracq])
-    except:
-        matches,count,goodness = [],[],[]
-
-    for i,amcsd in enumerate(matches):
-        if verbose:
-            str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (amcsd,
-                     cifdatabase.mineral_by_amcsd(amcsd),goodness[i],
-                     count[i],count[i]/goodness[i])
+    for i,id_no in enumerate(amcsd):
+        if verbose and i < 20:
+            str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (id_no,
+                     cifdatabase.mineral_by_amcsd(id_no),scores[i],
+                     match_peaks[i],total_peaks[i])
             print(str)
 
-               
-    return matches
+    return [match for i,match in enumerate(amcsd) if scores[i] > 0]
                 
                           
                 

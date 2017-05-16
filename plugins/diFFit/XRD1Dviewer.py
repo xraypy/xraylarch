@@ -421,7 +421,6 @@ class Fitting1DXRD(BasePanel):
 
             cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
             cif.structure_factors(wvlgth=wavelength,q_max=maxq)
-            #qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
@@ -437,6 +436,7 @@ class Fitting1DXRD(BasePanel):
                 I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
                 self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
             except:
+                qall,Iall = plot_sticks(qall,Iall)
                 cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
                 self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
 
@@ -1120,8 +1120,12 @@ class Fitting1DXRD(BasePanel):
         if gdness > 1 or gdness < 0:
             self.val_gdnss.SetValue('0.85')
             gdness = float(self.val_gdnss.GetValue())
-        list_amcsd = match_database(fracq=gdness,q=self.plt_data[0],ipks=self.xrd1dgrp.pki,
-                                    cifdatabase=self.owner.cifdatabase)
+        q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
+        print('Still need to determine how best to rank these matches')
+        list_amcsd = match_database(self.owner.cifdatabase,q_pks,
+                                    #fracq=gdness,
+                                    minq=np.min(self.plt_data[0]),
+                                    maxq=np.max(self.plt_data[0]))
         self.displayMATCHES(list_amcsd)
         
     def displayMATCHES(self,list_amcsd):
