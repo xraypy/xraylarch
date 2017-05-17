@@ -434,15 +434,12 @@ class cifDB(object):
                  'q_id','amcsd_id' to 'qpeak'
         '''
 
-        import time
-        t0 = time.time()
         if url:
             cifstr = requests.get(cifile).text
         else:
             with open(cifile,'r') as file:
                 cifstr = str(file.read())
         cif = create_cif(cifstr=cifstr)
-        t1 = time.time()
 
         ## check for amcsd in file already
         ## Find amcsd_id in database
@@ -461,14 +458,12 @@ class cifDB(object):
                     file.write('%s: AMCSD %i already exists in database %s.\n' % 
                          (os.path.split(cifile)[-1],cif.id_no,self.dbname))
             return
-        t2 = time.time()
         
         ## Define q-array for each entry at given energy
         energy = 19000 ## units eV
-        cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
-        qarr = self.create_q_array(cif.qhkl)
-        
-        t3 = time.time()
+        #cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
+        qhkl = cif.q_calculator(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
+        qarr = self.create_q_array(qhkl)
 
         ###################################################
         def_elem = self.elemtbl.insert()
@@ -484,8 +479,6 @@ class cifDB(object):
         add_cat  = self.catref.insert()
         new_cif  = self.ciftbl.insert()
 
-        t4 = time.time()
-
         ## Find mineral_name
         match = False
         search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
@@ -498,14 +491,10 @@ class cifDB(object):
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
         
-        t5 = time.time()
-        
         ## Find symmetry_name
         search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == cif.symmetry.name)
         for row in search_spgrp.execute():
             iuc_id = row.iuc_id
-
-        t6 = time.time()
 
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=cif.id_no,
@@ -514,8 +503,6 @@ class cifDB(object):
                              cif=cifstr,
                              qstr=json.dumps(qarr.tolist(),default=str),
                              url=str(cifile))
-
-        t7 = time.time()
 
         ## Find composition (loop over all elements)
         for element in set(cif.atom.label):
@@ -527,8 +514,6 @@ class cifDB(object):
             except:
                 print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
                 pass
-
-        t8 = time.time()
 
         ## Find author_name
         for author_name in cif.publication.author:
@@ -547,14 +532,10 @@ class cifDB(object):
                 add_auth.execute(author_id=author_id,
                                    amcsd_id=cif.id_no)
 
-        t9 = time.time()
-
     #     ## not ready for defined categories
     #     cif_category.execute(category_id='none',
     #                          amcsd_id=cif.id_no)
 
-        ## Remove after debugging - mkak
-        print('Time total: %1.3f s; Structure factors: %1.3f s.' % ((t9-t0),(t3-t2)))
         if url:
             if verbose:
                 self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
