@@ -452,6 +452,20 @@ class cifDB(object):
             with open(cifile,'r') as file:
                 cifstr = str(file.read())
         cif = create_cif(cifstr=cifstr)
+        
+        if cif.id_no is None:
+            cif_no = 99999
+            search_cif = self.query(self.ciftbl.c.amcsd_id).filter(self.ciftbl.c.amcsd_id == cif_no).all()
+            cnt_lp = 0
+            while len(search_cif) > 0:
+                cif_no += 1
+                cnt_lp += 1
+                search_cif = self.query(self.ciftbl.c.amcsd_id).filter(self.ciftbl.c.amcsd_id == cif_no).all()
+                if cnt_lp > 500: ##  safe guards against infinite loop
+                    print(' *** too many loops to find unassigned AMCSD number.')
+                    return
+            print(' *** Assigning unnumbered CIF to AMCSD %i' % cif_no)
+            cif.id_no = cif_no
 
         ## check for amcsd in file already
         ## Find amcsd_id in database
@@ -516,6 +530,7 @@ class cifDB(object):
             search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
             for row in search_elements.execute():
                 z = row.z
+            
             try:
                 add_comp.execute(z=z,amcsd_id=cif.id_no)
             except:
@@ -688,8 +703,9 @@ class cifDB(object):
             elementstr = '%s %s' % (elementstr,element)
         print(elementstr)
         print(' Name: %s' % mineral_name)
+
         try:
-            print(' Space Group No.: %s (%s)' % (iuc_id,self.symm_id(int(iuc_id))))
+            print(' Space Group No.: %s (%s)' % (iuc_id,self.symm_id(iuc_id)))
         except:
             print(' Space Group No.: %s' % iuc_id)
         if no_qpeaks:
@@ -705,6 +721,9 @@ class cifDB(object):
         print('')
 
     def symm_id(self,iuc_id):
+        
+        if not isinstance(iuc_id,int):
+            iuc_id = int(iuc_id.split(':')[0])
         
         if iuc_id < 3 : return 'triclinic'       ##   1 -   2 : Triclinic
         elif iuc_id < 16: return 'monoclinic'    ##   3 -  15 : Monoclinic

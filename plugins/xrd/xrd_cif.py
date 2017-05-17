@@ -2745,6 +2745,8 @@ def check_elemsym(atom):
             return atom
     return match_list[ai]
 
+def removeNonAscii(s):
+    return "".join(i for i in s if ord(i)<128)
 
 def create_cif(cifdatabase=None,cifile=None,amcsd_id=None,cifstr=None):
 
@@ -2758,7 +2760,11 @@ def create_cif(cifdatabase=None,cifile=None,amcsd_id=None,cifstr=None):
         elif amcsd_id is not None and cifdatabase is not None:
             ciftext = cifdatabase.return_cif(amcsd_id)
         with open(tmpcif, 'w') as f:
-            f.write(ciftext)
+            try:
+                f.write(ciftext)
+            except:
+                f.write(removeNonAscii(ciftext)) 
+
         cif.read_cifile(tmpcif)
         os.system('rm -rf %s' % tmpcif)
     cif.spacegroup()
