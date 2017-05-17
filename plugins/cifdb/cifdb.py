@@ -415,6 +415,18 @@ class cifDB(object):
         ## Main table
         self.ciftbl  = Table('ciftbl', self.metadata)
         
+    def add_space_groups(self):
+    
+        ## Add missing space groups
+        for spgrp_no in SPACEGROUPS.keys():
+            for spgrp_name in SPACEGROUPS[spgrp_no]:
+                match = False
+                search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == spgrp_name)
+                for row in search_spgrp.execute():
+                    match = True
+                if match is False:
+                    print('Adding: %s %s' % (spgrp_no,spgrp_name))
+                    self.spgptbl.insert().execute(iuc_id=spgrp_no,hm_notation=spgrp_name)
         
     def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1,file=None):
         '''
@@ -490,7 +502,7 @@ class cifDB(object):
             search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
-        
+                
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=cif.id_no,
                              mineral_id=int(mineral_id),
