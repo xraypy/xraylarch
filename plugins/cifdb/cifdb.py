@@ -393,7 +393,7 @@ class cifDB(object):
                     if verbose:
                         print('Duplicate: %s %s' % (spgrp_no,spgrp_name))
                 pass
-  
+
     def load_database(self):
 
         ###################################################
@@ -491,15 +491,10 @@ class cifDB(object):
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
         
-        ## Find symmetry_name
-        search_spgrp = self.spgptbl.select(self.spgptbl.c.hm_notation == cif.symmetry.name)
-        for row in search_spgrp.execute():
-            iuc_id = row.iuc_id
-
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=cif.id_no,
                              mineral_id=int(mineral_id),
-                             iuc_id=iuc_id,
+                             iuc_id=cif.symmetry.no,
                              cif=cifstr,
                              qstr=json.dumps(qarr.tolist(),default=str),
                              url=str(cifile))
