@@ -164,8 +164,11 @@ def lambda_from_E(E,E_units='keV',lambda_units='A'):
     else:
         return PLANCK_HC/E*1e-3 # A
 
-def generate_hkl(hmax=10,kmax=10,lmax=10):
-    hklall = np.mgrid[-hmax:hmax+1, -kmax:kmax+1, -lmax:lmax+1].reshape(3, -1).T
+def generate_hkl(hmax=10,kmax=10,lmax=10,positive_only=True):
+    if positive_only is True:
+        hklall = np.mgrid[0:hmax+1, 0:kmax+1, 0:lmax+1].reshape(3, -1).T
+    else:
+        hklall = np.mgrid[-hmax:hmax+1, -kmax:kmax+1, -lmax:lmax+1].reshape(3, -1).T
     return np.array([hkl for hkl in hklall if hkl[0]**2 + hkl[1]**2 + hkl[2]**2 > 0])
 
 

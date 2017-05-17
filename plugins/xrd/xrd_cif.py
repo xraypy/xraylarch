@@ -2625,6 +2625,38 @@ class CIFcls(object):
                     self.symmetry.no = no
                     return
 
+    def q_calculator(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
+
+        hkl_list = generate_hkl(positive_only=True)
+#         xraydb = xrayDB()
+        
+        dhkl = d_from_hkl(hkl_list,*self.unitcell)
+        qhkl = q_from_d(dhkl)
+        
+        F2hkl = np.zeros(len(hkl_list))
+    
+        ## removes q values outside of range
+        ii,jj = qhkl < q_max,qhkl > q_min
+        ii = jj*ii        
+        
+        for i,hkl in enumerate(hkl_list):
+            Fhkl = 0
+            if ii[i]:
+                for el in self.atom.label:  ## loops through each element
+                    for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
+                        hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
+                        Fhkl = Fhkl + (cmath.exp(2*cmath.pi*imag*hukvlw)).real
+            if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
+        
+        ## removes zero value structure factors
+        jj = F2hkl > 0.001
+        ii = ii*jj
+        
+        qarr = np.array(qhkl[ii],dtype=np.float16)
+       
+        return sorted(np.array(list(set(qarr))))
+
+
     def structure_factors(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
 
         hkl_list = generate_hkl()
