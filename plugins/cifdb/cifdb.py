@@ -1070,11 +1070,9 @@ class cifDB(object):
 
     def return_mineral_names(self):
         
-        mineralqry = self.query(self.nametbl)
-        names = ['']
-        for row in mineralqry.all():
-            names += [row.mineral_name]
-        
+        mineralqry = self.query(self.nametbl.c.mineral_name).all()
+        names = [name[0] for name in mineralqry if isinstance(name[0], unicode) or isinstance(name[0], str)]
+        names += ['']
         return sorted(names)
 
     def return_author_names(self):
