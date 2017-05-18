@@ -567,20 +567,13 @@ class cifDB(object):
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
-    def url_to_cif(self,verbose=False,savecif=False,trackerr=False,
+    def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
     
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
             #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
  
-        if trackerr:
-            dir = os.getcwd()
-            ftrack = open('%s/trouble_cif.txt' % dir,'a+')
-            ftrack.write('using URL : %s\n\n' % url)
-        else:
-            ftrack=None
-        
         ## Defines url range for searching and adding to cif database
         if all == True:
             iindex = range(99999) ## trolls whole database online
@@ -595,8 +588,6 @@ class cifDB(object):
             if r.text.split()[0] == "Can't" or '':
                 if verbose:
                     print('\t---> ERROR on amcsd%05d.cif' % i)
-                    if trackerr:
-                        ftrack.write('%s\n' % url_to_scrape)
             else:
                 if verbose:
                     print('Reading %s' % url_to_scrape)
@@ -609,15 +600,9 @@ class cifDB(object):
                         print('Saved %s' % file)
                 if addDB:
                     try:
-                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i,file=ftrack)
+                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
                     except:
-                        if trackerr:
-                            ftrack.write('%s\n' % url_to_scrape)
                         pass
-
-        if trackerr:
-            ftrack.close()
-
 
 #     def database_array(self,maxrows=None):
 #     
