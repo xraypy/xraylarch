@@ -264,13 +264,11 @@ class xrd1d(grpobjt):
         all_data = np.array(self.all_data(bkgd=bkgd))
 
         self.pki = peakfinder(all_data[3],**kwargs)
-        if threshold is not None: self.pki = peakfilter(threshold,self.pki,all_data[3])
+        if threshold is not None:
+            self.pki = peakfilter(threshold,self.pki,all_data[3])
 
         pk_data = np.zeros((5,len(self.pki)))
         for i,pki in enumerate(self.pki): pk_data[:,i] = all_data[:,pki]
-            
-        return pk_data
-
         
 #     def refine_peaks(self,trim=False,bkgd=False):
 #     

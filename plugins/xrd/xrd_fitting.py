@@ -43,27 +43,20 @@ def peaklocater(ipeaks,x):
 
     return np.array(xypeaks)
 
-def peakfinder(y, regions=20, gapthrsh=5):
+def peakfinder(y, method='scipy.signal.find_peaks_cwt', regions=20, gapthrsh=5):
     '''
     Returns indices for peaks in y from dataset
     '''
-
-    ttlpnts = len(y)
-    widths = np.arange(1,int(ttlpnts/regions))
-
-
-#     import peakutils
-#     peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=10)
-#     print 'peakutils.indexes'
-#     peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=100)
-    peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
-#     print 'signal.find_peaks_cwt'
-#     print 
-#     print 'peaks'
-#     print y[peak_indices]
-#     print
-# # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
-# #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+    
+    if method == 'peakutils.indexes':
+        import peakutils
+        peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=10)
+        #peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=100)
+    elif method == 'scipy.signal.find_peaks_cwt':
+        ## scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+        ##                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+        widths = np.arange(1,int(len(y)/regions))
+        peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
 
     return peak_indices
 

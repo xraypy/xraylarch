@@ -31,8 +31,7 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_d
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
                                E_from_lambda,d_from_twth,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
-                               SPACEGROUPS,create_cif,
-                               peakfinder,peakfilter,xrd_background)
+                               SPACEGROUPS,create_cif)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -42,7 +41,7 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
 
-FIT_METHODS = ['scipy.signal.find_peaks_cwt']
+FIT_METHODS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
@@ -383,6 +382,7 @@ class Fitting1DXRD(BasePanel):
         self.gapthrsh = 5
         self.halfwidth = 40
         self.intthrsh = 100
+        self.method = FIT_METHODS[0]
 
         # Background fitting defaults
         self.exponent   = 20
@@ -778,7 +778,8 @@ class Fitting1DXRD(BasePanel):
             self.remove_all_peaks()
 
             self.intthrsh = int(self.pkpl.val_intthr.GetValue())
-            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),threshold=self.intthrsh)
+            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
+                                     threshold=self.intthrsh,method=self.method)
                     
             self.peak_display()
             self.plot_peaks()
@@ -872,7 +873,7 @@ class Fitting1DXRD(BasePanel):
 
         if len(self.xrd1dgrp.pki) > 0:
             self.define_peaks()
-
+            
             xi = self.rngpl.ch_xaxis.GetSelection()
             pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
             self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
@@ -901,6 +902,7 @@ class Fitting1DXRD(BasePanel):
             self.iregions  = int(myDlg.val_regions.GetValue())
             self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
             self.halfwidth = int(myDlg.val_hw.GetValue())
+            self.method = FIT_METHODS[myDlg.ch_pkfit.GetSelection()]
 #             self.intthrsh  = int(myDlg.val_intthr.GetValue())
             fit = True
         myDlg.Destroy()
@@ -1272,8 +1274,6 @@ class PeakOptions(wx.Dialog):
 
         ttl_fit = wx.StaticText(self.panel, label='Fit type')
         self.ch_pkfit = wx.Choice(self.panel,choices=FIT_METHODS)
-
-        self.ch_pkfit.Bind(wx.EVT_CHOICE, None)
 
         fitsizer.Add(ttl_fit,  flag=wx.RIGHT, border=5)
         fitsizer.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
