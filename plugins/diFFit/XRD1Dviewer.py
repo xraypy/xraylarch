@@ -8,6 +8,7 @@ import numpy as np
 import sys
 import time
 import re
+import math
 
 from threading import Thread
 from functools import partial
@@ -27,10 +28,9 @@ from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_database)
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth, lambda_from_E,
-                               E_from_lambda,d_from_twth,
-                               instrumental_fit_uvw,peakfinder,peaklocater,peakfitter,
-                               peakfilter,xrd_background,xrd1d,calc_broadening,
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
+                               E_from_lambda,d_from_twth,calc_broadening,
+                               instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
                                SPACEGROUPS,create_cif)
 from larch_plugins.xrmmap import read1DXRDFile
 
@@ -41,7 +41,7 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
 
-FIT_METHODS = ['scipy.signal.find_peaks_cwt']
+FIT_METHODS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
@@ -382,6 +382,7 @@ class Fitting1DXRD(BasePanel):
         self.gapthrsh = 5
         self.halfwidth = 40
         self.intthrsh = 100
+        self.method = FIT_METHODS[0]
 
         # Background fitting defaults
         self.exponent   = 20
@@ -420,7 +421,6 @@ class Fitting1DXRD(BasePanel):
 
             cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
             cif.structure_factors(wvlgth=wavelength,q_max=maxq)
-            #qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
@@ -436,6 +436,7 @@ class Fitting1DXRD(BasePanel):
                 I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
                 self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
             except:
+                qall,Iall = plot_sticks(qall,Iall)
                 cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
                 self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
 
@@ -777,7 +778,8 @@ class Fitting1DXRD(BasePanel):
             self.remove_all_peaks()
 
             self.intthrsh = int(self.pkpl.val_intthr.GetValue())
-            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),threshold=self.intthrsh)
+            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
+                                     threshold=self.intthrsh,method=self.method)
                     
             self.peak_display()
             self.plot_peaks()
@@ -871,7 +873,7 @@ class Fitting1DXRD(BasePanel):
 
         if len(self.xrd1dgrp.pki) > 0:
             self.define_peaks()
-
+            
             xi = self.rngpl.ch_xaxis.GetSelection()
             pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
             self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
@@ -900,6 +902,7 @@ class Fitting1DXRD(BasePanel):
             self.iregions  = int(myDlg.val_regions.GetValue())
             self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
             self.halfwidth = int(myDlg.val_hw.GetValue())
+            self.method = FIT_METHODS[myDlg.ch_pkfit.GetSelection()]
 #             self.intthrsh  = int(myDlg.val_intthr.GetValue())
             fit = True
         myDlg.Destroy()
@@ -1119,8 +1122,12 @@ class Fitting1DXRD(BasePanel):
         if gdness > 1 or gdness < 0:
             self.val_gdnss.SetValue('0.85')
             gdness = float(self.val_gdnss.GetValue())
-        list_amcsd = match_database(fracq=gdness,q=self.plt_data[0],ipks=self.xrd1dgrp.pki,
-                                    cifdatabase=self.owner.cifdatabase)
+        q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
+        print('Still need to determine how best to rank these matches')
+        list_amcsd = match_database(self.owner.cifdatabase,q_pks,
+                                    #fracq=gdness,
+                                    minq=np.min(self.plt_data[0]),
+                                    maxq=np.max(self.plt_data[0]))
         self.displayMATCHES(list_amcsd)
         
     def displayMATCHES(self,list_amcsd):
@@ -1267,8 +1274,6 @@ class PeakOptions(wx.Dialog):
 
         ttl_fit = wx.StaticText(self.panel, label='Fit type')
         self.ch_pkfit = wx.Choice(self.panel,choices=FIT_METHODS)
-
-        self.ch_pkfit.Bind(wx.EVT_CHOICE, None)
 
         fitsizer.Add(ttl_fit,  flag=wx.RIGHT, border=5)
         fitsizer.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
@@ -1645,22 +1650,21 @@ class Viewer1DXRD(wx.Panel):
     def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
     
         energy = self.getE()
+        wavelength = lambda_from_E(energy)
         
-        maxq = 5.
-        minq = 1.
+        minq,maxq = 0.2,6.0
         for i,data in enumerate(self.xy_plot):
-            if 1.05*np.max(data[0]) > maxq:
-                maxq = 1.05*np.max(data[0])
-            if minq < 1.05*np.min(data[0]):
-                minq = 1.05*np.min(data[0])
+            maxq = 1.05*np.max(data[0])
+            minq = 0.95*np.min(data[0])
+            if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
 
         cif = create_cif(cifile=path)
-        cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=minq,q_max=maxq)
+        cif.structure_factors(wvlgth=wavelength,q_min=minq,q_max=maxq)
         qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
-        
+       
         if len(Iall) > 0:
             q    = qall
-            twth = twth_from_q(q,lambda_from_E(energy))
+            twth = twth_from_q(q,wavelength)
             d    = d_from_q(q)
             I    = Iall/np.max(Iall)*cifscale
         else:
@@ -1782,7 +1786,7 @@ class Viewer1DXRD(wx.Panel):
 #             pass
 #             
 #         if rmdata:
-#             print 'EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no]
+#             print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
 # 
 #             ## removing name from list works... do not activate till rest is working
 #             ## mkak 2016.11.10
@@ -1790,7 +1794,7 @@ class Viewer1DXRD(wx.Panel):
 #             self.ch_data.Set(self.data_name)
 #             
 #             if len(self.data_name) < 1:
-#                 print 'HERE: remove all buttons that need data to exist'
+#                 print('HERE: remove all buttons that need data to exist')
 
     def onSELECT(self,event=None):
 

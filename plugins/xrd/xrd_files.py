@@ -8,12 +8,7 @@ mkak 2017.02.06 (originally written spring 2016)
 ##########################################################################
 # IMPORT PYTHON PACKAGES
 
-import math
-import re
-import os
-
 import numpy as np
-from scipy import optimize,signal,constants,interpolate
 
 ##########################################################################
 # FUNCTIONS

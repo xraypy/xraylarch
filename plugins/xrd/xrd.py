@@ -169,7 +169,11 @@ class xrd1d(grpobjt):
             if 'Polarization' in line:
                 if line.split()[-1] != 'None': self.polarization = float(line.split()[-1])
             if 'Normalization' in line:
-                self.normalization = float(line.split()[-1])
+                try:
+                    value = float(line.split()[-1])
+                except:
+                    value = 1.0
+                self.normalization = value
 
             if 'q_' in line or '2th_' in line:
                 xtype = line.split()[1]
@@ -260,13 +264,11 @@ class xrd1d(grpobjt):
         all_data = np.array(self.all_data(bkgd=bkgd))
 
         self.pki = peakfinder(all_data[3],**kwargs)
-        if threshold is not None: self.pki = peakfilter(threshold,self.pki,all_data[3])
+        if threshold is not None:
+            self.pki = peakfilter(threshold,self.pki,all_data[3])
 
         pk_data = np.zeros((5,len(self.pki)))
         for i,pki in enumerate(self.pki): pk_data[:,i] = all_data[:,pki]
-            
-        return pk_data
-
         
 #     def refine_peaks(self,trim=False,bkgd=False):
 #     

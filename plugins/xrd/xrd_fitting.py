@@ -43,20 +43,22 @@ def peaklocater(ipeaks,x):
 
     return np.array(xypeaks)
 
-def peakfinder(y, regions=20, gapthrsh=5):
+def peakfinder(y, method='scipy.signal.find_peaks_cwt', regions=20, gapthrsh=5):
     '''
     Returns indices for peaks in y from dataset
     '''
-
-    ttlpnts = len(y)
-    widths = np.arange(1,int(ttlpnts/regions))
-
-    peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
-# # scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
-# #                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+    
+    if method == 'peakutils.indexes':
+        import peakutils
+        peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=10)
+        #peak_indices = peakutils.indexes(y, thres=0.02/max(y), min_dist=100)
+    elif method == 'scipy.signal.find_peaks_cwt':
+        ## scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+        ##                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
+        widths = np.arange(1,int(len(y)/regions))
+        peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
 
     return peak_indices
-
 
 def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
     
@@ -341,7 +343,7 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
             idx  = np.digitize(X,twth)
             Ii    = [np.sum(Y[idx==k]) for k in range(bins)]
             Itot = Itot + Ii
-
+        
     if smooth:
         Itot = outliers(Itot)
     return Itot
