@@ -792,9 +792,6 @@ class cifDB(object):
 
     def amcsd_by_q(self,peaks,qmin=QMIN,qmax=QMAX,qstep=QSTEP,list=None,verbose=False):
 
-        import time
-        t1 = time.time()
-
         ## Defines min/max limits of q-range
         imin,imax = 0,len(self.axis)
         if qmax < np.max(self.axis): imax = abs(self.axis-qmax).argmin()
@@ -831,11 +828,6 @@ class cifDB(object):
         miss_peaks = np.sum((peaks_false*q_amcsd),axis=1)
         scores = np.sum((peaks_weighting*q_amcsd),axis=1)
         
-        t2 = time.time()
-
-        ## Remove after debugging - mkak
-        print('Search took %1.3f s.' % (t2-t1))
-
         return sorted(zip(scores,amcsd,total_peaks,match_peaks,miss_peaks),reverse=True)
 
 
