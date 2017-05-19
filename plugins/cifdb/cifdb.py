@@ -567,20 +567,13 @@ class cifDB(object):
             else:
                 print('File : %s' % os.path.split(cifile)[-1])
 
-    def url_to_cif(self,verbose=False,savecif=False,trackerr=False,
+    def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
     
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
             #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
  
-        if trackerr:
-            dir = os.getcwd()
-            ftrack = open('%s/trouble_cif.txt' % dir,'a+')
-            ftrack.write('using URL : %s\n\n' % url)
-        else:
-            ftrack=None
-        
         ## Defines url range for searching and adding to cif database
         if all == True:
             iindex = range(99999) ## trolls whole database online
@@ -595,8 +588,6 @@ class cifDB(object):
             if r.text.split()[0] == "Can't" or '':
                 if verbose:
                     print('\t---> ERROR on amcsd%05d.cif' % i)
-                    if trackerr:
-                        ftrack.write('%s\n' % url_to_scrape)
             else:
                 if verbose:
                     print('Reading %s' % url_to_scrape)
@@ -608,16 +599,10 @@ class cifDB(object):
                     if verbose:
                         print('Saved %s' % file)
                 if addDB:
-                    if 1==1: #try:
-                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i,file=ftrack)
-#                     except:
-#                         if trackerr:
-#                             ftrack.write('%s\n' % url_to_scrape)
-#                         pass
-
-        if trackerr:
-            ftrack.close()
-
+                    try:
+                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
+                    except:
+                        pass
 
 #     def database_array(self,maxrows=None):
 #     
@@ -807,9 +792,6 @@ class cifDB(object):
 
     def amcsd_by_q(self,peaks,qmin=QMIN,qmax=QMAX,qstep=QSTEP,list=None,verbose=False):
 
-        import time
-        t1 = time.time()
-
         ## Defines min/max limits of q-range
         imin,imax = 0,len(self.axis)
         if qmax < np.max(self.axis): imax = abs(self.axis-qmax).argmin()
@@ -846,11 +828,6 @@ class cifDB(object):
         miss_peaks = np.sum((peaks_false*q_amcsd),axis=1)
         scores = np.sum((peaks_weighting*q_amcsd),axis=1)
         
-        t2 = time.time()
-
-        ## Remove after debugging - mkak
-        print('Search took %1.3f s.' % (t2-t1))
-
         return sorted(zip(scores,amcsd,total_peaks,match_peaks,miss_peaks),reverse=True)
 
 
