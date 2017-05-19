@@ -109,7 +109,7 @@ def plot_sticks(x,y):
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        x,y = calcFrameSize(1500, 750)
+        x,y = calcFrameSize(1500, 780)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -276,6 +276,8 @@ class diFFit1DFrame(wx.Frame):
 
                 if xrdf.xrd1dgrp is not None:
                     xrdf.reset_fitting()
+                    xrdf.clearMATCHES()
+                    
 
                 xrdf.xrd1dgrp = seldat
                 xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
@@ -371,6 +373,13 @@ class Fitting1DXRD(BasePanel):
         self.ylabel    = 'Intensity (a.u.)'
         self.xunit     = '1/A'
         self.dlimit    = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
+        
+        ## Database searching parameters
+        self.elem_include = []
+        self.elem_exclude = []
+        self.amcsd        = []
+        self.auth_include = []
+        self.mnrl_include = []
         
         self.SetFittingDefaults()
         self.Panel1DFitting()
@@ -616,6 +625,8 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.btn_rbkgd.Disable()
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
+
+        self.srchpl.btn_mtch.Disable()
         
         self.xmin     = min
         self.xmax     = max
@@ -1084,13 +1095,19 @@ class Fitting1DXRD(BasePanel):
 
         myDlg = XRDSearchGUI(self)
         
-
         filter = False
+        list_amcsd = None
+        
         if myDlg.ShowModal() == wx.ID_OK:
             
             self.elem_include = myDlg.srch.elem_incl
             self.elem_exclude = myDlg.srch.elem_excl
-            filter = True
+
+            for id in myDlg.AMCSD.GetValue().split(','):
+                try:
+                    self.amcsd += [int(id)]
+                except:
+                    pass
             if myDlg.Mineral.IsTextEmpty():
                 self.mnrl_include = None
             else: 
@@ -1099,9 +1116,18 @@ class Fitting1DXRD(BasePanel):
                 self.auth_include = None
             else: 
                 self.auth_include = myDlg.Author.GetValue().split(',')
-        myDlg.Destroy()
 
-        list_amcsd = None
+            filter = True
+        myDlg.Destroy()
+        
+        print
+        print 'self.elem_include',self.elem_include
+        print 'self.elem_exclude',self.elem_exclude
+        print 'self.amcsd',self.amcsd
+        print 'self.auth_include',self.auth_include
+        print 'self.mnrl_include',self.mnrl_include
+        print
+
         if filter == True:
             cif = self.owner.cifdatabase
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
@@ -1146,7 +1172,7 @@ class Fitting1DXRD(BasePanel):
                 
         self.rtgpl.btn_clr.Enable()
 
-    def clearMATCHES(self,list_amcsd):
+    def clearMATCHES(self):
         '''
         Populates Results Panel with list
         '''
@@ -2732,6 +2758,10 @@ class XRDSearchGUI(wx.Dialog):
         self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
+        ## AMCSD search
+        lbl_AMCSD  = wx.StaticText(self.panel, label='AMCSD search:' )
+        self.AMCSD = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+
         ## Author search
         lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
         self.Author  = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
@@ -2770,6 +2800,7 @@ class XRDSearchGUI(wx.Dialog):
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
         self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
+        self.AMCSD.Bind(wx.EVT_TEXT_ENTER,     self.entrAMCSD     )
         self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral   )
         self.Author.Bind(wx.EVT_TEXT_ENTER,    self.entrAuthor    )
         self.Symmetry.Bind(wx.EVT_TEXT_ENTER,  self.entrSymmetry  )
@@ -2779,23 +2810,26 @@ class XRDSearchGUI(wx.Dialog):
         grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
         grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        grd_sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,2) )
-        grd_sizer.Add(self.atrslct,   pos = ( 2,4)               )
+        grd_sizer.Add(lbl_AMCSD,      pos = ( 2,1)               )
+        grd_sizer.Add(self.AMCSD,     pos = ( 2,2), span = (1,3) )
 
-        grd_sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
-        grd_sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
-        grd_sizer.Add(self.chmslct,   pos = ( 3,4)               )
+        grd_sizer.Add(lbl_Author,     pos = ( 3,1)               )
+        grd_sizer.Add(self.Author,    pos = ( 3,2), span = (1,2) )
+        grd_sizer.Add(self.atrslct,   pos = ( 3,4)               )
 
-        grd_sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
-        grd_sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
-        grd_sizer.Add(self.symslct,   pos = ( 4,4)               )
+        grd_sizer.Add(lbl_Chemistry,  pos = ( 4,1)               )
+        grd_sizer.Add(self.Chemistry, pos = ( 4,2), span = (1,2) )
+        grd_sizer.Add(self.chmslct,   pos = ( 4,4)               )
 
-        grd_sizer.Add(lbl_Category,   pos = ( 5,1)               )
-        grd_sizer.Add(self.Category,  pos = ( 5,2), span = (1,3) )
+        grd_sizer.Add(lbl_Symmetry,   pos = ( 5,1)               )
+        grd_sizer.Add(self.Symmetry,  pos = ( 5,2), span = (1,2) )
+        grd_sizer.Add(self.symslct,   pos = ( 5,4)               )
 
-        grd_sizer.Add(lbl_Keyword,    pos = ( 6,1)               )
-        grd_sizer.Add(self.Keyword,   pos = ( 6,2), span = (1,3) )
+        grd_sizer.Add(lbl_Category,   pos = ( 6,1)               )
+        grd_sizer.Add(self.Category,  pos = ( 6,2), span = (1,3) )
+
+        grd_sizer.Add(lbl_Keyword,    pos = ( 7,1)               )
+        grd_sizer.Add(self.Keyword,   pos = ( 7,2), span = (1,3) )
         
         ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
         ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
@@ -2806,6 +2840,11 @@ class XRDSearchGUI(wx.Dialog):
         sizer.AddSpacer(15)
         sizer.Add(ok_sizer)
         self.panel.SetSizer(sizer)
+        
+        ## No categories are specified yet in database
+        ## mkak 2017.05.19
+        lbl_Category.Disable()
+        self.Category.Disable()
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+40, iy+40))
@@ -2823,7 +2862,6 @@ class XRDSearchGUI(wx.Dialog):
     def entrSymmetry(self,event=None):
         self.srch.read_geometry(str(self.Symmetry.GetValue()))
         self.Symmetry.SetValue(self.srch.print_geometry())
-
             
     def entrCategory(self,event=None):
         key = 'categories'
@@ -2835,6 +2873,10 @@ class XRDSearchGUI(wx.Dialog):
         self.srch.read_parameter(self.Keyword.GetValue(),key=key)
         self.Keyword.SetValue(self.srch.print_parameter(key=key))
 
+    def entrAMCSD(self,event=None):
+        key = 'amcsd'
+        self.srch.read_parameter(self.AMCSD.GetValue(),key=key)
+        self.AMCSD.SetValue(self.srch.print_parameter(key=key))
 
     def entrMineral(self,event=None):
         ## need to integrate with SearchCIFdb somehow...
@@ -2849,6 +2891,46 @@ class XRDSearchGUI(wx.Dialog):
         self.srch.read_chemistry(self.Chemistry.GetValue())
         self.Chemistry.SetValue(self.srch.print_chemistry())
 
+#########################################################################
+#     def SetValues(self,event=None):
+# 
+# 
+#         ## Mineral search
+#         if len(self.parent.mnrl_include) == 1:
+#             if self.parent.mnrl_include[0] not in self.minerals:
+#                 self.minerals.insert(1,self.parent.mnrl_include[0])
+#                 self.Mineral.Set(self.minerals)
+#                 self.Mineral.SetSelection(1)
+#         else:
+#             
+# 
+#         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## AMCSD search
+#         self.AMCSD = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## Author search
+#         self.Author  = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## Chemistry search
+#         
+#         self.Chemistry.SetValue(self.srch.print_chemistry())
+# 
+# 
+#         ## Cell parameter symmetry search
+#         self.Symmetry = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## General search
+#         lbl_Keyword  = wx.StaticText(self.panel, label='Keyword search:' )
+#         self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+# 
+#         ## Database searching parameters
+#         self.parent.elem_include = []
+#         self.parent.elem_exclude = []
+#         self.parent.amcsd        = []
+#         self.parent.auth_include = []
+#         self.parent.mnrl_include = []
 
 #########################################################################
     def onChemistry(self,event=None):
@@ -2922,6 +3004,7 @@ class XRDSearchGUI(wx.Dialog):
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
+        self.AMCSD.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
         for i,n in enumerate(CATEGORIES):
