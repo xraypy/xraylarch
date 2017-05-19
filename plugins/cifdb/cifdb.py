@@ -607,10 +607,10 @@ class cifDB(object):
                         if verbose:
                             print('Saved %s' % file)
                     if addDB:
-                        if 1==1: #try:
+                        try:
                             self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-#                         except:
-#                             pass
+                        except:
+                            pass
 
 
 
