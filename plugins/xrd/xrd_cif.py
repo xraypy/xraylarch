@@ -2111,7 +2111,7 @@ SPGRP_SYMM = {'1': {'1a': [['x', 'y', 'z']]},
 ## P primitive; I body centered; F face centered; A centered on A faces only;
 ## B centered on B faces only; C centered on C faces only; R rhombohedral
 SPACEGROUPS = {'1':['B1','C1','A1','F1','I1'],
-               '2':['B-1','C-1','P-1','A-1','F-1','I-1','P1','P111'],
+               '2':['B-1','C-1','P-1','A-1','F-1','I-1','P1','P111','F1-11'],
                '3':['B121','C112','P2','A211','P112','P121','P211'],
                '4':['B1211','C1121','P21','A2111','P1121','P1211','P2111','P12121211'],
                '5':['A121','B112','C2','A112','B211','C121','C211','F112','F121','F211','I112','I121','I211','B2','I2'],
@@ -2446,10 +2446,15 @@ class CIFcls(object):
                 elif k == '_cell_length_a':
                     if cf[key][k] == '3,2518':
                         self.unitcell[0] = '3.2518' ## typo in cif 14130
+                    elif cf[key][k][-1] == ',':
+                        self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
                     else:
                         self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_cell_length_b':
-                    self.unitcell[1] =re.sub(r"\(\w*\)", r"", cf[key][k])
+                    if cf[key][k][-1] == ',':
+                        self.unitcell[1] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
+                    else:
+                        self.unitcell[1] =re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_cell_length_c':
                     self.unitcell[2] = re.sub(r"\(\w*\)", r"", cf[key][k])
                 elif k == '_cell_angle_alpha':

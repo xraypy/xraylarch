@@ -570,13 +570,15 @@ class cifDB(object):
     def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
     
-        exceptions = [0,14748,15049,15050,15851]
+        exceptions = [0,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453]
         ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
         ## 14748 : has label of amcsd code but no number (or anything) assigned
         ## 15049 : page number 'L24307 1' could not be parsed as number
         ## 15050 : page number 'L24307 1' could not be parsed as number
         ## 15851 : no first page number provided despite providing field label
-
+        ## 18368 : non-numerical entries in B_iso fields
+        ## 18449 : no first page number provided despite providing field label
+        ## 18450 : no first page number provided despite providing field label
         
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
