@@ -12,9 +12,10 @@ except ArithmeticError:
 #     y =  'other error'
 
 #endtry
-print y
 
-print '-----------------'
+print( y)
+
+print('-----------------')
 
 y = 3
 if y < 100:
