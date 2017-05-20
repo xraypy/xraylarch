@@ -495,6 +495,8 @@ def show_history(max_lines=10000, _larch=None):
 def reset_fiteval(_larch=None, **kws):
     """initiailze fiteval for fitting with lmfit"""
     fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
+    # remove 'print' from asteval symtable, as it is not picklable
+    fiteval.symtable.pop('print')
     fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
     if fiteval_init is not None:
         for init_item in fiteval_init:
@@ -543,5 +545,5 @@ local_funcs = {'_builtin': {'group':_group,
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which']
 
-if six.PY3:
-    valid_commands.append('print')
+# if six.PY3:
+#     valid_commands.append('print')
