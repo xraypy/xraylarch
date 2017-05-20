@@ -798,6 +798,9 @@ class Interpreter:
             args = args + self.run(starargs)
 
         keywords = {}
+        if six.PY3 and func == print:
+            keywords['file'] = self.writer
+
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
