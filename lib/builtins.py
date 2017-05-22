@@ -12,6 +12,7 @@ import six
 if six.PY3:
     import io
 
+from six.moves import input
 
 from lmfit import asteval
 
@@ -465,7 +466,7 @@ def _isgroup(obj, *args, **kws):
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
         raise Warning("cannot pause() -- larch broken?")
-    return raw_input(msg)
+    return input(msg)
 
 def _sleep(t=0):  return time.sleep(t)
 _sleep.__doc__ = time.sleep.__doc__
