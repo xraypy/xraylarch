@@ -140,7 +140,7 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text, _larch=None):
+def _eval(text, filename=None, _larch=None):
     """evaluate a string of larch text
     """
     if _larch is None:
