@@ -31,6 +31,6 @@ plot(mdat.x, init,   label='initial', color='black', style='dotted')
 plot(mdat.x, final,  label='final', color='red')
 
 # print report of parameters, uncertainties
-print fit_report(out)
+print(fit_report(out))
 
 ## end of examples/fitting/doc_example1.lar
