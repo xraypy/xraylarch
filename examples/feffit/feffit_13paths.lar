@@ -98,7 +98,7 @@ dset = feffit_dataset(data=cu_data, transform=trans,
 # perform fit!
 out = feffit(pars, dset)
 
-print feffit_report(out, with_paths=False, min_correl=0.3)
+print( feffit_report(out, with_paths=False, min_correl=0.3))
 
 fout = open('feffit_13paths.out', 'w')
 

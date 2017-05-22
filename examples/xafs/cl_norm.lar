@@ -36,6 +36,6 @@ plot(cu.energy,   init, label='initial', color='black', style='dotted')
 plot(cu.energy,  final, label='final', color='black', style='solid')
 
 # print report of parameters, uncertainties
-print fit_report(params)
+print( fit_report(params))
 
 ##

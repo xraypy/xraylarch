@@ -6,16 +6,16 @@ def resid(pars, x, sigma=None, data=None):
     if data is None:      return model
     if sigma is  None:    return (model - data)
     return (model - data)/sigma
-enddef
+#enddef
 
 
 def compare_fit(method):
     meths = ['nelder', 'powell', 'bfgs', 'lbfgs', 'tnc', 'cobyla', 'slsqp']
     if method not in meths:
-        print "unknown / unsupport method: '%s'" % method
-        print "use one of: %s" % (', ').join(meths)
+        print( "unknown / unsupport method: '%s'" % method)
+        print( "use one of: %s" % (', ').join(meths))
         return
-    endif
+    #endif
 
     n = 601
     xmin = 0.
@@ -36,8 +36,8 @@ def compare_fit(method):
     for pars, meth in ((pfit1, 'leastsq'), (pfit2, method)):
         t0 = time.time()
         ret = minimize(resid, pars, args=(x,), method=meth, kws={'data':data})
-        print 'Method = %s, Fit time = %.3f sec' % (meth, time.time()-t0)
-        print fit_report(ret)
+        print( 'Method = %s, Fit time = %.3f sec' % (meth, time.time()-t0))
+        print( fit_report(ret))
         lfit = gaussian(x, pars.amp, pars.cen, pars.wid) + x*pars.slope + pars.off
         plot(x, lfit, linewidth=2, label=meth)
         results[meth] = (lfit)

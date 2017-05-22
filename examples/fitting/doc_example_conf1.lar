@@ -22,9 +22,9 @@ def myresid(p, data):
 result = minimize(myresid, params, args=(mdat,))
 
 # print report of parameters, uncertainties
-print fit_report(result)
+print( fit_report(result))
 
 out = confidence_intervals(result, sigmas=(1, 2, 3))
 
-print confidence_report(out)
+print( confidence_report(out))
 ## end of examples/fitting/doc_example_conf1.lar

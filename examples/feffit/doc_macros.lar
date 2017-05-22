@@ -141,7 +141,7 @@ def write_report(filename, out):
         f.write(out)
         f.close()
     except:
-        print 'could not write %s' % filename
+        print( 'could not write %s' % filename)
     endtry
 enddef
 

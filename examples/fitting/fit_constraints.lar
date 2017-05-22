@@ -1,37 +1,58 @@
+doc =  """
+   Example fit to Gaussian line shape.
+"""
 
+def resid(pars, data, verbose=False):
 
-def resid(pars, x, sigma=None, data=None):
-    yg = gaussian(x,   amplitude=pars.amp_g, center=pars.cen_g, sigma=pars.wid_g)
-    yl = lorentzian(x, amplitude=pars.amp_l, center=pars.cen_l, sigma=pars.wid_l)
-    slope = pars.line_slope
-    offset = pars.line_off
-    model =  yg +  yl + offset + x * slope
-    if data is None:      return model
-    if sigma is  None:    return (model - data)
-    return (model - data)/sigma
-enddef
+    # print(" In resid ", dir(pars))
 
-n = 601
-xmin = 0.
-xmax = 20.0
-x = linspace(xmin, xmax, n)
+    pars.iter = pars.iter + 1
 
-data = (gaussian(x,  21, 8.1, 1.2) +
-        lorentzian(x, 10, 9.6, 2.4) +
-        random.normal(scale=0.23,  size=n) +
-        x*0.5)
+    off = pars.off.value
+    amp1 = pars.amp1.value
+    cen1 = pars.cen1.value
+    wid1 = pars.wid1.value
+    amp2 = pars.amp2.value
+    cen2 = pars.cen2.value
+    wid2 = pars.wid2.value
 
-pfit = param_group(amp_g = guess(10),
-                   cen_g = guess(9),
-                   wid_g = guess(1),
-                   amp_tot = guess(20),
-                   amp_l   = param(expr='amp_tot - amp_g'),
-                   cen_l   = param(expr='1.5+cen_g'),
-                   wid_l   = param(expr='2*wid_g'),
-                   line_slope = guess(0),
-                   line_off = guess(0.2))
+    model = (off +
+             gaussian(data.x, amplitude=amp1, center=cen1, sigma=wid1) +
+             gaussian(data.x, amplitude=amp2, center=cen2, sigma=wid2) )
 
-out = minimize(resid, pfit,
-               args=(x,), kws={'data':data})
+    if verbose and (pars.iter % 10 == 0):
+        print( ' >> ', pars.iter, amp1,  cen1, wid1, amp2, cen2, wid2, off)
+        newplot(data.x, data.y)
+        plot(data.x, model, force_draw=True)
+    #endif
+    return  model - data.y
+#enddef
 
-print fit_report(out)
+mdat = group()
+
+random.seed(1230)
+
+mdat.x = arange(201)/20.0
+mdat.y = (-2.0 +
+          gaussian(mdat.x, amplitude=6.0, center=3.0, sigma=0.5) +
+          gaussian(mdat.x, amplitude=2.0, center=4.9, sigma=0.25) +
+          random.normal(size=len(mdat.x), scale=0.22) )
+
+print("PARAMS 1:")
+params = param_group()
+params.off  = guess(-2)
+params.amp1 = guess(3.8, min=.0)
+params.cen1 = guess(3)
+params.wid1 = guess(1.2,  min=0)
+params.amp2 = param(expr='amp1/3')
+params.cen2 = guess(4.5)
+params.wid2 = param(expr='wid1/2')
+params.iter = 0
+
+#
+init = mdat.y + resid(params, mdat)
+out = minimize(resid, params, args=(mdat,), kws={'verbose': True})
+
+print(fit_report(out))
+
+plot(mdat.x, mdat.y + resid(params, mdat), label='best fit')

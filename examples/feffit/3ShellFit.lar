@@ -38,7 +38,7 @@ dset  = feffit_dataset(data=cu, pathlist=[path1, path2, path3], transform=trans)
 
 out   = feffit(fitparams, dset)
 
-print feffit_report(out)
+print( feffit_report(out))
 
 do_plot = True
 if do_plot:
@@ -48,8 +48,8 @@ if do_plot:
     plot(path1.k,  -4.0 + path1.chi*path1.k**2, label='path1')
     plot(path2.k,  -3.0 + path2.chi*path2.k**2, label='path2')
     plot(path3.k,  -2.0 + path3.chi*path3.k**2, label='path3')
-    # 
- 
+    #
+
     plot(dset.data.r,  dset.data.chir_mag, win=2, new=True, label='data')
     plot(dset.model.r, dset.model.chir_mag, win=2, label='fit')
     plot(path1.r,     -path1.chir_mag,   win=2,   label='path1')
