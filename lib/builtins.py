@@ -496,7 +496,10 @@ def reset_fiteval(_larch=None, **kws):
     """initiailze fiteval for fitting with lmfit"""
     fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
     # remove 'print' from asteval symtable, as it is not picklable
-    fiteval.symtable.pop('print')
+    try:
+        fiteval.symtable.pop('print')
+    except KeyError:
+        pass
     fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
     if fiteval_init is not None:
         for init_item in fiteval_init:
