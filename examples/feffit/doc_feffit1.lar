@@ -27,14 +27,14 @@ dset = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
 # perform fit!
 out = feffit(pars, dset)
 
-print feffit_report(out)
+print(feffit_report(out))
 
 try:
     fout = open('doc_feffit1.out', 'w')
     fout.write("%s\n" % feffit_report(out))
     fout.close()
 except:
-    print 'could not write doc_feffit1.out'
+    print('could not write doc_feffit1.out')
 #endtry
 
 plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True,
