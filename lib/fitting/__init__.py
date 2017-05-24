@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 import six
 from copy import copy, deepcopy
-import wx
+HAS_WXPYTHON = False
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    pass
+
 import numpy as np
 import matplotlib
-matplotlib.use("WXAgg")
+
+if HAS_WXPYTHON:
+    matplotlib.use("WXAgg")
 
 from ..symboltable import Group, isgroup
 
