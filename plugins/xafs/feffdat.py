@@ -198,8 +198,8 @@ class FeffPathGroup(Group):
     def __geom2label(self):
         """generate label by hashing path geometry"""
         if self.geom is not None:
-            return "p" + fix_varname(b64hash(tuple(self.geom))).lower()
-        return "p_no_geom"
+            return "p%s" % (fix_varname(b64hash(tuple(self.geom))).lower())
+        return "pNoGeom"
 
     def __copy__(self):
         return FeffPathGroup(filename=self.filename, _larch=self._larch,
