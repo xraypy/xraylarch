@@ -5,6 +5,8 @@ utilities for larch
 from __future__ import print_function
 import re
 import sys
+from base64 import b64encode
+
 
 if sys.version[0] == '3':
     maketrans = str.maketrans
@@ -36,7 +38,7 @@ VALID_CHARS1 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
 BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
-BAD_VARSCHARS = BAD_FILECHARS + '+-.'
+BAD_VARSCHARS = BAD_FILECHARS + '=+-.'
 GOOD_VARSCHARS = '_'*len(BAD_VARSCHARS)
 
 TRANS_FILE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
@@ -176,3 +178,16 @@ def find_delims(s, delim='"',match=None):
                 return True, j, k+len(match)-1
             p1 = s[k:k+1]
     return False, j, len(s)
+
+
+def b64hash(obj):
+    """return a base64 hash of a hashable object"""
+    ohash = hex(hash(obj))[2:].replace('x', '').replace('-', '')
+    if len(ohash) % 2 != 0:
+        ohash = ohash + '0'
+    tmp = []
+    for i in range(int(len(ohash)/2.0)):
+        a = int(ohash[2*i],   base=16)
+        b = int(ohash[2*i+1], base=16)
+        tmp.append(chr(a*16 + b))
+    return b64encode(''.join(tmp))
