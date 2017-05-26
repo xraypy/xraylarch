@@ -16,9 +16,15 @@ if sys.version[0] == '3':
         elif isinstance(s, bytes):
             return s.decode(sys.stdout.encoding)
         return str(s, sys.stdout.encoding)
+    def str2bytes(s):
+        'string to byte conversion'
+        if isinstance(s, bytes):
+            return s
+        return bytes(s, sys.stdout.encoding)
+
 else:
     from string import maketrans
-    bytes2str = str
+    bytes2str = str2bytes = str
 
 
 
@@ -190,4 +196,4 @@ def b64hash(obj):
         a = int(ohash[2*i],   base=16)
         b = int(ohash[2*i+1], base=16)
         tmp.append(chr(a*16 + b))
-    return b64encode(''.join(tmp))
+    return b64encode(str2bytes(''.join(tmp)))
