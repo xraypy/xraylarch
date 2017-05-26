@@ -20,7 +20,7 @@ from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
-from larch.utils.strutils import fix_varname
+from larch.utils.strutils import fix_varname, b64hash
 from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch_plugins.xray import atomic_mass, atomic_symbol
 from larch.fitting import group2params
@@ -172,15 +172,16 @@ class FeffPathGroup(Group):
         self._larch = _larch
         self.filename = filename
         self.params = None
+        self.label = label
         self.spline_coefs = None
         def_degen = 1
         if filename is not None:
             self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
             self.geom  = self._feffdat.geom
             def_degen  = self._feffdat.degen
-#
-        def_label = "p%s" % (hex(hash(self))[2:])
-        self.label = def_label if label  is None else labe
+            if self.label is None:
+                self.label = self.__geom2label()
+
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
         self.e0     = 0.0      if e0     is None else e0
@@ -193,6 +194,12 @@ class FeffPathGroup(Group):
         self.chi = None
         if self._feffdat is not None:
             self.create_spline_coefs()
+
+    def __geom2label(self):
+        """generate label by hashing path geometry"""
+        if self.geom is not None:
+            return "p" + fix_varname(b64hash(tuple(self.geom))).lower()
+        return "p_no_geom"
 
     def __copy__(self):
         return FeffPathGroup(filename=self.filename, _larch=self._larch,
@@ -234,6 +241,9 @@ class FeffPathGroup(Group):
         create Path Parameters within the current fiteval
         """
         self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
+        if self.label is None:
+            self.label = self.__geom2label()
+
         self.store_feffdat()
 
         for pname in PATH_PARS:
