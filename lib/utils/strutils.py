@@ -5,8 +5,8 @@ utilities for larch
 from __future__ import print_function
 import re
 import sys
-from base64 import b64encode
-
+from base64 import b64encode, b32encode
+import hashlib
 
 if sys.version[0] == '3':
     maketrans = str.maketrans
@@ -186,14 +186,14 @@ def find_delims(s, delim='"',match=None):
     return False, j, len(s)
 
 
-def b64hash(obj):
-    """return a base64 hash of a hashable object"""
-    ohash = hex(hash(obj))[2:].replace('x', '').replace('-', '')
-    if len(ohash) % 2 != 0:
-        ohash = ohash + '0'
-    tmp = []
-    for i in range(int(len(ohash)/2.0)):
-        a = int(ohash[2*i],   base=16)
-        b = int(ohash[2*i+1], base=16)
-        tmp.append(chr(a*16 + b))
-    return b64encode(str2bytes(''.join(tmp)))
+def b32hash(s):
+    """return a base32 hash of a string"""
+    _hash = hashlib.sha256()
+    _hash.update(str2bytes(s))
+    return bytes2str(b32encode(_hash.digest()))
+
+def b64hash(s):
+    """return a base64 hash of a string"""
+    _hash = hashlib.sha256()
+    _hash.update(str2bytes(s))
+    return bytes2str(b64encode(_hash.digest()))
