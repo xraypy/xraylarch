@@ -20,7 +20,7 @@ from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
-from larch.utils.strutils import fix_varname, b64hash
+from larch.utils.strutils import fix_varname, b32hash
 from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch_plugins.xray import atomic_mass, atomic_symbol
 from larch.fitting import group2params
@@ -175,12 +175,6 @@ class FeffPathGroup(Group):
         self.label = label
         self.spline_coefs = None
         def_degen = 1
-        if filename is not None:
-            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
-            self.geom  = self._feffdat.geom
-            def_degen  = self._feffdat.degen
-            if self.label is None:
-                self.label = self.__geom2label()
 
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -190,6 +184,13 @@ class FeffPathGroup(Group):
         self.sigma2 = 0.0      if sigma2 is None else sigma2
         self.third  = 0.0      if third  is None else third
         self.fourth = 0.0      if fourth is None else fourth
+        if filename is not None:
+            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
+            self.geom  = self._feffdat.geom
+            def_degen  = self._feffdat.degen
+            if self.label is None:
+                self.label = self.__geom2label()
+
         self.k = None
         self.chi = None
         if self._feffdat is not None:
@@ -197,9 +198,15 @@ class FeffPathGroup(Group):
 
     def __geom2label(self):
         """generate label by hashing path geometry"""
+        rep = []
         if self.geom is not None:
-            return "p%s" % (fix_varname(b64hash(tuple(self.geom))).lower())
-        return "pNoGeom"
+            for atom in self.geom:
+                rep.extend(atom)
+
+        for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
+            rep.append(getattr(self, attr, '_'))
+        s = "|".join([str(i) for i in rep])
+        return "p%s" % (b32hash(s)[:8].lower())
 
     def __copy__(self):
         return FeffPathGroup(filename=self.filename, _larch=self._larch,
