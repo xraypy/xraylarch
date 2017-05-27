@@ -176,6 +176,14 @@ class FeffPathGroup(Group):
         self.spline_coefs = None
         def_degen = 1
 
+        self._feffdat = None
+        if filename is not None:
+            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
+            self.geom  = self._feffdat.geom
+            def_degen  = self._feffdat.degen
+            if self.label is None:
+                self.label = self.__geom2label()
+
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
         self.e0     = 0.0      if e0     is None else e0
@@ -184,12 +192,6 @@ class FeffPathGroup(Group):
         self.sigma2 = 0.0      if sigma2 is None else sigma2
         self.third  = 0.0      if third  is None else third
         self.fourth = 0.0      if fourth is None else fourth
-        if filename is not None:
-            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
-            self.geom  = self._feffdat.geom
-            def_degen  = self._feffdat.degen
-            if self.label is None:
-                self.label = self.__geom2label()
 
         self.k = None
         self.chi = None
@@ -202,6 +204,9 @@ class FeffPathGroup(Group):
         if self.geom is not None:
             for atom in self.geom:
                 rep.extend(atom)
+        if self._feffdat is not None:
+            rep.append(self._feffdat.degen)
+            rep.append(self._feffdat.reff)
 
         for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
             rep.append(getattr(self, attr, '_'))
