@@ -44,7 +44,7 @@
    delr_2, sig2_1       = -0.110
  
 [[Paths]]
-   Path pxr46gfqr, Feff.dat file = feff_feo01.dat
+   Path prqdqp2pm, Feff.dat file = feff_feo01.dat
      atom      x        y        z       ipot
       Fe       0.0000,  0.0000,  0.0000  0 (absorber)
        O       0.0000,  2.1387,  0.0000  1
@@ -56,7 +56,7 @@
      deltar = -0.031455 +/- 0.010076  'delr_1'
      sigma2 =  0.012780 +/- 0.002610  'sig2_1'
 
-   Path p7ffcntms, Feff.dat file = feff_feo02.dat
+   Path pbhrkq5es, Feff.dat file = feff_feo02.dat
      atom      x        y        z       ipot
       Fe       0.0000,  0.0000,  0.0000  0 (absorber)
       Fe       2.1387,  0.0000, -2.1387  2
