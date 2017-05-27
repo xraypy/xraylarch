@@ -31,10 +31,10 @@ dset  = feffit_dataset(data=cu_data, pathlist=[path1, path2, path3], transform=t
 out = feffit(pars, dset)
 report = feffit_report(out)
 
-print( report)
+print(report)
 run('doc_macros.lar')
 write_report('doc_feffit2.out', report)
 
 plot_chifit(dset, title='Three-shell fit to Cu', rmax=5)
 
-# ## end examples/feffit/doc_feffit2.lar
+## end examples/feffit/doc_feffit2.lar
