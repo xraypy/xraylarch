@@ -32,16 +32,16 @@ def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit',
     # show k-weighted chi(k) in first plot window
     newplot(dataset.data.k, data_chi_kw, title=title,
             xlabel=label_k, ylabel=label_chikw % kw,
-            show_legend=show_legend,     color='blue', label='data', win=win)
-    plot(dataset.model.k, model_chi_kw,  color='red',  label='fit',  win=win)
+            show_legend=show_legend,     label='data', win=win)
+    plot(dataset.model.k, model_chi_kw,  label='fit',  win=win)
 
     # show chi(R) in second plot window
     newplot(dataset.data.r,  dataset.data.chir_mag, xmax=rmax, title=title,
             xlabel=label_r,  ylabel=label_chir % (kw+1),
-            show_legend=show_legend,              color='blue', label='data', win=win+1)
-    plot(dataset.model.r, dataset.model.chir_mag, color='red',  label='fit',  win=win+1)
-    plot(dataset.model.r, dataset.data.chir_re,   color='blue', label='',     win=win+1)
-    plot(dataset.model.r, dataset.model.chir_re,  color='red',  label='',     win=win+1)
+            show_legend=show_legend,              label='data', win=win+1)
+    plot(dataset.model.r, dataset.model.chir_mag, label='fit',  win=win+1)
+    plot(dataset.model.r, dataset.data.chir_re,   label='',     win=win+1)
+    plot(dataset.model.r, dataset.model.chir_re,  label='',     win=win+1)
 #enddef
 
 
@@ -99,7 +99,7 @@ def plot_modelpaths_k(dataset, kweight=None, offset=-1, title='Model and Paths',
 
     newplot(model.k, model_chi_kw, title=title,
             xlabel=label_r, ylabel=label_chikw % kw,
-            color='blue', label='sum', win=1, **extra)
+            label='sum', win=1, **extra)
 
     for ipath in range(len(dataset.pathlist)):
         plot_path_k(dataset, ipath, kweight=kw, offset=(ipath+1)*offset)
