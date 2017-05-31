@@ -398,9 +398,12 @@ def imread(filename, *args, **kwargs):
     >>> image = imread('test.tif', 0)
 
     """
-    with TIFFfile(filename) as tif:
-        return tif.asarray(*args, **kwargs)
-
+#     with TIFFfile(filename) as tif:
+#         return tif.asarray(*args, **kwargs)
+    tif = TIFFfile(filename)
+    images = tif.asarray()
+    tif.close()
+    return images
 
 class lazyattr(object):
     """Lazy object attribute whose value is computed on first access."""

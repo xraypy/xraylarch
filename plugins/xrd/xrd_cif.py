@@ -2429,6 +2429,8 @@ class CIFcls(object):
 
             self.cifile = cifile
            
+            ## Maybe this is where the try statement should be
+            ## mkak 2017.05.19
             cf = CifFile.ReadCif(cifile)
             key = cf.keys()[0]
 

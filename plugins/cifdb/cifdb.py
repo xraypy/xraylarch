@@ -472,16 +472,11 @@ class cifDB(object):
         self.ciftbl = Table('ciftbl', self.metadata)
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == cif.id_no)
         for row in search_cif.execute():
-            if url:
-                print('AMCSD %i already exists in database.\n' % cif.id_no)
-                if file is not None:
-                    file.write('AMCSD %i already exists in database %s: %s\n' % 
-                         (cif.id_no,self.dbname,cifile))
-            else:
-                print('%s: AMCSD %i already exists in database %s.' % 
-                     (os.path.split(cifile)[-1],cif.id_no,self.dbname))
-                if file is not None:
-                    file.write('%s: AMCSD %i already exists in database %s.\n' % 
+            if verbose:
+                if url:
+                    print('AMCSD %i already exists in database.\n' % cif.id_no)
+                else:
+                    print('%s: AMCSD %i already exists in database %s.' % 
                          (os.path.split(cifile)[-1],cif.id_no,self.dbname))
             return
         
@@ -559,18 +554,15 @@ class cifDB(object):
     #                          amcsd_id=cif.id_no)
 
         if url:
-            if verbose:
-                self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
+            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
         else:
-            if verbose:
-                self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),cifile=cifile)
-            else:
-                print('File : %s' % os.path.split(cifile)[-1])
+            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),cifile=cifile)
 
     def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
     
-        exceptions = [0,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453]
+        maxi = 20573
+        exceptions = [0,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
         ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
         ## 14748 : has label of amcsd code but no number (or anything) assigned
         ## 15049 : page number 'L24307 1' could not be parsed as number
@@ -579,6 +571,7 @@ class cifDB(object):
         ## 18368 : non-numerical entries in B_iso fields
         ## 18449 : no first page number provided despite providing field label
         ## 18450 : no first page number provided despite providing field label
+        ## 20029 : no volume number provided despite providing field label
         
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
@@ -592,7 +585,7 @@ class cifDB(object):
             iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
         
         for i in iindex:
-            if i not in exceptions:
+            if i not in exceptions and i < maxi:
                 url_to_scrape = url % i
                 r = requests.get(url_to_scrape)
                 if r.text.split()[0] == "Can't" or '':
