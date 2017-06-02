@@ -12,6 +12,7 @@ import six
 if six.PY3:
     import io
 
+from six.moves import input
 
 from lmfit import asteval
 
@@ -140,7 +141,7 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _eval(text, _larch=None):
+def _eval(text, filename=None, _larch=None):
     """evaluate a string of larch text
     """
     if _larch is None:
@@ -465,7 +466,7 @@ def _isgroup(obj, *args, **kws):
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
         raise Warning("cannot pause() -- larch broken?")
-    return raw_input(msg)
+    return input(msg)
 
 def _sleep(t=0):  return time.sleep(t)
 _sleep.__doc__ = time.sleep.__doc__
@@ -495,6 +496,11 @@ def show_history(max_lines=10000, _larch=None):
 def reset_fiteval(_larch=None, **kws):
     """initiailze fiteval for fitting with lmfit"""
     fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
+    # remove 'print' from asteval symtable, as it is not picklable
+    try:
+        fiteval.symtable.pop('print')
+    except KeyError:
+        pass
     fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
     if fiteval_init is not None:
         for init_item in fiteval_init:
@@ -543,5 +549,5 @@ local_funcs = {'_builtin': {'group':_group,
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which']
 
-if six.PY3:
-    valid_commands.append('print')
+# if six.PY3:
+#     valid_commands.append('print')

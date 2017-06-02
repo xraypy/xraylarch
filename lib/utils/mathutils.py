@@ -296,11 +296,11 @@ def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
 
     wx = np.arange(2*npts)
     if form.lower().startswith('gauss'):
-        win = gaussian(wx, cen=npts, sigma=sigma)
+        win = gaussian(wx, center=npts, sigma=sigma)
     elif form.lower().startswith('voig'):
-        win = voigt(wx, cen=npts, sigma=sigma, gamma=gamma)
+        win = voigt(wx, center=npts, sigma=sigma, gamma=gamma)
     else:
-        win = lorentzian(wx, cen=npts, sigma=sigma)
+        win = lorentzian(wx, center=npts, sigma=sigma)
 
     y1 = np.concatenate((y0[npts:0:-1], y0, y0[-1:-npts-1:-1]))
     y2 = np.convolve(win/win.sum(), y1, mode='valid')

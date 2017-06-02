@@ -82,7 +82,7 @@ trans = feffit_transform(rmin=1.5, rmax=3.0, kmin=3, kmax=13,
                          kw=2, dk=4, window='kaiser')
 
 # perform fit for each scatterer
-print '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R       |R_phcor|'
+print( '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R       |R_phcor|')
 fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
 
 results = {}
@@ -108,7 +108,7 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
     _de0   = '%6.2f(%.2f) ' % (out.params['del_e0'].value,  out.params['del_e0'].stderr)
     _ss2   = '%6.4f(%.4f) ' % (out.params['sig2'].value,  out.params['sig2'].stderr)
     _r     = '%6.3f(%.3f) ' % (path1.reff+out.params['del_r'].value, out.params['del_r'].stderr)
-    print fmt % (scatt, redchi, _amp, _ss2, _de0, _r, r_phcor)
+    print( fmt % (scatt, redchi, _amp, _ss2, _de0, _r, r_phcor))
     results[scatterer] = out
 #endfor
 

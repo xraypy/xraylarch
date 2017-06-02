@@ -50,7 +50,7 @@ enddef
 
 mfit = minimize(resid, params, args=(dat,))
 
-print fit_report(mfit, show_correl=False)
+print( fit_report(mfit, show_correl=False))
 
 # now plot results (2 different windows)
 final, f1, f2, e1 = make_model(params, dat, components=True)

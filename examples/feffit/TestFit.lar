@@ -33,9 +33,9 @@ trans = feffit_transform(kmin=3, kmax=14, kw=2, dk=4,  window='bessel',
 dset  = feffit_dataset(data=fdat, pathlist=[path1], transform=trans)
 
 out = feffit(fitparams, dset)
-print 'feffit complete'
+print( 'feffit complete')
 
-print fit_report(fitparams)
+print( fit_report(fitparams))
 
 newplot(dset.data.k, dset.data.chi*dset.data.k**2)
   plot(dset.model.k, dset.model.chi*dset.model.k**2)

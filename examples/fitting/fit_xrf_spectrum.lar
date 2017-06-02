@@ -118,12 +118,12 @@ params.imax = index_of(mca.energy, 14.0)
 
 # Fit 1
 minimize(residual, params, args=(mca, ), kws={'pileup':False})
-print 'First fit done...'
+print( 'First fit done...')
 first = residual(params, mca, trunc=False, pileup=True)[:len(mca.counts)] + mca.counts
 
 xrf_plot(mca.energy, first, as_mca2=True, color='black')
 
-print fit_report(params, min_correl=0.7)
+print( fit_report(params, min_correl=0.7))
 
 x = concatenate((linspace(0, 3.0, 7), linspace(4,  20, 9)))
 gg = spline_rep(x, zeros(len(x)), group=params)
@@ -157,6 +157,6 @@ minimize(residual, params, args=(mca, ), kws={'pileup':True})
 
 final = residual(params, mca, trunc=False, pileup=True)[:len(mca.counts)] + mca.counts
 
-print fit_report(params, min_correl=0.3)
+print( fit_report(params, min_correl=0.3))
 xrf_plot(mca.energy, final,   as_mca2=True, new=False)
 xrf_plot(mca.energy, spline_eval(mca.energy, params),   as_mca2=True, new=False)

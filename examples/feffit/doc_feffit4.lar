@@ -37,7 +37,7 @@ trans = feffit_transform(kmin=2.0, kmax=13.5, kweight=[2,3],
 dset  = feffit_dataset(data=feo_dat, pathlist=[path_feo, path_fefe],
                        transform=trans)
 out = feffit(pars, dset)
-print feffit_report(out)
+print( feffit_report(out))
 run('doc_macros.lar')
 write_report('doc_feffit4.out', feffit_report(out))
 

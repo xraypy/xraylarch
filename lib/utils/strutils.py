@@ -5,6 +5,8 @@ utilities for larch
 from __future__ import print_function
 import re
 import sys
+from base64 import b64encode, b32encode
+import hashlib
 
 if sys.version[0] == '3':
     maketrans = str.maketrans
@@ -14,9 +16,15 @@ if sys.version[0] == '3':
         elif isinstance(s, bytes):
             return s.decode(sys.stdout.encoding)
         return str(s, sys.stdout.encoding)
+    def str2bytes(s):
+        'string to byte conversion'
+        if isinstance(s, bytes):
+            return s
+        return bytes(s, sys.stdout.encoding)
+
 else:
     from string import maketrans
-    bytes2str = str
+    bytes2str = str2bytes = str
 
 
 
@@ -36,7 +44,7 @@ VALID_CHARS1 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
 BAD_FILECHARS = ';~,`!%$@$&^?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
-BAD_VARSCHARS = BAD_FILECHARS + '+-.'
+BAD_VARSCHARS = BAD_FILECHARS + '=+-.'
 GOOD_VARSCHARS = '_'*len(BAD_VARSCHARS)
 
 TRANS_FILE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
@@ -176,3 +184,16 @@ def find_delims(s, delim='"',match=None):
                 return True, j, k+len(match)-1
             p1 = s[k:k+1]
     return False, j, len(s)
+
+
+def b32hash(s):
+    """return a base32 hash of a string"""
+    _hash = hashlib.sha256()
+    _hash.update(str2bytes(s))
+    return bytes2str(b32encode(_hash.digest()))
+
+def b64hash(s):
+    """return a base64 hash of a string"""
+    _hash = hashlib.sha256()
+    _hash.update(str2bytes(s))
+    return bytes2str(b64encode(_hash.digest()))
