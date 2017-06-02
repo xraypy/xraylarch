@@ -219,7 +219,7 @@ class GSEXRM_MapRow:
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
-                 masterfile = None, xrftype=None, xrdtype=None,
+                 masterfile = None, xrftype=None, xrdtype=None, poni = None,
                  FLAGxrf = True, FLAGxrd = False):
 
         if not FLAGxrf and not FLAGxrd:
@@ -342,6 +342,7 @@ class GSEXRM_MapRow:
         ## is this the correct way to handle collected number of frames per row?
         ## mkak 2017.02.08
         if FLAGxrd:
+            print 'File? ',poni
             if self.npts == xrddat.shape[0]:
                 self.xrd2d = xrddat
             elif self.npts > xrddat.shape[0]:
@@ -949,7 +950,7 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile = self.masterfile,
+                             masterfile = self.masterfile, poni = self.calibration,
                              FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
 
 
