@@ -343,7 +343,7 @@ class GSEXRM_MapRow:
         ## mkak 2017.02.08
         if FLAGxrd:
             if self.npts == xrddat.shape[0]:
-                self.xrd2d     = xrddat
+                self.xrd2d = xrddat
             elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
