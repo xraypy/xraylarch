@@ -50,4 +50,4 @@ timer.show_report()
 
 # show(cu)
 
-print 'Ran %i processing steps in % .4f seconds' % (n, time.time() - t0)
+print( 'Ran %i processing steps in % .4f seconds' % (n, time.time() - t0))

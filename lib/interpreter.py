@@ -83,15 +83,15 @@ class Interpreter:
   """
 
     supported_nodes = ('arg', 'assert', 'assign', 'attribute', 'augassign',
-                       'binop', 'boolop', 'break', 'call', 'compare',
-                       'continue', 'delete', 'dict', 'ellipsis',
+                       'binop', 'boolop', 'break', 'bytes', 'call',
+                       'compare', 'continue', 'delete', 'dict', 'ellipsis',
                        'excepthandler', 'expr', 'expression', 'extslice',
                        'for', 'functiondef', 'if', 'ifexp', 'import',
                        'importfrom', 'index', 'interrupt', 'list',
                        'listcomp', 'module', 'name', 'nameconstant', 'num',
                        'pass', 'print', 'raise', 'repr', 'return', 'slice',
-                       'str', 'subscript', 'try', 'tryexcept', 'tryfinally',
-                       'tuple', 'unaryop', 'while')
+                       'str', 'subscript', 'try', 'tryexcept',
+                       'tryfinally', 'tuple', 'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
                  with_plugins=True, historyfile=None, maxhistory=5000):
@@ -493,6 +493,10 @@ class Interpreter:
         'return string'
         return node.s  # ('s',)
 
+    def on_bytes(self, node):
+        'return bytes'
+        return node.s  # ('s',)
+
     def on_nameconstant(self, node):    # ('value')
         """ Name Constant node (new in Python3.4)"""
         return node.value
@@ -798,6 +802,9 @@ class Interpreter:
             args = args + self.run(starargs)
 
         keywords = {}
+        if six.PY3 and func == print:
+            keywords['file'] = self.writer
+
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)

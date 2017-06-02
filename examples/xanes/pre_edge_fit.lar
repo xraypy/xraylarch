@@ -67,5 +67,5 @@ plot(dat.e, g2, label='gauss2', win=2)
 plot(dat.e, g3, label='gauss3', win=2)
 plot(dat.e, e1, label='erf +offset', win=2)
 
-print fit_report(params, show_correl=False)
+print( fit_report(params, show_correl=False))
 #

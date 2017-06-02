@@ -42,7 +42,7 @@ dset_150  = feffit_dataset(data=cu_150, pathlist=[path1_150], transform=trans)
 out = feffit(pars, [dset_10, dset_50, dset_150])
 report = feffit_report(out)
 
-print report
+print( report)
 run('doc_macros.lar')
 write_report('doc_feffit3.out', report)
 

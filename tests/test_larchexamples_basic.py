@@ -26,7 +26,7 @@ class TestScripts(TestCase):
         self.isNear("s_gauss[5]", 0.027, places=2)
         self.isNear("s_voigt[5]", 0.256, places=2)
 
-    def test_basic_smooth(self):
+    def test_basic_localnames(self):
         self.runscript('local_namespaces.lar', dirname='../examples/basic/')
         assert(len(self.session.get_errors()) == 0)
         self.isNear("x", 1000.0, places=4)

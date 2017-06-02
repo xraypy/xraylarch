@@ -17,7 +17,7 @@ def fit_exp(pars, dat):
 enddef
 
 minout = minimize(fit_exp, fitparams, args=(dat,))
-print fit_report(minout, min_correl=0)
+print( fit_report(minout, min_correl=0))
 
 final = fit_exp(fitparams, dat) + dat.y
 newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)

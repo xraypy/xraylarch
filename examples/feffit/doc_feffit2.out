@@ -41,7 +41,7 @@
    alpha, sig2_3        =  0.138
  
 [[Paths]]
-   Path p12057e59, Feff.dat file = feff0001.dat
+   Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
@@ -53,7 +53,7 @@
      deltar = -0.006292 +/- 0.003488  'alpha*reff'
      sigma2 =  0.008643 +/- 0.000274  'sig2_1'
 
-   Path p1209aafd, Feff.dat file = feff0002.dat
+   Path pe3tkyh7w, Feff.dat file = feff0002.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu      -3.6032,  0.0000,  0.0000  1
@@ -65,7 +65,7 @@
      deltar = -0.008899 +/- 0.003488  'alpha*reff'
      sigma2 =  0.014079 +/- 0.001384  'sig2_2'
 
-   Path p11af5dcd, Feff.dat file = feff0003.dat
+   Path pkky2qtk6, Feff.dat file = feff0003.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       1.8016, -1.8016,  0.0000  1

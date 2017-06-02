@@ -1,5 +1,5 @@
 
-print " == Using Archimedes Method to calculate PI"
+print(" == Using Archimedes Method to calculate PI")
 
 # max error allowed
 eps = 1e-16
@@ -17,5 +17,4 @@ while x-y > eps:
 #endwhile
 result = (x+y)/2
 pi1 = 4*arctan(1)
-print "PI = %.18f, error=%.3g in %i steps" % (result, result-pi1, n)
-
+print("PI = %.18f, error=%.3g in %i steps" % (result, result-pi1, n))

@@ -5,8 +5,8 @@ for script in ls('*.lar'):
     if script == this_script:
         continue
     #endif
-        
-    print '>>> Running script ', script
+
+    print( '>>> Running script ', script)
     wx_update()
     run(script)
 #endfor

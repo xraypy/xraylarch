@@ -12,6 +12,8 @@ import numpy as np
 from tempfile import NamedTemporaryFile
 from larch import Interpreter, InputText
 
+from six.moves import StringIO
+
 def nullfunction(*args, **kwargs):
     pass
 
@@ -32,22 +34,19 @@ class LarchSession(object):
         self.set_stdout()
 
     def set_stdout(self, fname='_stdout_'):
-        self._outfile = os.path.abspath(fname)
-
-        self._larch.writer = open(self._outfile, 'w')
+        # self._outfile = os.path.abspath(fname)
+        # self._larch.writer = open(self._outfile, 'w')
+        self._larch.writer = StringIO()
 
     def read_stdout(self):
         self._larch.writer.flush()
+        self._larch.writer.seek(0)
         t0 = time.time()
-        time.sleep(0.1)
-        while (not os.path.exists(self._outfile) and
-               (time.time() - t0)< 5.0):
-            time.sleep(0.1)
+        time.sleep(0.01)
 
-        with open(self._outfile) as inp:
-            out = inp.read()
-        os.unlink(self._outfile)
-        self._larch.writer =  open(self._outfile, 'w')
+        out = self._larch.writer.read()
+        self._larch.writer.close()
+        self.set_stdout()
         return out
 
     def run(self, text):

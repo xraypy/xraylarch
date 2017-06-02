@@ -55,7 +55,7 @@
  
 [[Paths]]
  dataset 1:
-   Path p1218978d, Feff.dat file = feff0001.dat
+   Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
@@ -68,7 +68,7 @@
      sigma2 =  0.003276 +/- 0.000118  'sigma2_eins(10, theta)'
 
  dataset 2:
-   Path p1218ab41, Feff.dat file = feff0001.dat
+   Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
@@ -81,7 +81,7 @@
      sigma2 =  0.003339 +/- 0.000131  'sigma2_eins(50, theta)'
 
  dataset 3:
-   Path p1211b329, Feff.dat file = feff0001.dat
+   Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1

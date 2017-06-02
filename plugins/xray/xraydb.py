@@ -551,11 +551,16 @@ class xrayDB(object):
         Data from Elam, Ravel, and Sieber.
         """
         calc = self.Elam_CrossSection
-        xsec = calc(element, energies, kind='photo')
         if kind.lower().startswith('tot'):
+            xsec = calc(element, energies, kind='photo')
             xsec += calc(element, energies, kind='coh')
             xsec += calc(element, energies, kind='incoh')
-
+        elif kind.lower().startswith('coh'):
+            xsec = calc(element, energies, kind='coh')
+        elif kind.lower().startswith('incoh'):
+            xsec = calc(element, energies, kind='incoh')
+        else:
+            xsec = calc(element, energies, kind='photo')
         return xsec
 
     def coherent_cross_section_elam(self, element, energies):

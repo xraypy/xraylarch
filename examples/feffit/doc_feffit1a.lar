@@ -25,7 +25,7 @@ dset  = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
 # perform fit!
 out = feffit(pars, dset)
 
-print feffit_report(out)
+print( feffit_report(out))
 
 run('doc_macros.lar')
 plot_chifit(dset, title='First shell fit to Cu')

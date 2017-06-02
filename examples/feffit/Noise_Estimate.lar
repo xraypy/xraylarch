@@ -23,7 +23,7 @@ for iscale in range(15):
          newplot(tmp.k, tmp.chi*tmp.k)
          plot(tmp.k, tmp.kwin*0.7)
          newplot(tmp.r, tmp.chir_mag, xmax=25, win=2)
-         print ' I  InputNoise| Estimated Noise       =>  Ratio'
+         print( ' I  InputNoise| Estimated Noise       =>  Ratio')
     else:
         update_trace(tmp.k, tmp.chi*tmp.k, trace=1, win=1)
         update_trace(tmp.r, tmp.chir_mag, trace=1, win=2)
@@ -31,5 +31,5 @@ for iscale in range(15):
     eps  = array(eps)
     eave = eps.mean()
     pred = sqrt(scale**2 + eps_off**2)
-    print ' %2.2i  %.7f  | %.7f +/-  %.7f  => %.7f || %.7f=> %.7f' % (iscale, scale, eave, eps.std(), eave/scale, pred, pred/eave)
+    print( ' %2.2i  %.7f  | %.7f +/-  %.7f  => %.7f || %.7f=> %.7f' % (iscale, scale, eave, eps.std(), eave/scale, pred, pred/eave))
 endfor
