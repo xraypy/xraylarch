@@ -1119,14 +1119,6 @@ class Fitting1DXRD(BasePanel):
 
             filter = True
         myDlg.Destroy()
-        
-        print
-        print 'self.elem_include',self.elem_include
-        print 'self.elem_exclude',self.elem_exclude
-        print 'self.amcsd',self.amcsd
-        print 'self.auth_include',self.auth_include
-        print 'self.mnrl_include',self.mnrl_include
-        print
 
         if filter == True:
             cif = self.owner.cifdatabase

@@ -206,7 +206,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSaveMCAFile(self, event=None, **kws):
         tmp = '''
-        # print 'SaveMCA File'
+        # print('SaveMCA File')
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))

@@ -35,14 +35,14 @@ MAXORDER = 6
 #         b.kktrans()
 #     endfor
 #     finish = time.clock()
-#     print finish - start
+#     print(finish - start)
 #
 #     start = time.clock()
 #     for i in range(10):
 #         b.kktrans(how='sca')
 #     endfor
 #     finish = time.clock()
-#     print finish - start
+#     print(finish - start)
 ##
 ## I got 7.6 seconds and 76.1 seconds for 10 iterations of each.  Awesome!
 ##

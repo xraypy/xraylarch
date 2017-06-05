@@ -127,7 +127,7 @@ class Plot(wx.Dialog):
         delta_film=out[0]
         la_film=out[2]*10000.	      # absorption length in cm, convert to microns
         thc_film=(2.*delta_film)**(0.5)*180./math.pi
-        print '%s %3.4f Degrees (%3.4f m radians)' % ('critical angle for film:', thc_film, thc_film*math.pi/180.*1000.)
+        print('%s %3.4f Degrees (%3.4f m radians)' % ('critical angle for film:', thc_film, thc_film*math.pi/180.*1000.))
         th_step=0.001
         th_range=numpy.arange(0.000, thc_film*3.0, th_step)  # angular range
         depths=[0.0]  # calculate efield intensity at air/film interface
@@ -158,20 +158,20 @@ class Plot(wx.Dialog):
         layer_den.append(subs_den)
         layer_rough.append(film_roughness)  # not necessary
         layer_tag.append(subs_mat+'_substrate')
-        # print critical angle and absorption length for film and substrate
-        print 'energy(eV) \t layer \t critical_angle(Deg.) \t absorption_length(micron) \n'
-        print '%4.1f \t %s \t %4.4f \t %4.4f\n' % (eV0, film_mat, thc_film, la_film)
+        # print(critical angle and absorption length for film and substrate)
+        print('energy(eV) \t layer \t critical_angle(Deg.) \t absorption_length(micron) \n')
+        print('%4.1f \t %s \t %4.4f \t %4.4f\n' % (eV0, film_mat, thc_film, la_film))
         out=readf1f2a.get_delta(subs_mat, subs_den, eV0)
         delta_subs=out[0]
         la_subs=out[2]*10000.	      # absorption length in cm, convert it to microns
         thc_subs=(2.*delta_subs)**(0.5)*180./math.pi
-        print '%4.1f \t %s \t %4.4f \t %4.4f\n' % (eV0, subs_mat, thc_subs, la_subs)
+        print('%4.1f \t %s \t %4.4f \t %4.4f\n' % (eV0, subs_mat, thc_subs, la_subs))
     # --- call reflectivity in SimpleParratt.py	 ------------------
         SimpleParratt.reflectivity(eV0, th_range, layer_mat, layer_thick, layer_den,\
             layer_rough, layer_tag, depths)
     # --- Plot ----------------------------------------------------
         if self.plot_on==1:
-            print self.plot_on
+            print(self.plot_on)
             self.plot.Destroy()
             #self.frm.Destroy()
         frm = wx.Frame(self, 1, 'SimpleParratt.txt', size=(600,450))
@@ -283,7 +283,7 @@ class Plot(wx.Dialog):
         film1.reverse_structure()  # reverse the layer order so that the top is vaccum
         layer_mat=[];	layer_thick=[];	 layer_den=[];	 layer_rough=[]; layer_tag=[]
         layer_thc=[]; layer_la=[]
-        print 'energy(eV) \t layer \t th_c(Deg.) \t th_c(m rad) \t absorption_length(micron) \t density (g/cc)\n'
+        print('energy(eV) \t layer \t th_c(Deg.) \t th_c(m rad) \t absorption_length(micron) \t density (g/cc)\n')
         for (ii, layer1) in enumerate(film1.LayerList):
             layer_mat.append(str(layer1.composition))
             inputfile='NominalDensity.txt'
@@ -308,22 +308,22 @@ class Plot(wx.Dialog):
             thc_layer=(2.*delta_layer)**(0.5)*180./math.pi  # critical angle in deg
             if ii==1:
                 thc_toplayer=thc_layer
-            print '%4.1f \t %s \t %4.4f \t %4.4f \t %4.1f \t %s\n' % \
+            print('%4.1f \t %s \t %4.4f \t %4.4f \t %4.1f \t %s\n' % \)
                 (eV0, layer1.composition+'-'+layer1.tag, thc_layer, thc_layer*math.pi/180.*1000., la_layer, layer1.density)
         th_step=0.001
         th_range=numpy.arange(0.000, thc_toplayer*12.0, th_step)  # angular range
         depths=[0.0]  # calculate efield intensity at air/film interface
-        #print layer_mat
-        #print layer_thick
-        #print layer_den
-        #print layer_rough
+        #print(layer_mat)
+        #print(layer_thick)
+        #print(layer_den)
+        #print(layer_rough)
         #layer_mat=['He', 'Cr', 'Si']; layer_thick=[0, 10., 10000]; layer_den=[1,1,1]; layer_rough=[1,1,1]
     # --- call reflectivity in SimpleParratt.py	 ------------------
         SimpleParratt.reflectivity(eV0, th_range, layer_mat, layer_thick, layer_den,\
             layer_rough, layer_tag, depths)
     # --- Plot ----------------------------------------------------
         if self.plot_on==1:
-            print self.plot_on
+            print(self.plot_on)
             self.plot.Destroy()
             #self.frm.Destroy()
         frm = wx.Frame(self, 1, 'SimpleParratt.txt', size=(600,450))

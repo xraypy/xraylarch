@@ -223,7 +223,6 @@ class GSEXRM_MapRow:
                  masterfile = None, xrftype=None, xrdtype=None, poni=None,
                  FLAGxrf = True, FLAGxrd = False):
 
-        print 'start timer for row creation'
         ti = time.time()
         if not FLAGxrf and not FLAGxrd:
             return
@@ -441,7 +440,7 @@ class GSEXRM_MapRow:
 
         self.read_ok = True
         tf = time.time()
-        print 'Time: %0.3f s (read %0.3f s; integrate %0.3f s)' % ((tf-ti),(tf0-ti0),(tf1-ti1))
+        print('Time to create row: %0.3f s (read %0.3f s; integrate %0.3f s)' % ((tf-ti),(tf0-ti0),(tf1-ti1)))
 
 class GSEMCA_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
