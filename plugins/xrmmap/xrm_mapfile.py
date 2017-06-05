@@ -223,6 +223,8 @@ class GSEXRM_MapRow:
                  masterfile = None, xrftype=None, xrdtype=None, poni=None,
                  FLAGxrf = True, FLAGxrd = False):
 
+        print 'start timer for row creation'
+        ti = time.time()
         if not FLAGxrf and not FLAGxrd:
             return
 
@@ -312,7 +314,9 @@ class GSEXRM_MapRow:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
 
                 if FLAGxrd:
+                    ti0 = time.time()
                     xrddat = xrd_reader(xdfile, verbose=False)
+                    tf0 = time.time()
                     if xrddat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
 
@@ -353,11 +357,13 @@ class GSEXRM_MapRow:
             else:
                 self.xrd2d = xrddat[0:self.npts]
             
+            ti1 = time.time()
             if poni is not None:
                 attrs = {'steps':STEPS}
                 self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
             else:
                 self.xrd1d = np.zeros((self.npts,2,STEPS))
+            tf1 = time.time()
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
@@ -434,6 +440,8 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
+        tf = time.time()
+        print 'Time: %0.3f s (read %0.3f s; integrate %0.3f s)' % ((tf-ti),(tf0-ti0),(tf1-ti1))
 
 class GSEMCA_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
@@ -1062,15 +1070,10 @@ class GSEXRM_MapFile(object):
             xrdgrp = self.xrmmap['xrd']
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            print 'need to add try statement'
             try:
-                print '1d?'
                 xrdgrp['data1D'][thisrow,] = row.xrd1d
-                print 'saved 1d data.'
             except:
-                print 'no. 2d.'
                 xrdgrp['data2D'][thisrow,] = row.xrd2d
-                print 'saved 2d data.'
 
         t2 = time.time()
         if verbose:
