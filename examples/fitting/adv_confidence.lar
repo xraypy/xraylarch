@@ -20,11 +20,10 @@ final = fit_exp(fitparams, dat) + dat.y
 newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)
    plot (dat.x, final, label='fit')
 
-# print minout
-print fit_report(minout)
+print( fit_report(minout))
 
 conf_int = confidence_intervals(minout)
-print confidence_report(conf_int)
+print( confidence_report(conf_int))
 
 xvals, yvals, c2map = chi2_map(minout, 'a2', 't2', nx=21, ny=21)
 imshow(c2map, x=xvals, y=yvals, title='Chi-square map for a2 and t2')

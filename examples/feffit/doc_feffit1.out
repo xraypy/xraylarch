@@ -32,7 +32,7 @@
    amp, del_r           =  0.137
  
 [[Paths]]
-   Path p1297de41, Feff.dat file = feffcu01.dat
+   Path pfh2ced6i, Feff.dat file = feffcu01.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1

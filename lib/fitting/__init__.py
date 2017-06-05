@@ -1,21 +1,29 @@
 #!/usr/bin/env python
 import six
 from copy import copy, deepcopy
-import wx
+HAS_WXPYTHON = False
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    pass
+
 import numpy as np
 import matplotlib
-matplotlib.use("WXAgg")
+
+if HAS_WXPYTHON:
+    matplotlib.use("WXAgg")
 
 from ..symboltable import Group, isgroup
 
 import lmfit
-from lmfit import (Parameter, Parameters, Minimizer,
-                   conf_interval, ci_report, conf_interval2d, ufloat,
-                   correlated_values)
+from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
+                   ci_report, conf_interval2d, ufloat, correlated_values)
 
 from lmfit.minimizer import eval_stderr, MinimizerResult
 from lmfit.model import ModelResult
 from lmfit.confidence import f_compare
+from lmfit.asteval import Interpreter
 
 def isParameter(x):
     return (isinstance(x, Parameter) or
@@ -148,7 +156,6 @@ def group2params(paramgroup, _larch=None):
 
     fiteval  = _larch.symtable._sys.fiteval
     params = Parameters(asteval=fiteval)
-
     if paramgroup is not None:
         for name in dir(paramgroup):
             par = getattr(paramgroup, name)
@@ -179,7 +186,10 @@ def params2group(params, paramgroup):
                          'name', 'correl', 'brute_step', 'user_data'):
                 setattr(this, attr, getattr(param, attr, None))
             if this.stderr is not None:
-                this.uvalue = ufloat((this.value, this.stderr))
+                try:
+                    this.uvalue = ufloat((this.value, this.stderr))
+                except:
+                    pass
 
 
 def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
@@ -188,7 +198,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     """
     wrapper around lmfit minimizer for Larch
     """
-    fiteval  = _larch.symtable._sys.fiteval
+    fiteval = _larch.symtable._sys.fiteval
     if isinstance(paramgroup, ParameterGroup):
         params = paramgroup.__params__
     elif isgroup(paramgroup):
@@ -198,8 +208,10 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     else:
         raise ValueError('minimize takes ParamterGroup or Group as first argument')
 
-    if args is None: args = ()
-    if kws is None: kws = {}
+    if args is None:
+        args = ()
+    if kws is None:
+        kws = {}
 
     def _residual(params):
         params2group(params, paramgroup)
@@ -273,7 +285,7 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
                 return lmfit.fit_report(result, modelpars=modelpars,
                                         show_correl=show_correl,
                                         min_correl=min_correl, sort_pars=sort_pars)
-            except ValueError, AttributeError:
+            except (ValueError, AttributeError):
                 pass
     return "Cannot make fit report with %s" % repr(fit_result)
 

@@ -130,7 +130,7 @@ Example:
 >>(params,msg) = fit(x,ocr)
 >>tau = params[0]
 >>a   = params[1]
->>print 'a_fit= ',a,' tau_fit=', tau
+>>print('a_fit= ',a,' tau_fit=', tau)
 # corrected counts
 >>counts_cor = num.ones(counts.shape)
 >>ocr_cor = num.ones(mon.shape)

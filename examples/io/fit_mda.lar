@@ -10,7 +10,7 @@ enddef
 
 
 def fit_voigt(pars, data):
-    return pars.off + pars.amp*voigt(data.x, pars.cen, pars.wid) - data.y
+    return pars.off + voigt(data.x, pars.amp, pars.cen, pars.wid) - data.y
 enddef
 
 def fit_scan(sname):
@@ -21,10 +21,10 @@ def fit_scan(sname):
             xlabel=data.xlabel, ylabel=data.ylabel, marker='o')
 
     # create group for parameters
-    params = group(off = param(0,     vary=True),
-                   amp = param(10.0,  vary=True),
-                   cen = param(-862, vary=True),
-                   wid = param(1, vary=True))
+    params = param_group(off = param(0,     vary=True),
+                         amp = param(10.0,  vary=True),
+                         cen = param(-862,  vary=True),
+                         wid = param(1,     vary=True))
 
     # final = fit_voigt(params, data) + data.y
     fit = minimize(fit_voigt, params, args=(data,))
@@ -36,4 +36,4 @@ def fit_scan(sname):
 enddef
 
 params = fit_scan('SampleScan')
-print 'Voigt Sigma = % .5f (% .5f)' % (params.wid.value, params.wid.stderr)
+print( 'Voigt Sigma = % .5f (% .5f)' % (params.wid.value, params.wid.stderr))

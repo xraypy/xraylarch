@@ -3,7 +3,10 @@ doc =  """
 """
 
 def resid(pars, data, verbose=False):
-    params.iter = params.iter + 1
+
+    # print(" In resid ", dir(pars))
+
+    pars.iter = pars.iter + 1
 
     off = pars.off.value
     amp1 = pars.amp1.value
@@ -17,16 +20,13 @@ def resid(pars, data, verbose=False):
              gaussian(data.x, amplitude=amp1, center=cen1, sigma=wid1) +
              gaussian(data.x, amplitude=amp2, center=cen2, sigma=wid2) )
 
-    if verbose and (params.iter % 2 == 0):
-        print ' >> ', iter, amp1,  cen1, wid1, amp2, cen2, wid2, off
+    if verbose and (pars.iter % 10 == 0):
+        print( ' >> ', pars.iter, amp1,  cen1, wid1, amp2, cen2, wid2, off)
         newplot(data.x, data.y)
         plot(data.x, model, force_draw=True)
-    endif
+    #endif
     return  model - data.y
-enddef
-
-# print resid
-
+#enddef
 
 mdat = group()
 
@@ -38,21 +38,21 @@ mdat.y = (-2.0 +
           gaussian(mdat.x, amplitude=2.0, center=4.9, sigma=0.25) +
           random.normal(size=len(mdat.x), scale=0.22) )
 
-params = group()
+print("PARAMS 1:")
+params = param_group()
 params.off  = guess(-2)
-params.amp1 = guess(3, min=.0)
+params.amp1 = guess(3.8, min=.0)
 params.cen1 = guess(3)
-params.wid1 = guess(1,  min=0)
+params.wid1 = guess(1.2,  min=0)
 params.amp2 = param(expr='amp1/3')
 params.cen2 = guess(4.5)
 params.wid2 = param(expr='wid1/2')
 params.iter = 0
 
-model = mdat.y + resid(params, mdat)
-out = minimize(resid, params, args=(mdat,))
+#
+init = mdat.y + resid(params, mdat)
+out = minimize(resid, params, args=(mdat,), kws={'verbose': True})
 
-status = resid(params, mdat, verbose=True)
-# print('Fit finished: %i function calles' % params.fit_details.nfev)
+print(fit_report(out))
 
-# show(params)
-# plot(mdat.x, model)
+plot(mdat.x, mdat.y + resid(params, mdat), label='best fit')

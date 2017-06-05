@@ -22,7 +22,6 @@ dset  = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 
 out = feffit(fitparams, dset)
 
-print feffit_report(out)
+print( feffit_report(out))
 plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True, label='data')
 plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
-

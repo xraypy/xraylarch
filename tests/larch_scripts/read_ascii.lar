@@ -28,7 +28,7 @@ for fname in local_testfiles:
     results[fname] = (ncol, nrow, grp.array_labels[:10])
 #endfor
 
-print "expected = ("
+print( "expected = (")
 for key, val in results.items():
    print("     ('%s', %i, %i, %s)," % (key, val[0], val[1], repr(val[2])))
 #endfor

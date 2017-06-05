@@ -16,12 +16,13 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
-from larch_plugins.xrd import XRD,E_from_lambda
+from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
 
 NINIT = 32
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
+STEPS = 5001
 
 def h5str(obj):
     """strings stored in an HDF5 from Python2 may look like
@@ -219,9 +220,10 @@ class GSEXRM_MapRow:
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
-                 masterfile = None, xrftype=None, xrdtype=None,
+                 masterfile = None, xrftype=None, xrdtype=None, poni=None,
                  FLAGxrf = True, FLAGxrd = False):
 
+        ti = time.time()
         if not FLAGxrf and not FLAGxrd:
             return
 
@@ -232,7 +234,7 @@ class GSEXRM_MapRow:
 
         self.npts = npts
         self.irow = irow
-        self.yvalue = yvalue
+        self.yvalue  = yvalue
         self.xrffile = xrffile
         self.xpsfile = xpsfile
         self.sisfile = sisfile
@@ -311,7 +313,9 @@ class GSEXRM_MapRow:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
 
                 if FLAGxrd:
+                    ti0 = time.time()
                     xrddat = xrd_reader(xdfile, verbose=False)
+                    tf0 = time.time()
                     if xrddat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
 
@@ -343,7 +347,7 @@ class GSEXRM_MapRow:
         ## mkak 2017.02.08
         if FLAGxrd:
             if self.npts == xrddat.shape[0]:
-                self.xrd2d     = xrddat
+                self.xrd2d = xrddat
             elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
@@ -351,6 +355,14 @@ class GSEXRM_MapRow:
                 ## mkak 2017.02.08
             else:
                 self.xrd2d = xrddat[0:self.npts]
+            
+            ti1 = time.time()
+            if poni is not None:
+                attrs = {'steps':STEPS}
+                self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
+            else:
+                self.xrd1d = np.zeros((self.npts,2,STEPS))
+            tf1 = time.time()
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
@@ -427,6 +439,8 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
+        tf = time.time()
+        print('Time to create row: %0.3f s (read %0.3f s; integrate %0.3f s)' % ((tf-ti),(tf0-ti0),(tf1-ti1)))
 
 class GSEMCA_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
@@ -572,7 +586,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 FLAGxrf=True, FLAGxrd=False):
+                 poni = None, FLAGxrf=True, FLAGxrd=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -593,10 +607,11 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.calibration = None
         self.energy      = None
         self.flag_xrf = FLAGxrf
         self.flag_xrd = FLAGxrd
+
+        self.calibration = poni
 
         # initialize from filename or folder
         if self.filename is not None:
@@ -664,6 +679,8 @@ class GSEXRM_MapFile(object):
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
+            
+            if poni is not None: self.add_calibration()
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -949,8 +966,8 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile = self.masterfile,
-                             FLAGxrf = self.flag_xrf, FLAGxrd = self.flag_xrd)
+                             masterfile=self.masterfile, poni=self.calibration,
+                             FLAGxrf=self.flag_xrf, FLAGxrd=self.flag_xrd)
 
 
     def add_rowdata(self, row, verbose=True):
@@ -1052,7 +1069,10 @@ class GSEXRM_MapFile(object):
             xrdgrp = self.xrmmap['xrd']
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            xrdgrp['data2D'][thisrow,] = row.xrd2d
+            try:
+                xrdgrp['data1D'][thisrow,] = row.xrd1d
+            except:
+                xrdgrp['data2D'][thisrow,] = row.xrd2d
 
         t2 = time.time()
         if verbose:
@@ -1219,14 +1239,18 @@ class GSEXRM_MapFile(object):
                 self.add_calibration()
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            self.chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-
+            chunksize_2DXRD    = (1, 1, xpixx, xpixy)
+            chunksize_1DXRD    = (1, 1, 2, STEPS)
+            
             if verbose:
                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D:  (%i, %i)'
                 print(prtxt % (npts, row.npts, xpixx, xpixy))
 
             xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
-                                   chunks = self.chunksize_2DXRD,
+                                   chunks = chunksize_2DXRD,
+                                   compression=COMPRESSION_LEVEL)
+            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, 2, STEPS), np.uint16,
+                                   chunks = chunksize_1DXRD,
                                    compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
@@ -2090,7 +2114,7 @@ class GSEXRM_MapFile(object):
             pattern = pattern.sum(axis=0)
         return pattern.sum(axis=0)
 
-    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, steps=5001):
+    def _get1Dxrd(self, map, pattern, areaname, nwedge=2, steps=STEPS):
 
         name = ('xrd: %s' % areaname)
         _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
