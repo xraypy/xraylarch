@@ -26,6 +26,14 @@ def read_lambda(calfile):
     ai = pyFAI.load(calfile)
     return ai._wavelength*1e10 ## units A
 
+def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
+                  verbose=False):
+    rowxrd1d = np.zeros((np.shape(rowxrd2d)[0],2,steps))
+    for i,xrd2d in enumerate(rowxrd2d):
+        rowxrd1d[i] = integrate_xrd(xrd2d,calfile,unit=unit,steps=steps,file=file,mask=mask,dark=dark,verbose=verbose)
+    return rowxrd1d  
+    
+
 def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
                   verbose=False):
     '''

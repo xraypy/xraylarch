@@ -1683,8 +1683,8 @@ class MapViewerFrame(wx.Frame):
                  'Read XRM Map File',  self.onReadFile)
         MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F',
                  'Read XRM Map Folder',  self.onReadFolder)
-        MenuItem(self, fmenu, '&Add to existing XRM Map File\tCtrl+F',
-                 'Read XRM Map Folder',  self.onAddToFile)
+#         MenuItem(self, fmenu, '&Add to existing XRM Map File\tCtrl+F',
+#                  'Read XRM Map Folder',  None) #self.onAddToFile)
         MenuItem(self, fmenu, 'Change &Working Folder',
                   'Choose working directory',
                   self.onFolderSelect)
@@ -1843,8 +1843,13 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
-            xrmfile = GSEXRM_MapFile(folder=str(path),FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
+            xrmfile = GSEXRM_MapFile(folder=str(path),FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd,poni=poni)
             self.add_xrmfile(xrmfile)
+
+#             if ponifile is not None:
+#                 xrmfile.calibration = ponifile
+#                 xrmfile.add_calibration()(self, evt=None)
+
 
     def add_xrmfile(self, xrmfile):
         gname = 'map001'
@@ -1867,45 +1872,45 @@ class MapViewerFrame(wx.Frame):
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
 
-    def onAddToFile(self, evt=None):
-        if not self.h5convert_done:
-            print( 'cannot open file while processing a map folder')
-            return
 
-        myDlg = AddToMapFolder()
-
-        filepath, fldrpath, read = None, None, False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read        = True
-            fldrpath    = myDlg.FldrPath
-            ponifile    = myDlg.FilePath
-            FLAGxrf     = myDlg.FLAGxrf
-            FLAGxrd     = myDlg.FLAGxrd
-
-        myDlg.Destroy()
-
-        ## Still working on this....
-        ## mkak 2016.10.06
-        if read:
-            print('Not yet implemented.')
-            ## 1. Open file if not open.
-            ## 2. Once open, check to see which data it contains.
-            ## 3. Check if new data is being asked to be added (compare flags).
-            ## 4. If new data, now add data.
-            xrmfile = GSEXRM_MapFile(filename=str(filepath))
-            if ponifile is not None:
-                xrmfile.calibration = ponifile
-                xrmfile.add_calibration()
-            self.add_xrmfile(xrmfile)
-#             xrmfile.check_flags()
-#
-#             if xrmfile.flag_xrf and FLAGxrf:
-#                print('This file already has XRF data. None will be added.')
-#             if xrmfile.flag_xrd and FLAGxrd:
-#                print('This file already has XRD data. None will be added.')
-
-            #xrmfile.add.....
-
+#         if not self.h5convert_done:
+#             print( 'cannot open file while processing a map folder')
+#             return
+# 
+#         myDlg = AddToMapFolder()
+# 
+#         filepath, fldrpath, read = None, None, False
+#         if myDlg.ShowModal() == wx.ID_OK:
+#             read        = True
+#             fldrpath    = myDlg.FldrPath
+#             ponifile    = myDlg.FilePath
+#             FLAGxrf     = myDlg.FLAGxrf
+#             FLAGxrd     = myDlg.FLAGxrd
+# 
+#         myDlg.Destroy()
+# 
+#         ## Still working on this....
+#         ## mkak 2016.10.06
+#         if read:
+#             print('Not yet implemented.')
+#             ## 1. Open file if not open.
+#             ## 2. Once open, check to see which data it contains.
+#             ## 3. Check if new data is being asked to be added (compare flags).
+#             ## 4. If new data, now add data.
+#             xrmfile = GSEXRM_MapFile(filename=str(filepath))
+#             if ponifile is not None:
+#                 xrmfile.calibration = ponifile
+#                 xrmfile.add_calibration()
+#             self.add_xrmfile(xrmfile)
+# #             xrmfile.check_flags()
+# #
+# #             if xrmfile.flag_xrf and FLAGxrf:
+# #                print('This file already has XRF data. None will be added.')
+# #             if xrmfile.flag_xrd and FLAGxrd:
+# #                print('This file already has XRD data. None will be added.')
+# 
+#             #xrmfile.add.....
+# 
 
 
     def openPONI(self, evt=None):
