@@ -221,11 +221,11 @@ class GSEXRM_MapRow:
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
-                 masterfile = None, xrftype=None, xrdtype=None, poni=None,
-                 FLAGxrf = True, FLAGxrd = False):
+                 masterfile=None, xrftype=None, xrdtype=None, poni=None,
+                 FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         ta = time.time()
-        if not FLAGxrf and not FLAGxrd:
+        if not FLAGxrf and not FLAGxrd2D:
             return
 
         self.read_ok = False
@@ -257,7 +257,7 @@ class GSEXRM_MapRow:
             else:
                 xrf_reader = read_xsp3_hdf5
 
-        if FLAGxrd:
+        if FLAGxrd2D or FLAGxrd1D:
             if xrdtype == 'hdf5':
                 xrd_reader = read_xrd_hdf5
             elif xrdtype == 'netcdf' or xrdfile.endswith('nc'):
@@ -315,7 +315,7 @@ class GSEXRM_MapRow:
                     if xrfdat is None:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
                 tc = time.time()
-                if FLAGxrd:
+                if FLAGxrd2D or FLAGxrd1D:
                     xrddat = xrd_reader(xdfile, verbose=False)
                     if xrddat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
@@ -348,7 +348,7 @@ class GSEXRM_MapRow:
         tf = time.time()
 
         ## SPECIFIC TO XRD data
-        if FLAGxrd:
+        if FLAGxrd2D or FLAGxrd1D:
             if self.npts == xrddat.shape[0]:
                 self.xrd2d = xrddat
             elif self.npts > xrddat.shape[0]:
@@ -357,7 +357,7 @@ class GSEXRM_MapRow:
             else:
                 self.xrd2d = xrddat[0:self.npts]
             tg = time.time()
-            if poni is not None:
+            if poni is not None and FLAGxrd1D:
                 attrs = {'steps':STEPS}
                 self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
             else:
@@ -387,8 +387,10 @@ class GSEXRM_MapRow:
                 self.dtfactor  = self.dtfactor[:self.npts]
                 self.inpcounts = self.inpcounts[:self.npts]
                 self.outcounts = self.outcounts[:self.npts]
-            if FLAGxrd:
+            if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[:self.npts]
+            if FLAGxrd1D:
+                self.xrd1d = self.xrd1d[:self.npts]
 
         points = range(1, self.npts+1)
         # auto-reverse: counter-intuitively (because stage is upside-down and so
@@ -407,8 +409,10 @@ class GSEXRM_MapRow:
                 self.dtfactor = self.dtfactor[::-1]
                 self.inpcounts= self.inpcounts[::-1]
                 self.outcounts= self.outcounts[::-1]
-            if FLAGxrd:
+            if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[::-1]
+            if FLAGxrd1D:
+                self.xrd1d = self.xrd1d[::-1]
 
 
         if FLAGxrf:
@@ -441,8 +445,8 @@ class GSEXRM_MapRow:
         ti = time.time()
         
         self.xrfreadtime   = ((tc-tb)+(tf-te)) if FLAGxrf else 0.0
-        self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd else 0.0
-        self.xrd1dcalctime = (th-tg) if FLAGxrd and poni is not None else 0.0
+        self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd2D else 0.0
+        self.xrd1dcalctime = (th-tg) if FLAGxrd1D and poni is not None else 0.0
         self.readtime      = (ti-ta)
 
 
@@ -590,7 +594,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 poni = None, FLAGxrf=True, FLAGxrd=False):
+                 poni = None, FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -613,7 +617,8 @@ class GSEXRM_MapFile(object):
 
         self.energy      = None
         self.flag_xrf = FLAGxrf
-        self.flag_xrd = FLAGxrd
+        self.flag_xrd1d = FLAGxrd1D
+        self.flag_xrd2d = FLAGxrd2D
 
         self.calibration = poni
 
@@ -777,7 +782,7 @@ class GSEXRM_MapFile(object):
         xrdcal = False
         if self.calibration and xrdgrp.attrs['calfile'] != self.calibration:
             if os.path.exists(self.calibration):
-                print('New calibration file: %s' % self.calibration)
+                print('Calibration file loaded: %s' % self.calibration)
                 xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
         print('')
         self.h5root.flush()
@@ -945,20 +950,20 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
 
-        if scan_version > 1.35 or (self.flag_xrf and self.flag_xrd):
-            yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
-            if xrff.startswith('None'):
-                xrff = xrff.replace('None', 'xsp3')
-            if sisf.startswith('None'):
-                sisf = sisf.replace('None', 'struck')
-            if xpsf.startswith('None'):
-                xpsf = xpsf.replace('None', 'xps')
-            if xrdf.startswith('None'):
-                xrdf = xrdf.replace('None', 'pexrd')
-
-        elif self.flag_xrf:
-            yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
-            xrdf = ''
+        if self.flag_xrf:
+            if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
+                yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+                if xrff.startswith('None'):
+                    xrff = xrff.replace('None', 'xsp3')
+                if sisf.startswith('None'):
+                    sisf = sisf.replace('None', 'struck')
+                if xpsf.startswith('None'):
+                    xpsf = xpsf.replace('None', 'xps')
+                if xrdf.startswith('None'):
+                    xrdf = xrdf.replace('None', 'pexrd')
+            else:
+                yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
+                xrdf = ''
         else:
             raise IOError('No XRF or XRD flags provided.')
             return
@@ -972,7 +977,8 @@ class GSEXRM_MapFile(object):
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
                              masterfile=self.masterfile, poni=self.calibration,
-                             FLAGxrf=self.flag_xrf, FLAGxrd=self.flag_xrd)
+                             FLAGxrf=self.flag_xrf, 
+                             FLAGxrd2D=self.flag_xrd2d, FLAGxrd1D=self.flag_xrd1d)
 
 
     def add_rowdata(self, row, verbose=True):
@@ -980,14 +986,14 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        if not self.flag_xrf and not self.flag_xrd:
+        if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
             return
 
         thisrow = self.last_row + 1
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.flag_xrf:
             pform = '%s, xrffile=%s' % (pform,row.xrffile)
-        if self.flag_xrd:
+        if self.flag_xrd2d or self.flag_xrd1d:
             pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
         print(pform)
 
@@ -1068,19 +1074,15 @@ class GSEXRM_MapFile(object):
 
         t1 = time.time()
 
-        if self.flag_xrd:
-            if row.xrd1d is not None:
-                self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
-            else:
-                self.xrmmap['xrd']['data2D'][thisrow,] = row.xrd2d
+        if self.flag_xrd1d and row.xrd1d is not None:  
+            self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
+
+        if self.flag_xrd2d and row.xrd2d is not None:
+            self.xrmmap['xrd']['data2D'][thisrow,] = row.xrd2d
 
         t2 = time.time()
         if verbose:
-        
-            writetime = t2-t0
-            xrfwritetime = t1-t0
-            xrdwritetime = t2-t1
-
+            writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
             if row.xrd1dcalctime > 0.01:
                 pform = '\tReading - %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s; 1DXRD: %0.2f s) '
                 print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
@@ -1110,8 +1112,9 @@ class GSEXRM_MapFile(object):
         xrmmap = self.xrmmap
 
         flaggp = xrmmap['flags']
-        flaggp.attrs['xrf'] = self.flag_xrf
-        flaggp.attrs['xrd'] = self.flag_xrd
+        flaggp.attrs['xrf']   = self.flag_xrf
+        flaggp.attrs['xrd2d'] = self.flag_xrd2d
+        flaggp.attrs['xrd1d'] = self.flag_xrd1d
 
         if self.npts is None:
             self.npts = row.npts
@@ -1241,25 +1244,26 @@ class GSEXRM_MapFile(object):
                                compression=COMPRESSION_LEVEL,
                                maxshape=(None, npts, npos))
 
-        if self.flag_xrd:
+        if self.flag_xrd2d or self.flag_xrd1d:
 
             if self.calibration:
                 self.add_calibration()
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
-            chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-            chunksize_1DXRD    = (1, 1, 2, STEPS)
-            
             if verbose:
-                prtxt = '--- Build XRD Schema: %i, %i ---- 2D:  (%i, %i)'
+                prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
                 print(prtxt % (npts, row.npts, xpixx, xpixy))
 
-            xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
-                                   chunks = chunksize_2DXRD,
-                                   compression=COMPRESSION_LEVEL)
-            xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, 2, STEPS), np.uint16,
-                                   chunks = chunksize_1DXRD,
-                                   compression=COMPRESSION_LEVEL)
+            if self.flag_xrd2d:
+                chunksize_2DXRD    = (1, 1, xpixx, xpixy)
+                xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
+                                       chunks = chunksize_2DXRD,
+                                       compression=COMPRESSION_LEVEL)
+            if self.flag_xrd1d:
+                chunksize_1DXRD    = (1, 1, 2, STEPS)
+                xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, 2, STEPS), np.uint16,
+                                       chunks = chunksize_1DXRD,
+                                       compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 #         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
@@ -1271,23 +1275,21 @@ class GSEXRM_MapFile(object):
         check if any XRD OR XRF data in mapfile
         mkak 2016.10.13
         '''
-        print( 'running: self.check_flags()')
+        try:
+            xrdgp = self.xrmmap['xrd']['data2D']
+            self.flag_xrd2d = True
+        except:
+            self.flag_xrd2d = False
 
         try:
-            xrdgp = self.xrmmap['xrd']
-            xrddata = xrdgp['data2D']
-            self.flag_xrd = True
+            xrdgp = self.xrmmap['xrd']['data1D']
+            self.flag_xrd1d = True
         except:
-            self.flag_xrd = False
-        try:
-            xrfgp = self.xrmmap['xrf']
-            xrfdata = xrdgp['det1']
-            self.flag_xrf = True
-        except:
-            self.flag_xrf = False
+            self.flag_xrd1d = False
 
-        self.xrmmap['flags'].attrs['xrf'] = self.flag_xrf
-        self.xrmmap['flags'].attrs['xrd'] = self.flag_xrd
+        self.xrmmap['flags'].attrs['xrf']   = self.flag_xrf
+        self.xrmmap['flags'].attrs['xrd2d'] = self.flag_xrd2d
+        self.xrmmap['flags'].attrs['xrd1d'] = self.flag_xrd1d
         self.h5root.flush()
 
     def reset_flags(self):
@@ -1301,8 +1303,9 @@ class GSEXRM_MapFile(object):
         except:
             check_flags(self)
 
-        self.flag_xrf = self.xrmmap['flags'].attrs['xrf']
-        self.flag_xrd = self.xrmmap['flags'].attrs['xrd']
+        self.flag_xrf   = self.xrmmap['flags'].attrs['xrf']
+        self.flag_xrd2d = self.xrmmap['flags'].attrs['xrd2d']
+        self.flag_xrd1d = self.xrmmap['flags'].attrs['xrd1d']
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -1590,7 +1593,7 @@ class GSEXRM_MapFile(object):
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
 
-        if self.scan_version < 1.35 and self.flag_xrd:
+        if self.scan_version < 1.35 and (self.flag_xrd2d or self.flag_xrd1d):
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
             for i,addxrd in enumerate(xrd_files):
                 self.rowdata[i].insert(4,addxrd)
@@ -1941,25 +1944,16 @@ class GSEXRM_MapFile(object):
         """
 
         try:
-            xrdgrp = self.xrmmap['xrd']
-            data2D = xrdgrp['data2D']
+            xrdgrp = self.xrmmap['xrd']['data2D']
             flag2D = True
         except:
             flag2D = False
 
         try:
-            xrdgrp = self.xrmmap['xrd']
-            xrdgrp['data1D']
+            xrdgrp = self.xrmmap['xrd']['data1D']
             flag1D = True
         except:
-            if flag2D:
-                try:
-                    xrdgrp.attrs['calfile']
-                    flag1D = True
-                except:
-                    flag1D = False
-            else:
-                flag1D = False
+            flag1D = False
 
         return flag1D,flag2D
 
@@ -1983,8 +1977,8 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        mapdat = self.xrmmap['xrd']
-        ix, iy, xpix, ypix = mapdat['data2D'].shape
+        mapdat = self.xrmmap['xrd']['data2D']
+        ix, iy, xpix, ypix = mapdat.shape
 
         npix = len(np.where(area)[0])
         if npix < 1:
@@ -2000,7 +1994,7 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                frames = self.get_frames_rect(ymin, ymax, xmin, xmax,
+                frames = self.get_xrd_rect(ymin, ymax, xmin, xmax,
                                            mapdat=mapdat, area=area)
             except MemoryError:
                 use_chunks = True
@@ -2013,7 +2007,7 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    frames += self.get_frames_rect(ymin, ymax, x1, x2,
+                    frames += self.get_xrd_rect(ymin, ymax, x1, x2,
                                                 mapdat=mapdat, area=area)
             else:
                 for i in range(step+1):
@@ -2022,12 +2016,12 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    frames += self.get_frames_rect(y1, y2, xmin, xmax,
+                    frames += self.get_xrd_rect(y1, y2, xmin, xmax,
                                                 mapdat=mapdat, area=area)
 
-        return self._getXRD(mapdat, frames, areaname, xpixels=xpix, ypixels=ypix)
+        return self._get2DXRD(mapdat, frames, areaname, xpixels=xpix, ypixels=ypix)
 
-    def get_frames_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
+    def get_xrd_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
         """return summed frames for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2049,17 +2043,17 @@ class GSEXRM_MapFile(object):
         Note:  if mapdat is None, the map data is taken from the 'xrd/data2D' parameter
         """
         if mapdat is None:
-            mapdat = self.xrmmap['xrd']
+            mapdat = self.xrmmap['xrd']['data2D']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
-        ix, iy, xpix, ypix = mapdat['data2D'].shape
+        ix, iy, xpix, ypix = mapdat.shape
         #ix, iy, nmca = mapdat['counts'].shape
 
-        cell   = mapdat['data2D'].regionref[sy, sx, :]
-        frames = mapdat['data2D'][cell]
+        cell   = mapdat.regionref[sy, sx, :]
+        frames = mapdat[cell]
         frames = frames.reshape(ny, nx, xpix, ypix)
 
         if area is not None:
@@ -2069,7 +2063,7 @@ class GSEXRM_MapFile(object):
 
         return frames.sum(axis=0)
 
-    def _getXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):
+    def _get2DXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):
 
         name = ('xrd: %s' % areaname)
         _2Dxrd = XRD(data2D=frames, xpixels=xpixels, ypixels=ypixels, name=name)
