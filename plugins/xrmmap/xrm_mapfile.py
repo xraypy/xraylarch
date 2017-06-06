@@ -18,6 +18,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   read_xrd_hdf5)
 from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
 
+
 NINIT = 32
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
@@ -223,7 +224,7 @@ class GSEXRM_MapRow:
                  masterfile = None, xrftype=None, xrdtype=None, poni=None,
                  FLAGxrf = True, FLAGxrd = False):
 
-        ti = time.time()
+        ta = time.time()
         if not FLAGxrf and not FLAGxrd:
             return
 
@@ -263,6 +264,7 @@ class GSEXRM_MapRow:
                 xrd_reader = read_xrd_netcdf
             else:
                 xrd_reader = read_xrd_netcdf
+
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
@@ -307,17 +309,17 @@ class GSEXRM_MapRow:
             try:
                 atime = os.stat(xmfile).st_ctime
 
+                tb = time.time()
                 if FLAGxrf:
                     xrfdat = xrf_reader(xmfile, npixels=self.nrows_expected, verbose=False)
                     if xrfdat is None:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
-
+                tc = time.time()
                 if FLAGxrd:
-                    ti0 = time.time()
                     xrddat = xrd_reader(xdfile, verbose=False)
-                    tf0 = time.time()
                     if xrddat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
+                td = time.time()
 
             except (IOError, IndexError):
                 time.sleep(0.010)
@@ -328,6 +330,7 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
+        te = time.time()
         if FLAGxrf:
             self.counts    = xrfdat.counts[ioff:]
             self.inpcounts = xrfdat.inputCounts[ioff:]
@@ -342,34 +345,30 @@ class GSEXRM_MapRow:
             dt_denom[np.where(dt_denom < 1)] = 1.0
             self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
 
+        tf = time.time()
+
         ## SPECIFIC TO XRD data
-        ## is this the correct way to handle collected number of frames per row?
-        ## mkak 2017.02.08
         if FLAGxrd:
             if self.npts == xrddat.shape[0]:
                 self.xrd2d = xrddat
             elif self.npts > xrddat.shape[0]:
                 self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
-                ## should change to [1:...] if skipping first frame
-                ## mkak 2017.02.08
             else:
                 self.xrd2d = xrddat[0:self.npts]
-            
-            ti1 = time.time()
+            tg = time.time()
             if poni is not None:
                 attrs = {'steps':STEPS}
                 self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
             else:
-                self.xrd1d = np.zeros((self.npts,2,STEPS))
-            tf1 = time.time()
-
+                self.xrd1d = None
+        th = time.time()
+                
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
-        # print(" Row ", gnpts, ngather, snpts, xnpts, self.npts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -439,8 +438,13 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
-        tf = time.time()
-        print('\tTime to create next row: %0.3f s (read %0.3f s; integrate %0.3f s)' % ((tf-ti),(tf0-ti0),(tf1-ti1)))
+        ti = time.time()
+        
+        self.xrfreadtime   = ((tc-tb)+(tf-te)) if FLAGxrf else 0.0
+        self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd else 0.0
+        self.xrd1dcalctime = (th-tg) if FLAGxrd and poni is not None else 0.0
+        self.readtime      = (ti-ta)
+
 
 class GSEMCA_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
@@ -848,6 +852,7 @@ class GSEXRM_MapFile(object):
         possible once at least 1 row of raw data is available
         in the scan folder.
         """
+        self.starttime = time.time()
         if self.status == GSEXRM_FileStatus.hasdata:
             return
         if self.status != GSEXRM_FileStatus.created:
@@ -1064,30 +1069,32 @@ class GSEXRM_MapFile(object):
         t1 = time.time()
 
         if self.flag_xrd:
-            ## Unneccessary at this point BUT convenient if two xrd detectors are used
-            ## mkak 2016.08.03
-            xrdgrp = self.xrmmap['xrd']
-
-            xrdpts, xpixx, xpixy = row.xrd2d.shape
-            try:
-                xrdgrp['data1D'][thisrow,] = row.xrd1d
-            except:
-                xrdgrp['data2D'][thisrow,] = row.xrd2d
+            if row.xrd1d is not None:
+                self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
+            else:
+                self.xrmmap['xrd']['data2D'][thisrow,] = row.xrd2d
 
         t2 = time.time()
         if verbose:
-            if self.flag_xrd and self.flag_xrf and hasattr(self.xrmmap['xrd'],'calfile'):
-                pform = '\tXRF: %0.2f s; XRD: %0.2f s (%0.2f s); Total: %0.2f s'
-                print(pform % (t1-t0,t2-t1,t2-t1a,t2-t0))
-            elif self.flag_xrd and self.flag_xrf:
-                pform = '\tXRF: %0.2f s; XRD: %0.2f s; Total: %0.2f s'
-                print(pform % (t1-t0,t2-t1,t2-t0))
-            #elif self.flag_xrf:
-            #    pform = '\tTime: %0.2f s'
-            #    print(pform % (t2-t0))
-            elif self.flag_xrd:
-                pform = '\t2D XRD: %0.2f s; 1D XRD %0.2f s; Total: %0.2f s'
-                print(pform % (t1a-t0,t2-t1a,t2-t0))
+        
+            writetime = t2-t0
+            xrfwritetime = t1-t0
+            xrdwritetime = t2-t1
+
+            if row.xrd1dcalctime > 0.01:
+                pform = '\tReading - %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s; 1DXRD: %0.2f s) '
+                print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
+            elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
+                pform = '\tReading - %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s) '
+                print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
+            else:
+                print('\tReading - %0.2f s' % row.readtime)
+            if xrdwritetime > 0.01 and xrfwritetime > 0.01:
+                dim = '1D' if np.max(row.xrd1d) > 1 else '2D'
+                pform = '\tWriting - %0.2f s (XRF: %0.2f s; %sXRD: %0.2f s) '
+                print(pform % (writetime,xrfwritetime,dim,xrdwritetime))
+            else:
+                print('\tWriting - %0.2f s' % writetime)
 
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
@@ -1095,6 +1102,7 @@ class GSEXRM_MapFile(object):
 
     def build_schema(self, row, verbose=False):
         """build schema for detector and scan data"""
+        
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -1253,7 +1261,8 @@ class GSEXRM_MapFile(object):
                                    chunks = chunksize_1DXRD,
                                    compression=COMPRESSION_LEVEL)
 
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+        print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+#         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
         self.h5root.flush()
 
