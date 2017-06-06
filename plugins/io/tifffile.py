@@ -462,14 +462,12 @@ class TIFFfile(object):
 
     def close(self):
         """Close open file handle(s)."""
-#         print('trying to close')
 #         if not hasattr(self, 'tiffs'):
 #             return
         for tif in self._tiffs.values():
             if tif._fd:
                 tif._fd.close()
                 tif._fd = None
-#                 print('\tsuccessfully closed it.')
 
     def _fromfile(self):
         """Read TIFF header and all page records from file."""
