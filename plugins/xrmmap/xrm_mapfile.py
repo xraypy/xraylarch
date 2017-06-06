@@ -1084,19 +1084,19 @@ class GSEXRM_MapFile(object):
         if verbose:
             writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
             if row.xrd1dcalctime > 0.01:
-                pform = '\tReading - %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s; 1DXRD: %0.2f s) '
+                pform = '\tReading: %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s; 1DXRD: %0.2f s) '
                 print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
             elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
-                pform = '\tReading - %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s) '
+                pform = '\tReading: %0.2f s (XRF: %0.2f s; 2DXRD: %0.2f s) '
                 print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
             else:
-                print('\tReading - %0.2f s' % row.readtime)
+                print('\tReading: %0.2f s' % row.readtime)
             if xrdwritetime > 0.01 and xrfwritetime > 0.01:
                 dim = '1D' if np.max(row.xrd1d) > 1 else '2D'
-                pform = '\tWriting - %0.2f s (XRF: %0.2f s; %sXRD: %0.2f s) '
+                pform = '\tWriting: %0.2f s (XRF: %0.2f s; %sXRD: %0.2f s) '
                 print(pform % (writetime,xrfwritetime,dim,xrdwritetime))
             else:
-                print('\tWriting - %0.2f s' % writetime)
+                print('\tWriting: %0.2f s' % writetime)
 
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
@@ -1957,8 +1957,11 @@ class GSEXRM_MapFile(object):
 
         return flag1D,flag2D
 
+    def get_1Dxrd_area(self, areaname, callback = None):
+    
+        print '[get_1Dxrd_area] is not yet written.'
 
-    def get_xrd_area(self, areaname, callback = None):
+    def get_2Dxrd_area(self, areaname, callback = None):
         """return 2D XRD pattern for a pre-defined area
 
         Parameters

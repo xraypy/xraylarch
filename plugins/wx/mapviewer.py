@@ -849,15 +849,15 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             if os.path.exists(xrdgp.attrs['calfile']):
                 self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
         except:
-            return
+            pass
         try:
             self.wids['2DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd2d'])
         except:
-            return
+            pass
         try:
             self.wids['1DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd1d'])
         except:
-            return
+            pass
 
     def onClose(self):
         pass
@@ -1205,8 +1205,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
-    def _getxrd_area(self, areaname, **kwargs):
-        self._xrd = self.owner.current_file.get_xrd_area(areaname, **kwargs)
+    def _getxrd_area(self, areaname, xrd, **kwargs):
+        if xrd == '1D':
+            self._xrd = self.owner.current_file.get_1Dxrd_area(areaname, **kwargs)
+        elif xrd == '2D':
+            self._xrd = self.owner.current_file.get_2Dxrd_area(areaname, **kwargs)
 
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
@@ -1234,6 +1237,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onXRD(self, event=None, save=False, show=False):
 
         flag1D,flag2D = self.owner.current_file.check_xrd()
+        print 'flag1D,flag2D',flag1D,flag2D
         
         if not flag1D and not flag2D:
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
@@ -1254,21 +1258,23 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
 
         if flag1D: 
-           print
-           print '-- this means 1D data already exists'
-           print '-- need to extract 1D data for plotting from file for selected area'
-           print
-#           self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+            self._xrd  = None
+            self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
+           
+            print
+            print '-- this means 1D data already exists'
+            print '-- need to extract 1D data for plotting from file for selected area'
+            print
+#            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
-           if not flag2D:
-               datapath = xrmfile.xrmmap.attrs['Map_Folder']
-               print '---- will need to check now 2D data in: %s ' % datapath
+            if not flag2D:
+                datapath = xrmfile.xrmmap.attrs['Map_Folder']
+                print '---- will need to check now 2D data in: %s ' % datapath
                
             
         if flag2D:
             self._xrd  = None
-
-            self._getxrd_area(aname) ## creates self._xrd group of type XRD
+            self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = label
             self._xrd.npixels = len(area.value[np.where(area.value)])
