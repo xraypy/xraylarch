@@ -6,7 +6,7 @@
 #     win64/     Windows, 64-bit
 #     linux32/   Linux, 32-bit
 #     linux64/   Linux, 64-bit
-#     darwin/    Mac OS X, universal dynamic libraries
+#     darwin64/  Mac OS X, 64-bit
 
 from __future__ import print_function
 import  os, sys
@@ -29,8 +29,8 @@ else:
         if arch.startswith('64'):
             dlldir = 'linux64'
     elif system.lower().startswith('darw'):
-        dlldir = 'darwin'
-        makefile = 'Mk.darwin'
+        dlldir = 'darwin64'
+        makefile = 'Mk.darwin64'
 
 print('Writing Makefiles for %s' % (system))
 
