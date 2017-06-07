@@ -747,7 +747,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
-                      'XRD Calibration'):
+                      'Original data path', 'XRD Calibration', '2DXRD data', '1DXRD data'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -839,14 +839,25 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
+        folderpath = xrmmap.attrs['Map_Folder']
+        if len(folderpath) > 35:
+            folderpath = 'Browse...'+xrmmap.attrs['Map_Folder'][-35:]
+        self.wids['Original data path'].SetLabel('%s' % folderpath)
+
         try:
             xrdgp = xrmmap['xrd']
             if os.path.exists(xrdgp.attrs['calfile']):
                 self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
-
         except:
-            return
-            
+            pass
+        try:
+            self.wids['2DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd2d'])
+        except:
+            pass
+        try:
+            self.wids['1DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd1d'])
+        except:
+            pass
 
     def onClose(self):
         pass
@@ -1194,8 +1205,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
-    def _getxrd_area(self, areaname, **kwargs):
-        self._xrd = self.owner.current_file.get_xrd_area(areaname, **kwargs)
+    def _getxrd_area(self, areaname, xrd, **kwargs):
+        if xrd == '1D':
+            self._xrd = self.owner.current_file.get_1Dxrd_area(areaname, **kwargs)
+        elif xrd == '2D':
+            self._xrd = self.owner.current_file.get_2Dxrd_area(areaname, **kwargs)
 
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
@@ -1223,62 +1237,78 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onXRD(self, event=None, save=False, show=False):
 
         flag1D,flag2D = self.owner.current_file.check_xrd()
+        
         if not flag1D and not flag2D:
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
-        ## Calculate area
         try:
             aname = self._getarea()
             xrmfile = self.owner.current_file
             area  = xrmfile.xrmmap['areas/%s' % aname]
             label = area.attrs.get('description', aname)
-            self._xrd  = None
+
+            ## what's a clearer way to do this?
+            ## mkak 2017.03.24
+            env_names = list(xrmfile.xrmmap['config/environ/name'])
+            env_vals  = list(xrmfile.xrmmap['config/environ/value'])
+            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
+            for name, addr, val in zip(env_names, env_addrs, env_vals):
+                if 'mono.energy' in str(name).lower():
+                    energy = float(val)/1000.
         except:
             print('No map file and/or areas specified.')
             return
 
-        self._getxrd_area(aname) ## creates self._xrd group of type XRD
-        self._xrd.filename = self.owner.current_file.filename
-        self._xrd.title = label
-        self._xrd.npixels = len(area.value[np.where(area.value)])
-        
-        ## what's a clearer way to do this?
-        ## mkak 2017.03.24
-        env_names = list(xrmfile.xrmmap['config/environ/name'])
-        env_vals  = list(xrmfile.xrmmap['config/environ/value'])
-        env_addrs = list(xrmfile.xrmmap['config/environ/address'])
-        for name, addr, val in zip(env_names, env_addrs, env_vals):
-            if 'mono.energy' in str(name).lower():
-                energy = float(val)/1000.
-                self._xrd.energy = energy
-                self._xrd.wavelength = lambda_from_E(energy)
-
         if show:
-            self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
+            self.owner.message('Plotting XRD pattern for area \'%s\'Browse...' % label)
         if save:
-            self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
+            self.owner.message('Saving XRD pattern for area \'%s\'Browse...' % label)
 
+        if flag1D: 
+            self._xrd  = None
+            self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
+            self._xrd.filename = self.owner.current_file.filename
+            self._xrd.title = label
+            self._xrd.npixels = len(area.value[np.where(area.value)])
+            self._xrd.energy = energy
+            self._xrd.wavelength = lambda_from_E(energy)
 
-        if flag1D and os.path.exists(xrmfile.xrmmap['xrd'].attrs['calfile']):
-            self._xrd.steps = 5001
-            self._xrd.calfile = xrmfile.xrmmap['xrd'].attrs['calfile']
+            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+
+#             if not flag2D:
+#                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
             
-            self._xrd.calc_1D(save=save,verbose=True)
-            
-            if show:
-                ## need to change this to read from group; also needs to add in cake
-                ## mkak 2017.03.29
-                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
-
-        
         if flag2D:
+            self._xrd  = None
+            self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
+            self._xrd.filename = self.owner.current_file.filename
+            self._xrd.title = label
+            self._xrd.npixels = len(area.value[np.where(area.value)])
+            self._xrd.energy = energy
+            self._xrd.wavelength = lambda_from_E(energy)
+
             if save:
                 self._xrd.save_2D(verbose=True)
 
             if show:
                 title = '%s: %s' % (os.path.split(self._xrd.filename)[-1], label)
-                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile)
+                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile,
+                                         flip=True)
+
+            if not flag1D:
+                try:
+                    ponifile = xrmfile.xrmmap['xrd'].attrs['calfile']
+                except:
+                    ponifile = ''
+                if os.path.exists(ponifile):
+                    self._xrd.calfile = ponifile
+                    self._xrd.steps = 5001
+                    self._xrd.calc_1D(save=save,verbose=True)
+
+                    if show:
+                        self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+
                 
 
 class MapViewerFrame(wx.Frame):
@@ -1410,13 +1440,6 @@ class MapViewerFrame(wx.Frame):
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
         self.sel_mca = xrmfile.get_mca_area(aname, det=det)
-
-#     def get_xrd_area(self, mask, xoff=0, yoff=0, xrmfile=None):
-#         if xrmfile is None:
-#             xrmfile = self.current_file
-#         ##aname = xrmfile.add_area(mask)
-#         ##self.sel_xrd = xrmfile.get_xrd_area(aname)
-#         self.sel_xrd = xrmfile.xrd2d[50,50,]
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None,
                      xoff=0, yoff=0, **kws):
@@ -1589,19 +1612,26 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, title='image 0', xrmfile=None):
+    def display_2Dxrd(self, map, title='image 0', xrmfile=None,flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
         if self.xrddisplay2D is None:
-            poni = self.current_file.xrmmap['xrd'].attrs['calfile']
+            try:
+                poni = self.current_file.xrmmap['xrd'].attrs['calfile']
+            except:
+                poni = ''
             if not os.path.exists(poni): poni = None
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip='vertical',
-                                              xrd1Dviewer=self.xrddisplay1D,ponifile=poni)
+            flptyp = 'vertical' if flip is True else False
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
+                                              xrd1Dviewer=self.xrddisplay1D,
+                                              ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
         except PyDeadObjectError:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
+                                              xrd1Dviewer=self.xrddisplay1D,
+                                              ponifile=poni)
             self.xrddisplay2D.plot2Dxrd(map,title)
         self.xrddisplay2D.Show()
         self.xrddisplay2D.displayCAKE()
@@ -1683,8 +1713,6 @@ class MapViewerFrame(wx.Frame):
                  'Read XRM Map File',  self.onReadFile)
         MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F',
                  'Read XRM Map Folder',  self.onReadFolder)
-        MenuItem(self, fmenu, '&Add to existing XRM Map File\tCtrl+F',
-                 'Read XRM Map Folder',  self.onAddToFile)
         MenuItem(self, fmenu, 'Change &Working Folder',
                   'Choose working directory',
                   self.onFolderSelect)
@@ -1836,14 +1864,27 @@ class MapViewerFrame(wx.Frame):
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
             path        = myDlg.FldrPath
+            poni        = myDlg.PoniFile
             FLAGxrf     = myDlg.FLAGxrf
-            FLAGxrd     = myDlg.FLAGxrd
-
+            FLAGxrd1D   = myDlg.FLAGxrd1D
+            FLAGxrd2D   = myDlg.FLAGxrd2D
+            mask        = myDlg.MaskFile
+            wdgs        = int(myDlg.Wdg.GetValue())
+            stps        = int(myDlg.Stp.GetValue())
+            flip        = False if myDlg.poniTtl.GetSelection() == 1 else True
         myDlg.Destroy()
 
         if read:
-            xrmfile = GSEXRM_MapFile(folder=str(path),FLAGxrf=FLAGxrf,FLAGxrd=FLAGxrd)
+            xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
+                                     azwdgs=wdgs,qstps=stps,flip=flip,
+                                     FLAGxrf=FLAGxrf,
+                                     FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
             self.add_xrmfile(xrmfile)
+
+#             if ponifile is not None:
+#                 xrmfile.calibration = ponifile
+#                 xrmfile.add_calibration()(self, evt=None)
+
 
     def add_xrmfile(self, xrmfile):
         gname = 'map001'
@@ -1865,43 +1906,6 @@ class MapViewerFrame(wx.Frame):
         if parent is not None and len(parent) > 0:
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
-
-    def onAddToFile(self, evt=None):
-        if not self.h5convert_done:
-            print( 'cannot open file while processing a map folder')
-            return
-
-        myDlg = AddToMapFolder()
-
-        filepath, fldrpath, read = None, None, False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read        = True
-            fldrpath    = myDlg.FldrPath
-            filepath    = myDlg.FilePath
-            FLAGxrf     = myDlg.FLAGxrf
-            FLAGxrd     = myDlg.FLAGxrd
-
-        myDlg.Destroy()
-
-        ## Still working on this....
-        ## mkak 2016.10.06
-        if read:
-            print('Not yet implemented.')
-            ## 1. Open file if not open.
-            ## 2. Once open, check to see which data it contains.
-            ## 3. Check if new data is being asked to be added (compare flags).
-            ## 4. If new data, now add data.
-            xrmfile = GSEXRM_MapFile(filename=str(filepath))
-            self.add_xrmfile(xrmfile)
-#             xrmfile.check_flags()
-#
-#             if xrmfile.flag_xrf and FLAGxrf:
-#                print('This file already has XRF data. None will be added.')
-#             if xrmfile.flag_xrd and FLAGxrd:
-#                print('This file already has XRD data. None will be added.')
-
-            #xrmfile.add.....
-
 
 
     def openPONI(self, evt=None):
@@ -2049,75 +2053,220 @@ class OpenMapFolder(wx.Dialog):
     #----------------------------------------------------------------------
     def __init__(self):
 
-        self.FLAGxrf  = False
-        self.FLAGxrd  = False
-        self.FldrPath = None
+        self.FLAGxrf   = True
+        self.FLAGxrd1D = False
+        self.FLAGxrd2D = False
+        self.FldrPath  = None
+        self.PoniFile  = None
+        self.MaskFile  = None
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder')
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(350, 520))
 
         panel = wx.Panel(self)
 
-        fldrTtl  = SimpleText(panel,  label='XRM Map Folder:'      )
-        fldrBtn  = wx.Button(panel,   label='Browse...'            )
-        chTtl    = SimpleText(panel,  label='Include data for...'  )
-        xrfCkBx  = wx.CheckBox(panel, label='XRF'   )
-        xrdCkBx  = wx.CheckBox(panel, label='XRD'                 )
+        fldrTtl      = SimpleText(panel,  label='XRM Map Folder:'           )
+        chTtl        = SimpleText(panel,  label='Build map including data:' )
+        self.maskTtl = SimpleText(panel,  label='Mask file: (optional)'     )
+        self.wdgTtl  = SimpleText(panel,  label='Azimuthal wedges:'         )
+        self.stpTtl  = SimpleText(panel,  label='Radial steps:'             )
 
-        self.Fldr = wx.TextCtrl(panel, size=(300, 25))
+        xrfCkBx      = Check(panel, label='XRF'   )
+        xrd2dCkBx    = Check(panel, label='2DXRD' )
+        xrd1dCkBx    = Check(panel, label='1DXRD' )
 
-        hlpBtn = wx.Button(panel, wx.ID_HELP   )
-        okBtn  = wx.Button(panel, wx.ID_OK     )
-        canBtn = wx.Button(panel, wx.ID_CANCEL )
-        self.FindWindowById(wx.ID_OK).Disable()
+        self.poniTtl = Choice(panel,   choices=['Dioptas calibration file:',
+                                                   'pyFAI calibration file:'] )
 
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,   fldrBtn  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck, xrfCkBx  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck, xrdCkBx  )
+        self.Fldr = wx.TextCtrl(panel, size=(320, 25) )
+        self.Poni = wx.TextCtrl(panel, size=(320, 25) )
+        self.Mask = wx.TextCtrl(panel, size=(320, 25) )
+        self.Wdg  = wx.TextCtrl(panel, size=(30,  25) )
+        self.Stp  = wx.TextCtrl(panel, size=(50,  25) )
 
+
+        fldrBtn      = Button(panel,   label='Browse...' )
+        self.poniBtn = Button(panel,   label='Browse...' )
+        self.maskBtn = Button(panel,   label='Browse...' )
+
+        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
+        okBtn        = wx.Button(panel,   wx.ID_OK     )
+        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
+
+        self.wdgSpn = wx.SpinButton(panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+
+        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx      )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRD2Dcheck, xrd2dCkBx    )
+        self.Bind(wx.EVT_CHECKBOX, self.onXRD1Dcheck, xrd1dCkBx    )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSEponi, self.poniBtn )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSEmask, self.maskBtn )
+        self.Bind(wx.EVT_SPIN,     self.onWdgSPIN,    self.wdgSpn  )
+
+        fldrsizer = wx.BoxSizer(wx.VERTICAL)
+        fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,                    border=5)
+        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,                    border=5)
+        
+        ponisizer = wx.BoxSizer(wx.VERTICAL)
+        ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,                    border=5)
+        ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        ponisizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+
+        stpsizer = wx.BoxSizer(wx.HORIZONTAL)
+        stpsizer.Add(self.stpTtl, flag=wx.RIGHT,                            border=5)
+        stpsizer.Add(self.Stp,    flag=wx.RIGHT,                            border=5)
+
+        wdgsizer = wx.BoxSizer(wx.HORIZONTAL)
+        wdgsizer.Add(self.wdgTtl, flag=wx.RIGHT,                            border=5)
+        wdgsizer.Add(self.Wdg,    flag=wx.RIGHT,                            border=5)
+        wdgsizer.Add(self.wdgSpn, flag=wx.RIGHT,                            border=5)
+
+        masksizer = wx.BoxSizer(wx.VERTICAL)
+        masksizer.Add(self.maskTtl, flag=wx.TOP|wx.LEFT,                    border=5)
+        masksizer.Add(self.Mask,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        masksizer.Add(self.maskBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+
+        xrdsizer = wx.BoxSizer(wx.VERTICAL)
+        xrdsizer.Add(xrd2dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
+        xrdsizer.Add(xrd1dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
+
+        ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT,                              border=15)
+        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT,                        border=15)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+        
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-
         sizer.Add((-1, 10))
-        sizer.Add(fldrTtl,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(self.Fldr, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
-        sizer.Add(fldrBtn,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(fldrsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
         sizer.Add((-1, 15))
-        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrfCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrdCkBx,   flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(chTtl,        flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(ckbxsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(ponisizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(stpsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(wdgsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(masksizer,    flag=wx.TOP|wx.LEFT,                    border=5)
         sizer.Add((-1, 15))
-        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT,                    border=5)
+        sizer.Add(minisizer,    flag=wx.ALIGN_RIGHT,                    border=5)
 
         panel.SetSizer(sizer)
 
         ## Set defaults
         xrfCkBx.SetValue(True)
-        self.FLAGxrf = True
-        self.FLAGxrd = False
+        xrd2dCkBx.SetValue(False)
+        xrd1dCkBx.SetValue(False)
+        
+        self.poniTtl.SetSelection(0)
+        
+        self.Stp.SetValue('5001')
+        self.Wdg.SetValue('1')
+
+        self.FindWindowById(wx.ID_OK).Disable()
+        
+        self.poniTtl.Disable()
+        self.poniBtn.Disable()
+        self.Poni.Disable()
+        self.maskTtl.Disable()
+        self.maskBtn.Disable()
+        self.Mask.Disable()
+        self.stpTtl.Disable()
+        self.Stp.Disable()
+        self.wdgTtl.Disable()
+        self.Wdg.Disable()
+        self.wdgSpn.Disable()
+
 
     def checkOK(self):
 
-        if self.FLAGxrf or self.FLAGxrd:
-            if self.FldrPath:
-                self.FindWindowById(wx.ID_OK).Enable()
+        if self.FldrPath is None:
+            self.FindWindowById(wx.ID_OK).Disable()
+        elif not self.FLAGxrf:
+            self.FindWindowById(wx.ID_OK).Disable()
         else:
-                self.FindWindowById(wx.ID_OK).Disable()
+            self.FindWindowById(wx.ID_OK).Enable()
 
     def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
 
         self.checkOK()
 
-    def onXRDcheck(self,event=None):
-        self.FLAGxrd = event.GetEventObject().GetValue()
-
+    def onXRD2Dcheck(self,event=None):
+        self.FLAGxrd2D = event.GetEventObject().GetValue()
         self.checkOK()
+
+    def onXRD1Dcheck(self,event=None):
+        self.FLAGxrd1D = event.GetEventObject().GetValue()
+        if self.FLAGxrd1D:
+            self.poniTtl.Enable()
+            self.poniBtn.Enable()
+            self.Poni.Enable()
+            self.maskTtl.Enable()
+            self.maskBtn.Enable()
+            self.Mask.Enable()
+            self.stpTtl.Enable()
+            self.Stp.Enable()
+            self.wdgTtl.Enable()
+            self.Wdg.Enable()
+            self.wdgSpn.Enable()
+        else:
+            self.poniTtl.Disable()
+            self.poniBtn.Disable()
+            self.Poni.Disable()
+            self.maskTtl.Disable()
+            self.maskBtn.Disable()
+            self.Mask.Disable()
+            self.stpTtl.Disable()
+            self.Stp.Disable()
+            self.wdgTtl.Disable()
+            self.Wdg.Disable()
+            self.wdgSpn.Disable()
+        self.checkOK()
+
+    def onWdgSPIN(self,event=None):
+
+        self.Wdg.SetValue(str(event.GetPosition()))
+
+    def onBROWSEmask(self,event=None):
+        wildcards = 'XRD mask file (*.mask,*.edf)|*.mask;*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select XRD mask file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.Mask.Clear()
+            self.Mask.SetValue(str(path))
+            self.MaskFile = path
+
+    def onBROWSEponi(self,event=None):
+        wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select XRD calibration file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.Poni.Clear()
+            self.Poni.SetValue(str(path))
+            self.PoniFile = path
+
 
     def onBROWSE(self,event=None):
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
@@ -2137,117 +2286,6 @@ class OpenMapFolder(wx.Dialog):
             self.FldrPath = path
 
         self.checkOK()
-
-class AddToMapFolder(wx.Dialog):
-    """"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-
-        self.FLAGxrf  = False
-        self.FLAGxrd  = False
-        self.FldrPath = None
-
-        """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 450))
-
-        panel = wx.Panel(self)
-
-        fileTtl  = SimpleText(panel,   label='Existing Map File:'    )
-        fileBtn  = wx.Button(panel,    label='Browse...'             )
-        chTtl    = SimpleText(panel,   label='Add data for...'       )
-        xrfCkBx  = wx.CheckBox(panel,  label='XRF'                   )
-        xrdCkBx  = wx.CheckBox(panel,  label='XRD'                   )
-        fldrTtl  = SimpleText(panel,   label='XRM Map Folder:'       )
-        fldrBtn  = wx.Button(panel,    label='Browse...'             )
-
-        self.File   = wx.TextCtrl(panel, size=(350, 25))
-        self.Fldr   = wx.TextCtrl(panel, size=(350, 25))
-
-        hlpBtn = wx.Button(panel, wx.ID_HELP   )
-        okBtn  = wx.Button(panel, wx.ID_OK     )
-        canBtn = wx.Button(panel, wx.ID_CANCEL )
-        self.FindWindowById(wx.ID_OK).Disable()
-
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSEfile, fileBtn  )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSEfldr, fldrBtn  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx  )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRDcheck,   xrdCkBx  )
-
-        sizer = wx.GridBagSizer(3, 3)
-
-        sizer.Add(fileTtl,   pos = ( 1,1) )
-        sizer.Add(self.File, pos = ( 2,1), span = (1,4) )
-        sizer.Add(fileBtn,   pos = ( 3,1), )
-        sizer.Add(chTtl,     pos = ( 5,1) )
-        sizer.Add(xrfCkBx,   pos = ( 6,1) )
-        sizer.Add(xrdCkBx,   pos = ( 7,1) )
-        sizer.Add(fldrTtl,   pos = ( 9,1) )
-        sizer.Add(self.Fldr, pos = (10,1), span = (1,4) )
-        sizer.Add(fldrBtn,   pos = (11,1) )
-
-        sizer.Add(hlpBtn,    pos = (13,1) )
-        sizer.Add(okBtn,     pos = (13,3) )
-        sizer.Add(canBtn,    pos = (13,2) )
-
-        sizer.AddGrowableCol(2)
-        panel.SetSizer(sizer)
-
-    def onXRFcheck(self,event=None):
-        self.FLAGxrf = event.GetEventObject().GetValue()
-        self.checkOK()
-
-    def onXRDcheck(self,event=None):
-        self.FLAGxrd = event.GetEventObject().GetValue()
-        self.checkOK()
-
-    def onBROWSEfldr(self,event=None):
-        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=os.getcwd(),
-                           style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            self.Fldr.Clear()
-            self.Fldr.SetValue(str(path))
-            self.FldrPath = path
-
-        self.checkOK()
-
-    def onBROWSEfile(self,event=None):
-        wildcards = 'XRM map file (*.h5)|*.h5|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Read XRM Map File',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            self.File.Clear()
-            self.File.SetValue(str(path))
-            #self.CalFl.AppendText(str(path))
-            self.FilePath = path
-
-        self.checkOK()
-
-
-    def checkOK(self):
-
-        if self.FLAGxrf or self.FLAGxrd:
-            if self.FldrPath and self.FilePath:
-                self.FindWindowById(wx.ID_OK).Enable()
-        else:
-            self.FindWindowById(wx.ID_OK).Disable()
-
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):

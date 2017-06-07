@@ -41,7 +41,7 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
 
-FIT_METHODS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
+SRCH_MTHDS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
@@ -109,7 +109,7 @@ def plot_sticks(x,y):
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        x,y = calcFrameSize(1500, 750)
+        x,y = calcFrameSize(1500, 780)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -276,6 +276,8 @@ class diFFit1DFrame(wx.Frame):
 
                 if xrdf.xrd1dgrp is not None:
                     xrdf.reset_fitting()
+                    xrdf.clearMATCHES()
+                    
 
                 xrdf.xrd1dgrp = seldat
                 xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
@@ -357,20 +359,27 @@ class Fitting1DXRD(BasePanel):
         self.owner = owner
 
         ## Default information
-        self.xrd1dgrp   = None
-        self.plt_data   = None
+        self.xrd1dgrp  = None
+        self.plt_data  = None
 
-        self.plt_peaks  = None
-        self.peaklist   = []
+        self.plt_peaks = None
+        self.peaklist  = []
 
-        self.xmin       = None
-        self.xmax       = None
-        self.x, self.y  = 0,0
+        self.xmin      = None
+        self.xmax      = None
+        self.x, self.y = 0,0
 
-        self.xlabel     = 'q (1/$\AA$)' #'q (A^-1)'
-        self.ylabel     = 'Intensity (a.u.)'
-        self.xunit      = '1/A'
-        self.dlimit     = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
+        self.xlabel    = 'q (1/$\AA$)' #'q (A^-1)'
+        self.ylabel    = 'Intensity (a.u.)'
+        self.xunit     = '1/A'
+        self.dlimit    = 7.5 # A -> 2th = 5 deg.; q = 0.8 1/A
+        
+        ## Database searching parameters
+        self.elem_include = []
+        self.elem_exclude = []
+        self.amcsd        = []
+        self.auth_include = []
+        self.mnrl_include = []
         
         self.SetFittingDefaults()
         self.Panel1DFitting()
@@ -378,16 +387,17 @@ class Fitting1DXRD(BasePanel):
     def SetFittingDefaults(self):
 
         # Peak fitting defaults
-        self.iregions = 20
-        self.gapthrsh = 5
+        self.widths    = 20
+        self.gapthrsh  = 5
         self.halfwidth = 40
-        self.intthrsh = 100
-        self.method = FIT_METHODS[0]
+        self.intthrsh  = 100
+        self.thrsh     = 0
+        self.min_dist  = 10
 
         # Background fitting defaults
-        self.exponent   = 20
-        self.compress   = 2
-        self.width      = 4
+        self.exponent  = 20
+        self.compress  = 2
+        self.width     = 4
 
 ##############################################
 #### PANEL DEFINITIONS
@@ -615,6 +625,8 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.btn_rbkgd.Disable()
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
+
+        self.srchpl.btn_mtch.Disable()
         
         self.xmin     = min
         self.xmax     = max
@@ -746,7 +758,6 @@ class Fitting1DXRD(BasePanel):
         self.find_peaks(filter=filter)
 
         if len(self.xrd1dgrp.pki) > 0:
-            self.srchpl.owner.val_gdnss.Enable()
             self.srchpl.btn_mtch.Enable()
 
     def onAddPks(self,event=None):
@@ -761,7 +772,6 @@ class Fitting1DXRD(BasePanel):
     def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
-        self.srchpl.owner.val_gdnss.Disable()
         self.srchpl.btn_mtch.Disable()
 
     def find_peaks(self,event=None,filter=False):
@@ -773,14 +783,17 @@ class Fitting1DXRD(BasePanel):
 
         if newpeaks:
             xi = self.rngpl.ch_xaxis.GetSelection()
+            method = SRCH_MTHDS[self.pkpl.ch_pkfit.GetSelection()]
 
             ## clears previous searches
             self.remove_all_peaks()
 
             self.intthrsh = int(self.pkpl.val_intthr.GetValue())
             self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
-                                     threshold=self.intthrsh,method=self.method)
-                    
+                                     threshold=self.intthrsh,
+                                     thres=self.thrsh,min_dist=self.min_dist,
+                                     widths=self.widths,gapthrsh=self.gapthrsh,
+                                     method=method)
             self.peak_display()
             self.plot_peaks()
 
@@ -895,20 +908,19 @@ class Fitting1DXRD(BasePanel):
 
     def peak_options(self,event=None):
 
-        myDlg = PeakOptions(self)
-
-        fit = False
+        method = SRCH_MTHDS[self.pkpl.ch_pkfit.GetSelection()]
+        myDlg = PeakOptions(self,method=method)
         if myDlg.ShowModal() == wx.ID_OK:
-            self.iregions  = int(myDlg.val_regions.GetValue())
-            self.gapthrsh  = int(myDlg.val_gapthr.GetValue())
-            self.halfwidth = int(myDlg.val_hw.GetValue())
-            self.method = FIT_METHODS[myDlg.ch_pkfit.GetSelection()]
-#             self.intthrsh  = int(myDlg.val_intthr.GetValue())
-            fit = True
+            self.halfwidth = int(myDlg.val0.GetValue())
+            if method == 'scipy.signal.find_peaks_cwt':
+                self.widths  = int(myDlg.val1.GetValue())
+                self.gapthrsh  = int(myDlg.val2.GetValue())
+            elif method == 'peakutils.indexes':
+                self.thrsh    = int(myDlg.val1.GetValue())
+                self.min_dist = int(myDlg.val2.GetValue())
+
         myDlg.Destroy()
 
-        if fit:
-            self.find_peaks(filter=True)
 
     def select_peak(self, evt=None, peakname=None,  **kws):
 
@@ -1083,13 +1095,19 @@ class Fitting1DXRD(BasePanel):
 
         myDlg = XRDSearchGUI(self)
         
-
         filter = False
+        list_amcsd = None
+        
         if myDlg.ShowModal() == wx.ID_OK:
             
             self.elem_include = myDlg.srch.elem_incl
             self.elem_exclude = myDlg.srch.elem_excl
-            filter = True
+
+            for id in myDlg.AMCSD.GetValue().split(','):
+                try:
+                    self.amcsd += [int(id)]
+                except:
+                    pass
             if myDlg.Mineral.IsTextEmpty():
                 self.mnrl_include = None
             else: 
@@ -1098,9 +1116,10 @@ class Fitting1DXRD(BasePanel):
                 self.auth_include = None
             else: 
                 self.auth_include = myDlg.Author.GetValue().split(',')
+
+            filter = True
         myDlg.Destroy()
 
-        list_amcsd = None
         if filter == True:
             cif = self.owner.cifdatabase
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
@@ -1118,14 +1137,9 @@ class Fitting1DXRD(BasePanel):
 
     def onMatch(self,event=None):
 
-        gdness = float(self.val_gdnss.GetValue())
-        if gdness > 1 or gdness < 0:
-            self.val_gdnss.SetValue('0.85')
-            gdness = float(self.val_gdnss.GetValue())
         q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
         print('Still need to determine how best to rank these matches')
         list_amcsd = match_database(self.owner.cifdatabase,q_pks,
-                                    #fracq=gdness,
                                     minq=np.min(self.plt_data[0]),
                                     maxq=np.max(self.plt_data[0]))
         self.displayMATCHES(list_amcsd)
@@ -1150,7 +1164,7 @@ class Fitting1DXRD(BasePanel):
                 
         self.rtgpl.btn_clr.Enable()
 
-    def clearMATCHES(self,list_amcsd):
+    def clearMATCHES(self):
         '''
         Populates Results Panel with list
         '''
@@ -1244,7 +1258,7 @@ class BackgroundOptions(wx.Dialog):
         self.panel.SetSizer(mainsizer)
 
 class PeakOptions(wx.Dialog):
-    def __init__(self,parent):
+    def __init__(self,parent,method='peakutils.indexes'):
 
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Peak searching options',
@@ -1252,58 +1266,101 @@ class PeakOptions(wx.Dialog):
                                     size = (210,410))
         self.parent = parent
 
-        self.createPanel()
+        if method == 'scipy.signal.find_peaks_cwt':
+            self.createPanel_scipy()
+    
+            ## Set defaults
+            self.val1.SetValue(str(self.parent.widths))
+            self.val2.SetValue(str(self.parent.gapthrsh))
+        elif method == 'peakutils.indexes':
+            self.createPanel_index()
 
-        ## Set defaults
-        self.val_regions.SetValue(str(self.parent.iregions))
-        self.val_gapthr.SetValue(str(self.parent.gapthrsh))
-        self.val_hw.SetValue(str(self.parent.halfwidth))
-#         self.val_intthr.SetValue(str(self.parent.intthrsh))
+            ## Set defaults
+            self.val1.SetValue(str(self.parent.thrsh))
+            self.val2.SetValue(str(self.parent.min_dist))
+        else:
+            return 
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
 
-    def createPanel(self):
+    def createPanel_index(self):
 
         self.panel = wx.Panel(self)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
-        ##  Fit type
-        fitsizer = wx.BoxSizer(wx.VERTICAL)
+        ## Threshold
+        thrshsizer = wx.BoxSizer(wx.VERTICAL)
 
-        ttl_fit = wx.StaticText(self.panel, label='Fit type')
-        self.ch_pkfit = wx.Choice(self.panel,choices=FIT_METHODS)
+        ttl_thrsh = wx.StaticText(self.panel, label='Threshold')
+        self.val1 = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
-        fitsizer.Add(ttl_fit,  flag=wx.RIGHT, border=5)
-        fitsizer.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
+        thrshsizer.Add(ttl_thrsh,      flag=wx.RIGHT, border=5)
+        thrshsizer.Add(self.val1, flag=wx.RIGHT, border=5)
 
-         ## Regions
-        hwsizer = wx.BoxSizer(wx.VERTICAL)
+        ## Minimum distance
+        distsizer = wx.BoxSizer(wx.VERTICAL)
 
-        ttl_hw = wx.StaticText(self.panel, label='Number of data points in half width')
-        self.val_hw = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        ttl_gpthr = wx.StaticText(self.panel, label='Minimum distance')
 
-        hwsizer.Add(ttl_hw,  flag=wx.RIGHT, border=5)
-        hwsizer.Add(self.val_hw,  flag=wx.RIGHT, border=5)
+        self.val2 = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        distsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
+        distsizer.Add(self.val2,  flag=wx.RIGHT, border=5)
+
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        hlpBtn = wx.Button(self.panel, wx.ID_HELP   )
+        okBtn  = wx.Button(self.panel, wx.ID_OK     )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL )
+
+        hlpBtn.Bind(wx.EVT_BUTTON, lambda evt: wx.TipWindow(
+            self, 'These values are specific to the built-in peakutils.index'
+            '  function: '
+            '  thres : Threshold for detecting a peak/valley. The '
+            '  absolute value of the intensity must be above this value. '
+            '  min_dist : Minimum distance between each detected peak. The '
+            '  peak with the highest amplitude is preferred to satisfy this '
+            '  constraint. '
+            ' '))
+
+        oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8)
+        oksizer.Add(canBtn,     flag=wx.RIGHT, border=8)
+        oksizer.Add(okBtn, flag=wx.RIGHT,  border=8)
+
+        mainsizer.Add(thrshsizer,   flag=wx.ALL, border=8)
+        mainsizer.AddSpacer(10)
+        mainsizer.Add(distsizer, flag=wx.ALL, border=5)
+        mainsizer.AddSpacer(10)
+        mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
+
+
+        self.panel.SetSizer(mainsizer)    
+    
+    def createPanel_scipy(self):
+
+        self.panel = wx.Panel(self)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Regions
         rgnsizer = wx.BoxSizer(wx.VERTICAL)
 
-        ttl_rgn = wx.StaticText(self.panel, label='Number of regions')
-        self.val_regions = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-
+        ttl_rgn = wx.StaticText(self.panel, label='Regions')
+        self.val1 = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         rgnsizer.Add(ttl_rgn,  flag=wx.RIGHT, border=5)
-        rgnsizer.Add(self.val_regions,  flag=wx.RIGHT, border=5)
+        rgnsizer.Add(self.val1,  flag=wx.RIGHT, border=5)
 
         ## Gap threshold
         gpthrsizer = wx.BoxSizer(wx.VERTICAL)
 
         ttl_gpthr = wx.StaticText(self.panel, label='Gap threshold')
-
-        self.val_gapthr = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+        self.val2 = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         gpthrsizer.Add(ttl_gpthr,  flag=wx.RIGHT, border=5)
-        gpthrsizer.Add(self.val_gapthr,  flag=wx.RIGHT, border=5)
+        gpthrsizer.Add(self.val2,  flag=wx.RIGHT, border=5)
 
 
         #####
@@ -1325,10 +1382,6 @@ class PeakOptions(wx.Dialog):
         oksizer.Add(canBtn,     flag=wx.RIGHT, border=8)
         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8)
 
-        mainsizer.Add(fitsizer,   flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(10)
-        mainsizer.Add(hwsizer,   flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(10)
         mainsizer.Add(rgnsizer,   flag=wx.ALL, border=8)
         mainsizer.AddSpacer(10)
         mainsizer.Add(gpthrsizer, flag=wx.ALL, border=5)
@@ -2167,32 +2220,38 @@ class PeakToolsPanel(wx.Panel):
         ###########################
         ## Peak tools
         vbox_pks = wx.BoxSizer(wx.VERTICAL)
+        hbox0_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox1_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox2_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox3_pks = wx.BoxSizer(wx.HORIZONTAL)
         hbox4_pks = wx.BoxSizer(wx.HORIZONTAL)
 
+        ##  Fit type
+        ttl_fit = wx.StaticText(self, label='Fit type')
+        self.ch_pkfit = wx.Choice(self,choices=SRCH_MTHDS)
+
+        hbox0_pks.Add(ttl_fit,  flag=wx.RIGHT, border=5)
+        hbox0_pks.Add(self.ch_pkfit,  flag=wx.RIGHT, border=5)
+
         self.btn_fdpks = wx.Button(self,label='Find peaks')
         self.btn_fdpks.Bind(wx.EVT_BUTTON, partial(self.owner.onPeaks, filter=True))
-        hbox1_pks.Add(self.btn_fdpks, flag=wx.RIGHT, border=8)
+        hbox2_pks.Add(self.btn_fdpks, flag=wx.RIGHT, border=8)
 
         self.btn_opks = wx.Button(self,label='Search options')
         self.btn_opks.Bind(wx.EVT_BUTTON, self.owner.peak_options)
-        hbox1_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
-
+        hbox2_pks.Add(self.btn_opks, flag=wx.RIGHT, border=8)
 
         intthrsizer = wx.BoxSizer(wx.VERTICAL)
 
         ttl_intthr = wx.StaticText(self, label='Intensity threshold')
         self.val_intthr = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
         self.val_intthr.Bind(wx.EVT_TEXT_ENTER, partial(self.owner.find_peaks, filter=True))
-        hbox2_pks.Add(ttl_intthr,  flag=wx.RIGHT, border=8)
-        hbox2_pks.Add(self.val_intthr,  flag=wx.RIGHT, border=8)
+        hbox1_pks.Add(ttl_intthr,  flag=wx.RIGHT, border=8)
+        hbox1_pks.Add(self.val_intthr,  flag=wx.RIGHT, border=8)
 
         self.owner.peaklistbox = EditableListBox(self, self.owner.select_peak,
                                         remove_action=self.owner.rm_sel_peaks,
-                                        size=(250, -1) #, style =  wx.LB_MULTIPLE
-                                        )
+                                        size=(250, -1))
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.ttl_cntpks = wx.StaticText(self, label=('Total: 0 peaks'))
@@ -2206,6 +2265,7 @@ class PeakToolsPanel(wx.Panel):
         self.btn_rmvpks.Bind(wx.EVT_BUTTON, self.owner.onRmvPksAll)
         hbox4_pks.Add(self.btn_rmvpks, flag=wx.RIGHT, border=8)
 
+        vbox_pks.Add(hbox0_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox1_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(hbox2_pks, flag=wx.BOTTOM, border=8)
         vbox_pks.Add(self.owner.peaklistbox, flag=wx.BOTTOM, border=8)
@@ -2216,7 +2276,7 @@ class PeakToolsPanel(wx.Panel):
 
         ## until data is loaded:
         self.btn_fdpks.Disable()
-        self.btn_opks.Disable()
+#         self.btn_opks.Disable()
         self.val_intthr.Disable()
         self.btn_rmvpks.Disable()
         self.btn_addpks.Disable()
@@ -2259,23 +2319,13 @@ class SearchPanel(wx.Panel):
 
     def RefinementTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         self.btn_mtch = wx.Button(self,label='Search based on q')
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
 
-        ttl_gdnss = wx.StaticText(self, label='Goodness')
-        self.owner.val_gdnss = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        hbox.Add(ttl_gdnss, flag=wx.RIGHT, border=8)
-        hbox.Add(self.owner.val_gdnss, flag=wx.RIGHT, border=8)
-
-        self.owner.val_gdnss.SetValue('0.85')
-
         vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        vbox.Add(hbox,          flag=wx.BOTTOM, border=8)
         
         ## until peaks are available to search
-        self.owner.val_gdnss.Disable()
         self.btn_mtch.Disable()
 
         return vbox
@@ -2301,6 +2351,7 @@ class InstrPanel(wx.Panel):
         self.SetSizer(panel1D)
 
     def InstrumentTools(self):
+
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         hbox_inst = wx.BoxSizer(wx.HORIZONTAL)
@@ -2309,18 +2360,21 @@ class InstrPanel(wx.Panel):
         hbox_w    = wx.BoxSizer(wx.HORIZONTAL)
         hbox_size = wx.BoxSizer(wx.HORIZONTAL)
         hbox_D    = wx.BoxSizer(wx.HORIZONTAL)
+        hbox_hw   = wx.BoxSizer(wx.HORIZONTAL)
         
         ttl_inst = wx.StaticText(self, label='Instrumental')
         ttl_u    = wx.StaticText(self, label='u')
         ttl_v    = wx.StaticText(self, label='v')
         ttl_w    = wx.StaticText(self, label='w')
         ttl_size = wx.StaticText(self, label='Size broadening')
-        ttl_D    = wx.StaticText(self, label='D (A)')        
+        ttl_D    = wx.StaticText(self, label='D (A)')
+        ttl_hw   = wx.StaticText(self, label='Half width')
 
-        self.val_u = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_v = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_w = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
-        self.val_D = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_u  = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_v  = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_w  = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_D  = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
+        self.val_hw = wx.TextCtrl(self,style=wx.TE_PROCESS_ENTER)
 
         self.btn_clrinst = wx.Button(self,label='Clear')
         self.btn_clrsize = wx.Button(self,label='Clear')
@@ -2351,10 +2405,14 @@ class InstrPanel(wx.Panel):
         hbox_D.Add(ttl_D,      flag=wx.RIGHT, border=8)
         hbox_D.Add(self.val_D, flag=wx.RIGHT, border=8)
 
+        hbox_hw.Add(ttl_hw,      flag=wx.RIGHT, border=5)
+        hbox_hw.Add(self.val_hw, flag=wx.RIGHT, border=5)
+
         vbox.Add(hbox_inst, flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_u,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_v,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_w,    flag=wx.BOTTOM, border=8)
+        vbox.Add(hbox_hw,   flag=wx.BOTTOM, border=8)
 
         vbox.Add(hbox_size, flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_D,    flag=wx.BOTTOM, border=8)
@@ -2363,6 +2421,7 @@ class InstrPanel(wx.Panel):
         self.val_v.SetValue('1.0')
         self.val_w.SetValue('1.0')
         self.val_D.SetValue('')
+        self.val_hw.SetValue(str(self.owner.halfwidth))
 
         self.val_u.Disable()
         self.val_v.Disable()
@@ -2691,6 +2750,10 @@ class XRDSearchGUI(wx.Dialog):
         self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
+        ## AMCSD search
+        lbl_AMCSD  = wx.StaticText(self.panel, label='AMCSD search:' )
+        self.AMCSD = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+
         ## Author search
         lbl_Author   = wx.StaticText(self.panel, label='Author(s):' )
         self.Author  = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
@@ -2729,6 +2792,7 @@ class XRDSearchGUI(wx.Dialog):
         self.symslct.Bind(wx.EVT_BUTTON, self.onSymmetry  )
 
         self.Chemistry.Bind(wx.EVT_TEXT_ENTER, self.entrChemistry )
+        self.AMCSD.Bind(wx.EVT_TEXT_ENTER,     self.entrAMCSD     )
         self.Mineral.Bind(wx.EVT_TEXT_ENTER,   self.entrMineral   )
         self.Author.Bind(wx.EVT_TEXT_ENTER,    self.entrAuthor    )
         self.Symmetry.Bind(wx.EVT_TEXT_ENTER,  self.entrSymmetry  )
@@ -2738,23 +2802,26 @@ class XRDSearchGUI(wx.Dialog):
         grd_sizer.Add(lbl_Mineral,    pos = ( 1,1)               )
         grd_sizer.Add(self.Mineral,   pos = ( 1,2), span = (1,3) )
 
-        grd_sizer.Add(lbl_Author,     pos = ( 2,1)               )
-        grd_sizer.Add(self.Author,    pos = ( 2,2), span = (1,2) )
-        grd_sizer.Add(self.atrslct,   pos = ( 2,4)               )
+        grd_sizer.Add(lbl_AMCSD,      pos = ( 2,1)               )
+        grd_sizer.Add(self.AMCSD,     pos = ( 2,2), span = (1,3) )
 
-        grd_sizer.Add(lbl_Chemistry,  pos = ( 3,1)               )
-        grd_sizer.Add(self.Chemistry, pos = ( 3,2), span = (1,2) )
-        grd_sizer.Add(self.chmslct,   pos = ( 3,4)               )
+        grd_sizer.Add(lbl_Author,     pos = ( 3,1)               )
+        grd_sizer.Add(self.Author,    pos = ( 3,2), span = (1,2) )
+        grd_sizer.Add(self.atrslct,   pos = ( 3,4)               )
 
-        grd_sizer.Add(lbl_Symmetry,   pos = ( 4,1)               )
-        grd_sizer.Add(self.Symmetry,  pos = ( 4,2), span = (1,2) )
-        grd_sizer.Add(self.symslct,   pos = ( 4,4)               )
+        grd_sizer.Add(lbl_Chemistry,  pos = ( 4,1)               )
+        grd_sizer.Add(self.Chemistry, pos = ( 4,2), span = (1,2) )
+        grd_sizer.Add(self.chmslct,   pos = ( 4,4)               )
 
-        grd_sizer.Add(lbl_Category,   pos = ( 5,1)               )
-        grd_sizer.Add(self.Category,  pos = ( 5,2), span = (1,3) )
+        grd_sizer.Add(lbl_Symmetry,   pos = ( 5,1)               )
+        grd_sizer.Add(self.Symmetry,  pos = ( 5,2), span = (1,2) )
+        grd_sizer.Add(self.symslct,   pos = ( 5,4)               )
 
-        grd_sizer.Add(lbl_Keyword,    pos = ( 6,1)               )
-        grd_sizer.Add(self.Keyword,   pos = ( 6,2), span = (1,3) )
+        grd_sizer.Add(lbl_Category,   pos = ( 6,1)               )
+        grd_sizer.Add(self.Category,  pos = ( 6,2), span = (1,3) )
+
+        grd_sizer.Add(lbl_Keyword,    pos = ( 7,1)               )
+        grd_sizer.Add(self.Keyword,   pos = ( 7,2), span = (1,3) )
         
         ok_sizer.Add(hlpBtn,      flag=wx.ALL, border=8)
         ok_sizer.Add(canBtn,      flag=wx.ALL, border=8)
@@ -2765,6 +2832,11 @@ class XRDSearchGUI(wx.Dialog):
         sizer.AddSpacer(15)
         sizer.Add(ok_sizer)
         self.panel.SetSizer(sizer)
+        
+        ## No categories are specified yet in database
+        ## mkak 2017.05.19
+        lbl_Category.Disable()
+        self.Category.Disable()
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+40, iy+40))
@@ -2782,7 +2854,6 @@ class XRDSearchGUI(wx.Dialog):
     def entrSymmetry(self,event=None):
         self.srch.read_geometry(str(self.Symmetry.GetValue()))
         self.Symmetry.SetValue(self.srch.print_geometry())
-
             
     def entrCategory(self,event=None):
         key = 'categories'
@@ -2794,6 +2865,10 @@ class XRDSearchGUI(wx.Dialog):
         self.srch.read_parameter(self.Keyword.GetValue(),key=key)
         self.Keyword.SetValue(self.srch.print_parameter(key=key))
 
+    def entrAMCSD(self,event=None):
+        key = 'amcsd'
+        self.srch.read_parameter(self.AMCSD.GetValue(),key=key)
+        self.AMCSD.SetValue(self.srch.print_parameter(key=key))
 
     def entrMineral(self,event=None):
         ## need to integrate with SearchCIFdb somehow...
@@ -2808,6 +2883,46 @@ class XRDSearchGUI(wx.Dialog):
         self.srch.read_chemistry(self.Chemistry.GetValue())
         self.Chemistry.SetValue(self.srch.print_chemistry())
 
+#########################################################################
+#     def SetValues(self,event=None):
+# 
+# 
+#         ## Mineral search
+#         if len(self.parent.mnrl_include) == 1:
+#             if self.parent.mnrl_include[0] not in self.minerals:
+#                 self.minerals.insert(1,self.parent.mnrl_include[0])
+#                 self.Mineral.Set(self.minerals)
+#                 self.Mineral.SetSelection(1)
+#         else:
+#             
+# 
+#         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## AMCSD search
+#         self.AMCSD = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## Author search
+#         self.Author  = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## Chemistry search
+#         
+#         self.Chemistry.SetValue(self.srch.print_chemistry())
+# 
+# 
+#         ## Cell parameter symmetry search
+#         self.Symmetry = wx.TextCtrl(self.panel, size=(175, -1), style=wx.TE_PROCESS_ENTER)
+# 
+#         ## General search
+#         lbl_Keyword  = wx.StaticText(self.panel, label='Keyword search:' )
+#         self.Keyword = wx.TextCtrl(self.panel, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+# 
+# 
+#         ## Database searching parameters
+#         self.parent.elem_include = []
+#         self.parent.elem_exclude = []
+#         self.parent.amcsd        = []
+#         self.parent.auth_include = []
+#         self.parent.mnrl_include = []
 
 #########################################################################
     def onChemistry(self,event=None):
@@ -2881,6 +2996,7 @@ class XRDSearchGUI(wx.Dialog):
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
+        self.AMCSD.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
         for i,n in enumerate(CATEGORIES):

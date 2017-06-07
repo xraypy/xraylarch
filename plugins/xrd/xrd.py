@@ -263,6 +263,7 @@ class xrd1d(grpobjt):
     
         all_data = np.array(self.all_data(bkgd=bkgd))
 
+        
         self.pki = peakfinder(all_data[3],**kwargs)
         if threshold is not None:
             self.pki = peakfilter(threshold,self.pki,all_data[3])

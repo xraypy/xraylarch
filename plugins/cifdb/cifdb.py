@@ -472,16 +472,11 @@ class cifDB(object):
         self.ciftbl = Table('ciftbl', self.metadata)
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == cif.id_no)
         for row in search_cif.execute():
-            if url:
-                print('AMCSD %i already exists in database.\n' % cif.id_no)
-                if file is not None:
-                    file.write('AMCSD %i already exists in database %s: %s\n' % 
-                         (cif.id_no,self.dbname,cifile))
-            else:
-                print('%s: AMCSD %i already exists in database %s.' % 
-                     (os.path.split(cifile)[-1],cif.id_no,self.dbname))
-                if file is not None:
-                    file.write('%s: AMCSD %i already exists in database %s.\n' % 
+            if verbose:
+                if url:
+                    print('AMCSD %i already exists in database.\n' % cif.id_no)
+                else:
+                    print('%s: AMCSD %i already exists in database %s.' % 
                          (os.path.split(cifile)[-1],cif.id_no,self.dbname))
             return
         
@@ -559,20 +554,27 @@ class cifDB(object):
     #                          amcsd_id=cif.id_no)
 
         if url:
-            if verbose:
-                self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
+            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
         else:
-            if verbose:
-                self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),cifile=cifile)
-            else:
-                print('File : %s' % os.path.split(cifile)[-1])
+            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),cifile=cifile)
 
     def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
     
+        maxi = 20573
+        exceptions = [0,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
+        ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
+        ## 14748 : has label of amcsd code but no number (or anything) assigned
+        ## 15049 : page number 'L24307 1' could not be parsed as number
+        ## 15050 : page number 'L24307 1' could not be parsed as number
+        ## 15851 : no first page number provided despite providing field label
+        ## 18368 : non-numerical entries in B_iso fields
+        ## 18449 : no first page number provided despite providing field label
+        ## 18450 : no first page number provided despite providing field label
+        ## 20029 : no volume number provided despite providing field label
+        
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
-            #url = 'http://rruff.geo.arizona.edu/AMS/CIF_text_files/%05d_cif.txt'
  
         ## Defines url range for searching and adding to cif database
         if all == True:
@@ -583,69 +585,28 @@ class cifDB(object):
             iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
         
         for i in iindex:
-            url_to_scrape = url % i
-            r = requests.get(url_to_scrape)
-            if r.text.split()[0] == "Can't" or '':
-                if verbose:
-                    print('\t---> ERROR on amcsd%05d.cif' % i)
-            else:
-                if verbose:
-                    print('Reading %s' % url_to_scrape)
-                if savecif:
-                    file = 'amcsd%05d.cif' % i
-                    f = open(file,'w')
-                    f.write(r.text)
-                    f.close()
+            if i not in exceptions and i < maxi:
+                url_to_scrape = url % i
+                r = requests.get(url_to_scrape)
+                if r.text.split()[0] == "Can't" or '':
                     if verbose:
-                        print('Saved %s' % file)
-                if addDB:
-                    try:
-                        self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-                    except:
-                        pass
+                        print('\t---> ERROR on amcsd%05d.cif' % i)
+                else:
+                    if verbose:
+                        print('Reading %s' % url_to_scrape)
+                    if savecif:
+                        file = 'amcsd%05d.cif' % i
+                        f = open(file,'w')
+                        f.write(r.text)
+                        f.close()
+                        if verbose:
+                            print('Saved %s' % file)
+                    if addDB:
+                        try:
+                            self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
+                        except:
+                            pass
 
-#     def database_array(self,maxrows=None):
-#     
-#         cif_array = {}
-#         
-#         search_cif = self.ciftbl.select()
-#         count = 0
-#         for cifrow in search_cif.execute():
-#             amcsd_id = cifrow.amcsd_id
-#             mineral_id = cifrow.mineral_id
-#             iuc_id = cifrow.iuc_id
-#             
-#             mineral_name = ''
-#             search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
-#             for mnrlrow in search_mineralname.execute():
-#                 mineral_name = mnrlrow.mineral_name
-#         
-#             search_composition = self.compref.select(self.compref.c.amcsd_id == amcsd_id)
-#             composition = ''
-#             for cmprow in search_composition.execute():
-#                 z = cmprow.z
-#                 search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
-#                 for elmtrow in search_periodic.execute():
-#                     composition = '%s %s' % (composition,elmtrow.element_symbol)
-#                     
-#             search_authors = self.authref.select(self.authref.c.amcsd_id == amcsd_id)
-#             authors = ''
-#             for atrrow in search_authors.execute():
-#                 author_id = atrrow.author_id
-#                 search_alist = self.authtbl.select(self.authtbl.c.author_id == author_id)
-#                 for block in search_alist.execute():
-#                     if authors == '':
-#                         authors = '%s' % (block.author_name)
-#                     else:
-#                         authors = '%s; %s' % (authors,block.author_name)
-# 
-#             count = count + 1
-#             cif_array.update({count:(str(amcsd_id),str(mineral_name),str(iuc_id),str(composition),str(authors))})
-#             if maxrows is not None:
-#                  if count >= maxrows:
-#                      return cif_array
-#        
-#         return cif_array
 
 
 
@@ -1148,9 +1109,6 @@ class SearchCIFdb(object):
         self.gamma = RangeParameter()
 
 
-        
-
-
     def print_all(self):
     
         for key in ['authors','mnrlname','keywords','categories','amcsd','qpks']:
@@ -1187,6 +1145,40 @@ class SearchCIFdb(object):
                     self.__dict__[key] += [a.split()[0]]
                 except:
                     pass
+
+    def read_chemistry(self,s,clear=True):
+       
+        if clear:
+            self.elem_incl,self.elem_excl = [],[]
+        chem_incl,chem_excl = [],[]
+
+        chemstr = re.sub('[( )]','',s)
+        ii = -1
+        for i,s in enumerate(chemstr):
+            if s == '-':
+                ii = i
+        if ii > 0:
+            chem_incl = chemstr[0:ii].split(',')
+            if len(chemstr)-ii == 1:
+                for elem in self.allelem:
+                    if elem not in chem_incl:
+                        chem_excl += [elem]
+            elif ii < len(chemstr)-1:
+                chem_excl = chemstr[ii+1:].split(',')
+        else:
+            chem_incl = chemstr.split(',')
+
+        for elem in chem_incl:
+            elem = capitalize_string(elem)
+            if elem in self.allelem and elem not in self.elem_incl:
+                self.elem_incl += [elem]
+                if elem in self.elem_excl:
+                    j = self.elem_excl.index(elem)
+                    self.elem_excl.pop(j)
+        for elem in chem_excl:
+            elem = capitalize_string(elem)
+            if elem in self.allelem and elem not in self.elem_excl and elem not in self.elem_incl:
+                self.elem_excl += [elem]
 
     def print_chemistry(self):
     
@@ -1275,7 +1267,7 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
         print('\n')
         for i,id_no in enumerate(amcsd):
             if i < 10:
-                str = 'AMCSD %i, %s (%0.3f --> %i of %i peaks)' % (id_no,
+                str = 'AMCSD %5d, %s (score of %2d --> %i of %i peaks)' % (id_no,
                          cifdatabase.mineral_by_amcsd(id_no),scores[i],
                          match_peaks[i],total_peaks[i])
                 print(str)

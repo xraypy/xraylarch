@@ -16,7 +16,7 @@ def get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name:
 
     >>> g = group(a = 1,  b=2.3, z = 'a string')
-    >>> print get('g.z')
+    >>> print(get('g.z'))
     'a string'
 
     """

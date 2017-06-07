@@ -12,8 +12,6 @@ import numpy as np
 HAS_pyFAI = False
 try:
     import pyFAI
-    import pyFAI.calibrant
-    # from pyFAI.calibration import Calibration
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -26,6 +24,45 @@ def read_lambda(calfile):
     ai = pyFAI.load(calfile)
     return ai._wavelength*1e10 ## units A
 
+def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
+                      mask=None, dark=None, flip=True):
+
+    '''
+    Uses pyFAI (poni) calibration file to produce 1D XRD data from a row of 2D XRD images 
+
+    Must provide pyFAI calibration file
+    
+    rowxrd2d : 2D diffraction images for integration
+    calfile  : poni calibration file
+    unit     : unit for integration data ('2th'/'q'); default is 'q'
+    steps    : number of steps in integration data; default is 10000
+    wedge    : azimuthal slices
+    mask     : mask array for image
+    dark     : dark image array
+    flip     : vertically flips image to correspond with Dioptas poni file calibration
+    '''
+    if HAS_pyFAI:
+        try:
+            ai = pyFAI.load(calfile)
+        except:
+            print('Provided calibration file could not be loaded.')
+            return
+        
+        if wedge != 1: print('Wedge not yet incorportated into calculations and saving.')
+        attrs = {'mask':mask,'dark':dark}
+        if unit.startswith('2th'):
+            attrs.update({'unit':'2th_deg'})
+        else:
+            attrs.update({'unit':'q_A^-1'})
+        
+        if flip:
+            return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
+        else:
+            return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+
+    else:
+        print('pyFAI not imported. Cannot calculate 1D integration.')
+
 def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
                   verbose=False):
     '''
@@ -33,13 +70,13 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
 
     Must provide pyFAI calibration file
     
-    xrd2d   : 2D diffraction images for integration
-    calfile : poni calibration file
-    unit    : unit for integration data ('2th'/'q'); default is 'q'
-    steps   : number of steps in integration data; default is 10000
-    file    : filename for saving data; if '' (default) will not save
-    mask    : mask array for image
-    dark    : dark image array
+    xrd2d    : 2D diffraction images for integration
+    calfile  : poni calibration file
+    unit     : unit for integration data ('2th'/'q'); default is 'q'
+    steps    : number of steps in integration data; default is 10000
+    file     : filename for saving data; if '' (default) will not save
+    mask     : mask array for image
+    dark     : dark image array
     '''
     
     if HAS_pyFAI:
@@ -95,18 +132,11 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
         print('pyFAI not imported. Cannot calculate 1D integration.')
 
 
-
-
-
 def calcXRD1d(xrd2d,ai,steps,attrs):
     return ai.integrate1d(xrd2d,steps,**attrs)
 
 def calcXRDcake(xrd2d,ai,attrs):
-    #res = ai.integrate2d(xrd2d,2048,2048,**attrs)
-    #cakeI   = res[0]
-    #cakeq   = res[1]
-    #cakeeta = res[2]
-    return ai.integrate2d(xrd2d,2048,2048,**attrs)
+    return ai.integrate2d(xrd2d,2048,2048,**attrs) ## returns I,q,eta
     
 
 

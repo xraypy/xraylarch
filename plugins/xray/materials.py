@@ -60,7 +60,7 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
 
     example
     -------
-      >>> print material_mu('H2O', 10000.0)
+      >>> print(material_mu('H2O', 10000.0))
       5.32986401658495
     """
     _materials = get_materials(_larch)

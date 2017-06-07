@@ -151,7 +151,7 @@ class Plot(wx.Dialog):
                                 concentration_AtWtFract = ConcList[ii]            # concentration in weight fraction
                                 Conversion = AtomicWeight_substrate1/AtomicWeight # weight fraction to atomic fraction
                                 ConcList[ii] = Conversion * concentration_AtWtFract
-                                #print AtomicSymbol, concentration_AtWtFract, Conversion, Conversion * concentration_AtWtFract
+                                #print(AtomicSymbol, concentration_AtWtFract, Conversion, Conversion * concentration_AtWtFract)
                 # concentrations are in atomic percent now
                 # 
                 for (ii, item) in enumerate(AtomList):
@@ -179,7 +179,7 @@ class Plot(wx.Dialog):
                 reload(fluo_det)
                 self.input=fluo_det.input_param(eV0, Atoms, xHe, xAl, xKap, WD, xsw)
                 matrix=fluo_det.SampleMatrix2(substrate1, density1, thickness1,substrate2, density2, thickness2, angle0, loc)
-                #print '####', substrate1, density1, thickness1,substrate2, density2, thickness2
+                #print('####', substrate1, density1, thickness1,substrate2, density2, thickness2)
                 # --- change directory for pc executable: py2exe makes exe-file in dist folder.  put outputfiles one folder up.
                 exeExists=0
                 if os.path.exists('fluo_panel.exe'):    # run from exe file put outputs in different folder
@@ -198,7 +198,7 @@ class Plot(wx.Dialog):
                 textOut=fluo_det.sim_spectra(eV0, Atoms, xHe, xAl, xKap, WD, xsw, sample=matrix)
                 printout='output: simSpectrum_table.txt, simSpectrum_plot.txt, Elemental_Sensitivity.txt'
                 printout+=' saved in '+path0
-                print printout
+                print(printout)
                 #self.cbLINES.Destroy()
                 #self.fyList=[]
                 #self.cbLINES = wx.ComboBox(self, 3, 'Press [Plot!] to update', (120, 30), (165, 10), self.fyList, wx.CB_DROPDOWN)
@@ -284,7 +284,7 @@ class Plot(wx.Dialog):
                 self.plot=frm
                 # after upgrading to python 2.6 saving jpg crashes
                 #client.SaveFile(fileName='plot.jpg')
-                #print 'plot saved to plot.jpg'
+                #print('plot saved to plot.jpg')
 
 
 

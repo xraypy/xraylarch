@@ -118,7 +118,7 @@ pv_doc = """PV(pvname)
       mypv = PV('xx.VAL')
       mypv.get()
       mypv.put(value)
-      print mypv.pvname, mypv.count, mypv.type
+      print(mypv.pvname, mypv.count, mypv.type)
 
     Notes
     -----
