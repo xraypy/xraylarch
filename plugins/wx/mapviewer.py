@@ -1237,7 +1237,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onXRD(self, event=None, save=False, show=False):
 
         flag1D,flag2D = self.owner.current_file.check_xrd()
-        print 'flag1D,flag2D',flag1D,flag2D
         
         if not flag1D and not flag2D:
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
@@ -1248,9 +1247,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             xrmfile = self.owner.current_file
             area  = xrmfile.xrmmap['areas/%s' % aname]
             label = area.attrs.get('description', aname)
+
+            ## what's a clearer way to do this?
+            ## mkak 2017.03.24
+            env_names = list(xrmfile.xrmmap['config/environ/name'])
+            env_vals  = list(xrmfile.xrmmap['config/environ/value'])
+            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
+            for name, addr, val in zip(env_names, env_addrs, env_vals):
+                if 'mono.energy' in str(name).lower():
+                    energy = float(val)/1000.
         except:
-           print('No map file and/or areas specified.')
-           return
+            print('No map file and/or areas specified.')
+            return
 
         if show:
             self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
@@ -1260,17 +1268,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if flag1D: 
             self._xrd  = None
             self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
-           
-            print
-            print '-- this means 1D data already exists'
-            print '-- need to extract 1D data for plotting from file for selected area'
-            print
-#            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+            self._xrd.filename = self.owner.current_file.filename
+            self._xrd.title = label
+            self._xrd.npixels = len(area.value[np.where(area.value)])
+            self._xrd.energy = energy
+            self._xrd.wavelength = lambda_from_E(energy)
+
+            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
             if not flag2D:
                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
-                print '---- will need to check now 2D data in: %s ' % datapath
-               
+                print('---- not yet looking in path for 2D data: %s ' % datapath)
             
         if flag2D:
             self._xrd  = None
@@ -1278,19 +1286,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = label
             self._xrd.npixels = len(area.value[np.where(area.value)])
-
-        
-            ## what's a clearer way to do this?
-            ## mkak 2017.03.24
-            env_names = list(xrmfile.xrmmap['config/environ/name'])
-            env_vals  = list(xrmfile.xrmmap['config/environ/value'])
-            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
-            for name, addr, val in zip(env_names, env_addrs, env_vals):
-                if 'mono.energy' in str(name).lower():
-                    energy = float(val)/1000.
-                    self._xrd.energy = energy
-                    self._xrd.wavelength = lambda_from_E(energy)
-
+            self._xrd.energy = energy
+            self._xrd.wavelength = lambda_from_E(energy)
 
             if save:
                 self._xrd.save_2D(verbose=True)
