@@ -236,7 +236,8 @@ if INSTALL and is_anaconda and uname.startswith('darwin'):
             lines = ['binary file?']
         fh.close()
         line0 = lines[0].strip()
-        if line0.startswith('#!/usr/bin/env pythonw'):
+        if (line0.startswith('#!/usr/bin/env python')
+            and 'pythonw' not in line0):
             fh = open(fname, 'w')
             fh.write('#!/usr/bin/env python\n')
             fh.write("".join(lines[1:]))
