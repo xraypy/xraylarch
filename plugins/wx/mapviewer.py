@@ -841,7 +841,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         folderpath = xrmmap.attrs['Map_Folder']
         if len(folderpath) > 35:
-            folderpath = '...'+xrmmap.attrs['Map_Folder'][-35:]
+            folderpath = 'Browse...'+xrmmap.attrs['Map_Folder'][-35:]
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
         try:
@@ -1261,9 +1261,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         if show:
-            self.owner.message('Plotting XRD pattern for area \'%s\'...' % label)
+            self.owner.message('Plotting XRD pattern for area \'%s\'Browse...' % label)
         if save:
-            self.owner.message('Saving XRD pattern for area \'%s\'...' % label)
+            self.owner.message('Saving XRD pattern for area \'%s\'Browse...' % label)
 
         if flag1D: 
             self._xrd  = None
@@ -1276,9 +1276,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
-            if not flag2D:
-                datapath = xrmfile.xrmmap.attrs['Map_Folder']
-                print('---- not yet looking in path for 2D data: %s ' % datapath)
+#             if not flag2D:
+#                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
             
         if flag2D:
             self._xrd  = None
@@ -1294,7 +1293,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             if show:
                 title = '%s: %s' % (os.path.split(self._xrd.filename)[-1], label)
-                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile)
+                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile,
+                                         flip=True)
 
             if not flag1D:
                 try:
@@ -1612,7 +1612,7 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, title='image 0', xrmfile=None):
+    def display_2Dxrd(self, map, title='image 0', xrmfile=None,flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
@@ -1622,12 +1622,16 @@ class MapViewerFrame(wx.Frame):
             except:
                 poni = ''
             if not os.path.exists(poni): poni = None
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip='vertical',
-                                              xrd1Dviewer=self.xrddisplay1D,ponifile=poni)
+            flptyp = 'vertical' if flip is True else False
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
+                                              xrd1Dviewer=self.xrddisplay1D,
+                                              ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(map,title)
         except PyDeadObjectError:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
+                                              xrd1Dviewer=self.xrddisplay1D,
+                                              ponifile=poni)
             self.xrddisplay2D.plot2Dxrd(map,title)
         self.xrddisplay2D.Show()
         self.xrddisplay2D.displayCAKE()
@@ -1864,14 +1868,17 @@ class MapViewerFrame(wx.Frame):
             FLAGxrf     = myDlg.FLAGxrf
             FLAGxrd1D   = myDlg.FLAGxrd1D
             FLAGxrd2D   = myDlg.FLAGxrd2D
-
+            mask        = myDlg.MaskFile
+            wdgs        = int(myDlg.Wdg.GetValue())
+            stps        = int(myDlg.Stp.GetValue())
+            flip        = False if myDlg.poniTtl.GetSelection() == 1 else True
         myDlg.Destroy()
 
         if read:
-            xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,
+            xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
+                                     azwdgs=wdgs,qstps=stps,flip=flip,
                                      FLAGxrf=FLAGxrf,
-                                     FLAGxrd1D=FLAGxrd1D,
-                                     FLAGxrd2D=FLAGxrd2D)
+                                     FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
             self.add_xrmfile(xrmfile)
 
 #             if ponifile is not None:
@@ -2051,55 +2058,103 @@ class OpenMapFolder(wx.Dialog):
         self.FLAGxrd2D = False
         self.FldrPath  = None
         self.PoniFile  = None
+        self.MaskFile  = None
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(400, 350))
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder',size=(350, 520))
 
         panel = wx.Panel(self)
 
         fldrTtl      = SimpleText(panel,  label='XRM Map Folder:'           )
-        fldrBtn      = wx.Button(panel,   label='Browse...'                 )
         chTtl        = SimpleText(panel,  label='Build map including data:' )
-        xrfCkBx      = wx.CheckBox(panel, label='XRF'                       )
-        xrd2dCkBx    = wx.CheckBox(panel, label='2DXRD'                     )
-        xrd1dCkBx    = wx.CheckBox(panel, label='1DXRD'                     )
-        self.poniTtl = SimpleText(panel,  label='Calibration file:'         )
-        self.poniBtn = wx.Button(panel,   label='Browse...'                 )
+        self.maskTtl = SimpleText(panel,  label='Mask file: (optional)'     )
+        self.wdgTtl  = SimpleText(panel,  label='Azimuthal wedges:'         )
+        self.stpTtl  = SimpleText(panel,  label='Radial steps:'             )
 
-        self.Fldr = wx.TextCtrl(panel, size=(300, 25))
-        self.Poni = wx.TextCtrl(panel, size=(300, 25))
+        xrfCkBx      = Check(panel, label='XRF'   )
+        xrd2dCkBx    = Check(panel, label='2DXRD' )
+        xrd1dCkBx    = Check(panel, label='1DXRD' )
 
-        hlpBtn = wx.Button(panel, wx.ID_HELP   )
-        okBtn  = wx.Button(panel, wx.ID_OK     )
-        canBtn = wx.Button(panel, wx.ID_CANCEL )
-        self.FindWindowById(wx.ID_OK).Disable()
+        self.poniTtl = Choice(panel,   choices=['Dioptas calibration file:',
+                                                   'pyFAI calibration file:'] )
 
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
+        self.Fldr = wx.TextCtrl(panel, size=(320, 25) )
+        self.Poni = wx.TextCtrl(panel, size=(320, 25) )
+        self.Mask = wx.TextCtrl(panel, size=(320, 25) )
+        self.Wdg  = wx.TextCtrl(panel, size=(30,  25) )
+        self.Stp  = wx.TextCtrl(panel, size=(50,  25) )
+
+
+        fldrBtn      = Button(panel,   label='Browse...' )
+        self.poniBtn = Button(panel,   label='Browse...' )
+        self.maskBtn = Button(panel,   label='Browse...' )
+
+        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
+        okBtn        = wx.Button(panel,   wx.ID_OK     )
+        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
+
+        self.wdgSpn = wx.SpinButton(panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx      )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD2Dcheck, xrd2dCkBx    )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD1Dcheck, xrd1dCkBx    )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSEponi, self.poniBtn )
+        self.Bind(wx.EVT_BUTTON,   self.onBROWSEmask, self.maskBtn )
+        self.Bind(wx.EVT_SPIN,     self.onWdgSPIN,    self.wdgSpn  )
+
+        fldrsizer = wx.BoxSizer(wx.VERTICAL)
+        fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,                    border=5)
+        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,                    border=5)
+        
+        ponisizer = wx.BoxSizer(wx.VERTICAL)
+        ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,                    border=5)
+        ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        ponisizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+
+        stpsizer = wx.BoxSizer(wx.HORIZONTAL)
+        stpsizer.Add(self.stpTtl, flag=wx.RIGHT,                            border=5)
+        stpsizer.Add(self.Stp,    flag=wx.RIGHT,                            border=5)
+
+        wdgsizer = wx.BoxSizer(wx.HORIZONTAL)
+        wdgsizer.Add(self.wdgTtl, flag=wx.RIGHT,                            border=5)
+        wdgsizer.Add(self.Wdg,    flag=wx.RIGHT,                            border=5)
+        wdgsizer.Add(self.wdgSpn, flag=wx.RIGHT,                            border=5)
+
+        masksizer = wx.BoxSizer(wx.VERTICAL)
+        masksizer.Add(self.maskTtl, flag=wx.TOP|wx.LEFT,                    border=5)
+        masksizer.Add(self.Mask,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
+        masksizer.Add(self.maskBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+
+        xrdsizer = wx.BoxSizer(wx.VERTICAL)
+        xrdsizer.Add(xrd2dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
+        xrdsizer.Add(xrd1dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
+
+        ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT,                              border=15)
+        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT,                        border=15)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+        
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-
         sizer.Add((-1, 10))
-        sizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
-        sizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(fldrsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
         sizer.Add((-1, 15))
         sizer.Add(chTtl,        flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrfCkBx,      flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrd2dCkBx,    flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(xrd1dCkBx,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(ckbxsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
         sizer.Add((-1, 8))
-        sizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, border=5)
-        sizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(ponisizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(stpsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(wdgsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add((-1, 8))
+        sizer.Add(masksizer,    flag=wx.TOP|wx.LEFT,                    border=5)
         sizer.Add((-1, 15))
         sizer.Add(minisizer,    flag=wx.ALIGN_RIGHT,                    border=5)
 
@@ -2107,10 +2162,28 @@ class OpenMapFolder(wx.Dialog):
 
         ## Set defaults
         xrfCkBx.SetValue(True)
+        xrd2dCkBx.SetValue(False)
+        xrd1dCkBx.SetValue(False)
+        
+        self.poniTtl.SetSelection(0)
+        
+        self.Stp.SetValue('5001')
+        self.Wdg.SetValue('1')
+
+        self.FindWindowById(wx.ID_OK).Disable()
         
         self.poniTtl.Disable()
         self.poniBtn.Disable()
         self.Poni.Disable()
+        self.maskTtl.Disable()
+        self.maskBtn.Disable()
+        self.Mask.Disable()
+        self.stpTtl.Disable()
+        self.Stp.Disable()
+        self.wdgTtl.Disable()
+        self.Wdg.Disable()
+        self.wdgSpn.Disable()
+
 
     def checkOK(self):
 
@@ -2136,11 +2209,47 @@ class OpenMapFolder(wx.Dialog):
             self.poniTtl.Enable()
             self.poniBtn.Enable()
             self.Poni.Enable()
+            self.maskTtl.Enable()
+            self.maskBtn.Enable()
+            self.Mask.Enable()
+            self.stpTtl.Enable()
+            self.Stp.Enable()
+            self.wdgTtl.Enable()
+            self.Wdg.Enable()
+            self.wdgSpn.Enable()
         else:
             self.poniTtl.Disable()
             self.poniBtn.Disable()
             self.Poni.Disable()
+            self.maskTtl.Disable()
+            self.maskBtn.Disable()
+            self.Mask.Disable()
+            self.stpTtl.Disable()
+            self.Stp.Disable()
+            self.wdgTtl.Disable()
+            self.Wdg.Disable()
+            self.wdgSpn.Disable()
         self.checkOK()
+
+    def onWdgSPIN(self,event=None):
+
+        self.Wdg.SetValue(str(event.GetPosition()))
+
+    def onBROWSEmask(self,event=None):
+        wildcards = 'XRD mask file (*.mask,*.edf)|*.mask;*.edf|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select XRD mask file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.Mask.Clear()
+            self.Mask.SetValue(str(path))
+            self.MaskFile = path
 
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'

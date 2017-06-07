@@ -26,7 +26,7 @@ required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
                     'PIL', 'requests']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
 
-xrd_modules = ['pyFAI','CifFile', 'requests', 'fabio']
+xrd_modules = ['pyFAI','CifFile', 'fabio']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,

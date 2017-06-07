@@ -222,6 +222,7 @@ class GSEXRM_MapRow:
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
+                 mask=None, wdg=1, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         ta = time.time()
@@ -358,7 +359,7 @@ class GSEXRM_MapRow:
                 self.xrd2d = xrddat[0:self.npts]
             tg = time.time()
             if poni is not None and FLAGxrd1D:
-                attrs = {'steps':STEPS}
+                attrs = {'steps':steps,'mask':mask,'wedge':wdg,'flip':flip}
                 self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
             else:
                 self.xrd1d = None
@@ -594,7 +595,8 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 poni = None, FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
+                 poni=None, mask=None, azwdgs=1, qstps=STEPS, flip=True,
+                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -621,6 +623,10 @@ class GSEXRM_MapFile(object):
         self.flag_xrd2d = FLAGxrd2D
 
         self.calibration = poni
+        self.maskfile    = mask
+        self.azwdgs      = azwdgs
+        self.qstps       = qstps
+        self.flip        = flip
 
         # initialize from filename or folder
         if self.filename is not None:
@@ -976,7 +982,9 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile=self.masterfile, poni=self.calibration,
+                             masterfile=self.masterfile, poni=self.calibration, 
+                             flip=self.flip, mask=self.maskfile, 
+                             wdg=self.azwdgs, steps=self.qstps,
                              FLAGxrf=self.flag_xrf, 
                              FLAGxrd2D=self.flag_xrd2d, FLAGxrd1D=self.flag_xrd1d)
 
@@ -1083,7 +1091,7 @@ class GSEXRM_MapFile(object):
         if verbose: t2 = time.time()
         if verbose:
             writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
-            if row.xrd1dcalctime > 0.01:
+            if row.xrd1dcalctime > 0.001:
                 pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s; 1DXRD: %0.3f s) '
                 print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
             elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
@@ -1091,10 +1099,9 @@ class GSEXRM_MapFile(object):
                 print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
             else:
                 print('\tReading: %0.2f s' % row.readtime)
-            if xrdwritetime > 0.01 and xrfwritetime > 0.01:
-                dim = '1D' if np.max(row.xrd1d) > 1 else '2D'
-                pform = '\tWriting: %0.3f s (XRF: %0.3f s; %sXRD: %0.3f s) '
-                print(pform % (writetime,xrfwritetime,dim,xrdwritetime))
+            if xrdwritetime > 0.001 and xrfwritetime > 0.001:
+                pform = '\tWriting: %0.3f s (XRF: %0.3f s; XRD: %0.3f s) '
+                print(pform % (writetime,xrfwritetime,xrdwritetime))
             else:
                 print('\tWriting: %0.2f s' % writetime)
 
@@ -1256,13 +1263,20 @@ class GSEXRM_MapFile(object):
 
             if self.flag_xrd2d:
                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-                xrmmap['xrd'].create_dataset('data2D',(xrdpts, xrdpts, xpixx, xpixy), np.uint16,
+                xrmmap['xrd'].create_dataset('data2D',
+                                       (xrdpts, xrdpts, xpixx, xpixy),
+                                       np.uint16,
                                        chunks = chunksize_2DXRD,
                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
-                chunksize_1DXRD    = (1, 1, 2, STEPS)
-                print('FIXED TO ONLY ONE WEDGE HERE')
-                xrmmap['xrd'].create_dataset('data1D',(xrdpts, xrdpts, 2, STEPS), np.float32,
+                if self.azwdgs != 1:
+                    print('Wedge not yet incorportated into calculations and saving.')
+                    self.azwdgs = 1
+                
+                chunksize_1DXRD    = (1, 1, int(1+self.azwdgs), self.qstps)
+                xrmmap['xrd'].create_dataset('data1D',
+                                       (xrdpts, xrdpts, int(1+self.azwdgs), self.qstps),
+                                       np.float32,
                                        chunks = chunksize_1DXRD,
                                        compression=COMPRESSION_LEVEL)
 

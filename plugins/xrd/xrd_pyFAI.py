@@ -24,7 +24,8 @@ def read_lambda(calfile):
     ai = pyFAI.load(calfile)
     return ai._wavelength*1e10 ## units A
 
-def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, mask=None, dark=None):
+def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
+                      mask=None, dark=None, flip=True):
 
     '''
     Uses pyFAI (poni) calibration file to produce 1D XRD data from a row of 2D XRD images 
@@ -35,8 +36,10 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, mask=None, dark=
     calfile  : poni calibration file
     unit     : unit for integration data ('2th'/'q'); default is 'q'
     steps    : number of steps in integration data; default is 10000
+    wedge    : azimuthal slices
     mask     : mask array for image
     dark     : dark image array
+    flip     : vertically flips image to correspond with Dioptas poni file calibration
     '''
     if HAS_pyFAI:
         try:
@@ -45,15 +48,17 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, mask=None, dark=
             print('Provided calibration file could not be loaded.')
             return
         
-        attrs = {}
+        if wedge != 1: print('Wedge not yet incorportated into calculations and saving.')
+        attrs = {'mask':mask,'dark':dark}
         if unit.startswith('2th'):
             attrs.update({'unit':'2th_deg'})
         else:
             attrs.update({'unit':'q_A^-1'})
-        attrs.update({'mask':mask})
-        attrs.update({'dark':dark})
         
-        return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+        if flip:
+            return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
+        else:
+            return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
 
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
