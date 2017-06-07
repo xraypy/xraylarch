@@ -19,7 +19,7 @@ For further details, consult the pyepics documentation
            waiting to return until record is fully processed,
            with a timeout value.
   cainfo(pvname, print_out=True)
-           printout information about Process Variable. with
+           print out information about Process Variable. with
            print_out = False, returns string of information.
   PV(pvname)
            create a Process Variable object with get()/put()
