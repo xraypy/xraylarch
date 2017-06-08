@@ -1274,7 +1274,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.energy = energy
             self._xrd.wavelength = lambda_from_E(energy)
 
-            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+            if np.shape(self._xrd.data1D)[0] > 2:
+                for i in np.arange(np.shape(self._xrd.data1D)[0]/2):
+                    xrd1d = self._xrd.data1D[(i*2):((i*2)+2)]
+                    if i != 0:
+                        wdglbl = self._xrd.title + ' - wedge %i' % i
+                    else:
+                        wdglbl = self._xrd.title
+                    self.owner.display_1Dxrd(xrd1d,self._xrd.energy,label=wdglbl)
+            
+            else:
+                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
 #             if not flag2D:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
