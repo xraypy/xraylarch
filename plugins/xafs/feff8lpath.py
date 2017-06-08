@@ -290,7 +290,7 @@ def initializeLarchPlugin(_larch=None):
     if _larch is not None:
         global F8LIB
         if F8LIB is None:
-            F8LIB = get_dll('onepath')
+            F8LIB = get_dll('feff8lpath')
 
 def registerLarchPlugin():
     return ('_xafs', {'feff8_xafs': feff8_xafs})
