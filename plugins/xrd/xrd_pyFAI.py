@@ -54,6 +54,12 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
             attrs.update({'unit':'2th_deg'})
         else:
             attrs.update({'unit':'q_A^-1'})
+        if wedge != 1:
+            slice = 360./wedge
+            nslc = 0
+            azimuth_range = ((nslc*slice),((nslc+1)*slice))
+            attrs.update({'azimuth_range':azimuth_range})
+            print 'azimuth_range',azimuth_range
         
         if flip:
             return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        

@@ -1270,15 +1270,22 @@ class GSEXRM_MapFile(object):
                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
                 if self.azwdgs != 1:
-                    print('Wedge not yet incorportated into calculations and saving.')
-                    self.azwdgs = 1
+                    #print('Wedge not yet incorportated into calculations and saving.')
+                    #self.azwdgs = 1
+                    print('Testing wedge incorporation...')
                 
-                chunksize_1DXRD    = (1, 1, int(1+self.azwdgs), self.qstps)
+                chunksize_1DXRD    = (1, 1, 2, self.qstps)
                 xrmmap['xrd'].create_dataset('data1D',
-                                       (xrdpts, xrdpts, int(1+self.azwdgs), self.qstps),
+                                       (xrdpts, xrdpts, 2, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
                                        compression=COMPRESSION_LEVEL)
+#                 chunksize_1DXRD    = (1, 1, int(1+self.azwdgs), self.qstps)
+#                 xrmmap['xrd'].create_dataset('data1D',
+#                                        (xrdpts, xrdpts, int(1+self.azwdgs), self.qstps),
+#                                        np.float32,
+#                                        chunks = chunksize_1DXRD,
+#                                        compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 #         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))

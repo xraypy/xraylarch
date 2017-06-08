@@ -2169,6 +2169,8 @@ class OpenMapFolder(wx.Dialog):
         
         self.Stp.SetValue('5001')
         self.Wdg.SetValue('1')
+        self.wdgSpn.SetValue(1)
+        self.wdgSpn.SetRange(1,36) # self.wdgSpn.SetMin(1)
 
         self.FindWindowById(wx.ID_OK).Disable()
         
