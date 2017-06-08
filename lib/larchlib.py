@@ -395,7 +395,7 @@ def get_dlldir():
     elif system.lower().startswith('linux'):
         return 'linux%s' % suff
     elif system.lower().startswith('darwin'):
-        return 'darwin'
+        return 'darwin64'
     return ''
 
 def isNamedClass(obj, cls):
@@ -411,8 +411,10 @@ def get_dll(libname):
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
     _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so', 'linux': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
+
     thisdir = os.path.abspath(os.path.join(larchdir, 'dlls',
                                            get_dlldir()))
+
     dirs = [thisdir]
 
     loaddll = ctypes.cdll.LoadLibrary
