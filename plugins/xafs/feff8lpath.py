@@ -66,7 +66,7 @@ class Feff8L_XAFSPath(object):
         self._larch = _larch
         global F8LIB
         if F8LIB is None:
-            F8LIB = get_dll('onepath')
+            F8LIB = get_dll('feff8lpath')
         self.reset(phase_file=phase_file, title=title)
 
     def reset(self, phase_file=None, title=''):
