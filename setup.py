@@ -272,7 +272,8 @@ def fix_darwin_dylibs():
     larchdlls = 'share/larch/dlls/darwin64'
 
     dylibs = ('libgcc_s.1.dylib','libquadmath.0.dylib', 'libgfortran.3.dylib',
-              'libfeff6.dylib', 'libcldata.dylib')
+              'libfeff6.dylib', 'libcldata.dylib', 'libfeff8lpath.dylib',
+              'libfeff8lpotph.dylib')
     exes   = ('feff6l',)
     fixcmd = '/usr/bin/install_name_tool -change'
 
