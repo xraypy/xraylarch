@@ -172,6 +172,7 @@ for pdir in pluginpaths:
     data_files.append((pjoin(larchdir, pdir), pfiles))
 
 
+altered_py_scripts = []
 if INSTALL and is_anaconda and uname.startswith('darwin'):
     for fname in scripts:
         fh = open(fname, 'r')
@@ -181,12 +182,13 @@ if INSTALL and is_anaconda and uname.startswith('darwin'):
             lines = ['binary file?']
         fh.close()
         line0 = lines[0].strip()
-        if not line0.startswith('#!/usr/bin/env pythonw'):
+        if (line0.startswith('#!/usr/bin/env python')
+            and 'pythonw' not in line0):
             fh = open(fname, 'w')
             fh.write('#!/usr/bin/env pythonw\n')
             fh.write("".join(lines[1:]))
             fh.close()
-            print("Rewrote ", fname)
+            altered_py_scripts.append(fname)
 
 
 # now we have all the data files, so we can run setup
@@ -228,7 +230,7 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'o')
 
 if INSTALL and is_anaconda and uname.startswith('darwin'):
-    for fname in scripts:
+    for fname in altered_py_scripts:
         fh = open(fname, 'r')
         try:
             lines = fh.readlines()
@@ -236,8 +238,7 @@ if INSTALL and is_anaconda and uname.startswith('darwin'):
             lines = ['binary file?']
         fh.close()
         line0 = lines[0].strip()
-        if (line0.startswith('#!/usr/bin/env python')
-            and 'pythonw' not in line0):
+        if line0.startswith('#!/usr/bin/env pythonw'):
             fh = open(fname, 'w')
             fh.write('#!/usr/bin/env python\n')
             fh.write("".join(lines[1:]))
@@ -262,6 +263,35 @@ def fix_permissions(dirname, stat=None):
         for d in dirs+files:
             set_perms(pjoin(top, d))
 
+def fix_darwin_dylibs():
+    """
+    fix dynamic libs on Darwin with install_name_tool
+    """
+    olddir    = '/usr/local/gfortran/lib'
+    newdir    = sys.prefix
+    larchdlls = 'share/larch/dlls/darwin64'
+
+    dylibs = ('libgcc_s.1.dylib','libquadmath.0.dylib', 'libgfortran.3.dylib')
+    exes   = ('feff6l',)
+    fixcmd = '/usr/bin/install_name_tool -change'
+
+    cmds = []
+    for ename in exes:
+        ename = pjoin(newdir, 'bin', ename)
+        for dname in dylibs:
+            old = pjoin(olddir, dname)
+            new = pjoin(newdir, larchdlls, dname)
+            cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
+
+    for ename in dylibs:
+        ename = pjoin(newdir, larchdlls, ename)
+        for dname in dylibs:
+            old = pjoin(olddir, dname)
+            new = pjoin(newdir, larchdlls, dname)
+            cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
+
+    for cmd in cmds:
+        os.system(cmd)
 
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
@@ -271,12 +301,16 @@ if deps_ok and not os.path.exists('.deps'):
     f.write('1\n')
     f.close()
 
-# create desktop icons
+# final install:
+#   create desktop icons
+#   fix dynamic libraries
 if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
     cmd ="%s %s" % (pjoin(sys.exec_prefix, pyexe),
                     pjoin(sys.exec_prefix, bindir, 'larch_makeicons'))
     os.system(cmd)
 
+    if uname.startswith('darwin'):
+        fix_darwin_dylibs()
 
 if len(missing) > 0:
     msg = """
