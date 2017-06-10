@@ -2489,6 +2489,9 @@ class Calc1DPopup(wx.Dialog):
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
+        
+        self.wedges.Disable()
+        self.wedge_arrow.Disable()
 
     def createPanel(self):
 
@@ -2498,83 +2501,27 @@ class Calc1DPopup(wx.Dialog):
 
         ## Azimutal wedges
         wedgesizer = wx.BoxSizer(wx.VERTICAL)
-
         ttl_wedges = wx.StaticText(self.panel, label='AZIMUTHAL WEDGES')
-
         wsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         spstyle = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
         self.wedge_arrow = wx.SpinButton(self.panel, style=spstyle)
-
         self.wedge_arrow.Bind(wx.EVT_SPIN, self.onSPIN)
-
         wsizer.Add(self.wedges,flag=wx.RIGHT,border=8)
         wsizer.Add(self.wedge_arrow,flag=wx.RIGHT,border=8)
-
         wedgesizer.Add(ttl_wedges,flag=wx.BOTTOM,border=8)
         wedgesizer.Add(wsizer,flag=wx.BOTTOM,border=8)
 
-
-        ## Y-Range
-        ysizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_yrange = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
-
-        yminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymin = wx.StaticText(self.panel, label='minimum')
-        self.ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        yminsizer.Add(ttl_ymin,  flag=wx.RIGHT, border=5)
-        yminsizer.Add(self.ymin,  flag=wx.RIGHT, border=5)
-
-        ymaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymax = wx.StaticText(self.panel, label='maximum')
-        self.ymax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        ymaxsizer.Add(ttl_ymax,  flag=wx.RIGHT, border=5)
-        ymaxsizer.Add(self.ymax,  flag=wx.RIGHT, border=5)
-
-        ysizer.Add(ttl_yrange,  flag=wx.BOTTOM, border=5)
-        ysizer.Add(yminsizer,  flag=wx.BOTTOM, border=5)
-        ysizer.Add(ymaxsizer,  flag=wx.BOTTOM, border=5)
-
-
-
         ## X-Range
         xsizer = wx.BoxSizer(wx.VERTICAL)
-
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
-
-        self.xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
-        xunits = ['q','d',u'2\u03B8']
-        ttl_xunit = wx.StaticText(self.panel, label='units')
-        self.ch_xunit = wx.Choice(self.panel,choices=xunits)
-        self.ch_xunit.Bind(wx.EVT_CHOICE,None)#self.onUnits)
-
-        self.xunitsizer.Add(ttl_xunit, flag=wx.RIGHT, border=5)
-        self.xunitsizer.Add(self.ch_xunit, flag=wx.RIGHT, border=5)
-
         xstepsizer = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xstep = wx.StaticText(self.panel, label='steps')
         self.xstep = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         xstepsizer.Add(ttl_xstep,  flag=wx.RIGHT, border=5)
         xstepsizer.Add(self.xstep,  flag=wx.RIGHT, border=5)
-
-        xminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmin = wx.StaticText(self.panel, label='minimum')
-        self.xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)
-        xminsizer.Add(self.xmin,  flag=wx.RIGHT, border=5)
-
-        xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmax = wx.StaticText(self.panel, label='maximum')
-        self.xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)
-        xmaxsizer.Add(self.xmax,  flag=wx.RIGHT, border=5)
-
         xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
-        xsizer.Add(self.xunitsizer, flag=wx.TOP|wx.BOTTOM, border=5)
         xsizer.Add(xstepsizer, flag=wx.TOP|wx.BOTTOM, border=5)
-        xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
-        xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
 
         ## Plot/save
 
@@ -2591,17 +2538,13 @@ class Calc1DPopup(wx.Dialog):
         #####
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
-        #hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
         self.okBtn  = wx.Button(self.panel, wx.ID_OK      )
         canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
 
-        #oksizer.Add(hlpBtn,flag=wx.RIGHT,  border=8)
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(self.okBtn,  flag=wx.RIGHT,  border=8)
 
         mainsizer.Add(wedgesizer, flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(ysizer,     flag=wx.ALL, border=5)
         mainsizer.AddSpacer(15)
         mainsizer.Add(xsizer,     flag=wx.ALL, border=5)
         mainsizer.AddSpacer(15)
@@ -2621,28 +2564,16 @@ class Calc1DPopup(wx.Dialog):
 
     def setDefaults(self):
 
-        self.ymin.SetValue(str(0))
-        self.ymax.SetValue(str(10000))
         self.xstep.SetValue(str(5001))
-        self.xmin.SetValue(str(0.1))
-        self.xmax.SetValue(str(5.5))
-        self.wedges.SetValue(str(1))
-
-        self.wedge_arrow.SetRange(1, 10)
+        
+        self.wedges.SetValue('1')
         self.wedge_arrow.SetValue(1)
-        self.okBtn.Disable()
+        self.wedge_arrow.SetRange(1,36)
 
-        self.ymin.Disable()
-        self.ymax.Disable()
-        self.xmin.Disable()
-        self.xmax.Disable()
-        self.wedges.Disable()
-        self.wedge_arrow.Disable()
-        self.ch_xunit.Disable()
+        self.okBtn.Disable()
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
-        print('WARNING: not currently using multiple wedges for calculations')
 
     def getValues(self):
 
