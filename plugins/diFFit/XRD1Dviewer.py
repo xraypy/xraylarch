@@ -1164,7 +1164,7 @@ class Fitting1DXRD(BasePanel):
                 
         self.rtgpl.btn_clr.Enable()
 
-    def clearMATCHES(self):
+    def clearMATCHES(self,event=None):
         '''
         Populates Results Panel with list
         '''
