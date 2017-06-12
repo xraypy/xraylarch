@@ -1,6 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto eol=lf
 
+exe/* -text
 *.nib -text
 *.jpg -text
 *.png -text
