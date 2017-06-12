@@ -6,4 +6,4 @@ sqlachemy>=0.8
 h5py>=2.2
 pillow>=3.4
 requests>=2.1
-
+lmfit
