@@ -12,11 +12,31 @@ import site
 import platform
 from glob import glob
 
+try:
+    from setuptools.command.build_py import build_py as _build_py
+except ImportError:
+    from distutils.command.build_py import build_py as _build_py
+
 import version
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
 INSTALL =  (cmdline_args[0] == 'install')
+PROJECT="larch"
+
+# ########## #
+# version.py #
+# ########## #
+class build_py(_build_py):
+    """
+    Enhanced build_py which copies version.py to <PROJECT>.version.py
+    """
+    def find_package_modules(self, package, package_dir):
+        modules = _build_py.find_package_modules(self, package, package_dir)
+        if package == PROJECT:
+            modules.append((PROJECT, 'version', 'version.py'))
+        return modules
+
 
 ##
 ## Dependencies: required and recommended modules
@@ -209,6 +229,7 @@ setup(name = 'xraylarch',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
                    'Topic :: Scientific/Engineering'],
+      cmdclass=dict(build_py=build_py,)
      )
 
 
