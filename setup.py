@@ -12,7 +12,7 @@ import site
 import platform
 from glob import glob
 
-from lib import version
+import version
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
