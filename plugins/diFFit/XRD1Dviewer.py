@@ -1545,6 +1545,19 @@ class Viewer1DXRD(wx.Panel):
 
         vbox.Add(hbox_scl, flag=wx.BOTTOM|wx.TOP, border=8)
 
+        ###########################
+        ## Scale
+        hbox_rmv = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.btn_rmv = wx.Button(self,label='delete from plot')
+
+        self.btn_rmv.Bind(wx.EVT_BUTTON, self.reset1Dscale)
+
+        hbox_rmv.Add(self.btn_rmv, flag=wx.RIGHT, border=8)
+
+        vbox.Add(hbox_rmv, flag=wx.BOTTOM|wx.TOP, border=8)
+
+
         ## Disable until data
         self.btn_reset.Disable()
         self.val_scale.Disable()
@@ -1914,6 +1927,10 @@ class Viewer1DXRD(wx.Panel):
         if xi == 2: xmax = min(xmax,self.dlimit)
         if xaxis: self.set_xview(xmin, xmax)
         if yaxis: self.set_yview(ymin, ymax)
+
+    def remove_data(self,event=None):
+
+        self.plot1D.test()
 
     def reset1Dscale(self,event=None):
 
