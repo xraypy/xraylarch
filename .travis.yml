@@ -17,13 +17,13 @@ before_install:
     - conda info -a
 
 install:
-    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib 
+    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py matplotlib wxpython
     - source activate test_env
     - conda config --add channels conda-forge
     - conda config --add channels gsecars
     - conda install h5py matplotlib pandas nose sphinx sqlalchemy patchelf libgfortran
     - conda install pillow requests yaml pango pcre
-    - conda install wxpython wxmplot wxutils
+    - conda install wxmplot wxutils
     - conda install lmfit termcolor pyepics fabio pyfai pycifrw
     - python setup.py install
 
