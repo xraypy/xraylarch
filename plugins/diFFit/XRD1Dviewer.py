@@ -4,6 +4,8 @@ GUI for displaying 1D XRD images
 
 '''
 import os
+from os.path import expanduser
+
 import numpy as np
 import sys
 import time
@@ -118,7 +120,7 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.openDB(dbname='amcsd_cif.db')
+        self.openDB()
 
         ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
@@ -148,7 +150,10 @@ class diFFit1DFrame(wx.Frame):
         except:
             pass
 
-        self.cifdatabase = cifDB(dbname=dbname)
+        try:
+            self.cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+        except:
+            self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
     def onExit(self, event=None):
         try:
@@ -1103,11 +1108,17 @@ class Fitting1DXRD(BasePanel):
             self.elem_include = myDlg.srch.elem_incl
             self.elem_exclude = myDlg.srch.elem_excl
 
-            for id in myDlg.AMCSD.GetValue().split(','):
+            if len(myDlg.AMCSD.GetValue()) > 0:
+                myDlg.entrAMCSD()
+                list_amcsd = []
+                
+            for id in myDlg.srch.amcsd:
                 try:
-                    self.amcsd += [int(id)]
+                    list_amcsd += [int(id)]
                 except:
                     pass
+
+            
             if myDlg.Mineral.IsTextEmpty():
                 self.mnrl_include = None
             else: 
@@ -1122,6 +1133,7 @@ class Fitting1DXRD(BasePanel):
 
         if filter == True:
             cif = self.owner.cifdatabase
+            
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
                 list_amcsd = cif.amcsd_by_chemistry(include=self.elem_include,
                                                     exclude=self.elem_exclude,
@@ -1150,11 +1162,15 @@ class Fitting1DXRD(BasePanel):
         '''
         self.rtgpl.amcsdlistbox.Clear()
 
-        if list_amcsd is not None:
+        if list_amcsd is not None and len(list_amcsd) > 0:
             for amcsd in list_amcsd:
-                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
-                entry = '%i : %s' % (amcsd,name)
-                self.rtgpl.amcsdlistbox.Append(entry)
+                try:
+                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
+                    entry = '%i : %s' % (amcsd,name)
+                    self.rtgpl.amcsdlistbox.Append(entry)
+                except:
+                    print('\t ** amcsd #%i not found in database.' % amcsd)
+                    list_amcsd.remove(amcsd)
             if len(list_amcsd) == 1:
                 self.txt_amcsd_cnt.SetLabel('1 MATCH')
             elif len(list_amcsd) > 1:
@@ -1172,7 +1188,10 @@ class Fitting1DXRD(BasePanel):
         self.txt_amcsd_cnt.SetLabel('')
         self.rtgpl.btn_clr.Disable()        
         
-        self.plot_data()
+        try:
+            self.plot_data()
+        except:
+            pass 
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
