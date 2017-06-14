@@ -1686,7 +1686,7 @@ class Viewer1DXRD(wx.Panel):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
 
-    def addCIFdata(self,newcif,path):
+    def addCIFdata(self,newcif,datalabel):
 
         cif_no = len(self.cif_name)
         
@@ -1697,10 +1697,6 @@ class Viewer1DXRD(wx.Panel):
         cifscale = np.max(self.cif_plot[-1][3])
         self.cif_scale.append(int(cifscale))
 
-        if path is None:
-            datalabel = 'cif %i' % len(self.cif_plot)
-        else:
-            datalabel = 'cif: %s' % os.path.split(path)[-1]
         self.cif_name.append(datalabel)
 
         ## Plot data (x,y)
@@ -2055,7 +2051,11 @@ class Viewer1DXRD(wx.Panel):
             newcif = self.readCIF(path,verbose=True)
 
             if newcif is not None:
-                self.addCIFdata(newcif,path)
+                if path is None:
+                    datalabel = 'cif %i' % len(self.cif_plot)
+                else:
+                    datalabel = 'cif: %s' % os.path.split(path)[-1]
+                self.addCIFdata(newcif,datalabel)
 
 
 class RangeToolsPanel(wx.Panel):
