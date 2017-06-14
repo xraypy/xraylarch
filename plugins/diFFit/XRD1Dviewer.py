@@ -29,7 +29,7 @@ from wxmplot.basepanel import BasePanel
 from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 import larch
-from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_database)
+from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
                                E_from_lambda,d_from_twth,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
@@ -429,7 +429,7 @@ class Fitting1DXRD(BasePanel):
             
             energy = self.xrd1dgrp.energy
             wavelength = self.xrd1dgrp.wavelength
-            maxI = np.max(self.plt_data[3])*0.8
+            maxI = np.max(self.plt_data[3])*0.95
             maxq = np.max(self.plt_data[0])*1.05
             
             xi = self.rngpl.ch_xaxis.GetSelection()
