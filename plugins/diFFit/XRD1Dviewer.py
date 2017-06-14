@@ -1179,6 +1179,7 @@ class Fitting1DXRD(BasePanel):
             self.txt_amcsd_cnt.SetLabel('')
                 
         self.rtgpl.btn_clr.Enable()
+        self.rtgpl.amcsdlistbox.EnsureVisible(0)
 
     def clearMATCHES(self,event=None):
         '''
