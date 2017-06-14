@@ -1098,7 +1098,7 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(self)
+        myDlg = XRDSearchGUI(parent=self)
         
         filter = False
         list_amcsd = None
@@ -1631,7 +1631,8 @@ class Viewer1DXRD(wx.Panel):
         btn_data.Bind(wx.EVT_BUTTON, self.load_file)
 
         btn_cif = wx.Button(panel,label='ADD NEW CIF')
-        btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
+        btn_cif.Bind(wx.EVT_BUTTON, self.chooseCIF)
+#         btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
 
         hbox.Add(btn_data, flag=wx.ALL, border=8)
         hbox.Add(btn_cif, flag=wx.ALL, border=8)
@@ -2056,6 +2057,187 @@ class Viewer1DXRD(wx.Panel):
                 else:
                     datalabel = 'cif: %s' % os.path.split(path)[-1]
                 self.addCIFdata(newcif,datalabel)
+
+
+
+    def chooseCIF(self,event=None):
+    
+        dlg = SelectCIFData(self)
+        
+        okay = False
+        if dlg.ShowModal() == wx.ID_OK:
+            okay = True
+            cif  = dlg.cif
+            name = dlg.name
+        dlg.Destroy()
+        
+        if okay:
+            minq,maxq = QMIN,QMAX
+            if len(self.xy_data) > 0:
+                plt_no = self.ch_data.GetSelection()
+                wvlgth = self.xy_data[plt_no].wavelength
+                for i,xydata in self.xy_data:
+                    if minq > np.min(xydata[0]): minq = np.min(xydata[0])
+                    if maxq < np.max(xydata[0]): maxq = np.max(xydata[0])                    
+            else:
+                energy, wvlgth = 19.0,lambda_from_E(energy)
+                
+            cif.structure_factor(wvlgth=wvlgth,q_min=minq,q_max=maxq)
+            qall,Iall = cif.qhkl,cif.Ihkl
+            Iall = Iall/max(CIFSCALE)*maxI
+            qall,Iall = plot_sticks(qall,Iall)
+            newcif = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
+            
+            try:
+                self.addCIFdata(newcif,name)
+            except:
+                pass
+
+
+            
+    
+class SelectCIFData(wx.Dialog):
+    def __init__(self,parent):
+
+        """Constructor"""
+        wx.Dialog.__init__(self, parent, title='Select CIF to plot',style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+
+        self.cifdb = parent.owner.cifdatabase
+
+        self.panel = wx.Panel(self)
+
+        btn_fltr = wx.Button(self.panel,label='Search CIF database')
+#         self.cif_list = EditableListBox(self, self.showCIF, size=(250, -1))
+#         self.cif_list = wx.ListBox(self)
+        btn_ld = wx.Button(self.panel,label='Load CIF from file')
+        
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        okBtn  = wx.Button(self.panel, wx.ID_OK      )
+        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
+
+        oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
+        oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
+
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(btn_fltr, flag=wx.BOTTOM, border=5)
+        mainsizer.AddSpacer(15)
+#         mainsizer.Add(self.cif_list, flag=wx.BOTTOM, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(btn_ld, flag=wx.BOTTOM, border=5)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
+
+
+        btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
+        btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
+
+        self.panel.SetSizer(mainsizer)
+
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+
+    def load_file(self,event=None):
+
+        wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose CIF',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        read = False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.cif = create_cif(cifile=path)
+            self.datalabel = '%s' % os.path.split(path)[-1]
+            if self.cif.label is not None: self.datalabel = '%s : %s' % (self.datalabel,self.cif.label)
+
+    def filter_database(self,event=None):
+
+        myDlg = XRDSearchGUI(database=self.cifdb)
+        
+        filter = False
+        list_amcsd = None
+        
+        if myDlg.ShowModal() == wx.ID_OK:
+            
+            elem_include = myDlg.srch.elem_incl
+            elem_exclude = myDlg.srch.elem_excl
+
+            if len(myDlg.AMCSD.GetValue()) > 0:
+                myDlg.entrAMCSD()
+                list_amcsd = []
+                
+            for id in myDlg.srch.amcsd:
+                try:
+                    list_amcsd += [int(id)]
+                except:
+                    pass
+
+            
+            if myDlg.Mineral.IsTextEmpty():
+                mnrl_include = None
+            else: 
+                mnrl_include = myDlg.Mineral.GetStringSelection()
+            if myDlg.Author.GetValue() == '':
+                auth_include = None
+            else: 
+                auth_include = myDlg.Author.GetValue().split(',')
+
+            filter = True
+        myDlg.Destroy()
+
+        if filter == True:
+           
+            if len(elem_include) > 0 or len(elem_exclude) > 0:
+                list_amcsd = cifdb.amcsd_by_chemistry(include=elem_include,
+                                                      exclude=elem_exclude,
+                                                      list=list_amcsd)
+            if mnrl_include is not None:
+                list_amcsd = cifdb.amcsd_by_mineral(include=mnrl_include,
+                                                    list=list_amcsd)
+            if auth_include is not None:
+                list_amcsd = cifdb.amcsd_by_author(include=auth_include,
+                                                   list=list_amcsd)
+            self.returnMATCHES(list_amcsd)
+
+    def returnMATCHES(self,list_amcsd):
+        '''
+        Populates Results Panel with list
+        '''
+        self.cif_list.Clear()
+
+        if list_amcsd is not None and len(list_amcsd) > 0:
+            for amcsd in list_amcsd:
+                try:
+                    elem,name,spgp,autr = self.cifdb.all_by_amcsd(amcsd)
+                    entry = '%i : %s' % (amcsd,name)
+                    self.cif_list.Append(entry)
+                except:
+                    print('\t ** amcsd #%i not found in database.' % amcsd)
+                    list_amcsd.remove(amcsd)
+                
+        self.cif_list.EnsureVisible(0)
+        
+    def showCIF(self, event=None, **kws):
+
+        if event is not None:
+            cifname = event.GetString()
+            amcsd_id = int(cifname.split()[0])
+            
+            self.cif = create_cif(cifdatabase=self.cifdb,amcsd_id=amcsd_id)
+            self.datalabel = 'AMCSD %i' % amcsd_id
+            if self.cif.label is not None: self.datalabel = '%s : %s' (self.datalabel,self.cif.label)
+            
+            return datalabel,cif
+
+
 
 
 class RangeToolsPanel(wx.Panel):
@@ -2661,11 +2843,16 @@ class DatabaseInfoGUI(wx.Dialog):
 #########################################################################
 class XRDSearchGUI(wx.Dialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent=None, database=None):
         
         wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
         ## remember: size=(width,height)
-        self.parent = parent
+        try:
+            self.cifdb = self.parent.owner.cifdatabase
+        except:
+            self.cifdb = database
+        
+            
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -2676,7 +2863,7 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
-        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.minerals = self.cifdb.return_mineral_names()
         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## AMCSD search
@@ -2871,7 +3058,7 @@ class XRDSearchGUI(wx.Dialog):
 
 
     def onAuthor(self,event=None):
-        authorlist = self.parent.owner.cifdatabase.return_author_names()
+        authorlist = self.cifdb.return_author_names()
         dlg = AuthorListTable(self,authorlist,include=self.srch.authors)
    
         update = False
@@ -2921,7 +3108,7 @@ class XRDSearchGUI(wx.Dialog):
             self.Symmetry.SetValue(self.srch.print_geometry())
         
     def onReset(self,event=None):
-        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.minerals = self.cifdb.return_mineral_names()
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
