@@ -2056,28 +2056,6 @@ class Viewer1DXRD(wx.Panel):
 
             if newcif is not None:
                 self.addCIFdata(newcif,path)
-    
-    def getE(self):
-    
-        try:
-            energy = float(self.val_cifE.GetValue())
-        except:
-            energy = None
-        
-        if energy is None:
-            try:
-                plt_no = self.ch_data.GetSelection()
-                energy = self.xy_data[plt_no].energy
-            except:
-                energy = 19.0
-            self.val_cifE.SetValue('%0.3f' % energy)
-            self.slctEorL.SetSelection(0)
-        else:
-            if self.slctEorL.GetSelection() == 0:
-                energy = float(self.val_cifE.GetValue())
-            else:
-                energy = E_from_lambda(float(self.val_cifE.GetValue()))
-        return energy
 
 
 class RangeToolsPanel(wx.Panel):
@@ -2327,7 +2305,7 @@ class SearchPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         
         btn_db = wx.Button(self,label='Database info')
-        btn_srch = wx.Button(self,label='Filter database')
+        btn_srch = wx.Button(self,label='Search database')
 
         btn_db.Bind(wx.EVT_BUTTON,    self.owner.database_info)
         btn_srch.Bind(wx.EVT_BUTTON,  self.owner.filter_database)
@@ -2340,7 +2318,7 @@ class SearchPanel(wx.Panel):
     def RefinementTools(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
         
-        self.btn_mtch = wx.Button(self,label='Search based on q')
+        self.btn_mtch = wx.Button(self,label='Search for peak matches')
         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
 
         vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
