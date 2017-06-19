@@ -1098,7 +1098,7 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(parent=self)
+        myDlg = XRDSearchGUI(database=self.owner.cifdatabase)
         
         filter = False
         list_amcsd = None
@@ -2100,16 +2100,21 @@ class SelectCIFData(wx.Dialog):
     def __init__(self,parent):
 
         """Constructor"""
-        wx.Dialog.__init__(self, parent, title='Select CIF to plot',style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+        wx.Dialog.__init__(self, parent, title='Select CIF to plot')
 
         self.cifdb = parent.owner.cifdatabase
 
         self.panel = wx.Panel(self)
 
+        ttl_or = wx.StaticBox(self,label='- OR -')
+
         btn_fltr = wx.Button(self.panel,label='Search CIF database')
+        btn_ld = wx.Button(self.panel,label='Load CIF from file')
+
 #         self.cif_list = EditableListBox(self, self.showCIF, size=(250, -1))
 #         self.cif_list = wx.ListBox(self)
-        btn_ld = wx.Button(self.panel,label='Load CIF from file')
+
+
         
         #####
         ## OKAY!
@@ -2121,14 +2126,20 @@ class SelectCIFData(wx.Dialog):
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
 
+        btnsizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        btnsizer.Add(btn_fltr, flag=wx.RIGHT, border=5)
+        btnsizer.AddSpacer(15)
+        btnsizer.Add(ttl_or, flag=wx.RIGHT, border=5)
+        btnsizer.AddSpacer(15)
+        btnsizer.Add(btn_ld, flag=wx.RIGHT, border=5)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(btn_fltr, flag=wx.BOTTOM, border=5)
+        mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
         mainsizer.AddSpacer(15)
-#         mainsizer.Add(self.cif_list, flag=wx.BOTTOM, border=8)
+#         mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
-        mainsizer.Add(btn_ld, flag=wx.BOTTOM, border=5)
-        mainsizer.AddSpacer(15)
+
         mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
 
 
@@ -2160,7 +2171,7 @@ class SelectCIFData(wx.Dialog):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(database=self.cifdb)
+        myDlg = XRDSearchGUI(parent=self)
         
         filter = False
         list_amcsd = None
@@ -2851,7 +2862,6 @@ class XRDSearchGUI(wx.Dialog):
             self.cifdb = self.parent.owner.cifdatabase
         except:
             self.cifdb = database
-        
             
         self.panel = wx.Panel(self)
 
