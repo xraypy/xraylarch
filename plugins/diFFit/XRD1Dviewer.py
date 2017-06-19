@@ -1693,7 +1693,7 @@ class Viewer1DXRD(wx.Panel):
         
         ## Add 'raw' data to array
         self.cif_plot.append(newcif)
-        self.cif_path.append(path)
+#         self.cif_path.append(path)
         
         cifscale = np.max(self.cif_plot[-1][3])
         self.cif_scale.append(int(cifscale))
@@ -1747,9 +1747,13 @@ class Viewer1DXRD(wx.Panel):
 
         xi = self.ch_xaxis.GetSelection()
         for i,cif_no in enumerate(self.icif):
-            self.cif_plot[i] = self.readCIF(self.cif_path[i],cifscale=self.cif_scale[i])
-            self.plot1D.update_line(cif_no,np.array(self.cif_plot[i][xi]),
-                                           np.array(self.cif_plot[i][3]))
+            try:
+                print 'REPLOT THIS SOMEHOW'
+#                 self.cif_plot[i] = self.readCIF(self.cif_path[i],cifscale=self.cif_scale[i])
+                self.plot1D.update_line(cif_no,np.array(self.cif_plot[i][xi]),
+                                               np.array(self.cif_plot[i][3]))
+            except:
+                print 'needs a reset option for plots from database. perhaps save all as cifcls instead of path/amcsd'
         self.plot1D.canvas.draw()
 
     def onEorLSel(self,event=None):
@@ -2062,13 +2066,13 @@ class Viewer1DXRD(wx.Panel):
 
     def chooseCIF(self,event=None):
     
-        dlg = SelectCIFData(self)
+        dlg = SelectCIFData(self.owner.cifdatabase)
         
         okay = False
         if dlg.ShowModal() == wx.ID_OK:
             okay = True
             cif  = dlg.cif
-            name = dlg.name
+            name = dlg.datalabel
         dlg.Destroy()
         
         if okay:
@@ -2080,54 +2084,55 @@ class Viewer1DXRD(wx.Panel):
                     if minq > np.min(xydata[0]): minq = np.min(xydata[0])
                     if maxq < np.max(xydata[0]): maxq = np.max(xydata[0])                    
             else:
-                energy, wvlgth = 19.0,lambda_from_E(energy)
+                energy = 19.0
+                wvlgth = lambda_from_E(energy)
                 
-            cif.structure_factor(wvlgth=wvlgth,q_min=minq,q_max=maxq)
+            cif.structure_factors(wvlgth=wvlgth,q_min=minq,q_max=maxq)
             qall,Iall = cif.qhkl,cif.Ihkl
-            Iall = Iall/max(CIFSCALE)*maxI
+            Iall = Iall * (np.max(cif.Ihkl)/CIFSCALE)
             qall,Iall = plot_sticks(qall,Iall)
-            newcif = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
+            newcif = np.array([qall, twth_from_q(qall,wvlgth), d_from_q(qall), Iall])
             
-            try:
+            if 1==1: #try:
                 self.addCIFdata(newcif,name)
-            except:
-                pass
+#             except:
+#                 print 'passing!'
+#                 pass
 
 
             
     
 class SelectCIFData(wx.Dialog):
-    def __init__(self,parent):
+
+    def __init__(self,cifdatabase):
+
+        self.cifdb = cifdatabase
 
         """Constructor"""
-        wx.Dialog.__init__(self, parent, title='Select CIF to plot')
+        dialog = wx.Dialog.__init__(self, None, title='Select CIF to plot', size=(350, 520))
 
-        self.cifdb = parent.owner.cifdatabase
+        panel = wx.Panel(self)
 
-        self.panel = wx.Panel(self)
+        ttl_or   = SimpleText(panel, label='- OR -')
 
-        ttl_or = wx.StaticBox(self,label='- OR -')
+        btn_fltr = wx.Button(panel,     label='Search CIF database')
+        btn_ld   = wx.Button(panel,     label='Load CIF from file')
 
-        btn_fltr = wx.Button(self.panel,label='Search CIF database')
-        btn_ld = wx.Button(self.panel,label='Load CIF from file')
+        self.cif_list = EditableListBox(panel, self.showCIF, size=(250, -1))
 
-#         self.cif_list = EditableListBox(self, self.showCIF, size=(250, -1))
-#         self.cif_list = wx.ListBox(self)
+        okBtn  = wx.Button(panel, wx.ID_OK      )
+        canBtn = wx.Button(panel, wx.ID_CANCEL  )
 
-
+        btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
+        btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
         
         #####
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        okBtn  = wx.Button(self.panel, wx.ID_OK      )
-        canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
-
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
 
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
-        
         btnsizer.Add(btn_fltr, flag=wx.RIGHT, border=5)
         btnsizer.AddSpacer(15)
         btnsizer.Add(ttl_or, flag=wx.RIGHT, border=5)
@@ -2137,19 +2142,15 @@ class SelectCIFData(wx.Dialog):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
         mainsizer.AddSpacer(15)
-#         mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
+        mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
-
         mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
 
+        panel.SetSizer(mainsizer)
 
-        btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
-        btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
-
-        self.panel.SetSizer(mainsizer)
-
-        ix,iy = self.panel.GetBestSize()
+        ix,iy = panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
+
 
     def load_file(self,event=None):
 
@@ -2171,8 +2172,8 @@ class SelectCIFData(wx.Dialog):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(parent=self)
-        
+        myDlg = XRDSearchGUI(database=self.cifdb)
+
         filter = False
         list_amcsd = None
         
@@ -2207,14 +2208,14 @@ class SelectCIFData(wx.Dialog):
         if filter == True:
            
             if len(elem_include) > 0 or len(elem_exclude) > 0:
-                list_amcsd = cifdb.amcsd_by_chemistry(include=elem_include,
+                list_amcsd = self.cifdb.amcsd_by_chemistry(include=elem_include,
                                                       exclude=elem_exclude,
                                                       list=list_amcsd)
             if mnrl_include is not None:
-                list_amcsd = cifdb.amcsd_by_mineral(include=mnrl_include,
+                list_amcsd = self.cifdb.amcsd_by_mineral(include=mnrl_include,
                                                     list=list_amcsd)
             if auth_include is not None:
-                list_amcsd = cifdb.amcsd_by_author(include=auth_include,
+                list_amcsd = self.cifdb.amcsd_by_author(include=auth_include,
                                                    list=list_amcsd)
             self.returnMATCHES(list_amcsd)
 
@@ -2244,9 +2245,9 @@ class SelectCIFData(wx.Dialog):
             
             self.cif = create_cif(cifdatabase=self.cifdb,amcsd_id=amcsd_id)
             self.datalabel = 'AMCSD %i' % amcsd_id
-            if self.cif.label is not None: self.datalabel = '%s : %s' (self.datalabel,self.cif.label)
+            if self.cif.label is not None: self.datalabel = '%s : %s' % (self.datalabel,self.cif.label)
             
-            return datalabel,cif
+            return self.datalabel,self.cif
 
 
 
