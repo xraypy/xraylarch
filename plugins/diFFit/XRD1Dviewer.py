@@ -181,7 +181,8 @@ class diFFit1DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
-        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
+        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.chooseCIF)
+#         MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
 #         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
@@ -2061,8 +2062,6 @@ class Viewer1DXRD(wx.Panel):
                 else:
                     datalabel = 'cif: %s' % os.path.split(path)[-1]
                 self.addCIFdata(newcif,datalabel)
-
-
 
     def chooseCIF(self,event=None):
     
