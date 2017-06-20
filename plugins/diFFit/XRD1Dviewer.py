@@ -44,6 +44,8 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
 
+ENERGY = 19.0
+
 SRCH_MTHDS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -2012,7 +2014,7 @@ class Viewer1DXRD(wx.Panel):
             plt_no = self.ch_data.GetSelection()
             energy = self.xy_data[plt_no].energy
         else:
-            energy = 19.0
+            energy = ENERGY
         
         minq,maxq = None,None
         for i,xydata in enumerate(self.xy_plot):
@@ -2072,7 +2074,7 @@ class Viewer1DXRD(wx.Panel):
                 plt_no = self.ch_data.GetSelection()
                 energy = self.xy_data[plt_no].energy
             except:
-                energy = 19.0
+                energy = ENERGY
             self.val_cifE.SetValue('%0.3f' % energy)
             self.slctEorL.SetSelection(0)
         else:
@@ -2099,7 +2101,7 @@ def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
     
 class SelectCIFData(wx.Dialog):
 
-    def __init__(self,cifdatabase,minq=QMIN,maxq=QMAX,energy=19.0):
+    def __init__(self,cifdatabase,minq=QMIN,maxq=QMAX,energy=ENERGY):
 
         self.cifdb = cifdatabase
         self.type = None
