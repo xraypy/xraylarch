@@ -2731,7 +2731,10 @@ class SearchPanel(wx.Panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+#         self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+        opts = wx.LB_NEEDED_SB #|wx.LB_HSCROLL
+        self.amcsdlistbox = wx.ListBox(self, style=opts, choices=[''], size=(200,150))
+        self.amcsdlistbox.Bind(wx.EVT_LISTBOX,  self.owner.showCIF  )
 
         self.btn_clr = wx.Button(self,label='Clear list')
         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
