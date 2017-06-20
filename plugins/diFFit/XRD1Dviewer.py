@@ -112,7 +112,7 @@ def plot_sticks(x,y):
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        x,y = calcFrameSize(1500, 780)
+        x,y = calcFrameSize(1500, 830)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -207,6 +207,7 @@ class diFFit1DFrame(wx.Frame):
 
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
         AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Database information', '', self.xrd1Dfitting.database_info)
         MenuItem(self, AnalyzeMenu, '&Change database', '', self.xrd1Dfitting.open_database)
         AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
@@ -269,6 +270,7 @@ class diFFit1DFrame(wx.Frame):
             index = -1
             loadXYfile(parent=self,xrdviewer=xrdv)
             if len(xrdv.xy_data) > 0: okay = True
+
         if okay:
             seldat = xrdv.xy_data[index]
             self.nb.SetSelection(1) ## switches to fitting panel
@@ -285,15 +287,12 @@ class diFFit1DFrame(wx.Frame):
                     xrdf.reset_fitting()
                     xrdf.clearMATCHES()
                     
-
                 xrdf.xrd1dgrp = seldat
                 xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
                 xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
                 xrdf.xmax     = np.max(xrdf.plt_data[xi])
-                
-
 
                 xrdf.optionsON()
                 xrdv.optionsON()
@@ -344,6 +343,7 @@ class SelectFittingData(wx.Dialog):
         mainsizer.Add(oksizer, flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
 
         self.panel.SetSizer(mainsizer)
+        self.slct_1Ddata.SetSelection(0)
 
     def load_file(self,event=None):
 
@@ -351,7 +351,7 @@ class SelectFittingData(wx.Dialog):
 
         self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
         self.slct_1Ddata.Set(self.parent.list)
-        self.slct_1Ddata.SetSelection(-1)
+        self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -462,22 +462,22 @@ class Fitting1DXRD(BasePanel):
         
         pattern_title    = SimpleText(parent, 'DATABASE FILTERING', size=(200, -1))
 
-        #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
-        self.pnb = wx.Notebook(parent)
-        self.pnbpanels = []
+        #self.dnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.dnb = wx.Notebook(parent)
+        self.dnbpanels = []
 
-        self.srchpl = SearchPanel(self.pnb, owner=self)
-        self.instpl = InstrPanel(self.pnb, owner=self)
-        self.rtgpl = ResultsPanel(self.pnb, owner=self)
+        self.srchpl = SearchPanel(self.dnb, owner=self)
+        self.instpl = InstrPanel(self.dnb, owner=self)
+        self.rtgpl = ResultsPanel(self.dnb, owner=self)
         for p in (self.instpl, self.srchpl, self.rtgpl):
-            self.pnb.AddPage(p,p.label.title(),True)
-            self.pnbpanels.append(p)
+            self.dnb.AddPage(p,p.label.title(),True)
+            self.dnbpanels.append(p)
             p.SetSize((300,600))
 
-        self.pnb.SetSelection(1)
+        self.dnb.SetSelection(1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(pattern_title, 0, ALL_CEN)
-        sizer.Add(self.pnb,1, wx.ALL|wx.EXPAND)
+        sizer.Add(self.dnb,1, wx.ALL|wx.EXPAND)
         parent.SetSize((300,600))
         pack(parent,sizer)
 
@@ -865,6 +865,7 @@ class Fitting1DXRD(BasePanel):
                                                      halfwidth=self.halfwidth,
                                                      verbose=False)
             self.onSetInstr()
+            self.dnb.SetSelection(0)
         except:
             pass
 
@@ -1162,14 +1163,16 @@ class Fitting1DXRD(BasePanel):
         '''
         Populates Results Panel with list
         '''
-        self.rtgpl.amcsdlistbox.Clear()
+#         self.rtgpl.amcsdlistbox.Clear()
+        self.srchpl.amcsdlistbox.Clear()
 
         if list_amcsd is not None and len(list_amcsd) > 0:
             for amcsd in list_amcsd:
                 try:
                     elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
                     entry = '%i : %s' % (amcsd,name)
-                    self.rtgpl.amcsdlistbox.Append(entry)
+#                     self.rtgpl.amcsdlistbox.Append(entry)
+                    self.srchpl.amcsdlistbox.Append(entry)
                 except:
                     print('\t ** amcsd #%i not found in database.' % amcsd)
                     list_amcsd.remove(amcsd)
@@ -1180,16 +1183,21 @@ class Fitting1DXRD(BasePanel):
         else:
             self.txt_amcsd_cnt.SetLabel('')
                 
-        self.rtgpl.btn_clr.Enable()
-        self.rtgpl.amcsdlistbox.EnsureVisible(0)
+#         self.rtgpl.btn_clr.Enable()
+#         self.rtgpl.amcsdlistbox.EnsureVisible(0)
+        self.srchpl.btn_clr.Enable()
+        self.srchpl.amcsdlistbox.EnsureVisible(0)
 
     def clearMATCHES(self,event=None):
         '''
         Populates Results Panel with list
         '''
-        self.rtgpl.amcsdlistbox.Clear()
         self.txt_amcsd_cnt.SetLabel('')
-        self.rtgpl.btn_clr.Disable()        
+
+#         self.rtgpl.amcsdlistbox.Clear()
+#         self.rtgpl.btn_clr.Disable()        
+        self.srchpl.amcsdlistbox.Clear()
+        self.srchpl.btn_clr.Disable()   
         
         try:
             self.plot_data()
@@ -2693,39 +2701,75 @@ class SearchPanel(wx.Panel):
         self.owner = owner
 
         matchpanel = self.SearchMatchTools()
-        refpanel = self.RefinementTools()
+#         refpanel = self.RefinementTools()
+        respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.VERTICAL)
         panel1D.Add(matchpanel,flag=wx.ALL,border=10)
-        panel1D.Add(refpanel,flag=wx.ALL,border=10)
+#         panel1D.Add(refpanel,flag=wx.ALL,border=10)
+        panel1D.Add(respanel,flag=wx.ALL,border=10)
         self.SetSizer(panel1D)
 
     def SearchMatchTools(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_db = wx.Button(self,label='Database info')
-        btn_srch = wx.Button(self,label='Search database')
+        self.btn_mtch = wx.Button(self,label='Search by peaks')
+        btn_srch = wx.Button(self,label='Filter database')
 
-        btn_db.Bind(wx.EVT_BUTTON,    self.owner.database_info)
+        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
         btn_srch.Bind(wx.EVT_BUTTON,  self.owner.filter_database)
 
-        vbox.Add(btn_db,   flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
         vbox.Add(btn_srch, flag=wx.BOTTOM, border=8)
 
-        return vbox
-
-    def RefinementTools(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        
-        self.btn_mtch = wx.Button(self,label='Search for peak matches')
-        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-
-        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        
         ## until peaks are available to search
         self.btn_mtch.Disable()
 
         return vbox
+
+    def ResultsTools(self):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+
+        self.btn_clr = wx.Button(self,label='Clear list')
+        self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
+
+        vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+        
+        self.btn_clr.Disable()
+
+        return vbox
+
+
+#     def SearchMatchTools(self):
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+#         
+#         btn_db = wx.Button(self,label='Database info')
+#         btn_srch = wx.Button(self,label='Search database')
+# 
+#         btn_db.Bind(wx.EVT_BUTTON,    self.owner.database_info)
+#         btn_srch.Bind(wx.EVT_BUTTON,  self.owner.filter_database)
+# 
+#         vbox.Add(btn_db,   flag=wx.BOTTOM, border=8)
+#         vbox.Add(btn_srch, flag=wx.BOTTOM, border=8)
+# 
+#         return vbox
+# 
+#     def RefinementTools(self):
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+#         
+#         self.btn_mtch = wx.Button(self,label='Search for peak matches')
+#         self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
+# 
+#         vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
+#         
+#         ## until peaks are available to search
+#         self.btn_mtch.Disable()
+# 
+#         return vbox
 
 
 
@@ -2785,7 +2829,9 @@ class InstrPanel(wx.Panel):
         self.btn_clrsize.Bind(wx.EVT_BUTTON, self.owner.onClrSize)
 
         hbox_inst.Add(ttl_inst,         flag=wx.RIGHT, border=8)
+        hbox_inst.AddSpacer(33)
         hbox_inst.Add(self.btn_clrinst, flag=wx.RIGHT, border=8)
+
 
         hbox_u.Add(ttl_u,      flag=wx.RIGHT, border=8)
         hbox_u.Add(self.val_u, flag=wx.RIGHT, border=8)
@@ -2797,7 +2843,9 @@ class InstrPanel(wx.Panel):
         hbox_w.Add(self.val_w, flag=wx.RIGHT, border=8)
 
         hbox_size.Add(ttl_size,         flag=wx.RIGHT, border=8)
+        hbox_size.AddSpacer(25)
         hbox_size.Add(self.btn_clrsize, flag=wx.RIGHT, border=8)
+
         
         hbox_D.Add(ttl_D,      flag=wx.RIGHT, border=8)
         hbox_D.Add(self.val_D, flag=wx.RIGHT, border=8)
@@ -2809,8 +2857,9 @@ class InstrPanel(wx.Panel):
         vbox.Add(hbox_u,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_v,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_w,    flag=wx.BOTTOM, border=8)
+        vbox.AddSpacer(15)
         vbox.Add(hbox_hw,   flag=wx.BOTTOM, border=8)
-
+        vbox.AddSpacer(15)
         vbox.Add(hbox_size, flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_D,    flag=wx.BOTTOM, border=8)
 
@@ -2844,27 +2893,27 @@ class ResultsPanel(wx.Panel):
         self.owner = owner
 
         ## Default information
-        respanel = self.ResultsTools()
+#         respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
-        panel1D.Add(respanel,flag=wx.ALL,border=10)
+#         panel1D.Add(respanel,flag=wx.ALL,border=10)
         self.SetSizer(panel1D)
 
-    def ResultsTools(self):
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
-
-        self.btn_clr = wx.Button(self,label='Clear list')
-        self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
-
-        vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
-        
-        self.btn_clr.Disable()
-
-        return vbox
+#     def ResultsTools(self):
+# 
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+# 
+#         self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+# 
+#         self.btn_clr = wx.Button(self,label='Clear list')
+#         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
+# 
+#         vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+#         vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+#         
+#         self.btn_clr.Disable()
+# 
+#         return vbox
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
