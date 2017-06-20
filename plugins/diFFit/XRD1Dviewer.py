@@ -30,8 +30,9 @@ from wxutils import MenuItem,pack,EditableListBox,SimpleText
 
 import larch
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
-                               E_from_lambda,d_from_twth,calc_broadening,
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
+                               d_from_twth,twth_from_d,q_from_d,
+                               lambda_from_E, E_from_lambda,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
                                SPACEGROUPS,create_cif)
 from larch_plugins.xrmmap import read1DXRDFile
@@ -2078,70 +2079,82 @@ class Viewer1DXRD(wx.Panel):
 
     def chooseCIF(self,event=None,cifscale=CIFSCALE):
     
-        dlg = SelectCIFData(self.owner.cifdatabase)
+        if len(self.xy_data) > 0:
+            plt_no = self.ch_data.GetSelection()
+            energy = self.xy_data[plt_no].energy
+        else:
+            energy = 19.0
+        
+        minq,maxq = None,None
+        for i,xydata in enumerate(self.xy_plot):
+            if i == 0:
+                minq,maxq = np.min(xydata[0]),np.max(xydata[0])
+            else:
+                if minq > np.min(xydata[0]): minq = np.min(xydata[0])
+                if maxq < np.max(xydata[0]): maxq = np.max(xydata[0])
+        if minq is None: minq = QMIN
+        if maxq is None: maxq = QMAX
+        
+        dlg = SelectCIFData(self.owner.cifdatabase,minq=minq,maxq=maxq,energy=energy)
         
         okay = False
         if dlg.ShowModal() == wx.ID_OK:
-            okay = True
-#             cif  = dlg.cif
-#             name = dlg.datalabel
+
+            try:
+                energy = E_from_lambda(dlg.returnLambda())
+                qaxis = dlg.returnQ()
+                minq,maxq = min(qaxis),max(qaxis)
+
+                if dlg.type == 'file':
+                    path = dlg.path
+                    cif = create_cif(cifile=path)
+                    name = os.path.split(path)[-1]
+                elif dlg.type == 'database':
+                    amcsd_id = dlg.amcsd_id
+                    cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
+                    name = 'AMCSD %i' % amcsd_id
+                if cif.label is not None: name = '%s : %s' % (name,cif.label)
             
-            print 
-            print
-            print dlg.amcsd_id 
-            print dlg.type
-            print dlg.path
-            
-            print 'need energy and min/max, too'
-            print
-            print 'end test'
-            print
-            
-            if dlg.type == 'file':
-                path = dlg.path
-                cif = create_cif(cifile=path)
                 okay = True
-                name = os.path.split(path)[-1]
-            elif dlg.type == 'database':
-                amcsd_id = dlg.amcsd_id
-                cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
-                name = 'AMCSD %i' % amcsd_id
-            if cif.label is not None: name = '%s : %s' % (name,cif.label)
-            
-            print 
-            print 'check:'
-            print cif
-            print name
-            print
-            print '----'
-#             
+            except:
+                print('ERROR: something failed while loading CIF')
+                pass
+
             
         dlg.Destroy()
         
         if okay:
-            minq,maxq = QMIN,QMAX
-            if len(self.xy_data) > 0:
-                plt_no = self.ch_data.GetSelection()
-                wvlgth = self.xy_data[plt_no].wavelength
-                for i,xydata in self.xy_data:
-                    if minq > np.min(xydata[0]): minq = np.min(xydata[0])
-                    if maxq < np.max(xydata[0]): maxq = np.max(xydata[0]) 
-            else:
-                energy = 19.0
-                wvlgth = lambda_from_E(energy)
+            self.slctEorL.SetSelection(0)
+            self.val_cifE.SetValue(str(energy))
+            wvlgth = lambda_from_E(energy)
                 
             newcif = calculateCIF(cif,wvlgth=wvlgth,qmin=minq,qmax=maxq,cifscale=cifscale)
-#             cif.structure_factors(wvlgth=wvlgth,q_min=minq,q_max=maxq)
-#             qall,Iall = cif.qhkl,cif.Ihkl
-#             Iall = Iall/np.max(Iall)*cifscale
-#             qall,Iall = plot_sticks(qall,Iall)
-#             newcif = np.array([qall, twth_from_q(qall,wvlgth), d_from_q(qall), Iall])
-            
-            if 1==1: #try:
-                self.addCIFdata(cif,newcif,name)
-#             except:
-#                 print 'passing!'
-#                 pass
+            self.addCIFdata(cif,newcif,name)
+
+    def getE(self):
+    
+        try:
+            energy = float(self.val_cifE.GetValue())
+        except:
+            energy = None
+        
+        if energy is None:
+            try:
+                plt_no = self.ch_data.GetSelection()
+                energy = self.xy_data[plt_no].energy
+            except:
+                energy = 19.0
+            self.val_cifE.SetValue('%0.3f' % energy)
+            self.slctEorL.SetSelection(0)
+        else:
+            if self.slctEorL.GetSelection() == 0:
+                energy = float(self.val_cifE.GetValue())
+            else:
+                energy = E_from_lambda(float(self.val_cifE.GetValue()))
+        return energy
+
+
+
 
 def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
 
@@ -2157,21 +2170,54 @@ def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
     
 class SelectCIFData(wx.Dialog):
 
-    def __init__(self,cifdatabase):
+    def __init__(self,cifdatabase,minq=QMIN,maxq=QMAX,energy=19.0):
 
         self.cifdb = cifdatabase
         self.type = None
         self.path = None
         self.amcsd_id = None
-
+        
+        self.xaxis = 0
+        
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Select CIF to plot', size=(350, 520))
 
         panel = wx.Panel(self)
 
-        ttl_or   = SimpleText(panel, label='- OR -')
+
+        #####
+        ## ENERGY
+        self.ch_EorL = wx.Choice(panel,    choices=['Energy (keV)','Wavelength (A)'])
+        self.val_cifE = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+
+        self.ch_EorL.Bind(wx.EVT_CHOICE,     self.onEorLSel)
+
+        enrgsizer = wx.BoxSizer(wx.HORIZONTAL)
+        enrgsizer.Add(self.ch_EorL, flag=wx.RIGHT, border=5)
+        enrgsizer.AddSpacer(15)
+        enrgsizer.Add(self.val_cifE, flag=wx.RIGHT, border=5)
+
+        #####
+        ## X-AXIS
+        self.ch_xaxis = wx.Choice(panel,   choices=['q',u'2\u03B8','d'])
+        self.val_xmin = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+        ttl_xaxis   = SimpleText(panel, label=' to ')
+        self.val_xmax = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)        
+
+        self.ch_xaxis.Bind(wx.EVT_CHOICE,     self.onXscaleSel)
+
+        xaxssizer = wx.BoxSizer(wx.HORIZONTAL)
+        xaxssizer.Add(self.ch_xaxis, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(self.val_xmin, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(ttl_xaxis, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(self.val_xmax, flag=wx.RIGHT, border=5)
+
 
         btn_fltr = wx.Button(panel,     label='Search CIF database')
+        ttl_or   = SimpleText(panel, label='- OR -')
         btn_ld   = wx.Button(panel,     label='Load CIF from file')
 
 #         self.cif_list = EditableListBox(panel, self.showCIF, size=(250, -1))
@@ -2181,18 +2227,21 @@ class SelectCIFData(wx.Dialog):
         self.cif_list = wx.ListBox(panel, style=opts, choices=[''], size=(250, -1))
         self.cif_list.Bind(wx.EVT_LISTBOX,  self.showCIF  )
 
-        okBtn  = wx.Button(panel, wx.ID_OK      )
-        canBtn = wx.Button(panel, wx.ID_CANCEL  )
-
         btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
         btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
         
         #####
         ## OKAY!
+        okBtn  = wx.Button(panel, wx.ID_OK      )
+        canBtn = wx.Button(panel, wx.ID_CANCEL  )
+
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
 
+
+        #####
+        ## BUTTON
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
         btnsizer.Add(btn_fltr, flag=wx.RIGHT, border=5)
         btnsizer.AddSpacer(15)
@@ -2200,9 +2249,17 @@ class SelectCIFData(wx.Dialog):
         btnsizer.AddSpacer(15)
         btnsizer.Add(btn_ld, flag=wx.RIGHT, border=5)
 
+
+        #####
+        ## TOTAL
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(5)
+        mainsizer.Add(enrgsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(5)
+        mainsizer.Add(xaxssizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
         mainsizer.AddSpacer(15)
+        mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(10)
         mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
@@ -2211,6 +2268,90 @@ class SelectCIFData(wx.Dialog):
 
         ix,iy = panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
+        
+        self.val_cifE.SetValue(str(energy))
+        self.ch_xaxis.SetSelection(self.xaxis)
+        self.val_xmin.SetValue('%0.4f' % minq)
+        self.val_xmax.SetValue('%0.4f' % maxq)
+
+    def returnLambda(self,event=None):
+
+        if self.ch_EorL.GetSelection() == 1:
+            return float(self.val_cifE.GetValue())
+        elif self.ch_EorL.GetSelection() == 0:
+            return lambda_from_E(float(self.val_cifE.GetValue()))
+    
+    def returnQ(self,event=None):
+    
+        val_min = float(self.val_xmin.GetValue())
+        val_max = float(self.val_xmax.GetValue())
+        wavelength = self.returnLambda()
+    
+        if self.ch_xaxis.GetSelection() == 2:
+            return q_from_d(val_min),q_from_d(val_max)
+        elif self.ch_xaxis.GetSelection() == 1:
+            return q_from_twth(val_min,wavelength),q_from_twth(val_max,wavelength)
+        else:
+            return val_min,val_max
+    
+    def onXscaleSel(self,event=None):
+    
+        try:
+            val_min = float(self.val_xmin.GetValue())
+            val_max = float(self.val_xmax.GetValue())
+        except:
+            self.ch_xaxis.SetSelection(0)
+            self.val_xmin.SetValue('%0.4f' % 0.2)
+            self.val_xmax.SetValue('%0.4f' % 6.0)
+            print('error in x-axis min/max input')
+            return
+       
+        wavelength = self.returnLambda()
+        if self.ch_xaxis.GetSelection() != self.xaxis:
+
+            if self.ch_xaxis.GetSelection() == 2:     ### select d
+                if self.xaxis == 1:                   ##     was 2th
+                     val_min = d_from_twth(val_min,wavelength)
+                     val_max = d_from_twth(val_max,wavelength)
+                else:                                 ##     was q
+                     val_min = d_from_q(val_min)
+                     val_max = d_from_q(val_max)
+            elif self.ch_xaxis.GetSelection() == 1:   ### select 2th
+                if self.xaxis == 2:                   ##     was d
+                     val_min = twth_from_d(val_min,wavelength)
+                     val_max = twth_from_d(val_max,wavelength)
+                else:                                 ##     was q                
+                     val_min = twth_from_q(val_min,wavelength)
+                     val_max = twth_from_q(val_max,wavelength)
+            else:                                     ### select q
+                if self.xaxis == 2:                   ##     was d
+                     val_min = q_from_d(val_min)
+                     val_max = q_from_d(val_max)
+                else:                                 ##     was 2th
+                     val_min = q_from_twth(val_min,wavelength)
+                     val_max = q_from_twth(val_max,wavelength)
+            self.xaxis = self.ch_xaxis.GetSelection()
+
+        self.val_xmin.SetValue('%0.4f' % min(val_min,val_max))
+        self.val_xmax.SetValue('%0.4f' % max(val_min,val_max))
+
+
+    def onEorLSel(self,event=None):
+
+        try:
+            current = float(self.val_cifE.GetValue())
+        except:
+            return
+        
+        if self.ch_EorL.GetSelection() == 1 and current > 5:
+            new = '%0.4f' % lambda_from_E(current)
+        elif self.ch_EorL.GetSelection() == 0 and current < 5:
+            new = '%0.4f' % E_from_lambda(current)
+        else:
+            return
+        
+        self.val_cifE.SetValue(new)
+        
 
 
     def load_file(self,event=None):
@@ -2233,10 +2374,6 @@ class SelectCIFData(wx.Dialog):
             self.amcsd_id = None
 
             self.cif_list.SetSelection(0)
-            
-#             self.cif = create_cif(cifile=path)
-#             self.datalabel = '%s' % os.path.split(path)[-1]
-#             if self.cif.label is not None: self.datalabel = '%s : %s' % (self.datalabel,self.cif.label)
 
     def filter_database(self,event=None):
 
@@ -2305,18 +2442,13 @@ class SelectCIFData(wx.Dialog):
                 
 
         ## automatically selects first in list.
-        if 1 == 1: #try:
-            self.cif_list.EnsureVisible(0)
-            self.cif_list.SetSelection(0)
+        self.cif_list.EnsureVisible(0)
+        self.cif_list.SetSelection(0)
             
-            amcsd_id = self.cif_list.GetString(self.cif_list.GetSelection())
-            self.amcsd_id = int(amcsd_id.split()[1])
+        amcsd_id = self.cif_list.GetString(self.cif_list.GetSelection())
+        self.amcsd_id = int(amcsd_id.split()[1])
+        self.type = 'database'
 
-            self.type = 'database'
-#             self.returnCIF( self.amcsd_id )
-#         except:
-#             print 'not working, clearly.'
-#             pass
         
     def showCIF(self, event=None, **kws):
 
@@ -2324,13 +2456,6 @@ class SelectCIFData(wx.Dialog):
             self.amcsd_id = int(event.GetString().split()[1])
             self.type = 'database'
             self.path = None
-#             self.returnCIF(amcsd_id)
-#             
-#     def returnCIF(self,amcsd_id):
-#     
-#             self.cif = create_cif(cifdatabase=self.cifdb,amcsd_id=amcsd_id)
-#             self.datalabel = 'AMCSD %i' % amcsd_id
-#             if self.cif.label is not None: self.datalabel = '%s : %s' % (self.datalabel,self.cif.label)
 
 class RangeToolsPanel(wx.Panel):
     '''
