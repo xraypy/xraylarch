@@ -315,10 +315,6 @@ class diFFit1DFrame(wx.Frame):
                 index = dlg.slct_1Ddata.GetSelection()
                 filename = dlg.File.GetValue()
                 calfile = dlg.Poni.GetValue() if len(dlg.Poni.GetValue()) > 0 else None
-                print
-                print 'files:', filename,calfile
-                print
-                print
             dlg.Destroy()
 
         if okay:

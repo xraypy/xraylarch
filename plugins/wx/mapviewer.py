@@ -1898,6 +1898,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
+            if wdgs > 36 or wdgs < 1: wdgs = 1
             xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
                                      azwdgs=wdgs,qstps=stps,flip=flip,
                                      FLAGxrf=FLAGxrf,

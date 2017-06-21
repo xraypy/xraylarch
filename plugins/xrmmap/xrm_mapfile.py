@@ -1270,7 +1270,7 @@ class GSEXRM_MapFile(object):
                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
                 if self.azwdgs > 1: ## always save full integration plus number of wedges
-                    self.azwdgs,datacolumns = int(self.azwdgs),int(2*(self.azwdgs+1))
+                    datacolumns = int(2*(self.azwdgs+1))
                 else:
                     self.azwdgs,datacolumns = 1,2
                 
@@ -1282,7 +1282,6 @@ class GSEXRM_MapFile(object):
                                        compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-#         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
         self.h5root.flush()
 

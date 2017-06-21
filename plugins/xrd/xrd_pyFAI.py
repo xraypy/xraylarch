@@ -63,14 +63,12 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
             else:
                 xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
             
-            slice = 360./wedge            
+            slice = 360./wedge
             for nslc in np.arange(wedge):
-                start = -180+(nslc*slice)
-                end = start+(nslc*slice)
-                azimuth_range = (start,end)
-                attrs.update({'azimuth_range':azimuth_range})
+                start = -180 + nslc*slice
+                end   = start+slice
+                attrs.update({'azimuth_range':(start,end)})
                 ii += 2
-
                 if flip:
                     xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
                 else:
