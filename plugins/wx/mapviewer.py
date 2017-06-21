@@ -1278,6 +1278,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.npixels = len(area.value[np.where(area.value)])
             self._xrd.energy = energy
             self._xrd.wavelength = lambda_from_E(energy)
+            
+            stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
 
             if np.shape(self._xrd.data1D)[0] > 2:
                 for i in np.arange(np.shape(self._xrd.data1D)[0]/2):
@@ -1289,7 +1291,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                             wdglbl = self._xrd.title + ' (entire image)'
                         self.owner.display_1Dxrd(xrd1d,self._xrd.energy,label=wdglbl)
                     if save:
-                        file = '%s.xy' % title if i==0 else '%s_wedge%02d.xy' % (title,i)
+                        file = '%s.xy' % stem if i==0 else '%s_wedge%02d.xy' % (stem,i)
                         save1D(file, xrd1d[0], xrd1d[1], calfile=ponifile)
                     
             
@@ -1298,7 +1300,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
                                              label=self._xrd.title)
                 if save:
-                    file = '%s.xy' % title
+                    file = '%s.xy' % stem
                     save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
 
 #             if not flag2D:
