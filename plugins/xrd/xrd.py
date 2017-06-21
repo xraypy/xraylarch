@@ -13,8 +13,8 @@ Authors/Modifications:
 import os
 import numpy as np
 
-from larch_plugins.xrd.xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
-                                       q_from_d, q_from_twth, E_from_lambda)
+from larch_plugins.xrd.xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
+                                         q_from_d,q_from_twth,E_from_lambda,lambda_from_E)
 from larch_plugins.xrd.xrd_pyFAI import integrate_xrd,calc_cake
 from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
@@ -82,11 +82,19 @@ class xrd1d(grpobjt):
         self.filename = file
         self.label    = label
 
+        self.energy     = energy
+        self.wavelength = wavelength
+        
+        if energy is None and wavelength is None:
+            self.energy = 19.0
+            self.wavelength = lambda_from_E(self.energy)
+        else:
+            if self.energy is None:     self.energy = E_from_lambda(self.wavelength)
+            if self.wavelength is None: self.wavelength = lambda_from_E(self.energy)
+
         if file is not None:
             self.xrd_from_file(file)
         else:
-            self.wavelength = wavelength
-            self.energy     = energy
 
             ## Default values
             self.distance      = None
@@ -141,6 +149,8 @@ class xrd1d(grpobjt):
             head,dat = read1DXRDFile(filename)
             if verbose:
                 print('Opening xrd data file: %s' % os.path.split(filename)[-1])
+            if len(head) < 4: 
+                print('WARNING: Using default energy for data. None given in file.')
         except:
            print('incorrect xy file format: %s' % os.path.split(filename)[-1])
            return
@@ -177,6 +187,7 @@ class xrd1d(grpobjt):
 
             if 'q_' in line or '2th_' in line:
                 xtype = line.split()[1]
+
         ## data
         self.set_xy_data(dat,xtype)
         

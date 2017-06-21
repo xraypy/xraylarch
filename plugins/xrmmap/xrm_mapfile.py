@@ -1269,15 +1269,14 @@ class GSEXRM_MapFile(object):
                                        chunks = chunksize_2DXRD,
                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
-#                 chunksize_1DXRD    = (1, 1, 2, self.qstps)
-#                 xrmmap['xrd'].create_dataset('data1D',
-#                                        (xrdpts, xrdpts, 2, self.qstps),
-#                                        np.float32,
-#                                        chunks = chunksize_1DXRD,
-#                                        compression=COMPRESSION_LEVEL)
-                chunksize_1DXRD    = (1, 1, int(2*(self.azwdgs+1)), self.qstps)
+                if self.azwdgs > 1: ## always save full integration plus number of wedges
+                    self.azwdgs,datacolumns = int(self.azwdgs),int(2*(self.azwdgs+1))
+                else:
+                    self.azwdgs,datacolumns = 1,2
+                
+                chunksize_1DXRD    = (1, 1, datacolumns, self.qstps)
                 xrmmap['xrd'].create_dataset('data1D',
-                                       (xrdpts, xrdpts, int(2*(self.azwdgs+1)), self.qstps),
+                                       (xrdpts, xrdpts, datacolumns, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
                                        compression=COMPRESSION_LEVEL)
