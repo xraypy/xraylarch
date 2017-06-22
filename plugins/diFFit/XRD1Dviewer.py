@@ -130,6 +130,8 @@ class diFFit1DFrame(wx.Frame):
         ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
+        
+        self.srch_cls = SearchCIFdb()
         ## include database tab? #self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
 
         ## add the pages to the notebook with the label to show on the tab
@@ -1328,7 +1330,7 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(database=self.owner.cifdatabase)
+        myDlg = XRDSearchGUI(self.owner.cifdatabase,self.owner.srch_cls)
         
         filter = False
         list_amcsd = None
@@ -1337,6 +1339,7 @@ class Fitting1DXRD(BasePanel):
             
             self.elem_include = myDlg.srch.elem_incl
             self.elem_exclude = myDlg.srch.elem_excl
+            self.owner.srch_cls = myDlg.srch
 
             if len(myDlg.AMCSD.GetValue()) > 0:
                 myDlg.entrAMCSD()
@@ -1418,6 +1421,8 @@ class Fitting1DXRD(BasePanel):
         self.txt_amcsd_cnt.SetLabel('')
 
         self.srchpl.amcsdlistbox.Clear()
+        self.owner.srch_cls = SearchCIFdb()
+
         self.srchpl.btn_clr.Disable()   
         
         try:
@@ -2350,6 +2355,8 @@ class SelectCIFData(wx.Dialog):
         dialog = wx.Dialog.__init__(self, parent, title='Select CIF to plot', size=(350, 520))
 
         panel = wx.Panel(self)
+        
+        self.parent = parent
 
 
         #####
@@ -2541,8 +2548,8 @@ class SelectCIFData(wx.Dialog):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(database=self.cifdb)
-
+        myDlg = XRDSearchGUI(self.cifdb,self.parent.owner.srch_cls)
+        
         filter = False
         list_amcsd = None
         
@@ -2550,6 +2557,7 @@ class SelectCIFData(wx.Dialog):
             
             elem_include = myDlg.srch.elem_incl
             elem_exclude = myDlg.srch.elem_excl
+            self.parent.owner.srch_cls = myDlg.srch
 
             if len(myDlg.AMCSD.GetValue()) > 0:
                 myDlg.entrAMCSD()
@@ -2607,7 +2615,10 @@ class SelectCIFData(wx.Dialog):
 
         ## automatically selects first in list.
         self.cif_list.EnsureVisible(0)
-        self.cif_list.SetSelection(0)
+        try:
+            self.cif_list.SetSelection(0)
+        except:
+            pass
             
         amcsd_id = self.cif_list.GetString(self.cif_list.GetSelection())
         self.amcsd_id = int(amcsd_id.split()[1])
@@ -3227,14 +3238,11 @@ class DatabaseInfoGUI(wx.Dialog):
 #########################################################################
 class XRDSearchGUI(wx.Dialog):
 
-    def __init__(self, parent=None, database=None):
+    def __init__(self, database, srch_cls):
         
-        wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
+        wx.Dialog.__init__(self, None, title='Crystal Structure Database Search')
         ## remember: size=(width,height)
-        try:
-            self.cifdb = self.parent.owner.cifdatabase
-        except:
-            self.cifdb = database
+        self.cifdb = database
             
         self.panel = wx.Panel(self)
 
@@ -3341,9 +3349,38 @@ class XRDSearchGUI(wx.Dialog):
         self.SetSize((ix+40, iy+40))
 
         self.Show()
-        self.srch = SearchCIFdb()
+        
+        
+        self.srch = SearchCIFdb() if srch_cls is None else srch_cls
+        self.setValues()
+        
 
 #########################################################################
+
+    def setValues(self):
+
+        key = 'authors'
+        self.Author.SetValue(self.srch.print_parameter(key=key))
+            
+        self.Symmetry.SetValue(self.srch.print_geometry())
+            
+        key = 'categories'
+        self.Category.Set(self.srch.print_parameter(key=key))
+             
+        key = 'keywords'
+        self.Keyword.SetValue(self.srch.print_parameter(key=key))
+
+        key = 'amcsd'
+        self.AMCSD.SetValue(self.srch.print_parameter(key=key))
+
+        try:
+            self.Mineral.Set(self.srch.mnrlname)
+        except:
+            print 'minerals did not work'
+            pass
+
+        self.Chemistry.SetValue(self.srch.print_chemistry())
+
 
     def entrAuthor(self,event=None):
         key = 'authors'
@@ -3498,8 +3535,7 @@ class XRDSearchGUI(wx.Dialog):
         self.AMCSD.Clear()
         self.Chemistry.Clear()
         self.Symmetry.Clear()
-        for i,n in enumerate(CATEGORIES):
-            self.Category.Deselect(i)
+        self.Category.DeselectAll()
         self.Keyword.Clear()
         self.srch.__init__()
 
