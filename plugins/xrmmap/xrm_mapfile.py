@@ -1269,19 +1269,19 @@ class GSEXRM_MapFile(object):
                                        chunks = chunksize_2DXRD,
                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
-                if self.azwdgs != 1:
-                    print('Wedge not yet incorportated into calculations and saving.')
-                    self.azwdgs = 1
+                if self.azwdgs > 1: ## always save full integration plus number of wedges
+                    datacolumns = int(2*(self.azwdgs+1))
+                else:
+                    self.azwdgs,datacolumns = 1,2
                 
-                chunksize_1DXRD    = (1, 1, int(1+self.azwdgs), self.qstps)
+                chunksize_1DXRD    = (1, 1, datacolumns, self.qstps)
                 xrmmap['xrd'].create_dataset('data1D',
-                                       (xrdpts, xrdpts, int(1+self.azwdgs), self.qstps),
+                                       (xrdpts, xrdpts, datacolumns, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
                                        compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-#         print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
         self.h5root.flush()
 
@@ -2071,7 +2071,10 @@ class GSEXRM_MapFile(object):
 
         patterns = (patterns[area[sy, sx]]).sum(axis=0)
         area_pix = (area.sum(axis=0)).sum(axis=0)
-        patterns[0] = patterns[0]/area_pix
+        
+        for i in np.arange(np.shape(patterns)[0]):
+           if i % 2 == 0: patterns[i] = patterns[i]/area_pix
+        # patterns[0] = patterns[0]/area_pix
         
         return patterns
 

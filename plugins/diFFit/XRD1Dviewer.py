@@ -4,6 +4,8 @@ GUI for displaying 1D XRD images
 
 '''
 import os
+from os.path import expanduser
+
 import numpy as np
 import sys
 import time
@@ -24,14 +26,17 @@ import wx.lib.mixins.listctrl  as listmix
 
 from wxmplot import PlotPanel
 from wxmplot.basepanel import BasePanel
-from wxutils import MenuItem,pack,EditableListBox,SimpleText
+from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
+                     pack, Popup, Button, MenuItem, Choice, Check,
+                     GridPanel, FileSave, HLine)
 
 import larch
-from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,CATEGORIES,match_database)
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,lambda_from_E,
-                               E_from_lambda,d_from_twth,calc_broadening,
+from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
+from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
+                               d_from_twth,twth_from_d,q_from_d,
+                               lambda_from_E, E_from_lambda,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
-                               SPACEGROUPS,create_cif)
+                               SPACEGROUPS,create_cif,save1D)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -40,6 +45,8 @@ VERSION = '1 (03-April-2017)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
+
+ENERGY = 19.0
 
 SRCH_MTHDS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
 
@@ -109,7 +116,7 @@ def plot_sticks(x,y):
 class diFFit1DFrame(wx.Frame):
     def __init__(self,_larch=None):
 
-        x,y = calcFrameSize(1500, 780)
+        x,y = calcFrameSize(1500, 830)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
 
@@ -118,7 +125,7 @@ class diFFit1DFrame(wx.Frame):
         panel = wx.Panel(self)
         self.nb = wx.Notebook(panel)
         
-        self.openDB(dbname='amcsd_cif.db')
+        self.openDB()
 
         ## create the page windows as children of the notebook
         self.xrd1Dviewer  = Viewer1DXRD(self.nb,owner=self)
@@ -148,7 +155,10 @@ class diFFit1DFrame(wx.Frame):
         except:
             pass
 
-        self.cifdatabase = cifDB(dbname=dbname)
+        try:
+            self.cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+        except:
+            self.cifdatabase = cifDB(dbname='amcsd_cif.db')
 
     def onExit(self, event=None):
         try:
@@ -176,23 +186,15 @@ class diFFit1DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
-        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.loadCIF)
+        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.chooseCIF)
+        diFFitMenu.AppendSeparator()
+        MenuItem(self, diFFitMenu, 'Save 1D dataset to file', '', self.save1Dxrd)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
-#         MenuItem(self, diFFitMenu, '&Add analysis to map file', '', None)
+        diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
         
         menubar.Append(diFFitMenu, '&diFFit1D')
 
-
-        ###########################
-        ## Process
-        #ProcessMenu = wx.Menu()
-        #
-        #MenuItem(self, ProcessMenu, 'Fit &background', '', None)
-        #MenuItem(self, ProcessMenu, 'Save &background', '', None)
-        #MenuItem(self, ProcessMenu, '&Remove current background', '', None)
-        #
-        #menubar.Append(ProcessMenu, '&Process')
 
         ###########################
         ## Analyze
@@ -200,6 +202,7 @@ class diFFit1DFrame(wx.Frame):
 
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
         AnalyzeMenu.AppendSeparator()
+        MenuItem(self, AnalyzeMenu, '&Database information', '', self.xrd1Dfitting.database_info)
         MenuItem(self, AnalyzeMenu, '&Change database', '', self.xrd1Dfitting.open_database)
         AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
@@ -262,6 +265,7 @@ class diFFit1DFrame(wx.Frame):
             index = -1
             loadXYfile(parent=self,xrdviewer=xrdv)
             if len(xrdv.xy_data) > 0: okay = True
+
         if okay:
             seldat = xrdv.xy_data[index]
             self.nb.SetSelection(1) ## switches to fitting panel
@@ -278,15 +282,12 @@ class diFFit1DFrame(wx.Frame):
                     xrdf.reset_fitting()
                     xrdf.clearMATCHES()
                     
-
                 xrdf.xrd1dgrp = seldat
                 xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
                 xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
                 xrdf.xmax     = np.max(xrdf.plt_data[xi])
-                
-
 
                 xrdf.optionsON()
                 xrdv.optionsON()
@@ -294,6 +295,237 @@ class diFFit1DFrame(wx.Frame):
                 
                 xrdf.ttl_energy.SetLabel('Energy: %0.3f keV (%0.4f A)' % (seldat.energy,
                                                                           seldat.wavelength))
+    def save1Dxrd(self,event=None):
+        '''
+
+        mkak 2017.06.21
+        '''
+        xrdv = self.xrd1Dviewer
+        xrdf = self.xrd1Dfitting
+        
+        indicies = [i for i,name in enumerate(xrdv.data_name) if 'cif' not in name]
+        okay = False
+
+        if len(indicies) > 0:
+            list_xrd1d = [xrdv.data_name[i] for i in indicies]
+            self.all_data = xrdv.xy_data
+            dlg = SelectSavingData(self,list_xrd1d)
+            if dlg.ShowModal() == wx.ID_OK:
+                okay = True
+                index = dlg.slct_1Ddata.GetSelection()
+                filename = dlg.File.GetValue()
+                calfile = dlg.Poni.GetValue() if len(dlg.Poni.GetValue()) > 0 else None
+            dlg.Destroy()
+
+        if okay:
+            savdat = xrdv.xy_data[index]
+            save1D(filename, savdat.q, savdat.I, calfile=calfile)
+
+
+class SelectSavingData(wx.Dialog):
+    def __init__(self,parent,list_xrd1d):
+
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, parent, title='Select data for saving',
+                                    style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.OK,
+                                    size=(350, 520))
+        
+        panel = wx.Panel(self)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+
+        ## SELECT DATA
+        ttl_slct         = SimpleText(panel, label='Select dataset to save:')
+        self.slct_1Ddata = wx.ListBox(panel, style=wx.LB_HSCROLL|wx.LB_NEEDED_SB,
+                                             choices=list_xrd1d, size=(300, -1))
+
+        datasizer = wx.BoxSizer(wx.VERTICAL)
+        datasizer.Add(ttl_slct,         flag=wx.TOP,              border=8)
+        datasizer.Add(self.slct_1Ddata, flag=wx.EXPAND|wx.TOP,    border=8)
+
+#         self.slct_1Ddata.Bind(wx.EVT_LISTBOX,  None  )
+
+
+        ## SAVE TO FILE
+        fileTtl    = SimpleText(panel,  label='Save data to:'             )
+        self.File  = wx.TextCtrl(panel, size=(300, 25)                    )
+        fileBtn    = Button(panel,      label='Browse...'                 )
+
+        self.Bind(wx.EVT_BUTTON, self.saveXY, fileBtn )
+
+        filesizer = wx.BoxSizer(wx.VERTICAL)
+        filesizer.Add(fileTtl,          flag=wx.TOP,              border=5)
+        filesizer.Add(self.File,        flag=wx.EXPAND|wx.TOP,    border=5)
+        filesizer.Add(fileBtn,          flag=wx.TOP,              border=5)
+
+        ## SELECT CALIBRATION
+        poniTtl    = SimpleText(panel,  label='Calibration file: (recommended)'  )
+        self.Poni  = wx.TextCtrl(panel, size=(300, 25) )        
+        poniBtn    = Button(panel,      label='Browse...' )
+
+        self.Bind(wx.EVT_BUTTON, self.onBROWSEponi, poniBtn )
+
+        ponisizer = wx.BoxSizer(wx.VERTICAL)
+        ponisizer.Add(poniTtl,          flag=wx.TOP,              border=5)
+        ponisizer.Add(self.Poni,        flag=wx.EXPAND|wx.TOP,    border=5)
+        ponisizer.Add(poniBtn,          flag=wx.TOP,              border=5)
+
+        #####
+        ## OKAY!
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        okBtn  = wx.Button(panel, wx.ID_OK      )
+        canBtn = wx.Button(panel, wx.ID_CANCEL  )
+
+        oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
+        oksizer.Add(okBtn,  flag=wx.RIGHT, border=8)
+
+
+        mainsizer.AddSpacer(8)
+        mainsizer.Add(datasizer, flag=wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(filesizer, flag=wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(ponisizer, flag=wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer, flag=wx.ALL|wx.ALIGN_RIGHT, border=8)
+
+        panel.SetSizer(mainsizer)
+
+        ix,iy = panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+
+    def saveXY(self,event=None):
+        wildcards = '1DXRD datafile (*.xy)|*.xy|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, 'Save file as...',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+
+        path, save = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            save = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if save:
+            self.File.Clear()
+            self.File.SetValue(str(path))
+
+    def onBROWSEponi(self,event=None):
+        wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select XRD calibration file',
+                            defaultDir=os.getcwd(),
+                            wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.Poni.Clear()
+            self.Poni.SetValue(str(path))
+
+
+
+###########
+
+#         """Constructor"""
+#         dialog = wx.Dialog.__init__(self, parent, title='Select CIF to plot', size=(350, 520))
+# 
+#         panel = wx.Panel(self)
+# 
+# 
+#         #####
+#         ## ENERGY
+#         self.ch_EorL = wx.Choice(panel,    choices=['Energy (keV)','Wavelength (A)'])
+#         self.val_cifE = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+# 
+#         self.ch_EorL.Bind(wx.EVT_CHOICE,     self.onEorLSel)
+# 
+#         enrgsizer = wx.BoxSizer(wx.HORIZONTAL)
+#         enrgsizer.Add(self.ch_EorL, flag=wx.RIGHT, border=5)
+#         enrgsizer.AddSpacer(15)
+#         enrgsizer.Add(self.val_cifE, flag=wx.RIGHT, border=5)
+# 
+#         #####
+#         ## X-AXIS
+#         self.ch_xaxis = wx.Choice(panel,   choices=['q',u'2\u03B8','d'])
+#         self.val_xmin = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+#         ttl_xaxis   = SimpleText(panel, label=' to ')
+#         self.val_xmax = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)        
+# 
+#         self.ch_xaxis.Bind(wx.EVT_CHOICE,     self.onXscaleSel)
+# 
+#         xaxssizer = wx.BoxSizer(wx.HORIZONTAL)
+#         xaxssizer.Add(self.ch_xaxis, flag=wx.RIGHT, border=5)
+#         xaxssizer.AddSpacer(15)
+#         xaxssizer.Add(self.val_xmin, flag=wx.RIGHT, border=5)
+#         xaxssizer.AddSpacer(15)
+#         xaxssizer.Add(ttl_xaxis, flag=wx.RIGHT, border=5)
+#         xaxssizer.AddSpacer(15)
+#         xaxssizer.Add(self.val_xmax, flag=wx.RIGHT, border=5)
+# 
+# 
+#         btn_fltr = wx.Button(panel,     label='Search CIF database')
+#         ttl_or   = SimpleText(panel, label='- OR -')
+#         btn_ld   = wx.Button(panel,     label='Load CIF from file')
+# 
+#         opts = wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
+#         self.cif_list = wx.ListBox(panel, style=opts, choices=[''], size=(250, -1))
+#         self.cif_list.Bind(wx.EVT_LISTBOX,  self.showCIF  )
+# 
+#         btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
+#         btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
+#         
+#         #####
+#         ## OKAY!
+#         okBtn  = wx.Button(panel, wx.ID_OK      )
+#         canBtn = wx.Button(panel, wx.ID_CANCEL  )
+# 
+#         oksizer = wx.BoxSizer(wx.HORIZONTAL)
+#         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
+#         oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
+# 
+# 
+#         #####
+#         ## BUTTON
+#         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
+#         btnsizer.Add(btn_fltr, flag=wx.RIGHT, border=5)
+#         btnsizer.AddSpacer(15)
+#         btnsizer.Add(ttl_or, flag=wx.RIGHT, border=5)
+#         btnsizer.AddSpacer(15)
+#         btnsizer.Add(btn_ld, flag=wx.RIGHT, border=5)
+# 
+# 
+#         #####
+#         ## TOTAL
+#         mainsizer = wx.BoxSizer(wx.VERTICAL)
+#         mainsizer.AddSpacer(5)
+#         mainsizer.Add(enrgsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+#         mainsizer.AddSpacer(5)
+#         mainsizer.Add(xaxssizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+#         mainsizer.AddSpacer(10)
+#         mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
+# 
+#         panel.SetSizer(mainsizer)
+# 
+#         ix,iy = panel.GetBestSize()
+#         self.SetSize((ix+20, iy+20))
+#         
+#         self.val_cifE.SetValue(str(energy))
+#         self.ch_xaxis.SetSelection(self.xaxis)
+#         self.val_xmin.SetValue('%0.4f' % minq)
+#         self.val_xmax.SetValue('%0.4f' % maxq)
+
+###########
+
+
 
 class SelectFittingData(wx.Dialog):
     def __init__(self,parent):
@@ -337,6 +569,7 @@ class SelectFittingData(wx.Dialog):
         mainsizer.Add(oksizer, flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
 
         self.panel.SetSizer(mainsizer)
+        self.slct_1Ddata.SetSelection(0)
 
     def load_file(self,event=None):
 
@@ -344,7 +577,7 @@ class SelectFittingData(wx.Dialog):
 
         self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
         self.slct_1Ddata.Set(self.parent.list)
-        self.slct_1Ddata.SetSelection(-1)
+        self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -424,7 +657,7 @@ class Fitting1DXRD(BasePanel):
             
             energy = self.xrd1dgrp.energy
             wavelength = self.xrd1dgrp.wavelength
-            maxI = np.max(self.plt_data[3])*0.8
+            maxI = np.max(self.plt_data[3])*0.95
             maxq = np.max(self.plt_data[0])*1.05
             
             xi = self.rngpl.ch_xaxis.GetSelection()
@@ -455,22 +688,22 @@ class Fitting1DXRD(BasePanel):
         
         pattern_title    = SimpleText(parent, 'DATABASE FILTERING', size=(200, -1))
 
-        #self.pnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
-        self.pnb = wx.Notebook(parent)
-        self.pnbpanels = []
+        #self.dnb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.dnb = wx.Notebook(parent)
+        self.dnbpanels = []
 
-        self.srchpl = SearchPanel(self.pnb, owner=self)
-        self.instpl = InstrPanel(self.pnb, owner=self)
-        self.rtgpl = ResultsPanel(self.pnb, owner=self)
+        self.srchpl = SearchPanel(self.dnb, owner=self)
+        self.instpl = InstrPanel(self.dnb, owner=self)
+        self.rtgpl = ResultsPanel(self.dnb, owner=self)
         for p in (self.instpl, self.srchpl, self.rtgpl):
-            self.pnb.AddPage(p,p.label.title(),True)
-            self.pnbpanels.append(p)
+            self.dnb.AddPage(p,p.label.title(),True)
+            self.dnbpanels.append(p)
             p.SetSize((300,600))
 
-        self.pnb.SetSelection(1)
+        self.dnb.SetSelection(1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(pattern_title, 0, ALL_CEN)
-        sizer.Add(self.pnb,1, wx.ALL|wx.EXPAND)
+        sizer.Add(self.dnb,1, wx.ALL|wx.EXPAND)
         parent.SetSize((300,600))
         pack(parent,sizer)
 
@@ -858,6 +1091,7 @@ class Fitting1DXRD(BasePanel):
                                                      halfwidth=self.halfwidth,
                                                      verbose=False)
             self.onSetInstr()
+            self.dnb.SetSelection(0)
         except:
             pass
 
@@ -1066,6 +1300,7 @@ class Fitting1DXRD(BasePanel):
 #             self.elem_include = myDlg.incl_elm
 #             self.elem_exclude = myDlg.excl_elm
             change = True
+            print('Eventually, need to save search parameters to restore them for reopening.')
         myDlg.Destroy()        
 
     def open_database(self,event=None):
@@ -1093,7 +1328,7 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(self)
+        myDlg = XRDSearchGUI(database=self.owner.cifdatabase)
         
         filter = False
         list_amcsd = None
@@ -1103,11 +1338,17 @@ class Fitting1DXRD(BasePanel):
             self.elem_include = myDlg.srch.elem_incl
             self.elem_exclude = myDlg.srch.elem_excl
 
-            for id in myDlg.AMCSD.GetValue().split(','):
+            if len(myDlg.AMCSD.GetValue()) > 0:
+                myDlg.entrAMCSD()
+                list_amcsd = []
+                
+            for id in myDlg.srch.amcsd:
                 try:
-                    self.amcsd += [int(id)]
+                    list_amcsd += [int(id)]
                 except:
                     pass
+
+            
             if myDlg.Mineral.IsTextEmpty():
                 self.mnrl_include = None
             else: 
@@ -1122,6 +1363,7 @@ class Fitting1DXRD(BasePanel):
 
         if filter == True:
             cif = self.owner.cifdatabase
+            
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
                 list_amcsd = cif.amcsd_by_chemistry(include=self.elem_include,
                                                     exclude=self.elem_exclude,
@@ -1148,13 +1390,17 @@ class Fitting1DXRD(BasePanel):
         '''
         Populates Results Panel with list
         '''
-        self.rtgpl.amcsdlistbox.Clear()
+        self.srchpl.amcsdlistbox.Clear()
 
-        if list_amcsd is not None:
+        if list_amcsd is not None and len(list_amcsd) > 0:
             for amcsd in list_amcsd:
-                elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
-                entry = '%i : %s' % (amcsd,name)
-                self.rtgpl.amcsdlistbox.Append(entry)
+                try:
+                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
+                    entry = '%i : %s' % (amcsd,name)
+                    self.srchpl.amcsdlistbox.Append(entry)
+                except:
+                    print('\t ** amcsd #%i not found in database.' % amcsd)
+                    list_amcsd.remove(amcsd)
             if len(list_amcsd) == 1:
                 self.txt_amcsd_cnt.SetLabel('1 MATCH')
             elif len(list_amcsd) > 1:
@@ -1162,17 +1408,22 @@ class Fitting1DXRD(BasePanel):
         else:
             self.txt_amcsd_cnt.SetLabel('')
                 
-        self.rtgpl.btn_clr.Enable()
+        self.srchpl.btn_clr.Enable()
+        self.srchpl.amcsdlistbox.EnsureVisible(0)
 
-    def clearMATCHES(self):
+    def clearMATCHES(self,event=None):
         '''
         Populates Results Panel with list
         '''
-        self.rtgpl.amcsdlistbox.Clear()
         self.txt_amcsd_cnt.SetLabel('')
-        self.rtgpl.btn_clr.Disable()        
+
+        self.srchpl.amcsdlistbox.Clear()
+        self.srchpl.btn_clr.Disable()   
         
-        self.plot_data()
+        try:
+            self.plot_data()
+        except:
+            pass 
 
 class BackgroundOptions(wx.Dialog):
     def __init__(self,parent):
@@ -1417,7 +1668,7 @@ class Viewer1DXRD(wx.Panel):
 
         self.cif_name     = []
         self.cif_plot     = []
-        self.cif_path     = []
+        self.cif_all      = []
         self.cif_scale    = []
         self.icif         = []
 
@@ -1459,11 +1710,9 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1DXRD(panel)
 
-#         settings = self.SettingsPanel(self)
         btnbox = self.QuickButtons(panel)
 
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-#         hbox.Add(settings,flag=wx.RIGHT,border=10)
         hbox.Add(btnbox,flag=wx.LEFT,border = 1)
         vbox.Add(hbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
@@ -1611,19 +1860,11 @@ class Viewer1DXRD(wx.Panel):
         btn_data.Bind(wx.EVT_BUTTON, self.load_file)
 
         btn_cif = wx.Button(panel,label='ADD NEW CIF')
-        btn_cif.Bind(wx.EVT_BUTTON, self.loadCIF)
+        btn_cif.Bind(wx.EVT_BUTTON, self.chooseCIF)
 
         hbox.Add(btn_data, flag=wx.ALL, border=8)
         hbox.Add(btn_cif, flag=wx.ALL, border=8)
         return hbox
-
-#     def SettingsPanel(self,panel):
-# 
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#         self.ttl_energy = wx.StaticText(self, label=('Energy: %0.3f keV (%0.4f A)' % (0,0)))
-#         vbox.Add(self.ttl_energy, flag=wx.EXPAND|wx.ALL, border=8)
-# 
-#         return vbox
 
     def QuickButtons(self,panel):
         buttonbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -1666,21 +1907,17 @@ class Viewer1DXRD(wx.Panel):
 ##############################################
 #### XRD PLOTTING FUNCTIONS
 
-    def addCIFdata(self,newcif,path):
+    def addCIFdata(self,cif,newcif,datalabel):
 
         cif_no = len(self.cif_name)
         
         ## Add 'raw' data to array
         self.cif_plot.append(newcif)
-        self.cif_path.append(path)
+        self.cif_all.append(cif)
         
         cifscale = np.max(self.cif_plot[-1][3])
         self.cif_scale.append(int(cifscale))
 
-        if path is None:
-            datalabel = 'cif %i' % len(self.cif_plot)
-        else:
-            datalabel = 'cif: %s' % os.path.split(path)[-1]
         self.cif_name.append(datalabel)
 
         ## Plot data (x,y)
@@ -1728,9 +1965,21 @@ class Viewer1DXRD(wx.Panel):
 
     def onResetE(self,event=None):
 
+        energy = self.getE()
+        wavelength = lambda_from_E(energy)
+        
+        minq,maxq = 0.2,6.0
+        for i,data in enumerate(self.xy_plot):
+            maxq = 1.05*np.max(data[0])
+            minq = 0.95*np.min(data[0])
+            if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
+        
+
         xi = self.ch_xaxis.GetSelection()
         for i,cif_no in enumerate(self.icif):
-            self.cif_plot[i] = self.readCIF(self.cif_path[i],cifscale=self.cif_scale[i])
+            self.cif_plot[i] = calculateCIF(self.cif_all[i], wvlgth=wavelength,
+                                            qmin=minq, qmax=maxq,
+                                            cifscale=self.cif_scale[i])
             self.plot1D.update_line(cif_no,np.array(self.cif_plot[i][xi]),
                                            np.array(self.cif_plot[i][3]))
         self.plot1D.canvas.draw()
@@ -1827,27 +2076,6 @@ class Viewer1DXRD(wx.Panel):
 
         self.plot1D.unzoom_all()
         self.rescale1Daxis(xaxis=False,yaxis=True)
-
-#     def remove1Ddata(self,event=None):
-#         ## mkak 2016.11.10
-#         try:
-#             plt_no = self.ch_data.GetSelection()
-#             name = self.data_name[plt_no]
-#             question = 'Remove %s from XRD 1D viewer?' % name
-#             rmdata = YesNo(self,question,caption='Overwrite warning')
-#         except:
-#             pass
-#             
-#         if rmdata:
-#             print('EVENTUALLY, button will remove plot: %s' % self.data_name[plt_no])
-# 
-#             ## removing name from list works... do not activate till rest is working
-#             ## mkak 2016.11.10
-#             self.data_name.remove(self.data_name[plt_no])
-#             self.ch_data.Set(self.data_name)
-#             
-#             if len(self.data_name) < 1:
-#                 print('HERE: remove all buttons that need data to exist')
 
     def onSELECT(self,event=None):
 
@@ -1948,8 +2176,6 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.unzoom_all()
         
         self.rescale1Daxis(xaxis=False,yaxis=True)
-        
-#         self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
 
     def set_xview(self, x1, x2):
 
@@ -2018,25 +2244,60 @@ class Viewer1DXRD(wx.Panel):
             ## mkak 2016.11.16
             print('Not yet capable of saving data. Function yet to be written.')
 
-    def loadCIF(self,event=None):
-
-        wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose CIF',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            newcif = self.readCIF(path,verbose=True)
-
-            if newcif is not None:
-                self.addCIFdata(newcif,path)
+    def chooseCIF(self,event=None,cifscale=CIFSCALE):
     
+        if len(self.xy_data) > 0:
+            plt_no = self.ch_data.GetSelection()
+            energy = self.xy_data[plt_no].energy
+        else:
+            energy = ENERGY
+        
+        minq,maxq = None,None
+        for i,xydata in enumerate(self.xy_plot):
+            if i == 0:
+                minq,maxq = np.min(xydata[0]),np.max(xydata[0])
+            else:
+                if minq > np.min(xydata[0]): minq = np.min(xydata[0])
+                if maxq < np.max(xydata[0]): maxq = np.max(xydata[0])
+        if minq is None: minq = QMIN
+        if maxq is None: maxq = QMAX
+        
+        dlg = SelectCIFData(self,self.owner.cifdatabase,minq=minq,maxq=maxq,energy=energy)
+        
+        okay = False
+        if dlg.ShowModal() == wx.ID_OK:
+
+            try:
+                energy = E_from_lambda(dlg.returnLambda())
+                qaxis = dlg.returnQ()
+                minq,maxq = min(qaxis),max(qaxis)
+
+                if dlg.type == 'file':
+                    path = dlg.path
+                    cif = create_cif(cifile=path)
+                    name = os.path.split(path)[-1]
+                elif dlg.type == 'database':
+                    amcsd_id = dlg.amcsd_id
+                    cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
+                    name = 'AMCSD %i' % amcsd_id
+                if cif.label is not None: name = '%s : %s' % (name,cif.label)
+            
+                okay = True
+            except:
+                print('ERROR: something failed while loading CIF')
+                pass
+
+            
+        dlg.Destroy()
+        
+        if okay:
+            self.slctEorL.SetSelection(0)
+            self.val_cifE.SetValue(str(energy))
+            wvlgth = lambda_from_E(energy)
+                
+            newcif = calculateCIF(cif,wvlgth=wvlgth,qmin=minq,qmax=maxq,cifscale=cifscale)
+            self.addCIFdata(cif,newcif,name)
+
     def getE(self):
     
         try:
@@ -2049,7 +2310,7 @@ class Viewer1DXRD(wx.Panel):
                 plt_no = self.ch_data.GetSelection()
                 energy = self.xy_data[plt_no].energy
             except:
-                energy = 19.0
+                energy = ENERGY
             self.val_cifE.SetValue('%0.3f' % energy)
             self.slctEorL.SetSelection(0)
         else:
@@ -2059,6 +2320,306 @@ class Viewer1DXRD(wx.Panel):
                 energy = E_from_lambda(float(self.val_cifE.GetValue()))
         return energy
 
+
+
+
+def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
+
+    cif.structure_factors(wvlgth=wvlgth,q_min=qmin,q_max=qmax)
+    qall,Iall = cif.qhkl,cif.Ihkl
+    Iall = Iall/np.max(Iall)*cifscale
+    qall,Iall = plot_sticks(qall,Iall)
+        
+    return np.array([qall, twth_from_q(qall,wvlgth), d_from_q(qall), Iall])
+
+    
+            
+    
+class SelectCIFData(wx.Dialog):
+
+    def __init__(self,parent,cifdatabase,minq=QMIN,maxq=QMAX,energy=ENERGY):
+
+        self.cifdb = cifdatabase
+        self.type = None
+        self.path = None
+        self.amcsd_id = None
+        
+        self.xaxis = 0
+        
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, parent, title='Select CIF to plot', size=(350, 520))
+
+        panel = wx.Panel(self)
+
+
+        #####
+        ## ENERGY
+        self.ch_EorL = wx.Choice(panel,    choices=['Energy (keV)','Wavelength (A)'])
+        self.val_cifE = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+
+        self.ch_EorL.Bind(wx.EVT_CHOICE,     self.onEorLSel)
+
+        enrgsizer = wx.BoxSizer(wx.HORIZONTAL)
+        enrgsizer.Add(self.ch_EorL, flag=wx.RIGHT, border=5)
+        enrgsizer.AddSpacer(15)
+        enrgsizer.Add(self.val_cifE, flag=wx.RIGHT, border=5)
+
+        #####
+        ## X-AXIS
+        self.ch_xaxis = wx.Choice(panel,   choices=['q',u'2\u03B8','d'])
+        self.val_xmin = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
+        ttl_xaxis   = SimpleText(panel, label=' to ')
+        self.val_xmax = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)        
+
+        self.ch_xaxis.Bind(wx.EVT_CHOICE,     self.onXscaleSel)
+
+        xaxssizer = wx.BoxSizer(wx.HORIZONTAL)
+        xaxssizer.Add(self.ch_xaxis, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(self.val_xmin, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(ttl_xaxis, flag=wx.RIGHT, border=5)
+        xaxssizer.AddSpacer(15)
+        xaxssizer.Add(self.val_xmax, flag=wx.RIGHT, border=5)
+
+
+        btn_fltr = wx.Button(panel,     label='Search CIF database')
+        ttl_or   = SimpleText(panel, label='- OR -')
+        btn_ld   = wx.Button(panel,     label='Load CIF from file')
+
+        opts = wx.LB_HSCROLL|wx.LB_NEEDED_SB|wx.LB_SORT
+        self.cif_list = wx.ListBox(panel, style=opts, choices=[''], size=(250, -1))
+        self.cif_list.Bind(wx.EVT_LISTBOX,  self.showCIF  )
+
+        btn_fltr.Bind(wx.EVT_BUTTON, self.filter_database)        
+        btn_ld.Bind(wx.EVT_BUTTON,   self.load_file)
+        
+        #####
+        ## OKAY!
+        okBtn  = wx.Button(panel, wx.ID_OK      )
+        canBtn = wx.Button(panel, wx.ID_CANCEL  )
+
+        oksizer = wx.BoxSizer(wx.HORIZONTAL)
+        oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
+        oksizer.Add(okBtn,  flag=wx.RIGHT,  border=8)
+
+
+        #####
+        ## BUTTON
+        btnsizer = wx.BoxSizer(wx.HORIZONTAL)
+        btnsizer.Add(btn_fltr, flag=wx.RIGHT, border=5)
+        btnsizer.AddSpacer(15)
+        btnsizer.Add(ttl_or, flag=wx.RIGHT, border=5)
+        btnsizer.AddSpacer(15)
+        btnsizer.Add(btn_ld, flag=wx.RIGHT, border=5)
+
+
+        #####
+        ## TOTAL
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.AddSpacer(5)
+        mainsizer.Add(enrgsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(5)
+        mainsizer.Add(xaxssizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(btnsizer, flag=wx.BOTTOM|wx.TOP|wx.LEFT, border=5)
+        mainsizer.AddSpacer(10)
+        mainsizer.Add(self.cif_list, flag=wx.BOTTOM|wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(oksizer, flag=wx.BOTTOM|wx.ALIGN_RIGHT, border=10)
+
+        panel.SetSizer(mainsizer)
+
+        ix,iy = panel.GetBestSize()
+        self.SetSize((ix+20, iy+20))
+        
+        self.val_cifE.SetValue(str(energy))
+        self.ch_xaxis.SetSelection(self.xaxis)
+        self.val_xmin.SetValue('%0.4f' % minq)
+        self.val_xmax.SetValue('%0.4f' % maxq)
+
+    def returnLambda(self,event=None):
+
+        if self.ch_EorL.GetSelection() == 1:
+            return float(self.val_cifE.GetValue())
+        elif self.ch_EorL.GetSelection() == 0:
+            return lambda_from_E(float(self.val_cifE.GetValue()))
+    
+    def returnQ(self,event=None):
+    
+        val_min = float(self.val_xmin.GetValue())
+        val_max = float(self.val_xmax.GetValue())
+        wavelength = self.returnLambda()
+    
+        if self.ch_xaxis.GetSelection() == 2:
+            return q_from_d(val_min),q_from_d(val_max)
+        elif self.ch_xaxis.GetSelection() == 1:
+            return q_from_twth(val_min,wavelength),q_from_twth(val_max,wavelength)
+        else:
+            return val_min,val_max
+    
+    def onXscaleSel(self,event=None):
+    
+        try:
+            val_min = float(self.val_xmin.GetValue())
+            val_max = float(self.val_xmax.GetValue())
+        except:
+            self.ch_xaxis.SetSelection(0)
+            self.val_xmin.SetValue('%0.4f' % 0.2)
+            self.val_xmax.SetValue('%0.4f' % 6.0)
+            print('error in x-axis min/max input')
+            return
+       
+        wavelength = self.returnLambda()
+        if self.ch_xaxis.GetSelection() != self.xaxis:
+
+            if self.ch_xaxis.GetSelection() == 2:     ### select d
+                if self.xaxis == 1:                   ##     was 2th
+                     val_min = d_from_twth(val_min,wavelength)
+                     val_max = d_from_twth(val_max,wavelength)
+                else:                                 ##     was q
+                     val_min = d_from_q(val_min)
+                     val_max = d_from_q(val_max)
+            elif self.ch_xaxis.GetSelection() == 1:   ### select 2th
+                if self.xaxis == 2:                   ##     was d
+                     val_min = twth_from_d(val_min,wavelength)
+                     val_max = twth_from_d(val_max,wavelength)
+                else:                                 ##     was q                
+                     val_min = twth_from_q(val_min,wavelength)
+                     val_max = twth_from_q(val_max,wavelength)
+            else:                                     ### select q
+                if self.xaxis == 2:                   ##     was d
+                     val_min = q_from_d(val_min)
+                     val_max = q_from_d(val_max)
+                else:                                 ##     was 2th
+                     val_min = q_from_twth(val_min,wavelength)
+                     val_max = q_from_twth(val_max,wavelength)
+            self.xaxis = self.ch_xaxis.GetSelection()
+
+        self.val_xmin.SetValue('%0.4f' % min(val_min,val_max))
+        self.val_xmax.SetValue('%0.4f' % max(val_min,val_max))
+
+
+    def onEorLSel(self,event=None):
+
+        try:
+            current = float(self.val_cifE.GetValue())
+        except:
+            return
+        
+        if self.ch_EorL.GetSelection() == 1 and current > 5:
+            new = '%0.4f' % lambda_from_E(current)
+        elif self.ch_EorL.GetSelection() == 0 and current < 5:
+            new = '%0.4f' % E_from_lambda(current)
+        else:
+            return
+        
+        self.val_cifE.SetValue(new)
+        
+
+
+    def load_file(self,event=None):
+
+        wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose CIF',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+
+        read = False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            self.path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+        
+        if read:
+            self.type = 'file'
+            self.cif_list.Clear()
+            self.cif_list.Append(os.path.split(self.path)[-1])
+            self.amcsd_id = None
+
+            self.cif_list.SetSelection(0)
+
+    def filter_database(self,event=None):
+
+        myDlg = XRDSearchGUI(database=self.cifdb)
+
+        filter = False
+        list_amcsd = None
+        
+        if myDlg.ShowModal() == wx.ID_OK:
+            
+            elem_include = myDlg.srch.elem_incl
+            elem_exclude = myDlg.srch.elem_excl
+
+            if len(myDlg.AMCSD.GetValue()) > 0:
+                myDlg.entrAMCSD()
+                list_amcsd = []
+                
+            for id in myDlg.srch.amcsd:
+                try:
+                    list_amcsd += [int(id)]
+                except:
+                    pass
+
+            
+            if myDlg.Mineral.IsTextEmpty():
+                mnrl_include = None
+            else: 
+                mnrl_include = myDlg.Mineral.GetStringSelection()
+            if myDlg.Author.GetValue() == '':
+                auth_include = None
+            else: 
+                auth_include = myDlg.Author.GetValue().split(',')
+
+            filter = True
+        myDlg.Destroy()
+
+        if filter == True:
+           
+            if len(elem_include) > 0 or len(elem_exclude) > 0:
+                list_amcsd = self.cifdb.amcsd_by_chemistry(include=elem_include,
+                                                      exclude=elem_exclude,
+                                                      list=list_amcsd)
+            if mnrl_include is not None:
+                list_amcsd = self.cifdb.amcsd_by_mineral(include=mnrl_include,
+                                                    list=list_amcsd)
+            if auth_include is not None:
+                list_amcsd = self.cifdb.amcsd_by_author(include=auth_include,
+                                                   list=list_amcsd)
+            self.returnMATCHES(list_amcsd)
+
+    def returnMATCHES(self,list_amcsd):
+        '''
+        Populates Results Panel with list
+        '''
+        self.cif_list.Clear()
+
+        if list_amcsd is not None and len(list_amcsd) > 0:
+            for amcsd in list_amcsd:
+                try:
+                    elem,name,spgp,autr = self.cifdb.all_by_amcsd(amcsd)
+                    entry = 'AMCSD %i : %s' % (amcsd,name)
+                    self.cif_list.Append(entry)
+                except:
+                    print('\t ** amcsd #%i not found in database.' % amcsd)
+                    list_amcsd.remove(amcsd)
+                
+
+        ## automatically selects first in list.
+        self.cif_list.EnsureVisible(0)
+        self.cif_list.SetSelection(0)
+            
+        amcsd_id = self.cif_list.GetString(self.cif_list.GetSelection())
+        self.amcsd_id = int(amcsd_id.split()[1])
+        self.type = 'database'
+
+        
+    def showCIF(self, event=None, **kws):
+
+        if event is not None:
+            self.amcsd_id = int(event.GetString().split()[1])
+            self.type = 'database'
+            self.path = None
 
 class RangeToolsPanel(wx.Panel):
     '''
@@ -2296,41 +2857,49 @@ class SearchPanel(wx.Panel):
         self.owner = owner
 
         matchpanel = self.SearchMatchTools()
-        refpanel = self.RefinementTools()
+#         refpanel = self.RefinementTools()
+        respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.VERTICAL)
         panel1D.Add(matchpanel,flag=wx.ALL,border=10)
-        panel1D.Add(refpanel,flag=wx.ALL,border=10)
+        panel1D.Add(respanel,flag=wx.ALL,border=10)
         self.SetSizer(panel1D)
 
     def SearchMatchTools(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox = wx.BoxSizer(wx.HORIZONTAL)
         
-        btn_db = wx.Button(self,label='Database info')
+        self.btn_mtch = wx.Button(self,label='Search by peaks')
         btn_srch = wx.Button(self,label='Filter database')
 
-        btn_db.Bind(wx.EVT_BUTTON,    self.owner.database_info)
+        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
         btn_srch.Bind(wx.EVT_BUTTON,  self.owner.filter_database)
 
-        vbox.Add(btn_db,   flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
         vbox.Add(btn_srch, flag=wx.BOTTOM, border=8)
 
-        return vbox
-
-    def RefinementTools(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        
-        self.btn_mtch = wx.Button(self,label='Search based on q')
-        self.btn_mtch.Bind(wx.EVT_BUTTON,   self.owner.onMatch)
-
-        vbox.Add(self.btn_mtch, flag=wx.BOTTOM, border=8)
-        
         ## until peaks are available to search
         self.btn_mtch.Disable()
 
         return vbox
 
+    def ResultsTools(self):
 
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+#         opts = wx.LB_NEEDED_SB #|wx.LB_HSCROLL
+#         self.amcsdlistbox = wx.ListBox(self, style=opts, choices=[''], size=(200,150))
+#         self.amcsdlistbox.Bind(wx.EVT_LISTBOX,  self.owner.showCIF  )
+
+        self.btn_clr = wx.Button(self,label='Clear list')
+        self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
+
+        vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
+        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+        
+        self.btn_clr.Disable()
+
+        return vbox
 
 class InstrPanel(wx.Panel):
     '''
@@ -2388,7 +2957,9 @@ class InstrPanel(wx.Panel):
         self.btn_clrsize.Bind(wx.EVT_BUTTON, self.owner.onClrSize)
 
         hbox_inst.Add(ttl_inst,         flag=wx.RIGHT, border=8)
+        hbox_inst.AddSpacer(33)
         hbox_inst.Add(self.btn_clrinst, flag=wx.RIGHT, border=8)
+
 
         hbox_u.Add(ttl_u,      flag=wx.RIGHT, border=8)
         hbox_u.Add(self.val_u, flag=wx.RIGHT, border=8)
@@ -2400,7 +2971,9 @@ class InstrPanel(wx.Panel):
         hbox_w.Add(self.val_w, flag=wx.RIGHT, border=8)
 
         hbox_size.Add(ttl_size,         flag=wx.RIGHT, border=8)
+        hbox_size.AddSpacer(25)
         hbox_size.Add(self.btn_clrsize, flag=wx.RIGHT, border=8)
+
         
         hbox_D.Add(ttl_D,      flag=wx.RIGHT, border=8)
         hbox_D.Add(self.val_D, flag=wx.RIGHT, border=8)
@@ -2412,8 +2985,9 @@ class InstrPanel(wx.Panel):
         vbox.Add(hbox_u,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_v,    flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_w,    flag=wx.BOTTOM, border=8)
+        vbox.AddSpacer(15)
         vbox.Add(hbox_hw,   flag=wx.BOTTOM, border=8)
-
+        vbox.AddSpacer(15)
         vbox.Add(hbox_size, flag=wx.BOTTOM, border=8)
         vbox.Add(hbox_D,    flag=wx.BOTTOM, border=8)
 
@@ -2447,27 +3021,17 @@ class ResultsPanel(wx.Panel):
         self.owner = owner
 
         ## Default information
-        respanel = self.ResultsTools()
+#         respanel = self.ResultsTools()
 
         panel1D = wx.BoxSizer(wx.HORIZONTAL)
-        panel1D.Add(respanel,flag=wx.ALL,border=10)
+#         panel1D.Add(respanel,flag=wx.ALL,border=10)
         self.SetSizer(panel1D)
 
-    def ResultsTools(self):
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
-
-        self.btn_clr = wx.Button(self,label='Clear list')
-        self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
-
-        vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
-        
-        self.btn_clr.Disable()
-
-        return vbox
+#     def ResultsTools(self):
+# 
+#         vbox = wx.BoxSizer(wx.VERTICAL)
+# 
+#         return vbox
 
 ##### Pop-up from 2D XRD Viewer to calculate 1D pattern
 class Calc1DPopup(wx.Dialog):
@@ -2489,6 +3053,9 @@ class Calc1DPopup(wx.Dialog):
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
+        
+        self.wedges.Disable()
+        self.wedge_arrow.Disable()
 
     def createPanel(self):
 
@@ -2498,83 +3065,27 @@ class Calc1DPopup(wx.Dialog):
 
         ## Azimutal wedges
         wedgesizer = wx.BoxSizer(wx.VERTICAL)
-
         ttl_wedges = wx.StaticText(self.panel, label='AZIMUTHAL WEDGES')
-
         wsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         spstyle = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
         self.wedge_arrow = wx.SpinButton(self.panel, style=spstyle)
-
         self.wedge_arrow.Bind(wx.EVT_SPIN, self.onSPIN)
-
         wsizer.Add(self.wedges,flag=wx.RIGHT,border=8)
         wsizer.Add(self.wedge_arrow,flag=wx.RIGHT,border=8)
-
         wedgesizer.Add(ttl_wedges,flag=wx.BOTTOM,border=8)
         wedgesizer.Add(wsizer,flag=wx.BOTTOM,border=8)
 
-
-        ## Y-Range
-        ysizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_yrange = wx.StaticText(self.panel, label='Y-RANGE (a.u.)')
-
-        yminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymin = wx.StaticText(self.panel, label='minimum')
-        self.ymin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        yminsizer.Add(ttl_ymin,  flag=wx.RIGHT, border=5)
-        yminsizer.Add(self.ymin,  flag=wx.RIGHT, border=5)
-
-        ymaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_ymax = wx.StaticText(self.panel, label='maximum')
-        self.ymax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        ymaxsizer.Add(ttl_ymax,  flag=wx.RIGHT, border=5)
-        ymaxsizer.Add(self.ymax,  flag=wx.RIGHT, border=5)
-
-        ysizer.Add(ttl_yrange,  flag=wx.BOTTOM, border=5)
-        ysizer.Add(yminsizer,  flag=wx.BOTTOM, border=5)
-        ysizer.Add(ymaxsizer,  flag=wx.BOTTOM, border=5)
-
-
-
         ## X-Range
         xsizer = wx.BoxSizer(wx.VERTICAL)
-
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
-
-        self.xunitsizer = wx.BoxSizer(wx.HORIZONTAL)
-        xunits = ['q','d',u'2\u03B8']
-        ttl_xunit = wx.StaticText(self.panel, label='units')
-        self.ch_xunit = wx.Choice(self.panel,choices=xunits)
-        self.ch_xunit.Bind(wx.EVT_CHOICE,None)#self.onUnits)
-
-        self.xunitsizer.Add(ttl_xunit, flag=wx.RIGHT, border=5)
-        self.xunitsizer.Add(self.ch_xunit, flag=wx.RIGHT, border=5)
-
         xstepsizer = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xstep = wx.StaticText(self.panel, label='steps')
         self.xstep = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
         xstepsizer.Add(ttl_xstep,  flag=wx.RIGHT, border=5)
         xstepsizer.Add(self.xstep,  flag=wx.RIGHT, border=5)
-
-        xminsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmin = wx.StaticText(self.panel, label='minimum')
-        self.xmin = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xminsizer.Add(ttl_xmin,  flag=wx.RIGHT, border=5)
-        xminsizer.Add(self.xmin,  flag=wx.RIGHT, border=5)
-
-        xmaxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ttl_xmax = wx.StaticText(self.panel, label='maximum')
-        self.xmax = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        xmaxsizer.Add(ttl_xmax,  flag=wx.RIGHT, border=5)
-        xmaxsizer.Add(self.xmax,  flag=wx.RIGHT, border=5)
-
         xsizer.Add(ttl_xrange,  flag=wx.BOTTOM, border=5)
-        xsizer.Add(self.xunitsizer, flag=wx.TOP|wx.BOTTOM, border=5)
         xsizer.Add(xstepsizer, flag=wx.TOP|wx.BOTTOM, border=5)
-        xsizer.Add(xminsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
-        xsizer.Add(xmaxsizer,  flag=wx.TOP|wx.BOTTOM, border=5)
 
         ## Plot/save
 
@@ -2591,17 +3102,13 @@ class Calc1DPopup(wx.Dialog):
         #####
         ## OKAY!
         oksizer = wx.BoxSizer(wx.HORIZONTAL)
-        #hlpBtn = wx.Button(self.panel, wx.ID_HELP    )
         self.okBtn  = wx.Button(self.panel, wx.ID_OK      )
         canBtn = wx.Button(self.panel, wx.ID_CANCEL  )
 
-        #oksizer.Add(hlpBtn,flag=wx.RIGHT,  border=8)
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(self.okBtn,  flag=wx.RIGHT,  border=8)
 
         mainsizer.Add(wedgesizer, flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(ysizer,     flag=wx.ALL, border=5)
         mainsizer.AddSpacer(15)
         mainsizer.Add(xsizer,     flag=wx.ALL, border=5)
         mainsizer.AddSpacer(15)
@@ -2621,28 +3128,16 @@ class Calc1DPopup(wx.Dialog):
 
     def setDefaults(self):
 
-        self.ymin.SetValue(str(0))
-        self.ymax.SetValue(str(10000))
         self.xstep.SetValue(str(5001))
-        self.xmin.SetValue(str(0.1))
-        self.xmax.SetValue(str(5.5))
-        self.wedges.SetValue(str(1))
-
-        self.wedge_arrow.SetRange(1, 10)
+        
+        self.wedges.SetValue('1')
         self.wedge_arrow.SetValue(1)
-        self.okBtn.Disable()
+        self.wedge_arrow.SetRange(1,36)
 
-        self.ymin.Disable()
-        self.ymax.Disable()
-        self.xmin.Disable()
-        self.xmax.Disable()
-        self.wedges.Disable()
-        self.wedge_arrow.Disable()
-        self.ch_xunit.Disable()
+        self.okBtn.Disable()
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
-        print('WARNING: not currently using multiple wedges for calculations')
 
     def getValues(self):
 
@@ -2732,11 +3227,15 @@ class DatabaseInfoGUI(wx.Dialog):
 #########################################################################
 class XRDSearchGUI(wx.Dialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent=None, database=None):
         
         wx.Dialog.__init__(self, parent, title='Crystal Structure Database Search')
         ## remember: size=(width,height)
-        self.parent = parent
+        try:
+            self.cifdb = self.parent.owner.cifdatabase
+        except:
+            self.cifdb = database
+            
         self.panel = wx.Panel(self)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -2747,7 +3246,7 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
-        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.minerals = self.cifdb.return_mineral_names()
         self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
 
         ## AMCSD search
@@ -2942,7 +3441,7 @@ class XRDSearchGUI(wx.Dialog):
 
 
     def onAuthor(self,event=None):
-        authorlist = self.parent.owner.cifdatabase.return_author_names()
+        authorlist = self.cifdb.return_author_names()
         dlg = AuthorListTable(self,authorlist,include=self.srch.authors)
    
         update = False
@@ -2992,7 +3491,7 @@ class XRDSearchGUI(wx.Dialog):
             self.Symmetry.SetValue(self.srch.print_geometry())
         
     def onReset(self,event=None):
-        self.minerals = self.parent.owner.cifdatabase.return_mineral_names()
+        self.minerals = self.cifdb.return_mineral_names()
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
@@ -3209,11 +3708,6 @@ class XRDSymmetrySearch(wx.Dialog):
         for spgrp_no in sorted(SPACEGROUPS.keys()):
             for spgrp_name in sorted(SPACEGROUPS[spgrp_no]):
                 hm_notations += ['%s : %s' % (spgrp_no,spgrp_name)]
-#         for spgrp in SPACEGROUPS:
-#             iuc_id,name = spgrp
-#             hm = '%s: %s' % (str(iuc_id),name)
-#             hm_notations += [hm]
-#         hm_notations = sorted(hm_notations)
 
         lbl_SG    = wx.StaticText(self.panel, label='Space group:')
         self.SG   = wx.Choice(self.panel,     choices=SG_list)
@@ -3348,84 +3842,6 @@ class XRDSymmetrySearch(wx.Dialog):
         
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
-
-# class CIFDatabaseList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
-#     def __init__(self, parent, ID, pos=wx.DefaultPosition,
-#                  size=wx.DefaultSize, style=0):
-#         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
-#         listmix.ListCtrlAutoWidthMixin.__init__(self)
-
-# class DatabaseXRD(wx.Panel, listmix.ColumnSorterMixin):
-#     """
-#     This will be the second notebook tab
-#     """
-#     #----------------------------------------------------------------------
-#     def __init__(self,parent,owner=None,_larch=None):
-#         """"""
-#         wx.Panel.__init__(self, parent)
-# 
-#         self.parent = parent
-#         self.owner = owner
-# 
-#         self.createAndLayout()
-# 
-#     def createAndLayout(self):
-#         sizer = wx.BoxSizer(wx.VERTICAL)
-#         self.list = CIFDatabaseList(self, wx.ID_ANY, style=wx.LC_REPORT
-#                                  | wx.BORDER_NONE
-#                                  | wx.LC_EDIT_LABELS
-#                                  | wx.LC_SORT_ASCENDING)
-#         sizer.Add(self.list, 1, wx.EXPAND)
-# 
-#         #self.database_info = self.createDATABASEarray()
-#         ## removed so database not loaded upon start up
-#         self.database_info = {}
-# 
-#         self.populateList()
-# 
-#         self.itemDataMap = self.database_info
-#         listmix.ColumnSorterMixin.__init__(self, 4)
-#         self.SetSizer(sizer)
-#         self.SetAutoLayout(True)
-# 
-#     def populateList(self):
-#         self.list.InsertColumn(0, 'AMSCD ID', wx.LIST_FORMAT_RIGHT)
-#         self.list.InsertColumn(1, 'Name')
-#         self.list.InsertColumn(2, 'Space Group')
-#         self.list.InsertColumn(3, 'Elements')
-#         self.list.InsertColumn(4, 'Authors')
-# 
-#         for key, data in self.database_info.items():
-#             index = self.list.InsertStringItem(sys.maxint, data[0])
-#             self.list.SetStringItem(index, 1, data[1])
-#             self.list.SetStringItem(index, 2, data[2])
-#             self.list.SetStringItem(index, 3, data[3])
-#             self.list.SetStringItem(index, 4, data[4])
-#             self.list.SetItemData(index, key)
-# 
-#         self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(1, 100)
-#         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
-#         self.list.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-# 
-# #
-# #         # show how to select an item
-# #         self.list.SetItemState(5, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
-# #
-# #         # show how to change the colour of a couple items
-# #         item = self.list.GetItem(1)
-# #         item.SetTextColour(wx.BLUE)
-# #         self.list.SetItem(item)
-# #         item = self.list.GetItem(4)
-# #         item.SetTextColour(wx.RED)
-# #         self.list.SetItem(item)
-# 
-#         self.currentItem = 0
-# 
-#     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
-#     def GetListCtrl(self):
-#         return self.list
 
 class diFFit1D(wx.App):
     def __init__(self):

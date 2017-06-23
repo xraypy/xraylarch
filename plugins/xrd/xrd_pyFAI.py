@@ -12,6 +12,7 @@ import numpy as np
 HAS_pyFAI = False
 try:
     import pyFAI
+    import pyFAI.units
     HAS_pyFAI = True
 except ImportError:
     pass
@@ -48,17 +49,40 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
             print('Provided calibration file could not be loaded.')
             return
         
-        if wedge != 1: print('Wedge not yet incorportated into calculations and saving.')
         attrs = {'mask':mask,'dark':dark}
         if unit.startswith('2th'):
             attrs.update({'unit':'2th_deg'})
         else:
             attrs.update({'unit':'q_A^-1'})
+        if wedge != 1:
+            xrd1d = np.zeros((np.shape(rowxrd2d)[0],(wedge+1)*2,steps))
+
+            ii = 0            
+            if flip:
+                xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
+            else:
+                xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+            
+            slice = 360./wedge
+            for nslc in np.arange(wedge):
+                start = -180 + nslc*slice
+                end   = start+slice
+                attrs.update({'azimuth_range':(start,end)})
+                ii += 2
+                if flip:
+                    xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+                else:
+                    xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+
+            return xrd1d
+
+
         
-        if flip:
-            return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
         else:
-            return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+            if flip:
+                return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
+            else:
+                return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
 
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
@@ -105,9 +129,6 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
         print('pyFAI not imported. Cannot calculate 1D integration.')
 
 def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
-    '''
-
-    '''
     
     if HAS_pyFAI:
         try:
@@ -131,103 +152,92 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
 
-
 def calcXRD1d(xrd2d,ai,steps,attrs):
     return ai.integrate1d(xrd2d,steps,**attrs)
 
 def calcXRDcake(xrd2d,ai,attrs):
     return ai.integrate2d(xrd2d,2048,2048,**attrs) ## returns I,q,eta
-    
 
+def save1D(filename, xaxis, I, error=None, xaxis_unit=pyFAI.units.Q_A, calfile=None,
+           has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+    '''
+    copied and modified from pyFAI/io.py
+    '''
+    if calfile is None:
+        ai = None
+    else:
+        ai = pyFAI.load(calfile)
 
-    
-    
+    xaxis_unit = pyFAI.units.to_unit(xaxis_unit)
+    with open(filename, 'w') as f:
+        f.write(make_headers(has_dark=has_dark, has_flat=has_flat, ai=ai,
+                                 polarization_factor=polarization_factor,
+                                 normalization_factor=normalization_factor))
+        try:
+            f.write('\n# --> %s\n' % (filename))
+        except UnicodeError:
+            f.write('\n# --> %s\n' % (filename.encode('utf8')))
+        if error is None:
+            try:
+                f.write('#%14s %14s\n' % (xaxis_unit.REPR, 'I '))
+            except:
+                f.write('#%14s %14s\n' % (xaxis_unit.name, 'I '))
+            f.write('\n'.join(['%14.6e  %14.6e' % (t, i) for t, i in zip(xaxis, I)]))
+        else:
+            f.write('#%14s  %14s  %14s\n' %
+                    (xaxis_unit.REPR, 'I ', 'sigma '))
+            f.write('\n'.join(['%14.6e  %14.6e %14.6e' % (t, i, s) for t, i, s in zip(xaxis, I, error)]))
+        f.write('\n')
 
+def make_headers(hdr='#', has_dark=False, has_flat=False, ai=None,
+                 polarization_factor=None, normalization_factor=None):
+    '''
+    copied and modified from pyFAI/io.py
+    '''
+    if ai is not None:
+        headerLst = ['== pyFAI calibration ==']
+        headerLst.append('SplineFile: %s' % ai.splineFile)
+        headerLst.append('PixelSize: %.3e, %.3e m' %
+                         (ai.pixel1, ai.pixel2))
+        headerLst.append('PONI: %.3e, %.3e m' % (ai.poni1, ai.poni2))
+        headerLst.append('Distance Sample to Detector: %s m' %
+                         ai.dist)
+        headerLst.append('Rotations: %.6f %.6f %.6f rad' %
+                         (ai.rot1, ai.rot2, ai.rot3))
+        headerLst += ['', '== Fit2d calibration ==']
 
+        f2d = ai.getFit2D()
+        headerLst.append('Distance Sample-beamCenter: %.3f mm' %
+                         f2d['directDist'])
+        headerLst.append('Center: x=%.3f, y=%.3f pix' %
+                         (f2d['centerX'], f2d['centerY']))
+        headerLst.append('Tilt: %.3f deg  TiltPlanRot: %.3f deg' %
+                         (f2d['tilt'], f2d['tiltPlanRotation']))
+        headerLst.append('')
 
-# def calculate_ai(AI):
-#     '''
-#     Builds ai structure using AzimuthalIntegrator from hdf5 parameters
-#     mkak 2016.08.30
-#     '''
-# 
-#     if HAS_pyFAI:
-#         try:
-#             distance = float(AI.attrs['distance'])
-#         except:
-#             distance = 1
-#      
-#         ## Optional way to shorten this script... will need to change units of pixels
-#         ## mkak 2016.08.30   
-#         #floatattr = ['poni1','poni2','rot1','rot2','rot3','pixel1','pixel2']
-#         #valueattr = np.empty(7)
-#         #for f,fattr in enumerate(floatattr):
-#         #     try:
-#         #         valueattr[f] = float(AI.attr[fattr])
-#         #     except:
-#         #         valueattr[f] =  0
-#     
-#         try:
-#             poni_1 = float(AI.attrs['poni1'])
-#         except:
-#             poni_1 = 0
-#         try:
-#             poni_2 = float(AI.attrs['poni2'])
-#         except:
-#             poni_2 = 0
-#         
-#         try:
-#             rot_1 = float(AI.attrs['rot1'])
-#         except:
-#             rot_1 = 0
-#         try:
-#             rot_2 = float(AI.attrs['rot2'])
-#         except:
-#             rot_2 = 0
-#         try:
-#             rot_3 = float(AI.attrs['rot3'])
-#         except:
-#             rot_3 = 0
-# 
-#         try:
-#             pixel_1 = float(AI.attrs['ps1'])
-#         except:
-#             pixel_1 = 0
-#         try:
-#             pixel_2 = float(AI.attrs['ps2'])
-#         except:
-#             pixel_2 = 0
-# 
-#         try:
-#             spline = AI.attrs['spline']
-#             if spline == '':
-#                 spline = None
-#         except:
-#             spline = None
-#         
-#         try:
-#             detname = AI.attrs['detector']
-#             if detname == '':
-#                 detname = None
-#         except:
-#             detname = None
-#     
-#         try:
-#             xraylambda =float(AI.attrs['wavelength'])
-#         except:
-#             xraylambda = None
-#     else:
-#         print('pyFAI not imported. Cannot calculate ai for calibration.')
-#         return
-# 
-#         
-#     return pyFAI.AzimuthalIntegrator(dist = distance, poni1 = poni_1, poni2 = poni_2,
-#                                     rot1 = rot_1, rot2 = rot_2, rot3 = rot_3,
-#                                     pixel1 = pixel_1, pixel2 = pixel_2,
-#                                     splineFile = spline, detector = detname,
-#                                     wavelength = xraylambda)
-#########################################################################
+        if ai._wavelength is not None:
+            headerLst.append('Wavelength: %s' % ai.wavelength)
+        if ai.maskfile is not None:
+            headerLst.append('Mask File: %s' % ai.maskfile)
+        if has_dark or (ai.darkcurrent is not None):
+            if ai.darkfiles:
+                headerLst.append('Dark current: %s' % ai.darkfiles)
+            else:
+                headerLst.append('Dark current: Done with unknown file')
+        if has_flat or (ai.flatfield is not None):
+            if ai.flatfiles:
+                headerLst.append('Flat field: %s' % ai.flatfiles)
+            else:
+                headerLst.append('Flat field: Done with unknown file')
+        if polarization_factor is None and ai._polarization is not None:
+            polarization_factor = ai._polarization_factor
+        headerLst.append('Polarization factor: %s' % polarization_factor)
+        headerLst.append('Normalization factor: %s' % normalization_factor)
+    else:
+        headerLst = ' '
 
-                     
+    return '\n'.join([hdr + ' ' + i for i in headerLst])
+
+                    
 def registerLarchPlugin():
     return ('_xrd', {'integrate_xrd': integrate_xrd}) #,'calculate_ai': calculate_ai})

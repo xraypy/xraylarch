@@ -425,6 +425,7 @@ class diFFit2DFrame(wx.Frame):
                     attrs = {'steps':5001}
                 else:
                     attrs = {'steps':int(myDlg.steps)}
+            #attrs = {'wedge':int(myDlg.wedges.GetValues())}
             myDlg.Destroy()
         else:
             print('Data and calibration files must be available for this function.')
@@ -442,7 +443,6 @@ class diFFit2DFrame(wx.Frame):
                     path = dlg.GetPath().replace('\\', '/')
                     attrs.update({'file':path,'save':save})
                 dlg.Destroy()
-
             data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
             
             ##self.xrd2Dcake.plot2D.display(cake[0])                   
@@ -466,7 +466,6 @@ class diFFit2DFrame(wx.Frame):
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                     self.xrddisplay1D.Show()
 
-            
 ##############################################
 #### CALIBRATION FUNCTIONS
     def Calibrate(self,event=None):

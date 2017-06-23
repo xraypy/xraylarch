@@ -72,7 +72,7 @@ from larch.wxlib import LarchPanel, LarchFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
-from larch_plugins.xrd import lambda_from_E,E_from_lambda,xrd1d
+from larch_plugins.xrd import lambda_from_E,E_from_lambda,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
@@ -841,7 +841,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         folderpath = xrmmap.attrs['Map_Folder']
         if len(folderpath) > 35:
-            folderpath = 'Browse...'+xrmmap.attrs['Map_Folder'][-35:]
+            folderpath = '...'+xrmmap.attrs['Map_Folder'][-35:]
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
         try:
@@ -1246,7 +1246,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             aname = self._getarea()
             xrmfile = self.owner.current_file
             area  = xrmfile.xrmmap['areas/%s' % aname]
-            label = area.attrs.get('description', aname)
+            title = area.attrs.get('description', aname)
 
             ## what's a clearer way to do this?
             ## mkak 2017.03.24
@@ -1259,22 +1259,49 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         except:
             print('No map file and/or areas specified.')
             return
+        try:
+            ponifile = xrmfile.xrmmap['xrd'].attrs['calfile']
+            ponifile = ponifile if os.path.exists(ponifile) else None
+        except:
+            ponifile = None
 
         if show:
-            self.owner.message('Plotting XRD pattern for area \'%s\'Browse...' % label)
+            self.owner.message('Plotting XRD pattern for area \'%s\'...' % title)
         if save:
-            self.owner.message('Saving XRD pattern for area \'%s\'Browse...' % label)
+            self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
 
         if flag1D: 
             self._xrd  = None
             self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
-            self._xrd.title = label
+            self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
             self._xrd.energy = energy
             self._xrd.wavelength = lambda_from_E(energy)
+            
+            stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
 
-            self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+            if np.shape(self._xrd.data1D)[0] > 2:
+                for i in np.arange(np.shape(self._xrd.data1D)[0]/2):
+                    xrd1d = self._xrd.data1D[(i*2):((i*2)+2)]
+                    if show:
+                        if i != 0:
+                            wdglbl = self._xrd.title + ' - wedge %i' % i
+                        else:
+                            wdglbl = self._xrd.title + ' (entire image)'
+                        self.owner.display_1Dxrd(xrd1d,self._xrd.energy,label=wdglbl)
+                    if save:
+                        file = '%s.xy' % stem if i==0 else '%s_wedge%02d.xy' % (stem,i)
+                        save1D(file, xrd1d[0], xrd1d[1], calfile=ponifile)
+                    
+            
+            else:
+                if show:
+                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
+                                             label=self._xrd.title)
+                if save:
+                    file = '%s.xy' % stem
+                    save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
 
 #             if not flag2D:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
@@ -1283,7 +1310,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd  = None
             self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
-            self._xrd.title = label
+            self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
             self._xrd.energy = energy
             self._xrd.wavelength = lambda_from_E(energy)
@@ -1292,16 +1319,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 self._xrd.save_2D(verbose=True)
 
             if show:
-                title = '%s: %s' % (os.path.split(self._xrd.filename)[-1], label)
-                self.owner.display_2Dxrd(self._xrd.data2D, title=title, xrmfile=xrmfile,
+                label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
+                self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
                                          flip=True)
 
             if not flag1D:
-                try:
-                    ponifile = xrmfile.xrmmap['xrd'].attrs['calfile']
-                except:
-                    ponifile = ''
-                if os.path.exists(ponifile):
+                if ponifile is not None:
                     self._xrd.calfile = ponifile
                     self._xrd.steps = 5001
                     self._xrd.calc_1D(save=save,verbose=True)
@@ -1875,6 +1898,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
+            if wdgs > 36 or wdgs < 1: wdgs = 1
             xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
                                      azwdgs=wdgs,qstps=stps,flip=flip,
                                      FLAGxrf=FLAGxrf,
@@ -2104,36 +2128,36 @@ class OpenMapFolder(wx.Dialog):
         self.Bind(wx.EVT_SPIN,     self.onWdgSPIN,    self.wdgSpn  )
 
         fldrsizer = wx.BoxSizer(wx.VERTICAL)
-        fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,                    border=5)
-        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
-        fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,                    border=5)
+        fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
+        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
+        fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,           border=5)
         
         ponisizer = wx.BoxSizer(wx.VERTICAL)
-        ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,                    border=5)
-        ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
-        ponisizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+        ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,           border=5)
+        ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
+        ponisizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,           border=5)
 
         stpsizer = wx.BoxSizer(wx.HORIZONTAL)
-        stpsizer.Add(self.stpTtl, flag=wx.RIGHT,                            border=5)
-        stpsizer.Add(self.Stp,    flag=wx.RIGHT,                            border=5)
+        stpsizer.Add(self.stpTtl, flag=wx.RIGHT, border=5)
+        stpsizer.Add(self.Stp,    flag=wx.RIGHT, border=5)
 
         wdgsizer = wx.BoxSizer(wx.HORIZONTAL)
-        wdgsizer.Add(self.wdgTtl, flag=wx.RIGHT,                            border=5)
-        wdgsizer.Add(self.Wdg,    flag=wx.RIGHT,                            border=5)
-        wdgsizer.Add(self.wdgSpn, flag=wx.RIGHT,                            border=5)
+        wdgsizer.Add(self.wdgTtl, flag=wx.RIGHT, border=5)
+        wdgsizer.Add(self.Wdg,    flag=wx.RIGHT, border=5)
+        wdgsizer.Add(self.wdgSpn, flag=wx.RIGHT, border=5)
 
         masksizer = wx.BoxSizer(wx.VERTICAL)
-        masksizer.Add(self.maskTtl, flag=wx.TOP|wx.LEFT,                    border=5)
-        masksizer.Add(self.Mask,    flag=wx.EXPAND|wx.TOP|wx.LEFT,          border=5)
-        masksizer.Add(self.maskBtn, flag=wx.TOP|wx.LEFT,                    border=5)
+        masksizer.Add(self.maskTtl, flag=wx.TOP|wx.LEFT,           border=5)
+        masksizer.Add(self.Mask,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
+        masksizer.Add(self.maskBtn, flag=wx.TOP|wx.LEFT,           border=5)
 
         xrdsizer = wx.BoxSizer(wx.VERTICAL)
-        xrdsizer.Add(xrd2dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
-        xrdsizer.Add(xrd1dCkBx, flag=wx.TOP|wx.LEFT,                        border=5)
+        xrdsizer.Add(xrd2dCkBx, flag=wx.TOP|wx.LEFT, border=5)
+        xrdsizer.Add(xrd1dCkBx, flag=wx.TOP|wx.LEFT, border=5)
 
         ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT,                              border=15)
-        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT,                        border=15)
+        ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT, border=15)
+        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT,  border=15)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
@@ -2143,20 +2167,20 @@ class OpenMapFolder(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10))
-        sizer.Add(fldrsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(fldrsizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 15))
-        sizer.Add(chTtl,        flag=wx.TOP|wx.LEFT,                    border=5)
-        sizer.Add(ckbxsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT, border=5)
+        sizer.Add(ckbxsizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
-        sizer.Add(ponisizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(ponisizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
-        sizer.Add(stpsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(stpsizer,  flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
-        sizer.Add(wdgsizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(wdgsizer,  flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
-        sizer.Add(masksizer,    flag=wx.TOP|wx.LEFT,                    border=5)
+        sizer.Add(masksizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 15))
-        sizer.Add(minisizer,    flag=wx.ALIGN_RIGHT,                    border=5)
+        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT, border=5)
 
         panel.SetSizer(sizer)
 
@@ -2169,6 +2193,8 @@ class OpenMapFolder(wx.Dialog):
         
         self.Stp.SetValue('5001')
         self.Wdg.SetValue('1')
+        self.wdgSpn.SetValue(1)
+        self.wdgSpn.SetRange(1,36) # self.wdgSpn.SetMin(1)
 
         self.FindWindowById(wx.ID_OK).Disable()
         
