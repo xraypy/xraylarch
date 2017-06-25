@@ -281,6 +281,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                expression=h5str(expr),
                                info=json.dumps(info))
 
+        for p in self.owner.nbpanels:
+            if hasattr(p, 'update_xrmmap'):
+                p.update_xrmmap(xrmfile.xrmmap)
+
+
 
     def onROI(self, evt, varname='a'):
         fname   = self.varfile[varname].GetStringSelection()
@@ -1237,7 +1242,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onXRD(self, event=None, save=False, show=False):
 
         flag1D,flag2D = self.owner.current_file.check_xrd()
-        
+
         if not flag1D and not flag2D:
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
@@ -1270,7 +1275,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
 
-        if flag1D: 
+        if flag1D:
             self._xrd  = None
             self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
@@ -1278,7 +1283,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.npixels = len(area.value[np.where(area.value)])
             self._xrd.energy = energy
             self._xrd.wavelength = lambda_from_E(energy)
-            
+
             stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
 
             if np.shape(self._xrd.data1D)[0] > 2:
@@ -1293,8 +1298,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if save:
                         file = '%s.xy' % stem if i==0 else '%s_wedge%02d.xy' % (stem,i)
                         save1D(file, xrd1d[0], xrd1d[1], calfile=ponifile)
-                    
-            
+
+
             else:
                 if show:
                     self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
@@ -1305,7 +1310,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 #             if not flag2D:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
-            
+
         if flag2D:
             self._xrd  = None
             self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
@@ -1332,7 +1337,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if show:
                         self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
-                
+
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -1393,6 +1398,7 @@ class MapViewerFrame(wx.Frame):
         self.move_callback = None
 
         self.larch_buffer.Hide()
+        self.onFolderSelect()
 
 
     def CloseFile(self, filename, event=None):
@@ -1474,7 +1480,7 @@ class MapViewerFrame(wx.Frame):
             for iy in range(ym):
                 tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
             mask = tmask
-            # print('shifted mask!')
+
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
@@ -2131,7 +2137,7 @@ class OpenMapFolder(wx.Dialog):
         fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
         fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
         fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,           border=5)
-        
+
         ponisizer = wx.BoxSizer(wx.VERTICAL)
         ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,           border=5)
         ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
@@ -2163,7 +2169,7 @@ class OpenMapFolder(wx.Dialog):
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
-        
+
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10))
@@ -2188,16 +2194,16 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx.SetValue(True)
         xrd2dCkBx.SetValue(False)
         xrd1dCkBx.SetValue(False)
-        
+
         self.poniTtl.SetSelection(0)
-        
+
         self.Stp.SetValue('5001')
         self.Wdg.SetValue('1')
         self.wdgSpn.SetValue(1)
         self.wdgSpn.SetRange(1,36) # self.wdgSpn.SetMin(1)
 
         self.FindWindowById(wx.ID_OK).Disable()
-        
+
         self.poniTtl.Disable()
         self.poniBtn.Disable()
         self.Poni.Disable()
