@@ -50,9 +50,9 @@ def xrf_calib_fitrois(mca, _larch=None):
                        'Gaussian', background='constant',
                        _larch=_larch)
 
-        ccen = fit.params.center.value
+        ccen = fit.params['center'].value
         ecen = ccen * mca.slope + mca.offset
-        fwhm = 2.354820 * fit.params.sigma.value * mca.slope
+        fwhm = 2.354820 * fit.params['sigma'].value * mca.slope
         calib[roi.name] = (eknown, ecen, fwhm, ccen, fit)
     mca.init_calib = calib
 
