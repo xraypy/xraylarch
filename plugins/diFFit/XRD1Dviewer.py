@@ -132,6 +132,7 @@ class diFFit1DFrame(wx.Frame):
         self.xrd1Dfitting = Fitting1DXRD(self.nb,owner=self)
         
         self.srch_cls = SearchCIFdb()
+        self.amcsd_mtchlst = []
         ## include database tab? #self.xrddatabase  = DatabaseXRD(self.nb,owner=self)
 
         ## add the pages to the notebook with the label to show on the tab
@@ -1333,7 +1334,6 @@ class Fitting1DXRD(BasePanel):
         myDlg = XRDSearchGUI(self.owner.cifdatabase,self.owner.srch_cls)
         
         filter = False
-        list_amcsd = None
         
         if myDlg.ShowModal() == wx.ID_OK:
             
@@ -1341,15 +1341,16 @@ class Fitting1DXRD(BasePanel):
             self.elem_exclude = myDlg.srch.elem_excl
             self.owner.srch_cls = myDlg.srch
 
+            list_amcsd = []
             if len(myDlg.AMCSD.GetValue()) > 0:
                 myDlg.entrAMCSD()
-                list_amcsd = []
                 
-            for id in myDlg.srch.amcsd:
-                try:
-                    list_amcsd += [int(id)]
-                except:
-                    pass
+                for id in myDlg.srch.amcsd:
+                    try:
+                        list_amcsd += [int(id)]
+                    except:
+                        pass
+            if len(list_amcsd) < 1: list_amcsd = None
 
             
             if myDlg.Mineral.IsTextEmpty():
