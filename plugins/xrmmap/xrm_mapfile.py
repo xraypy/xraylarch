@@ -8,7 +8,7 @@ import scipy.stats as stats
 import json
 import larch
 from larch.utils.debugtime import debugtime
-
+from larch.utils.strutils import fix_filename
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 
@@ -1930,7 +1930,7 @@ class GSEXRM_MapFile(object):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
         _mca.areaname = _mca.title = name
         path, fname = os.path.split(self.filename)
-        _mca.filename = fname
+        _mca.filename = fix_filename(fname)
         fmt = "Data from File '%s', detector '%s', area '%s'"
         mapname = map.name.split('/')[-1]
         _mca.info  =  fmt % (self.filename, mapname, name)
