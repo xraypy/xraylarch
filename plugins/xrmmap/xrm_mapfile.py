@@ -8,7 +8,7 @@ import scipy.stats as stats
 import json
 import larch
 from larch.utils.debugtime import debugtime
-
+from larch.utils.strutils import fix_filename
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 
@@ -364,7 +364,7 @@ class GSEXRM_MapRow:
             else:
                 self.xrd1d = None
         th = time.time()
-                
+
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
@@ -444,7 +444,7 @@ class GSEXRM_MapRow:
 
         self.read_ok = True
         ti = time.time()
-        
+
         self.xrfreadtime   = ((tc-tb)+(tf-te)) if FLAGxrf else 0.0
         self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd2D else 0.0
         self.xrd1dcalctime = (th-tg) if FLAGxrd1D and poni is not None else 0.0
@@ -687,14 +687,12 @@ class GSEXRM_MapFile(object):
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
 
-            print('')
-
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
-            
+
             if poni is not None: self.add_calibration()
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
@@ -790,7 +788,6 @@ class GSEXRM_MapFile(object):
             if os.path.exists(self.calibration):
                 print('Calibration file loaded: %s' % self.calibration)
                 xrdgrp.attrs['calfile'] = '%s' % (self.calibration)
-        print('')
         self.h5root.flush()
 
     def add_data(self, group, name, data, attrs=None, **kws):
@@ -939,7 +936,7 @@ class GSEXRM_MapFile(object):
         return self.pixeltime
 
     def read_rowdata(self, irow):
-        '''read a row's worth of raw data from the Map Folder
+        '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
         try:
@@ -982,14 +979,14 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile=self.masterfile, poni=self.calibration, 
-                             flip=self.flip, mask=self.maskfile, 
+                             masterfile=self.masterfile, poni=self.calibration,
+                             flip=self.flip, mask=self.maskfile,
                              wdg=self.azwdgs, steps=self.qstps,
-                             FLAGxrf=self.flag_xrf, 
+                             FLAGxrf=self.flag_xrf,
                              FLAGxrd2D=self.flag_xrd2d, FLAGxrd1D=self.flag_xrd1d)
 
 
-    def add_rowdata(self, row, verbose=True):
+    def add_rowdata(self, row, verbose=False):
         '''adds a row worth of real data'''
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
@@ -1082,9 +1079,9 @@ class GSEXRM_MapFile(object):
 
         if verbose: t1 = time.time()
 
-        if self.flag_xrd1d and row.xrd1d is not None:  
+        if self.flag_xrd1d and row.xrd1d is not None:
             self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
-            
+
         if self.flag_xrd2d and row.xrd2d is not None:
             self.xrmmap['xrd']['data2D'][thisrow,] = row.xrd2d
 
@@ -1111,7 +1108,7 @@ class GSEXRM_MapFile(object):
 
     def build_schema(self, row, verbose=False):
         '''build schema for detector and scan data'''
-        
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -1273,7 +1270,7 @@ class GSEXRM_MapFile(object):
                     datacolumns = int(2*(self.azwdgs+1))
                 else:
                     self.azwdgs,datacolumns = 1,2
-                
+
                 chunksize_1DXRD    = (1, 1, datacolumns, self.qstps)
                 xrmmap['xrd'].create_dataset('data1D',
                                        (xrdpts, xrdpts, datacolumns, self.qstps),
@@ -1933,7 +1930,7 @@ class GSEXRM_MapFile(object):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
         _mca.areaname = _mca.title = name
         path, fname = os.path.split(self.filename)
-        _mca.filename = fname
+        _mca.filename = fix_filename(fname)
         fmt = "Data from File '%s', detector '%s', area '%s'"
         mapname = map.name.split('/')[-1]
         _mca.info  =  fmt % (self.filename, mapname, name)
@@ -2058,7 +2055,7 @@ class GSEXRM_MapFile(object):
         '''
         if mapdat is None:
             mapdat = self.xrmmap['xrd']['data1D']
-            
+
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
@@ -2071,11 +2068,11 @@ class GSEXRM_MapFile(object):
 
         patterns = (patterns[area[sy, sx]]).sum(axis=0)
         area_pix = (area.sum(axis=0)).sum(axis=0)
-        
+
         for i in np.arange(np.shape(patterns)[0]):
            if i % 2 == 0: patterns[i] = patterns[i]/area_pix
         # patterns[0] = patterns[0]/area_pix
-        
+
         return patterns
 
     def get_2Dxrd_area(self, areaname, callback = None):

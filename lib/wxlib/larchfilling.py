@@ -258,7 +258,10 @@ class FillingTree(wx.TreeCtrl):
 
     def getFullName(self, item, partial=''):
         """Return a syntactically proper name for item."""
-        name = self.GetItemText(item)
+        try:
+            name = self.GetItemText(item)
+        except:
+            return None
         parent = None
         obj = None
         if item != self.root:
@@ -386,7 +389,7 @@ class Filling(wx.SplitterWindow):
         self.tree.setRootObject(rootObject)
         if self.tree.root is not None:
             self.tree.SelectItem(self.tree.root)
-            self.tree.display()
+            wx.CallAfter(self.tree.display)
 
     def OnChanged(self, event):
         #this is important: do not evaluate this event=>

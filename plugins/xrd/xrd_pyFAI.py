@@ -158,11 +158,13 @@ def calcXRD1d(xrd2d,ai,steps,attrs):
 def calcXRDcake(xrd2d,ai,attrs):
     return ai.integrate2d(xrd2d,2048,2048,**attrs) ## returns I,q,eta
 
-def save1D(filename, xaxis, I, error=None, xaxis_unit=pyFAI.units.Q_A, calfile=None,
+def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
            has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
     '''
     copied and modified from pyFAI/io.py
     '''
+    if xaxis_unit is None:
+        xaxis_unit = pyFAI.units.Q_A
     if calfile is None:
         ai = None
     else:
