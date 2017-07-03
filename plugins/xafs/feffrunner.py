@@ -214,16 +214,19 @@ class FeffRunner(Group):
             copy(feffinp_file, 'feff.inp')
 
         f = open(log, 'a')
-        header = "\n======= running module %s ====================================================\n" % exe
+        header = "\n======== running Feff module %s ========\n" % exe
+        def write(msg):
+            msg = " : {:s}\n".format(msg.strip().rstrip())
+            self._larch.writer.write(msg)
+
         if self.verbose:
-            print(header)
+            write(header)
         f.write(header)
         process=subprocess.Popen(program, shell=False,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT)
         flag = False
         thislist = []
-        self.process = process
         while True:
             if  process.returncode is None:
                 process.poll()
@@ -232,7 +235,7 @@ class FeffRunner(Group):
             if not line:
                 break
             if self.verbose:
-                print( ':'+line.rstrip())
+                write(line)
             ## snarf threshold energy
             pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
             match = pattern.search(line)
