@@ -1,13 +1,29 @@
-
 import os
 from   os.path   import realpath, isdir, isfile, join, basename, dirname
+import sys
 from   distutils.spawn import find_executable
+
 from shutil import copy, move
 import subprocess
+import time
 import re
 
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter)
+
+def find_exe(exename):
+    bindir = 'bin'
+    if os.name == 'nt':
+        bindir = 'Scripts'
+        if not exename.endswith('.exe'):
+            exename = "%s.exe" % exename
+
+    exefile = os.path.join(sys.exec_prefix, bindir, exename)
+
+    if os.path.exists(exefile) and os.access(exefile, os.X_OK):
+        return exefile
+    return find_executable(exename)
+
 
 class FeffRunner(Group):
     """
@@ -63,14 +79,16 @@ class FeffRunner(Group):
 
     """
 
-    def __init__(self, feffinp=None, verbose=True, repo=None, _larch=None, **kws):
+    def __init__(self, feffinp='feff.inp', folder=None, verbose=True, repo=None, _larch=None, **kws):
         kwargs = dict(name='Feff runner')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        if _larch == None:
+        if _larch is None:
             self._larch   = Interpreter()
         else:
             self._larch = _larch
+
+        self.folder   = folder or '.'
         self.feffinp  = feffinp
         self.verbose  = verbose
         self.mpse     = False
@@ -81,36 +99,46 @@ class FeffRunner(Group):
 
 
     def __repr__(self):
-        if self.feffinp is not None:
-            if not isfile(self.feffinp):
-                return '<External Feff Group (empty)>'
-            return '<External Feff Group: %s>' % self.feffinp
-        return '<External Feff Group (empty)>'
+        fullfile = os.path.join(self.folder, self.feffinp)
+        return '<External Feff Group: %s>' % fullfile
 
-
-    def run(self, exe='monolithic'):
+    def run(self, feffinp=None, folder=None, exe='monolithic'):
         """
         Make system call to run one or more of the stand-alone executables,
         writing a log file to the folder containing the input file.
 
         """
+        if folder is not None:
+            self.folder = folder
 
-        if self.feffinp == None:
+        if feffinp is not None:
+            self.feffinp = feffinp
+
+        if self.feffinp is None:
             raise Exception("no feff.inp file was specified")
-        if not isfile(self.feffinp):
-            raise Exception("feff.inp file '%s' could not be found" % self.feffinp)
 
         savefile = '.save_save_save.inp'
-        here=os.getcwd()
-        os.chdir(dirname(self.feffinp))
+        here = os.path.abspath(os.getcwd())
+        os.chdir(os.path.abspath(self.folder))
+
+
+        feffinp_dir, feffinp_file = os.path.split(self.feffinp)
+        feffinp_dir = dirname(self.feffinp)
+        if len(feffinp_dir) > 0:
+            os.chdir(feffinp_dir)
+
+        if not isfile(feffinp_file):
+            raise Exception("feff.inp file '%s' could not be found" % feffinp_file)
+
         log = 'f85e.log'
 
-        if exe == None:
+        if exe is None:
             exe = ''
         else:
             if not ((exe in ('monolithic', 'rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x')) or exe.startswith('feff')):
                 os.chdir(here)
                 raise Exception("'%s' is not a valid executable name" % exe)
+
 
         ## default behavior is to step through the feff85exafs modules (but not opconsat, monolithic presumes that opconsat will not be used)
         if exe.startswith('mono'): # run modules recursively
@@ -133,15 +161,15 @@ class FeffRunner(Group):
         ##  3. if repo is set, try to find the newly compiled feff85exafs executable
         ##  4. if nothing has yet been found, try to use _xafs._feff_executable
         ##  5. if nothing is found, raise an Exception
-        program=None
+        program = None
         if exe.startswith('feff'): # step 1, exe seems to be numbered feff (e.g. feff6, feff7, ...)
-            self.resolved = find_executable(exe)
+            self.resolved = find_exe(exe)
             if self.resolved:
-                program=self.resolved
+                program = self.resolved
 
         if exe in ('rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x'):
             if self.repo == None: # step 2, try to find the installed feff85exafs module
-                self.resolved = find_executable(exe)
+                self.resolved = find_exe(exe)
                 if not os.access(self.resolved, os.X_OK):
                     os.chdir(here)
                     raise Exception("'%s' is not an executable" % self.resolved)
@@ -160,7 +188,7 @@ class FeffRunner(Group):
                     os.chdir(here)
                     raise Exception("'%s' is not an executable" % program)
 
-        if program == None:  # step 4, try _xafs.feff_executable
+        if program is None:  # step 4, try _xafs._feff_executable
             program = self._larch.symtable.get_symbol('_xafs._feff_executable')
             try:
                 program = self._larch.symtable.get_symbol('_xafs._feff_executable')
@@ -171,36 +199,44 @@ class FeffRunner(Group):
                 os.chdir(here)
                 raise Exception("_xafs._feff_executable is not set (2)")
 
-        if program != None:
+        if program is not None:
             if not os.access(program, os.X_OK):
                 program = None
 
-        if program == None:  # step 5, give up
+        if program is None:  # step 5, give up
             os.chdir(here)
             raise Exception("'%s' executable cannot be found" % exe)
 
         ## preserve an existing feff.inp file if this is not called feff.inp
-        if basename(self.feffinp) != 'feff.inp':
+        if feffinp_file != 'feff.inp':
             if isfile('feff.inp'):
                 copy('feff.inp', savefile)
-                copy(basename(self.feffinp), 'feff.inp')
+            copy(feffinp_file, 'feff.inp')
 
         f = open(log, 'a')
         header = "\n======= running module %s ====================================================\n" % exe
-        if self.verbose: print(header)
+        if self.verbose:
+            print(header)
         f.write(header)
-        process=subprocess.Popen(program, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process=subprocess.Popen(program, shell=False,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
         flag = False
         thislist = []
+        self.process = process
         while True:
+            if  process.returncode is None:
+                process.poll()
+            time.sleep(0.01)
             line = process.stdout.readline()
             if not line:
                 break
-            if self.verbose: print( ':'+line.rstrip())
+            if self.verbose:
+                print( ':'+line.rstrip())
             ## snarf threshold energy
             pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
             match = pattern.search(line)
-            if match != None:
+            if match is not None:
                 self.threshold.append(match.group(2))
             ## snarf charge transfer
             if line.strip().startswith('Charge transfer'):
@@ -227,7 +263,10 @@ class FeffRunner(Group):
 
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs._feff_executable"""
-    _larch.symtable.set_symbol('_xafs._feff_executable', find_executable('feff6'))
+    feff6_exe = find_exe('feff6l')
+    if feff6_exe is None:
+        feff6_exe = find_exe('feff6')
+    _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
 
 
 def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
@@ -236,8 +275,37 @@ def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     """
     return FeffRunner(feffinp=feffinp, verbose=verbose, repo=repo, _larch=_larch)
 
+def _feff6l(folder='.', feffinp='feff.inp', verbose=True, _larch=None, **kws):
+    """
+    run a feff6 calculation for a feff.inp file in a folder
+
+    Arguments:
+    ----------
+      folder (str): folder for calculation, containing 'feff.inp' file ['.']
+      feffinp (str): name of feff.inp file to use ['feff.inp']
+      verbose (bool): whether to print out extra messages [False]
+
+    Returns:
+    --------
+      instance of FeffRunner
+
+    Notes:
+    ------
+      many results data files are generated in the Feff working folder
+    """
+    feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
+    feff_exe = _larch.symtable.get_symbol('_xafs._feff_executable')
+
+    if 'feff6l' in feff_exe:
+        exe = 'feff6l'
+    else:
+        exe = 'feff6'
+    feffrunner.run(exe=exe)
+    return feffrunner
+
 def registerLarchGroups():
     return (FeffRunner,)
 
 def registerLarchPlugin(): # must have a function with this name!
-    return ('_xafs', { 'feffrunner': feffrunner })
+    return ('_xafs', { 'feffrunner': feffrunner,
+                       'feff6l': _feff6l})
