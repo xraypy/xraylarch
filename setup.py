@@ -12,11 +12,20 @@ import site
 import platform
 from glob import glob
 
-from lib import version
-
 DEBUG = False
 cmdline_args = sys.argv[1:]
-INSTALL =  (cmdline_args[0] == 'install')
+INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
+
+
+_version__ = None
+with open(os.path.join('lib', 'version.py'), 'r') as version_file:
+    lines = version_file.readlines()
+    for line in lines:
+        line = line[:-1]
+        if line.startswith('__version__'):
+            key, vers = [w.strip() for w in line.split('=')]
+            __version__ = vers.replace("'",  "").replace('"',  "").strip()
+
 
 ##
 ## Dependencies: required and recommended modules
@@ -195,7 +204,7 @@ if INSTALL and is_anaconda and uname.startswith('darwin'):
 
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
-      version = version.__version__,
+      version = __version__,
       author = 'Matthew Newville and the X-rayLarch Development Team',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
