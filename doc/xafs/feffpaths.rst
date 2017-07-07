@@ -16,22 +16,43 @@ Larch.  The main interface for this is the :func:`feffpath` function that
 reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
 
 Running Feff
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=====================
 
 .. _feff85exafs: https://github.com/xraypy/feff85exafs
 .. _feff85exafs unit tests: https://github.com/xraypy/feff85exafs/tree/master/tests
 
-Larch provides a tool for running Feff as an external executable.  The
-default behavior is intended to make it easy to use the executables
-from the `feff85exafs`_ package.  However, the FeffRunner tool is
-quite flexible and can be used to run specific modules from
-`feff85exafs`_ or other versions of Feff that you might have on your
-computer.
+Larch provides functions for running Feff6l and Feff85l as an external
+programs.
+
+Running Feff6l with :func:`feff6l`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: feff6l(folder='.', feffinp='feff.inp', verbose=True)
+
+    run Feff6 in the supplied folder.
+
+    :param folder:   name of folder containing the Feff6 input file, and where to put the output files ['.', the current working directory]
+    :param feffinp:   name of *feff.inp* file within the supplied folder ['feff.inp']
+    :param verbose:   flag controlling screen output from Feff [True]
+    :returns: a FeffRunner Group.
+
+This will generate a number of outputs, including the *feffNNNN.dat* files
+containing the data for each scattering path.
+
+Running Feff85l with :func:`feffrunner`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The incorporation of Feff85Lite in Larch is still in development, but is
+ntended to make the executables from the `feff85exafs`_ package easy to use
+and a seamless drop-in replacement for Feff6l. The FeffRunner tool is quite
+flexible and can be used to run specific modules from `feff85exafs`_ or
+other versions of Feff that you might have on your computer.
 
 
 ..  function:: feffrunner(feffinp=None, verbose=True, repo=None)
 
-    create a FeffRunner Group from a *feffNNNN.inp* file.
+    create a FeffRunner Group from a *feff.inp* file.
 
     :param feffinp:   name (full path of) *feff.inp* file
     :param verbose:   flag controlling screen output from Feff [True]
@@ -125,7 +146,7 @@ logic for executable resolution described above worked as intended.
 
 
 :func:`feffpath` and FeffPath Groups
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=======================================
 
 The outputs from Feff for each path are complicated enough to need a
 structured organization of data.  This is accomplished by providing a
@@ -231,7 +252,7 @@ numerical value or a Parameter (as created by :func:`_math.param`) can be given.
 
 
 :func:`path2chi` and :func:`ff2chi`: Generating :math:`\chi(k)` for a FeffPath
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================================================================
 
 ..  function:: path2chi(path, paramgroup=None, kmax=None, kstep=0.05, k=None)
 
@@ -281,7 +302,7 @@ sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
 .. _xafs-feffdat_sec:
 
 The _feffdat Group: Full Details of the Feff.Dat File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 Each FeffPath Group will have a ``_feffdat`` sub-group which contains the
 data from the underlying *feffNNNN.dat* file for the results of the Feff
@@ -340,7 +361,7 @@ and the sum is used as :math:`\delta(k)`.
 .. _xafs-exafsequation_sec:
 
 The EXAFS Equation using Feff and FeffPath Groups
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 Now we are ready to write down the full EXAFS equation used for a Feff Path
 using the terms defined above in the
@@ -419,7 +440,7 @@ set of paths -- that is, a histogram of paths.
 .. _xafs-sigma2calcs_sec:
 
 Models for Calculating :math:`\sigma^2`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
@@ -462,7 +483,7 @@ As with :func:`sigma2_eins, the `path` argument can be left ``None``, and the
 ''current FeffData group", (`_sys.fiteval.symtable._feffdat`), will be used.
 
 Example:  Reading a FEFF file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 Here we simply read a *feffNNNN.dat* file and display its components, and
 calculate :math:`\chi` for this path with two different values of
@@ -526,7 +547,7 @@ varying :math:`k` spacing, and that this spacing becomes fairly large at
 high :math:`k`.
 
 Example:  Adding FEFF files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 Now, we add some FEFF files together, applying some path parameters.  The
 example is actually very similar to the one above except that we use
@@ -552,7 +573,7 @@ group is up to date.
 
 
 Example: Using Path Parameters when adding FEFF files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================================================
 
 Using :ref:`Parameters <fitting-parameters_sec>` for modelling data is a
 key feature of Larch, and if you are modelling XAFS data with Feff, you
