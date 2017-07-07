@@ -24,7 +24,7 @@ with open(os.path.join('lib', 'version.py'), 'r') as version_file:
         line = line[:-1]
         if line.startswith('__version__'):
             key, vers = [w.strip() for w in line.split('=')]
-            __version__ = vers
+            __version__ = vers.replace("'",  "").replace('"',  "").strip()
 
 
 ##
