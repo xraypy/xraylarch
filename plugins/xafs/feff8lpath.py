@@ -288,21 +288,22 @@ def feff8_xafs(phase_file, _larch=None):
     return Feff8L_XAFSPath(phase_file=phase_file, _larch=_larch)
 
 
-def initializeLarchPlugin(_larch=None):
-    """initialize F8LIB"""
-    if _larch is not None:
-        global F8LIB
-        if F8LIB is None:
-            try:
-                F8LIB = get_dll('feff8lpath')
-            except:
-                pass
+
+## def initializeLarchPlugin(_larch=None):
+#     """initialize F8LIB"""
+#     if _larch is not None:
+#         global F8LIB
+#         if F8LIB is None:
+#             try:
+#                 F8LIB = get_dll('feff8lpath')
+#             except:
+#                 pass
+##
 
 def registerLarchPlugin():
     return ('_xafs', {'feff8_xafs': feff8_xafs})
 
 
-#     path = Feff8l_Path(phase_file='../fortran/phase.pad')
 #     path.set_absorber(x=0.01, y=0.1, z=0.01)
 #     path.add_scatterer(x=1.806, y=0.1, z=1.806, ipot=1)
 #     path.degen = 12
