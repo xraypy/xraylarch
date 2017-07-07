@@ -179,9 +179,13 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
 
-    xrmmap.create_group('xrd')
-    xrmmap['xrd'].attrs['desc'] = 'xrd detector calibration and data'
-    xrmmap['xrd'].attrs['type'] = 'xrd detector'
+    g = xrmmap.create_group('xrd')
+    g.attrs['desc'] = 'xrd detector calibration and data'
+    g.attrs['type'] = 'xrd detector'
+
+    g = xrmmap.create_group('recon')
+    for name in ('xrd','xrf'):
+        g.create_group(name)
 
     h5root.flush()
 
@@ -1400,6 +1404,15 @@ class GSEXRM_MapFile(object):
         '''
         workgroup = self.ensure_workgroup()
         return [h5str(g) for g in workgroup.keys()]
+
+    def add_recon(self,recon,name,tag='xrf'):
+
+        try:
+            group = self.xrmmap['recon/%s' % tag]
+        except:
+            group = self.xrmmap['recon/xrf']
+         ds = group.create_dataset(name, data=recon)
+
 
     def add_area(self, mask, name=None, desc=None):
         '''add a selected area, with optional name
