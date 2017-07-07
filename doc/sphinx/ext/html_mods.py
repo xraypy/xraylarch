@@ -2,7 +2,10 @@ import re
 from docutils import nodes
 import sphinx.writers.html
 
-BaseTranslator = sphinx.writers.html.SmartyPantsHTMLTranslator
+# BaseTranslator = sphinx.writers.html.SmartyPantsHTMLTranslator
+
+BaseTranslator = sphinx.writers.html.HTMLTranslator
+
 class CustomHTMLTranslator(BaseTranslator):
     def visit_tabular_col_spec(self, node):
         self.table_spec = re.split(r'[\s\|]+', node['spec'])

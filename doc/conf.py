@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
 # from sphinxtr
 import html_mods
-import latex_mods
+# import latex_mods
 
 # -- General configuration -----------------------------------------------------
 
@@ -123,7 +123,7 @@ else:
 #sphinxtr
 # A string of reStructuredText that will be included at the end of
 # every source file that is read.
-rst_epilog = open(os.path.join(CURDIR, 'epilog.rst'),'r').read().decode('utf8')
+rst_epilog = open(os.path.join(CURDIR, 'epilog.rst'),'r').read()# .decode('utf8')
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -191,7 +191,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typograpbhically correct entities.
-html_use_smartypants = True
+# html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {'index': ['indexsidebar.html','searchbox.html']}
@@ -227,21 +227,21 @@ html_domain_indices = False
 # -- Options for LaTeX output --------------------------------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+# latex_paper_size = 'letter'
 
 # The font size ('10pt', '11pt' or '12pt').
 # latex_font_size = '11pt'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-  ('index', 'larch.tex', u'Larch Documentation',
-   u'Matthew Newville', 'manual'),
-]
+# latex_documents = [
+#   ('index', 'larch.tex', u'Larch Documentation',
+#    u'Matthew Newville', 'manual'),
+# ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = '_static/larchcones.png'
+# latex_logo = '_static/larchcones.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -254,23 +254,23 @@ latex_logo = '_static/larchcones.png'
 # If false, no module index is generated.
 # latex_use_modindex = False
 
-latex_additional_files = [
+# latex_additional_files = [
     # 'sphinx/tex/puthesis.cls',
     # 'sphinx/tex/preamble._tex',
-    'sphinx/tex/refstyle.bst',
-    'sphinx/tex/biblio.tex',
+    # 'sphinx/tex/refstyle.bst',
+    # 'sphinx/tex/biblio.tex',
     # 'sphinx/tex/sphinx.sty',
-    'larch.bib',
-]
+    # 'larch.bib',
+# ]
 
 ## \setcounter{secnumdepth}{2}
 ## \setcounter{tocdepth}{2}
 
-latex_elements = {'pointsizee': '11pt',
-                   'preamble': """
- \input{preamble._tex}
- \usepackage{sphinx}
- """}
+# latex_elements = {'pointsizee': '11pt',
+#                    'preamble': """
+#  \input{preamble._tex}
+#  \usepackage{sphinx}
+#  """}
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -290,6 +290,6 @@ latex_elements = {'pointsizee': '11pt',
 #latex_appendices = []
 
 # If false, no module index is generated.
-latex_domain_indices = False
+# latex_domain_indices = False
 
 # latex_use_modindex = False
