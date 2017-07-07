@@ -288,6 +288,7 @@ def feff8_xafs(phase_file, _larch=None):
     return Feff8L_XAFSPath(phase_file=phase_file, _larch=_larch)
 
 
+"""
 def initializeLarchPlugin(_larch=None):
     """initialize F8LIB"""
     if _larch is not None:
@@ -297,6 +298,7 @@ def initializeLarchPlugin(_larch=None):
                 F8LIB = get_dll('feff8lpath')
             except:
                 pass
+"""
 
 def registerLarchPlugin():
     return ('_xafs', {'feff8_xafs': feff8_xafs})
