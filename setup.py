@@ -14,7 +14,7 @@ from glob import glob
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
-INSTALL =  (cmdline_args[0] == 'install')
+INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 
 
 _version__ = None
