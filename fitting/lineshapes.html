@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.5. Some Builtin Line-shape Functions &#8212; larch 0.9.33 documentation</title>
+    <title>7.5. Some Builtin Line-shape Functions &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.6. Fit Examples" href="examples.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -113,108 +113,133 @@
             
   <div class="section" id="some-builtin-line-shape-functions">
 <span id="lineshape-functions-label"></span><h1>7.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.9.34: </span>The definitions of these line shapes are now taken from the
+<a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> package, and have a more uniform interface.</p>
+</div>
 <p>Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
 be amended easily.  All these functions return either a floating point
 scalar or array, depending on the input <code class="docutils literal"><span class="pre">x</span></code>.</p>
 <dl class="function">
 <dt id="gaussian">
-<code class="descname">gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
-<dd><p>a Gaussian or normal distribution function:</p>
+<code class="descname">gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>a Gaussian or normal distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Normal_distribution">http://en.wikipedia.org/wiki/Normal_distribution</a>), with three
+Parameters: <code class="docutils literal"><span class="pre">amplitude</span></code>, <code class="docutils literal"><span class="pre">center</span></code>, and <code class="docutils literal"><span class="pre">sigma</span></code>.</p>
+<div class="math">
+\[f(x; A, \mu, \sigma) = \frac{A}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}\]</div>
+<p>where the parameter <code class="docutils literal"><span class="pre">amplitude</span></code> corresponds to <span class="math">\(A\)</span>, <code class="docutils literal"><span class="pre">center</span></code> to
+<span class="math">\(\mu\)</span>, and <code class="docutils literal"><span class="pre">sigma</span></code> to <span class="math">\(\sigma\)</span>.</p>
+<p>The full width at half maximum is <span class="math">\(2\sigma\sqrt{2\ln{2}}\)</span>,
+approximately <span class="math">\(2.3548\sigma\)</span>.   The maximum height is
+<span class="math">\(A/(\sigma\sqrt{2\pi})\)</span>.</p>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}\]</div>
-<p>where <em>cen</em> is used for <span class="math">\(\mu\)</span>.
-The Full-Width at Half-Maximum is <span class="math">\(2\sigma\sqrt{2\ln{2}}\)</span>,
-approximately <span class="math">\(2.3548\sigma\)</span></p>
 <dl class="function">
 <dt id="lorentzian">
-<code class="descname">lorentzian</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
-<dd><p>a Lorentzian or Cauchy-Lorentz distribution function:</p>
+<code class="descname">lorentzian</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Lorentzian or Cauchy-Lorentz distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Cauchy_distribution">http://en.wikipedia.org/wiki/Cauchy_distribution</a>), with three
+Parameters: <code class="docutils literal"><span class="pre">amplitude</span></code>, <code class="docutils literal"><span class="pre">center</span></code>, and <code class="docutils literal"><span class="pre">sigma</span></code>.</p>
+<div class="math">
+\[f(x; A, \mu, \sigma) = \frac{A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
+<p>where the parameter <code class="docutils literal"><span class="pre">amplitude</span></code> corresponds to <span class="math">\(A\)</span>, <code class="docutils literal"><span class="pre">center</span></code> to
+<span class="math">\(\mu\)</span>, and <code class="docutils literal"><span class="pre">sigma</span></code> to <span class="math">\(\sigma\)</span>.  The full width at
+half maximum is <span class="math">\(2\sigma\)</span>.  The maximum height is
+<span class="math">\(A/(\sigma\pi)\)</span>.</p>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
-<p>where <em>cen</em> is used for <span class="math">\(\mu\)</span>. The Full-Width at Half-Maximum is
-<span class="math">\(2\sigma\)</span>.</p>
 <dl class="function">
 <dt id="voigt">
-<code class="descname">voigt</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
-<dd><p>a Voigt distribution function.   The definition used here is</p>
-</dd></dl>
-
+<code class="descname">voigt</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>gamma=None</em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Voigt distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Voigt_profile">http://en.wikipedia.org/wiki/Voigt_profile</a>), with four Parameters:
+<code class="docutils literal"><span class="pre">amplitude</span></code>, <code class="docutils literal"><span class="pre">center</span></code>, <code class="docutils literal"><span class="pre">sigma</span></code>, and <code class="docutils literal"><span class="pre">gamma</span></code> defined as:</p>
 <div class="math">
-\[f(x, \mu, \sigma, \gamma) = \frac{\textrm{Re}[w(z)]}{\sigma\sqrt{2 \pi}}\]</div>
+\[f(x; A, \mu, \sigma, \gamma) = \frac{A \textrm{Re}[w(z)]}{\sigma\sqrt{2\pi}}\]</div>
 <p>where</p>
 <div class="math">
 \begin{eqnarray*}
-  z &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
-  w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
-\end{eqnarray*}</div><p>and <code class="xref py py-func docutils literal"><span class="pre">erfc()</span></code> is the complimentary error function.  As above, <em>cen</em> is
-used for <span class="math">\(\mu\)</span> here, <em>sigma</em> for <span class="math">\(\sigma\)</span>, and <em>gamma</em> for the
-parameter <span class="math">\(\gamma\)</span>.  If <em>gamma</em> is left as <code class="docutils literal"><span class="pre">None</span></code>, it is set equal
-to <em>sigma</em>.  For the case when <span class="math">\(\gamma = \sigma\)</span>, the Full-Width at
-Half-Maximum is approximately <span class="math">\(3.6013\sigma\)</span>.</p>
+     z   &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
+    w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
+\end{eqnarray*}</div><p>and <code class="xref py py-func docutils literal"><span class="pre">erfc()</span></code> is the complimentary error function.  As above, the
+parameter <code class="docutils literal"><span class="pre">amplitude</span></code> corresponds to <span class="math">\(A\)</span>, <code class="docutils literal"><span class="pre">center</span></code> to
+<span class="math">\(\mu\)</span>, and <code class="docutils literal"><span class="pre">sigma</span></code> to <span class="math">\(\sigma\)</span>.  With the default value of
+<code class="docutils literal"><span class="pre">None</span></code>, <code class="docutils literal"><span class="pre">gamma</span></code> (<span class="math">\(\gamma\)</span>) is constrained to have value equal
+to <code class="docutils literal"><span class="pre">sigma</span></code>, though it can be varied independently.  For the case when
+<span class="math">\(\gamma = \sigma\)</span>, the full width at half maximum is approximately
+<span class="math">\(3.6013\sigma\)</span>.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="pvoigt">
-<code class="descname">pvoigt</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
-<dd><p>a pseudo-Voigt distribution function, which is a weighted sum of a
+<code class="descname">pvoigt</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>fraction=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
-<em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>), and <em>frac</em> setting the
-Lorentzian fraction:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-</pre></div>
-</div>
+<code class="docutils literal"><span class="pre">amplitude</span></code> (<span class="math">\(A\)</span>) , <code class="docutils literal"><span class="pre">center</span></code> (<span class="math">\(\mu\)</span>) and the same full
+width at half maximum (so constrained values of <cite>sigma`</cite>,
+<span class="math">\(\sigma\)</span>).  A paramater <code class="docutils literal"><span class="pre">fraction</span></code> (<span class="math">\(\alpha\)</span>) controls
+controls the relative weight of the Gaussian and Lorentzian components,
+giving the full definition of</p>
+<div class="math">
+\[f(x; A, \mu, \sigma, \alpha) = \frac{(1-\alpha)A}{\sigma_g\sqrt{2\pi}}
+   e^{[{-{(x-\mu)^2}/{{2\sigma_g}^2}}]}
+   + \frac{\alpha A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
 </dd></dl>
 
 <dl class="function">
 <dt id="pearson7">
-<code class="descname">pearson7</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>expon=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
-<dd><p>a Pearson-7 lineshape.  This is another Voigt-like distribution
-function, defined as</p>
+<code class="descname">pearson7</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>exponent=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>A Pearson VII distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution">http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution</a>),
+with four parameers: <code class="docutils literal"><span class="pre">amplitude</span></code> (<span class="math">\(A\)</span>), <code class="docutils literal"><span class="pre">center</span></code>
+(<span class="math">\(\mu\)</span>), <code class="docutils literal"><span class="pre">sigma</span></code> (<span class="math">\(\sigma\)</span>), and <code class="docutils literal"><span class="pre">exponent</span></code> (<span class="math">\(m\)</span>)
+in</p>
+<div class="math">
+\[f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}\]</div>
+</div></blockquote>
+<p>where <span class="math">\(\beta\)</span> is the beta function (see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
+in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v0.19.1)"><code class="xref py py-mod docutils literal"><span class="pre">scipy.special</span></code></a>).</p>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma, p) = \frac{s}{\big\{[1 + (\frac{x-\mu}{\sigma})^2] (2^{1/p} -1)  \big\}^p}\]</div>
-<p>where for <em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>) are as for the
-above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
-<div class="math">
-\[s = \frac{\Gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\Gamma(p-1/2)}\]</div>
-<p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="students_t">
-<code class="descname">students_t</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
-<dd><p>Student's t distribution function.</p>
+<code class="descname">students_t</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Student’s t distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Student%27s_t-distribution">http://en.wikipedia.org/wiki/Student%27s_t-distribution</a>), with three
+Parameters: <code class="docutils literal"><span class="pre">amplitude</span></code> (<span class="math">\(A\)</span>), <code class="docutils literal"><span class="pre">center</span></code> (<span class="math">\(\mu\)</span>) and
+<code class="docutils literal"><span class="pre">sigma</span></code> (<span class="math">\(\sigma\)</span>) in</p>
+<div class="math">
+\[f(x; A, \mu, \sigma) = \frac{A \Gamma(\frac{\sigma+1}{2})}
+    {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})}
+    \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}\]</div>
+<p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma) = \frac{\Gamma(\frac{\sigma+1}{2})} {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})} \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}\]</div>
-<p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="breit_wigner">
-<code class="descname">breit_wigner</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Breit-Wigner-Fano distribution function.</p>
+<code class="descname">breit_wigner</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Breit-Wigner-Fano distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Fano_resonance">http://en.wikipedia.org/wiki/Fano_resonance</a>&gt;), with four Parameters:
+<code class="docutils literal"><span class="pre">amplitude</span></code> (<span class="math">\(A\)</span>), <code class="docutils literal"><span class="pre">center</span></code> (<span class="math">\(\mu\)</span>), <code class="docutils literal"><span class="pre">sigma</span></code>
+(<span class="math">\(\sigma\)</span>), and <code class="docutils literal"><span class="pre">q</span></code> (<span class="math">\(q\)</span>) in</p>
+<div class="math">
+\[f(x; A, \mu, \sigma, q) = \frac{A (q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}\]</div>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}\]</div>
-<dl class="function">
-<dt id="logistic">
-<code class="descname">logistic</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#logistic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Logistic lineshape, a sigmoidal curve</p>
-</dd></dl>
-
-<div class="math">
-\[f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}\]</div>
 <dl class="function">
 <dt id="lognormal">
 <code class="descname">lognormal</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
-<dd><p>log-normal function</p>
+<dd><p>A Log-normal distribution function (see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Lognormal">http://en.wikipedia.org/wiki/Lognormal</a>), with three Parameters
+<code class="docutils literal"><span class="pre">amplitude</span></code> (<span class="math">\(A\)</span>), <code class="docutils literal"><span class="pre">center</span></code> (<span class="math">\(\mu\)</span>) and <code class="docutils literal"><span class="pre">sigma</span></code>
+(<span class="math">\(\sigma\)</span>) in</p>
+<div class="math">
+\[f(x; A, \mu, \sigma) = \frac{A e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
 </dd></dl>
 
-<div class="math">
-\[f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
 <p>Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the <a class="reference internal" href="#fit-funcs-table"><span class="std std-ref">Table of Useful Line shapes</span></a>.</p>
@@ -222,8 +247,8 @@ in the <a class="reference internal" href="#fit-funcs-table"><span class="std st
 <span id="index-0"></span><div><p>Table of Useful Line shapes.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="46%" />
-<col width="54%" />
+<col width="55%" />
+<col width="45%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><em>function</em></th>
@@ -231,43 +256,40 @@ in the <a class="reference internal" href="#fit-funcs-table"><span class="std st
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>gaussian(x, cen, sigma)</td>
+<tr class="row-even"><td>gaussian(x, amplitude, center, sigma)</td>
 <td>Gaussian, normal distribution</td>
 </tr>
-<tr class="row-odd"><td>lorentzian(x, cen, sigma)</td>
+<tr class="row-odd"><td>lorentzian(x, amplitude, center, sigma)</td>
 <td>Lorentzian distribution</td>
 </tr>
-<tr class="row-even"><td>voigt(x, cen, sigma, gamma)</td>
+<tr class="row-even"><td>voigt(x, amplitude, center, sigma, gamma)</td>
 <td>Voigt distribution</td>
 </tr>
-<tr class="row-odd"><td>pvoigt(x, cen, sigma, frac)</td>
+<tr class="row-odd"><td>pvoigt(x, amplitude, center, sigma, fraction)</td>
 <td>pseudo-Voigt distribution</td>
 </tr>
-<tr class="row-even"><td>pearson7(x, cen, sigma, expon)</td>
+<tr class="row-even"><td>pearson7(x, amplitude, center, sigma, exponent)</td>
 <td>Pearson-7 distribution</td>
 </tr>
-<tr class="row-odd"><td>students_t(x, cen, sigma)</td>
-<td>Student's t distribution</td>
+<tr class="row-odd"><td>students_t(x, amplitude, center, sigma)</td>
+<td>Student’s t distribution</td>
 </tr>
-<tr class="row-even"><td>breit_wigner(x, cen, sigma, q)</td>
+<tr class="row-even"><td>breit_wigner(x, amplitude, center, sigma, q)</td>
 <td>Breit-Wigner-Fano distribution</td>
 </tr>
-<tr class="row-odd"><td>logistic(x, cen, sigma)</td>
-<td>Logistic distribution</td>
-</tr>
-<tr class="row-even"><td>lognormal(x, cen, sigma)</td>
+<tr class="row-odd"><td>lognormal(x, amplitude, center, sigma)</td>
 <td>Log-normal distribution</td>
 </tr>
-<tr class="row-odd"><td>arctan(x)</td>
+<tr class="row-even"><td>arctan(x)</td>
 <td>Arc-tangent function</td>
 </tr>
-<tr class="row-even"><td>erf(x)</td>
+<tr class="row-odd"><td>erf(x)</td>
 <td>Error function</td>
 </tr>
-<tr class="row-odd"><td>erfc(x)</td>
+<tr class="row-even"><td>erfc(x)</td>
 <td>Complemented Error function (1-erf(x))</td>
 </tr>
-<tr class="row-even"><td>gammaln(x)</td>
+<tr class="row-odd"><td>gammaln(x)</td>
 <td>log of absolute value of gamma(x)</td>
 </tr>
 </tbody>
@@ -313,7 +335,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

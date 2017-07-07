@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6. Plotting and Displaying Data &#8212; larch 0.9.33 documentation</title>
+    <title>6. Plotting and Displaying Data &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7. Fitting and Modeling Data" href="../fitting/index.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -170,14 +170,14 @@ window, and you can control which one is drawn to with a plot window index
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> -- array of x values</li>
-<li><strong>y</strong> -- array of y values -- same size as x</li>
+<li><strong>x</strong> – array of x values</li>
+<li><strong>y</strong> – array of y values – same size as x</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Plot y(x) given 1-dimensional x and y arrays -- these must be of the
+<p>Plot y(x) given 1-dimensional x and y arrays – these must be of the
 same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 <p>There are many options for a plot, all specified by the keyword/value
 parameters described in the   <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a> below.</p>
@@ -234,13 +234,13 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-odd"><td>label</td>
 <td>string</td>
 <td>None</td>
-<td>trace label (defaults to 'trace N')</td>
+<td>trace label (defaults to ‘trace N’)</td>
 <td>yes</td>
 </tr>
 <tr class="row-even"><td>win</td>
 <td>integer</td>
 <td>1</td>
-<td>index of plot window to use (1, 2, ..., 16)</td>
+<td>index of plot window to use (1, 2, …, 16)</td>
 <td>yes</td>
 </tr>
 <tr class="row-odd"><td>side</td>
@@ -300,7 +300,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td>style</td>
 <td>string</td>
 <td>solid</td>
-<td>line-style for trace (solid, dashed, ...)</td>
+<td>line-style for trace (solid, dashed, …)</td>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>drawstyle</td>
@@ -312,7 +312,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td>marker</td>
 <td>string</td>
 <td>None</td>
-<td>symbol to show for each point (+, o, ....)</td>
+<td>symbol to show for each point (+, o, ….)</td>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>markersize</td>
@@ -389,8 +389,8 @@ same meaning, as indicated by the right-most column.</p>
 </tr>
 <tr class="row-odd"><td>legend_loc</td>
 <td>string</td>
-<td>'ur'</td>
-<td>location of legend ('ur', 'll', etc)</td>
+<td>‘ur’</td>
+<td>location of legend (‘ur’, ‘ll’, etc)</td>
 <td>no</td>
 </tr>
 <tr class="row-even"><td>refresh</td>
@@ -399,9 +399,9 @@ same meaning, as indicated by the right-most column.</p>
 <td>whether to refresh display</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-odd"><td>&#160;</td>
 <td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></code></a></td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>size</td>
 <td>int</td>
@@ -424,7 +424,7 @@ same meaning, as indicated by the right-most column.</p>
 </tbody>
 </table>
 <p>For each plot window, the configuration for the plot (title, labels, grid
-displays, etc) and the properties of each trace (color, linewidth, ...)
+displays, etc) and the properties of each trace (color, linewidth, …)
 are preserved for the duration of that window.   A few specific notes:</p>
 <blockquote>
 <div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a> default to <code class="docutils literal"><span class="pre">None</span></code>,
@@ -433,20 +433,20 @@ which means to use the previously used value.</p>
 are Unix timestamps into x labels showing the dates.</p>
 <p>3. While the default is to auto-scale the plot from the data ranges,
 specifying any of the limits will override the corresponding limit(s).</p>
-<p>4. The <em>color</em> argument can be any color name (&quot;blue&quot;, &quot;red&quot;, &quot;black&quot;, etc),
-standard X11 color names (&quot;cadetblue3&quot;, &quot;darkgreen&quot;, etc), or an RGB hex
-color string of the form &quot;#RRGGBB&quot;.</p>
-<p>5. Valid <em>style</em> arguments are 'solid', 'dashed', 'dotted', or 'dash-dot' ,
-with 'solid' as the default.</p>
-<p>6. Valid <em>marker</em> arguments are '+', 'o', 'x', '^', 'v', '&gt;', '&lt;', '|', '_',
-'square', 'diamond', 'thin diamond', 'hexagon', 'pentagon', 'tripod 1', or
-'tripod 2'.</p>
+<p>4. The <em>color</em> argument can be any color name (“blue”, “red”, “black”, etc),
+standard X11 color names (“cadetblue3”, “darkgreen”, etc), or an RGB hex
+color string of the form “#RRGGBB”.</p>
+<p>5. Valid <em>style</em> arguments are ‘solid’, ‘dashed’, ‘dotted’, or ‘dash-dot’ ,
+with ‘solid’ as the default.</p>
+<p>6. Valid <em>marker</em> arguments are ‘+’, ‘o’, ‘x’, ‘^’, ‘v’, ‘&gt;’, ‘&lt;’, ‘|’, ‘_’,
+‘square’, ‘diamond’, ‘thin diamond’, ‘hexagon’, ‘pentagon’, ‘tripod 1’, or
+‘tripod 2’.</p>
 <p>7. Valid <em>drawstyles</em> are None (which connects points with a straight line),
-'steps-pre', 'steps-mid', or 'steps-post', which give a step between the
-points, either just after a point ('steps-pre'), midway between them
-('steps-mid') or just before each point ('steps-post').   Note that if displaying
+‘steps-pre’, ‘steps-mid’, or ‘steps-post’, which give a step between the
+points, either just after a point (‘steps-pre’), midway between them
+(‘steps-mid’) or just before each point (‘steps-post’).   Note that if displaying
 discrete values as a function of time, left-to-right, and want to show a
-transition to a new value as a sudden step, you want 'steps-post'.</p>
+transition to a new value as a sudden step, you want ‘steps-post’.</p>
 </div></blockquote>
 </div></blockquote>
 <p>Again, most of these values can be configured interactively from the Plot configuration window.</p>
@@ -462,18 +462,18 @@ are listed in  <a class="reference internal" href="#plotopt-table"><span class="
 
 <dl class="method">
 <dt id="_plotter.update_trace">
-<code class="descclassname">_plotter.</code><code class="descname">update_trace</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">update_trace</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side=’left’</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates an existing trace of a plot.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> -- array of x values</li>
-<li><strong>y</strong> -- array of y values</li>
-<li><strong>win</strong> -- integer index of window for plot (1 is the first window)</li>
-<li><strong>trace</strong> -- integer index for the trace (1 is the first trace)</li>
-<li><strong>side</strong> -- which y axis to use ('left' or 'right').</li>
+<li><strong>x</strong> – array of x values</li>
+<li><strong>y</strong> – array of y values</li>
+<li><strong>win</strong> – integer index of window for plot (1 is the first window)</li>
+<li><strong>trace</strong> – integer index for the trace (1 is the first trace)</li>
+<li><strong>side</strong> – which y axis to use (‘left’ or ‘right’).</li>
 </ul>
 </td>
 </tr>
@@ -484,7 +484,7 @@ and you wish to update traces from a previous <a class="reference internal" href
 data without completely redrawing the entire plot.  Using this method
 is substantially faster than replotting, and should be used for dynamic
 plots, such as plottting the progress of some function during a fit.
-Note that you cannot change properties such as color here -- these will
+Note that you cannot change properties such as color here – these will
 be inherited from the existing trace.  In that sense, most of the
 properties of the trace and of the plot as a whole remain unchanged, it
 just happens that the data for the trace has been replaced.</p>
@@ -492,21 +492,21 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.plot_text">
-<code class="descclassname">_plotter.</code><code class="descname">plot_text</code><span class="sig-paren">(</span><em>text</em>, <em>x</em>, <em>y</em>, <em>win=1</em>, <em>side='left'</em>, <em>rotation=None</em>, <em>ha='left'</em>, <em>va='center'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">plot_text</code><span class="sig-paren">(</span><em>text</em>, <em>x</em>, <em>y</em>, <em>win=1</em>, <em>side=’left’</em>, <em>rotation=None</em>, <em>ha=’left’</em>, <em>va=’center’</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>add text at x, y coordinates of the plot window</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>text</strong> -- text to draw</li>
-<li><strong>x</strong> -- x position of text</li>
-<li><strong>y</strong> -- y position of text</li>
-<li><strong>win</strong> -- index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>side</strong> -- which axis to use ('left' or 'right') for coordinates.</li>
-<li><strong>rotation</strong> -- text rotation. angle in degrees or 'vertical' or 'horizontal'</li>
-<li><strong>ha</strong> -- horizontal alignment ('left', 'center', 'right')</li>
-<li><strong>va</strong> -- vertical alignment ('top', 'center', 'bottom', 'baseline')</li>
+<li><strong>text</strong> – text to draw</li>
+<li><strong>x</strong> – x position of text</li>
+<li><strong>y</strong> – y position of text</li>
+<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
+<li><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</li>
+<li><strong>rotation</strong> – text rotation. angle in degrees or ‘vertical’ or ‘horizontal’</li>
+<li><strong>ha</strong> – horizontal alignment (‘left’, ‘center’, ‘right’)</li>
+<li><strong>va</strong> – vertical alignment (‘top’, ‘center’, ‘bottom’, ‘baseline’)</li>
 </ul>
 </td>
 </tr>
@@ -523,17 +523,17 @@ just happens that the data for the trace has been replaced.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x1</strong> -- starting x coordinate</li>
-<li><strong>y1</strong> -- starting y coordinate</li>
-<li><strong>x2</strong> -- endnig x coordinate</li>
-<li><strong>y2</strong> -- ending y coordinate</li>
-<li><strong>win</strong> -- index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>side</strong> -- which axis to use ('left' or 'right') for coordinates.</li>
-<li><strong>shape</strong> -- arrow head shape ('full', 'left', 'right')</li>
-<li><strong>fg</strong> -- arrow fill color ('black')</li>
-<li><strong>width</strong> -- width of arrow line (in points. default=0.01)</li>
-<li><strong>head_width</strong> -- width of arrow head (in points. default=0.1)</li>
-<li><strong>overhang</strong> -- amount the arrow is swept back (in points. default=0)</li>
+<li><strong>x1</strong> – starting x coordinate</li>
+<li><strong>y1</strong> – starting y coordinate</li>
+<li><strong>x2</strong> – endnig x coordinate</li>
+<li><strong>y2</strong> – ending y coordinate</li>
+<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
+<li><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</li>
+<li><strong>shape</strong> – arrow head shape (‘full’, ‘left’, ‘right’)</li>
+<li><strong>fg</strong> – arrow fill color (‘black’)</li>
+<li><strong>width</strong> – width of arrow line (in points. default=0.01)</li>
+<li><strong>head_width</strong> – width of arrow head (in points. default=0.1)</li>
+<li><strong>overhang</strong> – amount the arrow is swept back (in points. default=0)</li>
 </ul>
 </td>
 </tr>
@@ -543,20 +543,20 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.save_plot">
-<code class="descclassname">_plotter.</code><code class="descname">save_plot</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">save_plot</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor=’w’</em>, <em>edgecolor=’w’</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current plot to a PNG or other output formats.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> -- name of output file</li>
-<li><strong>dpi</strong> -- resolution (dots per inch)</li>
-<li><strong>format</strong> -- output format (one of 'png', 'pdf', or 'svg')</li>
-<li><strong>win</strong> -- index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>facecolor</strong> -- color of plot background (not supported for all formats)</li>
-<li><strong>edgecolor</strong> -- color of plot frame color (not supported for all formats)</li>
-<li><strong>transparent</strong> -- whether to use a transparent background.</li>
+<li><strong>filename</strong> – name of output file</li>
+<li><strong>dpi</strong> – resolution (dots per inch)</li>
+<li><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</li>
+<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
+<li><strong>facecolor</strong> – color of plot background (not supported for all formats)</li>
+<li><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</li>
+<li><strong>transparent</strong> – whether to use a transparent background.</li>
 </ul>
 </td>
 </tr>
@@ -566,20 +566,20 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.save_image">
-<code class="descclassname">_plotter.</code><code class="descname">save_image</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_plotter.</code><code class="descname">save_image</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor=’w’</em>, <em>edgecolor=’w’</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current 2D image from <a class="reference internal" href="#_plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> -- name of output file</li>
-<li><strong>dpi</strong> -- resolution (dots per inch)</li>
-<li><strong>format</strong> -- output format (one of 'png', 'pdf', or 'svg')</li>
-<li><strong>win</strong> -- index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>facecolor</strong> -- color of plot background (not supported for all formats)</li>
-<li><strong>edgecolor</strong> -- color of plot frame color (not supported for all formats)</li>
-<li><strong>transparent</strong> -- whether to use a transparent background.</li>
+<li><strong>filename</strong> – name of output file</li>
+<li><strong>dpi</strong> – resolution (dots per inch)</li>
+<li><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</li>
+<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
+<li><strong>facecolor</strong> – color of plot background (not supported for all formats)</li>
+<li><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</li>
+<li><strong>transparent</strong> – whether to use a transparent background.</li>
 </ul>
 </td>
 </tr>
@@ -647,11 +647,11 @@ Ctrl-C (Apple-C for Mac OS X users).  You can then paste this image into
 other applications such as rich text documents and slide presentations.</p>
 <p><strong>Save image to PNG, PDF, or SVG</strong>:</p>
 <p>To save the plot image to a standard image format, use Ctrl-S (Apple-S for
-Mac OS X users).  This will bring up a 'save file' dialog box for writing
+Mac OS X users).  This will bring up a ‘save file’ dialog box for writing
 an image file.  The images will be generally high resolution, and should be
 of sufficiently high quality to be acceptable for publication or public
-display.  Each of the supported image formats -- PNG (default), PDF, and
-SVG -- has its strengths and weaknesses. The PNG images use high resolution
+display.  Each of the supported image formats – PNG (default), PDF, and
+SVG – has its strengths and weaknesses. The PNG images use high resolution
 (600dpi) and anti-aliasing, and are generally higher quality than the SVG
 images.  The PDF images include real font information but does not use
 anti-aliasing.</p>
@@ -661,7 +661,7 @@ Window, using Ctrl-P (Apple-P for Mac OS X users).   This may not work on
 all systems, in which case saving an image and printing that should</p>
 <p><strong>Configuring the Plot</strong>:</p>
 <p>From the Plot Window, either Ctrl-K (Apple-K for Mac OS X users) or
-Options-&gt;'Configure Plot' (or right-click to bring up a popup menu, then
+Options-&gt;’Configure Plot’ (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
 like this:</p>
 <div class="figure" id="id3">
@@ -679,22 +679,22 @@ mathematical symbols and formulae.   A simple example would be:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;$ k </span><span class="se">\r</span><span class="s1">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The portion of the strings between the dollar signs ('$') will be rendered
+<p>The portion of the strings between the dollar signs (‘$’) will be rendered
 as TeX-like markup, and so render the x and y labels as (for the pedantic,
 these renderings below may be only approximate):</p>
 <blockquote>
 <div><p><span class="math">\(k \rm(\AA^{-1})\)</span></p>
 <p><span class="math">\(\chi(k)\)</span></p>
 </div></blockquote>
-<p>An important point here is the use of the backslash character, '\', which
+<p>An important point here is the use of the backslash character, ‘', which
 you may recall from the tutorial is also used as an escape sequence.  Thus
-some TeX sequences, such as '\theta' may require an additional backslash,
-so that the '\t' part isn't rendered as a tab character. More generally,
+some TeX sequences, such as ‘\theta’ may require an additional backslash,
+so that the ‘\t’ part isn’t rendered as a tab character. More generally,
 use of <em>raw strings</em> is recommended in this context, so that one uses:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that this does not actually use TeX (so you don't need TeX installed),
+<p>Note that this does not actually use TeX (so you don’t need TeX installed),
 and the rendering is done by the matplotlib library.  For further details
 about using TeX for markup, including a list of symbols, commands to change
 fonts, and examples, can be found at <a class="reference external" href="http://matplotlib.org/users/mathtext.html">http://matplotlib.org/users/mathtext.html</a></p>
@@ -713,10 +713,10 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dat</strong> -- 2-d array of some intensity</li>
-<li><strong>x</strong> -- 1-d array of x values</li>
-<li><strong>y</strong> -- 1-d array of y values</li>
-<li><strong>colormap</strong> -- name of color table to use.</li>
+<li><strong>dat</strong> – 2-d array of some intensity</li>
+<li><strong>x</strong> – 1-d array of x values</li>
+<li><strong>y</strong> – 1-d array of y values</li>
+<li><strong>colormap</strong> – name of color table to use.</li>
 </ul>
 </td>
 </tr>
@@ -733,11 +733,11 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dat</strong> -- 2-d array of some intensity</li>
-<li><strong>x</strong> -- 1-d array of x values</li>
-<li><strong>y</strong> -- 1-d array of y values</li>
-<li><strong>colormap</strong> -- name of color table to use.</li>
-<li><strong>nlevels</strong> -- number of contour levels shown</li>
+<li><strong>dat</strong> – 2-d array of some intensity</li>
+<li><strong>x</strong> – 1-d array of x values</li>
+<li><strong>y</strong> – 1-d array of y values</li>
+<li><strong>colormap</strong> – name of color table to use.</li>
+<li><strong>nlevels</strong> – number of contour levels shown</li>
 </ul>
 </td>
 </tr>
@@ -752,9 +752,9 @@ real world coordinates for the image, not just the array indices.  If
 <p>By default, the image will be shown with the origin (pixel [0, 0]) in the
 lower left corner.  The image can be rotated and flipped by the user.</p>
 <p>The <cite>colormap</cite> argument is the name of the color map to use to transform
-intensity to color.  The default table is 'gray' for a grayscale mapping.
-Other valid names include 'coolwarm', 'cool', 'hot', 'jet', 'Reds',
-'Greens', 'Blues', 'copper', and a host of others, available</p>
+intensity to color.  The default table is ‘gray’ for a grayscale mapping.
+Other valid names include ‘coolwarm’, ‘cool’, ‘hot’, ‘jet’, ‘Reds’,
+‘Greens’, ‘Blues’, ‘copper’, and a host of others, available</p>
 <p>From the Image Display Window, you zoom in on regions of the image, rotate
 the image, change the color table, change the intensity scaling, change the
 interpolattion algorithm used.  You can also toggle between showing an
@@ -814,7 +814,7 @@ use <a class="reference internal" href="#_plotter.get_display" title="_plotter.g
 </div>
 <p>As an example of what you can do with this, here we make a histogram plot
 from a sampling of a more conitinuous distribution.  This  uses
-matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function,</p>
+matplotlib’s <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function,</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/plotting/doc_use_mpl.lar</span>
 <span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">gamma</span>
@@ -835,7 +835,7 @@ matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hi
 
 <span class="c1"># standard plot of g(r)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gr</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$R\,\rm(\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$g(R)$&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$R\,\rm(\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$g(R)$&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">fullbox</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># calculate g(r) on a coarse r-grid:</span>
@@ -859,7 +859,7 @@ matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hi
 <p>which generates a plot that looks like</p>
 <div class="figure" id="id6">
 <span id="plotting-fig6"></span><a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(k)</strong> A histogram plot made using matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function.</span></p>
+<p class="caption"><span class="caption-text"><strong>(k)</strong> A histogram plot made using matplotlib’s <code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function.</span></p>
 </div>
 </div>
 </div>
@@ -894,7 +894,7 @@ matplotlib's <code class="xref py py-func docutils literal"><span class="pre">hi
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

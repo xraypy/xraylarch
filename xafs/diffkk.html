@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.8. XAFS: Computing anomalous scattering factors from XAFS data &#8212; larch 0.9.33 documentation</title>
+    <title>8.8. XAFS: Computing anomalous scattering factors from XAFS data &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9. X-ray Databases" href="../xray/index.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -144,7 +144,7 @@ algorithm to compute the differential (i.e. difference between the
 data and the tabulated <span class="math">\(f''(E)\)</span>) Kramers-Kronig transform.  This
 algorithm is described in <span class="citation"><a class="reference internal" href="../biblio.html#citation-ohta-88">Ohta and Ishida</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-ohta-88">15</a><span>]</span></span>.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
-so it is reasonably fast -- not quite as fast as the original Fortran
+so it is reasonably fast – not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.</p>
 <p>The input <span class="math">\(\mu(E)\)</span> data are first matched to the tabulated
@@ -166,18 +166,18 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 </div>
 <dl class="function">
 <dt id="_xafs.diffkk">
-<code class="descclassname">_xafs.</code><code class="descname">diffkk</code><span class="sig-paren">(</span><em>energy=None</em>, <em>mu=None</em>, <em>z=None</em>, <em>edge='K'</em>, <em>mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">diffkk</code><span class="sig-paren">(</span><em>energy=None</em>, <em>mu=None</em>, <em>z=None</em>, <em>edge=’K’</em>, <em>mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a diffKK Group.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> -- an array containing the measured <span class="math">\(\mu(E)\)</span></li>
-<li><strong>z</strong> -- the Z number of the absorber element</li>
-<li><strong>edge</strong> -- the edge measured, usually K or L3</li>
-<li><strong>mback_kws</strong> -- arguments passed to the MBACK algorithm</li>
+<li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
+<li><strong>mu</strong> – an array containing the measured <span class="math">\(\mu(E)\)</span></li>
+<li><strong>z</strong> – the Z number of the absorber element</li>
+<li><strong>edge</strong> – the edge measured, usually K or L3</li>
+<li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
 </ul>
 </td>
 </tr>
@@ -190,18 +190,18 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 
 <dl class="function">
 <dt id="_xafs.diffkk.kk">
-<code class="descclassname">diffkk.</code><code class="descname">kk</code><span class="sig-paren">(</span><em>energy=None</em>, <em>mu=None</em>, <em>z=None</em>, <em>edge='K'</em>, <em>mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk.kk" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">diffkk.</code><code class="descname">kk</code><span class="sig-paren">(</span><em>energy=None</em>, <em>mu=None</em>, <em>z=None</em>, <em>edge=’K’</em>, <em>mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk.kk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the KK transform.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> -- an array containing the measured <span class="math">\(\mu(E)\)</span></li>
-<li><strong>z</strong> -- the Z number of the absorber element</li>
-<li><strong>edge</strong> -- the edge measured, usually K or L3</li>
-<li><strong>mback_kws</strong> -- arguments passed to the MBACK algorithm</li>
+<li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
+<li><strong>mu</strong> – an array containing the measured <span class="math">\(\mu(E)\)</span></li>
+<li><strong>z</strong> – the Z number of the absorber element</li>
+<li><strong>edge</strong> – the edge measured, usually K or L3</li>
+<li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
 </ul>
 </td>
 </tr>
@@ -349,7 +349,7 @@ algorithm would be more appropriate for L edge data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

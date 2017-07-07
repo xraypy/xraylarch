@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.33 documentation</title>
+    <title>8.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -306,7 +306,7 @@ the physical quantity described, and the name of function that will generate thi
 <span class="math">\(\chi(k)\)</span> to be represented by the two arrays <code class="docutils literal"><span class="pre">GROUP.k</span></code> and <code class="docutils literal"><span class="pre">GROUP.chi</span></code></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
 <h3>8.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
-<p>The XAFS functions need to write outputs to some group -- there are simply too many outputs to
+<p>The XAFS functions need to write outputs to some group – there are simply too many outputs to
 return and expect you to manage.   So, all functions take a <strong>group</strong> argument, which is used
 as the group into which results are written.  Again, this allows maximum flexibility, but gets
 tedious to provide this argument repeatedly when working with a particular data set.</p>
@@ -396,26 +396,26 @@ wavenumber can be a single number or array of numbers.</p>
 <h3>8.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><code class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></code></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.estimate_noise">
-<code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>….</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically estimate the noise level in a <span class="math">\(\chi(k)\)</span> spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>k</strong> -- 1-d array of <span class="math">\(k\)</span></li>
-<li><strong>chi</strong> -- 1-d array of <span class="math">\(\chi\)</span></li>
-<li><strong>group</strong> -- output group.</li>
-<li><strong>rmin</strong> -- minimum <span class="math">\(R\)</span> value for noise estimate.</li>
-<li><strong>rmax</strong> -- maximum <span class="math">\(R\)</span> value for noise estimate.</li>
-<li><strong>kweight</strong> -- exponent for weighting spectra by k**kweight [1]</li>
-<li><strong>kmin</strong> -- starting k for FT Window [0]</li>
-<li><strong>kmax</strong> -- ending k for FT Window  [20]</li>
-<li><strong>dk</strong> -- tapering parameter for FT Window [4]</li>
-<li><strong>dk2</strong> -- second tapering parameter for FT Window [None]</li>
-<li><strong>window</strong> -- name of window type ['kaiser']</li>
-<li><strong>nfft</strong> -- value to use for N_fft [2048].</li>
-<li><strong>kstep</strong> -- value to use for delta_k ( Ang^-1) [0.05]</li>
+<li><strong>k</strong> – 1-d array of <span class="math">\(k\)</span></li>
+<li><strong>chi</strong> – 1-d array of <span class="math">\(\chi\)</span></li>
+<li><strong>group</strong> – output group.</li>
+<li><strong>rmin</strong> – minimum <span class="math">\(R\)</span> value for noise estimate.</li>
+<li><strong>rmax</strong> – maximum <span class="math">\(R\)</span> value for noise estimate.</li>
+<li><strong>kweight</strong> – exponent for weighting spectra by k**kweight [1]</li>
+<li><strong>kmin</strong> – starting k for FT Window [0]</li>
+<li><strong>kmax</strong> – ending k for FT Window  [20]</li>
+<li><strong>dk</strong> – tapering parameter for FT Window [4]</li>
+<li><strong>dk2</strong> – second tapering parameter for FT Window [None]</li>
+<li><strong>window</strong> – name of window type [‘kaiser’]</li>
+<li><strong>nfft</strong> – value to use for N_fft [2048].</li>
+<li><strong>kstep</strong> – value to use for delta_k ( Ang^-1) [0.05]</li>
 </ul>
 </td>
 </tr>
@@ -454,10 +454,10 @@ The following outputs are written to the supplied <strong>group</strong> (or <ci
 
 <p>This method uses the high-R portion of <span class="math">\(\chi(R)\)</span> (between <strong>rmin</strong>
 and <strong>rmax</strong>) as a measure of the noise level in the <span class="math">\(\chi(R)\)</span> data
-and uses Parseval's theorem to convert this noise level to that in
+and uses Parseval’s theorem to convert this noise level to that in
 <span class="math">\(\chi(k)\)</span>.  This method implicitly assumes that there is no signal in
 the high-R portion of the spectrum, and that the noise in the spectrum is
-&quot;white&quot; (independent of <span class="math">\(R\)</span>) .  Each of these assumptions can be
+“white” (independent of <span class="math">\(R\)</span>) .  Each of these assumptions can be
 legitimately questioned.  Then again, making the assertion that these
 assumptions are invalid and disregarding the estimated noise level here
 would require knowledge of the noise in an XAFS spectrum that most users do
@@ -474,22 +474,22 @@ small, the estimate may not be that bad.</p>
 <h3>8.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.xas_deconvolve">
-<code class="descclassname">_xafs.</code><code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=Noned group=None</em>, <em>form='gaussian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=Noned group=None</em>, <em>form=’gaussian’</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>de-convolves a normalized mu(E) spectra with a peak shape, enhancing separation
-of XANES features.  This procedure can be unstable -- Use results with caution!</p>
+of XANES features.  This procedure can be unstable – Use results with caution!</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> -- 1-d array of <span class="math">\(E\)</span></li>
-<li><strong>norm</strong> -- 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> -- output group</li>
-<li><strong>form</strong> -- form of deconvolution function. One of
-'gaussian' (default) or 'lorentzian'</li>
-<li><strong>esigma</strong> -- energy <span class="math">\(\sigma\)</span> (in eV) to pass to
+<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
+<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>form</strong> – form of deconvolution function. One of
+‘gaussian’ (default) or ‘lorentzian’</li>
+<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
 <a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [default=1.0]</li>
-<li><strong>eshift</strong> -- energy shift (in eV) to apply to result. [default=0]</li>
+<li><strong>eshift</strong> – energy shift (in eV) to apply to result. [default=0]</li>
 </ul>
 </td>
 </tr>
@@ -552,7 +552,7 @@ The following data is put into the output group:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.3. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.33 documentation</title>
+    <title>8.3. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -145,7 +145,7 @@ subtleties.  This section is devoted to background subtraction with the
 <h2>8.3.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.autobk">
-<code class="descclassname">_xafs.</code><code class="descname">autobk</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">autobk</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the post-edge background function, <span class="math">\(\mu_0(E)\)</span>, and
 corresponding <span class="math">\(\chi(k)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -153,28 +153,28 @@ corresponding <span class="math">\(\chi(k)\)</span>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> -- output group (and input group for <code class="docutils literal"><span class="pre">e0</span></code> and <code class="docutils literal"><span class="pre">edge_step</span></code>.</li>
-<li><strong>rbkg</strong> -- distance (in <span class="math">\(\rm\AA\)</span>) for <span class="math">\(\chi(R)\)</span> above
+<li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> – 1-d array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group (and input group for <code class="docutils literal"><span class="pre">e0</span></code> and <code class="docutils literal"><span class="pre">edge_step</span></code>.</li>
+<li><strong>rbkg</strong> – distance (in <span class="math">\(\rm\AA\)</span>) for <span class="math">\(\chi(R)\)</span> above
 which the signal is ignored. Default = 1.</li>
-<li><strong>e0</strong> -- edge energy, in eV.  If <cite>None</cite>, it will be determined.</li>
-<li><strong>edge_step</strong> -- edge step.  If <cite>None</cite>, it will be determined.</li>
-<li><strong>pre_edge_kws</strong> -- dictionary containing keyword arguments to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
-<li><strong>nknots</strong> -- number of knots in spline.  If <cite>None</cite>, it will be determined.</li>
-<li><strong>kmin</strong> -- minimum <span class="math">\(k\)</span> value   [0]</li>
-<li><strong>kmax</strong> -- maximum <span class="math">\(k\)</span> value   [full data range].</li>
-<li><strong>kweight</strong> -- <span class="math">\(k\)</span> weight for FFT.  [1]</li>
-<li><strong>dk</strong> -- FFT window window parameter.  [0]</li>
-<li><strong>win</strong> -- FFT window function name.     ['hanning']</li>
-<li><strong>nfft</strong> -- array size to use for FFT [2048]</li>
-<li><strong>kstep</strong> -- <span class="math">\(k\)</span> step size to use for FFT [0.05]</li>
-<li><strong>k_std</strong> -- optional <span class="math">\(k\)</span> array for standard <span class="math">\(\chi(k)\)</span>.</li>
-<li><strong>chi_std</strong> -- optional <span class="math">\(\chi\)</span> array for standard <span class="math">\(\chi(k)\)</span>.</li>
-<li><strong>nclamp</strong> -- number of energy end-points for clamp [2]</li>
-<li><strong>clamp_lo</strong> -- weight of low-energy clamp [1]</li>
-<li><strong>clamp_hi</strong> -- weight of high-energy clamp [1]</li>
-<li><strong>calc_uncertaintites</strong> -- Flag to calculate uncertainties in  <span class="math">\(\mu_0(E)\)</span> and <span class="math">\(\chi(k)\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>e0</strong> – edge energy, in eV.  If <cite>None</cite>, it will be determined.</li>
+<li><strong>edge_step</strong> – edge step.  If <cite>None</cite>, it will be determined.</li>
+<li><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>nknots</strong> – number of knots in spline.  If <cite>None</cite>, it will be determined.</li>
+<li><strong>kmin</strong> – minimum <span class="math">\(k\)</span> value   [0]</li>
+<li><strong>kmax</strong> – maximum <span class="math">\(k\)</span> value   [full data range].</li>
+<li><strong>kweight</strong> – <span class="math">\(k\)</span> weight for FFT.  [1]</li>
+<li><strong>dk</strong> – FFT window window parameter.  [0]</li>
+<li><strong>win</strong> – FFT window function name.     [‘hanning’]</li>
+<li><strong>nfft</strong> – array size to use for FFT [2048]</li>
+<li><strong>kstep</strong> – <span class="math">\(k\)</span> step size to use for FFT [0.05]</li>
+<li><strong>k_std</strong> – optional <span class="math">\(k\)</span> array for standard <span class="math">\(\chi(k)\)</span>.</li>
+<li><strong>chi_std</strong> – optional <span class="math">\(\chi\)</span> array for standard <span class="math">\(\chi(k)\)</span>.</li>
+<li><strong>nclamp</strong> – number of energy end-points for clamp [2]</li>
+<li><strong>clamp_lo</strong> – weight of low-energy clamp [1]</li>
+<li><strong>clamp_hi</strong> – weight of high-energy clamp [1]</li>
+<li><strong>calc_uncertaintites</strong> – Flag to calculate uncertainties in  <span class="math">\(\mu_0(E)\)</span> and <span class="math">\(\chi(k)\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
 </ul>
 </td>
 </tr>
@@ -227,8 +227,8 @@ the range of available data.  The arrays <code class="docutils literal"><span cl
 <code class="docutils literal"><span class="pre">group.chie</span></code> will correspond to the input <code class="docutils literal"><span class="pre">energy</span></code> array.</p>
 <p>The parameters <code class="docutils literal"><span class="pre">e0</span></code> and <code class="docutils literal"><span class="pre">edge_step</span></code> are needed to determine
 <span class="math">\(\chi(k)\)</span>, and can be specified here.  If they are not, but the
-input <code class="docutils literal"><span class="pre">group</span></code> has attributes <code class="docutils literal"><span class="pre">e0</span></code> and <code class="docutils literal"><span class="pre">edge_step</span></code> -- say, from
-running <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> -- those values will be used.  If values
+input <code class="docutils literal"><span class="pre">group</span></code> has attributes <code class="docutils literal"><span class="pre">e0</span></code> and <code class="docutils literal"><span class="pre">edge_step</span></code> – say, from
+running <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> – those values will be used.  If values
 cannot be found in either place, they will be determined by calling
 <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> from within <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a>, and the output parameters
 from <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> will be added to the output <code class="docutils literal"><span class="pre">group</span></code> here.
@@ -303,14 +303,14 @@ slowly varying with energy.</p>
 <p>The definition above normalizes to the edge step <span class="math">\(\Delta\mu\)</span>
 (<code class="docutils literal"><span class="pre">edge_step</span></code>) instead of the energy-dependent <span class="math">\(\mu_0(E)\)</span>, as is
 often described in introductory texts on EXAFS.  The reason for this is
-essentially the same -- so that we do not need to carefully take care of
+essentially the same – so that we do not need to carefully take care of
 slow energy drifts in the measured <span class="math">\(\mu(E)\)</span> or worry about having an
 absolute measure of <span class="math">\(\mu(E)\)</span>.</p>
 <div class="section" id="and-spline-for">
 <h3>8.3.2.1. <span class="math">\(R_{\rm bkg}\)</span> and spline for <span class="math">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
 <span class="math">\(\mu(E)\)</span> that we will subtract from the same <span class="math">\(\mu(E)\)</span> could
-easily match <em>too</em> well, and erase much of the data we're interested in.
+easily match <em>too</em> well, and erase much of the data we’re interested in.
 Therefore, we have to carefully consider two aspects:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -477,7 +477,7 @@ spline function can be.</p>
 <p>1.  <code class="docutils literal"><span class="pre">e0</span></code>: It can be hard to know what <span class="math">\(E_0\)</span> should be for any XAFS
 spectra.  As this sets the value of <span class="math">\(k=0\)</span>, it will affect the
 location of the knots, and can have a profound affect on the results.  If
-you're unhappy with the <span class="math">\(\mu_0(E)\)</span> and <span class="math">\(\chi(k)\)</span>, playing with
+you’re unhappy with the <span class="math">\(\mu_0(E)\)</span> and <span class="math">\(\chi(k)\)</span>, playing with
 the <code class="docutils literal"><span class="pre">e0</span></code> parameter.</p>
 <p>2. <code class="docutils literal"><span class="pre">kweight</span></code>: Increasing this emphasizes the fit at high <em>k</em>.  Trying
 both values of 0 and 1 is always a good idea.</p>
@@ -500,13 +500,13 @@ using all the default inputs would be:</p>
 <span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
 
 <span class="n">newplot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$\mu(E)$&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\mu(E)$&#39;</span><span class="p">,</span>
         <span class="n">xmin</span><span class="o">=</span><span class="n">cu</span><span class="o">.</span><span class="n">e0</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">cu</span><span class="o">.</span><span class="n">e0</span><span class="o">+</span><span class="mi">300</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">bkg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
 
-<span class="n">newplot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">cu</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
-        <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$k\chi(k)$&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span><span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">cu</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k\chi(k)$&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span><span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1">## end of examples/xafs/doc_autobk1.lar</span>
 </pre></div>
@@ -541,12 +541,12 @@ here to demonstrate the method for passing arguments to <a class="reference inte
        <span class="n">pre_edge_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pre1&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;pre2&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;nnorm&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
 
 <span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$\mu(E)$&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\mu(E)$&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">e0</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">e0</span><span class="o">+</span><span class="mi">550</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">bkg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
 
-<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
-        <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$k^2\chi(k)$&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k)$&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1">## end of examples/xafs/doc_autobk2.lar</span>
 </pre></div>
@@ -589,7 +589,7 @@ clamp:</p>
 <span class="n">dat</span><span class="o">.</span><span class="n">bkg50</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bkg</span>
 
 <span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;clamp_hi=0&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>  <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$k^2\chi(k)$&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>  <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k)$&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Effect of clamp_hi&#39;</span><span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;clamp_hi=10&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -684,7 +684,7 @@ function.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.4. Fit Results and Outputs &#8212; larch 0.9.33 documentation</title>
+    <title>7.4. Fit Results and Outputs &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,18 +25,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.5. Some Builtin Line-shape Functions" href="lineshapes.html" />
-    <link rel="prev" title="7.3. minimize() and Objective Functions" href="minimize.html" />
+    <link rel="prev" title="7.3. minimize() and objective Functions" href="minimize.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -64,7 +64,7 @@
           <a href="lineshapes.html" title="7.5. Some Builtin Line-shape Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="7.3. minimize() and Objective Functions"
+          <a href="minimize.html" title="7.3. minimize() and objective Functions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -82,7 +82,7 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="previous chapter">7.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and Objective Functions</a></p>
+                        title="previous chapter">7.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and objective Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="lineshapes.html"
                         title="next chapter">7.5. Some Builtin Line-shape Functions</a></p>
@@ -113,9 +113,14 @@
             
   <div class="section" id="fit-results-and-outputs">
 <span id="fitting-results-sec"></span><h1>7.4. Fit Results and Outputs<a class="headerlink" href="#fit-results-and-outputs" title="Permalink to this headline">¶</a></h1>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.9.34: </span><code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> returns a result group containing fit statistics.</p>
+</div>
 <p>After the fit has completed, several statistics are output and available to
 describe the quality of the fit and the estimated values for the Parameter
-values and uncertainties.  The main statistics are written to <em>paramgroup</em>.</p>
+values and uncertainties.  The main statistics are written to group
+returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>, while the parameter values in <em>paramgroup</em>
+are updated to their best-fit values.</p>
 <p>The estimated values, uncertainties, and correlations for each varied
 Parameter are written as attributes of that Parameter.  Thus, after a fit,
 each variable Parameter <code class="docutils literal"><span class="pre">par</span></code> will be updated so that <code class="docutils literal"><span class="pre">par.value</span></code> will
@@ -123,77 +128,100 @@ hold the estimated best-fit value, <code class="docutils literal"><span class="p
 uncertainty (1-<span class="math">\(\sigma\)</span> standard error), and <code class="docutils literal"><span class="pre">par.correl</span></code> will hold
 a dictionary of correlation values with the other variable Parameters.</p>
 <p>General Fit statistics describing the quality of the fit and details about
-how the fit proceeded will be put into components of <em>paramgroup</em>, with
+how the fit proceeded will be put into the result group with
 variable names and meanings as outlines in
 <a class="reference internal" href="#minimize-stats-table"><span class="std std-ref">Table of Fit Statistics</span></a>.  For advanced users,
-the full residual vector,
-covarance matrix, and jacobian matrix from the fit, as well as several more
-esoteric outputs from MINPACK's lmdif function are put in
-<em>paramgroup.lmdif</em>.</p>
+the fitting class instance and result from <cite>lmfit</cite> are available.</p>
 <blockquote id="minimize-stats-table">
-<div><p>Table of Fit Statistics.
-Listed are the name of the variable added to the fit <em>paramgroup</em>, and
-the statistical quantity it holds.</p>
+<div><p>Table of Fit Statistics and Results contained in the return value of <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</p>
+<p>Listed are the names and description of items in the fit result group
+returned by the <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> function.  Many of these items are
+directly from <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="29%" />
-<col width="71%" />
+<col width="13%" />
+<col width="87%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head"><em>attribute</em></th>
-<th class="head"><em>statistical quantity or other output</em></th>
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">Description of Statistical Quantity or Output</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>residual</td>
-<td>final array returned from objective function</td>
+<tr class="row-even"><td>nvarys</td>
+<td>number of variable parameters in the fit</td>
 </tr>
-<tr class="row-odd"><td>nvarys</td>
-<td>number of independent variables</td>
+<tr class="row-odd"><td>ndata</td>
+<td>number of data points</td>
 </tr>
 <tr class="row-even"><td>nfree</td>
-<td>number of free parameters (len(residual) - nvarys)</td>
+<td>ndata - nfree</td>
 </tr>
 <tr class="row-odd"><td>chi_square</td>
-<td><span class="math">\(\chi^2\)</span>, chi-square</td>
+<td>chi-square: <span class="math">\(\chi^2 = \sum_i^N [{\rm Resid}_i]^2\)</span></td>
 </tr>
 <tr class="row-even"><td>chi_reduced</td>
-<td><span class="math">\(\chi_\nu^2\)</span>, reduced chi-square</td>
+<td>reduced chi-square: <span class="math">\(\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}\)</span> |</td>
 </tr>
-<tr class="row-odd"><td>message</td>
-<td>an output message about fit</td>
+<tr class="row-odd"><td>aic</td>
+<td><a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html#akaike-and-bayesian-information-criteria">Akaike Information Criteria</a></td>
 </tr>
-<tr class="row-even"><td>errorbars</td>
-<td>flag for whether errorbars were calculated</td>
+<tr class="row-even"><td>bic</td>
+<td><a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html#akaike-and-bayesian-information-criteria">Bayesian Information Criteria</a></td>
 </tr>
-<tr class="row-odd"><td>fit_details</td>
-<td>Group containing output data from fitting method</td>
+<tr class="row-odd"><td>residual</td>
+<td>final residual array</td>
 </tr>
-<tr class="row-even"><td>fit_details.method</td>
-<td>name of fitting method used.</td>
+<tr class="row-even"><td>covar</td>
+<td>covariance matrix (ordered according to <cite>var_names</cite>).</td>
 </tr>
-<tr class="row-odd"><td>fit_details.nfev</td>
-<td>number of calls to (evaluations of) objective function</td>
+<tr class="row-odd"><td>var_names</td>
+<td>list of variable parameter names</td>
+</tr>
+<tr class="row-even"><td>params</td>
+<td>lmfit <a class="reference external" href="https://lmfit.github.io/lmfit-py/parameters.html#lmfit.parameter.Parameters">Parameters</a></td>
+</tr>
+<tr class="row-odd"><td>fitter</td>
+<td>lmfit <a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html#lmfit.minimizer.Minimizer">Minimizer</a></td>
+</tr>
+<tr class="row-even"><td>fit_details</td>
+<td>lmfit <a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html#lmfit.minimizer.MinimizerResult">MinimizerResult</a></td>
+</tr>
+<tr class="row-odd"><td>nfev</td>
+<td>number of evaluations of the fit residual function.</td>
+</tr>
+<tr class="row-even"><td>success</td>
+<td>bool (<cite>True</cite> or <cite>False</cite>) for whether fit appeared to succeed.</td>
+</tr>
+<tr class="row-odd"><td>errorbars</td>
+<td>bool (<cite>True</cite> or <cite>False</cite>) for whether uncertainties were estimated.</td>
+</tr>
+<tr class="row-even"><td>message</td>
+<td>text message from fit</td>
+</tr>
+<tr class="row-odd"><td>lmdif_message</td>
+<td>text message from Fortran least-squares function</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </div></blockquote>
-<p>Additional outputs written to the <code class="docutils literal"><span class="pre">fit_details</span></code> group vary for each
-fitting method.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.9.34: </span><a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal"><span class="pre">fit_report()</span></code></a> uses a result group returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code></p>
+</div>
 <dl class="function">
 <dt id="fit_report">
-<code class="descname">fit_report</code><span class="sig-paren">(</span><em>paramgroup</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_report</code><span class="sig-paren">(</span><em>result</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a fit report for a fit given a parameter group.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>paramgroup</strong> -- parameter group, after being used in a fit.</li>
-<li><strong>show_correl</strong> -- flag (<code class="docutils literal"><span class="pre">True</span></code>/<code class="docutils literal"><span class="pre">False</span></code>) to show parameter correlations.</li>
-<li><strong>min_correl</strong> -- smallest absolute value of correlation to show.</li>
+<li><strong>result</strong> – fit result group, returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
+<li><strong>show_correl</strong> – flag (<code class="docutils literal"><span class="pre">True</span></code>/<code class="docutils literal"><span class="pre">False</span></code>) to show parameter correlations.</li>
+<li><strong>min_correl</strong> – smallest absolute value of correlation to show.</li>
 </ul>
 </td>
 </tr>
@@ -205,26 +233,24 @@ fitting method.</p>
 </dd></dl>
 
 <p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal"><span class="pre">fit_report()</span></code></a> would look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-<span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">501</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">497</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">26</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">30.650777</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.061672</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 28</span>
+    <span class="c1"># data points      = 201</span>
+    <span class="c1"># variables        = 4</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.50471</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">0.002562</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">1195.4</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1182.2</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">12.053707</span> <span class="o">+/-</span> <span class="mf">0.383248</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">10.000000</span><span class="p">)</span>
-   <span class="n">cen</span>            <span class="o">=</span>  <span class="mf">10.943759</span> <span class="o">+/-</span> <span class="mf">0.052711</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">10.800000</span><span class="p">)</span>
-   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">2.209804</span> <span class="o">+/-</span> <span class="mf">0.022001</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">3.100000</span><span class="p">)</span>
-   <span class="n">wid</span>            <span class="o">=</span>  <span class="mf">2.013217</span> <span class="o">+/-</span> <span class="mf">0.052131</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">off</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.864</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span>  <span class="mf">0.812</span>
-   <span class="n">off</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.699</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp</span><span class="p">:</span>   <span class="mf">12.0312835</span> <span class="o">+/-</span> <span class="mf">0.076725</span> <span class="p">(</span><span class="mf">0.64</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">wid</span><span class="p">:</span>   <span class="mf">2.01663402</span> <span class="o">+/-</span> <span class="mf">0.011920</span> <span class="p">(</span><span class="mf">0.59</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">off</span><span class="p">:</span>   <span class="mf">0.99188155</span> <span class="o">+/-</span> <span class="mf">0.005226</span> <span class="p">(</span><span class="mf">0.53</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">cen</span><span class="p">:</span>   <span class="mf">1.49995279</span> <span class="o">+/-</span> <span class="mf">0.010144</span> <span class="p">(</span><span class="mf">0.68</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.730</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">wid</span><span class="p">)</span>                  <span class="o">=</span>  <span class="mf">0.719</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">wid</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.525</span>
 </pre></div>
 </div>
 </div>
@@ -245,7 +271,7 @@ fitting method.</p>
           <a href="lineshapes.html" title="7.5. Some Builtin Line-shape Functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="7.3. minimize() and Objective Functions"
+          <a href="minimize.html" title="7.3. minimize() and objective Functions"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -260,7 +286,7 @@ fitting method.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

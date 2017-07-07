@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.5. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.33 documentation</title>
+    <title>8.5. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -143,16 +143,16 @@ is implemented as the function <a class="reference internal" href="#_xafs.cauchy
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> -- 1-d array of photo-electron wavenumber in <span class="math">\(\rm\AA^{-1}\)</span></li>
-<li><strong>chi</strong> -- 1-d array of <span class="math">\(\chi\)</span></li>
-<li><strong>group</strong> -- output Group</li>
-<li><strong>rmax_out</strong> -- highest <em>R</em> for output data (10 <span class="math">\(\rm\AA\)</span>)</li>
-<li><strong>kweight</strong> -- exponent for weighting spectra by <span class="math">\(k^{\rm kweight}\)</span></li>
-<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math">\(\rm\AA^{-1}\)</span></li>
+<li><strong>chi</strong> – 1-d array of <span class="math">\(\chi\)</span></li>
+<li><strong>group</strong> – output Group</li>
+<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math">\(\rm\AA\)</span>)</li>
+<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math">\(k^{\rm kweight}\)</span></li>
+<li><strong>nfft</strong> – value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> -- outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
@@ -204,8 +204,8 @@ straightforward:</p>
 <span class="n">f</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="n">kopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;xlabel&#39;</span><span class="p">:</span> <span class="s1">r&#39;$k \,(\AA^{-1})$&#39;</span><span class="p">,</span> 
-         <span class="s1">&#39;ylabel&#39;</span><span class="p">:</span> <span class="s1">r&#39;$k^2\chi(k) \, (\AA^{-2})$&#39;</span><span class="p">,</span> 
+<span class="n">kopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;xlabel&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;$k \,(\AA^{-1})$&#39;</span><span class="p">,</span> 
+         <span class="s1">&#39;ylabel&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \, (\AA^{-2})$&#39;</span><span class="p">,</span> 
          <span class="s1">&#39;linewidth&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;FeO&#39;</span><span class="p">,</span> <span class="s1">&#39;show_legend&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
 
 <span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;original data&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
@@ -223,8 +223,8 @@ straightforward:</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
 
 <span class="n">ropts</span> <span class="o">=</span> <span class="n">kopts</span>
-<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">r&#39;$R \, (\AA) $&#39;</span>
-<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">r&#39;$|\chi(R)| \, (\AA^{-3})$&#39;</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$R \, (\AA) $&#39;</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$|\chi(R)| \, (\AA^{-3})$&#39;</span>
 
 <span class="c1"># plot wavelet projected to R space</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ropts</span><span class="p">)</span>
@@ -289,7 +289,7 @@ is shown for comparison.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

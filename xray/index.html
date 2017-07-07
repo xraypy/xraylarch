@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>9. X-ray Databases &#8212; larch 0.9.33 documentation</title>
+    <title>9. X-ray Databases &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="10. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -216,16 +216,16 @@ from Elam, Ravel, and Sieber.</p>
 <td>elastic scattering factor (Waasmaier and Kirfel)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.f0_ions" title="_xray.f0_ions"><code class="xref py py-func docutils literal"><span class="pre">f0_ions()</span></code></a></td>
-<td>list of valid &quot;ions&quot; for <a class="reference internal" href="#_xray.f0" title="_xray.f0"><code class="xref py py-func docutils literal"><span class="pre">f0()</span></code></a> (Waasmaier and Kirfel)</td>
+<td>list of valid “ions” for <a class="reference internal" href="#_xray.f0" title="_xray.f0"><code class="xref py py-func docutils literal"><span class="pre">f0()</span></code></a> (Waasmaier and Kirfel)</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.chantler_energies" title="_xray.chantler_energies"><code class="xref py py-func docutils literal"><span class="pre">chantler_energies()</span></code></a></td>
 <td>energies of tabulation for Chantler data (Chantler)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.f1_chantler" title="_xray.f1_chantler"><code class="xref py py-func docutils literal"><span class="pre">f1_chantler()</span></code></a></td>
-<td>f'  anomalous factor (Chantler)</td>
+<td>f’  anomalous factor (Chantler)</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.f2_chantler" title="_xray.f2_chantler"><code class="xref py py-func docutils literal"><span class="pre">f2_chantler()</span></code></a></td>
-<td>f'' anomalous factor (Chantler)</td>
+<td>f” anomalous factor (Chantler)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><code class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></code></a></td>
 <td>absorption cross-section (Chantler)</td>
@@ -234,7 +234,7 @@ from Elam, Ravel, and Sieber.</p>
 <td>anomalous components of the index of refraction for a material</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><code class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></code></a></td>
-<td>f' and f'' anomalous factors (Cromer and Liberman)</td>
+<td>f’ and f” anomalous factors (Cromer and Liberman)</td>
 </tr>
 </tbody>
 </table>
@@ -316,22 +316,22 @@ line names</span></a>.  Finally, all energies are in eV.</p>
 <td>3p3/2</td>
 <td>N1</td>
 <td>4s</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>M2</td>
 <td>3p1/2</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>M1</td>
 <td>3s</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
 </tr>
 </tbody>
 </table>
@@ -455,7 +455,7 @@ line names</span></a>.  Finally, all energies are in eV.</p>
 <dl class="function">
 <dt id="_xray.atomic_number">
 <code class="descclassname">_xray.</code><code class="descname">atomic_number</code><span class="sig-paren">(</span><em>symbol</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.atomic_number" title="Permalink to this definition">¶</a></dt>
-<dd><p>return the atomic number from an atomic symbol ('H', 'C', 'Fe', etc)</p>
+<dd><p>return the atomic number from an atomic symbol (‘H’, ‘C’, ‘Fe’, etc)</p>
 </dd></dl>
 
 <dl class="function">
@@ -511,9 +511,9 @@ number or symbol.  The keys of the dictionay are the names of the emission lines
 <dd><p>return (fluorescent yield, average emission energy, probability)
 for an atomic number or symbol, edge, emission family, and incident
 energy.</p>
-<p>Here, 'emission family' is the family of emission lines, 'Ka', 'Lb',
-etc, that is comprised of several individual lines ('Ka1', 'Ka2',
-'Lb2', etc).  The returned average emission energy will be the average
+<p>Here, ‘emission family’ is the family of emission lines, ‘Ka’, ‘Lb’,
+etc, that is comprised of several individual lines (‘Ka1’, ‘Ka2’,
+‘Lb2’, etc).  The returned average emission energy will be the average
 of the corresponding individual sub-line energies, weighted by the
 probabilities of the individual lines.  The returned probability will
 be the total probability for all lines in the family.</p>
@@ -533,7 +533,7 @@ name of the edge.  widths are in eV.</p>
 
 <dl class="function">
 <dt id="_xray.mu_elam">
-<code class="descclassname">_xray.</code><code class="descname">mu_elam</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energy</em>, <em>kind='total'</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xray.</code><code class="descname">mu_elam</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energy</em>, <em>kind=’total’</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
 <dd><p>return X-ray mass attenuation coefficient <span class="math">\(\mu/\rho\)</span> in cm^2/gr
 for an atomic number or symbol at specified energy values.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -541,10 +541,10 @@ for an atomic number or symbol at specified energy values.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>z_or_symbol</strong> -- Integer atomic number or symbol for elemen</li>
-<li><strong>energy</strong> -- energy (single value, list, array) in eV at which
+<li><strong>z_or_symbol</strong> – Integer atomic number or symbol for elemen</li>
+<li><strong>energy</strong> – energy (single value, list, array) in eV at which
 to calculate <span class="math">\(\mu\)</span>.</li>
-<li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and 'incoh' for
+<li><strong>kind</strong> – one of ‘total’ (default), ‘photo’, ‘coh’, and ‘incoh’ for
 total, photo-absorption, coherent scattering, and
 incoherent scattering cross sections, respectively.</li>
 </ul>
@@ -574,7 +574,7 @@ specified energy values. Values returned are in cm^2/gr.</p>
 <dd><p>return elastic scattering (Thomson) factor <span class="math">\(f_0(q)\)</span> for the supplied values of
 <code class="docutils literal"><span class="pre">q</span></code> (<span class="math">\(q = \sin(\theta)/\lambda\)</span> where <span class="math">\(\theta\)</span> is the scattering angle
 and <span class="math">\(\lambda\)</span> is the X-ray wavelength).  Here, <code class="docutils literal"><span class="pre">ion</span></code> can be an atomic number or
-symbol, or any of the valid ion values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
+symbol, or any of the valid ion values (e.g., ‘Ga3+’) given by Waasmaier and Kirfel.
 The returned values are in units of electron number.</p>
 </dd></dl>
 
@@ -595,7 +595,7 @@ The arguments <code class="docutils literal"><span class="pre">emin</span></code
 <dl class="function">
 <dt id="_xray.f1_chantler">
 <code class="descclassname">_xray.</code><code class="descname">f1_chantler</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energies</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.f1_chantler" title="Permalink to this definition">¶</a></dt>
-<dd><p>return array of f', the real part of the anomalous scattering factor for an element at
+<dd><p>return array of f’, the real part of the anomalous scattering factor for an element at
 the given energies, using the tabulation of Chantler.  The returned values are in units
 of electron numbers, and represent the correction to Thomson scattering term.</p>
 </dd></dl>
@@ -603,7 +603,7 @@ of electron numbers, and represent the correction to Thomson scattering term.</p
 <dl class="function">
 <dt id="_xray.f2_chantler">
 <code class="descclassname">_xray.</code><code class="descname">f2_chantler</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energies</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.f2_chantler" title="Permalink to this definition">¶</a></dt>
-<dd><p>return array of f'', the imaginary part of the anomalous scattering factor for an
+<dd><p>return array of f”, the imaginary part of the anomalous scattering factor for an
 element at the given energies, using the tabulation of Chantler.  The returned values
 are in units of electron numbers.  These values scale to the values of the mass
 attenuation coefficient.</p>
@@ -619,20 +619,20 @@ specified energy values, using the tabulation of Chantler.</p>
 <dl class="function">
 <dt id="_xray.f1f2_cl">
 <code class="descclassname">_xray.</code><code class="descname">f1f2_cl</code><span class="sig-paren">(</span><em>z_or_element</em>, <em>energies</em>, <em>width=None</em>, <em>edge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.f1f2_cl" title="Permalink to this definition">¶</a></dt>
-<dd><p>return tuple of (f', f''), the real and imaginary anomalous scattering factors for an
+<dd><p>return tuple of (f’, f”), the real and imaginary anomalous scattering factors for an
 element at the specified energies, using the calculation scheme of Cromer and
 Liberman, as implemented by Brennan and Cowan.  The optional argument <code class="docutils literal"><span class="pre">width</span></code> can be
 used to specify an energy width (in eV) to use to convolve the output with a
 Lorentzian profile (with <code class="docutils literal"><span class="pre">width</span></code> used as <span class="math">\(2\gamma\)</span> in the Lorentzian).  If
-<code class="docutils literal"><span class="pre">edge</span></code> is given ('K', 'L3', etc), the core-level width is looked up from
+<code class="docutils literal"><span class="pre">edge</span></code> is given (‘K’, ‘L3’, etc), the core-level width is looked up from
 <a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal"><span class="pre">core_width()</span></code></a>, and its value is used.</p>
-<p>Note that both f' and f'' are returned here.</p>
+<p>Note that both f’ and f” are returned here.</p>
 </dd></dl>
 
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p>The Cromer-Liberman calculation sometimes generate spurious data,
-especially at high and low energies.  The data from Chantler's tables
+especially at high and low energies.  The data from Chantler’s tables
 should be used in its place.  That is, in almost all places where the
 Cromer-Liberman values differ from the Chantler values, the
 Cromer-Liberman data is obviously wrong.</p>
@@ -705,8 +705,8 @@ keys and number for each element as values.  For example:</p>
 </pre></div>
 </div>
 <p>Note that factional weights and scientific notation for weights is
-supported, as long as the weight begins with a number and not '.'.  That
-is 'Fe0.8' is supported, but 'Fe.8' is not.</p>
+supported, as long as the weight begins with a number and not ‘.’.  That
+is ‘Fe0.8’ is supported, but ‘Fe.8’ is not.</p>
 </dd></dl>
 
 <dl class="function">
@@ -725,7 +725,7 @@ density.  For example:</p>
 <dt id="_xray.material_add">
 <code class="descclassname">_xray.</code><code class="descname">material_add</code><span class="sig-paren">(</span><em>name</em>, <em>formula</em>, <em>density</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.material_add" title="Permalink to this definition">¶</a></dt>
 <dd><p>add material with name, chemical formula, and density.  This will be
-added to the a file in the user's larch directory, and loaded in
+added to the a file in the user’s larch directory, and loaded in
 subsequent larch sessions.</p>
 <p>material names are not case sensitive.</p>
 </dd></dl>
@@ -747,8 +747,8 @@ for an atomic number or symbol at specified energy values.</p>
 <tr class="field-even field"><th class="field-name">param energy:</th><td class="field-body">energy (single value, list, array) in eV at which
 to calculate <span class="math">\(\mu\)</span>.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">param kind:</th><td class="field-body">one of 'total' (default), 'photo', 'coh', and
-'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>)</td>
+<tr class="field-odd field"><th class="field-name">param kind:</th><td class="field-body">one of ‘total’ (default), ‘photo’, ‘coh’, and
+‘incoh’ (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>)</td>
 </tr>
 <tr class="field-even field"><th class="field-name">param density:</th><td class="field-body">material density (if <code class="docutils literal"><span class="pre">None</span></code>, it will be looked up for
 known materials)</td>
@@ -776,12 +776,12 @@ known materials)</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> -- material name or formula</li>
-<li><strong>energy</strong> -- energy (single value, list, array) in eV at which
+<li><strong>name</strong> – material name or formula</li>
+<li><strong>energy</strong> – energy (single value, list, array) in eV at which
 to calculate <span class="math">\(\mu\)</span>.</li>
-<li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and
-'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>)</li>
-<li><strong>density</strong> -- material density (if <code class="docutils literal"><span class="pre">None</span></code>, it will be looked up
+<li><strong>kind</strong> – one of ‘total’ (default), ‘photo’, ‘coh’, and
+‘incoh’ (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><code class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></code></a>)</li>
+<li><strong>density</strong> – material density (if <code class="docutils literal"><span class="pre">None</span></code>, it will be looked up
 for known materials)</li>
 </ul>
 </td>
@@ -791,8 +791,8 @@ for known materials)</li>
 </tr>
 </tbody>
 </table>
-<p>The returned dictionary will have elements 'mass' (total mass), 'density', and
-'elements' (list of atomic symbols for elements in material). For each element, there
+<p>The returned dictionary will have elements ‘mass’ (total mass), ‘density’, and
+‘elements’ (list of atomic symbols for elements in material). For each element, there
 will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <span class="math">\(\mu\)</span>).
 For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s1">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
@@ -812,10 +812,10 @@ using the tabulated scattering components from Chantler.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>material</strong> -- chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')</li>
-<li><strong>density</strong> -- material density in g/cm^3</li>
-<li><strong>energy</strong> -- X-ray energy in eV</li>
-<li><strong>photo_only</strong> -- boolean for returning only the photo cross-section component
+<li><strong>material</strong> – chemical formula  (‘Fe2O3’, ‘CaMg(CO3)2’, ‘La1.9Sr0.1CuO4’)</li>
+<li><strong>density</strong> – material density in g/cm^3</li>
+<li><strong>energy</strong> – X-ray energy in eV</li>
+<li><strong>photo_only</strong> – boolean for returning only the photo cross-section component
 for beta and t_atten. If <code class="docutils literal"><span class="pre">False</span></code> (the default value), the
 total cross-section is returned.</li>
 </ul>
@@ -900,7 +900,7 @@ factor <span class="math">\(f_j\)</span>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

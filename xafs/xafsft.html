@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.4. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.33 documentation</title>
+    <title>8.4. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8.5. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -173,7 +173,7 @@ is <span class="math">\(\delta k\)</span> = 0.05 <span class="math">\(\rm\AA^{-1
 <span class="math">\(\chi(k)\)</span> used in the Fourier transform should be a power of 2. The
 default used in Larch is <span class="math">\(N_{\rm fft}\)</span> = 2048.   Together, these
 allow <span class="math">\(\chi(k)\)</span> data to 102.4 <span class="math">\(\rm\AA^{-1}\)</span>.  Of course, real
-data doesn't extend that far, so the array to be transformed is
+data doesn’t extend that far, so the array to be transformed is
 <em>zero-padded</em> to the end of the range.  Since the spacing <span class="math">\(\delta R\)</span>
 of the resulting discrete <span class="math">\(\chi(R)\)</span> is given as
 <span class="math">\(\pi/{(N_{\rm fft} \delta k )}\)</span>, the extended range and zero-padding
@@ -206,7 +206,7 @@ XAFS is written as the imaginary part of a complex function.  This might
 lead one to assume that constructing <span class="math">\(\tilde\chi(k)\)</span> as <span class="math">\(0 +
 i\chi(k)\)</span> would be the natural choice.  For historical reasons, Larch uses
 the opposite convention, constructing <span class="math">\(\tilde\chi(k)\)</span> as
-<span class="math">\(\chi(k) + 0i\)</span>.   As we'll see below, you can easily change this
+<span class="math">\(\chi(k) + 0i\)</span>.   As we’ll see below, you can easily change this
 convention.  The effect of this choice is minor unless one is
 concerned about the differences of the real and imaginary parts of
 <span class="math">\(\chi(R)\)</span> or one is intending to filter and back-transform the
@@ -219,7 +219,7 @@ and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_xafs.xftf">
-<code class="descclassname">_xafs.</code><code class="descname">xftf</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftf</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math">\(\chi(k)\)</span> to
 <span class="math">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -227,22 +227,22 @@ encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xaf
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> -- 1-d array of photo-electron wavenumber in <span class="math">\(\rm\AA^{-1}\)</span></li>
-<li><strong>chi</strong> -- 1-d array of <span class="math">\(\chi\)</span></li>
-<li><strong>group</strong> -- output Group</li>
-<li><strong>rmax_out</strong> -- highest <em>R</em> for output data (10 <span class="math">\(\rm\AA\)</span>)</li>
-<li><strong>kweight</strong> -- exponent for weighting spectra by <span class="math">\(k^{\rm kweight}\)</span></li>
-<li><strong>kmin</strong> -- starting <em>k</em> for FT Window</li>
-<li><strong>kmax</strong> -- ending <em>k</em> for FT Window</li>
-<li><strong>dk</strong> -- tapering parameter for FT Window</li>
-<li><strong>dk2</strong> -- second tapering parameter for FT Window</li>
-<li><strong>window</strong> -- name of window type</li>
-<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math">\(\rm\AA^{-1}\)</span></li>
+<li><strong>chi</strong> – 1-d array of <span class="math">\(\chi\)</span></li>
+<li><strong>group</strong> – output Group</li>
+<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math">\(\rm\AA\)</span>)</li>
+<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math">\(k^{\rm kweight}\)</span></li>
+<li><strong>kmin</strong> – starting <em>k</em> for FT Window</li>
+<li><strong>kmax</strong> – ending <em>k</em> for FT Window</li>
+<li><strong>dk</strong> – tapering parameter for FT Window</li>
+<li><strong>dk2</strong> – second tapering parameter for FT Window</li>
+<li><strong>window</strong> – name of window type</li>
+<li><strong>nfft</strong> – value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> -- outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
@@ -305,9 +305,9 @@ the complex array of <span class="math">\(\chi(R)\)</span>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chi</strong> -- 1-d array of <span class="math">\(\chi\)</span> to be transformed</li>
-<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>chi</strong> – 1-d array of <span class="math">\(\chi\)</span> to be transformed</li>
+<li><strong>nfft</strong> – value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -328,7 +328,7 @@ complex.  By convention, the real part of <span class="math">\(\chi(q)\)</span> 
 the explicitly real <span class="math">\(\chi(k)\)</span>.</p>
 <dl class="function">
 <dt id="_xafs.xftr">
-<code class="descclassname">_xafs.</code><code class="descname">xftr</code><span class="sig-paren">(</span><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftr</code><span class="sig-paren">(</span><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math">\(\chi(R)\)</span> to
 <span class="math">\(\chi(q)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -336,22 +336,22 @@ the explicitly real <span class="math">\(\chi(k)\)</span>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>r</strong> -- 1-d array of distance.</li>
-<li><strong>chir</strong> -- 1-d array of <span class="math">\(\chi(R)\)</span></li>
-<li><strong>group</strong> -- output Group</li>
-<li><strong>qmax_out</strong> -- highest <em>k</em> for output data (30 <span class="math">\(\rm\AA^{-1}\)</span>)</li>
-<li><strong>rweight</strong> -- exponent for weighting spectra by <span class="math">\(r^{\rm rweight}\)</span> (0)</li>
-<li><strong>rmin</strong> -- starting <em>R</em> for FT Window</li>
-<li><strong>rmax</strong> -- ending <em>R</em> for FT Window</li>
-<li><strong>dr</strong> -- tapering parameter for FT Window</li>
-<li><strong>dr2</strong> -- second tapering parameter for FT Window</li>
-<li><strong>window</strong> -- name of window type</li>
-<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>r</strong> – 1-d array of distance.</li>
+<li><strong>chir</strong> – 1-d array of <span class="math">\(\chi(R)\)</span></li>
+<li><strong>group</strong> – output Group</li>
+<li><strong>qmax_out</strong> – highest <em>k</em> for output data (30 <span class="math">\(\rm\AA^{-1}\)</span>)</li>
+<li><strong>rweight</strong> – exponent for weighting spectra by <span class="math">\(r^{\rm rweight}\)</span> (0)</li>
+<li><strong>rmin</strong> – starting <em>R</em> for FT Window</li>
+<li><strong>rmax</strong> – ending <em>R</em> for FT Window</li>
+<li><strong>dr</strong> – tapering parameter for FT Window</li>
+<li><strong>dr2</strong> – second tapering parameter for FT Window</li>
+<li><strong>window</strong> – name of window type</li>
+<li><strong>nfft</strong> – value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> -- outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
@@ -417,9 +417,9 @@ values into a group.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chir</strong> -- 1-d array of <span class="math">\(\chi(R)\)</span> to be transformed</li>
-<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>chir</strong> – 1-d array of <span class="math">\(\chi(R)\)</span> to be transformed</li>
+<li><strong>nfft</strong> – value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -440,19 +440,19 @@ extensive literature on such windows, and a lot of choices and parameters
 available for constructing windows.  A sampling of windows is shown below.</p>
 <dl class="function">
 <dt id="_xafs.ftwindow">
-<code class="descclassname">_xafs.</code><code class="descname">ftwindow</code><span class="sig-paren">(</span><em>x</em>, <em>xmin=0</em>, <em>xmax=None</em>, <em>dk=1</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">ftwindow</code><span class="sig-paren">(</span><em>x</em>, <em>xmin=0</em>, <em>xmax=None</em>, <em>dk=1</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a Fourier transform window array.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> -- 1-d array array to build window on.</li>
-<li><strong>xmin</strong> -- starting <em>x</em> for FT Window</li>
-<li><strong>xmax</strong> -- ending <em>x</em> for FT Window</li>
-<li><strong>dx</strong> -- tapering parameter for FT Window</li>
-<li><strong>dx2</strong> -- second tapering parameter for FT Window (=dx)</li>
-<li><strong>window</strong> -- name of window type</li>
+<li><strong>x</strong> – 1-d array array to build window on.</li>
+<li><strong>xmin</strong> – starting <em>x</em> for FT Window</li>
+<li><strong>xmax</strong> – ending <em>x</em> for FT Window</li>
+<li><strong>dx</strong> – tapering parameter for FT Window</li>
+<li><strong>dx2</strong> – second tapering parameter for FT Window (=dx)</li>
+<li><strong>window</strong> – name of window type</li>
 </ul>
 </td>
 </tr>
@@ -563,7 +563,7 @@ shown as a different amount of taper on the high- and low-<code class="docutils 
 the window.  As before, <code class="docutils literal"><span class="pre">xmin=5</span></code> and <code class="docutils literal"><span class="pre">xmax=15</span></code>.</span></p>
 </div><p id="fig-xafsft2">The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of <code class="docutils literal"><span class="pre">xmin</span></code> and <code class="docutils literal"><span class="pre">xmax</span></code>, but do not stay at 1 over
-a central portion of the window -- they taper continuously.  The Gaussian
+a central portion of the window – they taper continuously.  The Gaussian
 window is a simple Gaussian function, and is not truncated according to
 <code class="docutils literal"><span class="pre">xmin</span></code> and <code class="docutils literal"><span class="pre">xmax</span></code>, and the <code class="docutils literal"><span class="pre">dx</span></code> parameter sets the width.  The Sine
 and Kaiser-Bessel windows both go to zero at  <code class="docutils literal"><span class="pre">xmin-dx/2</span></code> and <code class="docutils literal"><span class="pre">xmax</span> <span class="pre">+</span>
@@ -649,7 +649,7 @@ can be instructive to plot the real and imaginary components, as shown
 below:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_mag&#39;</span><span class="p">,</span>
         <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="s1">r&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">r&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_re&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_im</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_im&#39;</span><span class="p">)</span>
@@ -718,7 +718,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

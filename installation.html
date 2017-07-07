@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>1. Downloading and Installation &#8212; larch 0.9.33 documentation</title>
+    <title>1. Downloading and Installation &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="2. Larch Community and Support" href="community.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -130,12 +130,12 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.33.  Larch is in active and
+<p>The latest release version of Larch is 0.9.34.  Larch is in active and
 continuing development, and the intention is to tag a new release version
 every three to six months.  Of course, there may be bugs and unintended
 features, and some missing or incomplete desired features.  Still, most of
 what is in Larch is working and ready for use.  New and in-development
-features and application will be explicitly described as &quot;beta&quot;.</p>
+features and application will be explicitly described as “beta”.</p>
 <p>Larch is written in Python and requires and existing Python interpreter to be
 installed on your computer, along with a handful of common libraries for
 scientific computing.</p>
@@ -146,13 +146,14 @@ package is certainly easier to use and comes with the packages that Larch
 needs already installed or automatically fetched when installing Larch.</p>
 <div class="section" id="python-versions-2-7-or-3-6">
 <h2>1.1. Python Versions: 2.7 or 3.6?<a class="headerlink" href="#python-versions-2-7-or-3-6" title="Permalink to this headline">¶</a></h2>
-<p>As of this writing (Spring, 2017) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch can now work with either version
-of Python, though the main GUI toolkit (wxPython) used by Larch is still not
-officially released for Python 3, Larch works well with the in-development
-version of wxPython.  Support for Larch running with Python 3.6 should be
-considered experimental, but we eager to migrate to Python 3.6, and expect to
-do so within year or so.</p>
+<p>As of this writing (Summer, 2017) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch can now work with either
+version of Python.  The GUI toolkit (wxPython) used by Larch is still not
+officially released for Python 3, but Larch does work well with the
+in-development version of wxPython.  Support for Larch running with Python
+3.6 should be considered experimental, and we invite brave users to try it
+out.  We are eager to migrate Larch to Python 3.6, and expect to do so
+within year or so.</p>
 </div>
 <div class="section" id="using-anaconda-python">
 <h2>1.2. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
@@ -160,7 +161,7 @@ do so within year or so.</p>
 scientific work with many useful packages included.  By default, Anaconda
 Python installs into your own home folder (on Windows, it will use the
 <cite>APPDATA</cite> location, which is typically something like
-<cite>C:UsersYourNameAppDataLocalContinuumAnaconda2</cite>).  Installing does
+<cite>C:\Users\YourName\AppData\Local\Continuum\Anaconda2</cite>).  Installing does
 not require extra permissions to install, upgrade, or remove components.
 Anaconda includes a robust package manager called <em>conda</em> that makes it
 easy to update the packages it manages, including Larch.</p>
@@ -181,14 +182,14 @@ small Apps (Mac OSX) that you can click on to run the following Larch
 applications:</p>
 <blockquote>
 <div><ul class="simple">
-<li><cite>larch</cite>  -- simplest command-line interface.</li>
-<li><cite>larch_gui</cite> -- Enhanced command-line interface with GUI data browser.</li>
-<li><cite>gse_mapviewer</cite> -- XRF Mapviewer for GSECARS XRF Map data.</li>
-<li><cite>gse_scanviewer</cite> -- Simple XAFS and Scan viewer for GSECARS data.</li>
-<li><cite>xrfdisplay</cite> -- Display XRF Spectrum.</li>
-<li><cite>xyfit</cite> -- Display and Peak Fitting of XANES and other 1D spectra (beta).</li>
-<li><cite>1D XRD Viewer</cite> -- Display and work with XRD diffraction patterns (beta).</li>
-<li><cite>2D XRD Viewer</cite> -- Display and work with XRD diffraction images (beta).</li>
+<li><cite>larch</cite>  – simplest command-line interface.</li>
+<li><cite>larch_gui</cite> – Enhanced command-line interface with GUI data browser.</li>
+<li><cite>gse_mapviewer</cite> – XRF Mapviewer for GSECARS XRF Map data.</li>
+<li><cite>gse_scanviewer</cite> – Simple XAFS and Scan viewer for GSECARS data.</li>
+<li><cite>xrfdisplay</cite> – Display XRF Spectrum.</li>
+<li><cite>xyfit</cite> – Display and Peak Fitting of XANES and other 1D spectra (beta).</li>
+<li><cite>1D XRD Viewer</cite> – Display and work with XRD diffraction patterns (beta).</li>
+<li><cite>2D XRD Viewer</cite> – Display and work with XRD diffraction images (beta).</li>
 </ul>
 </div></blockquote>
 <p>A key advantage of using Anaconda is that once installed, updates can be
@@ -196,9 +197,9 @@ installed with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
-<p>As of this writing, some functionality -- notably X-ray diffraction -- may
+<p>As of this writing, some functionality – notably X-ray diffraction – may
 need additional libraries installed, and some of these libraries may not be
-available for Python3.6 or for all platforms.   We're working on this, but
+available for Python3.6 or for all platforms.   We’re working on this, but
 if you need help, please contact us.</p>
 </div>
 <div class="section" id="source-installation">
@@ -211,13 +212,26 @@ can use <cite>git</cite> to grab the latest development version of the source co
 </div>
 <div class="section" id="prerequisites">
 <h3>1.3.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
-<p>Larch requires Python version 2.7 or higher.  Larch works with Python 3.5
-and 3.6, but requires the not-yet-supported Phoenix branch of wxPython, and
-should be considered experimental.</p>
-<p>The following Python packages are all required for Larch: numpy, scipy,
-matplotlib, h5py, sqlalchemy, and wxPython.  Except for wxPython, these all
-come as part of the core Anaconda package, and all are easily installed as
-standard packages on almost all platforms.</p>
+<p>Larch requires Python version 2.7 or 3.6. Larch works with Python 3.6 but
+requires the not-yet-officially released Phoenix branch of wxPython.  The
+following Python packages are all required:</p>
+<blockquote>
+<div>numpy, scipy, matplotlib, h5py, sqlalchemy, six, lmfit, wxPython,
+wxmplot, wxutils, asteval.</div></blockquote>
+<p>These are all available for Anaconda Python 2.7 and 3.6, either from the
+core Anaconda packages or from the GSECARS conda channel, and will be
+installed with <cite>conda install -c GSECARS xraylarch</cite>.</p>
+<p>If you’re installing from source or using a Python distribution other than
+Anaconda, all these packages are also available from PyPI and can be
+installed with  <cite>pip install</cite></p>
+<p>There are a fair number of packages that are required for some of the
+advanced and in-development X-ray diffraction analysis capabilities.  These
+include</p>
+<blockquote>
+<div>fabio, pyfai, pycifrw</div></blockquote>
+<p>For the most part, these are available from Anaconda channels for most
+systems and versions.  There may be some missing features or poorly-tested
+features.  If you experience problems, please let us know!</p>
 </div>
 <div class="section" id="installation-from-source">
 <h3>1.3.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
@@ -250,7 +264,7 @@ Advanced CyberInfrastructure (ACI-1450468).</p>
 influence on the design and implementation of this code and has provided
 countless fixes for serious problems in design and execution in the early
 stages.  More than that, Larch would simply not exist without the long and
-fruitful collaboration we've enjoyed.  Tom Trainor had a very strong
+fruitful collaboration we’ve enjoyed.  Tom Trainor had a very strong
 influence on the original design of Larch, and helped with the initial
 version of the python implementation.  Yong Choi wrote the code for X-ray
 standing wave and reflectivity analysis and graciously allowed it to be
@@ -279,10 +293,10 @@ given in <a class="reference internal" href="xray/index.html#xraydb-chapter"><sp
 maintained in python, especially the numpy, scipy, and matplotlib, the
 entire scientific python community deserves a hearty thanks.  In
 particular, Larch includes code from Jonathan J. Helmus to implement robust
-setting of Parameter bounds as described in the MINUIT User's guide.  Till
+setting of Parameter bounds as described in the MINUIT User’s guide.  Till
 Stensitzki wrote the code for improved, brute-force estimates of confidence
 intervals, and Christopher Deil provided many valuable suggestions for
-improving the parameterized fitting used in Larch.  Eric O. Lebigot's
+improving the parameterized fitting used in Larch.  Eric O. Lebigot’s
 uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
@@ -357,7 +371,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

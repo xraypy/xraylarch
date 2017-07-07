@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.8. Advanced Confidence Intervals and Chi-square maps &#8212; larch 0.9.33 documentation</title>
+    <title>7.8. Advanced Confidence Intervals and Chi-square maps &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8. XAFS Analysis" href="../xafs/index.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -148,9 +148,9 @@ automatic method.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>minimizer</strong> -- the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
-<li><strong>sigmas</strong> -- list of sigma-levels to find parameter values for.</li>
-<li><strong>prob_func</strong> -- <code class="docutils literal"><span class="pre">None</span></code> or callable function to calculate the
+<li><strong>minimizer</strong> – the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
+<li><strong>sigmas</strong> – list of sigma-levels to find parameter values for.</li>
+<li><strong>prob_func</strong> – <code class="docutils literal"><span class="pre">None</span></code> or callable function to calculate the
 probability from the optimized chi-square. By default,
 <code class="xref py py-func docutils literal"><span class="pre">f_compare()</span></code>, the standard F-test, is used.</li>
 </ul>
@@ -175,7 +175,7 @@ the levels indicated.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conf_values</strong> -- confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conf_values</strong> – confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string containing the report, which can be printed or stored.</td>
 </tr>
@@ -192,35 +192,37 @@ better than another.</p>
 
 <div class="section" id="confidence-interval-example-1">
 <h2>7.8.1. Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
-<p>Let's begin with a shortened version of the first example from the previous
+<p>Let’s begin with a shortened version of the first example from the previous
 section.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
 <span class="c1"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
-<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
+<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">12.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
          <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
 
 
-<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-               <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-               <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
-               <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                     <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
 
 <span class="c1"># define objective function for fit residual</span>
-<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
-<span class="n">enddef</span>
+<span class="k">def</span> <span class="nf">myresid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
+<span class="c1">#enddef</span>
 
 <span class="c1"># perform fit</span>
-<span class="n">mout</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">myresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
 
 <span class="c1"># print report of parameters, uncertainties</span>
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
 
-<span class="n">out</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="nb">print</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 <span class="c1">## end of examples/fitting/doc_example_conf1.lar</span>
 </pre></div>
 </div>
@@ -316,10 +318,10 @@ data</p>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">))</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 
-<span class="n">fitparams</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">3.5</span><span class="p">),</span>
-                  <span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="o">-</span><span class="mf">9.5</span><span class="p">),</span>
-                  <span class="n">t1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
-                  <span class="n">t2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">15</span><span class="p">))</span>
+<span class="n">fitparams</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">3.5</span><span class="p">),</span>
+                        <span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="o">-</span><span class="mf">9.5</span><span class="p">),</span>
+                        <span class="n">t1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                        <span class="n">t2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">15</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">fit_exp</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dat</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">a1</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">pars</span><span class="o">.</span><span class="n">t1</span><span class="p">)</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">a2</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">pars</span><span class="o">.</span><span class="n">t2</span><span class="p">)</span>
@@ -327,7 +329,7 @@ data</p>
 <span class="n">enddef</span>
 
 <span class="n">minout</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fit_exp</span><span class="p">,</span> <span class="n">fitparams</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">fitparams</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
 <span class="n">final</span> <span class="o">=</span> <span class="n">fit_exp</span><span class="p">(</span><span class="n">fitparams</span><span class="p">,</span> <span class="n">dat</span><span class="p">)</span> <span class="o">+</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span>
 <span class="n">newplot</span> <span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -389,7 +391,7 @@ intervals in these parameters with:</p>
 </pre></div>
 </div>
 <p>Now can see more asymmetric uncertainty values, specifically that the
--n-<span class="math">\(\sigma\)</span> and +n-<span class="math">\(\sigma\)</span> are different, and don't seem to be
+-n-<span class="math">\(\sigma\)</span> and +n-<span class="math">\(\sigma\)</span> are different, and don’t seem to be
 linear in n.  Comparing the 1-<span class="math">\(\sigma\)</span> levels between the automated
 and explicit methods as we did above, we now have</p>
 <blockquote>
@@ -431,7 +433,7 @@ and explicit methods as we did above, we now have</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>In fairness, the automated values don't look too bad, given that they
+<p>In fairness, the automated values don’t look too bad, given that they
 cannot reflect asymmetric uncertainties.  But, like the reported
 correlations, the full report above hints at a less than ideal case.</p>
 </div>
@@ -452,14 +454,14 @@ of variable parameters by brute force.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>minimizer</strong> -- the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
-<li><strong>xname</strong> -- name of variable for x-axis</li>
-<li><strong>yname</strong> -- name of variable for y-axis</li>
-<li><strong>nx</strong> -- number of steps in x [11]</li>
-<li><strong>ny</strong> -- number of steps in y [11]</li>
-<li><strong>sigmas</strong> -- extent of x, y values to calculate, in <span class="math">\(\sigma\)</span></li>
-<li><strong>xrange</strong> -- explicit x range of calculations [x.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * x.stderr]</li>
-<li><strong>yrange</strong> -- explicit y range of calculations [y.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * y.stderr]</li>
+<li><strong>minimizer</strong> – the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
+<li><strong>xname</strong> – name of variable for x-axis</li>
+<li><strong>yname</strong> – name of variable for y-axis</li>
+<li><strong>nx</strong> – number of steps in x [11]</li>
+<li><strong>ny</strong> – number of steps in y [11]</li>
+<li><strong>sigmas</strong> – extent of x, y values to calculate, in <span class="math">\(\sigma\)</span></li>
+<li><strong>xrange</strong> – explicit x range of calculations [x.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * x.stderr]</li>
+<li><strong>yrange</strong> – explicit y range of calculations [y.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * y.stderr]</li>
 </ul>
 </td>
 </tr>
@@ -474,7 +476,7 @@ determined from <code class="docutils literal"><span class="pre">nx</span></code
 sets how far from the best value to extend the ranges.</p>
 </dd></dl>
 
-<p>As an example usage, we return to the first example of the &quot;well-behaved&quot;
+<p>As an example usage, we return to the first example of the “well-behaved”
 fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></code></a> on a pair of variables with low correlation
 and a pair with high correlation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
@@ -561,7 +563,7 @@ correlation, or when nearing a final analysis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

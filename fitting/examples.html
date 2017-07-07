@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.6. Fit Examples &#8212; larch 0.9.33 documentation</title>
+    <title>7.6. Fit Examples &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -143,43 +143,41 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="c1"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
-<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
+<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
          <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
 
-<span class="c1"># create a group of fit parameters</span>
-<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-               <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-               <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
-               <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># create a parameter group for the fit:</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                     <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
-<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
-       <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
 
 <span class="c1"># define objective function for fit residual</span>
 <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
-<span class="n">enddef</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
+<span class="c1">#enddef</span>
 
 <span class="c1"># perform fit</span>
-<span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
+<span class="n">out</span>  <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
 
+<span class="c1">#</span>
 <span class="c1"># make final array</span>
-<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
-        <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
-
+<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+<span class="c1">#</span>
 <span class="c1"># plot results</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
 
 <span class="c1"># print report of parameters, uncertainties</span>
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-
+<span class="nb">print</span><span class="p">(</span><span class="n">fit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 
 <span class="c1">## end of examples/fitting/doc_example1.lar</span>
 </pre></div>
 </div>
-<p>This fitting script consists  of several components, which we'll go over in
+<p>This fitting script consists  of several components, which we’ll go over in
 some detail.</p>
 <blockquote>
 <div><p>1 <strong>create mock data</strong>:  Here we use the builtin <code class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></code>
@@ -207,25 +205,23 @@ report of the fit statistics, best fit values, uncertainties and
 correlations between variables.</p>
 </div></blockquote>
 <p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">197</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">26</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">0.498818</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.002532</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 28</span>
+    <span class="c1"># data points      = 201</span>
+    <span class="c1"># variables        = 4</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.53784</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">0.0027302</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">1182.6</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1169.4</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">12.102080</span> <span class="o">+/-</span> <span class="mf">0.122022</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.000000</span><span class="p">)</span>
-   <span class="n">cen</span>            <span class="o">=</span>  <span class="mf">1.476801</span> <span class="o">+/-</span> <span class="mf">0.016932</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.000000</span><span class="p">)</span>
-   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">0.996424</span> <span class="o">+/-</span> <span class="mf">0.006977</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">wid</span>            <span class="o">=</span>  <span class="mf">2.022030</span> <span class="o">+/-</span> <span class="mf">0.016608</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">off</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.861</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span>  <span class="mf">0.808</span>
-   <span class="n">off</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.692</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp</span><span class="p">:</span>   <span class="mf">11.9259429</span> <span class="o">+/-</span> <span class="mf">0.078146</span> <span class="p">(</span><span class="mf">0.66</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">cen</span><span class="p">:</span>   <span class="mf">1.50726422</span> <span class="o">+/-</span> <span class="mf">0.010365</span> <span class="p">(</span><span class="mf">0.69</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">off</span><span class="p">:</span>   <span class="mf">1.00495225</span> <span class="o">+/-</span> <span class="mf">0.005356</span> <span class="p">(</span><span class="mf">0.53</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">wid</span><span class="p">:</span>   <span class="mf">1.99121482</span> <span class="o">+/-</span> <span class="mf">0.012135</span> <span class="p">(</span><span class="mf">0.61</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.726</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="n">wid</span><span class="p">)</span>                  <span class="o">=</span>  <span class="mf">0.717</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">wid</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>                  <span class="o">=</span> <span class="o">-</span><span class="mf">0.520</span>
 </pre></div>
 </div>
 <p>And the plot of data and fit will look like this:</p>
@@ -264,8 +260,8 @@ error-function.</li>
 
 <span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
-    <span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
-    <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
 
     <span class="n">e1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_amp</span> <span class="o">*</span> <span class="n">erf</span><span class="p">(</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_wid</span><span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_cen</span><span class="p">))</span>
     <span class="nb">sum</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">e1</span>
@@ -275,8 +271,8 @@ error-function.</li>
     <span class="k">return</span> <span class="nb">sum</span>
 <span class="n">enddef</span>
 
-<span class="c1"># create group for parameters</span>
-<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+<span class="c1"># create a parameter group for the fit:</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span>
     <span class="n">cen1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7113.25</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7111</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7115</span><span class="p">),</span>
     <span class="n">cen2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7116.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7115</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7120</span><span class="p">),</span>
 
@@ -298,9 +294,9 @@ error-function.</li>
     <span class="k">return</span> <span class="n">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span>
 <span class="n">enddef</span>
 
-<span class="n">m</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+<span class="n">mfit</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
 
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">show_correl</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">mfit</span><span class="p">,</span> <span class="n">show_correl</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
 <span class="c1"># now plot results (2 different windows)</span>
 <span class="n">final</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">e1</span> <span class="o">=</span> <span class="n">make_model</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">dat</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -331,33 +327,32 @@ Also note that we limit the range of the data from the full data set using
 the <code class="docutils literal"><span class="pre">index_of</span></code> function.  The objective function <code class="docutils literal"><span class="pre">resid()</span></code> is very
 simple, calling <code class="docutils literal"><span class="pre">make_models()</span></code> which creates the model of two Gaussian
 peaks, an error function, and an offset.  There are 10 parameters for the
-fit.  We're fitting the spectra with two Gaussian functions and an error
+fit.  We’re fitting the spectra with two Gaussian functions and an error
 function.  It is often observed that if the centroids of peak functions such
 as Gaussians are left to vary completely freely they tend to wander around
 and give lousy fits, so here we place fairly tight controls on the
 centroids.  We also place bounds on the amplitudes and widths of the peaks,
-so they can't go too far astray.</p>
+so they can’t go too far astray.</p>
 <p>The fit gives a report (ignoring correlations) like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">41</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">214</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">0.001194</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.000029</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 170</span>
+    <span class="c1"># data points      = 51</span>
+    <span class="c1"># variables        = 10</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.0012762</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">3.1126e-05</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">520.38</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">501.06</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.078636</span> <span class="o">+/-</span> <span class="mf">0.015419</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.406155</span> <span class="o">+/-</span> <span class="mf">0.044061</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">cen1</span>           <span class="o">=</span>  <span class="mf">7113.212401</span> <span class="o">+/-</span> <span class="mf">0.074142</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7113.250000</span><span class="p">)</span>
-   <span class="n">cen2</span>           <span class="o">=</span>  <span class="mf">7115.571111</span> <span class="o">+/-</span> <span class="mf">0.297302</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7116.000000</span><span class="p">)</span>
-   <span class="n">erf_amp</span>        <span class="o">=</span>  <span class="mf">0.375339</span> <span class="o">+/-</span> <span class="mf">0.008897</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">erf_cen</span>        <span class="o">=</span>  <span class="mf">7122.242846</span> <span class="o">+/-</span> <span class="mf">0.075486</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7123.500000</span><span class="p">)</span>
-   <span class="n">erf_wid</span>        <span class="o">=</span>  <span class="mf">0.289039</span> <span class="o">+/-</span> <span class="mf">0.012431</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">0.386845</span> <span class="o">+/-</span> <span class="mf">0.009081</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">wid1</span>           <span class="o">=</span>  <span class="mf">0.489783</span> <span class="o">+/-</span> <span class="mf">0.068186</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.600000</span><span class="p">)</span>
-   <span class="n">wid2</span>           <span class="o">=</span>  <span class="mf">1.877520</span> <span class="o">+/-</span> <span class="mf">0.166384</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.200000</span><span class="p">)</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>      <span class="mf">0.19742004</span> <span class="o">+/-</span> <span class="mf">0.037564</span> <span class="p">(</span><span class="mf">19.03</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>      <span class="mf">0.21393220</span> <span class="o">+/-</span> <span class="mf">0.048193</span> <span class="p">(</span><span class="mf">22.53</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">cen1</span><span class="p">:</span>      <span class="mf">7113.28403</span> <span class="o">+/-</span> <span class="mf">0.143034</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7113.25</span><span class="p">)</span>
+    <span class="n">cen2</span><span class="p">:</span>      <span class="mf">7116.46195</span> <span class="o">+/-</span> <span class="mf">0.279419</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7116</span><span class="p">)</span>
+    <span class="n">erf_amp</span><span class="p">:</span>   <span class="mf">0.38223607</span> <span class="o">+/-</span> <span class="mf">0.010433</span> <span class="p">(</span><span class="mf">2.73</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">erf_cen</span><span class="p">:</span>   <span class="mf">7122.29627</span> <span class="o">+/-</span> <span class="mf">0.097868</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7123.5</span><span class="p">)</span>
+    <span class="n">erf_wid</span><span class="p">:</span>   <span class="mf">0.27474480</span> <span class="o">+/-</span> <span class="mf">0.011462</span> <span class="p">(</span><span class="mf">4.17</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">off</span><span class="p">:</span>       <span class="mf">0.39565509</span> <span class="o">+/-</span> <span class="mf">0.010346</span> <span class="p">(</span><span class="mf">2.62</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">wid1</span><span class="p">:</span>      <span class="mf">1.07507112</span> <span class="o">+/-</span> <span class="mf">0.105954</span> <span class="p">(</span><span class="mf">9.86</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.6</span><span class="p">)</span>
+    <span class="n">wid2</span><span class="p">:</span>      <span class="mf">1.58457992</span> <span class="o">+/-</span> <span class="mf">0.307342</span> <span class="p">(</span><span class="mf">19.40</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>and the plots of the resulting best-fit and components look like these:</p>
@@ -378,10 +373,10 @@ that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the <code class="docutils literal"><span class="pre">make_models()</span></code>
 function:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
-    <span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
-    <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
-    <span class="n">p3</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;make model of spectra: 3 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="n">p3</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
 
     <span class="n">e1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_amp</span> <span class="o">*</span> <span class="n">erf</span><span class="p">(</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_wid</span><span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_cen</span><span class="p">))</span>
     <span class="nb">sum</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">p3</span> <span class="o">+</span> <span class="n">e1</span>
@@ -393,7 +388,7 @@ function:</p>
 </pre></div>
 </div>
 <p>and 3 more fitting parameters to the parameter group:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span>
     <span class="o">...</span>
     <span class="n">cen3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7122.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7120</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7124</span><span class="p">),</span>
     <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
@@ -402,33 +397,34 @@ function:</p>
 </pre></div>
 </div>
 <p>The fit now has 13 variables, and gives a report like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">38</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">775</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">0.000103</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.000003</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 504</span>
+    <span class="c1"># data points      = 51</span>
+    <span class="c1"># variables        = 13</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.00010278</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">2.7046e-06</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">642.85</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">617.74</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.080092</span> <span class="o">+/-</span> <span class="mf">0.005012</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.384458</span> <span class="o">+/-</span> <span class="mf">0.017113</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">amp3</span>           <span class="o">=</span>  <span class="mf">0.111112</span> <span class="o">+/-</span> <span class="mf">0.016366</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">cen1</span>           <span class="o">=</span>  <span class="mf">7113.234596</span> <span class="o">+/-</span> <span class="mf">0.023044</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7113.250000</span><span class="p">)</span>
-   <span class="n">cen2</span>           <span class="o">=</span>  <span class="mf">7115.416637</span> <span class="o">+/-</span> <span class="mf">0.136760</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7116.000000</span><span class="p">)</span>
-   <span class="n">cen3</span>           <span class="o">=</span>  <span class="mf">7122.300480</span> <span class="o">+/-</span> <span class="mf">0.039187</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7122.000000</span><span class="p">)</span>
-   <span class="n">erf_amp</span>        <span class="o">=</span>  <span class="mf">0.476421</span> <span class="o">+/-</span> <span class="mf">0.022186</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">erf_cen</span>        <span class="o">=</span>  <span class="mf">7123.374345</span> <span class="o">+/-</span> <span class="mf">0.215044</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7123.500000</span><span class="p">)</span>
-   <span class="n">erf_wid</span>        <span class="o">=</span>  <span class="mf">0.230234</span> <span class="o">+/-</span> <span class="mf">0.009485</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">0.487636</span> <span class="o">+/-</span> <span class="mf">0.022221</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">wid1</span>           <span class="o">=</span>  <span class="mf">0.496794</span> <span class="o">+/-</span> <span class="mf">0.021434</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.600000</span><span class="p">)</span>
-   <span class="n">wid2</span>           <span class="o">=</span>  <span class="mf">1.896698</span> <span class="o">+/-</span> <span class="mf">0.064887</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.200000</span><span class="p">)</span>
-   <span class="n">wid3</span>           <span class="o">=</span>  <span class="mf">0.614099</span> <span class="o">+/-</span> <span class="mf">0.040220</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.200000</span><span class="p">)</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>      <span class="mf">0.08005336</span> <span class="o">+/-</span> <span class="mf">0.005009</span> <span class="p">(</span><span class="mf">6.26</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>      <span class="mf">0.38406912</span> <span class="o">+/-</span> <span class="mf">0.017093</span> <span class="p">(</span><span class="mf">4.45</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">amp3</span><span class="p">:</span>      <span class="mf">0.11105163</span> <span class="o">+/-</span> <span class="mf">0.016357</span> <span class="p">(</span><span class="mf">14.73</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cen1</span><span class="p">:</span>      <span class="mf">7113.23457</span> <span class="o">+/-</span> <span class="mf">0.023040</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7113.25</span><span class="p">)</span>
+    <span class="n">cen2</span><span class="p">:</span>      <span class="mf">7115.41657</span> <span class="o">+/-</span> <span class="mf">0.136728</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7116</span><span class="p">)</span>
+    <span class="n">cen3</span><span class="p">:</span>      <span class="mf">7122.30049</span> <span class="o">+/-</span> <span class="mf">0.039190</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7122</span><span class="p">)</span>
+    <span class="n">erf_amp</span><span class="p">:</span>   <span class="mf">0.47613623</span> <span class="o">+/-</span> <span class="mf">0.022176</span> <span class="p">(</span><span class="mf">4.66</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">erf_cen</span><span class="p">:</span>   <span class="mf">7123.37448</span> <span class="o">+/-</span> <span class="mf">0.215089</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7123.5</span><span class="p">)</span>
+    <span class="n">erf_wid</span><span class="p">:</span>   <span class="mf">0.23023512</span> <span class="o">+/-</span> <span class="mf">0.009484</span> <span class="p">(</span><span class="mf">4.12</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">off</span><span class="p">:</span>       <span class="mf">0.48707800</span> <span class="o">+/-</span> <span class="mf">0.022211</span> <span class="p">(</span><span class="mf">4.56</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">wid1</span><span class="p">:</span>      <span class="mf">0.70260153</span> <span class="o">+/-</span> <span class="mf">0.030309</span> <span class="p">(</span><span class="mf">4.31</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.6</span><span class="p">)</span>
+    <span class="n">wid2</span><span class="p">:</span>      <span class="mf">2.68190137</span> <span class="o">+/-</span> <span class="mf">0.091739</span> <span class="p">(</span><span class="mf">3.42</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
+    <span class="n">wid3</span><span class="p">:</span>      <span class="mf">0.86847656</span> <span class="o">+/-</span> <span class="mf">0.056876</span> <span class="p">(</span><span class="mf">6.55</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Adding the third peak here reduced <span class="math">\(\chi^2\)</span> by a factor of 10, from
-0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
+0.001276 to 0.000103, and so seems to be a significant improvement.
+Reduced chi-square also dropped by an order of magnitude and both the
+Akaike and Bayesian information criteria dropped by more than 100.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
 <div class="figure compound align-center" id="fig-fit3">
@@ -451,34 +447,33 @@ section, we simply change <code class="docutils literal"><span class="pre">make_
 </pre></div>
 </div>
 <p>The fit report now reads:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">38</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">441</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">0.000093</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.000002</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 476</span>
+    <span class="c1"># data points      = 51</span>
+    <span class="c1"># variables        = 13</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">9.2875e-05</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">2.4441e-06</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">648.02</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">622.91</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.146617</span> <span class="o">+/-</span> <span class="mf">0.012757</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.445953</span> <span class="o">+/-</span> <span class="mf">0.035927</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.250000</span><span class="p">)</span>
-   <span class="n">amp3</span>           <span class="o">=</span>  <span class="mf">0.193669</span> <span class="o">+/-</span> <span class="mf">0.032386</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">cen1</span>           <span class="o">=</span>  <span class="mf">7113.237795</span> <span class="o">+/-</span> <span class="mf">0.020992</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7113.250000</span><span class="p">)</span>
-   <span class="n">cen2</span>           <span class="o">=</span>  <span class="mf">7115.912912</span> <span class="o">+/-</span> <span class="mf">0.134734</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7116.000000</span><span class="p">)</span>
-   <span class="n">cen3</span>           <span class="o">=</span>  <span class="mf">7122.320641</span> <span class="o">+/-</span> <span class="mf">0.037579</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7122.000000</span><span class="p">)</span>
-   <span class="n">erf_amp</span>        <span class="o">=</span>  <span class="mf">0.490162</span> <span class="o">+/-</span> <span class="mf">0.023101</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">erf_cen</span>        <span class="o">=</span>  <span class="mf">7123.580458</span> <span class="o">+/-</span> <span class="mf">0.227496</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">7123.500000</span><span class="p">)</span>
-   <span class="n">erf_wid</span>        <span class="o">=</span>  <span class="mf">0.228310</span> <span class="o">+/-</span> <span class="mf">0.008306</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">0.497919</span> <span class="o">+/-</span> <span class="mf">0.023158</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-   <span class="n">wid1</span>           <span class="o">=</span>  <span class="mf">0.528196</span> <span class="o">+/-</span> <span class="mf">0.027222</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.600000</span><span class="p">)</span>
-   <span class="n">wid2</span>           <span class="o">=</span>  <span class="mf">1.676269</span> <span class="o">+/-</span> <span class="mf">0.093116</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.200000</span><span class="p">)</span>
-   <span class="n">wid3</span>           <span class="o">=</span>  <span class="mf">0.642993</span> <span class="o">+/-</span> <span class="mf">0.047203</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.200000</span><span class="p">)</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>      <span class="mf">0.14657959</span> <span class="o">+/-</span> <span class="mf">0.012760</span> <span class="p">(</span><span class="mf">8.71</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>      <span class="mf">0.44536523</span> <span class="o">+/-</span> <span class="mf">0.035916</span> <span class="p">(</span><span class="mf">8.06</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">amp3</span><span class="p">:</span>      <span class="mf">0.19354556</span> <span class="o">+/-</span> <span class="mf">0.032364</span> <span class="p">(</span><span class="mf">16.72</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cen1</span><span class="p">:</span>      <span class="mf">7113.23780</span> <span class="o">+/-</span> <span class="mf">0.020989</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7113.25</span><span class="p">)</span>
+    <span class="n">cen2</span><span class="p">:</span>      <span class="mf">7115.91312</span> <span class="o">+/-</span> <span class="mf">0.134712</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7116</span><span class="p">)</span>
+    <span class="n">cen3</span><span class="p">:</span>      <span class="mf">7122.32066</span> <span class="o">+/-</span> <span class="mf">0.037577</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7122</span><span class="p">)</span>
+    <span class="n">erf_amp</span><span class="p">:</span>   <span class="mf">0.48986689</span> <span class="o">+/-</span> <span class="mf">0.023086</span> <span class="p">(</span><span class="mf">4.71</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">erf_cen</span><span class="p">:</span>   <span class="mf">7123.58055</span> <span class="o">+/-</span> <span class="mf">0.227490</span> <span class="p">(</span><span class="mf">0.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">7123.5</span><span class="p">)</span>
+    <span class="n">erf_wid</span><span class="p">:</span>   <span class="mf">0.22831037</span> <span class="o">+/-</span> <span class="mf">0.008305</span> <span class="p">(</span><span class="mf">3.64</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">off</span><span class="p">:</span>       <span class="mf">0.49735544</span> <span class="o">+/-</span> <span class="mf">0.023143</span> <span class="p">(</span><span class="mf">4.65</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">wid1</span><span class="p">:</span>      <span class="mf">0.52826663</span> <span class="o">+/-</span> <span class="mf">0.027231</span> <span class="p">(</span><span class="mf">5.15</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.6</span><span class="p">)</span>
+    <span class="n">wid2</span><span class="p">:</span>      <span class="mf">1.67565399</span> <span class="o">+/-</span> <span class="mf">0.093190</span> <span class="p">(</span><span class="mf">5.56</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
+    <span class="n">wid3</span><span class="p">:</span>      <span class="mf">0.64297551</span> <span class="o">+/-</span> <span class="mf">0.047200</span> <span class="p">(</span><span class="mf">7.34</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and we see that the already very low
-<span class="math">\(\chi^2\)</span> reduces by another 10%, which suggests a real improvement.
-For completeness,  the plots from this fit look like this:</p>
+<p>and we see that the already very low <span class="math">\(\chi^2\)</span> reduces by another 10%,
+and improvements of the two information criteria.  which suggests a real
+improvement.  For completeness, the plots from this fit look like this:</p>
 <div class="figure compound align-center" id="fig-fit4">
 <div style="width: 45%" class="subfigure align-center" id="id6">
 <span id="fig-fit4a"></span><a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 100%;" /></a>
@@ -490,7 +485,7 @@ For completeness,  the plots from this fit look like this:</p>
 </div>
 <p class="caption"><span class="caption-text"><strong>Figure 7.5:</strong> Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
 and an Error function.</span></p>
-</div><p id="fig-fit4">It's difficult to see a dramatic difference in fit quality for this data,
+</div><p id="fig-fit4">It’s difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.</p>
 </div>
@@ -503,20 +498,20 @@ spectra with a large selection of candidate model spectra, taking the
 result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.</p>
-<p>The example here is borrowed from Bruce Ravel's data and tutorials, and
+<p>The example here is borrowed from Bruce Ravel’s data and tutorials, and
 based on the work published by <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">9</a><span>]</span></span>, The goal here is not
 to repeat the whole of that analysis, but to present the mechanics of the
-fitting approach.  Essentially, we're asserting that a particular measured
+fitting approach.  Essentially, we’re asserting that a particular measured
 spectrum is made of a linear combination of 2 or more other spectra.  We
-have a set of candidate model spectra, and we're going to try to determine
+have a set of candidate model spectra, and we’re going to try to determine
 both which of those model spectra combine to match the measured one.  Here
 we will simply assert that all the spectra are aligned in the ordinate and
 that they are normalized in some reproducible way so that there are
-essentially no artefacts or systematic problems in the 'x' or 'y' values of
+essentially no artefacts or systematic problems in the ‘x’ or ‘y’ values of
 the data.</p>
 <p>For the example here, the spectra are held in individual ASCII data files,
-which we'll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</em>,
-<em>s2.dat</em>, ..., <em>s6.dat</em> for the spectra on 6 different standards. It is
+which we’ll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</em>,
+<em>s2.dat</em>, …, <em>s6.dat</em> for the spectra on 6 different standards. It is
 not important for the discussion here what these spectra represent, but
 they are XANES data taken at the Au L3 edge on various Au compounds.</p>
 <p>A visual inspection of the spectra (see Figure <a href="#fig-fit5">7.6</a>)
@@ -567,7 +562,8 @@ like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example3/fit1.lar</span>
 <span class="n">run</span><span class="p">(</span><span class="s1">&#39;ReadData.lar&#39;</span><span class="p">)</span>
 
-<span class="c1"># create a group of fit parameters</span>
+
+<span class="c1"># create a parameter group for the fit:</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
                <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
                <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -579,11 +575,11 @@ like this:</p>
 <span class="k">def</span> <span class="nf">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">+</span>
             <span class="n">pars</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="p">)</span>
-<span class="n">enddef</span>
+<span class="c1">#enddef</span>
 
 <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span><span class="o">/</span><span class="n">data</span><span class="o">.</span><span class="n">eps</span>
-<span class="n">enddef</span>
+<span class="c1">#enddef</span>
 
 <span class="c1"># set model here: Amp1 is free,</span>
 <span class="c1"># Amp2 is constrained to be 1 - Amp1</span>
@@ -595,9 +591,9 @@ like this:</p>
 <span class="n">data</span><span class="o">.</span><span class="n">eps</span>  <span class="o">=</span> <span class="mf">0.001</span>
 
 <span class="c1"># perform fit</span>
-<span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
 <span class="n">fit</span> <span class="o">=</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
 
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
@@ -612,32 +608,33 @@ like this:</p>
 </pre></div>
 </div>
 <p>Here, we actually define a weight for all 6 spectra, but force 4 of them to
-be 0.  For a two component fit, this would not be necessary, but we'll be
+be 0.  For a two component fit, this would not be necessary, but we’ll be
 expanding this shortly.  We place bounds of [0, 1] on all the parameters,
 and we use a constraint to ensure that the parameters add to 1.0.   Also
 note that we define an uncertainty in the data that we use to scale the
 <code class="docutils literal"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">model</span></code> returned by the fit.   This is somewhat arbitrarily chosen
 to be 0.001, that is 0.1% of the typical data value.  The
 results of this fit are:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">159</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">5</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">9339.070954</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">58.736295</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 7</span>
+    <span class="c1"># data points      = 160</span>
+    <span class="c1"># variables        = 1</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">9339.1</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">58.736</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">652.69</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">655.76</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.470660</span> <span class="o">+/-</span> <span class="mf">0.004709</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.500000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.529340</span> <span class="o">+/-</span> <span class="mf">0.004709</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1&#39;</span>
-
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>   <span class="mf">0.47066003</span> <span class="o">+/-</span> <span class="mf">0.004708</span> <span class="p">(</span><span class="mf">1.00</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>   <span class="mf">0.52933996</span> <span class="o">+/-</span> <span class="mf">0.004708</span> <span class="p">(</span><span class="mf">0.89</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;1 - amp1&#39;</span>
+    <span class="n">amp3</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp4</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp5</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp6</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and the result for this fit is shown in Figure <a href="#fig-fit5">7.6</a>.
-This demonstrates the use of simple constraints for Parameters in fits:
-we've used an algebraic expression to ensure that the weights for the two
+<p>and the result for this fit is shown in Figure <a href="#fig-fit5">7.6</a>.  This
+demonstrates the use of simple constraints for Parameters in fits: we’ve
+used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.</p>
 <p>The fit here is not perfect, and we suspect there may be another standard
 as a component to the fit.  But at this point, we have several candidate
@@ -648,9 +645,9 @@ spectra, and a pretty good starting fit, so the main questions are</p>
 <li>Which combination gives the best results?</li>
 </ol>
 </div></blockquote>
-<p>To answer the first question, we'll assert that &quot;improved reduced
-chi-square&quot; is the best way to decide which of a series of fits is best.
-To answer the second question, we'll work through all the possibilities.
+<p>To answer the first question, we’ll assert that “improved reduced
+chi-square” is the best way to decide which of a series of fits is best.
+To answer the second question, we’ll work through all the possibilities.
 Now, we set up a more complicated script to do 5 separate fits so that we
 can compare the results.   This makes use of some of the more advanced
 scripting features of larch:</p>
@@ -672,12 +669,12 @@ scripting features of larch:</p>
     <span class="k">return</span> <span class="n">out</span>
 <span class="n">enddef</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-               <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-               <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-               <span class="n">amp4</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-               <span class="n">amp5</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-               <span class="n">amp6</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">amp4</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">amp5</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">amp6</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
 <span class="c1"># make 4 copies of this parameter group:</span>
 <span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
@@ -686,27 +683,27 @@ scripting features of larch:</p>
 <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">amp2</span><span class="o">.</span><span class="n">vary</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">amp2</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1&#39;</span>
-<span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;2 component fit:  s1, s2&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;2 components:  s1, s2&#39;</span>
 
 <span class="c1"># Model: three components</span>
 <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">amp3</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
-<span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 component fit:  s1, s2, s3&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 components:  s1, s2, s3&#39;</span>
 
 <span class="c1"># Model: three components</span>
 <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">amp4</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
-<span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 component fit:  s1, s2, s4&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 components:  s1, s2, s4&#39;</span>
 
 <span class="c1"># Model: three components</span>
 <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">amp5</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
-<span class="n">pars</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 component fit:  s1, s2, s5&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 components:  s1, s2, s5&#39;</span>
 
 <span class="c1"># Model: three components</span>
 <span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
 <span class="n">pars</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">amp6</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
-<span class="n">pars</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 component fit:  s1, s2, s6&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;3 components:  s1, s2, s6&#39;</span>
 
 <span class="c1"># set uncertainty in data that we&#39;ll use to scale the returned residual</span>
 <span class="n">data</span><span class="o">.</span><span class="n">eps</span>  <span class="o">=</span> <span class="mf">0.001</span>
@@ -714,17 +711,20 @@ scripting features of larch:</p>
 
 
 <span class="c1">## Now loop over parameter groups, performing fit and comparing</span>
-<span class="c1">## the value of reduced chi-square</span>
-<span class="k">print</span> <span class="s1">&#39;chi_reduced         fit notes&#39;</span>
-<span class="k">print</span> <span class="s1">&#39;-------------------------------------&#39;</span>
+<span class="c1">## the value of reduced chi-square, AIC and BIC</span>
+<span class="k">print</span> <span class="s1">&#39;chi_reduced |  A I C  |  B I C | Notes&#39;</span>
+<span class="k">print</span> <span class="s1">&#39;------------+---------+--------+----------------------------&#39;</span>
 <span class="n">best_chi2</span><span class="p">,</span> <span class="n">best_params</span> <span class="o">=</span> <span class="mf">1.e99</span><span class="p">,</span> <span class="bp">None</span>
+<span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39; </span><span class="si">%8.1f</span><span class="s1">   | </span><span class="si">%6.1f</span><span class="s1">  | </span><span class="si">%6.1f</span><span class="s1"> |  </span><span class="si">%s</span><span class="s1">&#39;</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">:</span>
-    <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
-    <span class="k">print</span> <span class="s2">&quot;  </span><span class="si">%.4f</span><span class="s2">   </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">note</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span> <span class="o">&lt;</span> <span class="n">best_chi2</span><span class="p">:</span>
-        <span class="n">best_params</span><span class="p">,</span> <span class="n">best_chi2</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span>
-    <span class="n">endif</span>
-<span class="n">endfor</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
+    <span class="k">print</span> <span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">chi_reduced</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">bic</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">note</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">chi_reduced</span> <span class="o">&lt;</span> <span class="n">best_chi2</span><span class="p">:</span>
+        <span class="n">best_params</span><span class="p">,</span> <span class="n">best_result</span><span class="p">,</span> <span class="n">best_chi2</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">chi_reduced</span>
+    <span class="c1">#endif</span>
+<span class="c1">#endfor</span>
+<span class="k">print</span> <span class="s1">&#39;------------+---------+--------+----------------------------&#39;</span>
+
 
 <span class="k">def</span> <span class="nf">make_plots</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="s2">&quot;generates best-fit plots for a parameter group&quot;</span>
@@ -751,9 +751,8 @@ scripting features of larch:</p>
 <span class="c1"># NOTE!  set paramGroup to best_params to ensure</span>
 <span class="c1">#        that constraintes are properly evaluated</span>
 
-<span class="n">_sys</span><span class="o">.</span><span class="n">paramGroup</span> <span class="o">=</span> <span class="n">best_params</span>
-<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">best_params</span><span class="p">)</span>
- 
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">best_result</span><span class="p">)</span>
+
 <span class="n">make_plots</span><span class="p">(</span><span class="n">best_params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
 <span class="c1">## end of examples/fitting/doc_example3/fit2.lar</span>
@@ -762,44 +761,46 @@ scripting features of larch:</p>
 <p>There are several points worth noting here:</p>
 <blockquote>
 <div><ol class="loweralpha simple">
-<li>We make a new copy of the Parameter Group for each fit -- this way we
+<li>We make a new copy of the Parameter Group for each fit – this way we
 can (with some care) switch back and forth between fitting models.  Note
 that we add the non-Parameter <code class="docutils literal"><span class="pre">note</span></code> member to this group that give a
 brief description of the fit.  Of course, we could add anything else we
 wanted.</li>
 <li>We set <code class="docutils literal"><span class="pre">amp1.vary</span></code> and <code class="docutils literal"><span class="pre">amp2.vary</span></code> to <code class="docutils literal"><span class="pre">True</span></code> and set one of the
-other amplitude parameter's expression to <code class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></code> to impose
+other amplitude parameter’s expression to <code class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></code> to impose
 the desired constraint.</li>
 <li>The loop over Parameter groups runs the fit for each set of
-Parameters, and checks for the lowest value of <code class="docutils literal"><span class="pre">chi_reduced</span></code>.</li>
+Parameters, and checks for the lowest value of <code class="docutils literal"><span class="pre">chi_reduced</span></code>,
+<code class="docutils literal"><span class="pre">aic</span></code>, and <code class="docutils literal"><span class="pre">bic</span></code>.</li>
 </ol>
 </div></blockquote>
 <p>The output of running this gives:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chi_reduced</span>         <span class="n">fit</span> <span class="n">notes</span>
-<span class="o">-------------------------------------</span>
-  <span class="mf">58.7363</span>   <span class="mi">2</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span>
-  <span class="mf">40.1796</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span>
-  <span class="mf">37.1932</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span>
-  <span class="mf">32.1411</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
-  <span class="mf">37.2007</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s6</span>
-<span class="n">Best</span> <span class="n">Fit</span><span class="p">:</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
-<span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">158</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">10</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">5078.292601</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">32.141092</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chi_reduced</span> <span class="o">|</span>  <span class="n">A</span> <span class="n">I</span> <span class="n">C</span>  <span class="o">|</span>  <span class="n">B</span> <span class="n">I</span> <span class="n">C</span> <span class="o">|</span> <span class="n">Notes</span>
+<span class="o">------------+---------+--------+----------------------------</span>
+     <span class="mf">58.7</span>   <span class="o">|</span>  <span class="mf">652.7</span>  <span class="o">|</span>  <span class="mf">655.8</span> <span class="o">|</span>  <span class="mi">2</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span>
+     <span class="mf">40.2</span>   <span class="o">|</span>  <span class="mf">592.9</span>  <span class="o">|</span>  <span class="mf">599.1</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span>
+     <span class="mf">37.2</span>   <span class="o">|</span>  <span class="mf">580.6</span>  <span class="o">|</span>  <span class="mf">586.7</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span>
+     <span class="mf">32.1</span>   <span class="o">|</span>  <span class="mf">557.2</span>  <span class="o">|</span>  <span class="mf">563.4</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
+     <span class="mf">37.2</span>   <span class="o">|</span>  <span class="mf">580.6</span>  <span class="o">|</span>  <span class="mf">586.8</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s6</span>
+<span class="o">------------+---------+--------+----------------------------</span>
+<span class="n">Best</span> <span class="n">Fit</span><span class="p">:</span>   <span class="mi">3</span> <span class="n">components</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 12</span>
+    <span class="c1"># data points      = 160</span>
+    <span class="c1"># variables        = 2</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">5078.3</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">32.141</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">557.21</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">563.36</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.278665</span> <span class="o">+/-</span> <span class="mf">0.017035</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.532070</span> <span class="o">+/-</span> <span class="mf">0.003491</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">amp5</span>           <span class="o">=</span>  <span class="mf">0.189264</span> <span class="o">+/-</span> <span class="mf">0.016438</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.270</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>   <span class="mf">0.27866516</span> <span class="o">+/-</span> <span class="mf">0.017035</span> <span class="p">(</span><span class="mf">6.11</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>   <span class="mf">0.53207041</span> <span class="o">+/-</span> <span class="mf">0.003491</span> <span class="p">(</span><span class="mf">0.66</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">amp3</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp4</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp5</span><span class="p">:</span>   <span class="mf">0.18926442</span> <span class="o">+/-</span> <span class="mf">0.016438</span> <span class="p">(</span><span class="mf">8.69</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;1 - amp1 - amp2&#39;</span>
+    <span class="n">amp6</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.270</span>
 </pre></div>
 </div>
 <p>and the output plots for the best model look like this:</p>
@@ -814,45 +815,45 @@ Parameters, and checks for the lowest value of <code class="docutils literal"><s
 </div>
 <p class="caption"><span class="caption-text"><strong>Figure 7.7:</strong> Linear Combination XANES Fit of gold components in cyanobacteria with
 species <em>s1</em>, <em>s2</em>, and <em>s5</em>.</span></p>
-</div><p id="fig-fit6">Of course, we aren't necessarily done here as we haven't exhausted all
+</div><p id="fig-fit6">Of course, we aren’t necessarily done here as we haven’t exhausted all
 possible combinations of components.  Included in the examples
 (<em>examples/fitting/doc_examples3/fit3.lar</em>), but not reprinted here, is a
 script that runs through all possible combinations of 3 and 4 components,
 though still assuming that <em>s1</em> and <em>s2</em> are components.</p>
 <p>The output gives this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chi_reduced</span>         <span class="n">fit</span> <span class="n">notes</span>
-<span class="o">-------------------------------------</span>
-  <span class="mf">58.7363</span>   <span class="mi">2</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span>
-  <span class="mf">40.1796</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span>
-  <span class="mf">37.1932</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span>
-  <span class="mf">32.1411</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
-  <span class="mf">37.2007</span>   <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s6</span>
-  <span class="mf">59.2220</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span>
-  <span class="mf">14.7269</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s5</span>
-  <span class="mf">13.3452</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s6</span>
-  <span class="mf">30.1274</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span>
-  <span class="mf">32.3537</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span><span class="p">,</span> <span class="n">s6</span>
-  <span class="mf">34.3471</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s6</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chi_reduced</span> <span class="o">|</span>  <span class="n">A</span> <span class="n">I</span> <span class="n">C</span>  <span class="o">|</span>  <span class="n">B</span> <span class="n">I</span> <span class="n">C</span> <span class="o">|</span> <span class="n">Notes</span>
+<span class="o">------------+---------+--------+----------------------------</span>
+     <span class="mf">58.7</span>   <span class="o">|</span>  <span class="mf">652.7</span>  <span class="o">|</span>  <span class="mf">655.8</span> <span class="o">|</span>  <span class="mi">2</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span>
+     <span class="mf">40.2</span>   <span class="o">|</span>  <span class="mf">592.9</span>  <span class="o">|</span>  <span class="mf">599.1</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span>
+     <span class="mf">37.2</span>   <span class="o">|</span>  <span class="mf">580.6</span>  <span class="o">|</span>  <span class="mf">586.7</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span>
+     <span class="mf">32.1</span>   <span class="o">|</span>  <span class="mf">557.2</span>  <span class="o">|</span>  <span class="mf">563.4</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span>
+     <span class="mf">37.2</span>   <span class="o">|</span>  <span class="mf">580.6</span>  <span class="o">|</span>  <span class="mf">586.8</span> <span class="o">|</span>  <span class="mi">3</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s6</span>
+     <span class="mf">59.2</span>   <span class="o">|</span>  <span class="mf">656.0</span>  <span class="o">|</span>  <span class="mf">665.2</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span>
+     <span class="mf">14.7</span>   <span class="o">|</span>  <span class="mf">433.3</span>  <span class="o">|</span>  <span class="mf">442.5</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s5</span>
+     <span class="mf">13.3</span>   <span class="o">|</span>  <span class="mf">417.6</span>  <span class="o">|</span>  <span class="mf">426.8</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s6</span>
+     <span class="mf">30.1</span>   <span class="o">|</span>  <span class="mf">547.8</span>  <span class="o">|</span>  <span class="mf">557.1</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s5</span>
+     <span class="mf">32.4</span>   <span class="o">|</span>  <span class="mf">559.2</span>  <span class="o">|</span>  <span class="mf">568.5</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s5</span><span class="p">,</span> <span class="n">s6</span>
+     <span class="mf">34.3</span>   <span class="o">|</span>  <span class="mf">568.8</span>  <span class="o">|</span>  <span class="mf">578.0</span> <span class="o">|</span>  <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s4</span><span class="p">,</span> <span class="n">s6</span>
+<span class="o">------------+---------+--------+----------------------------</span>
 <span class="n">Best</span> <span class="n">Fit</span><span class="p">:</span>   <span class="mi">4</span> <span class="n">component</span> <span class="n">fit</span><span class="p">:</span>  <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s6</span>
-<span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">157</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">22</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">2095.190450</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">13.345162</span>
-
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 37</span>
+    <span class="c1"># data points      = 160</span>
+    <span class="c1"># variables        = 3</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">2095.2</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">13.345</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">417.56</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">426.78</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.327883</span> <span class="o">+/-</span> <span class="mf">0.009491</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.465013</span> <span class="o">+/-</span> <span class="mf">0.005625</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-   <span class="n">amp3</span>           <span class="o">=</span>  <span class="mf">0.063834</span> <span class="o">+/-</span> <span class="mf">0.003834</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">amp6</span>           <span class="o">=</span>  <span class="mf">0.143270</span> <span class="o">+/-</span> <span class="mf">0.008020</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2 - amp3&#39;</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp2</span><span class="p">,</span> <span class="n">amp3</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.890</span>
-   <span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.340</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>   <span class="mf">0.32788267</span> <span class="o">+/-</span> <span class="mf">0.009491</span> <span class="p">(</span><span class="mf">2.89</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>   <span class="mf">0.46501286</span> <span class="o">+/-</span> <span class="mf">0.005624</span> <span class="p">(</span><span class="mf">1.21</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">amp3</span><span class="p">:</span>   <span class="mf">0.06384062</span> <span class="o">+/-</span> <span class="mf">0.003749</span> <span class="p">(</span><span class="mf">5.87</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">amp4</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp5</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp6</span><span class="p">:</span>   <span class="mf">0.14326383</span> <span class="o">+/-</span> <span class="mf">0.008029</span> <span class="p">(</span><span class="mf">5.60</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;1 - amp1 - amp2 - amp3&#39;</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp2</span><span class="p">,</span> <span class="n">amp3</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.890</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.340</span>
 </pre></div>
 </div>
 <p>You might notice that, whereas the 3 component fit favored adding <em>s5</em>, the
@@ -860,27 +861,28 @@ four component fit favors <em>s3</em> and <em>s6</em>.  You might further notice
 four component fit with <em>s3</em> and <em>s5</em> has reduced chi-square of 14.7, only
 slightly worse than the best value.  For completeness, the parameters for
 that are:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
-<span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">157</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">18</span>
-   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">2312.121664</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">14.726890</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ret6</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">pars</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">ret6</span><span class="p">)</span>
 
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 7</span>
+    <span class="c1"># data points      = 160</span>
+    <span class="c1"># variables        = 3</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">2312.1</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">14.727</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">433.32</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">442.55</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp1</span>           <span class="o">=</span>  <span class="mf">0.303043</span> <span class="o">+/-</span> <span class="mf">0.011665</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-   <span class="n">amp2</span>           <span class="o">=</span>  <span class="mf">0.458358</span> <span class="o">+/-</span> <span class="mf">0.005875</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.400000</span><span class="p">)</span>
-   <span class="n">amp3</span>           <span class="o">=</span>  <span class="mf">0.054293</span> <span class="o">+/-</span> <span class="mf">0.003941</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">amp5</span>           <span class="o">=</span>  <span class="mf">0.184307</span> <span class="o">+/-</span> <span class="mf">0.011130</span> <span class="o">=</span> <span class="s1">&#39;1 - amp1 - amp2 - amp3&#39;</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp2</span><span class="p">,</span> <span class="n">amp3</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.916</span>
-   <span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.247</span>
-   <span class="n">amp1</span><span class="p">,</span> <span class="n">amp3</span>           <span class="o">=</span>  <span class="mf">0.152</span>
-<span class="o">=======================================================</span>
+    <span class="n">amp1</span><span class="p">:</span>   <span class="mf">0.30304286</span> <span class="o">+/-</span> <span class="mf">0.011667</span> <span class="p">(</span><span class="mf">3.85</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.3030429</span><span class="p">)</span>
+    <span class="n">amp2</span><span class="p">:</span>   <span class="mf">0.45835749</span> <span class="o">+/-</span> <span class="mf">0.005874</span> <span class="p">(</span><span class="mf">1.28</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.4583575</span><span class="p">)</span>
+    <span class="n">amp3</span><span class="p">:</span>   <span class="mf">0.05429199</span> <span class="o">+/-</span> <span class="mf">0.003961</span> <span class="p">(</span><span class="mf">7.30</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">0.05429198</span><span class="p">)</span>
+    <span class="n">amp4</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">amp5</span><span class="p">:</span>   <span class="mf">0.18430763</span> <span class="o">+/-</span> <span class="mf">0.011132</span> <span class="p">(</span><span class="mf">6.04</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;1 - amp1 - amp2 - amp3&#39;</span>
+    <span class="n">amp6</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span><span class="n">fixed</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp2</span><span class="p">,</span> <span class="n">amp3</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.916</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp2</span><span class="p">)</span>                <span class="o">=</span> <span class="o">-</span><span class="mf">0.247</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amp1</span><span class="p">,</span> <span class="n">amp3</span><span class="p">)</span>                <span class="o">=</span>  <span class="mf">0.152</span>
 </pre></div>
 </div>
 <p>The plots resulting from both sets of Parameters are shown:</p>
@@ -909,7 +911,7 @@ with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>.</span></p>
 </div><p id="fig-fit8">From the plots alone, it is difficult to tell which of these fits is
 better, and it is probably best to say that these are both good fits.  This
 implies that component <em>s3</em> is important even if at a very small fraction,
-and that either component <em>s5</em> or <em>s6</em> (which aren't that different
+and that either component <em>s5</em> or <em>s6</em> (which aren’t that different
 spectroscopically or chemically (see Figure <a href="#fig-fit5">7.6</a>) is present.
 Of course, the analysis here is not meant to be definitive, and there are
 many more checks that could be done.  To be clear, <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">9</a><span>]</span></span>
@@ -951,7 +953,7 @@ found here.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

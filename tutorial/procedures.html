@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.6. Tutorial: Writing Functions or Procedures &#8212; larch 0.9.33 documentation</title>
+    <title>4.6. Tutorial: Writing Functions or Procedures &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -84,7 +84,7 @@
   <ul>
 <li><a class="reference internal" href="#">4.6. Tutorial: Writing Functions or Procedures</a><ul>
 <li><a class="reference internal" href="#def-statement">4.6.1. Def statement</a></li>
-<li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">4.6.2. Namespace and &quot;Scope&quot; inside a Procedure</a></li>
+<li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">4.6.2. Namespace and “Scope” inside a Procedure</a></li>
 <li><a class="reference internal" href="#the-return-statement-and-multiple-return-values">4.6.3. The return statement, and multiple Return values</a></li>
 <li><a class="reference internal" href="#keyword-arguments">4.6.4. Keyword arguments</a></li>
 <li><a class="reference internal" href="#documentation-strings">4.6.5. Documentation Strings</a></li>
@@ -133,7 +133,7 @@ functions.  For maximum clarity in this section we tend use the word
 imply a Python function.  In fact, as we will see, there is very little
 difference in practical use, and the rest of the documentation will be more
 lax about referring to functions written in Larch as functions.</p>
-<p>Once you're ready to write procedures, you'll almost certainly want to read
+<p>Once you’re ready to write procedures, you’ll almost certainly want to read
 about running Larch scripts and modules in the next section of this tutorial.</p>
 <div class="section" id="def-statement">
 <h2>4.6.1. Def statement<a class="headerlink" href="#def-statement" title="Permalink to this headline">¶</a></h2>
@@ -209,11 +209,11 @@ enddef
 </div>
 </div>
 <div class="section" id="namespace-and-scope-inside-a-procedure">
-<span id="tut-namespaces-label"></span><h2>4.6.2. Namespace and &quot;Scope&quot; inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
-<p>While inside a procedure, and important consideration is &quot;what variables
-does this procedure have access to?&quot;.  In fact, the question can be
-extended beyond procedures and functions to ask &quot;what variables are
-available at any time during a Larch session or when a script is running?&quot;.
+<span id="tut-namespaces-label"></span><h2>4.6.2. Namespace and “Scope” inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
+<p>While inside a procedure, and important consideration is “what variables
+does this procedure have access to?”.  In fact, the question can be
+extended beyond procedures and functions to ask “what variables are
+available at any time during a Larch session or when a script is running?”.
 This is known as <strong>scoping</strong>, and there is the notion of a <strong>namespace</strong> in
 which all the available variables exist.</p>
 <p>In Larch (to be clear, the rules here are slightly different than Python),
@@ -222,6 +222,9 @@ top-level group is <cite>_main</cite>, and all groups descend from it.  There is
 special list <code class="docutils literal"><span class="pre">_sys.searchGroupObjects</span></code> holding the list of Groups to be
 searched for names.  There are several related variables listed in
 <a class="reference internal" href="#namespace-table"><span class="std std-ref">Table of Namespace-related Variables</span></a>.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.9.34: </span><cite>_sys.paramGroup</cite> is no longer used.  For fitting, use <cite>_sys.fiteval</cite> instead.</p>
+</div>
 <blockquote id="namespace-table">
 <span id="index-0"></span><div><p>Table of Namespace-related Variables</p>
 <p>Listed are the name of variables holding information used in the looking
@@ -238,25 +241,22 @@ up of symbol names.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>_sys.paramGroup</td>
-<td>group of Parameters, as for a fit</td>
-</tr>
-<tr class="row-odd"><td>_sys.localGroup</td>
+<tr class="row-even"><td>_sys.localGroup</td>
 <td>group for variables passed into or created
 in a procedure</td>
 </tr>
-<tr class="row-even"><td>_sys.moduleGroup</td>
-<td>group for module-wide variables -- those
+<tr class="row-odd"><td>_sys.moduleGroup</td>
+<td>group for module-wide variables – those
 definied in the same file as the current procedure.</td>
 </tr>
-<tr class="row-odd"><td>_sys.searchGroupObjects</td>
+<tr class="row-even"><td>_sys.searchGroupObjects</td>
 <td>current list (ordered) of actual groups searched</td>
 </tr>
-<tr class="row-even"><td>_sys.searchGroups</td>
+<tr class="row-odd"><td>_sys.searchGroups</td>
 <td>current list of actual group names searched</td>
 </tr>
-<tr class="row-odd"><td>_sys.core_groups</td>
-<td>('_main', '_sys', '_builtin', '_math')</td>
+<tr class="row-even"><td>_sys.core_groups</td>
+<td>(‘_main’, ‘_sys’, ‘_builtin’, ‘_math’)</td>
 </tr>
 </tbody>
 </table>
@@ -265,19 +265,16 @@ definied in the same file as the current procedure.</td>
 <p><cite>_sys.searchGroups</cite> and <cite>_sys.searchGroupObjects</cite> are always kept in sync,
 and always contain the groups named in <cite>_sys.core_groups</cite>.  In addition,
 they always contain (in order, if not <code class="docutils literal"><span class="pre">None</span></code>), <cite>_sys.localGroup</cite>,
-<cite>_sys.paramGroup</cite>, <cite>_sys.moduleGroup</cite>.  If not inside a function or module,
+<cite>_sys.moduleGroup</cite>.  If not inside a function or module,
 <cite>_sys.localGroup</cite> and <cite>_sys.moduleGroup</cite> are set to <cite>_main</cite>.</p>
 <p>Thus, inside a procedure, the way names are looked up are:</p>
-<p>1. First, variables defined in the current <em>parameter group</em>.  This is
-meant to be used exclusively for fitting procedures. Only during a fit
-should <cite>_sys.paramGroup</cite> have any value other than <code class="docutils literal"><span class="pre">None</span></code>.</p>
-<p>2. Second, variables defined in the procedure definition (command-line
-arguments and created inside the procedure.</p>
-<p>3. Third, variable declared at the top-level in the same module in which the
-procedure is  defined.</p>
-<p>4. Finaly, by going through the list of other search groups, including all
-the groups in <cite>_sys.core_groups</cite>, and probably several others brought in
-from some plug-in.</p>
+<p>1. First, variables defined in the procedure definition, passed in as
+arguments, those created inside the procedure.</p>
+<p>2. Second, variable defined at the top-level (not inside other procedures)
+in the same module in which the procedure is defined.</p>
+<p>3. Third, by searching through the list of other search groups, including
+all the groups in <cite>_sys.core_groups</cite>, and probably several others brought
+in from some plug-in.</p>
 <p>In principle, you can alter some of these variables in the <cite>_sys</cite> group.
 This is a really bad idea, and you should avoid doing it at all costs.</p>
 </div>
@@ -309,13 +306,13 @@ do:</p>
 </div>
 <p>Because a return value from a procedure can hold many values, it is best to
 be careful when writing a procedure that you document what the return value
-is, and when using a procedure that you're getting the correct number of
+is, and when using a procedure that you’re getting the correct number of
 values.</p>
 </div>
 <div class="section" id="keyword-arguments">
 <h2>4.6.4. Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h2>
 <p>For the procedures defined so far, the arguments have been both required
-and in a fixed order.  Sometimes, you'll want to give a procedure optional
+and in a fixed order.  Sometimes, you’ll want to give a procedure optional
 arguments, and perhaps allow some flexibility in the order of the
 arguments.  Larch allows this with <strong>keyword</strong> arguments.
 Keyword arguments offer distinct advantages over positional arguments
@@ -342,13 +339,13 @@ This can then be used as:</p>
 <span class="mf">4.0</span>
 </pre></div>
 </div>
-<p>You can supply many keyword arguments -- they can be given in any order,
+<p>You can supply many keyword arguments – they can be given in any order,
 but they must all come <em>after</em> the positional arguments.</p>
 <p>A procedure can be written to take an unspecified number of positional and
 keyword parameters, using a special syntax for unspecified positional
 arguments and for unspecified keyword arguments.  To use unspecified
 positional arguments, a procedure definition takes an argument preceded by
-a '*' after all the named positional arguments, like this:</p>
+a ‘*’ after all the named positional arguments, like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">addall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;add all (at least 2!!) arguments given&quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
@@ -359,11 +356,11 @@ a '*' after all the named positional arguments, like this:</p>
 <span class="n">enddef</span>
 </pre></div>
 </div>
-<p>Here, the <strong>'*args'</strong> arguments means to use the variable 'args' to hold
+<p>Here, the <strong>‘*args’</strong> arguments means to use the variable ‘args’ to hold
 any number of positional arguments beyond those explicitly given.  Inside
-the procedure, a tuple named 'args' will hold any positional parameters
-included in the call to 'addall' past the first two (which will be held by
-'a' and 'b').  Thus, this procedure can be used as:</p>
+the procedure, a tuple named ‘args’ will hold any positional parameters
+included in the call to ‘addall’ past the first two (which will be held by
+‘a’ and ‘b’).  Thus, this procedure can be used as:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c1"># args = ()</span>
 <span class="mi">5</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c1"># args = (5, 7)</span>
@@ -372,7 +369,7 @@ included in the call to 'addall' past the first two (which will be held by
 </div>
 <p>To add support for unspecified keyword parameters, one adds a named
 argument to the procedure definition preceded by two asterisks:
-<strong>'**keywords'</strong>.  For example:</p>
+<strong>‘**keywords’</strong>.  For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">operate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;perform operation on a and b&quot;&quot;&quot;</span>
     <span class="n">debug</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -395,9 +392,9 @@ argument to the procedure definition preceded by two asterisks:
 <span class="n">enddef</span>
 </pre></div>
 </div>
-<p>As you may have figured out, inside the procedure, 'options' will hold a
+<p>As you may have figured out, inside the procedure, ‘options’ will hold a
 dictionary of keyword names/values passed into it.  With this (perhaps
-contrived) definition, you can call 'operate' many ways to change its
+contrived) definition, you can call ‘operate’ many ways to change its
 behavior:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>larch&gt; operate(3, 2, op=&#39;add&#39;)
 5
@@ -414,7 +411,7 @@ larch&gt; operate(3, 2, op=&#39;xxx&#39;, debug=False)
 op == xxx
 </pre></div>
 </div>
-<p>As with the <strong>'*args'</strong>, the <strong>'**options'</strong> in the procedure definition must
+<p>As with the <strong>‘*args’</strong>, the <strong>‘**options’</strong> in the procedure definition must
 appear after any named keyword parameters, and will not include the named
 keyword parameters.</p>
 </div>
@@ -476,7 +473,7 @@ mechanism, or when viewing details of the procedure.  For example:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

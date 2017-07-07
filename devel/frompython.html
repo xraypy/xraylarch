@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.4. Using Larch from Python &#8212; larch 0.9.33 documentation</title>
+    <title>11.4. Using Larch from Python &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="11.3. Plugins" href="plugins.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -122,7 +122,7 @@ order for the <code class="docutils literal"><span class="pre">import</span></co
 <span class="target" id="module-larch"></span><dl class="function">
 <dt id="larch.use_plugin_path">
 <code class="descclassname">larch.</code><code class="descname">use_plugin_path</code><span class="sig-paren">(</span><em>folder_name</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.use_plugin_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>add the named Plugin folder to Python's <code class="docutils literal"><span class="pre">sys.path</span></code>, allowing python
+<dd><p>add the named Plugin folder to Python’s <code class="docutils literal"><span class="pre">sys.path</span></code>, allowing python
 functions to be imported from the modules in the specified plugin folder.</p>
 <p>The argument is the subfolder for each plugin, relative to the
 installed Larch plugins (typically <code class="docutils literal"><span class="pre">$HOME/.larch/plugins</span></code> for
@@ -141,8 +141,8 @@ This interpreter instance is primarily used inside Larch plugins to create
 Groups and place them in the current symbol table, or to access
 data from the builtin <code class="docutils literal"><span class="pre">_sys</span></code> module  or from data resouces loaded into
 the <code class="docutils literal"><span class="pre">_xray</span></code> module.
-Though you won't need to write Larch scripts inside
-python (you <strong>can</strong>, but if you're reading this section, you probably want
+Though you won’t need to write Larch scripts inside
+python (you <strong>can</strong>, but if you’re reading this section, you probably want
 to use Python instead of Larch), you will need an instance of the
 interpreter.  This is easily created, and can then be passed to any of the
 plugin functions with the <code class="docutils literal"><span class="pre">_larch</span></code> keyword argument:</p>
@@ -210,7 +210,7 @@ particular interpreter session, you can:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

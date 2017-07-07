@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. Reading and Writing Data &#8212; larch 0.9.33 documentation</title>
+    <title>5. Reading and Writing Data &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="6. Plotting and Displaying Data" href="../plotting/index.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -139,7 +139,7 @@ functions for data handling.</p>
 widely used in the XAFS community, is to store data in plaintext (ASCII
 encoded) data files, with whitespace delimited numbers layed out as a
 table, with a fix number of columns and rows indicated by newlines.
-Typically a comment character such as &quot;#&quot; is used to signify header
+Typically a comment character such as “#” is used to signify header
 information.  For instance:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO.</span>
 <span class="c1"># data from 20-BM, 2001, as part of NXS school</span>
@@ -156,7 +156,7 @@ information.  For instance:</p>
 <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_io.read_ascii">
-<code class="descclassname">_io.</code><code class="descname">read_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">read_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>comentchar=’#;*%’</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and read an plaintext data file, returning a new group containing
 the data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -164,9 +164,9 @@ the data.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) -- name of file to read.</li>
-<li><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) -- string of valid comment characters</li>
-<li><strong>labels</strong> (string, <code class="docutils literal"><span class="pre">None</span></code>, or <code class="docutils literal"><span class="pre">False</span></code>) -- string to split for column labels</li>
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) – name of file to read.</li>
+<li><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) – string of valid comment characters</li>
+<li><strong>labels</strong> (string, <code class="docutils literal"><span class="pre">None</span></code>, or <code class="docutils literal"><span class="pre">False</span></code>) – string to split for column labels</li>
 </ul>
 </td>
 </tr>
@@ -214,16 +214,16 @@ labels in the file.   You can be explicit:</p>
 </div>
 <dl class="function">
 <dt id="_io.write_ascii">
-<code class="descclassname">_io.</code><code class="descname">write_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">write_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>*args</em>, <em>commentchar=’#’</em>, <em>label=None</em>, <em>header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and writes arrays, scalars, and text to an ASCII file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>commentchar</strong> -- character for comment ('#')</li>
-<li><strong>label</strong> -- array label line (autogenerated)</li>
-<li><strong>header</strong> -- array of strings for header</li>
+<li><strong>commentchar</strong> – character for comment (‘#’)</li>
+<li><strong>label</strong> – array label line (autogenerated)</li>
+<li><strong>header</strong> – array of strings for header</li>
 </ul>
 </td>
 </tr>
@@ -233,7 +233,7 @@ labels in the file.   You can be explicit:</p>
 
 <dl class="function">
 <dt id="_io.write_group">
-<code class="descclassname">_io.</code><code class="descname">write_group</code><span class="sig-paren">(</span><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">write_group</code><span class="sig-paren">(</span><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar=’#’</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>write data from a specified group to an ASCII data file.
 This is pretty minimal and may work poorly for large groups of complex
 data.</p>
@@ -244,7 +244,7 @@ data.</p>
 <h2>5.2. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
-&quot;metadata&quot; about the data, and can be explored with a variety of tools.
+“metadata” about the data, and can be explored with a variety of tools.
 The interface used in Larch is based on <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, which should be consulted
 for further documentation.</p>
 <dl class="function">
@@ -261,15 +261,15 @@ data heirarchy of the HDF5 file, and pick out the needed data:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="p">:</span> <span class="mi">3</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;Collection Time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span> <span class="s1">u&#39;Version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
-          <span class="s1">u&#39;Beamline&#39;</span><span class="p">:</span> <span class="s1">&#39;GSECARS, 13-IDC / APS&#39;</span><span class="p">,</span> <span class="s1">u&#39;Title&#39;</span><span class="p">:</span> <span class="s1">&#39;Epics Scan Data&#39;</span><span class="p">}</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Collection Time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
+          <span class="sa">u</span><span class="s1">&#39;Beamline&#39;</span><span class="p">:</span> <span class="s1">&#39;GSECARS, 13-IDC / APS&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Title&#39;</span><span class="p">:</span> <span class="s1">&#39;Epics Scan Data&#39;</span><span class="p">}</span>
   <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">&gt;</span>
   <span class="n">h5_file</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">HDF5</span> <span class="n">file</span> <span class="s2">&quot;test.h5&quot;</span> <span class="p">(</span><span class="n">mode</span> <span class="n">r</span><span class="p">)</span><span class="o">&gt;</span>
 <span class="n">larch</span><span class="o">&gt;</span><span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="p">:</span> <span class="mi">5</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;scan_prefix&#39;</span><span class="p">:</span> <span class="s1">&#39;13IDC:&#39;</span><span class="p">,</span> <span class="s1">u&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span>
-        <span class="s1">u&#39;correct_deadtime&#39;</span><span class="p">:</span> <span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="s1">u&#39;dimension&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="s1">u&#39;stop_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:44:52 2009&#39;</span><span class="p">}</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;scan_prefix&#39;</span><span class="p">:</span> <span class="s1">&#39;13IDC:&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span>
+        <span class="sa">u</span><span class="s1">&#39;correct_deadtime&#39;</span><span class="p">:</span> <span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;dimension&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="sa">u</span><span class="s1">&#39;stop_time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:44:52 2009&#39;</span><span class="p">}</span>
   <span class="n">environ</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">environ</span><span class="o">&gt;</span>
   <span class="n">full_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">full_xrf</span><span class="o">&gt;</span>
   <span class="n">merged_xrf</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">merged_xrf</span><span class="o">&gt;</span>
@@ -298,7 +298,7 @@ efficient for storing array data and still in wide use.</p>
 
 <dl class="function">
 <dt id="_io.netcdf_file">
-<code class="descclassname">_io.</code><code class="descname">netcdf_file</code><span class="sig-paren">(</span><em>filename</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_io.</code><code class="descname">netcdf_file</code><span class="sig-paren">(</span><em>filename</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and returns a netcdf file.</p>
 </dd></dl>
 
@@ -342,7 +342,7 @@ variable.</p>
 <dt id="_io.caput">
 <code class="descclassname">_io.</code><code class="descname">caput</code><span class="sig-paren">(</span><em>PV_name</em>, <em>value</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
 <dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal"><span class="pre">wait</span></code> is
-<code class="docutils literal"><span class="pre">True</span></code>, the function will not return until the put &quot;completes&quot;. For
+<code class="docutils literal"><span class="pre">True</span></code>, the function will not return until the put “completes”. For
 some types of data, this may wait for some process (moving a motor,
 triggering a detector) to finish before returning.</p>
 </dd></dl>
@@ -365,7 +365,7 @@ facilities and beamlines.</p>
 <code class="descclassname">_io.</code><code class="descname">read_mda</code><span class="sig-paren">(</span><em>filename</em>, <em>maxdim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_mda" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a binary MDA (multi-Dimensional Array) file from the Epics SScan
 Record, and return a group based on the scans it contains.  This is not
-very well tested -- use with caution!</p>
+very well tested – use with caution!</p>
 </dd></dl>
 
 <dl class="function">
@@ -412,7 +412,7 @@ groups and data structures can be saved and restored.</p>
 <dl class="function">
 <dt id="_io.restore">
 <code class="descclassname">_io.</code><code class="descname">restore</code><span class="sig-paren">(</span><em>filename</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>recover groups from a Larch 'save' file.  If <code class="docutils literal"><span class="pre">group</span></code> is None, the
+<dd><p>recover groups from a Larch ‘save’ file.  If <code class="docutils literal"><span class="pre">group</span></code> is None, the
 groups in the save file will be returned (in the order in which they
 were saved).  If <code class="docutils literal"><span class="pre">group</span></code> is an existing Larch group, the groups in
 the save file will be put inside that group, and will not be returned.</p>
@@ -451,7 +451,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

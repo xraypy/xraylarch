@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.7. Simplified Peak Fitting with fit_peak() &#8212; larch 0.9.33 documentation</title>
+    <title>7.7. Simplified Peak Fitting with fit_peak() &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -85,6 +85,7 @@
 <li><a class="reference internal" href="#">7.7. Simplified Peak Fitting with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a><ul>
 <li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">7.7.1. Example: Fitting a Gaussian + background with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></li>
 <li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">7.7.2. Example: Fitting a Rectangular function with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></li>
+<li><a class="reference internal" href="#using-lmfit-model">7.7.3. Using lmfit.Model</a></li>
 </ul>
 </li>
 </ul>
@@ -122,7 +123,7 @@
             
   <div class="section" id="module-_math">
 <span id="simplified-peak-fitting-with-fit-peak"></span><h1>7.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></code><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
-<p>As shown in the previous sections, it is pretty simple to use Larch's
+<p>As shown in the previous sections, it is pretty simple to use Larch’s
 fitting mechanism to set up and perform fits to data.  In fact, it is
 pretty commom to need to fit data to simple line-shapes, as when setting up
 an experiment.  In an effort to make life easier, in addition to providing
@@ -140,20 +141,20 @@ choice of step functions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> -- array of values at which to calculate model</li>
-<li><strong>y</strong> -- array of values for model to try to match</li>
-<li><strong>model</strong> -- name of model for functional form to use.  See
+<li><strong>x</strong> – array of values at which to calculate model</li>
+<li><strong>y</strong> – array of values for model to try to match</li>
+<li><strong>model</strong> – name of model for functional form to use.  See
 <a class="reference internal" href="#fit-peak-models-table"><span class="std std-ref">Table of fit_peak models</span></a>.</li>
-<li><strong>dy</strong> -- optional array of values for uncertainty in y data to be matched.</li>
-<li><strong>background</strong> -- name of background model to use. One of (case insensitive)
-None (no background), 'constant', 'linear', or 'quadratic'.
-This is ignored when model is 'linear' or 'quadratic'</li>
-<li><strong>step</strong> -- name of step model to use for 'step' and 'rectangle' models.
-One of (case insensitive): 'linear', 'erf', or 'atan'</li>
-<li><strong>negative</strong> -- boolean for whether peak or steps are expected to
+<li><strong>dy</strong> – optional array of values for uncertainty in y data to be matched.</li>
+<li><strong>background</strong> – name of background model to use. One of (case insensitive)
+None (no background), ‘constant’, ‘linear’, or ‘quadratic’.
+This is ignored when model is ‘linear’ or ‘quadratic’</li>
+<li><strong>step</strong> – name of step model to use for ‘step’ and ‘rectangle’ models.
+One of (case insensitive): ‘linear’, ‘erf’, or ‘atan’</li>
+<li><strong>negative</strong> – boolean for whether peak or steps are expected to
 go down (default <code class="docutils literal"><span class="pre">False</span></code>)</li>
-<li><strong>use_gamma</strong> -- boolean for whether to use separate gamma parameter for
-'voigt' model (default <code class="docutils literal"><span class="pre">False</span></code>).</li>
+<li><strong>use_gamma</strong> – boolean for whether to use separate gamma parameter for
+‘voigt’ model (default <code class="docutils literal"><span class="pre">False</span></code>).</li>
 </ul>
 </td>
 </tr>
@@ -283,7 +284,7 @@ instead of a dozen or so lines of code used before:</p>
 <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
 <span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.025</span> <span class="o">+</span> <span class="n">noise</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">89</span><span class="o">*</span><span class="n">voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">44.25</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mf">89.0</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">44.25</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">4.75</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 
 <span class="c1"># fit to Gaussian with linear background</span>
 <span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
@@ -293,39 +294,39 @@ instead of a dozen or so lines of code used before:</p>
 <span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit_init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;init&#39;</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;best fit&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
 
 <span class="c1">## end examples/fitting/doc_example_fitpeak1.lar</span>
 </pre></div>
 </div>
-<p>Here we first create mock data that's fairly noisy, and ask it to be fit
+<p>Here we first create mock data that’s fairly noisy, and ask it to be fit
 to Gaussian, including a linear background, with a single command.  We then
 plot the results and print the report of parameters.  Note that the fit is
 pretty good at finding the peak center and shape, even though the model is
 not strictly correct.</p>
-<p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">46</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">160</span>
-   <span class="n">chi_square</span>          <span class="o">=</span>  <span class="mf">0.741381</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span>  <span class="mf">0.016117</span>
-
+<p>The printed output from <code class="docutils literal"><span class="pre">fit_report(myfit)</span></code> will look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Model</span><span class="p">]]</span>
+    <span class="p">(</span><span class="n">Model</span><span class="p">(</span><span class="n">gaussian</span><span class="p">)</span> <span class="o">+</span> <span class="n">Model</span><span class="p">(</span><span class="n">linear</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;bkg_&#39;</span><span class="p">))</span>
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 33</span>
+    <span class="c1"># data points      = 51</span>
+    <span class="c1"># variables        = 5</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">0.62209</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">0.013524</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">214.73</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">205.07</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amplitude</span>      <span class="o">=</span>  <span class="mf">110.316958</span> <span class="o">+/-</span> <span class="mf">1.724332</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">35.002462</span><span class="p">)</span>
-   <span class="n">bkg_offset</span>     <span class="o">=</span>  <span class="mf">8.128759</span> <span class="o">+/-</span> <span class="mf">0.038694</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.450067</span><span class="p">)</span>
-   <span class="n">bkg_slope</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">0.026001</span> <span class="o">+/-</span> <span class="mf">0.000614</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">center</span>         <span class="o">=</span>  <span class="mf">44.303784</span> <span class="o">+/-</span> <span class="mf">0.088638</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">44.000000</span><span class="p">)</span>
-   <span class="n">sigma</span>          <span class="o">=</span>  <span class="mf">4.173981</span> <span class="o">+/-</span> <span class="mf">0.066834</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">15.000000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">fwhm</span>           <span class="o">=</span>  <span class="mf">9.828974</span> <span class="o">+/-</span> <span class="mf">0.157382</span> <span class="o">=</span> <span class="s1">&#39;2.354820*sigma&#39;</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.300</span><span class="p">)</span>
-   <span class="n">bkg_offset</span><span class="p">,</span> <span class="n">bkg_slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.834</span>
-   <span class="n">amplitude</span><span class="p">,</span> <span class="n">sigma</span>     <span class="o">=</span>  <span class="mf">0.651</span>
-   <span class="n">amplitude</span><span class="p">,</span> <span class="n">bkg_offset</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.412</span>
-<span class="o">=======================================================</span>
+    <span class="n">amplitude</span><span class="p">:</span>       <span class="mf">75.4295207</span> <span class="o">+/-</span> <span class="mf">1.085962</span> <span class="p">(</span><span class="mf">1.44</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">143.506</span><span class="p">)</span>
+    <span class="n">bkg_intercept</span><span class="p">:</span>   <span class="mf">8.10849304</span> <span class="o">+/-</span> <span class="mf">0.035243</span> <span class="p">(</span><span class="mf">0.43</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">bkg_slope</span><span class="p">:</span>      <span class="o">-</span><span class="mf">0.02506582</span> <span class="o">+/-</span> <span class="mf">0.000562</span> <span class="p">(</span><span class="mf">2.24</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">center</span><span class="p">:</span>          <span class="mf">44.3598293</span> <span class="o">+/-</span> <span class="mf">0.079202</span> <span class="p">(</span><span class="mf">0.18</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">43</span><span class="p">)</span>
+    <span class="n">fwhm</span><span class="p">:</span>            <span class="mf">13.3776066</span> <span class="o">+/-</span> <span class="mf">0.198318</span> <span class="p">(</span><span class="mf">1.48</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;2.3548200*sigma&#39;</span>
+    <span class="n">height</span><span class="p">:</span>          <span class="mf">5.29700921</span> <span class="o">+/-</span> <span class="mf">0.065021</span> <span class="p">(</span><span class="mf">1.23</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="mf">0.3989423</span><span class="o">*</span><span class="n">amplitude</span><span class="o">/</span><span class="nb">max</span><span class="p">(</span><span class="mf">1.e-15</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="s1">&#39;</span>
+    <span class="n">sigma</span><span class="p">:</span>           <span class="mf">5.68094659</span> <span class="o">+/-</span> <span class="mf">0.084218</span> <span class="p">(</span><span class="mf">1.48</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">7</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.300</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">bkg_intercept</span><span class="p">,</span> <span class="n">bkg_slope</span><span class="p">)</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">0.835</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>          <span class="o">=</span>  <span class="mf">0.647</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">bkg_intercept</span><span class="p">)</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">0.402</span>
 </pre></div>
 </div>
 <p>And the plot of data and fit will look like this:</p>
@@ -345,66 +346,63 @@ with a single line of code.</p>
 The fit is to a function that takes a step up and a step down.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_fitpeak2.lar</span>
 <span class="c1"># create mock rectangular data</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">81</span><span class="p">)</span>
-<span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="mf">6.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.001</span> <span class="o">+</span> <span class="n">noise</span>
-<span class="n">x0</span> <span class="o">=</span> <span class="mi">30</span>
-<span class="n">dx</span> <span class="o">=</span> <span class="mi">7</span>
-<span class="n">sig</span> <span class="o">=</span> <span class="n">dx</span><span class="o">*</span><span class="mf">0.6</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">68</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">0</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">1.2</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">60</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">1</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">1.1</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">71</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">75</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">70</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">73</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">5</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">72</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">6</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">71</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">7</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">0.7</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">make_rect_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">noise_scale</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="n">noise_scale</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="mf">6.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.001</span> <span class="o">+</span> <span class="n">noise</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">dx</span><span class="o">*</span><span class="mf">0.6</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">68</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">0</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.2</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">1</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.1</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">65</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">5</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">72</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">6</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">61</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">x0</span><span class="o">+</span><span class="mi">7</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.9</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span>
+<span class="c1">#enddef</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">321</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">make_rect_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">noise_scale</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 
 <span class="c1"># fit to rectangle shape</span>
-<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span>
+<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
      <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;best fit&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">))</span>
 
 <span class="c1">## end examples/fitting/doc_example_fitpeak2.lar</span>
 </pre></div>
 </div>
-<p>Again, we first create mock data that's fairly noisy.  The data is clearly
+<p>Again, we first create mock data that’s fairly noisy.  The data is clearly
 not exactly rectangular, but we ask it to be fit to a rectangular function
-plus a linear background.  The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code>
+plus a linear background.  The printed output from <code class="docutils literal"><span class="pre">fit_report(myfit)</span></code>
 will look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
-<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
-   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
-   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">74</span>
-   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">99</span>
-   <span class="n">chi_square</span>          <span class="o">=</span>  <span class="mf">11.867568</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span>  <span class="mf">0.160373</span>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Model</span><span class="p">]]</span>
+    <span class="p">(</span><span class="n">Model</span><span class="p">(</span><span class="n">rectangle</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Model</span><span class="p">(</span><span class="n">constant</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;bkg_&#39;</span><span class="p">))</span>
+<span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
+    <span class="c1"># function evals   = 67</span>
+    <span class="c1"># data points      = 321</span>
+    <span class="c1"># variables        = 6</span>
+    <span class="n">chi</span><span class="o">-</span><span class="n">square</span>         <span class="o">=</span> <span class="mf">23.405</span>
+    <span class="n">reduced</span> <span class="n">chi</span><span class="o">-</span><span class="n">square</span> <span class="o">=</span> <span class="mf">0.074301</span>
+    <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">828.54</span>
+    <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">805.91</span>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">bkg_offset</span>     <span class="o">=</span>  <span class="mf">5.923729</span> <span class="o">+/-</span> <span class="mf">0.152985</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.072026</span><span class="p">)</span>
-   <span class="n">bkg_slope</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">0.000659</span> <span class="o">+/-</span> <span class="mf">0.001301</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">center1</span>        <span class="o">=</span>  <span class="mf">27.751278</span> <span class="o">+/-</span> <span class="mf">0.392722</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">40.000000</span><span class="p">)</span>
-   <span class="n">center2</span>        <span class="o">=</span>  <span class="mf">83.203400</span> <span class="o">+/-</span> <span class="mf">0.190616</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">120.000000</span><span class="p">)</span>
-   <span class="n">height</span>         <span class="o">=</span>  <span class="mf">10.224378</span> <span class="o">+/-</span> <span class="mf">0.137845</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.021120</span><span class="p">)</span>
-   <span class="n">width1</span>         <span class="o">=</span>  <span class="mf">11.596238</span> <span class="o">+/-</span> <span class="mf">0.698650</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">19.200000</span><span class="p">)</span>
-   <span class="n">width2</span>         <span class="o">=</span>  <span class="mf">4.262621</span> <span class="o">+/-</span> <span class="mf">0.378333</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">19.200000</span><span class="p">)</span>
-<span class="p">[[</span><span class="n">Constraint</span> <span class="n">Expressions</span><span class="p">]]</span>
-   <span class="n">midpoint</span>       <span class="o">=</span>  <span class="mf">55.477339</span> <span class="o">+/-</span> <span class="mf">0.207626</span> <span class="o">=</span> <span class="s1">&#39;(center1+center2)/2.0&#39;</span>
-
-<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.300</span><span class="p">)</span>
-   <span class="n">bkg_offset</span><span class="p">,</span> <span class="n">bkg_slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.915</span>
-   <span class="n">bkg_offset</span><span class="p">,</span> <span class="n">height</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">0.654</span>
-   <span class="n">bkg_offset</span><span class="p">,</span> <span class="n">center1</span>  <span class="o">=</span>  <span class="mf">0.542</span>
-   <span class="n">height</span><span class="p">,</span> <span class="n">width1</span>       <span class="o">=</span>  <span class="mf">0.508</span>
-   <span class="n">bkg_slope</span><span class="p">,</span> <span class="n">center1</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">0.502</span>
-   <span class="n">bkg_slope</span><span class="p">,</span> <span class="n">height</span>    <span class="o">=</span>  <span class="mf">0.500</span>
-   <span class="n">bkg_offset</span><span class="p">,</span> <span class="n">width1</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">0.403</span>
-   <span class="n">bkg_slope</span><span class="p">,</span> <span class="n">width1</span>    <span class="o">=</span>  <span class="mf">0.345</span>
-<span class="o">=======================================================</span>
+    <span class="n">amplitude</span><span class="p">:</span>   <span class="mf">9.95178246</span> <span class="o">+/-</span> <span class="mf">0.038770</span> <span class="p">(</span><span class="mf">0.39</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">11.34094</span><span class="p">)</span>
+    <span class="n">bkg_c</span><span class="p">:</span>       <span class="mf">5.90041256</span> <span class="o">+/-</span> <span class="mf">0.020680</span> <span class="p">(</span><span class="mf">0.35</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">center1</span><span class="p">:</span>     <span class="mf">27.1354829</span> <span class="o">+/-</span> <span class="mf">0.095553</span> <span class="p">(</span><span class="mf">0.35</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">26.5</span><span class="p">)</span>
+    <span class="n">center2</span><span class="p">:</span>     <span class="mf">82.0689673</span> <span class="o">+/-</span> <span class="mf">0.071565</span> <span class="p">(</span><span class="mf">0.09</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mf">81.5</span><span class="p">)</span>
+    <span class="n">midpoint</span><span class="p">:</span>    <span class="mf">54.6022251</span> <span class="o">+/-</span> <span class="mf">0.055873</span> <span class="p">(</span><span class="mf">0.10</span><span class="o">%</span><span class="p">)</span>  <span class="o">==</span> <span class="s1">&#39;(center1+center2)/2.0&#39;</span>
+    <span class="n">sigma1</span><span class="p">:</span>      <span class="mf">8.14570023</span> <span class="o">+/-</span> <span class="mf">0.186184</span> <span class="p">(</span><span class="mf">2.29</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">32</span><span class="p">)</span>
+    <span class="n">sigma2</span><span class="p">:</span>      <span class="mf">4.88414083</span> <span class="o">+/-</span> <span class="mf">0.140778</span> <span class="p">(</span><span class="mf">2.88</span><span class="o">%</span><span class="p">)</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="mi">32</span><span class="p">)</span>
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span> <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.300</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">bkg_c</span><span class="p">)</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.566</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">)</span>         <span class="o">=</span>  <span class="mf">0.341</span>
 </pre></div>
 </div>
 <div class="figure" id="id2">
@@ -418,6 +416,30 @@ selection of simple shapes.  Such fits can be very useful for preliminary
 data visualization and analysis. Of course, one should be cautious about
 treating the results of such an automated approach as a final and best
 analysis of any data.</p>
+</div>
+<div class="section" id="using-lmfit-model">
+<h2>7.7.3. Using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a><a class="headerlink" href="#using-lmfit-model" title="Permalink to this headline">¶</a></h2>
+<p>Note that the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></code></a> function gives a simple wrapping of
+<a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a>.  For a wider selection of builtin
+Models and more sophisticated model building including adding bounds and
+constraints between parameters one can import and use <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> directly with larch.  As an example, the above fit can be
+replicated with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">from</span> <span class="nn">lmfit.models</span> <span class="k">import</span> <span class="n">RectangleModel</span><span class="p">,</span> <span class="n">ConstantModel</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">RectangleModel</span><span class="p">(</span><span class="n">form</span><span class="o">=</span><span class="s1">&#39;erf&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">ConstantModel</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;bkg_&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">make_params</span><span class="p">(</span><span class="n">bkg_c</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sigma1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                                  <span class="n">center1</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center20</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">fit_report</span><span class="p">(</span><span class="n">sorted_pars</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Here, a model is built as the sum of two components: a rectangle and a
+constant background. <a class="reference external" href="https://lmfit.github.io/lmfit-py/parameters.html">lmfit.Parameters</a> are made
+from this composite model and the parameter names, giving initial values
+for each parameter.  The model can then be used to fit the data <code class="docutils literal"><span class="pre">y</span></code> with
+the parameters <code class="docutils literal"><span class="pre">params</span></code>, and the independent variable <code class="docutils literal"><span class="pre">x</span></code>.  While
+directly using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> does require providing
+initial values for all parameters, it also gives complete access to the
+parameters, and allows building more complex models.</p>
 </div>
 </div>
 
@@ -452,7 +474,7 @@ analysis of any data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

@@ -1,7 +1,8 @@
+
 .. _fitting-minimize-sec:
 
 ==============================================
-:func:`minimize` and Objective Functions
+:func:`minimize` and objective Functions
 ==============================================
 
 .. module:: _math
@@ -25,8 +26,8 @@ best approach.
 
 A simple objective function that models data as a line might look like this::
 
-    params = group(offset = param(0., vary=True),
-                   slope = param(200, min=0, vary=True))
+    params = param_group(offset = param(0., vary=True),
+                 	 slope = param(200, min=0, vary=True))
 
     def residual(pars, xdata=None, ydata=None):
         model = pars.offset + pars.slope * xdata
@@ -46,12 +47,15 @@ itself.  Here is the function call using the objective function
 defined above, assuming you have a group called ``data`` containing
 the data you are trying to fit::
 
-    minimize(residual, params, kws={'xdata': data.x, 'ydata':data.y})
+    result = minimize(residual, params, kws={'xdata': data.x, 'ydata':data.y})
 
 As the fit proceeds, the values the Parameter values will be updated, and
 the objective function will be called to recalculate the residual array.
 Thus the objective function may be called many times before the fitting
 procedure decides it has found the best solution that it can.
+
+.. versionchanged:: 0.9.34
+   :func:`minimize` returns a result group containing fit statistics.
 
 .. function:: minimize(fcn, paramgroup, args=None, kws=None, method='leastsq', **extra_kws)
 
@@ -71,15 +75,11 @@ procedure decides it has found the best solution that it can.
     :param kws:  a dictionary of keyword/value arguments to pass to the objective function.
     :param method:  name (case insensitive) of minimization method to use (default='leastsq')
     :param extra_kws:  additional keywords to pass to fitting method.
-    :returns:      a :class:`minimizer` object that can be re-used under certain conditions.
-
-    returns fit object that can be used to modify or re-run fit.  Most results
-    of interest are written back to ``paramgroup`` itself.
+    :returns:   a Group containing several fitting statisics and best-fit parameters.
 
     The ``method`` argument gives the name of the fitting method to be
     used.  Several methods are available, as described below in
     :ref:`Table of Fitting Methods <minimize-methods_table>`.
-
 
 .. _minimize-methods_table:
 
@@ -106,8 +106,9 @@ procedure decides it has found the best solution that it can.
     ============= ==================================================================
 
 Further information on these methods, including full lists of extra
-parameters that can be passed to them, can be found at `scipy.optimize
-<http://docs.scipy.org/doc/scipy/reference/optimize.html>`_.
+parameters that can be passed to them, can be found at
+:lmfitdoc:`fitting`.
+
 
 It should be noted that the Levenberg-Marquardt algorithm is almost always
 the fastest of the methods listed (often by 10x), and is generally fairly

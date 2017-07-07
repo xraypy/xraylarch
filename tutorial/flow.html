@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.4. Tutorial: Conditional Execution and Flow Control &#8212; larch 0.9.33 documentation</title>
+    <title>4.4. Tutorial: Conditional Execution and Flow Control &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4.5. Tutorial: Dealing With Errors" href="errors.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -125,7 +125,7 @@
 <h1>4.4. Tutorial: Conditional Execution and Flow Control<a class="headerlink" href="#tutorial-conditional-execution-and-flow-control" title="Permalink to this headline">¶</a></h1>
 <p>Two important needs for a full-featured language are the ability to run
 different statements under different conditions, and to repeat certain
-calculations.  These are generally called 'flow control', as these
+calculations.  These are generally called ‘flow control’, as these
 statements control how the program will flow through the text of the
 script.  In the discussion here,  we will also introduce a few new concepts
 and Larch statements.</p>
@@ -133,7 +133,7 @@ and Larch statements.</p>
 been a single line of text that is immediately run, either printing output to
 the terminal or assigning a value to a variable. These are both examples of
 <strong>statements</strong>, which are the basic pieces pf text you send to the program.
-So far we've seen three types of statements:</p>
+So far we’ve seen three types of statements:</p>
 <blockquote>
 <div><ol class="arabic">
 <li><p class="first">simple statements or expressions, such as:</p>
@@ -145,20 +145,20 @@ So far we've seen three types of statements:</p>
 </pre></div>
 </div>
 <p>where we have an expression evaluated.  At the command line, these
-values are printed -- in a script they would not be printed.</p>
+values are printed – in a script they would not be printed.</p>
 </li>
 <li><p class="first">print statements, such as:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where we explicitly command larch to print the evaluated
-expression -- this would print if run from a script.</p>
+expression – this would print if run from a script.</p>
 </li>
 <li><p class="first">assignment statements, such as:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>where we assign the name 'x' to hold the evaluated expression.</p>
+<p>where we assign the name ‘x’ to hold the evaluated expression.</p>
 </li>
 </ol>
 </div></blockquote>
@@ -174,20 +174,20 @@ which is:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span> <span class="s1">&#39;x is 0!&#39;</span>
 </pre></div>
 </div>
-<p>Which will print 'x is 0!' if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
+<p>Which will print ‘x is 0!’ if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
 in this if statement is called the <strong>test</strong>.  A test is a Boolean
 mathematical expression.  While most usual mathematical expressions use
-operators such as '+', '-', a Boolean expression uses the operators listed
+operators such as ‘+’, ‘-‘, a Boolean expression uses the operators listed
 in <a class="reference internal" href="#tut-boolop-table"><span class="std std-ref">Table of Boolean Operators</span></a> to evaluate to a
 value of <code class="docutils literal"><span class="pre">True</span></code> or <code class="docutils literal"><span class="pre">False</span></code>.</p>
 <dl class="docutils">
 <dt>A single-line if statement as above looks like this::</dt>
 <dd>if &lt;test&gt;:  statement</dd>
 </dl>
-<p>The 'if' and ':' are important, while '&lt;test&gt;' can be any Boolean
+<p>The ‘if’ and ‘:’ are important, while ‘&lt;test&gt;’ can be any Boolean
 expression.  If the test evaluates to <code class="docutils literal"><span class="pre">True</span></code>, the statement is executed.</p>
 <p>If statements can execute multiple statements by putting the statements
-into a &quot;block of code&quot;:</p>
+into a “block of code”:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="nb">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
@@ -201,11 +201,11 @@ this:</p>
 <span class="n">endif</span>
 </pre></div>
 </div>
-<p>where '&lt;statements&gt;' here means a list of statements, and the 'endif' is
+<p>where ‘&lt;statements&gt;’ here means a list of statements, and the ‘endif’ is
 required (see <a class="reference internal" href="../devel/notpython.html#code-block-ends"><span class="std std-ref">11.1.1</span></a>). For the above, two statements will
-be run if x is equal to 0 -- there is no restriction on how many statements
+be run if x is equal to 0 – there is no restriction on how many statements
 can be run.</p>
-<p>An 'else' statement can be added to execute code if the test is False:</p>
+<p>An ‘else’ statement can be added to execute code if the test is False:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="nb">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
@@ -214,8 +214,8 @@ can be run.</p>
 <span class="n">endif</span>
 </pre></div>
 </div>
-<p>Multiple tests can be chained together with the 'elif' (a contraction of
-'else if'):</p>
+<p>Multiple tests can be chained together with the ‘elif’ (a contraction of
+‘else if’):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="nb">print</span> <span class="s1">&#39;x is equal to 0!&#39;</span>
 <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -227,11 +227,11 @@ can be run.</p>
 <span class="n">endif</span>
 </pre></div>
 </div>
-<p>Here the 'x &gt; 0' test will be executed if the 'x == 0' test fails, and the
-'x &gt; -10' test will be tried if that fails.</p>
+<p>Here the ‘x &gt; 0’ test will be executed if the ‘x == 0’ test fails, and the
+‘x &gt; -10’ test will be tried if that fails.</p>
 <p id="tut-boolop-table"><strong>Table of Boolean Operators</strong>  The operators here all take the form
 <em>right OP left</em> where OP is one of the operators below.  Note the
-distinction between '==' and 'is'.  The former compares <em>values</em> while the
+distinction between ‘==’ and ‘is’.  The former compares <em>values</em> while the
 latter compares the identity of two objects.</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -298,7 +298,7 @@ over the keys from a dictionary.   Thus a loop like this:</p>
 <span class="n">endfor</span>
 </pre></div>
 </div>
-<p>will go through values 'a', 'b', and 'c',  assigning each value to <em>x</em>,
+<p>will go through values ‘a’, ‘b’, and ‘c’,  assigning each value to <em>x</em>,
 then printing the value of x, which will result in printing out:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span>
 <span class="n">b</span>
@@ -355,7 +355,7 @@ string.   Notice that:</p>
 <span class="n">endfor</span>
 </pre></div>
 </div>
-<p>would act very differently if filelist was changed to 'file1'!</p>
+<p>would act very differently if filelist was changed to ‘file1’!</p>
 <p>Multiple values can be assigned in each iteration of the for loop.  Thus,
 iterating over a sequence of equal-length tuples, as in:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
@@ -411,7 +411,7 @@ can make use of the <a class="reference internal" href="builtins.html#zip" title
 <p>will print a table of sine and cosine values.</p>
 <p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><code class="xref py py-func docutils literal"><span class="pre">enumerate()</span></code></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">b</span><span class="s1">&#39;, &#39;</span><span class="n">c</span><span class="s1">&#39;):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;, &#39;</span><span class="n">c</span><span class="s1">&#39;):</span>
 <span class="o">.....&gt;</span>     <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span>
 <span class="o">.....&gt;</span> <span class="n">endfor</span>
 </pre></div>
@@ -434,8 +434,8 @@ in the sequence.   The <em>break</em> statement will exit a for loop immediately
 <span class="nb">print</span> <span class="s1">&#39;processed up to i = &#39;</span><span class="p">,</span> <span class="n">i</span>
 </pre></div>
 </div>
-<p>may jump out of the loop before the sequence generated by 'range(10)' is
-complete.  The variable 'i' will have the final used value.</p>
+<p>may jump out of the loop before the sequence generated by ‘range(10)’ is
+complete.  The variable ‘i’ will have the final used value.</p>
 <p>To skipover an iteration of a loop but continue on, use the <em>continue</em>
 statement:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
@@ -458,7 +458,7 @@ is:</p>
 <span class="n">endwhile</span>
 </pre></div>
 </div>
-<p>Here, the test works as for <em>if</em> -- it is a Boolean expression, evaluated at
+<p>Here, the test works as for <em>if</em> – it is a Boolean expression, evaluated at
 each iteration of the loop. Generally, the expression will test something
 that has been changed inside the loop (even if implicitly).   The classic
 while loop increases a counter at each iteration:</p>
@@ -535,7 +535,7 @@ while loop:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

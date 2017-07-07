@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.2. XAFS: Pre-edge Subtraction and Normalization &#8212; larch 0.9.33 documentation</title>
+    <title>8.2. XAFS: Pre-edge Subtraction and Normalization &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -134,7 +134,7 @@ XAFS-specific function for pre-edge subtraction and normalization is
 <h2>8.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pre_edge">
-<code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
@@ -244,7 +244,7 @@ That is, a line <span class="math">\((m E + b)\)</span> is fit to
 
 <dl class="function">
 <dt id="find_e0">
-<code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine <span class="math">\(E_0\)</span>, the energy threshold of the absorption edge,
 from the arrays energy and mu for <span class="math">\(\mu(E)\)</span>.</p>
 <p>This finds the point with maximum derivative with some
@@ -254,9 +254,9 @@ checks to avoid spurious glitches.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> -- array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- array of <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> -- output group</li>
+<li><strong>energy</strong> – array of x-ray energies, in eV</li>
+<li><strong>mu</strong> – array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
 </ul>
 </td>
 </tr>
@@ -331,27 +331,27 @@ the total number of data points.</p>
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span>.</p>
 <dl class="function">
 <dt id="mback">
-<code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> -- output group</li>
-<li><strong>z</strong> -- the Z number of the absorber</li>
-<li><strong>edge</strong> -- the absorption edge, usually 'K' or 'L3'</li>
-<li><strong>e0</strong> -- edge energy, <span class="math">\(E_0\)</span> in eV.  If None, the tabulated value is used.</li>
-<li><strong>emin</strong> -- the minimum energy to include in the fit.  If None, use first energy point</li>
-<li><strong>emax</strong> -- the maximum energy to include in the fit.  If None, use last energy point</li>
-<li><strong>whiteline</strong> -- a margin around the edge to exclude from the fit.  If not None, must be a positive integer</li>
-<li><strong>leexiang</strong> -- flag for using the use the Lee&amp;Xiang extension [False]</li>
-<li><strong>tables</strong> -- 'CL' (Cromer-Liberman) or 'Chantler', ['CL']</li>
-<li><strong>fit_erfc</strong> -- if True, fit the amplitude and width of the complementary error function [False]</li>
-<li><strong>return_f1</strong> -- if True, put f1 in the output group [False]</li>
-<li><strong>pre_edge_kws</strong> -- dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> – 1-d array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>z</strong> – the Z number of the absorber</li>
+<li><strong>edge</strong> – the absorption edge, usually ‘K’ or ‘L3’</li>
+<li><strong>e0</strong> – edge energy, <span class="math">\(E_0\)</span> in eV.  If None, the tabulated value is used.</li>
+<li><strong>emin</strong> – the minimum energy to include in the fit.  If None, use first energy point</li>
+<li><strong>emax</strong> – the maximum energy to include in the fit.  If None, use last energy point</li>
+<li><strong>whiteline</strong> – a margin around the edge to exclude from the fit.  If not None, must be a positive integer</li>
+<li><strong>leexiang</strong> – flag for using the use the Lee&amp;Xiang extension [False]</li>
+<li><strong>tables</strong> – ‘CL’ (Cromer-Liberman) or ‘Chantler’, [‘CL’]</li>
+<li><strong>fit_erfc</strong> – if True, fit the amplitude and width of the complementary error function [False]</li>
+<li><strong>return_f1</strong> – if True, put f1 in the output group [False]</li>
+<li><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -462,7 +462,7 @@ effect can be corrected for small over-absorption.</p>
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
-<code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge='K'</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge=’K’</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
 XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
 EXAFS).</p>
@@ -471,15 +471,15 @@ EXAFS).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <span class="math">\(\mu(E)\)</span></li>
-<li><strong>formula</strong> -- string for sample stoichiometry</li>
-<li><strong>group</strong> -- output group</li>
-<li><strong>elem</strong> -- atomic symbol ('Zn') or Z of absorbing element</li>
-<li><strong>edge</strong> -- name of edge ('K', 'L3', ...) [default 'K']</li>
-<li><strong>anginp</strong> -- input angle in degrees  [default 45]</li>
-<li><strong>angout</strong> -- output angle in degrees [default 45]</li>
-<li><strong>pre_kws</strong> -- additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> – 1-d array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>formula</strong> – string for sample stoichiometry</li>
+<li><strong>group</strong> – output group</li>
+<li><strong>elem</strong> – atomic symbol (‘Zn’) or Z of absorbing element</li>
+<li><strong>edge</strong> – name of edge (‘K’, ‘L3’, …) [default ‘K’]</li>
+<li><strong>anginp</strong> – input angle in degrees  [default 45]</li>
+<li><strong>angout</strong> – output angle in degrees [default 45]</li>
+<li><strong>pre_kws</strong> – additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -528,7 +528,7 @@ normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7. Fitting and Modeling Data &#8212; larch 0.9.33 documentation</title>
+    <title>7. Fitting and Modeling Data &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.1. Fitting Overview" href="overview.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -111,10 +111,10 @@
           <div class="body" role="main">
             
   <div class="section" id="fitting-and-modeling-data">
-<span id="fitting-chapter"></span><h1>7. Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this headline">¶</a></h1>
+<h1>7. Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this headline">¶</a></h1>
 <p>A key motivation for Larch is to provide easy and robust ways to model data
 and perform complex fits of data to models.  Data modeling and fitting can
-be messy and challenging tasks, so a major factor in Larch's design was to
+be messy and challenging tasks, so a major factor in Larch’s design was to
 make this as simple as possible.  This chapter discusses the basic concepts
 for building models, setting up and performing fits, and inspecting the
 results.</p>
@@ -123,16 +123,25 @@ spectra and data.  Of course, Larch can provides other, specific functions
 for doing fits, such as the EXAFS procedures <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></code></a> and
 <a class="reference internal" href="../xafs/feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">_xafs.feffit()</span></code></a>.  Many of these concepts (and the underlying fitting
 algorithms) are used for those other functions as well.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.9.34: </span>Several changes in the implementation of fitting were made in
+0.9.34. All fitting now uses the <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> package.  The use of
+<cite>_sys.paramGroup</cite> as a group to hold default fitting parameters is no
+longer used.  For constraint expressions, <cite>_sys.fiteval</cite> now holds the
+expression evaluator used.</p>
+</div>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">7.1. Fitting Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">7.2. Parameters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="parameters.html#setting-bounds">7.2.1. setting bounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#algebraic-constraints">7.2.2. algebraic constraints</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#working-with-uncertainties">7.2.3. working with uncertainties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#using-algebraic-constraints">7.2.2. using algebraic constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#param-group-creating-a-parameter-group-for-fitting-constraints">7.2.3. <code class="docutils literal"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#fiteval-and-details-about-algebraic-constraints">7.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#working-with-uncertainties">7.2.5. working with uncertainties</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="minimize.html">7.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and Objective Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minimize.html">7.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and objective Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">7.4. Fit Results and Outputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lineshapes.html">7.5. Some Builtin Line-shape Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">7.6. Fit Examples</a><ul>
@@ -144,6 +153,7 @@ algorithms) are used for those other functions as well.</p>
 <li class="toctree-l1"><a class="reference internal" href="fitpeaks.html">7.7. Simplified Peak Fitting with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-gaussian-background-with-fit-peak">7.7.1. Example: Fitting a Gaussian + background with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-rectangular-function-with-fit-peak">7.7.2. Example: Fitting a Rectangular function with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#using-lmfit-model">7.7.3. Using lmfit.Model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="confidence.html">7.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
@@ -186,7 +196,7 @@ algorithms) are used for those other functions as well.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.1. Tutorial: Getting Started &#8212; larch 0.9.33 documentation</title>
+    <title>4.1. Tutorial: Getting Started &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -133,7 +133,7 @@ enhanced GUI interpreter:</p>
 <p>For Windows, you can start larch_gui or the larch shell program from the
 Windows Start Menu.</p>
 <p>As of this writing, the Larch GUI is little more than an enhanced command-line
-shell, though it does include a &quot;Data Browser&quot; menu that allows you to view
+shell, though it does include a “Data Browser” menu that allows you to view
 a tree-like display of all the data in a Larch session, and to show help on
 Larch functions.</p>
 <div class="section" id="larch-as-a-basic-calculator">
@@ -164,31 +164,31 @@ also to hold the arguments to functions like <code class="xref py py-func docuti
 <p>Variable names must start with a letter or underscore (_), followed by
 any number of letters, underscores, or numbers.  You may notice that a dot
 (.) may appear to be in many variable names.  This indicates an
-<em>attribute</em>  of a variable -- we'll get to this in a later section.</p>
-<p>If you're familiar with other programming langauges, an important point for
+<em>attribute</em>  of a variable – we’ll get to this in a later section.</p>
+<p>If you’re familiar with other programming langauges, an important point for
 Larch (owing to its Python origins) is that variables are created
 <em>dynamically</em>, they are not pre-defined to have some particular data type.
-In fact, the a variable name (say, 'angle' above) can hold any type of
+In fact, the a variable name (say, ‘angle’ above) can hold any type of
 data, and its type can be changed easily:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="s1">&#39;now I am a string&#39;</span>
 </pre></div>
 </div>
 <p>Although the types of values for a variable can be changed dynamically,
 values in Larch (Python) do have a definite and clear type, and conversion
-between types is rigidly defined -- you can add an integer and a real
+between types is rigidly defined – you can add an integer and a real
 number to give a real number, but you cannot add a string and a real
 number.   In fact, writing:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
 </pre></div>
 </div>
-<p>is usually described as &quot;create a variable 'angle' and set its value to the
-result calculated (11.4...)&quot;.  For those used to working in C or Fortran,
+<p>is usually described as “create a variable ‘angle’ and set its value to the
+result calculated (11.4…)”.  For those used to working in C or Fortran,
 in which variables are static and must be of a pre-declared type, this
 description is a bit misleading.  A better way to think about it is that
 the calculation on the right-hand-side of the equal sign results in a value
-(11.4...) and we've assigned the name 'angle' to hold this value.  The
+(11.4…) and we’ve assigned the name ‘angle’ to hold this value.  The
 distinction may seem subtle, but it can have some profound results, as
-we'll see in the following section when discussing lists and other dynamic
+we’ll see in the following section when discussing lists and other dynamic
 values.</p>
 </div>
 </div>
@@ -224,7 +224,7 @@ values.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

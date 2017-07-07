@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.3. Tutorial: Basic Array Manipulation &#8212; larch 0.9.33 documentation</title>
+    <title>4.3. Tutorial: Basic Array Manipulation &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -84,7 +84,7 @@
   <ul>
 <li><a class="reference internal" href="#">4.3. Tutorial: Basic Array Manipulation</a><ul>
 <li><a class="reference internal" href="#functions-for-creating-arrays">4.3.1. Functions for creating arrays</a></li>
-<li><a class="reference internal" href="#the-array-dtype-datatype">4.3.2. The array <em>dtype</em> -- datatype</a></li>
+<li><a class="reference internal" href="#the-array-dtype-datatype">4.3.2. The array <em>dtype</em> – datatype</a></li>
 <li><a class="reference internal" href="#basic-array-manipulation">4.3.3. Basic array manipulation</a></li>
 <li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">4.3.4. Slicing and extracting sub-arrays</a></li>
 <li><a class="reference internal" href="#array-attributes-and-methods">4.3.5. Array attributes and methods</a></li>
@@ -127,7 +127,7 @@
   <div class="section" id="tutorial-basic-array-manipulation">
 <span id="tutor-array-sec"></span><h1>4.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Arrays are sequences of numerical data, with each element having the same
-underlying data type -- integers, real (floating point) numbers, or complex
+underlying data type – integers, real (floating point) numbers, or complex
 numbers.  Of course, arrays are very important for scientific data, and the
 majority of data you will be manipulating with Larch will be in the form of
 arrays.  Larch depends on the <a class="reference external" href="http://numpy.scipy.org/">numpy</a> library for providing basic array
@@ -135,7 +135,7 @@ data types and the methods for fast manipulation of array data.  These
 arrays can be multi-dimensional, have their dimensionality change
 dynamically, an can be sliced (subsets of elements taken).  Many built-in
 functions will act on the whole array, generally element-by-element, in a
-highly efficient way, greatly reducing the need to &quot;loop over&quot; elements.</p>
+highly efficient way, greatly reducing the need to “loop over” elements.</p>
 <p>This section introduces the creation, basic manipulation, and key
 properties of arrays.  The discussion here is not exhaustive, but is
 intended to get you far enough along to be able to manipulate arrays
@@ -290,7 +290,7 @@ arrays.  That is:</p>
 two-dimensional mesh or map of the input <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
-<h2>4.3.2. The array <em>dtype</em> -- datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.2. The array <em>dtype</em> – datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
 <p>Arrays are sequences of numbers stored in memory to make access to the
 elements of the arrays fast and memory use efficient.  As mentioned above,
 each array will use one of several storage conventions depending on what
@@ -401,7 +401,7 @@ all of the Boolean values are <code class="docutils literal"><span class="pre">T
 <p>An important aspect of arrays is that they can be treated as a single entity.  That is, <code class="docutils literal"><span class="pre">sin(x)</span></code>
 operates on each element of <code class="docutils literal"><span class="pre">x</span></code>.  But sometimes it is necessary to get a particular element from
 an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
--- a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
+– a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
 straightforward, using the range of indices needed for the slice between square brackets <code class="docutils literal"><span class="pre">[</span></code> and
 <code class="docutils literal"><span class="pre">]</span></code>.  For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">arr</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
@@ -418,7 +418,7 @@ straightforward, using the range of indices needed for the slice between square 
 </div>
 <p>The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
 As with lists, <code class="docutils literal"><span class="pre">arr[i]</span></code> selects value at index <code class="docutils literal"><span class="pre">i</span></code> (counting from 0).  Similarly, <code class="docutils literal"><span class="pre">arr[i:j]</span></code>
-selects elements starting at <code class="docutils literal"><span class="pre">i</span></code> and ending at (but not including -- see the example above)
+selects elements starting at <code class="docutils literal"><span class="pre">i</span></code> and ending at (but not including – see the example above)
 <code class="docutils literal"><span class="pre">j</span></code>.  If <code class="docutils literal"><span class="pre">i</span></code> is omitted,
 it is taken as 0 (the first element), and if <code class="docutils literal"><span class="pre">j</span></code> is omitted, it defaults to the last element of
 the array.  In addition, if <code class="docutils literal"><span class="pre">i</span></code> and/or <code class="docutils literal"><span class="pre">j</span></code> are negative, they count from the end of the array:</p>
@@ -428,7 +428,7 @@ the array.  In addition, if <code class="docutils literal"><span class="pre">i</
 <span class="p">[</span> <span class="mf">1.9</span>  <span class="mf">2.</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>A slice can take a third argument <code class="docutils literal"><span class="pre">k</span></code> -- the stride -- which allows selection of every <code class="docutils literal"><span class="pre">k</span></code>
+<p>A slice can take a third argument <code class="docutils literal"><span class="pre">k</span></code> – the stride – which allows selection of every <code class="docutils literal"><span class="pre">k</span></code>
 elements.  That is:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">6</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
 <span class="p">[</span> <span class="mf">0.1</span>  <span class="mf">0.3</span>  <span class="mf">0.5</span><span class="p">]</span>
@@ -539,7 +539,7 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 </tr>
 <tr class="row-odd"><td>conjugate()</td>
 <td>conjugate of array</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>all()</td>
 <td>boolean: if all values are <code class="docutils literal"><span class="pre">True</span></code></td>
@@ -551,35 +551,35 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 </tr>
 <tr class="row-even"><td>min()</td>
 <td>minimum value of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>max()</td>
 <td>maximum value of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>mean()</td>
 <td>mean value of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>std()</td>
 <td>standard deviation of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>prod()</td>
 <td>product of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>sum()</td>
 <td>sum of array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>argmin()</td>
 <td>index of first minimum value</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>argmax()</td>
 <td>index of first maximum value</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>argsort()</td>
 <td>array of indices for sorted array</td>
@@ -587,43 +587,43 @@ attributes and methods marked <code class="docutils literal"><span class="pre">r
 </tr>
 <tr class="row-odd"><td>cumprod()</td>
 <td>array of cumulative product of elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>cumsum()</td>
 <td>array of cumulative sum of elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>astype()</td>
 <td>array re-cast as a different <code class="docutils literal"><span class="pre">dtype</span></code></td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>round()</td>
 <td>array of rounded elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>diagonal()</td>
 <td>array of diagonal elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>trace()</td>
 <td>sum of diagonal elements()</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>transpose()</td>
 <td>transpose of array</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>flatten()</td>
-<td>array &quot;flattened&quot; to 1-dimension</td>
-<td>&nbsp;</td>
+<td>array “flattened” to 1-dimension</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>tolist()</td>
 <td>list containing array elements</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>reshape()</td>
 <td>array reshaped to specified shape tuple</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 </tbody>
 </table>
@@ -659,10 +659,10 @@ looping over elements of the array:</p>
 <span class="mi">9</span> <span class="mf">3.0</span>
 </pre></div>
 </div>
-<p>There are a large number of general purpose mathematical functions available in larch --
+<p>There are a large number of general purpose mathematical functions available in larch –
 the <code class="docutils literal"><span class="pre">_math</span></code> group contains over 500 items on startup.  A partial list is given in the
 The <a class="reference internal" href="#tutor-arrayfuncs-table"><span class="std std-ref">Table of Array-aware Mathematical functions</span></a> below.
-What's more, many more are available by importing them from the scipy library.</p>
+What’s more, many more are available by importing them from the scipy library.</p>
 <blockquote id="tutor-arrayfuncs-table">
 <span id="index-3"></span><div><blockquote>
 <div>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
@@ -899,10 +899,10 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
 <td>returns the given  percentile of array elements</td>
 </tr>
 <tr class="row-even"><td>ceil</td>
-<td>ceiling values (round &quot;up&quot;) of input</td>
+<td>ceiling values (round “up”) of input</td>
 </tr>
 <tr class="row-odd"><td>floor</td>
-<td>floor values (round &quot;down&quot;) of input</td>
+<td>floor values (round “down”) of input</td>
 </tr>
 <tr class="row-even"><td>round</td>
 <td>round values (away from 0) of input</td>
@@ -1106,7 +1106,7 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>

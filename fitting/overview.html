@@ -1,13 +1,13 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.1. Fitting Overview &#8212; larch 0.9.33 documentation</title>
+    <title>7.1. Fitting Overview &#8212; larch 0.9.34 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.33',
+        VERSION:     '0.9.34',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7.2. Parameters" href="parameters.html" />
@@ -36,7 +36,7 @@
   </script>
 
   </head>
-  <body role="document">
+  <body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -125,13 +125,13 @@ this is expressed as</p>
 \[S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2\]</div>
 <p>where the experimental data is expressed as <span class="math">\(y(x)\)</span> that is discretely
 sampled at <span class="math">\(N\)</span> points, <span class="math">\(f(x, \vec\beta)\)</span> is a model function of
-some dependent data <span class="math">\(x\)</span> and <span class="math">\(\vec\beta\)</span>, a set of parameters in the
-model.  As a simple example, a linear model of data would be written as
+some dependent data <span class="math">\(x\)</span> and <span class="math">\(\vec\beta\)</span>, a set of parameters in
+the model.  As a simple example, a linear model of data would be written as
 <span class="math">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
 minimal values of <span class="math">\(S\)</span>.  These justifcations are not without criticism
-or caveats, but we'll leave that aside for now.</p>
+or caveats, but we’ll leave those topics aside for now.</p>
 <p>It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
 points) might be given more or less weight.  Again, there are several
@@ -145,10 +145,10 @@ As mentioned, the model describing <span class="math">\(f(x, \vec{\beta})\)</spa
 <p>There is an extensive literature for the case in which the model function
 <span class="math">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
 <span class="math">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
--- a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
+– a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
 in this sense).  Of course, model function need not be linear in its
-parameters, and the minimization is generally referred to a ''non-linear
-least-squares optimization'' in the literature.  All the discussion here
+parameters, and the minimization is generally referred to a ”non-linear
+least-squares optimization” in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
 <p>It is convenient to define the <strong>residual array</strong> <span class="math">\(r\)</span> with <span class="math">\(N\)</span>
 elements:</p>
@@ -159,38 +159,37 @@ elements:</p>
 with a few key components required.  Specifically, for Larch, the
 requirements are</p>
 <blockquote>
-<div><p>1. A set of Parameters, <span class="math">\({\vec{\beta}}\)</span>, that are used in the model,
-and are to be adjusted to find the least-square value of the sum of
-squares of the residual.  These must be <strong>parameters</strong> (discussed below)
-that are held in a single <strong>parameter group</strong>.  This is a regular Larch
-group, and so can contain other values as well.</p>
+<div><p>1. A set of Parameters, <span class="math">\({\vec{\beta}}\)</span>, that are used in the
+model, and are to be adjusted to find the least-square value of the sum
+of squares of the residual.  These must be <strong>parameters</strong> (discussed
+below) that are held in a single <strong>parameter group</strong>.  This can either be
+simple Larch group or a specialized <cite>ParameterGroup</cite> (see
+<a class="reference internal" href="parameters.html#param-param-group-label"><span class="std std-ref">7.2.3</span></a>).  With both options, the group can contain
+non-parameter values as well as parameters.</p>
 <p>2. An <strong>objective function</strong> to calculate the residual array.  This
 will be a Larch function that takes the <strong>parameter group</strong> described
 above as its first argument, and an unlimited set of optional arguments.
-The arrays for the data should passed in by these optional arguments.
 This function should return the residual array, <span class="math">\(r\)</span> that will be
-minimized in the least-squares sense.</p>
+minimized in the least-squares sense.   The arrays for the data can
+be passed into this function either by the optional arguments or by
+putting these  data in the <strong>parameter group</strong>.</p>
 </div></blockquote>
-<p>Note that the use of additional data in the <strong>parameter group</strong> makes this
-one way to pass in data to the objective function.  After the fit has
-completed, several statistical results describing the fit quality and the
-values and uncertainties found for the parameters will be written to thie
-<strong>parameter group</strong>.  Though the description so far as been somewhat
-formal, the process is not as hard as it sounds, and all the topics
-outlined so far will be discussed in more detail below.</p>
+<p>After the fit has completed, several statistical results describing the fit
+quality and the values and uncertainties found for the parameters will be
+stored the result.</p>
 <p>Because the objective function will be called by the fitting process, it
 needs to follow fairly strict guidelines in its inputs and outputs.
 Specifically, the first argument to the function <strong>must</strong> be a Larch group
 containing all the Parameters in the model.  Furthermore, the return value
 of the objective function must be the fit residual array to be minimized in
 the least-squares sense.</p>
-<p>We'll jump in with a simple example fit to a line, with this script:</p>
+<p>We’ll jump in with a simple example fit to a line, with this script:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># create mock data for a line</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># create a group of fit parameters</span>
-<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
 <span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
 
@@ -200,7 +199,7 @@ the least-squares sense.</p>
 <span class="n">enddef</span>
 
 <span class="c1"># perform fit</span>
-<span class="n">minimize</span><span class="p">(</span><span class="n">fitresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fitresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
 
 <span class="c1"># create final model using best-fit values for the parameters.</span>
 <span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
@@ -249,7 +248,7 @@ of data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
     </div>
   </body>
 </html>
