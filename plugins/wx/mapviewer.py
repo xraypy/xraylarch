@@ -72,7 +72,8 @@ from larch.wxlib import LarchPanel, LarchFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
-from larch_plugins.xrd import lambda_from_E,E_from_lambda,xrd1d,save1D
+from larch_plugins.xrd import (lambda_from_E,E_from_lambda,xrd1d,save1D,
+                               q_from_twth,q_from_d)
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
@@ -377,7 +378,278 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.owner.display_map(omap, title=title, subtitles=subtitles,
                                info=info, x=x, y=y,
                                det=None, xrmfile=main_file)
+##################################
+##  new as of 2017.07.10 mkak
 
+class TomographyPanel(GridPanel):
+    '''Panel of Controls for reconstructing a tomographic slice'''
+    label  = 'Tomography Tools'
+    def __init__(self, parent, owner, **kws):
+        self.owner = owner
+
+        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+
+        xrfunits=['eV','keV']
+
+        self.xrf_roi = [Choice(self, choices=[], size=(120, -1)),
+                        Choice(self, choices=[], size=(120, -1))]
+
+        self.xrf_op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+        self.xrf_det  = Choice(self, choices=DETCHOICES, size=(90, -1))
+        self.xrf_cor  = Check(self, label='Correct Deadtime?')
+        self.xrf_hotcols  = Check(self, label='Ignore First/Last Columns?')
+
+        self.xrf_show_new = Button(self, 'Show New',     size=(100, -1),
+                               action=partial(self.onShowXRFSino, new=True))
+        self.xrf_show_old = Button(self, 'Replace Last', size=(100, -1),
+                               action=partial(self.onShowXRFSino, new=False))
+        
+        self.Add(SimpleText(self, '--    XRF    --'), dcol=1, style=LEFT, newrow=True)
+
+        fopts = dict(minval=-20000, precision=0, size=(70, -1))
+        self.xrf_lims = [FloatCtrl(self, value= 0, **fopts),
+                         FloatCtrl(self, value=-1, **fopts),
+                         FloatCtrl(self, value= 0, **fopts),
+                         FloatCtrl(self, value=-1, **fopts)]
+        for wid in self.xrf_lims: wid.Disable()
+        self.xrf_unt = [Choice(self, choices=xrfunits, size=(90, -1)),
+                        Choice(self, choices=xrfunits, size=(90, -1))]
+        for wid in self.xrf_unt: wid.Disable()
+
+        self.AddMany((SimpleText(self,'Detector'), self.xrf_det), newrow=True)
+        self.AddMany((SimpleText(self,'ROI 1'),self.xrf_roi[0],SimpleText(self,' '),self.xrf_unt[0],self.xrf_lims[0],SimpleText(self,' to '),self.xrf_lims[1]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'operator'),self.xrf_op),              style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI 2'),self.xrf_roi[1],SimpleText(self,' '),self.xrf_unt[1],self.xrf_lims[2],SimpleText(self,' to '),self.xrf_lims[3]), style=LEFT, newrow = True)
+        
+        self.Add(self.xrf_cor,       dcol=2, style=LEFT, newrow=True)
+        self.Add(self.xrf_hotcols,   dcol=2, style=LEFT)
+
+        self.Add(SimpleText(self,'XRF Sinogram: '), style=LEFT, newrow=True)
+        self.Add(self.xrf_show_new,  dcol=2,   style=LEFT)
+        self.Add(self.xrf_show_old,  dcol=2,   style=LEFT)
+
+
+        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=CEN)
+
+        xrdunits=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+
+        self.xrd_roi = [Choice(self, choices=[], size=(120, -1)),
+                        Choice(self, choices=[], size=(120, -1))]
+
+        self.xrd_op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+
+        self.xrd_show_new = Button(self, 'Show New',     size=(100, -1),
+                               action=partial(self.onShowXRDSino, new=True))
+        self.xrd_show_old = Button(self, 'Replace Last', size=(100, -1),
+                               action=partial(self.onShowXRDSino, new=False))
+
+        
+        self.Add(SimpleText(self, '--    XRD    --'), dcol=1, style=LEFT, newrow=True)
+
+        fopts = dict(minval=-20000, precision=0, size=(70, -1))
+        self.xrd_lims = [FloatCtrl(self, value= 0, **fopts),
+                         FloatCtrl(self, value=-1, **fopts),
+                         FloatCtrl(self, value= 0, **fopts),
+                         FloatCtrl(self, value=-1, **fopts)]
+        for wid in self.xrd_lims: wid.Disable()
+        self.xrd_unt = [Choice(self, choices=xrdunits, size=(90, -1)),
+                         Choice(self, choices=xrdunits, size=(90, -1))]
+        for wid in self.xrd_unt: wid.Disable()
+
+        self.AddMany((SimpleText(self,'ROI 1'),self.xrd_roi[0],SimpleText(self,' '),self.xrd_unt[0],self.xrd_lims[0],SimpleText(self,' to '),self.xrd_lims[1]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'operator'),self.xrd_op),              style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI 2'),self.xrd_roi[1],SimpleText(self,' '),self.xrd_unt[1],self.xrd_lims[2],SimpleText(self,' to '),self.xrd_lims[3]), style=LEFT, newrow = True)
+        
+        self.Add(SimpleText(self,'XRD Sinogram: '), style=LEFT, newrow=True)
+        self.Add(self.xrd_show_new,  dcol=2,   style=LEFT)
+        self.Add(self.xrd_show_old,  dcol=2,   style=LEFT)
+
+
+        self.pack()
+        
+        self.xrf_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrf=0))
+        self.xrf_roi[1].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrf=1))
+        self.xrd_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrd=0))
+        self.xrd_roi[1].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrd=1))
+        
+    def onROIchoice(self,event=None,xrf=None,xrd=None):
+    
+        if xrf is not None:
+            if self.xrf_roi[xrf].GetStringSelection() == 'Custom':
+                self.xrf_unt[xrf].Enable()
+                self.xrf_lims[int(xrf*2)].Enable()
+                self.xrf_lims[int(xrf*2)+1].Enable()
+            else:
+                self.xrf_unt[xrf].Disable()
+                self.xrf_lims[int(xrf*2)].Disable()
+                self.xrf_lims[int(xrf*2)+1].Disable()                
+        if xrd is not None:
+            if self.xrd_roi[xrd].GetStringSelection() == 'Custom':
+                self.xrd_unt[xrd].Enable()
+                self.xrd_lims[int(xrd*2)].Enable()
+                self.xrd_lims[int(xrd*2)+1].Enable()
+            else:
+                self.xrd_unt[xrd].Disable()
+                self.xrd_lims[int(xrd*2)].Disable()
+                self.xrd_lims[int(xrd*2)+1].Disable() 
+
+    def onClose(self):
+        for p in self.plotframes:
+            try:
+                p.Destroy()
+            except:
+                pass
+
+    def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
+        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        indices = []
+        for idx in selected:
+            iy, ix = divmod(idx, ny)
+            indices.append((ix, iy))
+
+    def createXRDroi(self,event=None,roi=0):
+
+        i0 = int(roi*2)
+        i1 = int(i0+1)
+        
+        xunt = self.xrd_unt[i0].GetSelection()
+        if xunt == 0:
+            qrange = [float(self.xrd_lims[i0].GetValue()),
+                      float(self.xrd_lims[i1].GetValue())]
+        elif xunt == 1:
+            qrange = [q_from_twth(float(self.xrd_lims[i0].GetValue()),16.0),
+                      q_from_twth(float(self.xrd_lims[i1].GetValue()),16.0)]
+        elif xunt == 2:
+            qrange = [q_from_d(float(self.xrd_lims[i0].GetValue())),
+                      q_from_d(float(self.xrd_lims[i1].GetValue()))]
+                      
+        ## might be better if the actually ROI sum/matrix is return
+        ## should then save as ROI with a name, no longer just custom.
+        ##### can also display ROI limits in the fields while grayed out.
+        ## 2017.07.10 mkak
+        return qrange 
+
+    def onShowXRDSino(self, event=None, new=True):
+        datafile  = self.owner.current_file
+        
+        ## if custom for either ROI, do:
+        #self.createXRDroi()
+
+
+        dtcorrect = self.xrd_cor.IsChecked()
+        no_hotcols  = suppress_hotcols(self.xrd_hotcols, datafile)
+        self.owner.no_hotcols = no_hotcols
+        roiname1 = self.xrd_roi[0].GetStringSelection()
+        roiname2 = self.xrd_roi[1].GetStringSelection()
+        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+                                       dtcorrect=dtcorrect)
+        title    = roiname1
+
+        if roiname2 != '1':
+            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                      dtcorrect=dtcorrect)
+            op = self.xrd_op.GetStringSelection()
+            if   op == '+': map +=  mapx
+            elif op == '-': map -=  mapx
+            elif op == '*': map *=  mapx
+            elif op == '/':
+                mxmin = min(mapx[np.where(mapx>0)])
+                if mxmin < 1: mxmin = 1.0
+                mapx[np.where(mapx<mxmin)] = mxmin
+                map =  map/(1.0*mapx)
+
+            title = '(%s) %s (%s)' % (roiname1, op, roiname2)
+
+        try:
+            x = datafile.get_pos(0, mean=True)
+        except:
+            x = None
+        try:
+            y = datafile.get_pos(1, mean=True)
+        except:
+            y = None
+
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: %s' % (fname, title)
+        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+
+        xoff, yoff = 0, 0
+
+    def onShowXRFSino(self, event=None, new=True):
+        datafile  = self.owner.current_file
+        det =self.xrf_det.GetStringSelection()
+        if det == 'sum':
+            det =  None
+        else:
+            det = int(det)
+
+        dtcorrect = self.xrf_cor.IsChecked()
+        no_hotcols  = suppress_hotcols(self.xrf_hotcols, datafile)
+        self.owner.no_hotcols = no_hotcols
+        roiname1 = self.xrf_roi[0].GetStringSelection()
+        roiname2 = self.xrf_roi[1].GetStringSelection()
+        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+                                       dtcorrect=dtcorrect)
+        title    = roiname1
+
+        if roiname2 != '1':
+            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                      dtcorrect=dtcorrect)
+            op = self.xrf_op.GetStringSelection()
+            if   op == '+': map +=  mapx
+            elif op == '-': map -=  mapx
+            elif op == '*': map *=  mapx
+            elif op == '/':
+                mxmin = min(mapx[np.where(mapx>0)])
+                if mxmin < 1: mxmin = 1.0
+                mapx[np.where(mapx<mxmin)] = mxmin
+                map =  map/(1.0*mapx)
+
+            title = '(%s) %s (%s)' % (roiname1, op, roiname2)
+
+        try:
+            x = datafile.get_pos(0, mean=True)
+        except:
+            x = None
+        try:
+            y = datafile.get_pos(1, mean=True)
+        except:
+            y = None
+
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: %s' % (fname, title)
+        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+
+        xoff, yoff = 0, 0
+        if len(self.owner.im_displays) == 0 or new:
+            iframe = self.owner.add_imdisplay(title, det=det)
+        self.owner.display_map(map, title=title, info=info, x=x, y=y,
+                               xoff=xoff, yoff=yoff, det=det,
+                               xrmfile=datafile)
+
+    def update_xrmmap(self, xrmmap):
+        self.set_xrfroi_choices(xrmmap)
+        self.set_xrdroi_choices(xrmmap)
+
+    def set_xrdroi_choices(self, xrmmap):
+        rois = ['1'] + list(xrmmap['roimap/sum_name'][:4]) + ['Custom']
+        if 'work' in xrmmap:
+            rois.extend(list(xrmmap['work'].keys()))
+        self.xrd_roi[0].SetChoices(rois[1:])
+        self.xrd_roi[1].SetChoices(rois)
+
+    def set_xrfroi_choices(self, xrmmap):
+        rois = ['1'] + list(xrmmap['roimap/sum_name']) + ['Custom']
+        if 'work' in xrmmap:
+            rois.extend(list(xrmmap['work'].keys()))
+        self.xrf_roi[0].SetChoices(rois[1:])
+        self.xrf_roi[1].SetChoices(rois)
+
+
+
+##################################
 class SimpleMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
     label  = 'Simple XRF ROI Map'
@@ -1431,7 +1703,7 @@ class MapViewerFrame(wx.Frame):
 
         self.nbpanels = []
 
-        for creator in (SimpleMapPanel, TriColorMapPanel, MapInfoPanel,
+        for creator in (SimpleMapPanel, TomographyPanel, TriColorMapPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label.title(), True)

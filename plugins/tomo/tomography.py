@@ -222,9 +222,9 @@ def create_tomogrp(sinogram, _larch=None, **kws):
 
    
 
-def registerLarchPlugin():
-    return ('_tomo', {'create_tomogrp': create_tomogrp})
-
-
-def registerLarchGroups():
-    return (tomogrp)
+# def registerLarchPlugin():
+#     return ('_tomo', {'create_tomogrp': create_tomogrp})
+# 
+# 
+# def registerLarchGroups():
+#     return (tomogrp)
