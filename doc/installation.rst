@@ -28,13 +28,14 @@ needs already installed or automatically fetched when installing Larch.
 Python Versions: 2.7 or 3.6?
 ================================
 
-As of this writing (Spring, 2017) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch can now work with either version
-of Python, though the main GUI toolkit (wxPython) used by Larch is still not
-officially released for Python 3, Larch works well with the in-development
-version of wxPython.  Support for Larch running with Python 3.6 should be
-considered experimental, but we eager to migrate to Python 3.6, and expect to
-do so within year or so.
+As of this writing (Summer, 2017) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch can now work with either
+version of Python.  The GUI toolkit (wxPython) used by Larch is still not
+officially released for Python 3, but Larch does work well with the
+in-development version of wxPython.  Support for Larch running with Python
+3.6 should be considered experimental, and we invite brave users to try it
+out.  We are eager to migrate Larch to Python 3.6, and expect to do so
+within year or so.
 
 
 Using Anaconda Python
@@ -44,7 +45,7 @@ Using Anaconda Python
 scientific work with many useful packages included.  By default, Anaconda
 Python installs into your own home folder (on Windows, it will use the
 `APPDATA` location, which is typically something like
-`C:\Users\YourName\AppData\Local\Continuum\Anaconda2`).  Installing does
+`C:\\Users\\YourName\\AppData\\Local\\Continuum\\Anaconda2`).  Installing does
 not require extra permissions to install, upgrade, or remove components.
 Anaconda includes a robust package manager called *conda* that makes it
 easy to update the packages it manages, including Larch.
@@ -98,14 +99,31 @@ can use `git` to grab the latest development version of the source code::
 Prerequisites
 ----------------------
 
-Larch requires Python version 2.7 or higher.  Larch works with Python 3.5
-and 3.6, but requires the not-yet-supported Phoenix branch of wxPython, and
-should be considered experimental.
+Larch requires Python version 2.7 or 3.6. Larch works with Python 3.6 but
+requires the not-yet-officially released Phoenix branch of wxPython.  The
+following Python packages are all required:
 
-The following Python packages are all required for Larch: numpy, scipy,
-matplotlib, h5py, sqlalchemy, and wxPython.  Except for wxPython, these all
-come as part of the core Anaconda package, and all are easily installed as
-standard packages on almost all platforms.
+    numpy, scipy, matplotlib, h5py, sqlalchemy, six, lmfit, wxPython,
+    wxmplot, wxutils, asteval.
+
+These are all available for Anaconda Python 2.7 and 3.6, either from the
+core Anaconda packages or from the GSECARS conda channel, and will be
+installed with `conda install -c GSECARS xraylarch`.
+
+If you're installing from source or using a Python distribution other than
+Anaconda, all these packages are also available from PyPI and can be
+installed with  `pip install`
+
+There are a fair number of packages that are required for some of the
+advanced and in-development X-ray diffraction analysis capabilities.  These
+include
+
+   fabio, pyfai, pycifrw
+
+For the most part, these are available from Anaconda channels for most
+systems and versions.  There may be some missing features or poorly-tested
+features.  If you experience problems, please let us know!
+
 
 Installation from Source
 ----------------------------
