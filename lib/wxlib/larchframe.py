@@ -37,15 +37,16 @@ class LarchWxShell(object):
         self._larch = _larch
         self.textstyle = None
 
+        self.prompt = prompt
+        self.input  = input
+        self.output = output
+
         if _larch is None:
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
             self._larch.run_init_scripts()
 
         self.symtable = self._larch.symtable
-        self.prompt = prompt
-        self.input  = input
-        self.output = output
         # if self.output is not None:
         #    self.encoding = sys.stdout.encoding
         #    sys.stdout = self
