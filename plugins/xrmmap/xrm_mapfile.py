@@ -1411,7 +1411,7 @@ class GSEXRM_MapFile(object):
             group = self.xrmmap['recon/%s' % tag]
         except:
             group = self.xrmmap['recon/xrf']
-         ds = group.create_dataset(name, data=recon)
+        ds = group.create_dataset(name, data=recon)
 
 
     def add_area(self, mask, name=None, desc=None):
