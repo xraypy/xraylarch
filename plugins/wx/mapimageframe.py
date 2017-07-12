@@ -51,7 +51,7 @@ class MapImageFrame(ImageFrame):
     def __init__(self, parent=None, size=(750, 675), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
-                 output_title='Image',   **kws):
+                 output_title='Image', **kws):
 
         # instdb=None,  inst_name=None,
 
@@ -61,8 +61,7 @@ class MapImageFrame(ImageFrame):
         self.move_callback = move_callback
         self.save_callback = save_callback
         self.wxmplot_version = get_wxmplot_version()
-
-
+        
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -288,7 +287,7 @@ class MapImageFrame(ImageFrame):
                               self.panel.ydata[iy],
                               self.panel.conf.data[iy, ix])
 
-        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % _point
+        msg = "Pixel [%i, %i], X, OME = [%.4f mm, %.4f deg], Intensity= %g" % _point
         write(msg,  panel=0)
 
     def onCursorMode(self, event=None, mode='zoom'):

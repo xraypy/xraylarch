@@ -2292,6 +2292,19 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
+    def get_xrdroi(self, qrange):
+
+        try:
+            qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
+            imin = (np.abs(qaxis-qrange[0])).argmin()
+            imax = (np.abs(qaxis-qrange[1])).argmin()
+
+            return np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+        
+        except:
+            pass
+        
+
     def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
@@ -2314,6 +2327,7 @@ class GSEXRM_MapFile(object):
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
         # scaler, non-roi data
+
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())
             if no_hotcols:

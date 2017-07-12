@@ -390,6 +390,7 @@ class TomographyPanel(GridPanel):
         GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
 
         xrfunits=['eV','keV']
+        fopts = dict(minval=-20000, precision=0, size=(70, -1))
 
         self.xrf_roi = [Choice(self, choices=[], size=(120, -1)),
                         Choice(self, choices=[], size=(120, -1))]
@@ -406,20 +407,16 @@ class TomographyPanel(GridPanel):
         
         self.Add(SimpleText(self, '--    XRF    --'), dcol=1, style=LEFT, newrow=True)
 
-        fopts = dict(minval=-20000, precision=0, size=(70, -1))
         self.xrf_lims = [FloatCtrl(self, value= 0, **fopts),
-                         FloatCtrl(self, value=-1, **fopts),
-                         FloatCtrl(self, value= 0, **fopts),
                          FloatCtrl(self, value=-1, **fopts)]
         for wid in self.xrf_lims: wid.Disable()
-        self.xrf_unt = [Choice(self, choices=xrfunits, size=(90, -1)),
-                        Choice(self, choices=xrfunits, size=(90, -1))]
-        for wid in self.xrf_unt: wid.Disable()
+        self.xrf_unt = Choice(self, choices=xrfunits, size=(90, -1))
+        self.xrf_unt.Disable()
 
         self.AddMany((SimpleText(self,'Detector'), self.xrf_det), newrow=True)
-        self.AddMany((SimpleText(self,'ROI 1'),self.xrf_roi[0],SimpleText(self,' '),self.xrf_unt[0],self.xrf_lims[0],SimpleText(self,' to '),self.xrf_lims[1]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI 1'),self.xrf_roi[0],SimpleText(self,' '),self.xrf_unt,self.xrf_lims[0],SimpleText(self,' to '),self.xrf_lims[1]), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,'operator'),self.xrf_op),              style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'ROI 2'),self.xrf_roi[1],SimpleText(self,' '),self.xrf_unt[1],self.xrf_lims[2],SimpleText(self,' to '),self.xrf_lims[3]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI 2'),self.xrf_roi[1],SimpleText(self,' ')), style=LEFT, newrow = True)
         
         self.Add(self.xrf_cor,       dcol=2, style=LEFT, newrow=True)
         self.Add(self.xrf_hotcols,   dcol=2, style=LEFT)
@@ -446,20 +443,18 @@ class TomographyPanel(GridPanel):
         
         self.Add(SimpleText(self, '--    XRD    --'), dcol=1, style=LEFT, newrow=True)
 
-        fopts = dict(minval=-20000, precision=0, size=(70, -1))
-        self.xrd_lims = [FloatCtrl(self, value= 0, **fopts),
-                         FloatCtrl(self, value=-1, **fopts),
-                         FloatCtrl(self, value= 0, **fopts),
-                         FloatCtrl(self, value=-1, **fopts)]
+        fopts = dict(minval=0.1, precision=2, size=(70, -1))
+        self.xrd_lims = [FloatCtrl(self, value= 2, **fopts),
+                         FloatCtrl(self, value= 3, **fopts)]
         for wid in self.xrd_lims: wid.Disable()
-        self.xrd_unt = [Choice(self, choices=xrdunits, size=(90, -1)),
-                         Choice(self, choices=xrdunits, size=(90, -1))]
-        for wid in self.xrd_unt: wid.Disable()
+        self.xrd_unt = Choice(self, choices=xrdunits, size=(90, -1))
+        self.xrd_unt.Disable()
 
-        self.AddMany((SimpleText(self,'ROI 1'),self.xrd_roi[0],SimpleText(self,' '),self.xrd_unt[0],self.xrd_lims[0],SimpleText(self,' to '),self.xrd_lims[1]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI 1'),self.xrd_roi[0],SimpleText(self,' '),self.xrd_unt,self.xrd_lims[0],SimpleText(self,' to '),self.xrd_lims[1]), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,'operator'),self.xrd_op),              style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'ROI 2'),self.xrd_roi[1],SimpleText(self,' '),self.xrd_unt[1],self.xrd_lims[2],SimpleText(self,' to '),self.xrd_lims[3]), style=LEFT, newrow = True)
-        
+        self.AddMany((SimpleText(self,'ROI 2'),self.xrd_roi[1],SimpleText(self,' ')), style=LEFT, newrow = True)
+
+      
         self.Add(SimpleText(self,'XRD Sinogram: '), style=LEFT, newrow=True)
         self.Add(self.xrd_show_new,  dcol=2,   style=LEFT)
         self.Add(self.xrd_show_old,  dcol=2,   style=LEFT)
@@ -467,31 +462,29 @@ class TomographyPanel(GridPanel):
 
         self.pack()
         
-        self.xrf_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrf=0))
-        self.xrf_roi[1].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrf=1))
-        self.xrd_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrd=0))
-        self.xrd_roi[1].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrd=1))
+        self.xrf_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrf=True))
+        self.xrd_roi[0].Bind(wx.EVT_CHOICE, partial(self.onROIchoice,xrd=True))
         
-    def onROIchoice(self,event=None,xrf=None,xrd=None):
+    def onROIchoice(self,event=None,xrf=False,xrd=False):
     
-        if xrf is not None:
-            if self.xrf_roi[xrf].GetStringSelection() == 'Custom':
-                self.xrf_unt[xrf].Enable()
-                self.xrf_lims[int(xrf*2)].Enable()
-                self.xrf_lims[int(xrf*2)+1].Enable()
+        if xrf:
+            if self.xrf_roi[0].GetStringSelection() == 'Custom':
+                self.xrf_unt.Enable()
+                self.xrf_lims[0].Enable()
+                self.xrf_lims[1].Enable()
             else:
-                self.xrf_unt[xrf].Disable()
-                self.xrf_lims[int(xrf*2)].Disable()
-                self.xrf_lims[int(xrf*2)+1].Disable()                
-        if xrd is not None:
-            if self.xrd_roi[xrd].GetStringSelection() == 'Custom':
-                self.xrd_unt[xrd].Enable()
-                self.xrd_lims[int(xrd*2)].Enable()
-                self.xrd_lims[int(xrd*2)+1].Enable()
+                self.xrf_unt.Disable()
+                self.xrf_lims[0].Disable()
+                self.xrf_lims[1].Disable()                
+        if xrd:
+            if self.xrd_roi[0].GetStringSelection() == 'Custom':
+                self.xrd_unt.Enable()
+                self.xrd_lims[0].Enable()
+                self.xrd_lims[1].Enable()
             else:
-                self.xrd_unt[xrd].Disable()
-                self.xrd_lims[int(xrd*2)].Disable()
-                self.xrd_lims[int(xrd*2)+1].Disable() 
+                self.xrd_unt.Disable()
+                self.xrd_lims[0].Disable()
+                self.xrd_lims[1].Disable() 
 
     def onClose(self):
         for p in self.plotframes:
@@ -509,21 +502,18 @@ class TomographyPanel(GridPanel):
             iy, ix = divmod(idx, ny)
             indices.append((ix, iy))
 
-    def createXRDroi(self,event=None,roi=0):
+    def createXRDroi(self,event=None):
 
-        i0 = int(roi*2)
-        i1 = int(i0+1)
-        
-        xunt = self.xrd_unt[i0].GetSelection()
+        xunt = self.xrd_unt.GetSelection()
         if xunt == 0:
-            qrange = [float(self.xrd_lims[i0].GetValue()),
-                      float(self.xrd_lims[i1].GetValue())]
+            qrange = [float(self.xrd_lims[0].GetValue()),
+                      float(self.xrd_lims[1].GetValue())]
         elif xunt == 1:
-            qrange = [q_from_twth(float(self.xrd_lims[i0].GetValue()),16.0),
-                      q_from_twth(float(self.xrd_lims[i1].GetValue()),16.0)]
+            qrange = [q_from_twth(float(self.xrd_lims[0].GetValue()),16.0),
+                      q_from_twth(float(self.xrd_lims[1].GetValue()),16.0)]
         elif xunt == 2:
-            qrange = [q_from_d(float(self.xrd_lims[i0].GetValue())),
-                      q_from_d(float(self.xrd_lims[i1].GetValue()))]
+            qrange = [q_from_d(float(self.xrd_lims[0].GetValue())),
+                      q_from_d(float(self.xrd_lims[1].GetValue()))]
                       
         ## might be better if the actually ROI sum/matrix is return
         ## should then save as ROI with a name, no longer just custom.
@@ -535,47 +525,57 @@ class TomographyPanel(GridPanel):
         datafile  = self.owner.current_file
         
         ## if custom for either ROI, do:
-        #self.createXRDroi()
+        qrange = self.createXRDroi()
 
-
-        dtcorrect = self.xrd_cor.IsChecked()
-        no_hotcols  = suppress_hotcols(self.xrd_hotcols, datafile)
-        self.owner.no_hotcols = no_hotcols
         roiname1 = self.xrd_roi[0].GetStringSelection()
         roiname2 = self.xrd_roi[1].GetStringSelection()
-        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
-                                       dtcorrect=dtcorrect)
-        title    = roiname1
+        
+        print '\nThis will take a minute or two...'
+        map      = datafile.get_xrdroi(qrange)
+        print '\t almost there...'
 
-        if roiname2 != '1':
-            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
-                                      dtcorrect=dtcorrect)
-            op = self.xrd_op.GetStringSelection()
-            if   op == '+': map +=  mapx
-            elif op == '-': map -=  mapx
-            elif op == '*': map *=  mapx
-            elif op == '/':
-                mxmin = min(mapx[np.where(mapx>0)])
-                if mxmin < 1: mxmin = 1.0
-                mapx[np.where(mapx<mxmin)] = mxmin
-                map =  map/(1.0*mapx)
-
-            title = '(%s) %s (%s)' % (roiname1, op, roiname2)
-
+        if roiname1 == 'Custom':
+            title = '%1.2f to %1.2f 1/A' % (qrange[0],qrange[1])
+        else:
+            title    = roiname1
+# 
+#         if roiname2 != '1':
+#             mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+#                                       dtcorrect=dtcorrect)
+#             op = self.xrd_op.GetStringSelection()
+#             if   op == '+': map +=  mapx
+#             elif op == '-': map -=  mapx
+#             elif op == '*': map *=  mapx
+#             elif op == '/':
+#                 mxmin = min(mapx[np.where(mapx>0)])
+#                 if mxmin < 1: mxmin = 1.0
+#                 mapx[np.where(mapx<mxmin)] = mxmin
+#                 map =  map/(1.0*mapx)
+# 
+#             title = '(%s) %s (%s)' % (roiname1, op, roiname2)
+# 
         try:
-            x = datafile.get_pos(0, mean=True)
+            ome = datafile.get_pos(0, mean=True)[::-1]
+        except:
+            ome = None
+        try:
+            x = datafile.get_pos(1, mean=True)
         except:
             x = None
-        try:
-            y = datafile.get_pos(1, mean=True)
-        except:
-            y = None
 
-        pref, fname = os.path.split(datafile.filename)
-        title = '%s: %s' % (fname, title)
+        title = 'XRD : %s' % title
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
 
-        xoff, yoff = 0, 0
+        omeoff, xoff = 0, 0
+        if len(self.owner.im_displays) == 0 or new:
+            iframe = self.owner.add_imdisplay(title)
+
+        ## define correct orientation for displaying
+        sino = np.flip(map.T,0)
+        
+        self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
+                               xoff=xoff, yoff=omeoff, xrmfile=datafile)
+
 
     def onShowXRFSino(self, event=None, new=True):
         datafile  = self.owner.current_file
@@ -610,23 +610,27 @@ class TomographyPanel(GridPanel):
             title = '(%s) %s (%s)' % (roiname1, op, roiname2)
 
         try:
-            x = datafile.get_pos(0, mean=True)
+            ome = datafile.get_pos(0, mean=True)[::-1]
+        except:
+            ome = None
+        try:
+            x = datafile.get_pos(1, mean=True)
         except:
             x = None
-        try:
-            y = datafile.get_pos(1, mean=True)
-        except:
-            y = None
-
+            
         pref, fname = os.path.split(datafile.filename)
         title = '%s: %s' % (fname, title)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
 
-        xoff, yoff = 0, 0
+        omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
-        self.owner.display_map(map, title=title, info=info, x=x, y=y,
-                               xoff=xoff, yoff=yoff, det=det,
+
+        ## define correct orientation for displaying
+        sino = np.flip(map.T,0)
+        
+        self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
+                               xoff=xoff, yoff=omeoff, det=det,
                                xrmfile=datafile)
 
     def update_xrmmap(self, xrmmap):
@@ -634,18 +638,18 @@ class TomographyPanel(GridPanel):
         self.set_xrdroi_choices(xrmmap)
 
     def set_xrdroi_choices(self, xrmmap):
-        rois = ['1'] + list(xrmmap['roimap/sum_name'][:4]) + ['Custom']
+        rois = ['1'] + list(xrmmap['roimap/sum_name'][:5]) + ['Custom']
         if 'work' in xrmmap:
             rois.extend(list(xrmmap['work'].keys()))
         self.xrd_roi[0].SetChoices(rois[1:])
-        self.xrd_roi[1].SetChoices(rois)
+        self.xrd_roi[1].SetChoices(rois[:5])
 
     def set_xrfroi_choices(self, xrmmap):
         rois = ['1'] + list(xrmmap['roimap/sum_name']) + ['Custom']
         if 'work' in xrmmap:
             rois.extend(list(xrmmap['work'].keys()))
         self.xrf_roi[0].SetChoices(rois[1:])
-        self.xrf_roi[1].SetChoices(rois)
+        self.xrf_roi[1].SetChoices(rois[:6])
 
 
 
@@ -1878,8 +1882,8 @@ class MapViewerFrame(wx.Frame):
 
         self.im_displays.append(imframe)
 
-    def display_map(self, map, title='', info='', x=None, y=None,
-                    xoff=0, yoff=0, det=None, subtitles=None, xrmfile=None):
+    def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
+                    det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
         lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
