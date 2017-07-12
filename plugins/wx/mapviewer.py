@@ -404,6 +404,9 @@ class TomographyPanel(GridPanel):
                                action=partial(self.onShowXRFSino, new=True))
         self.xrf_show_old = Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowXRFSino, new=False))
+
+        self.xrf_show_tomo = Button(self, 'Tomography slice',     size=(100, -1),
+                               action=partial(self.onShowXRFTomo, new=True))
         
         self.Add(SimpleText(self, '--    XRF    --'), dcol=1, style=LEFT, newrow=True)
 
@@ -425,6 +428,8 @@ class TomographyPanel(GridPanel):
         self.Add(self.xrf_show_new,  dcol=2,   style=LEFT)
         self.Add(self.xrf_show_old,  dcol=2,   style=LEFT)
 
+        self.Add(SimpleText(self,'XRF Reconstruction: '), style=LEFT, newrow=True)
+        self.Add(self.xrf_show_tomo,  dcol=3,   style=LEFT)
 
         self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=CEN)
 
@@ -574,6 +579,76 @@ class TomographyPanel(GridPanel):
         
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, xrmfile=datafile)
+
+    def onShowXRFTomo(self, event=None, new=True):
+        datafile  = self.owner.current_file
+        det =self.xrf_det.GetStringSelection()
+        if det == 'sum':
+            det =  None
+        else:
+            det = int(det)
+
+        dtcorrect = self.xrf_cor.IsChecked()
+        no_hotcols  = suppress_hotcols(self.xrf_hotcols, datafile)
+        self.owner.no_hotcols = no_hotcols
+        roiname1 = self.xrf_roi[0].GetStringSelection()
+        roiname2 = self.xrf_roi[1].GetStringSelection()
+        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+                                       dtcorrect=dtcorrect)
+        title    = roiname1
+
+        if roiname2 != '1':
+            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                      dtcorrect=dtcorrect)
+            op = self.xrf_op.GetStringSelection()
+            if   op == '+': map +=  mapx
+            elif op == '-': map -=  mapx
+            elif op == '*': map *=  mapx
+            elif op == '/':
+                mxmin = min(mapx[np.where(mapx>0)])
+                if mxmin < 1: mxmin = 1.0
+                mapx[np.where(mapx<mxmin)] = mxmin
+                map =  map/(1.0*mapx)
+
+            title = '(%s) %s (%s)' % (roiname1, op, roiname2)
+
+        try:
+            ome = datafile.get_pos(0, mean=True)[::-1]
+        except:
+            ome = None
+        try:
+            x = datafile.get_pos(1, mean=True)
+        except:
+            x = None
+            
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: %s' % (fname, title)
+        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+
+        xoff = 0
+        if len(self.owner.im_displays) == 0 or new:
+            iframe = self.owner.add_imdisplay(title, det=det)
+
+        ## define correct orientation for displaying
+        import tomopy 
+        
+        sino = np.flip(map.T,0)
+
+        dome,dx = np.shape(sino)
+        sino = np.reshape(sino,(dome,1,dx))
+        
+        rot_center = np.shape(sino)[2]/2
+        theta = np.radians(ome)
+        
+        tomo = tomopy.recon(sino, theta, center=rot_center, algorithm='gridrec')
+
+        nx,dx,dy = np.shape(tomo)
+        tomo = np.reshape(tomo,(dx,dy))
+
+        self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
+                               xoff=xoff, yoff=xoff, det=det,
+                               xrmfile=datafile)
+
 
 
     def onShowXRFSino(self, event=None, new=True):
