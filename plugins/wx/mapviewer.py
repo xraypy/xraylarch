@@ -1706,7 +1706,7 @@ class MapViewerFrame(wx.Frame):
 
         self.nbpanels = []
 
-        for creator in (SimpleMapPanel, TomographyPanel, TriColorMapPanel, MapInfoPanel,
+        for creator in (SimpleMapPanel, TriColorMapPanel, TomographyPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label.title(), True)
