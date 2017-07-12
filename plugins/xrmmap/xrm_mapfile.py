@@ -2297,9 +2297,9 @@ class GSEXRM_MapFile(object):
         try:
             qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
             imin = (np.abs(qaxis-qrange[0])).argmin()
-            imax = (np.abs(qaxis-qrange[1])).argmin()
+            imax = (np.abs(qaxis-qrange[1])).argmin()+1
 
-            return np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+            return [qaxis[imin],qaxis[imax]],np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
         
         except:
             pass

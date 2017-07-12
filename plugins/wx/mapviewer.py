@@ -443,7 +443,7 @@ class TomographyPanel(GridPanel):
         
         self.Add(SimpleText(self, '--    XRD    --'), dcol=1, style=LEFT, newrow=True)
 
-        fopts = dict(minval=0.1, precision=2, size=(70, -1))
+        fopts = dict(minval=0.1, precision=3, size=(70, -1))
         self.xrd_lims = [FloatCtrl(self, value= 2, **fopts),
                          FloatCtrl(self, value= 3, **fopts)]
         for wid in self.xrd_lims: wid.Disable()
@@ -514,7 +514,6 @@ class TomographyPanel(GridPanel):
         elif xunt == 2:
             qrange = [q_from_d(float(self.xrd_lims[0].GetValue())),
                       q_from_d(float(self.xrd_lims[1].GetValue()))]
-                      
         ## might be better if the actually ROI sum/matrix is return
         ## should then save as ROI with a name, no longer just custom.
         ##### can also display ROI limits in the fields while grayed out.
@@ -531,7 +530,7 @@ class TomographyPanel(GridPanel):
         roiname2 = self.xrd_roi[1].GetStringSelection()
         
         print '\nThis will take a minute or two...'
-        map      = datafile.get_xrdroi(qrange)
+        qrange, map = datafile.get_xrdroi(qrange)
         print '\t almost there...'
 
         if roiname1 == 'Custom':
