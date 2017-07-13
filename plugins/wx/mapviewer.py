@@ -439,7 +439,7 @@ class TomographyPanel(GridPanel):
 
         self.rot_cen = FloatCtrl(self, value=1, minval=0, precision=3, size=(100, -1))
         self.ref_cen  = Check(self, label='Refine?')
-        self.ref_cen.SetValue(0)
+        self.ref_cen.SetValue(False)
 
         self.Add(SimpleText(self,''), newrow=True)        
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
@@ -677,7 +677,7 @@ class TomographyPanel(GridPanel):
             if self.ref_cen.GetValue():
                 rot_center = tomopy.find_center(sino, theta, init=rot_center, ind=0, tol=0.5)
                 self.rot_cen.SetValue(rot_center)
-                self.ref_cen.SetValue(0)
+                self.ref_cen.SetValue(False)
             
             tomo = tomopy.recon(sino, theta, center=rot_center,
                                 algorithm=self.alg_choice[1].GetStringSelection())
@@ -2440,6 +2440,7 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx      = Check(panel, label='XRF'   )
         xrd2dCkBx    = Check(panel, label='2DXRD' )
         xrd1dCkBx    = Check(panel, label='1DXRD' )
+        tomoCkBx      = Check(panel, label='Tomography?'   )
 
         self.poniTtl = Choice(panel,   choices=['Dioptas calibration file:',
                                                    'pyFAI calibration file:'] )
@@ -2473,7 +2474,7 @@ class OpenMapFolder(wx.Dialog):
         fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
         fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
         fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,           border=5)
-
+        
         ponisizer = wx.BoxSizer(wx.VERTICAL)
         ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,           border=5)
         ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
@@ -2494,12 +2495,13 @@ class OpenMapFolder(wx.Dialog):
         masksizer.Add(self.maskBtn, flag=wx.TOP|wx.LEFT,           border=5)
 
         xrdsizer = wx.BoxSizer(wx.VERTICAL)
-        xrdsizer.Add(xrd2dCkBx, flag=wx.TOP|wx.LEFT, border=5)
-        xrdsizer.Add(xrd1dCkBx, flag=wx.TOP|wx.LEFT, border=5)
+        xrdsizer.Add(xrd2dCkBx, flag=wx.BOTTOM|wx.LEFT, border=5)
+        xrdsizer.Add(xrd1dCkBx, flag=wx.BOTTOM|wx.LEFT, border=5)
 
         ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
         ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT, border=15)
-        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT,  border=15)
+        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT, border=15)
+        ckbxsizer.Add(tomoCkBx, flag=wx.RIGHT, border=15)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
@@ -2530,6 +2532,7 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx.SetValue(True)
         xrd2dCkBx.SetValue(False)
         xrd1dCkBx.SetValue(False)
+        tomoCkBx.SetValue(False)
 
         self.poniTtl.SetSelection(0)
 

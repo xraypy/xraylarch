@@ -2292,7 +2292,7 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def get_xrdroi(self, qrange):
+    def add_xrdroi(self, qrange):
 
         try:
             qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
@@ -2304,6 +2304,17 @@ class GSEXRM_MapFile(object):
         except:
             pass
         
+    def add_xrfroi(self, Erange):
+
+        try:
+            Eaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
+            imin = (np.abs(Eaxis-Erange[0])).argmin()
+            imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+
+            return [Eaxis[imin],Eaxis[imax]],np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+        
+        except:
+            pass
 
     def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
