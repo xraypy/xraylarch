@@ -496,7 +496,7 @@ class TomographyPanel(GridPanel):
             self.roi_labels[1].SetLabel('Green')
             self.roi_labels[2].SetLabel('Blue')
             
-            self.roi_choice[0].SetChoices(self.rois)
+            self.roi_choice[0].SetChoices(self.rois[1:])
             self.roi_choice[1].SetChoices(self.rois)
             self.roi_choice[2].SetChoices(self.rois)
 
@@ -522,51 +522,32 @@ class TomographyPanel(GridPanel):
         xname = self.roi_name.GetValue()
         
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
-        
-        print 'probably would best to calculate the roi and add to h5 file at this point.'
-        print
-        print 'creating ROI : %s' % xname
-        print xrange
-        if xunt == 0: ## eV
-            xrange =  xrange
-        elif xunt == 1: ## keV
-            xrange[:] = [x*1000 for x in xrange]
-        elif xunt == 2: ## 1/A
-            xrange =  xrange
-        elif xunt == 3: ## 2th
-            print 'need to get energy -- using default 16.0'
-            lamb = 0.78
-            xrange =  q_from_twth(xrange,lamb)
-        elif xunt == 4: ## A
-            xrange =  q_from_d(xrange)
-        print 'redefined as:'
-        print xrange
-        print
+
+        if xunt == 0:   xrange = xrange  ## eV
+        elif xunt == 1: xrange[:] = [x*1000 for x in xrange] ## keV to eV
+        elif xunt == 2: xrange = xrange ## 1/A
+        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.energy)) ## 2th to 1/A
+        elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
         
         if xname in self.rois:
             xi = 0
-            while '%s_%02d' % (xname,xi) in self.rois:
-                xi += 1
-            self.rois.extend(['%s_%02d' % (xname,xi)])
-        else:
-            self.rois.extend([xname])
-
-        self.roi_choice[0].SetChoices(self.rois[1:])
-        self.roi_choice[1].SetChoices(self.rois)
+            while '%s_%02d' % (xname,xi) in self.rois: xi += 1
+            xname = '%s_%02d' % (xname,xi)
         
+        if self.roi_unt.GetStringSelection().startswith('XRD'):
+            self.owner.current_file.add_xrd1D_roi(xrange,save=True,name=xname)
 
-#         return xrange 
+        self.set_roi_choices(self.owner.current_file.xrmmap)
 
     def calculateSinogram(self,datafile):
     
         subtitles = None
+        plt3 = (self.plot_choice.GetSelection() == 1)
         
         r_roi = self.roi_choice[0].GetStringSelection()
-        if self.plot_choice.GetSelection() == 1:
+        if plt3:
             g_roi = self.roi_choice[1].GetStringSelection()
             b_roi = self.roi_choice[2].GetStringSelection()
-        else:
-            g_roi,b_roi = None,None
         i_roi = self.roi_choice[-1].GetStringSelection()
         
         if i_roi != '1':
@@ -580,8 +561,11 @@ class TomographyPanel(GridPanel):
             mapx = 1.
 
         r_map = datafile.get_roimap(r_roi)
-        if self.plot_choice.GetSelection() == 1:
-            g_map = datafile.get_roimap(g_roi)
+        if plt3:
+            try:
+                g_map = datafile.get_roimap(g_roi)
+            except:
+                g_map = np.ones(np.shape(r_map))
             b_map = datafile.get_roimap(b_roi)
 
 
@@ -596,16 +580,7 @@ class TomographyPanel(GridPanel):
             x = None
             
         pref, fname = os.path.split(datafile.filename)
-        if self.plot_choice.GetSelection() == 0:
-            sino = np.flip(r_map.T,0)/mapx
-            if i_roi != '1':
-                title = '(%s)/(%s)' % (r_roi, i_roi)
-            else:
-                title = r_roi
-            title = '%s: %s' % (fname, title)
-            info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
-            subtitle = None
-        else:
+        if plt3:
             sino = np.array([np.flip(r_map.T,0)/mapx,
                              np.flip(g_map.T,0)/mapx,
                              np.flip(b_map.T,0)/mapx])
@@ -620,6 +595,16 @@ class TomographyPanel(GridPanel):
                 subtitles = {'red':   'Red: %s'   % r_roi,
                              'green': 'Green: %s' % g_roi,
                              'blue':  'Blue: %s'  % b_roi}
+        else:
+            sino = np.flip(r_map.T,0)/mapx
+            if i_roi != '1':
+                title = '(%s)/(%s)' % (r_roi, i_roi)
+            else:
+                title = r_roi
+            title = '%s: %s' % (fname, title)
+            info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
+            subtitle = None
+
 
         return title,subtitles,info,x,ome,sino
 
@@ -701,6 +686,15 @@ class TomographyPanel(GridPanel):
         
         center = len(self.owner.current_file.get_pos(1, mean=True))/2
         self.rot_cen.SetValue(value=center)
+
+        env_names = list(xrmmap['config/environ/name'])
+        env_vals  = list(xrmmap['config/environ/value'])
+
+        self.energy = 18. ## default
+
+        for name, val in zip(env_names, env_vals):
+            name = str(name).lower()
+            if 'mono.energy' in name: self.energy = float(val)/1000 ## keV
 
 
     def set_roi_choices(self, xrmmap):
@@ -1154,7 +1148,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             if 'ring_current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif 'mono.energy' in name and cur_energy=='':
-                self.wids['X-ray Energy'].SetLabel('%s eV' % val)
+                E = float(val)
+                wvlgth = lambda_from_E(E/1000.)
+                self.wids['X-ray Energy'].SetLabel('%0.2f eV (%0.3f A)' % (E,wvlgth))
                 cur_energy = val
             elif 'beamline.fluxestimate' in name:
                 i0vals['flux'] = val

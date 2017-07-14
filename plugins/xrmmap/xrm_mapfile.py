@@ -1356,6 +1356,14 @@ class GSEXRM_MapFile(object):
             g.resize((nrow, npts, nx))
         self.h5root.flush()
 
+    def ensure_group(self,group,parent=None):
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        if parent is None: parent = self.xrmmap
+        if not group in parent:
+            parent.create_group(group)
+        return parent[group]
+
     def ensure_workgroup(self):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
@@ -1407,10 +1415,12 @@ class GSEXRM_MapFile(object):
 
     def add_recon(self,recon,name,tag='xrf'):
 
-        try:
-            group = self.xrmmap['recon/%s' % tag]
-        except:
-            group = self.xrmmap['recon/xrf']
+        recongroup = self.ensure_group('recon')
+        group = self.ensure_group(tag,parent=recongroup)
+#         try:
+#             group = self.xrmmap['recon/%s' % tag]
+#         except:
+#             group = self.xrmmap['recon/xrf']
         ds = group.create_dataset(name, data=recon)
 
 
@@ -2292,17 +2302,27 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def add_xrdroi(self, qrange):
-
-        try:
-            qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
-            imin = (np.abs(qaxis-qrange[0])).argmin()
-            imax = (np.abs(qaxis-qrange[1])).argmin()+1
-
-            return [qaxis[imin],qaxis[imax]],np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+    def add_xrd1D_roi(self, qrange, save=False, name=None):
         
+        try:
+            xrd1D = self.xrmmap['xrd/data1D']
         except:
-            pass
+            return
+            
+        qaxis = xrd1D[0,0,0,:]
+        imin = (np.abs(qaxis-qrange[0])).argmin()
+        imax = (np.abs(qaxis-qrange[1])).argmin()+1
+
+        print 'Calculating...'
+        xrd1D_roi = np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+        
+        if save:
+            print 'Saving...'
+            qstr = 'xrd1D : %0.3f 1/A to %0.3f 1/A' % (qaxis[imin],qaxis[imax])
+            self.add_work_array(xrd1D_roi,name,desc=qstr,flag='xrd1D')
+        
+        return xrd1D_roi,[qaxis[imin],qaxis[imax]]
+
         
     def add_xrfroi(self, Erange):
 
