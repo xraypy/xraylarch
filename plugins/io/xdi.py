@@ -110,7 +110,7 @@ class XDIFile(object):
     """
     _invalid_msg = "invalid data for '%s':  was expecting %s, got '%s'"
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, labels=None):
         self.filename = filename
         self.xdi_pyversion =  __version__
         self.xdilib = get_xdilib()
@@ -118,6 +118,7 @@ class XDIFile(object):
         self.data = []
         self.attrs = {}
         self.status = None
+        self.user_labels = labels
         if self.filename:
             self.read(self.filename)
 
@@ -143,6 +144,12 @@ class XDIFile(object):
         for attr in dict(xdi._fields_):
             setattr(self, attr, getattr(xdi, attr))
         self.array_labels = tostrlist(xdi.array_labels, self.narrays)
+
+        if self.user_labels is not None:
+            ulab = self.user_labels.replace(',', ' ')
+            ulabs = [l.strip() for l in ulab.split()]
+            self.array_labels[:len(ulabs)] = ulabs
+
         arr_units         = tostrlist(xdi.array_units, self.narrays)
         self.array_units  = []
         self.array_addrs  = []
@@ -248,21 +255,16 @@ class XDIFile(object):
 @ValidateLarchPlugin
 def read_xdi(fname, labels=None, _larch=None):
     """simple mapping of XDI file to larch groups"""
-    x = XDIFile(fname)
+    xdif = XDIFile(fname, labels=labels)
     group = _larch.symtable.create_group()
-    for key, val in x.__dict__.items():
+    for key, val in xdif.__dict__.items():
         if not key.startswith('_'):
             if six.PY3 and key in string_attrs:
                 val = tostr(val)
             setattr(group, key, val)
     group.__name__ ='XDI file %s' % fname
-    doc = ['%i arrays, %i npts' % (x.narrays, x.npts)]
-    arr_labels = getattr(x, 'array_labels', None)
-    if labels is not None:
-        ulabs = [x.strip() for x in labels.split(',')]
-        arr_labels[:len(ulabs)] = ulabs
-        setattr(x, 'array_labels', arr_labels)
-
+    doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
+    arr_labels = getattr(xdif, 'array_labels', None)
     if arr_labels is not None:
         doc.append("Array Labels: %s" % repr(arr_labels))
     group.__doc__ = '\n'.join(doc)
