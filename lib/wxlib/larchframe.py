@@ -37,15 +37,16 @@ class LarchWxShell(object):
         self._larch = _larch
         self.textstyle = None
 
+        self.prompt = prompt
+        self.input  = input
+        self.output = output
+
         if _larch is None:
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
             self._larch.run_init_scripts()
 
         self.symtable = self._larch.symtable
-        self.prompt = prompt
-        self.input  = input
-        self.output = output
         # if self.output is not None:
         #    self.encoding = sys.stdout.encoding
         #    sys.stdout = self
@@ -68,10 +69,10 @@ class LarchWxShell(object):
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
             sfont = style.GetFont()
+
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
 
         self.SetPrompt(True)
-
         self.flush_timer = wx.Timer(wxparent)
         self.needs_flush = True
         wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
@@ -110,20 +111,27 @@ class LarchWxShell(object):
         sfont = style.GetFont()
         self.textstyle = wx.TextAttr(color, bgcol, sfont)
 
+    def write_sys(self, text):
+        sys.stdout.write(text)
+        sys.stdout.flush()
+
     def write(self, text, **kws):
         if self.output is None:
-            sys.stdout.write(text)
-            sys.stdout.flush()
+            self.write_sys(text)
         else:
-            pos0 = self.output.GetLastPosition()
-            self.output.WriteText(text)
-            pos1 = self.output.GetLastPosition()
-            self.output.SetStyle(pos0, pos1, self.textstyle)
-            self.needs_flush = True
+            try:
+                self.output.SetInsertionPointEnd()
+                pos0 = self.output.GetLastPosition()
+                self.output.WriteText(text)
+                pos1 = self.output.GetLastPosition()
+                self.output.SetStyle(pos0, pos1, self.textstyle)
+                self.needs_flush = True
+            except:
+                self.write_sys(text)
 
     def flush(self, *args):
         try:
-            self.output.SetInsertionPoint(self.output.GetLastPosition())
+            self.output.SetInsertionPointEnd()
         except:
             pass
         self.output.Refresh()
@@ -258,8 +266,8 @@ class LarchFrame(wx.Frame):
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
 
-        sfont = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.SetFont(sfont)
+        self.font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.SetFont(self.font)
         sbar = self.CreateStatusBar(2, wx.CAPTION)
 
         self.SetStatusWidths([-2,-1])
@@ -306,6 +314,8 @@ class LarchFrame(wx.Frame):
                  'Change Directory', self.onChangeDir)
         MenuItem(self, fmenu, 'Clear Input\tCtrl+D',
                  'Clear Input', self.onClearInput)
+        MenuItem(self, fmenu, 'Select Font\tCtrl+F',
+                 'Select Font', self.onSelectFont)
 
         if self.with_inspection:
             MenuItem(self, fmenu, 'Show wxPython Inspector\tCtrl+I',
@@ -335,6 +345,19 @@ class LarchFrame(wx.Frame):
         menuBar.Append(appmenu, 'Applications')
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
+
+    def onSelectFont(self, event=None):
+        fdata = wx.FontData()
+        fdata.SetInitialFont(self.font)
+        dlg = wx.FontDialog(self, fdata)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.font = dlg.GetFontData().GetChosenFont()
+            self.SetFont(self.font)
+            self.mainpanel.output.SetFont(self.font)
+            self.mainpanel.objtree.SetFont(self.font)
+            self.mainpanel.objtree.text.SetFont(self.font)
+
+        dlg.Destroy()
 
     def onWxInspect(self, event=None):
         wx.GetApp().ShowInspectionTool()
@@ -443,6 +466,7 @@ class LarchFrame(wx.Frame):
 
     def onText(self, event=None):
         text =  event.GetString()
+
         self.larchshell.write(">%s\n" % text)
         self.input.Clear()
         if text.lower() in ('quit', 'exit'):
