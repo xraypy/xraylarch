@@ -388,7 +388,6 @@ class TomographyPanel(GridPanel):
         
         self.owner = owner
         self.rois = []
-        self.energy = None
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -536,7 +535,7 @@ class TomographyPanel(GridPanel):
         if xunt == 0:   xrange = xrange  ## eV
         elif xunt == 1: xrange[:] = [x*1000 for x in xrange] ## keV to eV
         elif xunt == 2: xrange = xrange ## 1/A
-        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.energy)) ## 2th to 1/A
+        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy/1000.)) ## 2th to 1/A
         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
         
         if xname in self.rois:
@@ -705,15 +704,6 @@ class TomographyPanel(GridPanel):
         self.cen_step.SetRange(-20.*center,20.*center)
         self.cen_step.SetValue(center*10.)
         
-        env_names = list(xrmmap['config/environ/name'])
-        env_vals  = list(xrmmap['config/environ/value'])
-
-        print 'setting energy'
-        for name, val in zip(env_names, env_vals):
-            if 'mono.energy' in str(name).lower():
-                self.energy = float(val)/1000 ## keV
-
-
     def set_roi_choices(self, xrmmap):
         self.rois = ['1'] + list(xrmmap['roimap/sum_name'])
         if 'work' in xrmmap:
@@ -1165,9 +1155,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             if 'ring_current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif 'mono.energy' in name and cur_energy=='':
-                E = float(val)
-                wvlgth = lambda_from_E(E/1000.)
-                self.wids['X-ray Energy'].SetLabel('%0.2f eV (%0.3f A)' % (E,wvlgth))
+                self.owner.current_energy = float(val)
+                wvlgth = lambda_from_E(self.owner.current_energy/1000.)
+                self.wids['X-ray Energy'].SetLabel('%0.3f eV (%0.3f A)' % (self.owner.current_energy,wvlgth))
                 cur_energy = val
             elif 'beamline.fluxestimate' in name:
                 i0vals['flux'] = val
@@ -1601,15 +1591,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             xrmfile = self.owner.current_file
             area  = xrmfile.xrmmap['areas/%s' % aname]
             title = area.attrs.get('description', aname)
-
-            ## what's a clearer way to do this?
-            ## mkak 2017.03.24
-            env_names = list(xrmfile.xrmmap['config/environ/name'])
-            env_vals  = list(xrmfile.xrmmap['config/environ/value'])
-            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
-            for name, addr, val in zip(env_names, env_addrs, env_vals):
-                if 'mono.energy' in str(name).lower():
-                    energy = float(val)/1000.
         except:
             print('No map file and/or areas specified.')
             return
@@ -1630,8 +1611,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
-            self._xrd.energy = energy
-            self._xrd.wavelength = lambda_from_E(energy)
+            self._xrd.energy = self.owner.current_energy/1000.
+            self._xrd.wavelength = lambda_from_E(self._xrd.energy)
 
             stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
 
@@ -1647,8 +1628,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if save:
                         file = '%s.xy' % stem if i==0 else '%s_wedge%02d.xy' % (stem,i)
                         save1D(file, xrd1d[0], xrd1d[1], calfile=ponifile)
-
-
             else:
                 if show:
                     self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
@@ -1748,6 +1727,8 @@ class MapViewerFrame(wx.Frame):
 
         self.larch_buffer.Hide()
         self.onFolderSelect()
+        
+        self.current_energy = None
 
 
     def CloseFile(self, filename, event=None):
