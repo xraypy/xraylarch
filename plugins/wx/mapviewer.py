@@ -1151,10 +1151,16 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         cur_energy = ''
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
+            print name
+            print "('mono.energy' in name or 'Mono Energy' in name)"
+            print ('mono.energy' in name or 'Mono Energy' in name)
+            print
+            
             name = str(name).lower()
             if 'ring_current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
-            elif 'mono.energy' in name and cur_energy=='':
+            elif ('mono.energy' in name or 'Mono Energy' in name) and cur_energy=='':
+                print '\tMATCH',name
                 self.owner.current_energy = float(val)
                 wvlgth = lambda_from_E(self.owner.current_energy/1000.)
                 self.wids['X-ray Energy'].SetLabel('%0.3f eV (%0.3f A)' % (self.owner.current_energy,wvlgth))

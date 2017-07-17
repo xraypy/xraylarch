@@ -111,20 +111,6 @@ def isGSEXRM_MapFolder(fname):
         if f in flist: has_xrfdata = True
     return has_xrfdata
 
-def isGSEXRM_XRDMapFolder(fname):
-    "return whether folder a valid Scan Folder (raw data)"
-    if (fname is None or not os.path.exists(fname) or
-        not os.path.isdir(fname)):
-        return False
-    flist = os.listdir(fname)
-    for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
-        if f not in flist:
-            return False
-    has_xrddata = False
-    header, rows = readMasterFile('%/Master.dat' % fname)
-    if rows[0,4] in flist: has_xrddata = True
-    return has_xrddata
-
 H5ATTRS = {'Type': 'XRM 2D Map',
            'Version': '1.4.0',
            'Title': 'Epics Scan Data',
