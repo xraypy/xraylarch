@@ -1093,7 +1093,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
-            self.wids[label] = SimpleText(self, ' ' ,          style=wx.LEFT, size=(300, -1))
+            self.wids[label] = SimpleText(self, ' ' ,          style=wx.LEFT, size=(350, -1))
 
             sizer.Add(thislabel,        (ir, 0), (1, 1), 1)
             sizer.Add(self.wids[label], (ir, 1), (1, 1), 1)
@@ -1140,7 +1140,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         if pixtime is None:
             pixtime = self.owner.current_file.calc_pixeltime()
         pixtime =int(round(1000.0*pixtime))
-        self.wids['Dwell Time'].SetLabel('%.1f milliseconds per pixel' % pixtime)
+        self.wids['Dwell Time'].SetLabel('%.1f ms per pixel' % pixtime)
 
         env_names = list(xrmmap['config/environ/name'])
         env_vals  = list(xrmmap['config/environ/value'])
@@ -1158,7 +1158,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
                 self.owner.current_energy = float(val)/1000.
                 wvlgth = lambda_from_E(self.owner.current_energy)
-                self.wids['X-ray Energy'].SetLabel('%0.3f keV (%0.3f A)' % \
+                self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
                                                    (self.owner.current_energy,wvlgth))
                 cur_energy = val
             elif 'beamline.fluxestimate' in name or 'transmitted flux' in name:
@@ -1181,7 +1181,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 elif 'finey' in name or 'fine y' in name:
                     fines['Y'] = val
 
-        i0val = 'Flux=%(flux)s Hz, I0 Current=%(current)s uA' % i0vals
+        if i0vals['current'] == '?':
+            i0val = 'Flux=%(flux)s Hz' % i0vals
+        else:
+            i0val = u'Flux=%(flux)s Hz, I0 Current=%(current)s \u03BCA' % i0vals
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
@@ -1444,9 +1447,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         info_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
         buff = ['# Map %s, Area %s' % (self.owner.current_file.filename, aname),
                 '# %i Pixels' % npix,
-                '# %i milliseconds per pixel' % int(round(1000.0*pixtime)),
+                '# %i ms per pixel' % int(round(1000.0*pixtime)),
                 '# %.3f total seconds'  % dtime,
-                '# Time (TSCALER) in milliseconds',
+                '# Time (TSCALER) in ms',
                 '# All other values in counts per second',
                 '#----------------------------------',
                 '#  ROI    Min   Max    Mean     Sigma    Median     Mode']
