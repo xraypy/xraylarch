@@ -1,0 +1,478 @@
+"""
+Plotting macros for XAFS data sets and fits
+
+ Function          Description of what is plotted
+ ---------------- -----------------------------------------------------
+  plot_mu()        mu(E) for XAFS data group in various forms
+  plot_bkg()       mu(E) and background mu0(E) for XAFS data group
+  plot_chik()      chi(k) for XAFS data group
+  plot_chir()      chi(R) for XAFS data group
+  plot_chifit()    chi(k) and chi(R) for fit to feffit dataset
+  plot_path_k()    chi(k) for a single path of a feffit dataset
+  plot_path_r()    chi(R) for a single path of a feffit dataset
+  plot_paths_k()   chi(k) for model and all paths of a feffit dataset
+  plot_paths_r()   chi(R) for model and all paths of a feffit dataset
+ ---------------- -----------------------------------------------------
+"""
+
+# common XAFS plot labels
+labels = group(k       = r'$k \rm\,(\AA^{-1})$',
+               r       = r'$R \rm\,(\AA)$',
+               energy  = r'$E\rm\,(eV)$',
+               mu      = r'$\mu(E)$',
+               dmude   = r'$d\mu(E)/dE$',
+               chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+               chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
+               chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
+               chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+               chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+               chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$')
+
+def __chir_label__(show_mag, show_real, show_imag, kweight):
+    "private method: determine y label for chi(R) plot"
+    ylab = []
+    if show_mag:  ylab.append(labels.chirmag)
+    if show_real: ylab.append(labels.chirre)
+    if show_imag: ylab.append(labels.chirim)
+    if len(ylab) > 1:  ylab = [labels.chir]
+    return ylab[0].format(kweight+1)
+#enddef
+
+def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
+            show_e0=False, emin=-50, emax=None, new=True, win=1):
+    """
+    plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
+             show_e0=False, emin=-50, emax=None, new=True, win=1)
+
+    Plot mu(E) for XAFS data group in various forms
+
+    Arguments
+    ----------
+     dgroup    group of XAFS data after pre_edge() results (see Note 1)
+     norm      bool whether to show normalized data [False]
+     deriv     bool whether to show derivative of XAFS data [False]
+     show_pre  bool whether to show pre-edge curve [False]
+     show_post bool whether to show post-edge curve [False]
+     show_e0   bool whether to show E0 [False]
+     emin      min energy to show, relative to E0 [50]
+     emax      max energy to show, relative to E0 [None, end of data]
+     new       bool whether to start a new plot [True]
+     win       integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         energy, mu, norm, e0, pre_edge, edge_step, filename
+    """
+    if hasattr(dgroup, 'mu'):
+        mu = dgroup.mu
+    elif  hasattr(dgroup, 'mutrans'):
+        mu = dgroup.mutrans
+    else:
+        raise ValueError("XAFS data group has no array for mu")
+    #endif
+    ylabel = labels.mu
+    label = 'mu'
+    if norm:  mu = dgroup.norm
+
+    if deriv:
+        mu = gradient(mu)/gradient(dgroup.energy)
+        ylabel = labels.dmude
+        label = 'dmu/dE'
+    #endif
+    if norm:
+        ylabel = "%s (norm)" % ylabel
+        label = "%s (norm)" % label
+    #endif
+
+    xmin, xmax = None, None
+    if emin is not None: xmin = dgroup.e0 + emin
+    if emax is not None: xmax = dgroup.e0 + emax
+
+    opts = dict(win=win, show_legend=True, linewidth=3,
+                title=dgroup.filename, xmin=xmin, xmax=xmax)
+
+    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+         label=label, zorder=20, new=new, **opts)
+
+    if (not norm and not deriv):
+        if show_pre:
+            plot(dgroup.energy, dgroup.pre_edge, label='pre_edge',
+                 zorder=18, **opts)
+        #endif
+        if show_post:
+            plot(dgroup.energy, dgroup.post_edge, label='post_edge',
+                 zorder=18, **opts)
+            if show_pre:
+                i = index_of(dgroup.energy, dgroup.e0)
+                ypre = dgroup.pre_edge[i]
+                ypost = dgroup.post_edge[i]
+                plot_arrow(dgroup.e0, ypre, dgroup.e0, ypost,
+                           color='#A2A2A2', width=0.25,
+                           head_width=0, zorder=3, win=win)
+            #endif
+        #endif
+        if show_e0:
+            i = index_of(dgroup.energy, dgroup.e0)
+            plot_marker(dgroup.e0, mu[i], marker='o', zorder=10, label='e0', win=win)
+        #endif
+    #endif
+#enddef
+
+def plot_bkg(dgroup, norm=True, emin=-50, emax=None, new=True, win=1):
+    """
+    plot_bkg(dgroup, norm=True, emin=-50, emax=None, win=1)
+
+    Plot mu(E) and background mu0(E) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup   group of XAFS data after autobk() results (see Note 1)
+     norm     bool whether to show normalized data [True]
+     emin     min energy to show, relative to E0 [50]
+     emax     max energy to show, relative to E0 [None, end of data]
+     new      bool whether to start a new plot [True]
+     win      integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         energy, mu, bkg, norm, e0, pre_edge, edge_step, filename
+    """
+    if hasattr(dgroup, 'mu'):
+        mu = dgroup.mu
+    elif  hasattr(dgroup, 'mutrans'):
+        mu = dgroup.mutrans
+    else:
+        raise ValueError("XAFS data group has no array for mu")
+    #endif
+
+    bkg = dgroup.bkg
+    ylabel = labels.mu
+    label = 'mu'
+    xmin, xmax = None, None
+    if emin is not None: xmin = dgroup.e0 + emin
+    if emax is not None: xmax = dgroup.e0 + emax
+    if norm:
+        mu  = dgroup.norm
+        bkg = (dgroup.bkg - dgroup.pre_edge) / dgroup.edge_step
+        ylabel = "%s (norm)" % ylabel
+        label = "%s (norm)" % label
+    #endif
+    opts = dict(win=win, show_legend=True, linewidth=3)
+    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+         title='%s' % dgroup.filename,
+         label=label, zorder=20, new=new, xmin=xmin, xmax=xmax, **opts)
+    plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
+#enddef
+
+
+def plot_chik(dgroup, kweight=None, kmax=None, show_window=True, new=True, win=1):
+    """
+    plot_chik(dgroup, kweight=None, kmax=None, show_window=True, win=1)
+
+    Plot k-weighted chi(k) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup       group of XAFS data after autobk() results (see Note 1)
+     kweight      k-weighting for plot [read from last xftf(), or 0]
+     kmax         max k to show [None, end of data]
+     show_window  bool whether to also plot k-window [plot if available]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         k, chi, kwin, filename
+    """
+    if kweight is None and hasattr(group, 'xftf_details'):
+        kweight = dgroup.xftf_details.call_args['kweight']
+    #endif
+    if kweight is None: kweight = 0
+
+    chi = dgroup.chi * dgroup.k ** kweight
+    opts = dict(win=win, show_legend=True, linewidth=3)
+
+    plot(dgroup.k, chi, xlabel=labels.k,
+         ylabel=labels.chikw.format(kweight), title=dgroup.filename,
+         label='chi', zorder=20, new=new, xmax=kmax, **opts)
+
+    if show_window and hasattr(dgroup, 'kwin'):
+        plot(dgroup.k, 0.75*max(chi)*dgroup.kwin,
+             zorder=12, label='window', **opts)
+    #endif
+#enddef
+
+
+def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
+              rmax=None, new=True, win=1):
+    """
+    plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
+              rmax=None, new=True, win=1)
+
+    Plot chi(R) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup       group of XAFS data after xftf() results (see Note 1)
+     show_mag     bool whether to plot |chir(R)| [True]
+     show_real    bool whether to plot Re[chir(R)] [False]
+     show_imag    bool whether to plot Im[chir(R)] [False]
+     rmax         max R to show [None, end of data]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         r, chir_mag, chir_im, chir_re, kweight, filename
+    """
+
+    kweight = dgroup.xftf_details.call_args['kweight']
+    opts = dict(win=win, show_legend=True, linewidth=3,
+                title=dgroup.filename, zorder=20, xmax=rmax,
+                xlabel=labels.r, new=new)
+
+    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    opts['ylabel'] = ylabel
+
+    if show_mag:
+        plot(dgroup.r, dgroup.chir_mag, label='mag', **opts)
+        opts['new'] = False
+    #endif
+    if show_real:
+        plot(dgroup.r, dgroup.chir_re, label='real', **opts)
+        opts['new'] = False
+    #endif
+    if show_imag:
+        plot(dgroup.r, dgroup.chir_im, label='imag', **opts)
+    #endif
+#enddef
+
+def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
+                show_mag=True, show_real=True, show_imag=False,
+                new=True, win=1):
+    """
+    plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
+                show_mag=True, show_real=False, show_imag=False,
+                new=True, win=1)
+
+    Plot k-weighted chi(k) and chi(R) for fit to feffit dataset
+
+    Arguments
+    ----------
+     dataset      feffit dataset, after running feffit()
+     kmin         min k to show [0]
+     kmax         max k to show [None, end of data]
+     rmax         max R to show [None, end of data]
+     show_mag     bool whether to plot |chir(R)| [True]
+     show_real    bool whether to plot Re[chir(R)] [False]
+     show_imag    bool whether to plot Im[chir(R)] [False]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+
+    """
+    kweight = dset.transform.kweight
+
+    data_chik  = dataset.data.chi * dataset.data.k**kweight
+    model_chik = dataset.model.chi * dataset.model.k**kweight
+
+    opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
+              show_legend=True, win=win, title=dataset.data.filename)
+
+    # k-weighted chi(k) in first plot window
+    plot(dataset.data.k, data_chik, xmin=kmin, xmax=kmax,
+            xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+            label='data', new=new, **opts)
+    plot(dataset.model.k, model_chik, label='fit',  **opts)
+
+    # show chi(R) in next plot window
+    opts['win'] = win+1
+
+    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+                 'xmax': rmax, 'new': new})
+
+    if show_mag:
+        plot(dataset.data.r,  dataset.data.chir_mag,
+             label='|data|', **opts)
+        opts['new'] = False
+        plot(dataset.model.r, dataset.model.chir_mag,
+             label='|fit|',  **opts)
+    #endif
+    if show_real:
+        plot(dataset.data.r,  dataset.data.chir_re,
+             label='Re[data]', **opts)
+        opts['new'] = False
+        plot(dataset.model.r, dataset.model.chir_re,
+             label='Re[fit]',  **opts)
+    #endif
+    if show_imag:
+        plot(dataset.data.r,  dataset.data.chir_im,
+             label='Im[data]', **opts)
+        opts['new'] = False
+        plot(dataset.model.r, dataset.model.chir_im,
+             label='Im[fit]',  **opts)
+    #endif
+#enddef
+
+def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
+                new=False, win=1, **kws):
+    """
+    plot_path_k(dataset, ipath, kmin=0, kmax=None, offset=0,
+               label=None, new=False, win=1, **kws)
+
+    Plot k-weighted chi(k) for a single Path of a feffit dataset
+
+    Arguments
+    ----------
+     dataset      feffit dataset, after running feffit()
+     ipath        index of path, starting count at 0 [0]
+     kmin         min k to show [0]
+     kmax         max k to show [None, end of data]
+     offset       vertical offset to use for plot [0]
+     label        path label ['path %d' % ipath]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+     kws          additional keyword arguments are passed to plot()
+    """
+    kweight = dset.transform.kweight
+    path = dataset.pathlist[ipath]
+    if label is None: label = 'path %i' % (ipath)
+
+    chi_kw = offset + path.chi * path.k**kweight
+
+    plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
+         xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+         win=win, new=new, **kws)
+#enddef
+
+def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
+                show_mag=True, show_real=False, show_imag=True,
+                new=False, win=1, **kws):
+    """
+    plot_path_r(dataset, ipath,rmax=None, offset=0, label=None,
+                show_mag=True, show_real=False, show_imag=True,
+                new=False, win=1, **kws)
+
+    Plot chi(R) for a single Path of a feffit dataset
+
+    Arguments
+    ----------
+     dataset      feffit dataset, after running feffit()
+     ipath        index of path, starting count at 0 [0]
+     kmax         max k to show [None, end of data]
+     offset       vertical offset to use for plot [0]
+     label        path label ['path %d' % ipath]
+     show_mag     bool whether to plot |chir(R)| [True]
+     show_real    bool whether to plot Re[chir(R)] [False]
+     show_imag    bool whether to plot Im[chir(R)] [False]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+     kws          additional keyword arguments are passed to plot()
+    """
+    path = dataset.pathlist[ipath]
+    if label is None:
+        label = 'path %i' % (ipath)
+    #endif
+    kweight =dataset.transform.kweight
+    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+
+    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+                 'xmax': rmax, 'new': new})
+    opts.update(kws)
+    if show_mag:
+        plot(path.r,  offest+path.chir_mag, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_real:
+        plot(path.r,  offset+path.chir_re, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_imag:
+        plot(path.r,  offset+path.chir_im, label=label, **opts)
+        opts['new'] = False
+    #endif
+#enddef
+
+def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
+    """
+    plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
+
+    Plot k-weighted chi(k) for model and all paths of a feffit dataset
+
+    Arguments
+    ----------
+     dataset      feffit dataset, after running feffit()
+     kmin         min k to show [0]
+     kmax         max k to show [None, end of data]
+     offset       vertical offset to use for paths for plot [-1]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+     kws          additional keyword arguments are passed to plot()
+    """
+    # make k-weighted chi(k)
+    kweight = dataset.transform.kweight
+    model = dataset.model
+
+    model_chi_kw = model.chi * model.k**kweight
+
+    plot(model.k, model_chi_kw, title=dataset.dset.filename,
+         xlabel=labels.r, ylabel=labels.chikw.format(kweight),
+         label='sum', new=new, xmin=xmin, xmax=kmax, win=win, **kws)
+
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_k(dataset, ipath, offset=(ipath+1)*offset,
+                    kmin=kmin, kmax=kmax, new=False, win=win)
+    #endfor
+#enddef
+
+def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False,
+                 show_imag=False, new=True, win=1, **kws):
+    """
+    plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False,
+                 show_imag=False, new=True, win=1, **kws):
+
+    Plot chi(R) for model and all paths of a feffit dataset
+
+    Arguments
+    ----------
+     dataset      feffit dataset, after running feffit()
+     offset       vertical offset to use for paths for plot [-0.5]
+     rmax         max R to show [None, end of data]
+     show_mag     bool whether to plot |chir(R)| [True]
+     show_real    bool whether to plot Re[chir(R)] [False]
+     show_imag    bool whether to plot Im[chir(R)] [False]
+     new          bool whether to start a new plot [True]
+     win          integer plot window to use [1]
+     kws          additional keyword arguments are passed to plot()
+    """
+    kweight = dataset.transform.kweight
+    model = dataset.model
+
+    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+
+    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+                 'xmax': rmax, 'new': new})
+    opts.update(kws)
+    if show_mag:
+        plot(path.r,  model.chir_mag, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_real:
+        plot(path.r,  model.chir_re, label=label, **opts)
+        opts['new'] = False
+    #endif
+    if show_imag:
+        plot(path.r,  model.chir_im, label=label, **opts)
+        opts['new'] = False
+    #endif
+
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_r(dataset, ipath, offset=(ipath+1)*offset,
+                    show_mag=show_mag, show_real=show_real,
+                    show_imag=show_imag, **opts)
+    #endfor
+#enddef
