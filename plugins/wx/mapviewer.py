@@ -535,7 +535,7 @@ class TomographyPanel(GridPanel):
         if xunt == 0:   xrange = xrange  ## eV
         elif xunt == 1: xrange[:] = [x*1000 for x in xrange] ## keV to eV
         elif xunt == 2: xrange = xrange ## 1/A
-        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy/1000.)) ## 2th to 1/A
+        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
         
         if xname in self.rois:
@@ -1151,38 +1151,34 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         cur_energy = ''
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
-            print name
-            print "('mono.energy' in name or 'Mono Energy' in name)"
-            print ('mono.energy' in name or 'Mono Energy' in name)
-            print
-            
             name = str(name).lower()
-            if 'ring_current' in name:
+           
+            if 'ring_current' in name or 'ring current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
-            elif ('mono.energy' in name or 'Mono Energy' in name) and cur_energy=='':
-                print '\tMATCH',name
-                self.owner.current_energy = float(val)
-                wvlgth = lambda_from_E(self.owner.current_energy/1000.)
-                self.wids['X-ray Energy'].SetLabel('%0.3f eV (%0.3f A)' % (self.owner.current_energy,wvlgth))
+            elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
+                self.owner.current_energy = float(val)/1000.
+                wvlgth = lambda_from_E(self.owner.current_energy)
+                self.wids['X-ray Energy'].SetLabel('%0.3f keV (%0.3f A)' % \
+                                                   (self.owner.current_energy,wvlgth))
                 cur_energy = val
-            elif 'beamline.fluxestimate' in name:
+            elif 'beamline.fluxestimate' in name or 'transmitted flux' in name:
                 i0vals['flux'] = val
             elif 'i0 current' in name:
                 i0vals['current'] = val
 
-            elif name.startswith('samplestage.'):
+            elif name.startswith('sample'):
                 name = name.replace('samplestage.', '')
-                if 'coarsex' in name:
+                if 'coarsex' in name or 'coarse x' in name:
                     self.wids['Sample Stage X'].SetLabel('%s mm' % val)
-                elif 'coarsey' in name:
+                elif 'coarsey' in name or 'coarse y' in name:
                     self.wids['Sample Stage Y'].SetLabel('%s mm' % val)
-                elif 'coarsez' in name:
+                elif 'coarsez' in name or 'coarse z' in name:
                     self.wids['Sample Stage Z'].SetLabel('%s mm' % val)
                 elif 'theta' in name:
                     self.wids['Sample Stage Theta'].SetLabel('%s deg' % val)
-                elif 'finex' in name:
+                elif 'finex' in name or 'fine x' in name:
                     fines['X'] = val
-                elif 'finey' in name:
+                elif 'finey' in name or 'fine y' in name:
                     fines['Y'] = val
 
         i0val = 'Flux=%(flux)s Hz, I0 Current=%(current)s uA' % i0vals
@@ -1617,7 +1613,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
-            self._xrd.energy = self.owner.current_energy/1000.
+            self._xrd.energy = self.owner.current_energy
             self._xrd.wavelength = lambda_from_E(self._xrd.energy)
 
             stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
