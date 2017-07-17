@@ -386,9 +386,9 @@ class TomographyPanel(GridPanel):
     label  = 'Tomography Tools'
     def __init__(self, parent, owner, **kws):
         
-        
         self.owner = owner
         self.rois = []
+        self.energy = None
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -440,11 +440,18 @@ class TomographyPanel(GridPanel):
         self.rot_cen = FloatCtrl(self, value=1, minval=0, precision=3, size=(100, -1))
         self.ref_cen  = Check(self, label='Refine?')
         self.ref_cen.SetValue(False)
+        self.cen_step = wx.SpinButton(self, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+
+        self.cen_step.Bind(wx.EVT_SPIN, self.onStepCenter)
+        
+        center = wx.BoxSizer(wx.HORIZONTAL)
+        center.Add(self.rot_cen,  flag=wx.LEFT, border=5)
+        center.Add(self.cen_step, flag=wx.LEFT, border=5)
 
         self.Add(SimpleText(self,''), newrow=True)        
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
         self.AddMany((self.alg_choice[0],self.alg_choice[1]),  dcol=1,   style=LEFT)
-        self.AddMany((SimpleText(self,''),SimpleText(self,'Center:'),self.rot_cen,self.ref_cen),  dcol=1,   style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self,''),SimpleText(self,'Center:'),center,self.ref_cen),  dcol=1,   style=LEFT, newrow=True)
         self.AddMany((SimpleText(self,''),self.tomo_show_new),  dcol=1,   style=LEFT, newrow=True)
         self.Add(self.tomo_replace_old,  dcol=1,   style=LEFT)
 
@@ -466,7 +473,10 @@ class TomographyPanel(GridPanel):
 ######################################
         
         self.pack()
-        
+
+    def onStepCenter(self,event=None):
+        self.rot_cen.SetValue(str(event.GetPosition()/10.))
+            
 
     def onALGchoice(self,event=None):
     
@@ -535,7 +545,9 @@ class TomographyPanel(GridPanel):
             xname = '%s_%02d' % (xname,xi)
         
         if self.roi_unt.GetStringSelection().startswith('XRD'):
+            self.owner.message('Calculating ROI: %s' % xname)
             self.owner.current_file.add_xrd1D_roi(xrange,save=True,name=xname)
+            self.owner.message('Ready')
 
         self.set_roi_choices(self.owner.current_file.xrmmap)
 
@@ -566,9 +578,10 @@ class TomographyPanel(GridPanel):
                 g_map = datafile.get_roimap(g_roi)
             except:
                 g_map = np.ones(np.shape(r_map))
-            b_map = datafile.get_roimap(b_roi)
-
-
+            try:
+                b_map = datafile.get_roimap(b_roi)
+            except:
+                b_map = np.ones(np.shape(r_map))
         try:
             ome = datafile.get_pos(0, mean=True)[::-1]
         except:
@@ -662,6 +675,7 @@ class TomographyPanel(GridPanel):
             if self.ref_cen.GetValue():
                 rot_center = tomopy.find_center(sino, theta, init=rot_center, ind=0, tol=0.5)
                 self.rot_cen.SetValue(rot_center)
+                self.cen_step.SetValue(rot_center*10)
                 self.ref_cen.SetValue(False)
             
             tomo = tomopy.recon(sino, theta, center=rot_center,
@@ -685,16 +699,19 @@ class TomographyPanel(GridPanel):
         self.set_roi_choices(xrmmap)
         
         center = len(self.owner.current_file.get_pos(1, mean=True))/2
-        self.rot_cen.SetValue(value=center)
+        
+        self.rot_cen.SetValue(center)
 
+        self.cen_step.SetRange(-20.*center,20.*center)
+        self.cen_step.SetValue(center*10.)
+        
         env_names = list(xrmmap['config/environ/name'])
         env_vals  = list(xrmmap['config/environ/value'])
 
-        self.energy = 18. ## default
-
+        print 'setting energy'
         for name, val in zip(env_names, env_vals):
-            name = str(name).lower()
-            if 'mono.energy' in name: self.energy = float(val)/1000 ## keV
+            if 'mono.energy' in str(name).lower():
+                self.energy = float(val)/1000 ## keV
 
 
     def set_roi_choices(self, xrmmap):

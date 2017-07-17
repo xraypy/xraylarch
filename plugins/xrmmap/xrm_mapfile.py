@@ -2313,15 +2313,13 @@ class GSEXRM_MapFile(object):
         imin = (np.abs(qaxis-qrange[0])).argmin()
         imax = (np.abs(qaxis-qrange[1])).argmin()+1
 
-        print 'Calculating...'
         xrd1D_roi = np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
         
         if save:
-            print 'Saving...'
             qstr = 'xrd1D : %0.3f 1/A to %0.3f 1/A' % (qaxis[imin],qaxis[imax])
             self.add_work_array(xrd1D_roi,name,desc=qstr,flag='xrd1D')
-        
-        return xrd1D_roi,[qaxis[imin],qaxis[imax]]
+        else:
+            return xrd1D_roi,[qaxis[imin],qaxis[imax]]
 
         
     def add_xrfroi(self, Erange):
