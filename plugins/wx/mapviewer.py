@@ -532,8 +532,8 @@ class TomographyPanel(GridPanel):
         
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
 
-        if xunt == 0:   xrange = xrange  ## eV
-        elif xunt == 1: xrange[:] = [x*1000 for x in xrange] ## keV to eV
+        if xunt == 0:   xrange[:] = [x/1000. for x in xrange] ## eV to keV
+        elif xunt == 1: xrange = xrange  ## keV
         elif xunt == 2: xrange = xrange ## 1/A
         elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
@@ -542,11 +542,13 @@ class TomographyPanel(GridPanel):
             xi = 0
             while '%s_%02d' % (xname,xi) in self.rois: xi += 1
             xname = '%s_%02d' % (xname,xi)
-        
+
+        self.owner.message('Calculating ROI: %s' % xname)
         if self.roi_unt.GetStringSelection().startswith('XRD'):
-            self.owner.message('Calculating ROI: %s' % xname)
-            self.owner.current_file.add_xrd1D_roi(xrange,save=True,name=xname)
-            self.owner.message('Ready')
+            self.owner.current_file.add_xrd1D_roi(xrange,xname)
+        elif self.roi_unt.GetStringSelection().startswith('XRF'):
+            self.owner.current_file.add_xrfroi(xrange,xname)
+        self.owner.message('Ready')
 
         self.set_roi_choices(self.owner.current_file.xrmmap)
 
@@ -717,7 +719,7 @@ class TomographyPanel(GridPanel):
 ##################################
 class SimpleMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
-    label  = 'Simple XRF ROI Map'
+    label  = 'Simple ROI Map'
     def __init__(self, parent, owner, **kws):
         self.owner = owner
 
@@ -920,7 +922,7 @@ class SimpleMapPanel(GridPanel):
 
 class TriColorMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
-    label  = '3-Color XRF ROI Map'
+    label  = '3-Color ROI Map'
     def __init__(self, parent, owner, **kws):
         GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
         self.owner = owner
@@ -1089,7 +1091,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
-                      'Original data path', 'XRD Calibration', '2DXRD data', '1DXRD data'):
+                      'Original data path',
+                      'XRD Calibration', '2DXRD data', '1DXRD data',
+                      'Tomography'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -1207,6 +1211,11 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['1DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd1d'])
         except:
             pass
+        try:
+            self.wids['Tomography'].SetLabel('%s' % xrmmap['flags'].attrs['tomo'])
+        except:
+            pass
+
 
     def onClose(self):
         pass
@@ -1769,7 +1778,8 @@ class MapViewerFrame(wx.Frame):
         for creator in (SimpleMapPanel, TriColorMapPanel, TomographyPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
             p = creator(parent, owner=self)
-            self.nb.AddPage(p, p.label.title(), True)
+            self.nb.AddPage(p, p.label, True)
+            #self.nb.AddPage(p, p.label.title(), True)
             bgcol = p.GetBackgroundColour()
             self.nbpanels.append(p)
             p.SetSize((750, 550))
@@ -1785,14 +1795,6 @@ class MapViewerFrame(wx.Frame):
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
         parent.SetSize((700, 400))
         pack(parent, sizer)
-
-        # self.area_sel = AreaSelectionPanel(parent, owner=self)
-        # self.area_sel.SetBackgroundColour('#F0F0E8')
-
-        # sizer.Add(wx.StaticLine(parent, size=(250, 2),
-        #                         style=wx.LI_HORIZONTAL),
-        #          0,  wx.ALL|wx.EXPAND)
-        # sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
 
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
@@ -2232,6 +2234,7 @@ class MapViewerFrame(wx.Frame):
             FLAGxrf     = myDlg.FLAGxrf
             FLAGxrd1D   = myDlg.FLAGxrd1D
             FLAGxrd2D   = myDlg.FLAGxrd2D
+            FLAGtomo    = myDlg.FLAGtomo
             mask        = myDlg.MaskFile
             wdgs        = int(myDlg.Wdg.GetValue())
             stps        = int(myDlg.Stp.GetValue())
@@ -2242,7 +2245,7 @@ class MapViewerFrame(wx.Frame):
             if wdgs > 36 or wdgs < 1: wdgs = 1
             xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
                                      azwdgs=wdgs,qstps=stps,flip=flip,
-                                     FLAGxrf=FLAGxrf,
+                                     FLAGxrf=FLAGxrf, FLAGtomo=FLAGtomo,
                                      FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
             self.add_xrmfile(xrmfile)
 
@@ -2421,6 +2424,7 @@ class OpenMapFolder(wx.Dialog):
         self.FLAGxrf   = True
         self.FLAGxrd1D = False
         self.FLAGxrd2D = False
+        self.FLAGtomo  = False
         self.FldrPath  = None
         self.PoniFile  = None
         self.MaskFile  = None
@@ -2464,6 +2468,7 @@ class OpenMapFolder(wx.Dialog):
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx      )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD2Dcheck, xrd2dCkBx    )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD1Dcheck, xrd1dCkBx    )
+        self.Bind(wx.EVT_CHECKBOX, self.onTOMOcheck,  tomoCkBx    )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSEponi, self.poniBtn )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSEmask, self.maskBtn )
@@ -2566,7 +2571,6 @@ class OpenMapFolder(wx.Dialog):
 
     def onXRFcheck(self,event=None):
         self.FLAGxrf = event.GetEventObject().GetValue()
-
         self.checkOK()
 
     def onXRD2Dcheck(self,event=None):
@@ -2600,6 +2604,11 @@ class OpenMapFolder(wx.Dialog):
             self.Wdg.Disable()
             self.wdgSpn.Disable()
         self.checkOK()
+
+    def onTOMOcheck(self,event=None):
+        self.FLAGtomo = event.GetEventObject().GetValue()
+        self.checkOK()
+
 
     def onWdgSPIN(self,event=None):
 

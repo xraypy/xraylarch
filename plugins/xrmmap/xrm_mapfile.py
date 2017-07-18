@@ -586,7 +586,7 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  poni=None, mask=None, azwdgs=1, qstps=STEPS, flip=True,
-                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
+                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False, FLAGtomo=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -608,9 +608,10 @@ class GSEXRM_MapFile(object):
         self.masterfile_mtime = -1
 
         self.energy      = None
-        self.flag_xrf = FLAGxrf
+        self.flag_xrf    = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
+        self.flag_tomo  = FLAGtomo
 
         self.calibration = poni
         self.maskfile    = mask
@@ -972,7 +973,7 @@ class GSEXRM_MapFile(object):
                              masterfile=self.masterfile, poni=self.calibration,
                              flip=self.flip, mask=self.maskfile,
                              wdg=self.azwdgs, steps=self.qstps,
-                             FLAGxrf=self.flag_xrf,
+                             FLAGxrf=self.flag_xrf, FLAGtomo=self.flag_tomo,
                              FLAGxrd2D=self.flag_xrd2d, FLAGxrd1D=self.flag_xrd1d)
 
 
@@ -1109,6 +1110,7 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2d'] = self.flag_xrd2d
         flaggp.attrs['xrd1d'] = self.flag_xrd1d
+        flaggp.attrs['tomo']   = self.flag_tomo
 
         if self.npts is None:
             self.npts = row.npts
@@ -1277,6 +1279,9 @@ class GSEXRM_MapFile(object):
         check if any XRD OR XRF data in mapfile
         mkak 2016.10.13
         '''
+
+        self.flag_xrf = True
+
         try:
             xrdgp = self.xrmmap['xrd']['data2D']
             self.flag_xrd2d = True
@@ -1308,6 +1313,7 @@ class GSEXRM_MapFile(object):
         self.flag_xrf   = self.xrmmap['flags'].attrs['xrf']
         self.flag_xrd2d = self.xrmmap['flags'].attrs['xrd2d']
         self.flag_xrd1d = self.xrmmap['flags'].attrs['xrd1d']
+        self.flag_tomo  = self.xrmmap['flags'].attrs['tomo']
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -2288,37 +2294,65 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def add_xrd1D_roi(self, qrange, save=False, name=None):
+    def add_xrd1D_roi(self, qrange, name, nwdg=0):
         
-        try:
-            xrd1D = self.xrmmap['xrd/data1D']
-        except:
-            return
-            
-        qaxis = xrd1D[0,0,0,:]
-        imin = (np.abs(qaxis-qrange[0])).argmin()
-        imax = (np.abs(qaxis-qrange[1])).argmin()+1
+        if self.flag_xrd1d:
+            qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
 
-        xrd1D_roi = np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
+            imin = (np.abs(qaxis-qrange[0])).argmin()
+            imax = (np.abs(qaxis-qrange[1])).argmin()+1
+            islice = slice(imin, imax, None)
+
+            xrd1D_roi = np.sum(self.xrmmap['xrd/data1D'][:,:,1,islice],axis=2)
         
-        if save:
             qstr = 'xrd1D : %0.3f 1/A to %0.3f 1/A' % (qaxis[imin],qaxis[imax])
             self.add_work_array(xrd1D_roi,name,desc=qstr,flag='xrd1D')
-        else:
-            return xrd1D_roi,[qaxis[imin],qaxis[imax]]
-
         
-    def add_xrfroi(self, Erange):
+    def add_xrfroi(self, Erange, name, nmca=4):
 
-        try:
-            Eaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
-            imin = (np.abs(Eaxis-Erange[0])).argmin()
-            imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+        if self.flag_xrf:
 
-            return [Eaxis[imin],Eaxis[imax]],np.sum(self.xrmmap['xrd/data1D'][:,:,1,imin:imax],axis=2)
-        
-        except:
-            pass
+#             islices = []
+
+            dets = ['det%i' % (i+1) for i in range(nmca)]
+            dets += ['detsum']
+            
+            sumraw,sumcor = None,None
+            
+            for i,det in enumerate(dets):
+                
+                idet = self.xrmmap[det]
+                
+                Eaxis = idet['energy'][:]
+
+                imin = (np.abs(Eaxis-Erange[0])).argmin()
+                imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+               
+#                 islices += [slice(imin, imax, None)]
+                islice = slice(imin, imax, None)
+                
+                if det == 'detsum':
+
+                    xname = '%s_raw_sum' % name
+                    self.add_work_array(sumraw,xname,flag='xrf - %s' % det)
+
+                    xname = '%s_cor_sum' % name
+                    self.add_work_array(sumcor,xname,flag='xrf - %s' % det)
+                
+                else:
+                    counts = np.array(idet['counts'][:])
+
+                    iraw = counts[:,:,islice].sum(axis=2)
+                    icor = counts[:,:,islice].sum(axis=2)*idet['dtfactor']
+                    sumraw = iraw if sumraw is None else iraw + sumraw
+                    sumcor = icor if sumcor is None else icor + sumcor
+                    
+                    xname = '%s_raw_%s' % (name,det)
+                    self.add_work_array(iraw,xname,flag='xrf - %s' % det)
+
+                    xname = '%s_cor_%s' % (name,det)
+                    self.add_work_array(icor,xname,flag='xrf - %s' % det)
+
 
     def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
