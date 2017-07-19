@@ -212,8 +212,8 @@ class GSEXRM_MapRow:
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
-                 mask=None, wdg=1, steps=STEPS, flip=True,
-                 FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
+                 mask=None, wdg=0, steps=STEPS, flip=True,
+                 FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False, FLAGtomo=False):
 
         ta = time.time()
         if not FLAGxrf and not FLAGxrd2D:
@@ -350,9 +350,9 @@ class GSEXRM_MapRow:
             tg = time.time()
             if poni is not None and FLAGxrd1D:
                 attrs = {'steps':steps,'mask':mask,'wedge':wdg,'flip':flip}
-                self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
+                self.xrdq,self.xrd1d,self.xrdq_wdg,self.xrd1d_wdg = integrate_xrd_row(self.xrd2d,poni,**attrs)
             else:
-                self.xrd1d = None
+                self.xrdq,self.xrd1d,self.xrdq_wdg,self.xrd1d_wdg= None,None,None,None
         th = time.time()
 
         gnpts, ngather  = gdata.shape
@@ -381,7 +381,13 @@ class GSEXRM_MapRow:
             if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[:self.npts]
             if FLAGxrd1D:
-                self.xrd1d = self.xrd1d[:self.npts]
+                try:
+                    self.xrdq      = self.xrdq[:self.npts]
+                    self.xrd1d     = self.xrd1d[:self.npts]
+                    self.xrdq_wdg  = self.xrdq_wdg[:self.npts]
+                    self.xrd1d_wdg = self.xrd1d_wdg[:self.npts]
+                except:
+                    pass
 
         points = range(1, self.npts+1)
         # auto-reverse: counter-intuitively (because stage is upside-down and so
@@ -403,7 +409,10 @@ class GSEXRM_MapRow:
             if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[::-1]
             if FLAGxrd1D:
-                self.xrd1d = self.xrd1d[::-1]
+                self.xrdq      = self.xrdq[::-1]
+                self.xrd1d     = self.xrd1d[::-1]
+                self.xrdq_wdg  = self.xrdq_wdg[::-1]
+                self.xrd1d_wdg = self.xrd1d_wdg[::-1]
 
 
         if FLAGxrf:
@@ -585,7 +594,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 poni=None, mask=None, azwdgs=1, qstps=STEPS, flip=True,
+                 poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False, FLAGtomo=False):
 
         self.filename         = filename
@@ -671,7 +680,7 @@ class GSEXRM_MapFile(object):
                 self.filename = new_filename(self.filename)
                 cfile = FastMapConfig()
                 cfile.Read(os.path.join(self.folder, self.ScanFile))
-                cfile.config['scan']['filename'] = self.filename
+                cfile.config['scan/filename'] = self.filename
                 cfile.Save(os.path.join(self.folder, self.ScanFile))
             self.h5root = h5py.File(self.filename)
 
@@ -1021,7 +1030,7 @@ class GSEXRM_MapFile(object):
                 grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
 
             # here, we add the total dead-time-corrected data to detsum.
-            self.xrmmap['detsum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
+            self.xrmmap['detsum/counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
 
             pos    = self.xrmmap['positions/pos']
             rowpos = np.array([p[:npts] for p in row.posvals])
@@ -1070,11 +1079,24 @@ class GSEXRM_MapFile(object):
 
         if verbose: t1 = time.time()
 
-        if self.flag_xrd1d and row.xrd1d is not None:
-            self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
+        if self.flag_xrd1d:
+            if row.xrd1d is not None:
+                print 'shapes'
+                print np.shape(row.xrd1d)
+                print np.shape(row.xrdq)
+                self.xrmmap['xrd/data1D/whole_q'][thisrow,]   = row.xrdq
+                self.xrmmap['xrd/data1D/whole_raw'][thisrow,] = row.xrd1d
+            if row.xrd1d_wdg is not None:
+                print 'wdg_shapes'
+                print np.shape(row.xrd1d_wdg)
+                print np.shape(row.xrdq_wdg)
+                print
+                self.xrmmap['xrd/data1D/wedge_q'][thisrow,]   = row.xrdq_wdg
+                self.xrmmap['xrd/data1D/wedg_raw'][thisrow,] = row.xrd1d_wdg
+
 
         if self.flag_xrd2d and row.xrd2d is not None:
-            self.xrmmap['xrd']['data2D'][thisrow,] = row.xrd2d
+            self.xrmmap['xrd/data2D/image_raw'][thisrow,] = row.xrd2d
 
         if verbose: t2 = time.time()
         if verbose:
@@ -1110,7 +1132,7 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2d'] = self.flag_xrd2d
         flaggp.attrs['xrd1d'] = self.flag_xrd1d
-        flaggp.attrs['tomo']   = self.flag_tomo
+        flaggp.attrs['tomo']  = self.flag_tomo
 
         if self.npts is None:
             self.npts = row.npts
@@ -1251,24 +1273,50 @@ class GSEXRM_MapFile(object):
                 print(prtxt % (npts, row.npts, xpixx, xpixy))
 
             if self.flag_xrd2d:
+
                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-                xrmmap['xrd'].create_dataset('data2D',
+                xrmmap['xrd'].create_group('data2D')
+                xrmmap['xrd/data2D'].create_dataset('image_raw',
                                        (xrdpts, xrdpts, xpixx, xpixy),
                                        np.uint16,
                                        chunks = chunksize_2DXRD,
                                        compression=COMPRESSION_LEVEL)
-            if self.flag_xrd1d:
-                if self.azwdgs > 1: ## always save full integration plus number of wedges
-                    datacolumns = int(2*(self.azwdgs+1))
-                else:
-                    self.azwdgs,datacolumns = 1,2
 
-                chunksize_1DXRD    = (1, 1, datacolumns, self.qstps)
-                xrmmap['xrd'].create_dataset('data1D',
-                                       (xrdpts, xrdpts, datacolumns, self.qstps),
-                                       np.float32,
-                                       chunks = chunksize_1DXRD,
-                                       compression=COMPRESSION_LEVEL)
+#                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
+#                 xrmmap['xrd'].create_dataset('data2D',
+#                                        (xrdpts, xrdpts, xpixx, xpixy),
+#                                        np.uint16,
+#                                        chunks = chunksize_2DXRD,
+#                                        compression=COMPRESSION_LEVEL)
+            if self.flag_xrd1d:
+                print 'creating 1D datasets'
+                xrmmap['xrd'].create_group('data1D')
+                xrmmap['xrd/data1D'].create_dataset('whole_q',
+                                                    (self.qstps,),
+                                                    np.float32)
+                xrmmap['xrd/data1D'].create_dataset('whole_raw',
+                                                    (xrdpts, xrdpts, self.qstps),
+                                                    np.float32)
+                if self.azwdgs > 1:
+                    print 'creating wedge datasets'
+                    chunksize_1DXRD    = (1, 1, self.azwdgs, self.qstps)
+                    xrmmap['xrd/data1D'].create_dataset('wedge_q',
+                                           (xrdpts, xrdpts, self.azwdgs, self.qstps),
+                                           np.float32,
+                                           chunks = chunksize_1DXRD,
+                                           compression=COMPRESSION_LEVEL)
+                    xrmmap['xrd/data1D'].create_dataset('wedge_raw',
+                                           (xrdpts, xrdpts, self.azwdgs, self.qstps),
+                                           np.float32,
+                                           chunks = chunksize_1DXRD,
+                                           compression=COMPRESSION_LEVEL)
+
+
+#                 xrmmap['xrd'].create_dataset('data1D',
+#                                        (xrdpts, xrdpts, datacolumns, self.qstps),
+#                                        np.float32,
+#                                        chunks = chunksize_1DXRD,
+#                                        compression=COMPRESSION_LEVEL)
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
@@ -1283,13 +1331,13 @@ class GSEXRM_MapFile(object):
         self.flag_xrf = True
 
         try:
-            xrdgp = self.xrmmap['xrd']['data2D']
+            xrdgp = self.xrmmap['xrd/data2D']
             self.flag_xrd2d = True
         except:
             self.flag_xrd2d = False
 
         try:
-            xrdgp = self.xrmmap['xrd']['data1D']
+            xrdgp = self.xrmmap['xrd/data1D']
             self.flag_xrd1d = True
         except:
             self.flag_xrd1d = False
@@ -1327,7 +1375,6 @@ class GSEXRM_MapFile(object):
                 realmca_groups.append(g)
             elif g.attrs.get('type', '').startswith('virtual mca'):
                 virtmca_groups.append(g)
-        # print('resize arrays ', realmca_groups)
         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
         for g in realmca_groups:
             g['counts'].resize((nrow, npts, nchan))
@@ -1356,12 +1403,74 @@ class GSEXRM_MapFile(object):
             parent.create_group(group)
         return parent[group]
 
+    def ensure_roiworkgroup(self):
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        if not 'work' in self.xrmmap:
+            self.xrmmap.create_group('work')
+        if not 'roimap' in self.xrmmap['work']:
+            self.xrmmap['work'].create_group('roimap')
+        return self.xrmmap['work/roimap']
+
     def ensure_workgroup(self):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
         if not 'work' in self.xrmmap:
             self.xrmmap.create_group('work')
         return self.xrmmap['work']
+
+
+    def add_xrd1D_roi_array(self, roiname, wedge_raw, whole_raw, roi_limits,
+                            wedge_name=None, **kws):
+        '''
+        add an array to the work group of processed arrays
+        '''
+        if wedge_name is None:
+            wedge_name = ['wedge%i' % (i+1) for i in range(len(roi_limits))]
+        
+        workgroup = self.ensure_workgroup()
+        roigroup  = self.ensure_roiworkgroup()
+
+        if roiname in roigroup:
+            raise ValueError("array name '%s' exists in work arrays" % roiname)
+        
+        ds = roigroup.create_group(roiname)
+        ds.create_dataset('roi_limits', data=roi_limits )
+        ds.create_dataset('wedge_name', data=wedge_name )
+        ds.create_dataset('wedge_raw',  data=wedge_raw  )
+        ds.create_dataset('whole_raw',  data=whole_raw  )
+
+        for key, val in kws.items(): ds.attrs[key] = val
+        
+        self.h5root.flush()
+
+
+    def add_xrf_roi_array(self, roiname, det_raw, det_cor, sum_raw, sum_cor, roi_limits,
+                          det_name=None, **kws):
+        '''
+        add an array to the work group of processed arrays
+        '''
+        if det_name is None:
+            det_name = ['mca%i' % (i+1) for i in range(len(roi_limits))]
+        
+        workgroup = self.ensure_workgroup()
+        roigroup  = self.ensure_roiworkgroup()
+
+        if roiname in roigroup:
+            raise ValueError("array name '%s' exists in work arrays" % roiname)
+        
+        ds = roigroup.create_group(roiname)
+        ds.create_dataset('roi_limits', data=roi_limits )
+        ds.create_dataset('det_name',   data=det_name   )
+        ds.create_dataset('det_raw',    data=det_raw    )
+        ds.create_dataset('sum_raw',    data=sum_raw    )
+        ds.create_dataset('det_cor',    data=det_cor    )
+        ds.create_dataset('sum_cor',    data=sum_cor    )
+
+        for key, val in kws.items(): ds.attrs[key] = val
+        
+        self.h5root.flush()
+
 
     def add_work_array(self, data, name, **kws):
         '''
@@ -1387,6 +1496,18 @@ class GSEXRM_MapFile(object):
             del workgroup[name]
             self.h5root.flush()
 
+#     def get_roi_array(self, name):
+#         '''
+#         get an array from the work/roimap group of processed arrays by index or name
+#         '''
+#         workgroup = self.ensure_workgroup()
+#         roigroup  = self.ensure_roiworkgroup()
+#         dat = None
+#         name = h5str(name)
+#         if name in roigroup:
+#             dat = roigroup[name]
+#         return dat
+
     def get_work_array(self, name):
         '''
         get an array from the work group of processed arrays by index or name
@@ -1397,6 +1518,14 @@ class GSEXRM_MapFile(object):
         if name in workgroup:
             dat = workgroup[name]
         return dat
+
+    def roiwork_array_names(self):
+        '''
+        return list of work array descriptions
+        '''
+        workgroup = self.ensure_workgroup()
+        roigroup  = self.ensure_roiworkgroup()
+        return [h5str(g) for g in roigroup.keys()]
 
     def work_array_names(self):
         '''
@@ -1971,20 +2100,20 @@ class GSEXRM_MapFile(object):
         '''
 
         try:
-            xrdgrp = self.xrmmap['xrd']['data2D']
+            xrdgrp = self.xrmmap['xrd/data2D']
             flag2D = True
         except:
             flag2D = False
 
         try:
-            xrdgrp = self.xrmmap['xrd']['data1D']
+            xrdgrp = self.xrmmap['xrd/data1D']
             flag1D = True
         except:
             flag1D = False
 
         return flag1D,flag2D
 
-    def get_1Dxrd_area(self, areaname, callback = None):
+    def get_1Dxrd_area(self, areaname, nwdg=0, callback=None):
         '''return 1D XRD pattern for a pre-defined area
 
         Parameters
@@ -2003,12 +2132,12 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        mapdat = self.xrmmap['xrd']['data1D']
-        ix, iy, nwdg, stps = mapdat.shape
+        qdat   = self.xrmmap['xrd/data1D/whole_q']
+        mapdat = self.xrmmap['xrd/data1D/whole_raw']
+        ix, iy, stps = mapdat.shape
 
-        npix = len(np.where(area)[0])
-        if npix < 1:
-            return None
+        if len(np.where(area)[0]) < 1: return None
+        
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
@@ -2025,7 +2154,8 @@ class GSEXRM_MapFile(object):
             except MemoryError:
                 use_chunks = True
         if use_chunks:
-            patterns = np.zeros([nwdg,stps])
+#             patterns = np.zeros([nwdg,stps])
+            patterns = np.zeros(stps)
             if nx > ny:
                 for i in range(step+1):
                     x1 = xmin + int(i*nx/step)
@@ -2045,7 +2175,7 @@ class GSEXRM_MapFile(object):
                     patterns += self.get_1Dxrd_rect(y1, y2, xmin, xmax,
                                                     area, mapdat=mapdat)
 
-        return self._get1DXRD(mapdat, patterns, areaname, nwedge=nwdg, steps=stps)
+        return self._get1DXRD(mapdat, [qdat,patterns], areaname, nwedge=nwdg, steps=stps)
 
     def get_1Dxrd_rect(self, ymin, ymax, xmin, xmax, area, mapdat=None):
         '''return summed patterns for a map rectangle, optionally
@@ -2066,27 +2196,36 @@ class GSEXRM_MapFile(object):
 
         Does *not* check for errors!
 
-        Note:  if mapdat is None, the map data is taken from the 'xrd/data1D' parameter
+        Note:  if mapdat is None, the map data is taken from the 'xrd/data1D/whole_raw' parameter
         '''
         if mapdat is None:
-            mapdat = self.xrmmap['xrd']['data1D']
+            mapdat = self.xrmmap['xrd/data1D/whole_raw']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
-        ix, iy, nwdg, stps = mapdat.shape
-
         cell     = mapdat.regionref[sy, sx, :]
         patterns = mapdat[cell]
-        patterns = patterns.reshape(ny, nx, nwdg, stps)
+
+        if len(mapdat.shape)== 4:
+            ix, iy, nwdg, stps = mapdat.shape
+            patterns = patterns.reshape(ny, nx, nwdg, stps)
+        else:
+            ix, iy, stps = mapdat.shape
+            patterns = patterns.reshape(ny, nx, stps)
 
         patterns = (patterns[area[sy, sx]]).sum(axis=0)
         area_pix = (area.sum(axis=0)).sum(axis=0)
+        
+        print 'patterns',np.shape(patterns)
+        print 'area_pix',np.shape(area_pix)
 
-        for i in np.arange(np.shape(patterns)[0]):
-           if i % 2 == 0: patterns[i] = patterns[i]/area_pix
-        # patterns[0] = patterns[0]/area_pix
+        patterns = patterns/area_pix
+        
+#         for i in np.arange(np.shape(patterns)[0]):
+#            if i % 2 == 0: patterns[i] = patterns[i]/area_pix
+#         # patterns[0] = patterns[0]/area_pix
 
         return patterns
 
@@ -2109,7 +2248,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        mapdat = self.xrmmap['xrd']['data2D']
+        mapdat = self.xrmmap['xrd/data2D/image_raw']
         ix, iy, xpix, ypix = mapdat.shape
 
         npix = len(np.where(area)[0])
@@ -2172,10 +2311,10 @@ class GSEXRM_MapFile(object):
 
         Does *not* check for errors!
 
-        Note:  if mapdat is None, the map data is taken from the 'xrd/data2D' parameter
+        Note:  if mapdat is None, the map data is taken from the 'xrd/data2D/image_raw' parameter
         '''
         if mapdat is None:
-            mapdat = self.xrmmap['xrd']['data2D']
+            mapdat = self.xrmmap['xrd/data2D/image_raw']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2195,7 +2334,7 @@ class GSEXRM_MapFile(object):
 
         return frames.sum(axis=0)
 
-    def _get1DXRD(self, map, pattern, areaname, nwedge=2, steps=STEPS):
+    def _get1DXRD(self, map, pattern, areaname, nwedge=0, steps=STEPS):
 
         name = ('xrd: %s' % areaname)
         _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
@@ -2222,46 +2361,6 @@ class GSEXRM_MapFile(object):
         _2Dxrd.info  =  fmt % (self.filename, mapname, name)
 
         return _2Dxrd
-
-    def get_pattern_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
-        '''return summed 1D XRD pattern for a map rectangle, optionally
-        applying area mask and deadtime correction
-
-        Parameters
-        ---------
-        ymin :       int       low y index
-        ymax :       int       high y index
-        xmin :       int       low x index
-        xmax :       int       high x index
-        mapdat :     optional, None or map data
-        area :       optional, None or area object  area for mask
-
-        Returns
-        -------
-        summed 1D XRD pattern for rectangle
-
-        Does *not* check for errors!
-
-        Note:  if mapdat is None, the map data is taken from the 'xrd/data1D' parameter
-        '''
-        if mapdat is None:
-            mapdat = self.xrmmap['xrd']
-
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-
-        ix, iy, nwedge, nchan = mapdat['data1D'].shape
-
-        cell    = mapdat['data1D'].regionref[sy, sx, :]
-        pattern = mapdat['data1D'][cell]
-        pattern = pattern.reshape(ny, nx, nwedge, nchan)
-
-        if area is not None:
-            pattern = pattern[area[sy, sx]]
-        else:
-            pattern = pattern.sum(axis=0)
-        return pattern.sum(axis=0)
 
     def get_pos(self, name, mean=True):
         '''return  position by name (matching 'roimap/pos_name' if
@@ -2294,64 +2393,71 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def add_xrd1D_roi(self, qrange, name, nwdg=0):
+    def add_xrd1D_roi(self, qrange, roiname, nwdg=0):
         
         if self.flag_xrd1d:
-            qaxis = self.xrmmap['xrd/data1D'][0,0,0,:]
 
+            xrmdet = self.xrmmap['xrd/data1D']
+            
+            qaxis = xrmdet['whole_q'][:]
             imin = (np.abs(qaxis-qrange[0])).argmin()
             imax = (np.abs(qaxis-qrange[1])).argmin()+1
-            islice = slice(imin, imax, None)
 
-            xrd1D_roi = np.sum(self.xrmmap['xrd/data1D'][:,:,1,islice],axis=2)
+            whl_limits = [imin, imax]
+            whl_cnts = [xrmdet['whole_raw'][:,:,slice(*whl_limits)]]
+
+            roi_limits = []
+            for i,wdg in enumerate(nwdg):
+
+                qaxis = xrmdet['wedge_q'][:,i]
+
+                imin = (np.abs(qaxis-qrange[0])).argmin()
+                imax = (np.abs(qaxis-qrange[1])).argmin()+1
+               
+                roi_limits += [[imin, imax]]
+
+            wdg_cnts = [xrmdet['wedge_raw'][:,:,slice(*iwdg),i].sum(axis=2) for i,iwdg in enumerate(roi_limits)]
+            print 'wdg_cnts',np.shape(wdg_cnts)
+            #wdg_cnts = np.einsum('kij->ijk', wdg_cnts)
+
+            roi_limits.insert(0,whl_limits)
+            
+            print 'wdg_cnts',np.shape(wdg_cnts)
+            print 'whl_cnts',np.shape(whl_cnts)
+            print 'roi_limits',np.shape(roi_limits)
+
+            #self.add_xrd1D_roi_array(roiname, wdg_cnts, whl_cnts, roi_limits, type='xrd1D')
         
-            qstr = 'xrd1D : %0.3f 1/A to %0.3f 1/A' % (qaxis[imin],qaxis[imax])
-            self.add_work_array(xrd1D_roi,name,desc=qstr,flag='xrd1D')
-        
-    def add_xrfroi(self, Erange, name, nmca=4):
+    def add_xrfroi(self, Erange, roiname, nmca=4):
 
         if self.flag_xrf:
 
-#             islices = []
-
+            roi_limits,dtfctrs,icounts = [],[],[]
             dets = ['det%i' % (i+1) for i in range(nmca)]
-            dets += ['detsum']
-            
-            sumraw,sumcor = None,None
             
             for i,det in enumerate(dets):
-                
-                idet = self.xrmmap[det]
-                
-                Eaxis = idet['energy'][:]
+
+                xrmdet = self.xrmmap[det]
+
+                Eaxis = xrmdet['energy'][:]
 
                 imin = (np.abs(Eaxis-Erange[0])).argmin()
                 imax = (np.abs(Eaxis-Erange[1])).argmin()+1
                
-#                 islices += [slice(imin, imax, None)]
-                islice = slice(imin, imax, None)
-                
-                if det == 'detsum':
+                roi_limits += [[imin, imax]]
+                dtfctrs += [xrmdet['dtfactor']]
+                icounts += [np.array(xrmdet['counts'][:])]
 
-                    xname = '%s_raw_sum' % name
-                    self.add_work_array(sumraw,xname,flag='xrf - %s' % det)
+            detraw = [icnt[:,:,slice(*islc)].sum(axis=2)        for icnt,islc        in zip(icounts,roi_limits)]
+            detcor = [icnt[:,:,slice(*islc)].sum(axis=2)*dtfctr for icnt,islc,dtfctr in zip(icounts,roi_limits,dtfctrs)]
+            detraw = np.einsum('kij->ijk', detraw)
+            detcor = np.einsum('kij->ijk', detcor)
 
-                    xname = '%s_cor_sum' % name
-                    self.add_work_array(sumcor,xname,flag='xrf - %s' % det)
-                
-                else:
-                    counts = np.array(idet['counts'][:])
+            sumraw = detraw.sum(axis=2)
+            sumcor = detcor.sum(axis=2)
 
-                    iraw = counts[:,:,islice].sum(axis=2)
-                    icor = counts[:,:,islice].sum(axis=2)*idet['dtfactor']
-                    sumraw = iraw if sumraw is None else iraw + sumraw
-                    sumcor = icor if sumcor is None else icor + sumcor
-                    
-                    xname = '%s_raw_%s' % (name,det)
-                    self.add_work_array(iraw,xname,flag='xrf - %s' % det)
-
-                    xname = '%s_cor_%s' % (name,det)
-                    self.add_work_array(icor,xname,flag='xrf - %s' % det)
+            self.add_xrf_roi_array(roiname, detraw, detcor, sumraw, sumcor,
+                                   roi_limits, type='xrf')
 
 
     def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
@@ -2372,6 +2478,7 @@ class GSEXRM_MapFile(object):
         roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
         work_names = self.work_array_names()
+        roiwork_names = self.roiwork_array_names()
         dat = 'roimap/sum_raw'
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
@@ -2383,6 +2490,18 @@ class GSEXRM_MapFile(object):
                 return self.xrmmap[dat][:, 1:-1, imap]
             else:
                 return self.xrmmap[dat][:, :, imap]
+        elif name in roiwork_names:
+            if dtcorrect:
+                if det is None:
+                    return self.xrmmap['work/roimap/%s/sum_cor' % name][:,:]
+                else:
+                    return self.xrmmap['work/roimap/%s/det_cor' % name][:,:,det]
+            else:
+                if det is None:
+                    return self.xrmmap['work/roimap/%s/sum_raw' % name][:,:]
+                else:
+                    return self.xrmmap['work/roimap/%s/det_raw' % name][:,:,det]
+            
         elif name in work_names:
             map = self.get_work_array(name)
             if no_hotcols and len(map.shape)==2:

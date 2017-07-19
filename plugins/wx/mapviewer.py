@@ -708,8 +708,8 @@ class TomographyPanel(GridPanel):
         
     def set_roi_choices(self, xrmmap):
         self.rois = ['1'] + list(xrmmap['roimap/sum_name'])
-        if 'work' in xrmmap:
-            self.rois.extend(list(xrmmap['work'].keys()))
+        if 'work/roimap' in xrmmap:
+            self.rois.extend(list(xrmmap['work/roimap'].keys()))
         self.roi_choice[0].SetChoices(self.rois[1:])
         self.roi_choice[-1].SetChoices(self.rois)
 
@@ -2242,7 +2242,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
-            if wdgs > 36 or wdgs < 1: wdgs = 1
+            wdgs    = 0 if wdgs > 36 or wdgs < 2 else wdgs
             xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
                                      azwdgs=wdgs,qstps=stps,flip=flip,
                                      FLAGxrf=FLAGxrf, FLAGtomo=FLAGtomo,
