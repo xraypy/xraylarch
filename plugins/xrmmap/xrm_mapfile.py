@@ -381,13 +381,10 @@ class GSEXRM_MapRow:
             if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[:self.npts]
             if FLAGxrd1D:
-                try:
-                    self.xrdq      = self.xrdq[:self.npts]
-                    self.xrd1d     = self.xrd1d[:self.npts]
-                    self.xrdq_wdg  = self.xrdq_wdg[:self.npts]
-                    self.xrd1d_wdg = self.xrd1d_wdg[:self.npts]
-                except:
-                    pass
+                self.xrdq,self.xrd1d = self.xrdq[:self.npts],self.xrd1d[:self.npts]
+                if self.xrdq_wdg is not None:
+                    self.xrdq_wdg        = self.xrdq_wdg[:self.npts]
+                    self.xrd1d_wdg       = self.xrd1d_wdg[:self.npts]
 
         points = range(1, self.npts+1)
         # auto-reverse: counter-intuitively (because stage is upside-down and so
@@ -409,11 +406,10 @@ class GSEXRM_MapRow:
             if FLAGxrd2D:
                 self.xrd2d = self.xrd2d[::-1]
             if FLAGxrd1D:
-                self.xrdq      = self.xrdq[::-1]
-                self.xrd1d     = self.xrd1d[::-1]
-                self.xrdq_wdg  = self.xrdq_wdg[::-1]
-                self.xrd1d_wdg = self.xrd1d_wdg[::-1]
-
+                self.xrdq,self.xrd1d = self.xrdq[::-1],self.xrd1d[::-1]
+                if self.xrdq_wdg is not None:
+                    self.xrdq_wdg        = self.xrdq_wdg[::-1]
+                    self.xrd1d_wdg       = self.xrd1d_wdg[::-1]
 
         if FLAGxrf:
             xvals = [(gdata[i, ixaddr] + gdata[i-1, ixaddr])/2.0 for i in points]
@@ -1081,10 +1077,10 @@ class GSEXRM_MapFile(object):
 
         if self.flag_xrd1d:
             if row.xrd1d is not None:
-                print 'shapes'
-                print np.shape(row.xrd1d)
-                print np.shape(row.xrdq)
-                self.xrmmap['xrd/data1D/whole_q'][thisrow,]   = row.xrdq
+                try:
+                    self.xrmmap['xrd/data1D/whole_q'] = row.xrdq[0]
+                except:
+                    pass
                 self.xrmmap['xrd/data1D/whole_raw'][thisrow,] = row.xrd1d
             if row.xrd1d_wdg is not None:
                 print 'wdg_shapes'
