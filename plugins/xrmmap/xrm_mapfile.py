@@ -1083,12 +1083,11 @@ class GSEXRM_MapFile(object):
                     pass
                 self.xrmmap['xrd/data1D/whole_raw'][thisrow,] = row.xrd1d
             if row.xrd1d_wdg is not None:
-                print 'wdg_shapes'
-                print np.shape(row.xrd1d_wdg)
-                print np.shape(row.xrdq_wdg)
-                print
-                self.xrmmap['xrd/data1D/wedge_q'][thisrow,]   = row.xrdq_wdg
-                self.xrmmap['xrd/data1D/wedg_raw'][thisrow,] = row.xrd1d_wdg
+                try:
+                    self.xrmmap['xrd/data1D/wedge_q'] = row.xrdq_wdg[0]
+                except:
+                    pass
+                self.xrmmap['xrd/data1D/wedge_raw'][thisrow,] = row.xrd1d_wdg
 
 
         if self.flag_xrd2d and row.xrd2d is not None:
@@ -1273,46 +1272,70 @@ class GSEXRM_MapFile(object):
                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
                 xrmmap['xrd'].create_group('data2D')
                 xrmmap['xrd/data2D'].create_dataset('image_raw',
-                                       (xrdpts, xrdpts, xpixx, xpixy),
+                                       (NINIT, npts, xpixx, xpixy),
                                        np.uint16,
                                        chunks = chunksize_2DXRD,
                                        compression=COMPRESSION_LEVEL)
 
-#                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
-#                 xrmmap['xrd'].create_dataset('data2D',
-#                                        (xrdpts, xrdpts, xpixx, xpixy),
-#                                        np.uint16,
-#                                        chunks = chunksize_2DXRD,
-#                                        compression=COMPRESSION_LEVEL)
             if self.flag_xrd1d:
-                print 'creating 1D datasets'
                 xrmmap['xrd'].create_group('data1D')
                 xrmmap['xrd/data1D'].create_dataset('whole_q',
                                                     (self.qstps,),
                                                     np.float32)
                 xrmmap['xrd/data1D'].create_dataset('whole_raw',
-                                                    (xrdpts, xrdpts, self.qstps),
+                                                    (NINIT, npts, self.qstps),
                                                     np.float32)
                 if self.azwdgs > 1:
-                    print 'creating wedge datasets'
-                    chunksize_1DXRD    = (1, 1, self.azwdgs, self.qstps)
+                    chunksize_1DXRD    = (1, 1, self.qstps, self.azwdgs)
                     xrmmap['xrd/data1D'].create_dataset('wedge_q',
-                                           (xrdpts, xrdpts, self.azwdgs, self.qstps),
-                                           np.float32,
-                                           chunks = chunksize_1DXRD,
-                                           compression=COMPRESSION_LEVEL)
+                                           (self.qstps, self.azwdgs),
+                                           np.float32)
                     xrmmap['xrd/data1D'].create_dataset('wedge_raw',
-                                           (xrdpts, xrdpts, self.azwdgs, self.qstps),
+                                           (NINIT, npts, self.qstps, self.azwdgs),
                                            np.float32,
                                            chunks = chunksize_1DXRD,
                                            compression=COMPRESSION_LEVEL)
-
-
-#                 xrmmap['xrd'].create_dataset('data1D',
-#                                        (xrdpts, xrdpts, datacolumns, self.qstps),
-#                                        np.float32,
-#                                        chunks = chunksize_1DXRD,
+#         if self.flag_xrd2d or self.flag_xrd1d:
+# 
+#             if self.calibration:
+#                 self.add_calibration()
+# 
+#             xrdpts, xpixx, xpixy = row.xrd2d.shape
+#             if verbose:
+#                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
+#                 print(prtxt % (npts, row.npts, xpixx, xpixy))
+# 
+#             if self.flag_xrd2d:
+# 
+#                 chunksize_2DXRD    = (1, 1, xpixx, xpixy)
+#                 xrmmap['xrd'].create_group('data2D')
+#                 xrmmap['xrd/data2D'].create_dataset('image_raw',
+#                                        (xrdpts, xrdpts, xpixx, xpixy),
+#                                        np.uint16,
+#                                        chunks = chunksize_2DXRD,
 #                                        compression=COMPRESSION_LEVEL)
+# 
+#             if self.flag_xrd1d:
+#                 xrmmap['xrd'].create_group('data1D')
+#                 xrmmap['xrd/data1D'].create_dataset('whole_q',
+#                                                     (self.qstps,),
+#                                                     np.float32)
+#                 xrmmap['xrd/data1D'].create_dataset('whole_raw',
+#                                                     (xrdpts, xrdpts, self.qstps),
+#                                                     np.float32)
+#                 if self.azwdgs > 1:
+#                     chunksize_1DXRD    = (1, 1, self.azwdgs, self.qstps)
+#                     xrmmap['xrd/data1D'].create_dataset('wedge_q',
+#                                            (self.qstps, self.azwdgs),
+#                                            np.float32,
+#                                            chunks = chunksize_1DXRD,
+#                                            compression=COMPRESSION_LEVEL)
+#                     xrmmap['xrd/data1D'].create_dataset('wedge_raw',
+#                                            (xrdpts, xrdpts, self.qstps, self.azwdgs),
+#                                            np.float32,
+#                                            chunks = chunksize_1DXRD,
+#                                            compression=COMPRESSION_LEVEL)
+
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
@@ -2171,6 +2194,7 @@ class GSEXRM_MapFile(object):
                     patterns += self.get_1Dxrd_rect(y1, y2, xmin, xmax,
                                                     area, mapdat=mapdat)
 
+        print 'got this far',np.shape([qdat,patterns])
         return self._get1DXRD(mapdat, [qdat,patterns], areaname, nwedge=nwdg, steps=stps)
 
     def get_1Dxrd_rect(self, ymin, ymax, xmin, xmax, area, mapdat=None):

@@ -1659,8 +1659,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
-            self._xrd.energy = energy
-            self._xrd.wavelength = lambda_from_E(energy)
+            self._xrd.energy = self.owner.current_energy
+            self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
 
             if save:
                 self._xrd.save_2D(verbose=True)
@@ -2543,7 +2543,7 @@ class OpenMapFolder(wx.Dialog):
         self.Stp.SetValue('5001')
         self.Wdg.SetValue('1')
         self.wdgSpn.SetValue(1)
-        self.wdgSpn.SetRange(1,36) # self.wdgSpn.SetMin(1)
+        self.wdgSpn.SetRange(0,36) # self.wdgSpn.SetMin(1)
 
         self.FindWindowById(wx.ID_OK).Disable()
 
