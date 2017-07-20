@@ -145,7 +145,7 @@ class FeffRunner(Group):
             if isfile(log): os.unlink(log)
             for m in ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x'):
                 os.chdir(here)
-                self.run(m)
+                self.run(exe=m)
                 if m == 'pot' and self.mpse:
                     self.run('opconsat')
             return
