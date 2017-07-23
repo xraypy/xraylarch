@@ -39,10 +39,10 @@ def __chir_label__(show_mag, show_real, show_imag, kweight):
 #enddef
 
 def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-            show_e0=False, emin=-50, emax=None, new=True, win=1):
+            show_e0=False, emin=None, emax=None, new=True, win=1):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-             show_e0=False, emin=-50, emax=None, new=True, win=1)
+             show_e0=False, emin=None, emax=None, new=True, win=1)
 
     Plot mu(E) for XAFS data group in various forms
 
@@ -54,7 +54,7 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
      show_pre  bool whether to show pre-edge curve [False]
      show_post bool whether to show post-edge curve [False]
      show_e0   bool whether to show E0 [False]
-     emin      min energy to show, relative to E0 [50]
+     emin      min energy to show, relative to E0 [None, start of data]
      emax      max energy to show, relative to E0 [None, end of data]
      new       bool whether to start a new plot [True]
      win       integer plot window to use [1]
@@ -119,9 +119,9 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     #endif
 #enddef
 
-def plot_bkg(dgroup, norm=True, emin=-50, emax=None, new=True, win=1):
+def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
     """
-    plot_bkg(dgroup, norm=True, emin=-50, emax=None, win=1)
+    plot_bkg(dgroup, norm=True, emin=None, emax=None, win=1)
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -129,7 +129,7 @@ def plot_bkg(dgroup, norm=True, emin=-50, emax=None, new=True, win=1):
     ----------
      dgroup   group of XAFS data after autobk() results (see Note 1)
      norm     bool whether to show normalized data [True]
-     emin     min energy to show, relative to E0 [50]
+     emin     min energy to show, relative to E0 [None, start of data]
      emax     max energy to show, relative to E0 [None, end of data]
      new      bool whether to start a new plot [True]
      win      integer plot window to use [1]
@@ -167,7 +167,8 @@ def plot_bkg(dgroup, norm=True, emin=-50, emax=None, new=True, win=1):
 #enddef
 
 
-def plot_chik(dgroup, kweight=None, kmax=None, show_window=True, new=True, win=1):
+def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
+              label='chi', new=True, win=1):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, win=1)
 
@@ -197,7 +198,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True, new=True, win=1
 
     plot(dgroup.k, chi, xlabel=labels.k,
          ylabel=labels.chikw.format(kweight), title=dgroup.filename,
-         label='chi', zorder=20, new=new, xmax=kmax, **opts)
+         label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
         plot(dgroup.k, 0.75*max(chi)*dgroup.kwin,
