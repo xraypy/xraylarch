@@ -846,7 +846,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         folderpath = xrmmap.attrs['Map_Folder']
         if len(folderpath) > 35:
-            folderpath = '...'+xrmmap.attrs['Map_Folder'][-35:]
+            folderpath = '...'+str(xrmmap.attrs['Map_Folder'][-35:])
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
         try:
