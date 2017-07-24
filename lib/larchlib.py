@@ -8,6 +8,8 @@ import ast
 import numpy as np
 import traceback
 import inspect
+import six
+from collections import OrderedDict
 import ctypes
 import ctypes.util
 from .utils import Closure
@@ -555,7 +557,24 @@ def Make_CallArgs(skipped_args):
     def wrap(fcn):
         def wrapper(*args, **kwargs):
             result = fcn(*args, **kwargs)
-            call_args = inspect.getcallargs(fcn, *args, **kwargs)
+            if six.PY3:
+                argspec = inspect.getfullargspec(fcn)
+            else:
+                argspec = inspect.getargspec(fcn)
+
+            offset = len(argspec.args) - len(argspec.defaults)
+            call_args = OrderedDict()
+
+            for k in argspec.args[:offset]:
+                call_args[k] = None
+            for k, v in zip(argspec.args[offset:], argspec.defaults):
+                call_args[k] = v
+
+            for iarg, arg in enumerate(args):
+                call_args[argspec.args[iarg]] = arg
+
+            call_args.update(kwargs)
+
             skipped = skipped_args[:]
             at0 = skipped[0]
             at1 = skipped[1]
@@ -565,11 +584,10 @@ def Make_CallArgs(skipped_args):
                                             group=call_args['group'],
                                             fcn_name=fcn.__name__)
 
-            for attr in ('group', '_larch'):
-                if attr not in skipped: skipped.append(attr)
+            for k in skipped + ['group', '_larch']:
+                if k in call_args:
+                    call_args.pop(k)
 
-            for k in skipped:
-                call_args.pop(k)
             details_name = '%s_details' % fcn.__name__
             if not hasattr(groupx, details_name):
                 setattr(groupx, details_name, Group())
@@ -579,7 +597,7 @@ def Make_CallArgs(skipped_args):
         wrapper.__doc__ = fcn.__doc__
         wrapper.__name__ = fcn.__name__
         wrapper._larchfunc_ = fcn
-        wrapper__filename__ = fcn.__code__.co_filename
+        wrapper.__filename__ = fcn.__code__.co_filename
         wrapper.__dict__.update(fcn.__dict__)
         return wrapper
     return wrap

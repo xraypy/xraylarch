@@ -2,7 +2,7 @@
 * text=auto eol=lf
 
 exes/* -text
-exes/*/feff6l -text
+exes/*/* -text
 *.nib -text
 *.jpg -text
 *.png -text

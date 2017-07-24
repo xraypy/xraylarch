@@ -329,7 +329,7 @@ class XrayLinesFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def ToggleLines(self, label=None, event=None, lines=[], **kws):
+    def ToggleLines(self, label=None, event=None, lines=None, **kws):
         if not event.leftIsDown:
             self.parent.Freeze()
             for line in self.linedata.get(label, []):
@@ -338,13 +338,15 @@ class XrayLinesFrame(wx.Frame):
                 self.onLine(checked=check, label=line, lines=lines)
             self.parent.Thaw()
 
-    def onLine(self, event=None, checked=None, label=None, lines=[]):
+    def onLine(self, event=None, checked=None, label=None, lines=None):
         if checked is None:
             try:
                 checked =event.IsChecked()
             except:
                 pass
         if checked is None: checked = False
+        if lines is None:
+            lines = []
 
         if label in lines and not checked:
             lines.remove(label)

@@ -132,7 +132,7 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
 
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
     """
-    plot_bkg(dgroup, norm=True, emin=Nonex, emax=None, win=1)
+    plot_bkg(dgroup, norm=True, emin=None, emax=None, win=1)
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -178,7 +178,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
 #enddef
 
 
-def plot_chik(dgroup, kweight=None, kmax=None, show_window=True, new=True, win=1):
+def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
+              label='chi', new=True, win=1):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, win=1)
 
@@ -208,7 +209,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True, new=True, win=1
 
     plot(dgroup.k, chi, xlabel=labels.k,
          ylabel=labels.chikw.format(kweight), title=dgroup.filename,
-         label='chi', zorder=20, new=new, xmax=kmax, **opts)
+         label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
         plot(dgroup.k, 0.75*max(chi)*dgroup.kwin,
