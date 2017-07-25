@@ -212,7 +212,7 @@ class GSEXRM_MapRow:
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
-                 mask=None, wdg=1, steps=STEPS, flip=True,
+                 mask=None, wdg=1, steps=STEPS, flip=True, FLAGtomo=False,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         ta = time.time()
