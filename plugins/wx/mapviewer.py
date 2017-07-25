@@ -547,6 +547,8 @@ class TomographyPanel(GridPanel):
         self.owner.message('Calculating ROI: %s' % xname)
         if self.roi_unt.GetStringSelection().startswith('XRD'):
             self.owner.current_file.add_xrd1D_roi(xrange,xname)
+        elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
+            self.owner.current_file.add_xrd2D_roi(xarea,xname)
         elif self.roi_unt.GetStringSelection().startswith('XRF'):
             self.owner.current_file.add_xrfroi(xrange,xname)
         self.owner.message('Ready')
@@ -1199,7 +1201,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
         try:
-            xrdgp = xrmmap['xrd']
+            xrdgp = xrmmap['xrd1D']
             if os.path.exists(xrdgp.attrs['calfile']):
                 self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
         except:
@@ -1621,7 +1623,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('No map file and/or areas specified.')
             return
         try:
-            ponifile = bytes2str(xrmfile.xrmmap['xrd'].attrs['calfile'])
+            ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs['calfile'])
             ponifile = ponifile if os.path.exists(ponifile) else None
         except:
             ponifile = None
@@ -1996,7 +1998,7 @@ class MapViewerFrame(wx.Frame):
         '''
         if self.xrddisplay2D is None:
             try:
-                poni = bytes2str(self.current_file.xrmmap['xrd'].attrs['calfile'])
+                poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
             except:
                 poni = ''
             if not os.path.exists(poni): poni = None
