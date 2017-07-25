@@ -1091,13 +1091,14 @@ class GSEXRM_MapFile(object):
                     pass
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
             if row.xrd1d_wdg is not None:
-                print 'need to give wedges a name'
-                wdg_name = 'wedge_001'
-                try:
-                    self.xrmmap['work/xrdwedge/%s/q' % wdg_name] = row.xrdq_wdg[0]
-                except:
-                    pass
-                self.xrmmap['work/xrdwedge/%s/counts' % wdg_name][thisrow,] = row.xrd1d_wdg
+                print 'shapes: ',np.shape(row.xrdq_wdg)
+                print 'shapes: ',np.shape(row.xrd1d_wdg)                
+                for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
+                    try:
+                        wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
+                    except:
+                        pass
+                    wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
 
         if self.flag_xrd2d and row.xrd2d is not None:
             self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
