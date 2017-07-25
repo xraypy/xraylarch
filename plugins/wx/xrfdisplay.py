@@ -37,6 +37,7 @@ except:
 
 from larch import Interpreter, site_config
 from larch.utils import index_of
+from larch.utils.strutils import bytes2str
 
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -553,7 +554,7 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roilist'].Clear()
         if mca is not None:
             for roi in mca.rois:
-                name = roi.name.strip()
+                name = bytes2str(roi.name.strip())
                 if len(name) > 0:
                     self.wids['roilist'].Append(roi.name)
 
@@ -665,6 +666,7 @@ class XRFDisplayFrame(wx.Frame):
         # xnpts = 1.0/len(self.mca.energy)
         # if xnpts*(right - left) > 0.5:
         #    return
+
         try:
             self.roi_patch.remove()
         except:
@@ -683,14 +685,15 @@ class XRFDisplayFrame(wx.Frame):
         if label is None and event is not None:
             label = event.GetString()
             self.roilist_sel = event.GetSelection()
+
         self.wids['roiname'].SetValue(label)
         name, left, right= None, -1, -1
-        label = label.lower().strip()
+        label = bytes2str(label.lower().strip())
 
         self.selected_roi = None
         if self.mca is not None:
             for roi in self.mca.rois:
-                if roi.name.lower()==label:
+                if bytes2str(roi.name.lower())==label:
                     left, right, name = roi.left, roi.right, roi.name
                     elo  = self.mca.energy[left]
                     ehi  = self.mca.energy[right]
@@ -959,7 +962,7 @@ class XRFDisplayFrame(wx.Frame):
 
                 # dat = (label, "%.4f" % e, "%.4f" % frac,
                 #       "%s->%s" % (ilevel, flevel))
-                dat = (label,  e, "%.4f" % frac,
+                dat = (label,  "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
 
                 self.wids['xray_linesdata'].append(e)
@@ -1050,7 +1053,7 @@ class XRFDisplayFrame(wx.Frame):
         atitles = []
         if self.mca is not None:
             if hasattr(self.mca, 'title'):
-                atitles.append(self.mca.title)
+                atitles.append(bytes2str(self.mca.title))
             if hasattr(self.mca, 'filename'):
                 atitles.append(" File={:s}".format(self.mca.filename))
             if hasattr(self.mca, 'npixels'):
@@ -1078,7 +1081,7 @@ class XRFDisplayFrame(wx.Frame):
             self.oplot(self.mca2.energy, self.mca2.counts,
                        mca=self.mca2, **kws)
         if title is None:
-            title =' '.join(atitles)
+            title = ' '.join(atitles)
         if set_title:
             self.SetTitle(title)
 

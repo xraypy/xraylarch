@@ -5,8 +5,7 @@ AR          = ar
 RANLIB      = ranlib
 CC          = gcc -O2 -fPIC
 LINK        = gcc -O2 -fPIC -shared
-LINK_FFLAGS = -lgfortran -lgfortranbegin
+LINK_FFLAGS = -lgfortran
 
 DLLPRE      = lib
 DLLEXT      = so
-

@@ -31,9 +31,9 @@ class Environment:
     * value        # A string value of this parameter,  e.g. "14.223"
     """
     def __init__(self, desc='', addr='', val=''):
-        self.addr  = addr.strip()
-        self.val   = val.strip()
-        self.desc  = desc.strip()
+        self.addr  = str(addr).strip()
+        self.val   = str(val).strip()
+        self.desc  = str(desc).strip()
         if self.desc.startswith('(') and self.desc.endswith(')'):
             self.desc = self.desc[1:-1]
 
