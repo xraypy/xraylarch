@@ -1091,8 +1091,6 @@ class GSEXRM_MapFile(object):
                     pass
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
             if row.xrd1d_wdg is not None:
-                print 'shapes: ',np.shape(row.xrdq_wdg)
-                print 'shapes: ',np.shape(row.xrd1d_wdg)                
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
                     try:
                         wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
@@ -1323,8 +1321,6 @@ class GSEXRM_MapFile(object):
                         wdg_sz = 360./self.azwdgs
                         wdg_lmts = np.array([azi*wdg_sz, (azi+1)*wdg_sz]) - 180
                         wdggrp.create_dataset('limits', data=wdg_lmts)
-                        
-                        print 'wedge %i - %0.2f to %0.2f ' % (azi,wdg_lmts[0],wdg_lmts[1])
 
         print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
 
@@ -2196,9 +2192,6 @@ class GSEXRM_MapFile(object):
 
         patterns = (patterns[area[sy, sx]]).sum(axis=0)
         area_pix = (area.sum(axis=0)).sum(axis=0)
-
-        print 'patterns',np.shape(patterns)
-        print 'area_pix',np.shape(area_pix)
  
         patterns = patterns/area_pix
 
