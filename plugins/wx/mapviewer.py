@@ -2694,6 +2694,7 @@ class OpenMapFolder(wx.Dialog):
 
         self.checkOK()
 
+
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):
         self.use_scandb = use_scandb

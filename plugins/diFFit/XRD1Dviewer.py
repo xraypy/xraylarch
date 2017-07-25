@@ -400,8 +400,13 @@ class SelectSavingData(wx.Dialog):
 
     def saveXY(self,event=None):
         wildcards = '1DXRD datafile (*.xy)|*.xy|All files (*.*)|*.*'
+        if os.path.exists(self.File.GetValue()):
+           dfltDIR = self.File.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, 'Save file as...',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards,
                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
@@ -417,8 +422,13 @@ class SelectSavingData(wx.Dialog):
 
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        if os.path.exists(self.Poni.GetValue()):
+           dfltDIR = self.Poni.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, message='Select XRD calibration file',
-                            defaultDir=os.getcwd(),
+                            defaultDir=dfltDIR,
                             wildcard=wildcards, style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
