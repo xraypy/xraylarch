@@ -16,6 +16,7 @@ import wx
 import numpy
 import wx.html as html
 import types
+import six
 
 from wx.py import dispatcher
 from wx.py import editwindow
@@ -25,6 +26,7 @@ import inspect
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.utils import Closure
+from larch.larchlib import Procedure
 from wxutils import Button, pack
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
@@ -56,6 +58,54 @@ DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
 def rst2html(text):
     return "<br>".join(text.split('\n'))
 
+
+def call_signature(obj):
+    """try to get call signature for callable object"""
+    fname = obj.__name__
+
+    # print("CALL SIG1: ", obj,  getattr(obj, '__module__', '<>'))
+    # print(dir(obj))
+    if isinstance(obj, Closure):
+        obj = obj.func
+
+    argspec = None
+    if hasattr(obj, '_larchfunc_'):
+        obj = obj._larchfunc_
+
+    # print("CALL SIG3: ", obj, getattr(obj, '__file__', '<>'))
+    # print(dir(obj))
+
+    if six.PY3:
+        argspec = inspect.getfullargspec(obj)
+        keywords = argspec.varkw
+    else:
+        argspec = inspect.getargspec(obj)
+        keywords = argspec.keywords
+
+    fargs = []
+    ioff = len(argspec.args) - len(argspec.defaults)
+    for iarg, arg in enumerate(argspec.args):
+        if arg == '_larch':
+            continue
+        if iarg < ioff:
+            fargs.append(arg)
+        else:
+            fargs.append("%s=%s" % (arg, repr(argspec.defaults[iarg-ioff])))
+    if keywords is not None:
+        fargs.append("**%s" % keywords)
+
+    out = "%s(%s)" % (fname, ', '.join(fargs))
+    maxlen = 71
+    if len(out) > maxlen:
+        o  = []
+        while len(out) > maxlen:
+            ecomm = maxlen - out[maxlen-1::-1].find(',')
+            o.append(out[:ecomm])
+            out = " "*(len(fname)+1) + out[ecomm:].strip()
+        if len(out)  > 0:
+            o.append(out)
+        out = '\n'.join(o)
+    return out
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
@@ -194,7 +244,7 @@ class FillingTree(wx.TreeCtrl):
             # Show string dictionary items with single quotes, except
             # for the first level of items, if they represent a
             # namespace.
-            if (isinstance(obj, dict) and isinstance(key, basestring) and
+            if (isinstance(obj, dict) and isinstance(key, six.string_types) and
                 (item != self.root or
                  (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
@@ -208,9 +258,10 @@ class FillingTree(wx.TreeCtrl):
         item = self.item
         if not item:
             return
+
         obj = self.GetPyData(item)
-        if isinstance(obj, Closure):
-            obj = obj.func
+        # print("Display: ", item, obj, isinstance(obj, Procedure),
+        # isinstance(obj, Closure))
 
         if self.IsExpanded(item):
             self.addChildren(item)
@@ -222,7 +273,9 @@ class FillingTree(wx.TreeCtrl):
         self.SetItemHasChildren(item, self.objHasChildren(obj))
         otype = type(obj)
         text = []
-        text.append("%s\n" % self.getFullName(item))
+        fullname = self.getFullName(item)
+        if fullname is not None:
+            text.append("%s\n" % fullname)
 
         needs_doc = False
         if isinstance(obj, COMMONTYPES):
@@ -235,7 +288,11 @@ class FillingTree(wx.TreeCtrl):
             if gdoc is None: gdoc = Group.__doc__
             text.append(gdoc)
         elif hasattr(obj, '__call__'):
-            text.append('Function:')
+            text.append('Function: %s' % obj)
+            try:
+                text.append("\n%s" % call_signature(obj))
+            except:
+                pass
             needs_doc = True
         else:
             text.append('Type: %s' % str(otype))
@@ -262,6 +319,8 @@ class FillingTree(wx.TreeCtrl):
             name = self.GetItemText(item)
         except:
             return None
+
+        # return 'Could not get item name: %s' % repr(item)
         parent = None
         obj = None
         if item != self.root:
@@ -324,6 +383,7 @@ class FillingText(editwindow.EditWindow):
         self.Refresh()
 
     def SetText(self, *args, **kwds):
+        # print("Text Set Text ", args)
         self.SetReadOnly(False)
         editwindow.EditWindow.SetText(self, *args, **kwds)
         self.SetReadOnly(True)

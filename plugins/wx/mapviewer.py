@@ -68,6 +68,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import LarchPanel, LarchFrame
+from larch.utils.strutils import bytes2str
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -232,10 +233,10 @@ class MapMathPanel(scrolled.ScrolledPanel):
         xrmfile = self.owner.current_file
         name = self.workarray_choice.GetStringSelection()
         dset = xrmfile.get_work_array(h5str(name))
-        expr = dset.attrs.get('expression', '<unknonwn>')
+        expr = bytes2str(dset.attrs.get('expression', '<unknonwn>'))
         self.info1.SetLabel("Expression: %s" % expr)
 
-        info = json.loads(dset.attrs.get('info', []))
+        info = json.loads(bytes2str(dset.attrs.get('info', [])))
         buff = []
         for var, dat in info:
             fname, aname, det, dtc = dat
@@ -1107,7 +1108,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmmap):
-        self.wids['Scan Started'].SetLabel( xrmmap.attrs['Start_Time'])
+        self.wids['Scan Started'].SetLabel( bytes2str(xrmmap.attrs['Start_Time']))
 
         comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
         for i, comm in enumerate(comments):
@@ -1192,9 +1193,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        folderpath = xrmmap.attrs['Map_Folder']
+        folderpath = bytes2str(xrmmap.attrs['Map_Folder'])
         if len(folderpath) > 35:
-            folderpath = '...'+xrmmap.attrs['Map_Folder'][-35:]
+            folderpath = '...'+bytes2str(xrmmap.attrs['Map_Folder'][-35:])
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
         try:
@@ -1419,7 +1420,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.choices = {}
         choice_labels = []
         for a in areas:
-            desc = areas[a].attrs.get('description', a)
+            desc = bytes2str(areas[a].attrs.get('description', a))
             self.choices[desc] = a
             choice_labels.append(desc)
 
@@ -1536,7 +1537,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onShow(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-        label = area.attrs.get('description', aname)
+        label = bytes2str(area.attrs.get('description', aname))
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
             imd.panel.add_highlight_area(area.value, label=label)
@@ -1573,7 +1574,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
-        label = area.attrs.get('description', aname)
+        label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
         dtcorrect = self.cor.IsChecked()
 
@@ -1604,12 +1605,23 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             aname = self._getarea()
             xrmfile = self.owner.current_file
             area  = xrmfile.xrmmap['areas/%s' % aname]
+
             title = area.attrs.get('description', aname)
+
+            ## what's a clearer way to do this?
+            ## mkak 2017.03.24
+            env_names = list(xrmfile.xrmmap['config/environ/name'])
+            env_vals  = list(xrmfile.xrmmap['config/environ/value'])
+            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
+            for name, addr, val in zip(env_names, env_addrs, env_vals):
+                if 'mono.energy' in str(name).lower():
+                    energy = float(val)/1000.
+
         except:
             print('No map file and/or areas specified.')
             return
         try:
-            ponifile = xrmfile.xrmmap['xrd'].attrs['calfile']
+            ponifile = bytes2str(xrmfile.xrmmap['xrd'].attrs['calfile'])
             ponifile = ponifile if os.path.exists(ponifile) else None
         except:
             ponifile = None
@@ -1984,7 +1996,7 @@ class MapViewerFrame(wx.Frame):
         '''
         if self.xrddisplay2D is None:
             try:
-                poni = self.current_file.xrmmap['xrd'].attrs['calfile']
+                poni = bytes2str(self.current_file.xrmmap['xrd'].attrs['calfile'])
             except:
                 poni = ''
             if not os.path.exists(poni): poni = None

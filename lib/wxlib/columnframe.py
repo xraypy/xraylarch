@@ -346,9 +346,10 @@ class ColumnDataFileFrame(wx.Frame) :
         gname = fix_varname(filename.replace('.', '_'))
         if len(gname) > 16:
             gname = gname[:16]
+        while gname.endswith('_'):
+            gname = gname[:-1]
 
         groupname, count, maxcount = gname, 0, 999
-
         while hasattr(self._larch.symtable, groupname) and count < maxcount:
             count += 1
             groupname = '%s_%3.3i' % (gname, count)
