@@ -2628,8 +2628,13 @@ class OpenMapFolder(wx.Dialog):
 
     def onBROWSEmask(self,event=None):
         wildcards = 'XRD mask file (*.mask,*.edf)|*.mask;*.edf|All files (*.*)|*.*'
+        if os.path.exists(self.Mask.GetValue()):
+           dfltDIR = self.Mask.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+        
         dlg = wx.FileDialog(self, message='Select XRD mask file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards, style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -2644,8 +2649,13 @@ class OpenMapFolder(wx.Dialog):
 
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        if os.path.exists(self.Poni.GetValue()):
+           dfltDIR = self.Poni.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, message='Select XRD calibration file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards, style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -2660,8 +2670,14 @@ class OpenMapFolder(wx.Dialog):
 
 
     def onBROWSE(self,event=None):
+
+        if os.path.exists(self.Fldr.GetValue()):
+           dfltDIR = self.Fldr.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+        
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=os.getcwd(),
+                           defaultPath=dfltDIR,
                            style=wx.FD_OPEN)
 
         path, read = None, False
