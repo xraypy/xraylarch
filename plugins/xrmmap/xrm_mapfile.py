@@ -1070,12 +1070,6 @@ class GSEXRM_MapFile(object):
 
         if verbose: t1 = time.time()
 
-        print
-        print 'test'
-        print "self.xrmmap['xrd']['data1D']",np.shape(self.xrmmap['xrd']['data1D'])
-        print "self.xrmmap['xrd']['data1D'][thisrow,]",np.shape(self.xrmmap['xrd']['data1D'][thisrow,])
-        print 'row.xrd1d',np.shape(row.xrd1d)
-        print
         if self.flag_xrd1d and row.xrd1d is not None:
             self.xrmmap['xrd']['data1D'][thisrow,] = row.xrd1d
 
