@@ -285,7 +285,10 @@ def fix_darwin_dylibs():
     dylibs = ('libgcc_s.1.dylib','libquadmath.0.dylib', 'libgfortran.3.dylib',
               'libfeff6.dylib', 'libcldata.dylib', 'libfeff8lpath.dylib',
               'libfeff8lpotph.dylib')
-    exes   = ('feff6l',)
+
+    exes = ('feff6l', 'feff8l_ff2x', 'feff8l_genfmt', 'feff8l_pathfinder',
+            'feff8l_pot', 'feff8l_rdinp', 'feff8l_xsph')
+
     fixcmd = '/usr/bin/install_name_tool -change'
 
     cmds = []
