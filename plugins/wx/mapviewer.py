@@ -27,6 +27,7 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
+from distutils.version import StrictVersion
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -307,9 +308,16 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.set_workarray_choices(xrmmap)
 
     def set_roi_choices(self, xrmmap):
-        rois = ['1'] + list(xrmmap['roimap/sum_name'])
-        if 'work' in xrmmap:
-            rois.extend(list(xrmmap['work'].keys()))
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+            rois = ['1'] + list(xrmmap['roimap/mcasum'])
+#             if 'work' in xrmmap:
+#                 rois.extend(list(xrmmap['work'].keys()))
+            print 'this is not complete for roi - need to specify detector then list roi'
+        else:
+            rois = ['1'] + list(xrmmap['roimap/sum_name'])
+            if 'work' in xrmmap:
+                rois.extend(list(xrmmap['work'].keys()))
+
         for wid in self.varroi.values():
             wid.SetChoices(rois)
 
@@ -392,12 +400,38 @@ class TomographyPanel(GridPanel):
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
+        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(120, -1))
+        self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
+        self.plot_choice.Disable()
+
+        self.det_choice = [Choice(self, choices=[], size=(120, -1)),
+                           Choice(self, choices=[], size=(120, -1)),
+                           Choice(self, choices=[], size=(120, -1)),
+                           Choice(self, choices=[], size=(120, -1))]
         self.roi_choice = [Choice(self, choices=[], size=(120, -1)),
                            Choice(self, choices=[], size=(120, -1)),
                            Choice(self, choices=[], size=(120, -1)),
                            Choice(self, choices=[], size=(120, -1))]
+        for i,det_chc in enumerate(self.det_choice):
+            det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
+        for i,roi_chc in enumerate(self.roi_choice):
+            roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
+
         self.roi_choice[1].Disable()
         self.roi_choice[2].Disable()        
+        self.det_choice[1].Disable()
+        self.det_choice[2].Disable()        
+
+        self.det_label = [SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,'')]
+        self.roi_label = [SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,'')]
+
+        self.cor  = Check(self, label='Correct Deadtime?')
+        self.hotcols  = Check(self, label='Ignore First/Last Columns?')
 
         self.sino_show_new = Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowSinogram, new=True))
@@ -408,21 +442,22 @@ class TomographyPanel(GridPanel):
         self.tomo_replace_old = Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))
         
-        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(120, -1))
-        self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
+        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],self.det_choice[1],self.det_choice[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
         
-#         self.Add(self.plot_choice),  dcol=3, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self,''),SimpleText(self,'Normalization')), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
+        self.Add(self.cor,  dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
+        self.Add(self.hotcols,  dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT, newrow = True)
         
-        self.roi_labels = [SimpleText(self,''),
-                           SimpleText(self,''),
-                           SimpleText(self,'')]
-                           
-        self.AddMany((SimpleText(self,''),self.roi_labels[0],self.roi_labels[1],self.roi_labels[2]), style=LEFT, newrow = True)
-        self.AddMany((self.plot_choice,self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
-#         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'Normalization:'),self.roi_choice[-1]), style=LEFT, newrow = True)
+        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
         
-        self.Add(SimpleText(self,''), newrow=True)
+#         self.Add(SimpleText(self,''), newrow=True)
         self.Add(SimpleText(self,'Sinogram:'),  dcol=1, style=RIGHT, newrow=True)
         self.Add(self.sino_show_new,  dcol=1,   style=LEFT)
         self.Add(self.sino_replace_old,  dcol=1,   style=LEFT)
@@ -484,32 +519,53 @@ class TomographyPanel(GridPanel):
             self.alg_choice[1].Disable()
         else:
             self.alg_choice[1].Enable()
-        
+
+    def detSELECT(self,idet,event=None):
+    
+        self.set_roi_choices(self.owner.current_file.xrmmap,idet=idet)
+
+    def roiSELECT(self,iroi,event=None):
+
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+
+            detname = self.det_choice[iroi].GetStringSelection()
+            roiname = self.roi_choice[iroi].GetStringSelection()
+            try:
+                roi = self.owner.current_file.xrmmap['roimap'][detname][roiname]
+                limits = roi['limits'][:]
+                units = roi['limits'].attrs['units']
+                roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+                self.roi_label[iroi].SetLabel(roistr)
+            except:
+                self.roi_label[iroi].SetLabel('')
+
     def plotSELECT(self,event=None):
     
-        if self.plot_choice.GetSelection() == 0:
-            self.roi_choice[1].Disable()
-            self.roi_choice[2].Disable()
-            
-            for lbl in self.roi_labels:
-                lbl.SetLabel('')
+        if len(self.owner.filemap) > 0:
 
-            self.roi_choice[0].SetChoices(self.rois[1:])
-            self.roi_choice[1].SetChoices([''])
-            self.roi_choice[2].SetChoices([''])
+            if self.plot_choice.GetSelection() == 0:
 
-        else:
-            self.roi_choice[1].Enable()
-            self.roi_choice[2].Enable()
-            
-            self.roi_labels[0].SetLabel('Red')
-            self.roi_labels[1].SetLabel('Green')
-            self.roi_labels[2].SetLabel('Blue')
-            
-            self.roi_choice[0].SetChoices(self.rois[1:])
-            self.roi_choice[1].SetChoices(self.rois)
-            self.roi_choice[2].SetChoices(self.rois)
+                self.det_choice[1].Disable()
+                self.det_choice[2].Disable()
+                self.roi_choice[1].Disable()
+                self.roi_choice[2].Disable()
 
+                for lbl in self.det_label:
+                    lbl.SetLabel('')
+                self.roi_label[1].SetLabel('')
+                self.roi_label[2].SetLabel('')
+                
+            else:
+
+                self.det_choice[1].Enable()
+                self.det_choice[2].Enable()
+                self.roi_choice[1].Enable()
+                self.roi_choice[2].Enable()
+            
+                self.det_label[0].SetLabel('Red')
+                self.det_label[1].SetLabel('Green')
+                self.det_label[2].SetLabel('Blue')
+            
     def onClose(self):
         for p in self.plotframes:
             try:
@@ -700,23 +756,68 @@ class TomographyPanel(GridPanel):
 
     def update_xrmmap(self, xrmmap):
 
-        self.set_roi_choices(xrmmap)
-        
+        self.plot_choice.Enable()
+
+        self.set_det_choices(xrmmap)
+#         self.set_roi_choices(xrmmap)
+
+
+
+
         center = len(self.owner.current_file.get_pos(1, mean=True))/2
-        
+
         self.rot_cen.SetValue(center)
 
         self.cen_step.SetRange(-20.*center,20.*center)
         self.cen_step.SetValue(center*10.)
-        
-    def set_roi_choices(self, xrmmap):
-        self.rois = ['1'] + list(xrmmap['roimap/sum_name'])
-        if 'work/roimap' in xrmmap:
-            self.rois.extend(list(xrmmap['work/roimap'].keys()))
-        self.roi_choice[0].SetChoices(self.rois[1:])
-        self.roi_choice[-1].SetChoices(self.rois)
 
+    def set_det_choices(self, xrmmap):
 
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+            
+            det_list = ['scalars']
+            for grp in xrmmap.keys():
+                for atrs in zip(xrmmap[grp].attrs.keys(),xrmmap[grp].attrs.values()):
+                    if atrs[0] == 'type' and 'detector' in atrs[1]: det_list += [grp]
+
+            for det_ch in self.det_choice:
+                det_ch.SetChoices(det_list)
+
+            self.set_roi_choices(xrmmap)
+
+    def set_roi_choices(self, xrmmap, idet=None):
+
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+
+            if idet is None:
+                for idet,det_ch in enumerate(self.det_choice):
+                    self.update_roi(idet,xrmmap)
+            else:
+                self.update_roi(idet,xrmmap)
+        else:
+            self.rois = ['1'] + list(xrmmap['roimap/sum_name'])
+            if 'work' in xrmmap:
+                self.rois.extend(list(xrmmap['work'].keys()))
+
+            self.roi_choice[0].SetChoices(self.rois[1:])
+            self.roi_choice[-1].SetChoices(self.rois)
+
+    def update_roi(self,idet,xrmmap):
+
+        detname = self.det_choice[idet].GetStringSelection()
+        if detname == 'scalars':
+            rois = ['1'] # +  ...  
+            print 'need to find path for these arrays'
+        else:
+            limits,names = [],xrmmap['roimap'][detname].keys()
+            for name in names:
+                limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
+            rois = [x for (y,x) in sorted(zip(limits,names))]
+        self.roi_choice[idet].SetChoices(rois)
+        try:
+            self.roiSELECT(idet)
+        except:
+            pass
 
 
 ##################################
@@ -917,9 +1018,16 @@ class SimpleMapPanel(GridPanel):
         self.set_roi_choices(xrmmap)
 
     def set_roi_choices(self, xrmmap):
-        rois = ['1'] + list(xrmmap['roimap/sum_name'])
-        if 'work' in xrmmap:
-            rois.extend(list(xrmmap['work'].keys()))
+        
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+            rois = ['1'] + list(xrmmap['roimap/mcasum'])
+#             if 'work' in xrmmap:
+#                 rois.extend(list(xrmmap['work'].keys()))
+            print 'this is not complete for roi - need to specify detector then list roi'
+        else:
+            rois = ['1'] + list(xrmmap['roimap/sum_name'])
+            if 'work' in xrmmap:
+                rois.extend(list(xrmmap['work'].keys()))
         self.roi1.SetChoices(rois[1:])
         self.roi2.SetChoices(rois)
 
@@ -1068,9 +1176,17 @@ class TriColorMapPanel(GridPanel):
         self.set_roi_choices(xrmmap)
 
     def set_roi_choices(self, xrmmap):
-        rois = ['1'] + list(xrmmap['roimap/sum_name'])
-        if 'work' in xrmmap:
-            rois.extend(list(xrmmap['work'].keys()))
+
+        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+            rois = ['1'] + list(xrmmap['roimap/mcasum'])
+#             if 'work' in xrmmap:
+#                 rois.extend(list(xrmmap['work'].keys()))
+            print 'this is not complete for roi - need to specify detector then list roi'
+        else:
+            rois = ['1'] + list(xrmmap['roimap/sum_name'])
+            if 'work' in xrmmap:
+                rois.extend(list(xrmmap['work'].keys()))
+
         for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
             cbox.SetChoices(rois)
 

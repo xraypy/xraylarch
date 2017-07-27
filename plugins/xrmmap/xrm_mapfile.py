@@ -1067,29 +1067,6 @@ class GSEXRM_MapFile(object):
                                 roigrp['mcasum'][roiname]['raw'][thisrow,] += mcaraw
                                 roigrp['mcasum'][roiname]['cor'][thisrow,] += mcacor
 
-            if self.flag_xrd1d:
-                if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
-                self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
-
-                if row.xrd1d_wdg is not None:
-                    for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
-                        try:
-                            wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
-                        except:
-                            pass
-                        wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
-
-            if self.flag_xrd2d and row.xrd2d is not None:
-                self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
-
-            self.last_row = thisrow
-            self.xrmmap.attrs['Last_Row'] = thisrow
-            self.h5root.flush()
-####################################################################################
-####################################################################################
-####################################################################################
-####################################################################################
-####################################################################################
         else:
 
             if verbose: t0 = time.time()
@@ -1167,43 +1144,25 @@ class GSEXRM_MapFile(object):
                 sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
-            if verbose: t1 = time.time()
 
-            if self.flag_xrd1d:
-                if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
-                self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
+        if self.flag_xrd1d:
+            if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
+            self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
 
-                if row.xrd1d_wdg is not None:
-                    for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
-                        try:
-                            wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
-                        except:
-                            pass
-                        wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
+            if row.xrd1d_wdg is not None:
+                for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
+                    try:
+                        wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
+                    except:
+                        pass
+                    wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
 
-            if self.flag_xrd2d and row.xrd2d is not None:
-                self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+        if self.flag_xrd2d and row.xrd2d is not None:
+            self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
 
-            if verbose: t2 = time.time()
-            if verbose:
-                writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
-                if row.xrd1dcalctime > 0.001:
-                    pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s; 1DXRD: %0.3f s) '
-                    print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
-                elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
-                    pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s) '
-                    print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
-                else:
-                    print('\tReading: %0.2f s' % row.readtime)
-                if xrdwritetime > 0.001 and xrfwritetime > 0.001:
-                    pform = '\tWriting: %0.3f s (XRF: %0.3f s; XRD: %0.3f s) '
-                    print(pform % (writetime,xrfwritetime,xrdwritetime))
-                else:
-                    print('\tWriting: %0.2f s' % writetime)
-
-            self.last_row = thisrow
-            self.xrmmap.attrs['Last_Row'] = thisrow
-            self.h5root.flush()
+        self.last_row = thisrow
+        self.xrmmap.attrs['Last_Row'] = thisrow
+        self.h5root.flush()
 
     def build_schema(self, row, verbose=False):
         '''build schema for detector and scan data'''
@@ -1286,12 +1245,12 @@ class GSEXRM_MapFile(object):
                                             maxshape=(None, npts))
                     lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
                     lmtgrp.attrs['type'] = 'energy'
-                    lmtgrp.attrs['unts'] = 'keV'
+                    lmtgrp.attrs['units'] = 'keV'
                         
             ## mcasum
             for grp in (xrmmap, xrmmap['roimap']):
                 dgrp = grp.create_group('mcasum')
-                dgrp.attrs['type'] = 'virtual mca'
+                dgrp.attrs['type'] = 'virtual mca detector'
                 dgrp.attrs['desc'] = 'sum of detectors'
 
             dgrp = xrmmap['mcasum']
@@ -1314,7 +1273,7 @@ class GSEXRM_MapFile(object):
                                         maxshape=(None, npts))
                 lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
                 lmtgrp.attrs['type'] = 'energy'
-                lmtgrp.attrs['unts'] = 'keV'
+                lmtgrp.attrs['units'] = 'keV'
 
 
 
@@ -1341,6 +1300,9 @@ class GSEXRM_MapFile(object):
                 print(prtxt % (npts, row.npts, xpixx, xpixy))
 
             if self.flag_xrd2d:
+                xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
+                xrmmap['xrd2D'].attrs['desc'] = '' #'add detector name eventually'
+                
                 xrmmap['xrd2D'].create_dataset('mask',
                                        (xpixx, xpixy),
                                        np.uint16,
@@ -1359,6 +1321,9 @@ class GSEXRM_MapFile(object):
                                        compression=COMPRESSION_LEVEL)
 
             if self.flag_xrd1d:
+                xrmmap['xrd1D'].attrs['type'] = 'xrd1D detector'
+                xrmmap['xrd1D'].attrs['desc'] = 'pyFAI calculation from xrd2D data'
+
                 xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32)
                 xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32)
 
@@ -1441,72 +1406,70 @@ class GSEXRM_MapFile(object):
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
 
-#         if not self.check_hostid():
-#             raise GSEXRM_NotOwner(self.filename)
-#         realmca_groups,virtmca_groups = [],[]
-#         for g in self.xrmmap.values():
-#             # include both real and virtual mca detectors!
-#             if g.attrs.get('type', '').startswith('mca det'):
-#                 realmca_groups.append(g)
-#             elif g.attrs.get('type', '').startswith('virtual mca'):
-#                 virtmca_groups.append(g)
-# 
-#         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
-#         for g in realmca_groups:
-#             g['counts'].resize((nrow, npts, nchan))
-#             for aname in ('livetime', 'realtime',
-#                           'inpcounts', 'outcounts', 'dtfactor'):
-#                 g[aname].resize((nrow, npts))
-# 
-#         for g in virtmca_groups:
-#             g['counts'].resize((nrow, npts, nchan))
-# 
-#         g = self.xrmmap['positions/pos']
-#         old, npts, nx = g.shape
-#         g.resize((nrow, npts, nx))
-# 
-#         for bname in ('det_raw', 'det_cor', 'sum_raw', 'sum_cor'):
-#             g = self.xrmmap['roimap'][bname]
-#             old, npts, nx = g.shape
-#             g.resize((nrow, npts, nx))
-# 
-
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        g = self.xrmmap['positions/pos']
-        old, npts, nx = g.shape
-        g.resize((nrow, npts, nx))
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
-        if self.flag_xrf:
+            g = self.xrmmap['positions/pos']
+            old, npts, nx = g.shape
+            g.resize((nrow, npts, nx))
+
+            if self.flag_xrf:
+                for g in self.xrmmap.values():
+                    if g.attrs.get('type', '').startswith('mca det'):
+                        oldnrow, npts, nchan = g['counts'].shape
+                        g['counts'].resize((nrow, npts, nchan))
+                        for aname in ('livetime', 'realtime',
+                                      'inpcounts', 'outcounts', 'dtfactor'):
+                            g[aname].resize((nrow, npts))
+        
+            if self.flag_xrd2d:
+                oldnrow, npts, xpixx, xpixy = self.xrmmap['xrd2D']['counts'].shape        
+                self.xrmmap['xrd2D']['counts'].resize((nrow, npts, xpixx, xpixy))
+
+            if self.flag_xrd1d:
+                oldnrow, npts, qstps = self.xrmmap['xrd1D']['counts'].shape        
+                self.xrmmap['xrd1D']['counts'].resize((nrow, npts, qstps))
+                for g in self.xrmmap['work']['xrdwedge'].values():
+                    g['counts'].resize((nrow, npts, qstps))
+
+            for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
+                for h in g.values():  # loop through rois in roimap
+                    for aname in ('raw','cor'):
+                        oldnrow, npts = h[aname].shape
+                        h[aname].resize((nrow, npts))
+        
+        else: ## old file format method
+        
+            realmca_groups = []
+            virtmca_groups = []
             for g in self.xrmmap.values():
+                # include both real and virtual mca detectors!
+                if g.attrs.get('type', '').startswith('mca det'):
+                    realmca_groups.append(g)
+                elif g.attrs.get('type', '').startswith('virtual mca'):
+                    virtmca_groups.append(g)
+            # print('resize arrays ', realmca_groups)
+            oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
+            for g in realmca_groups:
+                g['counts'].resize((nrow, npts, nchan))
+                for aname in ('livetime', 'realtime',
+                              'inpcounts', 'outcounts', 'dtfactor'):
+                    g[aname].resize((nrow, npts))
 
-                oldnrow, npts, nchan = g['counts'].shape
+            for g in virtmca_groups:
                 g['counts'].resize((nrow, npts, nchan))
 
-                if g.attrs.get('type', '').startswith('mca det'):
-                    for aname in ('livetime', 'realtime',
-                                  'inpcounts', 'outcounts', 'dtfactor'):
-                        g[aname].resize((nrow, npts))
-        
-        if self.flag_xrd2d:
-            oldnrow, npts, xpixx, xpixy = self.xrmmap['xrd2D']['counts'].shape        
-            self.xrmmap['xrd2D']['counts'].resize((nrow, npts, xpixx, xpixy))
+            g = self.xrmmap['positions/pos']
+            old, npts, nx = g.shape
+            g.resize((nrow, npts, nx))
 
-        if self.flag_xrd1d:
-            oldnrow, npts, qstps = self.xrmmap['xrd1D']['counts'].shape        
-            self.xrmmap['xrd1D']['counts'].resize((nrow, npts, qstps))
-            for g in self.xrmmap['work']['xrdwedge'].values():
-                g['counts'].resize((nrow, npts, qstps))
+            for bname in ('det_raw', 'det_cor', 'sum_raw', 'sum_cor'):
+                g = self.xrmmap['roimap'][bname]
+                old, npts, nx = g.shape
+                g.resize((nrow, npts, nx))
 
-        for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
-            print 'g in roimap:',g
-            for h in g.values():  # loop through rois in roimap
-                print '  h in g:',h
-                for aname in ('raw','cor'):
-                    oldnrow, npts = h[aname].shape
-                    h[aname].resize((nrow, npts))
-        
         self.h5root.flush()
 
     def add_xrd1D_roi_array(self, roiname, wedge_raw, whole_raw, roi_limits, **kws):
