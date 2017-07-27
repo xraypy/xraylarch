@@ -31,6 +31,13 @@ try:
 except ImportError:
     HAS_TERMCOLOR = False
 
+HAS_YAML = False
+try:
+    import yaml
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
+
 class LarchPluginException(Exception):
     """Exception with Larch Plugin"""
     def __init__(self, msg):
@@ -479,6 +486,35 @@ def save_workdir(conffile):
     except:
         pass
 
+
+def read_config(conffile):
+    """read yaml config file from users larch dir
+    compare save_config(conffile) which will save such a config
+
+    returns dictionary / configuration
+    """
+    cfile = os.path.join(usr_larchdir, conffile)
+    out = None
+    if os.path.exists(cfile):
+        with open(cfile, 'r') as fh:
+            out = fh.read()
+    if out is not None:
+        if not HAS_YAML:
+            raise RuntimeError('yaml is not available')
+        out = yaml.load(out)
+    return out
+
+def save_config(conffile, config):
+    """write yaml config file in the users larch dir
+    compare read_confif(conffile) which will read this value
+
+    """
+    cfile = os.path.join(usr_larchdir, conffile)
+    if not HAS_YAML:
+        raise RuntimeError('yaml is not available')
+    out = yaml.dump(config)
+    with open(cfile, 'w') as fh:
+        fh.write(out)
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):
