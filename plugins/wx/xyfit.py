@@ -26,6 +26,7 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
 
 from larch import Interpreter, Group
 from larch.utils import index_of
+from larch.utils.strutils import file2groupname
 
 from larch.larchlib import read_workdir, save_workdir
 
@@ -255,7 +256,7 @@ class ProcessPanel(wx.Panel):
         self.xas_vict = Choice(xas, **opts)
         self.xas_nnor = Choice(xas, **opts)
         self.xas_vict.SetSelection(1)
-        self.xas_nnor.SetSelection(2)
+        self.xas_nnor.SetSelection(1)
 
         def CopyBtn(name):
             return Button(xas, 'Copy', size=(50, 30),
@@ -390,6 +391,8 @@ class ProcessPanel(wx.Panel):
 
     def UpdatePlot(self, evt=None, **kws):
         self.needs_update = True
+        print("Update Plot ", evt)
+
 
     def on_selpoint(self, evt=None, opt='e0'):
         xval, yval = self.controller.get_cursor()
@@ -504,7 +507,7 @@ class ProcessPanel(wx.Panel):
             dgroup.plot_ymarkers = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
-                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'e0'})]
+                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'marker'})]
 
 class XYFitController():
     """
@@ -522,6 +525,7 @@ class XYFitController():
         self.proc_opts = {}
         self.fit_opts = {}
         self.group = None
+
         self.groupname = None
         self.report_frame = None
         self.symtable = self.larch.symtable
@@ -571,8 +575,8 @@ class XYFitController():
                     smooth_c0=2, smooth_c1=1, smooth_sig=1)
 
         if dgroup.datatype == 'xas':
-            opts.update(dict(e0=0, pre1=-200, pre2=-30, edge_step=0,
-                             nnorm=3, norm1=50, norm2=-10, nvict=2,
+            opts.update(dict(e0=0, pre1=-200, pre2=-20, edge_step=0,
+                             nnorm=2, norm1=50, norm2=-10, nvict=1,
                              auto_step=True, auto_e0=True, show_e0=True,
                              xas_op='Raw Data'))
 
@@ -729,7 +733,9 @@ class XYFitFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
-        title = "Larch XYFit (BETA!!): XY Data Viewing & Curve Fitting"
+        self.paths2read = []
+
+        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -738,8 +744,8 @@ class XYFitFrame(wx.Frame):
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
-        self.larch = self.larch_buffer._larch
-        self.controller = XYFitController(wxparent=self, _larch=self.larch_buffer.larchshell)
+        self.larch=self.larch_buffer.larchshell
+        self.controller = XYFitController(wxparent=self, _larch=self.larch)
 
         self.subframes = {}
         self.plotframe = None
@@ -778,7 +784,8 @@ class XYFitFrame(wx.Frame):
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
         self.controller.filelist = FileCheckList(leftpanel, main=self,
-                                      select_action=self.ShowFile)
+                                                 select_action=self.ShowFile,
+                                                 remove_action=self.RemoveFile)
         self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.GridBagSizer(1, 1)
@@ -866,20 +873,23 @@ class XYFitFrame(wx.Frame):
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            if dgroup is None:
-                continue
-            dgroup.plot_yarrays = [(dgroup.y, PLOTOPTS_1,
-                                    dgroup.filename)]
-            if dgroup.datatype == 'xas':
-                dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
-                dgroup.plot_ymarkers = []
+            if dgroup is not None:
+                self.controller.plot_group(groupname=groupname, title='', new=newplot)
+                newplot=False
 
-            self.controller.plot_group(groupname=groupname, title='', new=newplot)
-            newplot=False
+            # dgroup.plot_yarrays = [(dgroup.ydat, PLOTOPTS_1,
+            #                        dgroup.filename)]
+            #if dgroup.datatype == 'xas':
+            #    dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
+            #    dgroup.plot_ymarkers = []
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
         self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
         self.Raise()
+
+    def RemoveFile(self, evt=None, **kws):
+        print(" REMOVE FILE FROM VIEW ", evt, kws)
+
 
     def ShowFile(self, evt=None, groupname=None, **kws):
         filename = None
@@ -955,6 +965,7 @@ class XYFitFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
+
     def onClose(self, evt):
         save_workdir('xyfit.dat')
         self.proc_panel.proc_timer.Stop()
@@ -1001,29 +1012,26 @@ class XYFitFrame(wx.Frame):
     def onReadDialog(self, evt=None):
         dlg = wx.FileDialog(self, message="Read Data File",
                             defaultDir=os.getcwd(),
-                            wildcard=FILE_WILDCARDS, style=wx.FD_OPEN)
+                            wildcard=FILE_WILDCARDS,
+                            style=wx.FD_OPEN|wx.FD_MULTIPLE)
+        self.paths2read = []
         if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            path = path.replace('\\', '/')
-
-            self.onRead(path)
+            self.paths2read = dlg.GetPaths()
         dlg.Destroy()
 
-    def onRead(self, path):
-        if path in self.controller.file_groups:
-            if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
-                                  'Re-read file?'):
-                return
-        filedir, filename = os.path.split(path)
-        pref= fix_varname(filename.replace('.', '_'))
-        if len(pref) > 15:
-            pref = pref[:15]
-        groupname = pref
-        count, maxcount = 0, 999
-        while hasattr(self.larch.symtable, groupname) and count < maxcount:
-            count += 1
-            groupname = '%s_%2.2i' % (pref, count)
 
+        path = self.paths2read.pop(0)
+        path = path.replace('\\', '/')
+        do_read = True
+        if path in self.controller.file_groups:
+            do_read = (wx.ID_YES == popup(self,
+                                          "Re-read file '%s'?" % path,
+                                          'Re-read file?'))
+        if do_read:
+            self.onRead(path)
+
+    def onRead(self, path):
+        filedir, filename = os.path.split(path)
         if self.config['chdir_on_fileopen']:
             os.chdir(filedir)
 
@@ -1039,33 +1047,60 @@ class XYFitFrame(wx.Frame):
             self.show_subframe('readfile', ColumnDataFileFrame, **kwargs)
 
 
-    def onRead_OK(self, datagroup, array_sel=None, overwrite=False):
+    def onRead_OK(self, script, path, groupname=None, array_sel=None,
+                  overwrite=False):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
-        gname = datagroup.groupname
-        fname = datagroup.filename
-        path  = datagroup.path
-        datatype = getattr(datagroup, 'datatype', 'raw')
+        abort_read = False
+        filedir, filename = os.path.split(path)
+        if not overwrite and hasattr(self.larch.symtable, groupname):
+            newname = file2groupname(filename, symtable=self.larch.symtable)
+            msg = """Warning: groupname '%s' already used.
+            Will use groupname '%s' instead """  % (groupname, newname)
+            dlg = wx.MessageDialog(self, msg, 'Warning',
+                                   wx.OK | wx.CANCEL )
 
+            abort_read = (wx.ID_OK != dlg.ShowModal())
+            dlg.Destroy()
+            groupname = newname
+
+        if abort_read:
+            return
+        self.larch.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
             self.last_array_sel = array_sel
 
+        thisgroup = getattr(self.larch.symtable, groupname)
+        #print(thisgroup, thisgroup.gname, thisgroup.filenam)
+
+        thisgroup.groupname = groupname
+        thisgroup.filename = filename
+
+        datatype = getattr(thisgroup, 'datatype', 'raw')
         # file /group may already exist in list
-        if fname in self.controller.file_groups and not overwrite:
+        if filename in self.controller.file_groups and not overwrite:
             for i in range(1, 101):
-                ftest = "%s (%i)"  % (fname, i)
+                ftest = "%s (%i)"  % (filename, i)
                 if ftest not in self.controller.file_groups:
-                    fname = ftest
+                    filename = ftest
                     break
 
-        if fname not in self.controller.file_groups:
-            self.controller.filelist.Append(fname)
-            self.controller.file_groups[fname] = gname
+        if filename not in self.controller.file_groups:
+            self.controller.filelist.Append(filename)
+            self.controller.file_groups[filename] = groupname
 
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=gname)
+        self.ShowFile(groupname=groupname)
+
+        if len(self.paths2read) > 0 :
+            path = self.paths2read.pop(0)
+            path = path.replace('\\', '/')
+            filedir, filename = os.path.split(path)
+            gname = file2groupname(filename, symtable=self.larch.symtable)
+            self.onRead_OK(script, path, groupname=gname)
+
 
 class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
