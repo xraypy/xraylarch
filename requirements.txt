@@ -6,5 +6,4 @@ sqlachemy>=0.9
 h5py>=2.2
 pillow>=3.4
 requests>=2.1
-yaml>=3.0
 lmfit>=0.9.7
