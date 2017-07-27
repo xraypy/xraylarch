@@ -349,7 +349,9 @@ class XYFitPanel(wx.Panel):
         self.pick2erase_timer.Stop()
         panel = self.pick2erase_panel
         ntrace = panel.conf.ntrace - 1
+        trace = panel.conf.get_mpl_line(ntrace)
         panel.conf.get_mpl_line(ntrace).set_data(np.array([]), np.array([]))
+        panel.conf.ntrace = ntrace
         panel.draw()
 
     def onPick2Timer(self, evt=None):
