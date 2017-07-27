@@ -28,7 +28,7 @@ from larch import Interpreter, Group
 from larch.utils import index_of
 from larch.utils.strutils import file2groupname
 
-from larch.larchlib import read_workdir, save_workdir
+from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame, ReportFrame,
                          BitmapButton, FileCheckList, FloatCtrl, SetTip)
@@ -233,6 +233,8 @@ class ProcessPanel(wx.Panel):
         opts['size'] = (250, -1)
         self.xas_op  = Choice(xas, choices=XASOPChoices,  **opts)
 
+        self.xas_op.SetStringSelection('Normalized')
+
         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
             bb = BitmapButton(xas, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
@@ -262,6 +264,7 @@ class ProcessPanel(wx.Panel):
         def CopyBtn(name):
             return Button(xas, 'Copy', size=(50, 30),
                           action=partial(self.onCopyParam, name))
+
 
         xas.Add(SimpleText(xas, ' XAS Data Processing', **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
@@ -307,16 +310,61 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
+        save_config = Button(self, 'Save as Default Settings',
+                             size=(150, 30),
+                             action=self.onSaveConfigBtn)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.AddMany([((10,10), 0, LCEN, 0),
                        (gen,  0, LCEN, 10),
                        ((10,10), 0, LCEN, 0),
                        (HLine(self, size=(550, 2)), 0, LCEN, 10),
                        ((10,10), 0, LCEN, 0),
-                       (xas,  1, LCEN|wx.GROW, 10)])
+                       (xas,  1, LCEN|wx.GROW, 10),
+                       (save_config,  1, LCEN, 10)
+                       ])
 
         xas.Disable()
+
         pack(self, sizer)
+
+    def onSaveConfigBtn(self, evt=None):
+        conf = self.controller.larch.symtable._sys.xyfit
+
+        data_proc = {}
+        data_proc.update(getattr(conf, 'data_proc', {}))
+
+        data_proc['xshift'] = self.xshift.GetValue()
+        data_proc['yshift'] = self.yshift.GetValue()
+        data_proc['xscale'] = self.xscale.GetValue()
+        data_proc['yscale'] = self.yscale.GetValue()
+        data_proc['smooth_op'] = str(self.smooth_op.GetStringSelection())
+        data_proc['smooth_c0'] = int(self.smooth_c0.GetValue())
+        data_proc['smooth_c1'] = int(self.smooth_c1.GetValue())
+        data_proc['smooth_sig'] = float(self.smooth_sig.GetValue())
+        data_proc['smooth_conv'] = str(self.smooth_conv.GetStringSelection())
+
+        conf.data_proc = data_proc
+
+        if self.xaspanel.Enabled:
+            xas_proc = {}
+            xas_proc.update(getattr(conf, 'xas_proc', {}))
+
+            xas_proc['auto_e0'] = True
+            xas_proc['auto_step'] = True
+
+            xas_proc['pre1']  = self.xas_pre1.GetValue()
+            xas_proc['pre2']  = self.xas_pre2.GetValue()
+            xas_proc['norm1'] = self.xas_nor1.GetValue()
+            xas_proc['norm2'] = self.xas_nor2.GetValue()
+            xas_proc['nvict'] = self.xas_vict.GetSelection()
+            xas_proc['nnorm'] = self.xas_nnor.GetSelection()
+
+            xas_proc['show_e0'] = self.xas_showe0.IsChecked()
+            xas_proc['nnorm'] = int(self.xas_nnor.GetSelection())
+            xas_proc['nvict'] = int(self.xas_vict.GetSelection())
+            xas_proc['xas_op'] = str(self.xas_op.GetStringSelection())
+            conf.xas_proc = xas_proc
 
     def onCopyParam(self, name=None, event=None):
         proc_opts = self.controller.group.proc_opts
@@ -521,6 +569,7 @@ class XYFitController():
     class hollding the Larch session and doing the
     processing work for Larch XYFit
     """
+    config_file = 'xyfit.conf'
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
         self.larch = _larch
@@ -538,6 +587,52 @@ class XYFitController():
         self.symtable = self.larch.symtable
         self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', self)
+
+    def init_larch(self):
+        fico = self.get_iconfile()
+
+        _larch = self.larch
+        _larch.eval("import xafs_plots")
+        _larch.symtable._sys.xyfit = Group()
+        config = read_config(self.config_file)
+        if (config is None or 'workdir' not in config or
+            'data_proc' not in config or 'xas_proc' not in config):
+            config = self.make_default_config()
+
+        for key, value in config.items():
+            setattr(_larch.symtable._sys.xyfit, key, value)
+        os.chdir(config['workdir'])
+
+    def make_default_config(self):
+        """ default config, probably called on first run of program"""
+        config = {'chdir_on_fileopen': True,
+                  'workdir': os.getcwd()}
+        config['data_proc'] = dict(xshift=0, xscale=1, yshift=0,
+                                   yscale=1, smooth_op='None',
+                                   smooth_conv='Lorentzian',
+                                   smooth_c0=2, smooth_c1=1,
+                                   smooth_sig=1)
+        config['xas_proc'] = dict(e0=0, pre1=-200, pre2=-10,
+                                  edge_step=0, nnorm=2, norm1=25,
+                                  norm2=-10, nvict=1, auto_step=True,
+                                  auto_e0=True, show_e0=True,
+                                  xas_op='Normalized')
+        return config
+
+    def get_config(self, key, default=None):
+        "get configuration setting"
+        confgroup = self.larch.symtable._sys.xyfit
+        return getattr(confgroup, key, default)
+
+
+    def save_config(self):
+        """save configuration"""
+        conf = group2dict(self.larch.symtable._sys.xyfit)
+        conf.pop('__name__')
+        save_config(self.config_file, conf)
+
+    def set_workdir(self):
+        self.larch.symtable._sys.xyfit.workdir = os.getcwd()
 
     def show_report(self, text, evt=None):
         shown = False
@@ -577,15 +672,10 @@ class XYFitController():
         return grp
 
     def get_proc_opts(self, dgroup):
-        opts = dict(xshift=0, xscale=1, yshift=0, yscale=1,
-                    smooth_op='None', smooth_conv='Lorentzian',
-                    smooth_c0=2, smooth_c1=1, smooth_sig=1)
-
+        opts = {}
+        opts.update(self.get_config('data_proc', default={}))
         if dgroup.datatype == 'xas':
-            opts.update(dict(e0=0, pre1=-200, pre2=-20, edge_step=0,
-                             nnorm=2, norm1=50, norm2=-10, nvict=1,
-                             auto_step=True, auto_e0=True, show_e0=True,
-                             xas_op='Raw Data'))
+            opts.update(self.get_config('xas_proc', {}))
 
         if hasattr(dgroup, 'proc_opts'):
             opts.update(dgroup.proc_opts)
@@ -733,8 +823,8 @@ class XYFitController():
 class XYFitFrame(wx.Frame):
     _about = """Larch XYFit: XY Data Viewing & Curve Fitting
 
-  Matt Newville <newville @ cars.uchicago.edu>
-  """
+    Matt Newville <newville @ cars.uchicago.edu>
+    """
     def __init__(self, parent=None, size=(875, 550), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
@@ -759,7 +849,7 @@ class XYFitFrame(wx.Frame):
         self.SetSize(size)
         self.SetFont(Font(10))
 
-        self.config = {'chdir_on_fileopen': True}
+        self.larch_buffer.Hide()
 
         self.createMainPanel()
         self.createMenus()
@@ -768,9 +858,6 @@ class XYFitFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        read_workdir('xyfit.dat')
-        self.larch_buffer.Hide()
-
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -849,17 +936,21 @@ class XYFitFrame(wx.Frame):
         self.controller.filelist.SetCheckedStrings([])
 
     def init_larch(self):
-        self.SetStatusText('ready')
+        self.SetStatusText('initializing Larch')
         self.title.SetLabel('')
 
         self.fit_panel.larch = self.controller.larch
 
-        fico = self.controller.get_iconfile()
+        self.controller.init_larch()
+
         plotframe = self.controller.get_display(stacked=False)
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz, ypos))
+
+        self.SetStatusText('ready')
         self.Raise()
+
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
@@ -888,9 +979,11 @@ class XYFitFrame(wx.Frame):
         self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
         self.Raise()
 
-    def RemoveFile(self, evt=None, **kws):
-        print(" REMOVE FILE FROM VIEW ", evt, kws)
-        print("controller.file_groups ", controller.file_groups)
+    def RemoveFile(self, fname=None, **kws):
+        if fname is not None:
+            s = str(fname)
+            if s in self.controller.file_groups:
+                group = self.controller.file_groups.pop(s)
 
     def ShowFile(self, evt=None, groupname=None, **kws):
         filename = None
@@ -900,7 +993,6 @@ class XYFitFrame(wx.Frame):
             groupname = self.controller.file_groups[filename]
 
         if not hasattr(self.larch.symtable, groupname):
-            print( 'Error reading file ', groupname)
             return
 
         dgroup = self.controller.get_group(groupname)
@@ -926,7 +1018,7 @@ class XYFitFrame(wx.Frame):
                  self.onShowLarchBuffer)
 
         MenuItem(self, fmenu, "debug wx\tCtrl+I", "", self.showInspectionTool)
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onCloseNicely)
 
         self.menubar.Append(fmenu, "&File")
 
@@ -939,8 +1031,7 @@ class XYFitFrame(wx.Frame):
                   "Configure Data Fitting", self.onConfigDataFitting)
 
         self.SetMenuBar(self.menubar)
-        self.Bind(wx.EVT_CLOSE,  self.onClose)
-
+        self.Bind(wx.EVT_CLOSE,  self.onExit)
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
@@ -966,13 +1057,10 @@ class XYFitFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-
-    def onClose(self, evt):
-        save_workdir('xyfit.dat')
-        self.proc_panel.proc_timer.Stop()
-
+    def onExit(self, evt):
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
+            time.sleep(0.05)
             try:
                 obj.Destroy()
             except:
@@ -980,8 +1068,8 @@ class XYFitFrame(wx.Frame):
 
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
+            time.sleep(0.05)
             del obj
-
 
         if self.larch_buffer is not None:
             try:
@@ -989,6 +1077,18 @@ class XYFitFrame(wx.Frame):
             except:
                 pass
         self.Destroy()
+
+    def onCloseNicely(self, evt):
+        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+
+        if wx.ID_YES != dlg.ShowModal():
+            return
+
+        self.controller.save_config()
+        self.proc_panel.proc_timer.Stop()
+        time.sleep(0.05)
+        self.onExit(evt)
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -1020,6 +1120,8 @@ class XYFitFrame(wx.Frame):
             self.paths2read = dlg.GetPaths()
         dlg.Destroy()
 
+        if len(self.paths2read) < 1:
+            return
 
         path = self.paths2read.pop(0)
         path = path.replace('\\', '/')
@@ -1033,8 +1135,9 @@ class XYFitFrame(wx.Frame):
 
     def onRead(self, path):
         filedir, filename = os.path.split(path)
-        if self.config['chdir_on_fileopen']:
+        if self.controller.get_config('chdir_on_fileopen'):
             os.chdir(filedir)
+            self.controller.set_workdir()
 
         kwargs = dict(filename=path, _larch=self.larch_buffer.larchshell,
                       last_array_sel=self.last_array_sel,
