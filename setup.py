@@ -32,7 +32,7 @@ with open(os.path.join('lib', 'version.py'), 'r') as version_file:
 ##
 
 required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
-                    'PIL', 'requests']
+                    'PIL', 'requests', 'yaml']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
 
 xrd_modules = ['pyFAI','CifFile', 'fabio']

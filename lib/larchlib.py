@@ -8,7 +8,6 @@ import ast
 import numpy as np
 import traceback
 import inspect
-import yaml
 import six
 from collections import OrderedDict
 import ctypes
@@ -31,6 +30,13 @@ try:
     HAS_TERMCOLOR = True
 except ImportError:
     HAS_TERMCOLOR = False
+
+HAS_YAML = False
+try:
+    import yaml
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
 
 class LarchPluginException(Exception):
     """Exception with Larch Plugin"""
@@ -493,6 +499,8 @@ def read_config(conffile):
         with open(cfile, 'r') as fh:
             out = fh.read()
     if out is not None:
+        if not HAS_YAML:
+            raise RuntimeError('yaml is not available')
         out = yaml.load(out)
     return out
 
@@ -502,6 +510,8 @@ def save_config(conffile, config):
 
     """
     cfile = os.path.join(usr_larchdir, conffile)
+    if not HAS_YAML:
+        raise RuntimeError('yaml is not available')
     out = yaml.dump(config)
     with open(cfile, 'w') as fh:
         fh.write(out)
