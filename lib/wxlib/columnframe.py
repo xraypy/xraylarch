@@ -18,7 +18,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button,
 
 import larch
 from larch import Group
-from larch.utils.strutils import fix_varname
+from larch.utils.strutils import fix_varname, file2groupname
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -45,10 +45,6 @@ class EditColumnFrame(wx.Frame) :
 
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(4, 4)
-        # if not hasattr(group, 'orig_array_labels'):
-        #     group.orig_array_labels = group.array_labels[:]
-
-        # print("EDIT COLUMN NAMES ", group.array_labels)
 
         self.SetMinSize((600, 600))
 
@@ -125,20 +121,19 @@ class ColumnDataFileFrame(wx.Frame) :
         self._larch = _larch
         self.path = filename
 
-        group = self.group = self.read_column_file(self.path)
-
-        # self.array_labels = group.array_labels
+        group = self.initgroup = self.read_column_file(self.path)
 
         self.subframes = {}
-        self.outgroup  = Group(raw=group)
-        for attr in ('path', 'filename', 'groupname', 'datatype'):
-            setattr(self.outgroup, attr, getattr(group, attr, None))
+        self.workgroup  = Group(raw=group)
+        for attr in ('path', 'filename', 'groupname', 'datatype',
+                     'array_labels'):
+            setattr(self.workgroup, attr, getattr(group, attr, None))
 
-        arr_labels = [l.lower() for l in self.group.array_labels]
-        if self.outgroup.datatype is None:
-            self.outgroup.datatype = 'raw'
+        arr_labels = [l.lower() for l in self.initgroup.array_labels]
+        if self.workgroup.datatype is None:
+            self.workgroup.datatype = 'raw'
             if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
-                self.outgroup.datatype = 'xas'
+                self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
 
@@ -184,7 +179,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_arr.Disable()
 
         self.datatype = Choice(panel, choices=DATATYPES, **opts)
-        self.datatype.SetStringSelection(self.outgroup.datatype)
+        self.datatype.SetStringSelection(self.workgroup.datatype)
 
 
         opts['size'] = (50, -1)
@@ -343,21 +338,11 @@ class ColumnDataFileFrame(wx.Frame) :
         group = self._larch.symtable.get_symbol(tmpname)
         self._larch.symtable.del_symbol(tmpname)
 
-        gname = fix_varname(filename.replace('.', '_'))
-        if len(gname) > 16:
-            gname = gname[:16]
-        while gname.endswith('_'):
-            gname = gname[:-1]
-
-        groupname, count, maxcount = gname, 0, 999
-        while hasattr(self._larch.symtable, groupname) and count < maxcount:
-            count += 1
-            groupname = '%s_%3.3i' % (gname, count)
-
         group.text = text
         group.path = path
         group.filename = filename
-        group.groupname = groupname
+        group.groupname = file2groupname(filename,
+                                         symtable=self._larch.symtable)
         return group
 
     def show_subframe(self, name, frameclass, **opts):
@@ -373,12 +358,11 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onEditNames(self, evt=None):
         self.show_subframe('editcol', EditColumnFrame,
-                           group=self.group,
+                           group=self.workgroup,
                            on_ok=self.set_array_labels)
 
     def set_array_labels(self, arr_labels):
-        self.group.array_labels = arr_labels
-        # print(" SET ARRAY LABELS ", arr_labels)
+        self.workgroup.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['<index>']
         def update(wid, choices):
@@ -410,38 +394,35 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr_expr = 'sqrt(%s.ydat)'
         self.expressions['yerr'] = yerr_expr
 
-        # if array_labels is None and getattr(datagroup, 'array_labels', None) is not None:
-        #     array_labels = datagroup.array_labels
+        # generate script to pass back to calling program:
+        labels = ', '.join(self.workgroup.array_labels)
+        read_cmd = "%s('{path:s}', labels='%s')" % (self.reader, labels)
 
-        leval = self._larch.eval
+        buff = ["{group:s} = %s" % read_cmd,
+                "{group:s}.path = '{path:s}'"]
 
-        cmd = "'%s'" % self.path
-        if self.group.array_labels is not None:
-            cmd = "%s, labels='%s'" % (cmd, ', '.join(self.group.array_labels))
-
-        leval("%s = %s(%s)" % (groupname, self.reader, cmd))
-        self.outgroup.groupname = groupname
-
-        for attr in ('datatype', 'groupname', 'filename',
-                     'path', 'plot_xlabel', 'plot_ylabel'):
-            val = getattr(self.outgroup, attr)
-            leval("%s.%s = '%s'" % (groupname, attr, val))
+        for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
+            val = getattr(self.workgroup, attr)
+            buff.append("{group:s}.%s = '%s'" % (attr, val))
 
         for aname in ('xdat', 'ydat', 'yerr'):
-            expr = self.expressions[aname].replace('%s', groupname)
-            leval("%s.%s = %s" % (groupname, aname, expr))
+            expr = self.expressions[aname].replace('%s', '{group:s}')
+            buff.append("{group:s}.%s = %s" % (aname, expr))
 
-        if getattr(self.outgroup, 'datatype', 'raw') == 'xas':
-            leval("%s.energy = %s.xdat" % (groupname, groupname))
-            leval("%s.mu = %s.ydat" % (groupname, groupname))
+        if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
+            buff.append("{group:s}.energy = {group:s}.xdat")
+            buff.append("{group:s}.mu = {group:s}.ydat")
+
+        script = "\n".join(buff)
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(self.outgroup, array_sel=self.array_sel)
+            self.read_ok_cb(script, self.path, groupname=groupname,
+                            array_sel=self.array_sel)
 
         self.Destroy()
 
     def onCancel(self, event=None):
-        self.outgroup.import_ok = False
+        self.workgroup.import_ok = False
         self.Destroy()
 
     def onYerrChoice(self, evt=None):
@@ -461,9 +442,9 @@ class ColumnDataFileFrame(wx.Frame) :
 
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
-        rawgroup = self.group
-        outgroup = self.outgroup
-        rdata = self.group.data
+        rawgroup = self.initgroup
+        workgroup = self.workgroup
+        rdata = self.initgroup.data
 
         # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
@@ -473,14 +454,14 @@ class ColumnDataFileFrame(wx.Frame) :
 
         ncol, npts = rdata.shape
         if xname.startswith('<index') or ix >= ncol:
-            outgroup.xdat = 1.0*np.arange(npts)
+            workgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
             exprs['xdat'] = 'arange(%i)' % npts
         else:
-            outgroup.xdat = rdata[ix, :]
+            workgroup.xdat = rdata[ix, :]
             exprs['xdat'] = '%%s.data[%i, : ]' % ix
 
-        outgroup.datatype = self.datatype.GetStringSelection().strip().lower()
+        workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
         def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
@@ -494,7 +475,7 @@ class ColumnDataFileFrame(wx.Frame) :
             return suf, opstr, arr
 
         try:
-            xsuf, xpop, outgroup.xdat = pre_op(self.xpop, outgroup.xdat)
+            xsuf, xpop, workgroup.xdat = pre_op(self.xpop, workgroup.xdat)
             self.xsuf.SetLabel(xsuf)
             exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
         except:
@@ -537,20 +518,20 @@ class ColumnDataFileFrame(wx.Frame) :
             yarr2 = rdata[iy2, :]
             yexpr2 = '%%s.data[%i, : ]' % iy2
 
-        outgroup.ydat = yarr1
+        workgroup.ydat = yarr1
         exprs['ydat'] = yexpr1
         if yop in ('+', '-', '*', '/'):
             exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
             if yop == '+':
-                outgroup.ydat = yarr1.__add__(yarr2)
+                workgroup.ydat = yarr1.__add__(yarr2)
             elif yop == '-':
-                outgroup.ydat = yarr1.__sub__(yarr2)
+                workgroup.ydat = yarr1.__sub__(yarr2)
             elif yop == '*':
-                outgroup.ydat = yarr1.__mul__(yarr2)
+                workgroup.ydat = yarr1.__mul__(yarr2)
             elif yop == '/':
-                outgroup.ydat = yarr1.__truediv__(yarr2)
+                workgroup.ydat = yarr1.__truediv__(yarr2)
 
-        ysuf, ypop, outgroup.ydat = pre_op(self.ypop, outgroup.ydat)
+        ysuf, ypop, workgroup.ydat = pre_op(self.ypop, workgroup.ydat)
         self.ysuf.SetLabel(ysuf)
         exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
 
@@ -564,13 +545,13 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr = rdata[iyerr, :]
             exprs['yerr'] = '%%s.data[%i, :]' % iyerr
         elif yerr_op.startswith('sqrt'):
-            yerr = np.sqrt(outgroup.ydat)
+            yerr = np.sqrt(workgroup.ydat)
             exprs['yerr'] = 'sqrt(%s.ydat)'
 
         if use_deriv:
             try:
-                outgroup.ydat = (np.gradient(outgroup.ydat) /
-                                 np.gradient(outgroup.xdat))
+                workgroup.ydat = (np.gradient(workgroup.ydat) /
+                                 np.gradient(workgroup.xdat))
                 exprs['ydat'] = 'deriv(%s)/deriv(%s)' % (exprs['ydat'],
                                                          exprs['xdat'])
             except:
@@ -583,31 +564,31 @@ class ColumnDataFileFrame(wx.Frame) :
                           'use_deriv': use_deriv}
 
         try:
-            npts = min(len(outgroup.xdat), len(outgroup.ydat))
+            npts = min(len(workgroup.xdat), len(workgroup.ydat))
         except AttributeError:
             return
 
-        outgroup.filename    = rawgroup.filename
-        outgroup.npts        = npts
-        outgroup.plot_xlabel = xlabel
-        outgroup.plot_ylabel = ylabel
-        outgroup.xdat        = np.array(outgroup.xdat[:npts])
-        outgroup.ydat        = np.array(outgroup.ydat[:npts])
-        outgroup.y           = outgroup.ydat
-        outgroup.yerr        = yerr
+        workgroup.filename    = rawgroup.filename
+        workgroup.npts        = npts
+        workgroup.plot_xlabel = xlabel
+        workgroup.plot_ylabel = ylabel
+        workgroup.xdat        = np.array(workgroup.xdat[:npts])
+        workgroup.ydat        = np.array(workgroup.ydat[:npts])
+        workgroup.y           = workgroup.ydat
+        workgroup.yerr        = yerr
         if isinstance(yerr, np.ndarray):
-            outgroup.yerr    = np.array(yerr[:npts])
+            workgroup.yerr    = np.array(yerr[:npts])
 
-        if outgroup.datatype == 'xas':
-            outgroup.energy = outgroup.xdat
-            outgroup.mu     = outgroup.ydat
+        if workgroup.datatype == 'xas':
+            workgroup.energy = workgroup.xdat
+            workgroup.mu     = workgroup.ydat
 
-        path, fname = os.path.split(outgroup.filename)
+        path, fname = os.path.split(workgroup.filename)
         popts = dict(marker='o', markersize=4, linewidth=1.5,
                      title=fname, ylabel=ylabel, xlabel=xlabel,
-                     label="%s: %s" % (fname, outgroup.plot_ylabel))
+                     label="%s: %s" % (fname, workgroup.plot_ylabel))
 
-        self.plotpanel.plot(outgroup.xdat, outgroup.ydat, **popts)
+        self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
 
         for i in range(self.nb.GetPageCount()):
             if 'plot' in self.nb.GetPageText(i).lower():
