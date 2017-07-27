@@ -1,3 +1,4 @@
+import re
 import os
 import socket
 import time
@@ -157,6 +158,8 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     g.attrs['desc'] = '''scan configuration, including scan definitions,
     ROI definitions, MCA calibration, Environment Data, etc'''
 
+    xrmmap.create_group('scalars')
+    
     xrmmap.create_group('areas')
     xrmmap.create_group('work')
     xrmmap.create_group('positions')
@@ -1021,6 +1024,10 @@ class GSEXRM_MapFile(object):
             pos[thisrow, :npts, :] = tpos[:npts, :]
 
 
+            sclrgrp = self.xrmmap['scalars']
+            for ai,aname in enumerate(re.findall(r"[\w']+", row.sishead[-1])):
+                sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
+
             if self.flag_xrf:
 
                 nmca, xnpts, nchan = row.counts.shape
@@ -1066,6 +1073,8 @@ class GSEXRM_MapFile(object):
                                 roigrp[detname][roiname]['cor'][thisrow,] = mcacor
                                 roigrp['mcasum'][roiname]['raw'][thisrow,] += mcaraw
                                 roigrp['mcasum'][roiname]['cor'][thisrow,] += mcacor
+                                
+
 
         else:
 
@@ -1089,9 +1098,9 @@ class GSEXRM_MapFile(object):
                 _nr, npts, nchan = xrm_dets[0]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
                 for idet, grp in enumerate(xrm_dets):
-                    grp['dtfactor'][thisrow,  :npts]  = row.dtfactor[idet, :npts]
-                    grp['realtime'][thisrow,  :npts]  = row.realtime[idet, :npts]
-                    grp['livetime'][thisrow,  :npts]  = row.livetime[idet, :npts]
+                    grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
+                    grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
+                    grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
                     grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
                     grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
                     grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
@@ -1182,6 +1191,24 @@ class GSEXRM_MapFile(object):
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
+        nmca, xnpts, nchan = row.counts.shape
+        
+        if self.chunksize is None:
+            if xnpts < 10: xnpts=10
+            nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
+            nxm = 1024
+            if nxx > 256:
+                nxm = min(1024, int(65536*1.0/ nxx))
+            self.chunksize = (1, nxx, nxm)
+        
+        sismap = xrmmap['scalars']
+        sismap.attrs['type'] = 'scalar detectors'
+        for aname in re.findall(r"[\w']+", row.sishead[-1]):
+            print 'creating: xrmmap/scalars/%s' % aname
+            sismap.create_dataset(aname, (NINIT, npts), np.float32,
+                                  compression=COMPRESSION_LEVEL,
+                                  chunks=self.chunksize[:-1],
+                                  maxshape=(None, npts))
 
         if self.flag_xrf:
             conf   = self.xrmmap['config']
@@ -1193,21 +1220,11 @@ class GSEXRM_MapFile(object):
             slope  = conf['mca_calib/slope'].value
             quad   = conf['mca_calib/quad'].value
 
-            nmca, xnpts, nchan = row.counts.shape
             en_index = np.arange(nchan)
-            
-            if self.chunksize is None:
-                if xnpts < 10: xnpts=10
-                nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
-                nxm = 1024
-                if nxx > 256:
-                    nxm = min(1024, int(65536*1.0/ nxx))
-                self.chunksize = (1, nxx, nxm)
 
             if verbose:
                 prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
                 print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
-                print ' '
 
             ## mca1 to mca 4
             for i,imca in enumerate(('mca1', 'mca2', 'mca3', 'mca4')):

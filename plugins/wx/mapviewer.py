@@ -396,31 +396,25 @@ class TomographyPanel(GridPanel):
     def __init__(self, parent, owner, **kws):
         
         self.owner = owner
-        self.rois = []
+        self.file,self.xrmmap = None,None
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(120, -1))
+        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
-        self.plot_choice.Disable()
 
-        self.det_choice = [Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1))]
-        self.roi_choice = [Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1)),
-                           Choice(self, choices=[], size=(120, -1))]
+        self.det_choice = [Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1))]
+        self.roi_choice = [Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
-
-        self.roi_choice[1].Disable()
-        self.roi_choice[2].Disable()        
-        self.det_choice[1].Disable()
-        self.det_choice[2].Disable()        
 
         self.det_label = [SimpleText(self,''),
                           SimpleText(self,''),
@@ -433,15 +427,6 @@ class TomographyPanel(GridPanel):
         self.cor  = Check(self, label='Correct Deadtime?')
         self.hotcols  = Check(self, label='Ignore First/Last Columns?')
 
-        self.sino_show_new = Button(self, 'Show New',     size=(100, -1),
-                               action=partial(self.onShowSinogram, new=True))
-        self.sino_replace_old = Button(self, 'Replace Last', size=(100, -1),
-                               action=partial(self.onShowSinogram, new=False))
-        self.tomo_show_new = Button(self, 'Show New',     size=(100, -1),
-                               action=partial(self.onShowTomograph, new=True))
-        self.tomo_replace_old = Button(self, 'Replace Last', size=(100, -1),
-                               action=partial(self.onShowTomograph, new=False))
-        
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],self.det_choice[1],self.det_choice[2]), style=LEFT, newrow = True)
@@ -454,26 +439,35 @@ class TomographyPanel(GridPanel):
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
         self.Add(self.hotcols,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT, newrow = True)
-        
+
+        self.sino_show = [Button(self, 'Show New',     size=(100, -1),
+                               action=partial(self.onShowSinogram, new=True)),
+                          Button(self, 'Replace Last', size=(100, -1),
+                               action=partial(self.onShowSinogram, new=False))]
+        self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
+                               action=partial(self.onShowTomograph, new=True)),
+                          Button(self, 'Replace Last', size=(100, -1),
+                               action=partial(self.onShowTomograph, new=False))]
+
         self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
         
 #         self.Add(SimpleText(self,''), newrow=True)
         self.Add(SimpleText(self,'Sinogram:'),  dcol=1, style=RIGHT, newrow=True)
-        self.Add(self.sino_show_new,  dcol=1,   style=LEFT)
-        self.Add(self.sino_replace_old,  dcol=1,   style=LEFT)
+        self.Add(self.sino_show[0],  dcol=1,   style=LEFT)
+        self.Add(self.sino_show[1],  dcol=1,   style=LEFT)
 
         tomo_pkg = ['tomopy','scikit-image']
         tomopy_alg = ['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']
 
-        self.alg_choice = [Choice(self, choices=tomo_pkg,   size=(120, -1)),
-                           Choice(self, choices=tomopy_alg, size=(120, -1))]
+        self.alg_choice = [Choice(self, choices=tomo_pkg,   size=(125, -1)),
+                           Choice(self, choices=tomopy_alg, size=(125, -1))]
         for chc in self.alg_choice:
             chc.Bind(wx.EVT_CHOICE, self.onALGchoice)
         self.alg_choice[0].SetSelection(0)
         self.alg_choice[1].SetSelection(3)
 
         self.rot_cen = FloatCtrl(self, value=1, minval=0, precision=3, size=(100, -1))
-        self.ref_cen  = Check(self, label='Refine?')
+        self.ref_cen = Check(self, label='Refine?')
         self.ref_cen.SetValue(False)
         self.cen_step = wx.SpinButton(self, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
 
@@ -487,27 +481,74 @@ class TomographyPanel(GridPanel):
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
         self.AddMany((self.alg_choice[0],self.alg_choice[1]),  dcol=1,   style=LEFT)
         self.AddMany((SimpleText(self,''),SimpleText(self,'Center:'),center,self.ref_cen),  dcol=1,   style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self,''),self.tomo_show_new),  dcol=1,   style=LEFT, newrow=True)
-        self.Add(self.tomo_replace_old,  dcol=1,   style=LEFT)
+        self.AddMany((SimpleText(self,''),self.tomo_show[0]),  dcol=1,   style=LEFT, newrow=True)
+        self.Add(self.tomo_show[1],  dcol=1,   style=LEFT)
 
 ######################################
 
-        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
-
-        roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
-
-        fopts = dict(minval=0.01, precision=3, size=(100, -1))
-        self.roi_lims = [FloatCtrl(self, value=1, **fopts),
-                         FloatCtrl(self, value=2, **fopts)]
-        self.roi_name =  wx.TextCtrl(self,   -1, 'ROI_001',  size=(120, -1))        
-        self.roi_unt = Choice(self, choices=roiunits, size=(120, -1))
-
-        self.Add(SimpleText(self, '--    ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
-        self.AddMany((self.roi_name,self.roi_unt,self.roi_lims[0],self.roi_lims[1],Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow = True)
+#         self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
+# 
+#         roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
+# 
+#         fopts = dict(minval=0.01, precision=3, size=(100, -1))
+#         self.roi_lims = [FloatCtrl(self, value=1, **fopts),
+#                          FloatCtrl(self, value=2, **fopts)]
+#         self.roi_name =  wx.TextCtrl(self,   -1, 'ROI_001',  size=(120, -1))        
+#         self.roi_unt = Choice(self, choices=roiunits, size=(120, -1))
+# 
+#         self.Add(SimpleText(self, '--    ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
+#         self.AddMany((self.roi_name,self.roi_unt,self.roi_lims[0],self.roi_lims[1],Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow = True)
 
 ######################################
         
         self.pack()
+        
+        self.disable_options()
+
+    def disable_options(self):
+
+        for chc in ([self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice):
+            chc.Disable()
+        for chk in (self.cor,self.hotcols,self.ref_cen):
+            chk.Disable()
+        for btn in (self.sino_show+self.tomo_show):
+            btn.Disable()
+        self.rot_cen.Disable()
+        self.cen_step.Disable()
+
+    def enable_options(self):
+    
+        self.plot_choice.Enable()
+        
+        self.det_choice[0].Enable()
+        self.det_choice[-1].Enable()
+        self.roi_choice[0].Enable()
+        self.roi_choice[-1].Enable()
+        
+        for chc in self.alg_choice: chc.Enable()
+        
+        for chk in (self.cor,self.hotcols,self.ref_cen): chk.Enable()
+        for btn in (self.sino_show+self.tomo_show): btn.Enable()
+
+        self.rot_cen.Enable()
+        self.cen_step.Enable()
+
+    def update_xrmmap(self, xrmmap):
+
+        self.file   = self.owner.current_file
+        self.xrmmap = self.file.xrmmap
+        
+        self.enable_options()
+        self.set_det_choices(xrmmap)
+
+
+        center = len(self.file.get_pos(1, mean=True))/2
+
+        self.rot_cen.SetValue(center)
+
+        self.cen_step.SetRange(-20.*center,20.*center)
+        self.cen_step.SetValue(center*10.)
+
 
     def onStepCenter(self,event=None):
         self.rot_cen.SetValue(str(event.GetPosition()/10.))
@@ -522,16 +563,16 @@ class TomographyPanel(GridPanel):
 
     def detSELECT(self,idet,event=None):
     
-        self.set_roi_choices(self.owner.current_file.xrmmap,idet=idet)
+        self.set_roi_choices(self.file.xrmmap,idet=idet)
 
     def roiSELECT(self,iroi,event=None):
 
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
 
             detname = self.det_choice[iroi].GetStringSelection()
             roiname = self.roi_choice[iroi].GetStringSelection()
             try:
-                roi = self.owner.current_file.xrmmap['roimap'][detname][roiname]
+                roi = self.file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
                 roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
@@ -575,7 +616,7 @@ class TomographyPanel(GridPanel):
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None:
-            xrmfile = self.owner.current_file
+            xrmfile = self.file
         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
         indices = []
         for idx in selected:
@@ -595,21 +636,22 @@ class TomographyPanel(GridPanel):
         elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
         
-        if xname in self.rois:
-            xi = 0
-            while '%s_%02d' % (xname,xi) in self.rois: xi += 1
-            xname = '%s_%02d' % (xname,xi)
+        print 'send name to xrmmap file and have it check there for duplication'
+        #if xname in self.rois:
+        #    xi = 0
+        #    while '%s_%02d' % (xname,xi) in self.rois: xi += 1
+        #    xname = '%s_%02d' % (xname,xi)
 
         self.owner.message('Calculating ROI: %s' % xname)
         if self.roi_unt.GetStringSelection().startswith('XRD'):
-            self.owner.current_file.add_xrd1D_roi(xrange,xname)
+            self.file.add_xrd1D_roi(xrange,xname)
         elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
-            self.owner.current_file.add_xrd2D_roi(xarea,xname)
+            self.file.add_xrd2D_roi(xarea,xname)
         elif self.roi_unt.GetStringSelection().startswith('XRF'):
-            self.owner.current_file.add_xrfroi(xrange,xname)
+            self.file.add_xrfroi(xrange,xname)
         self.owner.message('Ready')
 
-        self.set_roi_choices(self.owner.current_file.xrmmap)
+        self.set_roi_choices(self.file.xrmmap)
 
     def calculateSinogram(self,datafile):
     
@@ -684,9 +726,7 @@ class TomographyPanel(GridPanel):
 
     def onShowSinogram(self, event=None, new=True):
         
-        datafile  = self.owner.current_file
-        title,subtitles,info,x,ome,sino = self.calculateSinogram(datafile)
-
+        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
@@ -694,12 +734,11 @@ class TomographyPanel(GridPanel):
 
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
-                               xrmfile=datafile)
+                               xrmfile=self.file)
 
     def onShowTomograph(self, event=None, new=True):
 
-        datafile  = self.owner.current_file
-        title,subtitles,info,x,ome,sino = self.calculateSinogram(datafile)
+        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         rot_center = self.rot_cen.GetValue()
 
@@ -752,34 +791,22 @@ class TomographyPanel(GridPanel):
 
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
-                               xrmfile=datafile)
-
-    def update_xrmmap(self, xrmmap):
-
-        self.plot_choice.Enable()
-
-        self.set_det_choices(xrmmap)
-#         self.set_roi_choices(xrmmap)
-
-
-
-
-        center = len(self.owner.current_file.get_pos(1, mean=True))/2
-
-        self.rot_cen.SetValue(center)
-
-        self.cen_step.SetRange(-20.*center,20.*center)
-        self.cen_step.SetValue(center*10.)
+                               xrmfile=self.file)
 
     def set_det_choices(self, xrmmap):
 
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             
-            det_list = ['scalars']
+            det_list = []
             for grp in xrmmap.keys():
                 for atrs in zip(xrmmap[grp].attrs.keys(),xrmmap[grp].attrs.values()):
                     if atrs[0] == 'type' and 'detector' in atrs[1]: det_list += [grp]
-
+            
+            if len(det_list) < 1: det_list = ['']
+            if 'scalars' in det_list:
+                det_list.remove('scalars')
+                det_list.insert(0, 'scalars')
+                
             for det_ch in self.det_choice:
                 det_ch.SetChoices(det_list)
 
@@ -787,7 +814,7 @@ class TomographyPanel(GridPanel):
 
     def set_roi_choices(self, xrmmap, idet=None):
 
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
 
             if idet is None:
                 for idet,det_ch in enumerate(self.det_choice):
@@ -795,24 +822,24 @@ class TomographyPanel(GridPanel):
             else:
                 self.update_roi(idet,xrmmap)
         else:
-            self.rois = ['1'] + list(xrmmap['roimap/sum_name'])
+            rois = ['1'] + list(xrmmap['roimap/sum_name'])
             if 'work' in xrmmap:
-                self.rois.extend(list(xrmmap['work'].keys()))
+                rois.extend(list(xrmmap['work'].keys()))
 
-            self.roi_choice[0].SetChoices(self.rois[1:])
-            self.roi_choice[-1].SetChoices(self.rois)
+            self.roi_choice[0].SetChoices(rois[1:])
+            self.roi_choice[-1].SetChoices(rois)
 
     def update_roi(self,idet,xrmmap):
 
         detname = self.det_choice[idet].GetStringSelection()
-        if detname == 'scalars':
-            rois = ['1'] # +  ...  
-            print 'need to find path for these arrays'
-        else:
+        try:
             limits,names = [],xrmmap['roimap'][detname].keys()
             for name in names:
                 limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
             rois = [x for (y,x) in sorted(zip(limits,names))]
+        except:
+            rois = [name for name in xrmmap[detname].keys()]
+            rois.insert(0, '1')
         self.roi_choice[idet].SetChoices(rois)
         try:
             self.roiSELECT(idet)
