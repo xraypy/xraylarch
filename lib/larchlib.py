@@ -8,6 +8,7 @@ import ast
 import numpy as np
 import traceback
 import inspect
+import yaml
 import six
 from collections import OrderedDict
 import ctypes
@@ -479,6 +480,31 @@ def save_workdir(conffile):
     except:
         pass
 
+
+def read_config(conffile):
+    """read yaml config file from users larch dir
+    compare save_config(conffile) which will save such a config
+
+    returns dictionary / configuration
+    """
+    cfile = os.path.join(usr_larchdir, conffile)
+    out = None
+    if os.path.exists(cfile):
+        with open(cfile, 'r') as fh:
+            out = fh.read()
+    if out is not None:
+        out = yaml.load(out)
+    return out
+
+def save_config(conffile, config):
+    """write yaml config file in the users larch dir
+    compare read_confif(conffile) which will read this value
+
+    """
+    cfile = os.path.join(usr_larchdir, conffile)
+    out = yaml.dump(config)
+    with open(cfile, 'w') as fh:
+        fh.write(out)
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):
