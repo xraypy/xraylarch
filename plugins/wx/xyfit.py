@@ -239,12 +239,13 @@ class ProcessPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = {'size': (65, -1), 'gformat': True,
-                'action': self.UpdatePlot}
+        opts = {'size': (65, -1), 'gformat': True}
 
-        self.xas_e0   = FloatCtrl(xas, value=0, **opts)
-        self.xas_step = FloatCtrl(xas, value=0, **opts)
+        self.xas_e0   = FloatCtrl(xas, value=0, action=self.onSet_XASE0, **opts)
+        self.xas_step = FloatCtrl(xas, value=0, action=self.onSet_XASStep, **opts)
+
         opts['precision'] = 1
+        opts['action'] =  self.UpdatePlot
         self.xas_pre1 = FloatCtrl(xas, value=-200, **opts)
         self.xas_pre2 = FloatCtrl(xas, value= -30, **opts)
         self.xas_nor1 = FloatCtrl(xas, value=  50, **opts)
@@ -383,6 +384,14 @@ class ProcessPanel(wx.Panel):
         except AttributeError:
             pass
 
+    def onSet_XASE0(self, evt=None, **kws):
+        self.xas_autoe0.SetValue(0)
+        self.needs_update = True
+
+    def onSet_XASStep(self, evt=None, **kws):
+        self.xas_autostep.SetValue(0)
+        self.needs_update = True
+
     def onProcessTimer(self, evt=None):
         if self.needs_update and self.controller.groupname is not None:
             self.process(self.controller.groupname)
@@ -391,8 +400,6 @@ class ProcessPanel(wx.Panel):
 
     def UpdatePlot(self, evt=None, **kws):
         self.needs_update = True
-        print("Update Plot ", evt)
-
 
     def on_selpoint(self, evt=None, opt='e0'):
         xval, yval = self.controller.get_cursor()
@@ -437,7 +444,7 @@ class ProcessPanel(wx.Panel):
         if dgroup.datatype.startswith('xas'):
             proc_opts['datatype'] = 'xas'
             proc_opts['e0'] = self.xas_e0.GetValue()
-            proc_opts['step'] = self.xas_step.GetValue()
+            proc_opts['edge_step'] = self.xas_step.GetValue()
             proc_opts['pre1']  = self.xas_pre1.GetValue()
             proc_opts['pre2']  = self.xas_pre2.GetValue()
             proc_opts['norm1'] = self.xas_nor1.GetValue()
@@ -457,9 +464,9 @@ class ProcessPanel(wx.Panel):
         if dgroup.datatype.startswith('xas'):
 
             if self.xas_autoe0.IsChecked():
-                self.xas_e0.SetValue(dgroup.proc_opts['e0'])
+                self.xas_e0.SetValue(dgroup.proc_opts['e0'], act=False)
             if self.xas_autostep.IsChecked():
-                self.xas_step.SetValue(dgroup.proc_opts['edge_step'])
+                self.xas_step.SetValue(dgroup.proc_opts['edge_step'], act=False)
 
             self.xas_pre1.SetValue(dgroup.proc_opts['pre1'])
             self.xas_pre2.SetValue(dgroup.proc_opts['pre2'])
@@ -507,7 +514,7 @@ class ProcessPanel(wx.Panel):
             dgroup.plot_ymarkers = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
-                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': 'marker'})]
+                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': '_nolegend_'})]
 
 class XYFitController():
     """
@@ -626,31 +633,25 @@ class XYFitController():
         # xas
         if dgroup.datatype.startswith('xas'):
 
-            dgroup.energy = dgroup.x
-            dgroup.mu = dgroup.y
+            dgroup.energy = dgroup.x*1.0
+            dgroup.mu = dgroup.y*1.0
 
-            popts = dict(group=dgroup.groupname, e0='None', step='None',
-                         make_flat='False')
-
+            copts = [dgroup.groupname]
             if not opts['auto_e0']:
                 _e0 = opts['e0']
                 if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                    popts['e0'] = "%.f" % float(_e0)
+                    copts.append("e0=%.4f" % float(_e0))
 
             if not opts['auto_step']:
-                popts['step'] = "%.f" % opts['step']
+                copts.append("step=%.4f" % opts['edge_step'])
 
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                popts[attr]  = "%.f" % opts[attr]
+                copts.append("%s=%.4f" % (attr, opts[attr]))
 
-            cmd = """pre_edge({group:s}, e0={e0:s}, step={step:s}, pre1={pre1:s}, pre2={pre2:s},
-         norm1={norm1:s}, norm2={norm2:s}, nnorm={nnorm:s}, nvict={nvict:s})""".format(**popts)
+            self.larch.eval("pre_edge(%s)" % (','.join(copts)))
 
-            self.larch.eval(cmd)
-
-            for attr in  ('e0', 'edge_step'):
-                opts[attr] = getattr(dgroup, attr)
-
+            opts['e0'] = dgroup.e0
+            opts['edge_step'] = dgroup.edge_step
             for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
                 opts[attr] = getattr(dgroup.pre_edge_details, attr)
             dgroup.proc_opts.update(opts)
@@ -696,31 +697,36 @@ class XYFitController():
         popts = kws
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
-            popts['label'] = "%s: %s" % (fname, dgroup.plot_ylabel)
+            popts['label'] = dgroup.plot_ylabel
+
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
-        if plotcmd == newplot and title is None:
-            title = fname
+        plot_ymarkers = None
+        if new:
+            if title is None:
+                title = fname
+            plot_ymarkers = getattr(dgroup, 'plot_ymarkers', None)
 
         popts['title'] = title
         for yarr in plot_yarrays:
             popts.update(yarr[1])
-            if yarr[2] is not None:
+            if popts['label'] is None and yarr[2] is not None:
                 popts['label'] = yarr[2]
             plotcmd(dgroup.x, yarr[0], **popts)
             plotcmd = oplot
 
-        if hasattr(dgroup, 'plot_ymarkers'):
+        if plot_ymarkers is not None:
             axes = ppanel.axes
-            for x, y, opts in dgroup.plot_ymarkers:
+            for x, y, opts in plot_ymarkers:
                 popts = {'marker': 'o', 'markersize': 4,
-                         'markerfacecolor': 'red',
+                         'markerfacecolor': 'red', 'label': '',
                          'markeredgecolor': 'black'}
                 popts.update(opts)
                 axes.plot([x], [y], **popts)
+
         ppanel.canvas.draw()
 
 
@@ -874,14 +880,9 @@ class XYFitFrame(wx.Frame):
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             if dgroup is not None:
-                self.controller.plot_group(groupname=groupname, title='', new=newplot)
+                self.controller.plot_group(groupname=groupname, title='',
+                                           new=newplot, label=dgroup.filename)
                 newplot=False
-
-            # dgroup.plot_yarrays = [(dgroup.ydat, PLOTOPTS_1,
-            #                        dgroup.filename)]
-            #if dgroup.datatype == 'xas':
-            #    dgroup.plot_xlabel = '$E\,\mathrm{(eV)}$'
-            #    dgroup.plot_ymarkers = []
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
         self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
@@ -889,7 +890,7 @@ class XYFitFrame(wx.Frame):
 
     def RemoveFile(self, evt=None, **kws):
         print(" REMOVE FILE FROM VIEW ", evt, kws)
-
+        print("controller.file_groups ", controller.file_groups)
 
     def ShowFile(self, evt=None, groupname=None, **kws):
         filename = None
