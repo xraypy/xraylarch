@@ -424,16 +424,17 @@ class LarchFrame(wx.Frame):
         if dgroup is not None:
             self.show_subframe(name='coledit', event=None,
                                creator=ColumnDataFileFrame,
-                               group=dgroup,
+                               filename=path,
                                last_array_sel=self.last_array_sel,
                                read_ok_cb=self.onReadScan_Success)
 
-    def onReadScan_Success(self, datagroup, array_sel):
+    def onReadScan_Success(self, script, path, groupname=None, array_sel=None,
+                           overwrite=False):
         """ called when column data has been selected and is ready to be used"""
-        self.last_array_sel = array_sel
-        filename  = datagroup._filename
-        groupname = datagroup._groupname
-        setattr(self.larchshell.symtable, groupname, datagroup)
+        self.larchshell.eval(script.format(group=groupname, path=path))
+        if array_sel is not None:
+            self.last_array_sel = array_sel
+
         self.larchshell.flush()
 
     def onRunScript(self, event=None):
