@@ -1644,25 +1644,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
 
-            if np.shape(self._xrd.data1D)[0] > 2:
-                for i in np.arange(np.shape(self._xrd.data1D)[0]/2):
-                    xrd1d = self._xrd.data1D[(i*2):((i*2)+2)]
-                    if show:
-                        if i != 0:
-                            wdglbl = self._xrd.title + ' - wedge %i' % i
-                        else:
-                            wdglbl = self._xrd.title + ' (entire image)'
-                        self.owner.display_1Dxrd(xrd1d,self._xrd.energy,label=wdglbl)
-                    if save:
-                        file = '%s.xy' % stem if i==0 else '%s_wedge%02d.xy' % (stem,i)
-                        save1D(file, xrd1d[0], xrd1d[1], calfile=ponifile)
-            else:
-                if show:
-                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
-                                             label=self._xrd.title)
-                if save:
-                    file = '%s.xy' % stem
-                    save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
+            if show:
+                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
+                                         label=self._xrd.title)
+            if save:
+                file = '%s.xy' % stem
+                save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
 
 #             if not flag2D:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
@@ -2023,6 +2010,7 @@ class MapViewerFrame(wx.Frame):
         data1dxrd = xrd1d(label=label,
                           energy=energy,
                           wavelength=lambda_from_E(energy))
+        
         data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:

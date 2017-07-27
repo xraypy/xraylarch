@@ -6,6 +6,7 @@ import h5py
 import numpy as np
 import scipy.stats as stats
 import json
+from distutils.version import StrictVersion
 import larch
 from larch.utils.debugtime import debugtime
 from larch.utils.strutils import fix_filename
@@ -112,7 +113,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '1.4.0',
+           'Version': '2.0.0',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time':'',
@@ -702,6 +703,9 @@ class GSEXRM_MapFile(object):
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
+            for xkey,xval in zip(self.xrmmap.attrs.keys(),self.xrmmap.attrs.values()):
+                if xkey == 'Version': self.version = xval
+
             if poni is not None: self.add_calibration()
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
@@ -992,6 +996,7 @@ class GSEXRM_MapFile(object):
 
     def add_rowdata(self, row, verbose=False):
         '''adds a row worth of real data'''
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -1006,121 +1011,199 @@ class GSEXRM_MapFile(object):
             pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
         print(pform)
 
-        if verbose: t0 = time.time()
-        if self.flag_xrf:
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
-            nmca, xnpts, nchan = row.counts.shape
-            xrm_dets = []
-
-            nrows = 0
-            map_items = sorted(self.xrmmap.keys())
-            for gname in map_items:
-                g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'mca detector':
-                    xrm_dets.append(g)
-                    nrows, npts, nchan =  g['counts'].shape
-
-            if thisrow >= nrows:
-                self.resize_arrays(32*(1+nrows/32))
-
-            _nr, npts, nchan = xrm_dets[0]['counts'].shape
-            npts = min(npts, xnpts, self.npts)
-            for idet, grp in enumerate(xrm_dets):
-                grp['dtfactor'][thisrow,  :npts]  = row.dtfactor[idet, :npts]
-                grp['realtime'][thisrow,  :npts]  = row.realtime[idet, :npts]
-                grp['livetime'][thisrow,  :npts]  = row.livetime[idet, :npts]
-                grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
-                grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
-                grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
-
-            # here, we add the total dead-time-corrected data to detsum.
-            self.xrmmap['detsum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
-
+            npts = np.shape(row.posvals)[1]
             pos    = self.xrmmap['positions/pos']
             rowpos = np.array([p[:npts] for p in row.posvals])
 
             tpos = rowpos.transpose()
-
             pos[thisrow, :npts, :] = tpos[:npts, :]
 
-            # now add roi map data
-            roimap = self.xrmmap['roimap']
-            det_raw = roimap['det_raw']
-            det_cor = roimap['det_cor']
-            sum_raw = roimap['sum_raw']
-            sum_cor = roimap['sum_cor']
 
-            detraw = list(row.sisdata[:npts].transpose())
+            if self.flag_xrf:
 
-            detcor = detraw[:]
-            sumraw = detraw[:]
-            sumcor = detraw[:]
+                nmca, xnpts, nchan = row.counts.shape
+                mca_dets = []
 
-            if self.roi_slices is None:
-                lims = self.xrmmap['config/rois/limits'].value
-                nrois, nmca, nx = lims.shape
+                nrows = 0
+                map_items = sorted(self.xrmmap.keys())
+                for gname in map_items:
+                    g = self.xrmmap[gname]
+                    if g.attrs.get('type', None) == 'mca detector':
+                        mca_dets.append(g)
+                        nrows, npts, nchan =  g['counts'].shape
 
-                self.roi_slices = []
-                for iroi in range(nrois):
-                    x = [slice(lims[iroi, i, 0],
-                               lims[iroi, i, 1]) for i in range(nmca)]
-                    self.roi_slices.append(x)
+                if thisrow >= nrows:
+                    self.resize_arrays(NINIT*(1+nrows/NINIT))
 
-            for slices in self.roi_slices:
-                iraw = [row.counts[i, :npts, slices[i]].sum(axis=1)
-                        for i in range(nmca)]
-                icor = [row.counts[i, :npts, slices[i]].sum(axis=1)*row.dtfactor[i, :npts]
-                        for i in range(nmca)]
-                detraw.extend(iraw)
-                detcor.extend(icor)
-                sumraw.append(np.array(iraw).sum(axis=0))
-                sumcor.append(np.array(icor).sum(axis=0))
+                _nr, npts, nchan = mca_dets[0]['counts'].shape
+                npts = min(npts, xnpts, self.npts)
+                
+                for idet, grp in enumerate(mca_dets):
+                    grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
+                    grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
+                    grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
+                    grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
+                    grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
+                    grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
+                self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
 
-            det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
-            det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
-            sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
-            sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
+                roigrp = self.xrmmap['roimap']
+                for detname in sorted(roigrp.keys()):
+                    if roigrp[detname].attrs.get('type', None) == 'mca detector':
+                        en  = self.xrmmap[detname]['energy'][:]
+                        cts = self.xrmmap[detname]['counts'][thisrow,]
+                        dft = self.xrmmap[detname]['dtfactor'][thisrow,]
+                        if roigrp[detname].attrs.get('type', None) == 'mca detector':
+                            for roiname in roigrp[detname].keys():
+                                en_lim = roigrp[detname][roiname]['limits'][:]
+                                roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
+                                             np.abs(en-en_lim[1]).argmin())
+                                mcaraw = cts[:,roi_slice].sum(axis=1)
+                                mcacor = mcaraw*dft
+                                roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
+                                roigrp[detname][roiname]['cor'][thisrow,] = mcacor
+                                roigrp['mcasum'][roiname]['raw'][thisrow,] += mcaraw
+                                roigrp['mcasum'][roiname]['cor'][thisrow,] += mcacor
 
-        if verbose: t1 = time.time()
-
-        if self.flag_xrd1d:
-            if row.xrd1d is not None:
-                try:
-                    self.xrmmap['xrd1D/q'] = row.xrdq[0]
-                except:
-                    pass
+            if self.flag_xrd1d:
+                if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
-            if row.xrd1d_wdg is not None:
-                for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
-                    try:
-                        wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
-                    except:
-                        pass
-                    wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
 
-        if self.flag_xrd2d and row.xrd2d is not None:
-            self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+                if row.xrd1d_wdg is not None:
+                    for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
+                        try:
+                            wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
+                        except:
+                            pass
+                        wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
 
-        if verbose: t2 = time.time()
-        if verbose:
-            writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
-            if row.xrd1dcalctime > 0.001:
-                pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s; 1DXRD: %0.3f s) '
-                print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
-            elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
-                pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s) '
-                print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
-            else:
-                print('\tReading: %0.2f s' % row.readtime)
-            if xrdwritetime > 0.001 and xrfwritetime > 0.001:
-                pform = '\tWriting: %0.3f s (XRF: %0.3f s; XRD: %0.3f s) '
-                print(pform % (writetime,xrfwritetime,xrdwritetime))
-            else:
-                print('\tWriting: %0.2f s' % writetime)
+            if self.flag_xrd2d and row.xrd2d is not None:
+                self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
 
-        self.last_row = thisrow
-        self.xrmmap.attrs['Last_Row'] = thisrow
-        self.h5root.flush()
+            self.last_row = thisrow
+            self.xrmmap.attrs['Last_Row'] = thisrow
+            self.h5root.flush()
+####################################################################################
+####################################################################################
+####################################################################################
+####################################################################################
+####################################################################################
+        else:
+
+            if verbose: t0 = time.time()
+            if self.flag_xrf:
+
+                nmca, xnpts, nchan = row.counts.shape
+                xrm_dets = []
+
+                nrows = 0
+                map_items = sorted(self.xrmmap.keys())
+                for gname in map_items:
+                    g = self.xrmmap[gname]
+                    if g.attrs.get('type', None) == 'mca detector':
+                        xrm_dets.append(g)
+                        nrows, npts, nchan =  g['counts'].shape
+
+                if thisrow >= nrows:
+                    self.resize_arrays(NINIT*(1+nrows/NINIT))
+
+                _nr, npts, nchan = xrm_dets[0]['counts'].shape
+                npts = min(npts, xnpts, self.npts)
+                for idet, grp in enumerate(xrm_dets):
+                    grp['dtfactor'][thisrow,  :npts]  = row.dtfactor[idet, :npts]
+                    grp['realtime'][thisrow,  :npts]  = row.realtime[idet, :npts]
+                    grp['livetime'][thisrow,  :npts]  = row.livetime[idet, :npts]
+                    grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
+                    grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
+                    grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
+
+                # here, we add the total dead-time-corrected data to detsum.
+                self.xrmmap['detsum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
+
+                pos    = self.xrmmap['positions/pos']
+                rowpos = np.array([p[:npts] for p in row.posvals])
+
+                tpos = rowpos.transpose()
+
+                pos[thisrow, :npts, :] = tpos[:npts, :]
+
+                # now add roi map data
+                roimap = self.xrmmap['roimap']
+                det_raw = roimap['det_raw']
+                det_cor = roimap['det_cor']
+                sum_raw = roimap['sum_raw']
+                sum_cor = roimap['sum_cor']
+
+                detraw = list(row.sisdata[:npts].transpose())
+
+                detcor = detraw[:]
+                sumraw = detraw[:]
+                sumcor = detraw[:]
+
+                if self.roi_slices is None:
+                    lims = self.xrmmap['config/rois/limits'].value
+                    nrois, nmca, nx = lims.shape
+
+                    self.roi_slices = []
+                    for iroi in range(nrois):
+                        x = [slice(lims[iroi, i, 0],
+                                   lims[iroi, i, 1]) for i in range(nmca)]
+                        self.roi_slices.append(x)
+
+                for slices in self.roi_slices:
+                    iraw = [row.counts[i, :npts, slices[i]].sum(axis=1)
+                            for i in range(nmca)]
+                    icor = [row.counts[i, :npts, slices[i]].sum(axis=1)*row.dtfactor[i, :npts]
+                            for i in range(nmca)]
+                    detraw.extend(iraw)
+                    detcor.extend(icor)
+                    sumraw.append(np.array(iraw).sum(axis=0))
+                    sumcor.append(np.array(icor).sum(axis=0))
+
+                det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
+                det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
+                sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
+                sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
+
+            if verbose: t1 = time.time()
+
+            if self.flag_xrd1d:
+                if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
+                self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
+
+                if row.xrd1d_wdg is not None:
+                    for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
+                        try:
+                            wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
+                        except:
+                            pass
+                        wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
+
+            if self.flag_xrd2d and row.xrd2d is not None:
+                self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+
+            if verbose: t2 = time.time()
+            if verbose:
+                writetime,xrfwritetime,xrdwritetime = (t2-t0),(t1-t0),(t2-t1)
+                if row.xrd1dcalctime > 0.001:
+                    pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s; 1DXRD: %0.3f s) '
+                    print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime,row.xrd1dcalctime))
+                elif row.xrd2dreadtime > 0.01 and row.xrfreadtime > 0.01:
+                    pform = '\tReading: %0.3f s (XRF: %0.3f s; 2DXRD: %0.3f s) '
+                    print(pform % (row.readtime,row.xrfreadtime,row.xrd2dreadtime))
+                else:
+                    print('\tReading: %0.2f s' % row.readtime)
+                if xrdwritetime > 0.001 and xrfwritetime > 0.001:
+                    pform = '\tWriting: %0.3f s (XRF: %0.3f s; XRD: %0.3f s) '
+                    print(pform % (writetime,xrfwritetime,xrdwritetime))
+                else:
+                    print('\tWriting: %0.2f s' % writetime)
+
+            self.last_row = thisrow
+            self.xrmmap.attrs['Last_Row'] = thisrow
+            self.h5root.flush()
 
     def build_schema(self, row, verbose=False):
         '''build schema for detector and scan data'''
@@ -1141,14 +1224,19 @@ class GSEXRM_MapFile(object):
             self.npts = row.npts
         npts = self.npts
 
-        conf   = self.xrmmap['config']
-
         if self.flag_xrf:
-            nmca, xnpts, nchan = row.counts.shape
-            if verbose:
-                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                print(prtxt % (npts, row.npts, nmca, nchan))
+            conf   = self.xrmmap['config']
+            
+            roi_names = [h5str(s) for s in conf['rois/name']]
+            roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
 
+            offset = conf['mca_calib/offset'].value
+            slope  = conf['mca_calib/slope'].value
+            quad   = conf['mca_calib/quad'].value
+
+            nmca, xnpts, nchan = row.counts.shape
+            en_index = np.arange(nchan)
+            
             if self.chunksize is None:
                 if xnpts < 10: xnpts=10
                 nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
@@ -1156,114 +1244,91 @@ class GSEXRM_MapFile(object):
                 if nxx > 256:
                     nxm = min(1024, int(65536*1.0/ nxx))
                 self.chunksize = (1, nxx, nxm)
-            en_index = np.arange(nchan)
 
-            offset = conf['mca_calib/offset'].value
-            slope  = conf['mca_calib/slope'].value
-            quad   = conf['mca_calib/quad'].value
+            if verbose:
+                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
+                print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
+                print ' '
 
-            roi_names = [h5str(s) for s in conf['rois/name']]
-            roi_addrs = [h5str(s) for s in conf['rois/address']]
-            roi_limits = conf['rois/limits'].value
-            for imca in range(nmca):
-                dname = 'det%i' % (imca+1)
-                dgrp = xrmmap.create_group(dname)
-                dgrp.attrs['type'] = 'mca detector'
-                dgrp.attrs['desc'] = 'mca%i' % (imca+1)
-                en  = 1.0*offset[imca] + slope[imca]*1.0*en_index
-                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[imca],
-                                                         'cal_slope': slope[imca]})
-                self.add_data(dgrp, 'roi_name',    roi_names)
-                self.add_data(dgrp, 'roi_address', [s % (imca+1) for s in roi_addrs])
-                self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
+            ## mca1 to mca 4
+            for i,imca in enumerate(('mca1', 'mca2', 'mca3', 'mca4')):
+                for grp in (xrmmap, xrmmap['roimap']):
+                    dgrp = grp.create_group(imca)
+                    dgrp.attrs['type'] = 'mca detector'
+                    dgrp.attrs['desc'] = imca
 
+                dgrp = xrmmap[imca]
+                en  = 1.0*offset[i] + slope[i]*1.0*en_index
+                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[i],
+                                                         'cal_slope': slope[i]})
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     compression=COMPRESSION_LEVEL,
                                     chunks=self.chunksize,
                                     maxshape=(None, npts, nchan))
-                for name, dtype in (('realtime', np.int),  ('livetime', np.int),
-                                    ('dtfactor', np.float32),
+
+                for name, dtype in (('realtime',  np.int    ),
+                                    ('livetime',  np.int    ),
+                                    ('dtfactor',  np.float32),
                                     ('inpcounts', np.float32),
                                     ('outcounts', np.float32)):
                     dgrp.create_dataset(name, (NINIT, npts), dtype,
                                         compression=COMPRESSION_LEVEL,
                                         maxshape=(None, npts))
 
-            # add 'virtual detector' for corrected sum:
-            dgrp = xrmmap.create_group('detsum')
-            dgrp.attrs['type'] = 'virtual mca'
-            dgrp.attrs['desc'] = 'deadtime corrected sum of detectors'
-            en = 1.0*offset[0] + slope[0]*1.0*en_index
+                dgrp = xrmmap['roimap'][imca]
+                for rname,rlimit in zip(roi_names,roi_limits[i]):
+                    rgrp = dgrp.create_group(rname)
+                    for aname,dtype in (('raw',  np.int16  ),
+                                    ('cor',  np.float32)):
+                        rgrp.create_dataset(aname, (NINIT, npts), dtype,
+                                            compression=COMPRESSION_LEVEL,
+                                            chunks=self.chunksize[:-1],
+                                            maxshape=(None, npts))
+                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
+                    lmtgrp.attrs['type'] = 'energy'
+                    lmtgrp.attrs['unts'] = 'keV'
+                        
+            ## mcasum
+            for grp in (xrmmap, xrmmap['roimap']):
+                dgrp = grp.create_group('mcasum')
+                dgrp.attrs['type'] = 'virtual mca'
+                dgrp.attrs['desc'] = 'sum of detectors'
+
+            dgrp = xrmmap['mcasum']
+            en  = 1.0*offset[0] + slope[0]*1.0*en_index
             self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
                                                      'cal_slope': slope[0]})
-            self.add_data(dgrp, 'roi_name',    roi_names)
-            self.add_data(dgrp, 'roi_address', [s % 1 for s in roi_addrs])
-            self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                 compression=COMPRESSION_LEVEL,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan))
-            # roi map data
-            scan = xrmmap['roimap']
-            det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
-            det_desc = [i.strip() for i in row.sishead[-1][1:].split('|')]
-            for addr in roi_addrs:
-                det_addr.extend([addr % (i+1) for i in range(nmca)])
 
-            for desc in roi_names:
-                det_desc.extend(["%s (mca%i)" % (desc, i+1)
-                                 for i in range(nmca)])
+            dgrp = xrmmap['roimap']['mcasum']
+            for rname,rlimit in zip(roi_names,roi_limits[0]):
+                rgrp = dgrp.create_group(rname)
+                for aname,dtype in (('raw',  np.int16  ),
+                                    ('cor',  np.float32)):
+                    rgrp.create_dataset(aname, (NINIT, npts), dtype,
+                                        compression=COMPRESSION_LEVEL,
+                                        chunks=self.chunksize[:-1],
+                                        maxshape=(None, npts))
+                lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
+                lmtgrp.attrs['type'] = 'energy'
+                lmtgrp.attrs['unts'] = 'keV'
 
-            sums_map = {}
-            sums_desc = []
-            nsum = 0
-            for idet, addr in enumerate(det_desc):
-                if '(mca' in addr:
-                    addr = addr.split('(mca')[0].strip()
 
-                if addr not in sums_map:
-                    sums_map[addr] = []
-                    sums_desc.append(addr)
-                sums_map[addr].append(idet)
-            nsum = max([len(s) for s in sums_map.values()])
-            sums_list = []
-            for sname in sums_desc:
-                slist = sums_map[sname]
-                if len(slist) < nsum:
-                    slist.extend([-1]*(nsum-len(slist)))
-                sums_list.append(slist)
 
-            nsum = len(sums_list)
-            nsca = len(det_desc)
-
-            sums_list = np.array(sums_list)
-
-            self.add_data(scan, 'det_name',    det_desc)
-            self.add_data(scan, 'det_address', det_addr)
-            self.add_data(scan, 'sum_name',    sums_desc)
-            self.add_data(scan, 'sum_list',    sums_list)
-
-            nxx = min(nsca, 8)
-            for name, nx, dtype in (('det_raw', nsca, np.int32),
-                                    ('det_cor', nsca, np.float32),
-                                    ('sum_raw', nsum, np.int32),
-                                    ('sum_cor', nsum, np.float32)):
-                scan.create_dataset(name, (NINIT, npts, nx), dtype,
-                                    compression=COMPRESSION_LEVEL,
-                                    chunks=(2, npts, nx),
-                                    maxshape=(None, npts, nx))
-
-            # positions
-            pos = xrmmap['positions']
-            for pname in ('mca realtime', 'mca livetime'):
-                self.pos_desc.append(pname)
-                self.pos_addr.append(pname)
-            npos = len(self.pos_desc)
-            self.add_data(pos, 'name',     self.pos_desc)
-            self.add_data(pos, 'address',  self.pos_addr)
-            pos.create_dataset('pos', (NINIT, npts, npos), dtype,
-                               compression=COMPRESSION_LEVEL,
-                               maxshape=(None, npts, npos))
+        # positions
+        pos = xrmmap['positions']
+        for pname in ('mca realtime', 'mca livetime'):
+            self.pos_desc.append(pname)
+            self.pos_addr.append(pname)
+        npos = len(self.pos_desc)
+        self.add_data(pos, 'name',     self.pos_desc)
+        self.add_data(pos, 'address',  self.pos_addr)
+        pos.create_dataset('pos', (NINIT, npts, npos), dtype,
+                           compression=COMPRESSION_LEVEL,
+                           maxshape=(None, npts, npos))
 
         if self.flag_xrd2d or self.flag_xrd1d:
 
@@ -1375,42 +1440,72 @@ class GSEXRM_MapFile(object):
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
+
+#         if not self.check_hostid():
+#             raise GSEXRM_NotOwner(self.filename)
+#         realmca_groups,virtmca_groups = [],[]
+#         for g in self.xrmmap.values():
+#             # include both real and virtual mca detectors!
+#             if g.attrs.get('type', '').startswith('mca det'):
+#                 realmca_groups.append(g)
+#             elif g.attrs.get('type', '').startswith('virtual mca'):
+#                 virtmca_groups.append(g)
+# 
+#         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
+#         for g in realmca_groups:
+#             g['counts'].resize((nrow, npts, nchan))
+#             for aname in ('livetime', 'realtime',
+#                           'inpcounts', 'outcounts', 'dtfactor'):
+#                 g[aname].resize((nrow, npts))
+# 
+#         for g in virtmca_groups:
+#             g['counts'].resize((nrow, npts, nchan))
+# 
+#         g = self.xrmmap['positions/pos']
+#         old, npts, nx = g.shape
+#         g.resize((nrow, npts, nx))
+# 
+#         for bname in ('det_raw', 'det_cor', 'sum_raw', 'sum_cor'):
+#             g = self.xrmmap['roimap'][bname]
+#             old, npts, nx = g.shape
+#             g.resize((nrow, npts, nx))
+# 
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-        realmca_groups,virtmca_groups = [],[]
-        for g in self.xrmmap.values():
-            # include both real and virtual mca detectors!
-            if g.attrs.get('type', '').startswith('mca det'):
-                realmca_groups.append(g)
-            elif g.attrs.get('type', '').startswith('virtual mca'):
-                virtmca_groups.append(g)
-
-        oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
-        for g in realmca_groups:
-            g['counts'].resize((nrow, npts, nchan))
-            for aname in ('livetime', 'realtime',
-                          'inpcounts', 'outcounts', 'dtfactor'):
-                g[aname].resize((nrow, npts))
-
-        for g in virtmca_groups:
-            g['counts'].resize((nrow, npts, nchan))
 
         g = self.xrmmap['positions/pos']
         old, npts, nx = g.shape
         g.resize((nrow, npts, nx))
 
-        for bname in ('det_raw', 'det_cor', 'sum_raw', 'sum_cor'):
-            g = self.xrmmap['roimap'][bname]
-            old, npts, nx = g.shape
-            g.resize((nrow, npts, nx))
-        
-        oldnrow, npts, xpixx, xpixy = self.xrmmap['xrd2D']['counts'].shape        
-        self.xrmmap['xrd2D']['counts'].resize((nrow, npts, xpixx, xpixy))
+        if self.flag_xrf:
+            for g in self.xrmmap.values():
 
-        oldnrow, npts, qstps = self.xrmmap['xrd1D']['counts'].shape        
-        self.xrmmap['xrd1D']['counts'].resize((nrow, npts, qstps))
-        for g in self.xrmmap['work']['xrdwedge'].values():
-            g['counts'].resize((nrow, npts, qstps))
+                oldnrow, npts, nchan = g['counts'].shape
+                g['counts'].resize((nrow, npts, nchan))
+
+                if g.attrs.get('type', '').startswith('mca det'):
+                    for aname in ('livetime', 'realtime',
+                                  'inpcounts', 'outcounts', 'dtfactor'):
+                        g[aname].resize((nrow, npts))
+        
+        if self.flag_xrd2d:
+            oldnrow, npts, xpixx, xpixy = self.xrmmap['xrd2D']['counts'].shape        
+            self.xrmmap['xrd2D']['counts'].resize((nrow, npts, xpixx, xpixy))
+
+        if self.flag_xrd1d:
+            oldnrow, npts, qstps = self.xrmmap['xrd1D']['counts'].shape        
+            self.xrmmap['xrd1D']['counts'].resize((nrow, npts, qstps))
+            for g in self.xrmmap['work']['xrdwedge'].values():
+                g['counts'].resize((nrow, npts, qstps))
+
+        for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
+            print 'g in roimap:',g
+            for h in g.values():  # loop through rois in roimap
+                print '  h in g:',h
+                for aname in ('raw','cor'):
+                    oldnrow, npts = h[aname].shape
+                    h[aname].resize((nrow, npts))
         
         self.h5root.flush()
 
@@ -2106,9 +2201,8 @@ class GSEXRM_MapFile(object):
         qdat   = self.xrmmap['xrd1D']['q']
         mapdat = self.xrmmap['xrd1D']['counts']
         mapname = self.xrmmap['xrd1D'].name
-        print 'IS THIS A THING?'
         ix, iy, stps = mapdat.shape
-
+        
         if len(np.where(area)[0]) < 1: return None
         
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
@@ -2146,8 +2240,6 @@ class GSEXRM_MapFile(object):
                         callback(i, step, nx*(y2-y1))
                     patterns += self.get_1Dxrd_rect(y1, y2, xmin, xmax,
                                                     area, mapdat=mapdat)
-
-        patterns = patterns.sum(axis=0)
         patterns = np.array([qdat,patterns])
         
         return self._get1DXRD(mapname, patterns, areaname, nwedge=nwdg, steps=stps)
@@ -2179,16 +2271,11 @@ class GSEXRM_MapFile(object):
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
-        if len(mapdat.shape)== 4:
-            ix, iy, nwdg, stps = mapdat.shape
-            patterns = patterns.reshape(ny, nx, nwdg, stps)
-        else:
-            ix, iy, stps = mapdat.shape
-            patterns = patterns.reshape(ny, nx, stps)
-
         cell     = mapdat.regionref[sy, sx, :]
         patterns = mapdat[cell]
-        patterns = patterns.reshape(ny, nx, nwdg, stps)
+
+        ix, iy, stps = mapdat.shape
+        patterns = patterns.reshape(ny, nx, stps)
 
         patterns = (patterns[area[sy, sx]]).sum(axis=0)
         area_pix = (area.sum(axis=0)).sum(axis=0)
@@ -2303,7 +2390,7 @@ class GSEXRM_MapFile(object):
 
         return frames.sum(axis=0)
 
-    def _get1DXRD(self, map, pattern, areaname, nwedge=0, steps=STEPS):
+    def _get1DXRD(self, mapname, pattern, areaname, nwedge=0, steps=STEPS):
 
         name = ('xrd: %s' % areaname)
         _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
@@ -2312,12 +2399,12 @@ class GSEXRM_MapFile(object):
         path, fname = os.path.split(self.filename)
         _1Dxrd.filename = fname
         fmt = "Data from File '%s', detector '%s', area '%s'"
-        mapname = map.name.split('/')[-1]
+#         mapname = map.name.split('/')[-1]
         _1Dxrd.info  =  fmt % (self.filename, mapname, name)
 
         return _1Dxrd
 
-    def _get2DXRD(self, map, frames, areaname, xpixels=2048, ypixels=2048):
+    def _get2DXRD(self, mapname, frames, areaname, xpixels=2048, ypixels=2048):
 
         name = ('xrd: %s' % areaname)
         _2Dxrd = XRD(data2D=frames, xpixels=xpixels, ypixels=ypixels, name=name)
@@ -2326,7 +2413,7 @@ class GSEXRM_MapFile(object):
         path, fname = os.path.split(self.filename)
         _2Dxrd.filename = fname
         fmt = "Data from File '%s', detector '%s', area '%s'"
-        mapname = map.name.split('/')[-1]
+        #mapname = map.name.split('/')[-1]
         _2Dxrd.info  =  fmt % (self.filename, mapname, name)
 
         return _2Dxrd
