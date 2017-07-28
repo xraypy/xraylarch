@@ -1435,6 +1435,10 @@ class GSEXRM_MapFile(object):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
+
+['mcasum']['counts']
+
+
             g = self.xrmmap['positions/pos']
             old, npts, nx = g.shape
             g.resize((nrow, npts, nx))
@@ -1450,6 +1454,9 @@ class GSEXRM_MapFile(object):
                     for aname in ('livetime', 'realtime',
                                   'inpcounts', 'outcounts', 'dtfactor'):
                         g[aname].resize((nrow, npts))
+                elif g.attrs.get('type', '').startswith('virtual mca det'):
+                    oldnrow, npts, nchan = g['counts'].shape
+                    g['counts'].resize((nrow, npts, nchan))
                 elif g.attrs.get('type', '').startswith('xrd2D detector'):
                     oldnrow, npts, xpixx, xpixy = g['counts'].shape
                     g['counts'].resize((nrow, npts, xpixx, xpixy))
