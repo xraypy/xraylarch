@@ -21,7 +21,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
 from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
 
 
-NINIT = 2
+NINIT = 32
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
@@ -1026,12 +1026,10 @@ class GSEXRM_MapFile(object):
             if thisrow >= nrows:
                 self.resize_arrays(NINIT*(1+nrows/NINIT))
 
-            print 'check 1'
             sclrgrp = self.xrmmap['scalars']
             for ai,aname in enumerate(re.findall(r"[\w']+", row.sishead[-1])):
                 sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
 
-            print 'check 2'
             npts = np.shape(row.posvals)[1]
             pos    = self.xrmmap['positions/pos']
             rowpos = np.array([p[:npts] for p in row.posvals])
@@ -1039,7 +1037,6 @@ class GSEXRM_MapFile(object):
             tpos = rowpos.transpose()
             pos[thisrow, :npts, :] = tpos[:npts, :]
 
-            print 'check 3'
             if self.flag_xrf:
 
                 nmca, xnpts, nchan = row.counts.shape
@@ -1053,7 +1050,6 @@ class GSEXRM_MapFile(object):
 
                 _nr, npts, nchan = mca_dets[0]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
-                print 'check 4'
                 for idet, grp in enumerate(mca_dets):
                     grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
                     grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
@@ -1062,7 +1058,6 @@ class GSEXRM_MapFile(object):
                     grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
                     grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
                 self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
-                print 'check 5'
                 roigrp = self.xrmmap['roimap']
                 for detname in sorted(roigrp.keys()):
                     if roigrp[detname].attrs.get('type', None) == 'mca detector':
@@ -1080,8 +1075,6 @@ class GSEXRM_MapFile(object):
                                 roigrp[detname][roiname]['cor'][thisrow,] = mcacor
                                 roigrp['mcasum'][roiname]['raw'][thisrow,] += mcaraw
                                 roigrp['mcasum'][roiname]['cor'][thisrow,] += mcacor
-                                
-                print 'check 6'
 
         else:
 
@@ -1160,11 +1153,9 @@ class GSEXRM_MapFile(object):
                 sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
-        print 'check 7'
         if self.flag_xrd1d:
             if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
             self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
-            print 'check 8'
             if row.xrd1d_wdg is not None:
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
                     try:
@@ -1172,10 +1163,8 @@ class GSEXRM_MapFile(object):
                     except:
                         pass
                     wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
-        print 'check 9'
         if self.flag_xrd2d and row.xrd2d is not None:
             self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
-        print 'check 10'
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
         self.h5root.flush()
@@ -1434,10 +1423,6 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-
-
-['mcasum']['counts']
-
 
             g = self.xrmmap['positions/pos']
             old, npts, nx = g.shape
