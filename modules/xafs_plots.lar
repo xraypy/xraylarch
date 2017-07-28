@@ -16,28 +16,30 @@ Plotting macros for XAFS data sets and fits
 """
 
 # common XAFS plot labels
-labels = group(k       = r'$k \rm\,(\AA^{-1})$',
-               r       = r'$R \rm\,(\AA)$',
-               energy  = r'$E\rm\,(eV)$',
-               mu      = r'$\mu(E)$',
-               dmude   = r'$d\mu(E)/dE$',
-               chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
-               chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
-               chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
-               chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               e0color = '#B2B282')
-
 def __chir_label__(show_mag, show_real, show_imag, kweight):
     "private method: determine y label for chi(R) plot"
     ylab = []
-    if show_mag:  ylab.append(labels.chirmag)
-    if show_real: ylab.append(labels.chirre)
-    if show_imag: ylab.append(labels.chirim)
-    if len(ylab) > 1:  ylab = [labels.chir]
+    if show_mag:  ylab.append(plotlabels.chirmag)
+    if show_real: ylab.append(plotlabels.chirre)
+    if show_imag: ylab.append(plotlabels.chirim)
+    if len(ylab) > 1:  ylab = [plotlabels.chir]
     return ylab[0].format(kweight+1)
 #enddef
+
+plotlabels = group(k       = r'$k \rm\,(\AA^{-1})$',
+                   r       = r'$R \rm\,(\AA)$',
+                   energy  = r'$E\rm\,(eV)$',
+                   mu      = r'$\mu(E)$',
+                   dmude   = r'$d\mu(E)/dE$',
+                   chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+                   chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   e0color = '#B2B282',
+                   chirlab = __chir_label__)
+
 
 def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
             show_e0=False, show_deriv=False, emin=None, emax=None, new=True, win=1):
@@ -73,13 +75,13 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     else:
         raise ValueError("XAFS data group has no array for mu")
     #endif
-    ylabel = labels.mu
+    ylabel = plotlabels.mu
     label = 'mu'
     if norm:  mu = dgroup.norm
 
     if deriv:
         mu = gradient(mu)/gradient(dgroup.energy)
-        ylabel = labels.dmude
+        ylabel = plotlabels.dmude
         label = 'dmu/dE'
     #endif
     if norm:
@@ -95,12 +97,12 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
                 title=dgroup.filename, xmin=xmin, xmax=xmax)
 
 
-    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+    plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          label=label, zorder=20, new=new, **opts)
 
     if show_deriv:
         dmu = gradient(mu)/gradient(dgroup.energy)
-        plot(dgroup.energy, dmu, ylabel=labels.dmude,
+        plot(dgroup.energy, dmu, ylabel=plotlabels.dmude,
              label='dmu/dE', zorder=18, side='right', **opts)
     #endif
 
@@ -117,14 +119,14 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
                 ypre = dgroup.pre_edge[i]
                 ypost = dgroup.post_edge[i]
                 plot_arrow(dgroup.e0, ypre, dgroup.e0, ypost,
-                           color=labels.e0color, width=0.25,
+                           color=plotlabels.e0color, width=0.25,
                            head_width=0, zorder=3, win=win)
             #endif
         #endif
     #endif
     if show_e0:
         plot_axvline(dgroup.e0, zorder=2, size=3,
-                     label='E0', color=labels.e0color, win=win)
+                     label='E0', color=plotlabels.e0color, win=win)
         get_display(win=win).panel.conf.draw_legend()
     #endif
 
@@ -159,7 +161,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
     #endif
 
     bkg = dgroup.bkg
-    ylabel = labels.mu
+    ylabel = plotlabels.mu
     label = 'mu'
     xmin, xmax = None, None
     if emin is not None: xmin = dgroup.e0 + emin
@@ -171,7 +173,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
         label = "%s (norm)" % label
     #endif
     opts = dict(win=win, show_legend=True, linewidth=3)
-    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+    plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          title='%s' % dgroup.filename,
          label=label, zorder=20, new=new, xmin=xmin, xmax=xmax, **opts)
     plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
@@ -207,8 +209,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     chi = dgroup.chi * dgroup.k ** kweight
     opts = dict(win=win, show_legend=True, linewidth=3)
 
-    plot(dgroup.k, chi, xlabel=labels.k,
-         ylabel=labels.chikw.format(kweight), title=dgroup.filename,
+    plot(dgroup.k, chi, xlabel=plotlabels.k,
+         ylabel=plotlabels.chikw.format(kweight), title=dgroup.filename,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
@@ -245,9 +247,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     kweight = dgroup.xftf_details.call_args['kweight']
     opts = dict(win=win, show_legend=True, linewidth=3,
                 title=dgroup.filename, zorder=20, xmax=rmax,
-                xlabel=labels.r, new=new)
+                xlabel=plotlabels.r, new=new)
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
     opts['ylabel'] = ylabel
 
     if show_mag:
@@ -296,15 +298,15 @@ def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
 
     # k-weighted chi(k) in first plot window
     plot(dataset.data.k, data_chik, xmin=kmin, xmax=kmax,
-            xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+            xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
             label='data', new=new, **opts)
     plot(dataset.model.k, model_chik, label='fit',  **opts)
 
     # show chi(R) in next plot window
     opts['win'] = win+1
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
 
     if show_mag:
@@ -357,7 +359,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     chi_kw = offset + path.chi * path.k**kweight
 
     plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
-         xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+         xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
          win=win, new=new, **kws)
 #enddef
 
@@ -390,9 +392,9 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
         label = 'path %i' % (ipath)
     #endif
     kweight =dataset.transform.kweight
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
 
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
     opts.update(kws)
     if show_mag:
@@ -432,7 +434,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
     model_chi_kw = model.chi * model.k**kweight
 
     plot(model.k, model_chi_kw, title=dataset.dset.filename,
-         xlabel=labels.r, ylabel=labels.chikw.format(kweight),
+         xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
          label='sum', new=new, xmin=xmin, xmax=kmax, win=win, **kws)
 
     for ipath in range(len(dataset.pathlist)):
@@ -464,9 +466,9 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
     kweight = dataset.transform.kweight
     model = dataset.model
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
 
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
     opts.update(kws)
     if show_mag:
