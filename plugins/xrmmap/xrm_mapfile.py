@@ -21,7 +21,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
 from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
 
 
-NINIT = 32
+NINIT = 2
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
@@ -1200,11 +1200,22 @@ class GSEXRM_MapFile(object):
         sismap = xrmmap['scalars']
         sismap.attrs['type'] = 'scalar detectors'
         for aname in re.findall(r"[\w']+", row.sishead[-1]):
-            print 'creating: xrmmap/scalars/%s' % aname
             sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                   compression=COMPRESSION_LEVEL,
                                   chunks=self.chunksize[:-1],
                                   maxshape=(None, npts))
+
+        # positions
+        pos = xrmmap['positions']
+        for pname in ('mca realtime', 'mca livetime'):
+            self.pos_desc.append(pname)
+            self.pos_addr.append(pname)
+        npos = len(self.pos_desc)
+        self.add_data(pos, 'name',     self.pos_desc)
+        self.add_data(pos, 'address',  self.pos_addr)
+        pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
+                           compression=COMPRESSION_LEVEL,
+                           maxshape=(None, npts, npos))
 
         if self.flag_xrf:
             conf   = self.xrmmap['config']
@@ -1251,7 +1262,7 @@ class GSEXRM_MapFile(object):
                 for rname,rlimit in zip(roi_names,roi_limits[i]):
                     rgrp = dgrp.create_group(rname)
                     for aname,dtype in (('raw',  np.int16  ),
-                                    ('cor',  np.float32)):
+                                        ('cor',  np.float32)):
                         rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                             compression=COMPRESSION_LEVEL,
                                             chunks=self.chunksize[:-1],
@@ -1278,8 +1289,7 @@ class GSEXRM_MapFile(object):
             dgrp = xrmmap['roimap']['mcasum']
             for rname,rlimit in zip(roi_names,roi_limits[0]):
                 rgrp = dgrp.create_group(rname)
-                for aname,dtype in (('raw',  np.int16  ),
-                                    ('cor',  np.float32)):
+                for aname,dtype in (('raw',  np.int16  ),('cor',  np.float32)):
                     rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                         compression=COMPRESSION_LEVEL,
                                         chunks=self.chunksize[:-1],
@@ -1288,24 +1298,7 @@ class GSEXRM_MapFile(object):
                 lmtgrp.attrs['type'] = 'energy'
                 lmtgrp.attrs['units'] = 'keV'
 
-
-
-        # positions
-        pos = xrmmap['positions']
-        for pname in ('mca realtime', 'mca livetime'):
-            self.pos_desc.append(pname)
-            self.pos_addr.append(pname)
-        npos = len(self.pos_desc)
-        self.add_data(pos, 'name',     self.pos_desc)
-        self.add_data(pos, 'address',  self.pos_addr)
-        pos.create_dataset('pos', (NINIT, npts, npos), dtype,
-                           compression=COMPRESSION_LEVEL,
-                           maxshape=(None, npts, npos))
-
         if self.flag_xrd2d or self.flag_xrd1d:
-
-            if self.calibration:
-                self.add_calibration()
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             if verbose:
@@ -1316,19 +1309,13 @@ class GSEXRM_MapFile(object):
                 xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
                 xrmmap['xrd2D'].attrs['desc'] = '' #'add detector name eventually'
                 
-                xrmmap['xrd2D'].create_dataset('mask',
-                                       (xpixx, xpixy),
-                                       np.uint16,
+                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16,
                                        compression=COMPRESSION_LEVEL)
-                xrmmap['xrd2D'].create_dataset('background',
-                                       (xpixx, xpixy),
-                                       np.uint16,
+                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16,
                                        compression=COMPRESSION_LEVEL)
 
                 chunksize_2DXRD = (1, npts, xpixx, xpixy)
-                xrmmap['xrd2D'].create_dataset('counts',
-                                       (NINIT, npts, xpixx, xpixy),
-                                       np.uint16,
+                xrmmap['xrd2D'].create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint16,
                                        chunks = chunksize_2DXRD,
                                        maxshape=(None, npts, xpixx, xpixy),
                                        compression=COMPRESSION_LEVEL)
@@ -1582,13 +1569,6 @@ class GSEXRM_MapFile(object):
         if name in workgroup:
             dat = workgroup[name]
         return dat
-
-    def roiwork_array_names(self):
-        '''
-        return list of work array descriptions
-        '''
-        roigroup  = ensure_subgroup('roimap',self.xrmmap)
-        return [h5str(g) for g in roigroup.keys()]
 
     def work_array_names(self):
         '''
@@ -2525,13 +2505,13 @@ class GSEXRM_MapFile(object):
                                    roi_limits, type='xrf')
 
 
-    def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
+    def get_roimap(self, detname, roiname, no_hotcols=True, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
         ---------
-        name :       str    ROI name
-        det  :       optional, None or int [None]  index for detector
+        detname :    str    ROI name
+        roiname :    str    ROI name
         dtcorrect :  optional, bool [True]         dead-time correct data
         no_hotcols   optional, bool [True]         suprress hot columns
 
@@ -2539,61 +2519,61 @@ class GSEXRM_MapFile(object):
         -------
         ndarray for ROI data
         '''
-        imap = -1
-        roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
-        det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-        work_names = self.work_array_names()
-        roiwork_names = self.roiwork_array_names()
-        dat = 'roimap/sum_raw'
+
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
-        # scaler, non-roi data
+        
+        if roiname == '1': return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
-        if name.lower() in det_names and name.lower() not in roi_names:
-            imap = det_names.index(name.lower())
-            if no_hotcols:
-                return self.xrmmap[dat][:, 1:-1, imap]
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+
+            if detname == 'scalars':
+                dat = '%s/%s' % (detname,roiname)            
             else:
-                return self.xrmmap[dat][:, :, imap]
-        elif name in roiwork_names:
-            if dtcorrect:
-                if det is None:
-                    return self.xrmmap['work/roimap/%s/sum_cor' % name][:,:]
+                dat = 'roimap/%s/%s' % (detname,roiname)
+                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+            
+            try:
+                if no_hotcols:
+                    return self.xrmmap[dat][:, 1:-1]
                 else:
-                    return self.xrmmap['work/roimap/%s/det_cor' % name][:,:,det]
-            else:
-                if det is None:
-                    return self.xrmmap['work/roimap/%s/sum_raw' % name][:,:]
-                else:
-                    return self.xrmmap['work/roimap/%s/det_raw' % name][:,:,det]
-        elif name in work_names:
-            map = self.get_work_array(name)
-            if no_hotcols and len(map.shape)==2:
-                map = map[:, 1:-1]
-            return map
+                    return self.xrmmap[dat][:, :]
 
-        dat = 'roimap/sum_raw'
-        if dtcorrect:
-            dat = 'roimap/sum_cor'
+            except:
+                raise GSEXRM_Exception("Could not find '%s/%s'" % (detname,roiname))
 
-        if self.ndet is None:
-            self.ndet =  self.xrmmap.attrs['N_Detectors']
 
-        if det in range(1, self.ndet+1):
-            name = '%s (mca%i)' % (name, det)
-            det_names = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
-            dat = 'roimap/det_raw'
-            if dtcorrect:
-                dat = 'roimap/det_cor'
-
-        imap = det_names.index(name.lower())
-        if imap < 0:
-            raise GSEXRM_Exception("Could not find ROI '%s'" % name)
-
-        if no_hotcols:
-            return self.xrmmap[dat][:, 1:-1, imap]
         else:
-            return self.xrmmap[dat][:, :, imap]
+            roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+            try:
+                imap = roi_list.index(roiname.lower())
+            except:
+                imap = -1
+            
+            det_list = ['det1','det2','det3','det4']
+            if detname in det_list:
+                dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'            
+            elif detname == 'detsum':
+                dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
+            else:
+                dat = 'roimap/%s/%s' % (detname,roiname)
+                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+                imap = -2
+            
+            try:
+                if imap < 0:
+                    if no_hotcols:
+                        return self.xrmmap[dat][:, 1:-1]
+                    else:
+                        return self.xrmmap[dat][:, :]
+                else:
+                    if no_hotcols:
+                        return self.xrmmap[dat][:, 1:-1, imap]
+                    else:
+                        return self.xrmmap[dat][:, :, imap]
+            except:
+                raise GSEXRM_Exception("Could not find '%s/%s'" % (detname,roiname))
+               
 
     def get_mca_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):
