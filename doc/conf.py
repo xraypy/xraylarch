@@ -28,9 +28,26 @@ import html_mods
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
-              'sphinx.ext.mathjax',  'sphinx.ext.ifconfig',
-              'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.intersphinx',
+              # 'sphinx.ext.linkcode',
+              'sphinxcontrib.napoleon',
+              'sphinxcontrib.argdoc',
+              'numpydoc']
+
+#
+# def linkcode_resolve(domain, info):
+#     if domain != 'py':
+#         return None
+#     mname = info.get('module', '')
+#     if mname in (None, '', 'None'):
+#         return None
+#     link = '../plugins'
+#     return '%s/%s.lar' % (link, mname)
+
 
 # from sphinxtr
 extensions.extend(['fix_equation_ref', 'subfig', 'numfig', 'numsec',
