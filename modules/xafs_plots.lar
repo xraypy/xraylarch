@@ -42,12 +42,14 @@ plotlabels = group(k       = r'$k \rm\,(\AA^{-1})$',
 
 
 def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-            show_e0=False, show_deriv=False, emin=None, emax=None, new=True, win=1):
+            show_e0=False, show_deriv=False, emin=None, emax=None, label='mu',
+            new=True, win=1):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-             show_e0=False, emin=None, emax=None, new=True, win=1)
+             show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
+             new=True, win=1)
 
-    Plot mu(E) for XAFS data group in various forms
+    Plot mu(E) for an XAFS data group in various forms
 
     Arguments
     ----------
@@ -60,6 +62,7 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
      show_deriv bool whether to show deriv together with mu [False]
      emin       min energy to show, relative to E0 [None, start of data]
      emax       max energy to show, relative to E0 [None, end of data]
+     label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
      new        bool whether to start a new plot [True]
      win        integer plot window to use [1]
 
@@ -76,19 +79,19 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
         raise ValueError("XAFS data group has no array for mu")
     #endif
     ylabel = plotlabels.mu
-    label = 'mu'
     if norm:  mu = dgroup.norm
-
+    if labels is None:
+        label = 'mu'
+    #endif
     if deriv:
         mu = gradient(mu)/gradient(dgroup.energy)
         ylabel = plotlabels.dmude
-        label = 'dmu/dE'
+        dlabel = '%s (deriv)' % label
     #endif
     if norm:
         ylabel = "%s (norm)" % ylabel
-        label = "%s (norm)" % label
+        dlabel = "%s (norm)" % label
     #endif
-
     xmin, xmax = None, None
     if emin is not None: xmin = dgroup.e0 + emin
     if emax is not None: xmax = dgroup.e0 + emax
@@ -103,7 +106,7 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     if show_deriv:
         dmu = gradient(mu)/gradient(dgroup.energy)
         plot(dgroup.energy, dmu, ylabel=plotlabels.dmude,
-             label='dmu/dE', zorder=18, side='right', **opts)
+             label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
 
     if (not norm and not deriv):
@@ -129,12 +132,11 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
                      label='E0', color=plotlabels.e0color, win=win)
         get_display(win=win).panel.conf.draw_legend()
     #endif
-
 #enddef
 
-def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
+def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
     """
-    plot_bkg(dgroup, norm=True, emin=None, emax=None, win=1)
+    plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -144,6 +146,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
      norm     bool whether to show normalized data [True]
      emin     min energy to show, relative to E0 [None, start of data]
      emax     max energy to show, relative to E0 [None, end of data]
+     show_e0  bool whether to show E0 [False]
+     label    string for label [``None``: 'mu']
      new      bool whether to start a new plot [True]
      win      integer plot window to use [1]
 
@@ -162,7 +166,9 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
 
     bkg = dgroup.bkg
     ylabel = plotlabels.mu
-    label = 'mu'
+    if label is None:
+        label = 'mu'
+    #endif
     xmin, xmax = None, None
     if emin is not None: xmin = dgroup.e0 + emin
     if emax is not None: xmax = dgroup.e0 + emax
@@ -177,13 +183,19 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
          title='%s' % dgroup.filename,
          label=label, zorder=20, new=new, xmin=xmin, xmax=xmax, **opts)
     plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
+    if show_e0:
+        plot_axvline(dgroup.e0, zorder=2, size=3,
+                     label='E0', color=plotlabels.e0color, win=win)
+        get_display(win=win).panel.conf.draw_legend()
+    #endif
 #enddef
 
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
-              label='chi', new=True, win=1):
+              label=None, new=True, win=1):
     """
-    plot_chik(dgroup, kweight=None, kmax=None, show_window=True, win=1)
+    plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
+              new=True, win=1)
 
     Plot k-weighted chi(k) for XAFS data group
 
@@ -192,7 +204,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      dgroup       group of XAFS data after autobk() results (see Note 1)
      kweight      k-weighting for plot [read from last xftf(), or 0]
      kmax         max k to show [None, end of data]
-     show_window  bool whether to also plot k-window [plot if available]
+     show_window  bool whether to also plot k-window [True]
+     label        string for label [``None`` to use 'chi']
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -208,32 +221,34 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
     chi = dgroup.chi * dgroup.k ** kweight
     opts = dict(win=win, show_legend=True, linewidth=3)
-
+    if label is None:
+        label = 'chi'
+    #endif
     plot(dgroup.k, chi, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=dgroup.filename,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
-        plot(dgroup.k, 0.75*max(chi)*dgroup.kwin,
-             zorder=12, label='window', **opts)
+        plot(dgroup.k, dgroup.kwin, zorder=12, label='window', **opts)
     #endif
 #enddef
 
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, new=True, win=1):
+              rmax=None, label=None, new=True, win=1):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, new=True, win=1)
+              rmax=None, label=None, new=True, win=1)
 
     Plot chi(R) for XAFS data group
 
     Arguments
     ----------
      dgroup       group of XAFS data after xftf() results (see Note 1)
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
+     label        string for label [``None`` to use 'chir']
      rmax         max R to show [None, end of data]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
@@ -252,16 +267,19 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
     opts['ylabel'] = ylabel
 
+    if label is None:
+        label = 'chir'
+    #endif
     if show_mag:
-        plot(dgroup.r, dgroup.chir_mag, label='mag', **opts)
+        plot(dgroup.r, dgroup.chir_mag, label='%s (mag)' % label, **opts)
         opts['new'] = False
     #endif
     if show_real:
-        plot(dgroup.r, dgroup.chir_re, label='real', **opts)
+        plot(dgroup.r, dgroup.chir_re, label='%s (real)' % label, **opts)
         opts['new'] = False
     #endif
     if show_imag:
-        plot(dgroup.r, dgroup.chir_im, label='imag', **opts)
+        plot(dgroup.r, dgroup.chir_im, label='%s (imag)' % label, **opts)
     #endif
 #enddef
 
@@ -281,9 +299,9 @@ def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
      kmin         min k to show [0]
      kmax         max k to show [None, end of data]
      rmax         max R to show [None, end of data]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chidr(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -380,9 +398,9 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for plot [0]
      label        path label ['path %d' % ipath]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
@@ -456,9 +474,9 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
      dataset      feffit dataset, after running feffit()
      offset       vertical offset to use for paths for plot [-0.5]
      rmax         max R to show [None, end of data]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
