@@ -503,7 +503,7 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
 @larch.ValidateLarchPlugin
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 shape='full', color='black',
-                width=0.02, head_width=0.20,
+                width=0.00, head_width=0.05, head_length=0.25,
                _larch=None, wxparent=None,  size=None, **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, options)
@@ -519,8 +519,9 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
         side: which axis to use ('left' or 'right') for coordinates.
         shape:  arrow head shape ('full', 'left', 'right')
         color:  arrow color ('black')
-        width:  width of arrow line (in points. default=0.02)
-        head_width:  width of arrow head (in points. default=0.20)
+        width:  width of arrow line (in points. default=0.0)
+        head_width:  width of arrow head (in points. default=0.05)
+        head_length:  length of arrow head (in points. default=0.25)
         overhang:    amount the arrow is swept back (in points. default=0)
         win:  window to draw too
 
@@ -530,9 +531,9 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     if plotter is None:
         _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
-    kwargs = {'length_includes_head': True}
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
-                      color=color, width=width, head_width=head_width, **kws)
+                      color=color, width=width, head_length=head_length,
+                      head_width=head_width, **kws)
 
 @larch.ValidateLarchPlugin
 def _plot_marker(x, y, marker='o', size=4, color='black',
