@@ -311,7 +311,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dtcorr  = self.varcor[varname].IsChecked()
         det =  None
         if dname != 'sum':  det = int(dname)
-        map = self.owner.filemap[fname].get_roimap(roiname, det=det,
+        map = self.owner.filemap[fname].OLDget_roimap(roiname, det=det,
                                                    no_hotcols=False,
                                                    dtcorrect=dtcorr)
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
@@ -371,7 +371,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if roiname == '1':
                 self.map = 1
             else:
-                self.map = filemap[fname].get_roimap(roiname, det=det,
+                self.map = filemap[fname].OLDget_roimap(roiname, det=det,
                                                      no_hotcols=False,
                                                      dtcorrect=dtcorr)
 
@@ -498,7 +498,7 @@ class TomographyPanel(GridPanel):
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
         
-        self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+        self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
@@ -524,14 +524,12 @@ class TomographyPanel(GridPanel):
 
         self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
         
-#         self.Add(SimpleText(self,''), newrow=True)
         self.Add(SimpleText(self,'Sinogram:'),  dcol=1, style=RIGHT, newrow=True)
         self.Add(self.sino_show[0],  dcol=1,   style=LEFT)
         self.Add(self.sino_show[1],  dcol=1,   style=LEFT)
 
         
         self.tomo_pkg,self.tomo_alg = [],[]
-        HAS_tomopy = False
         if HAS_tomopy:
             self.tomo_pkg += ['tomopy']
             self.tomo_alg += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
@@ -663,6 +661,8 @@ class TomographyPanel(GridPanel):
     
         if len(self.owner.filemap) > 0:
 
+            oper_ch = self.oper.GetSelection()
+            
             if self.plot_choice.GetSelection() == 0:
 
                 self.det_choice[1].Disable()
@@ -674,9 +674,14 @@ class TomographyPanel(GridPanel):
                     lbl.SetLabel('')
                 self.roi_label[1].SetLabel('')
                 self.roi_label[2].SetLabel('')
+
+                oper_chs = ['/', '*', '-', '+', 'vs']
+
+                self.oper.SetSelection(oper_ch)
+         
                 
             else:
-
+            
                 self.det_choice[1].Enable()
                 self.det_choice[2].Enable()
                 self.roi_choice[1].Enable()
@@ -685,6 +690,14 @@ class TomographyPanel(GridPanel):
                 self.det_label[0].SetLabel('Red')
                 self.det_label[1].SetLabel('Green')
                 self.det_label[2].SetLabel('Blue')
+
+                oper_chs = ['/', '*', '-', '+']
+           
+            self.oper.SetChoices(oper_chs)
+            if oper_ch >= len(oper_chs):
+                self.oper.SetSelection(0)
+            else:
+                self.oper.SetSelection(oper_ch)
             
     def onClose(self):
         for p in self.plotframes:
@@ -701,15 +714,16 @@ class TomographyPanel(GridPanel):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
-              
-        print
-        print args
-        print
-        
+
         det_name,roi_name = [],[]
+        plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
             det_name += [det.GetStringSelection()]
             roi_name += [roi.GetStringSelection()]
+            if det_name[-1] == 'scalars':
+                plt_name += ['%s' % roi_name[-1]]
+            else:
+                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
         if roi_name[-1] != '1' and oprtr == '/':
             mapx = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
@@ -720,8 +734,6 @@ class TomographyPanel(GridPanel):
             #mapx = np.flip(mapx.T,0)
         else:
             mapx = 1.
-            
-        print 'MAPX',np.shape(mapx)
 
         r_map = datafile.get_roimap(det_name[0],roi_name[0],**args)
         if plt3:
@@ -733,44 +745,103 @@ class TomographyPanel(GridPanel):
             
         pref, fname = os.path.split(datafile.filename)
         if plt3:
-            sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
-            print '1:',np.shape(sino)
+            if   oprtr == '+': sino = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
+            elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
+            elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
+            elif oprtr == '/': sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
             sino = np.flip(sino.T,0)
-            print '2:',np.shape(sino)
-#             sino = sino.swapaxes(0, 2).swapaxes(0, 1)
-#             print '3:',np.shape(sino)
+
             title = fname
             info = ''
             if roi_name[-1] == '1' and oprtr == '/':
-                subtitles = {'red':   'Red: %s'   % roi_name[0],
-                             'green': 'Green: %s' % roi_name[1],
-                             'blue':  'Blue: %s'  % roi_name[2]}
+                subtitles = {'red':   'Red: %s'   % plt_name[0],
+                             'green': 'Green: %s' % plt_name[1],
+                             'blue':  'Blue: %s'  % plt_name[2]}
             else:
-                subtitles = {'red':   'Red: %s %s %s'   % (roi_name[0],oprtr,roi_name[-1]),
-                             'green': 'Green: %s %s %s' % (roi_name[1],oprtr,roi_name[-1]),
-                             'blue':  'Blue: %s %s %s'  % (roi_name[2],oprtr,roi_name[-1])}
-
+                subtitles = {'red':   'Red: %s %s %s'   % (plt_name[0],oprtr,plt_name[-1]),
+                             'green': 'Green: %s %s %s' % (plt_name[1],oprtr,plt_name[-1]),
+                             'blue':  'Blue: %s %s %s'  % (plt_name[2],oprtr,plt_name[-1])}
 
         else:
-            sino = r_map/mapx
+            if   oprtr == '+': sino = r_map+mapx
+            elif oprtr == '-': sino = r_map-mapx
+            elif oprtr == '*': sino = r_map*mapx
+            elif oprtr == '/': sino = r_map/mapx
             sino = np.flip(sino.T,0)
 
             if roi_name[-1] == '1' and oprtr == '/':
-                title = roi_name[0]
+                title = plt_name[0]
             else:
-                title = '%s %s %s' % (roi_name[0],oprtr,roi_name[-1])
+                title = '%s %s %s' % (plt_name[0],oprtr,plt_name[-1])
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
 
-
-        print 'SHAPE',np.shape(sino)
         return title,subtitles,info,x,ome,sino
+
+
+    def onShowCorrel(self,datafile):
+
+        args={'no_hotcols': self.chk_hotcols.GetValue(),
+              'dtcorrect' : self.chk_dftcor.GetValue()}
+
+        det_name,roi_name = [],[]
+        plt_name = []
+        for det,roi in zip(self.det_choice,self.roi_choice):
+            det_name += [det.GetStringSelection()]
+            roi_name += [roi.GetStringSelection()]
+            if det_name[-1] == 'scalars':
+                plt_name += ['%s' % roi_name[-1]]
+            else:
+                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
+        
+        if roi_name[-1] == '1' or roi_name[0] == '1':
+            print "WARNING: cannot make correlation plot with matrix of '1'"
+            return
+            
+        map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
+        map2 = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+        
+        map1 = np.flip(map1.T,0)
+        map2 = np.flip(map2.T,0)
+
+        ome = datafile.get_pos(0, mean=True)[::-1]  # except: ome = None
+        x   = datafile.get_pos(1, mean=True)        # except: x   = None
+        ## x = datafile.get_pos(0, mean=True)
+        ## y = datafile.get_pos(1, mean=True)
+            
+       
+        pref, fname = os.path.split(datafile.filename)
+        title ='%s: %s vs. %s' %(fname, plt_name[-1], plt_name[0])
+
+        # try to use correlation plot from wxmplot 0.9.23 and later
+        if CorrelatedMapFrame is not None:
+            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
+            correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
+                                x=x, y=ome, title=title)
+            ## correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
+            ##                     x=x, y=y, title=title)
+
+        else:
+            correl_plot = PlotFrame(title=title, output_title=title)
+            correl_plot.plot(map2.flatten(), map1.flatten(),
+                             xlabel=plt_name[-1], ylabel=plt_name[0],
+                             marker='o', markersize=4, linewidth=0)
+            correl_plot.panel.cursor_mode = 'lasso'
+            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
+
+        correl_plot.Show()
+        correl_plot.Raise()
+        self.owner.plot_displays.append(correl_plot)
 
 
     def onShowSinogram(self, event=None, new=True):
         
-        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+        if self.oper.GetStringSelection() == 'vs':
+            self.onShowCorrel(self.file)
+            return
+        else:
+            title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
@@ -783,14 +854,18 @@ class TomographyPanel(GridPanel):
     def onShowTomograph(self, event=None, new=True):
 
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+        pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
+
+        print 'package',self.alg_choice[0].GetStringSelection()
+        print 'algorithm',self.alg_choice[1].GetStringSelection()
 
         rot_center = self.rot_cen.GetValue()
 
         if np.shape(sino)[0] + 2 == len(ome):
             ome = ome[1:-1]            
         
-        if self.alg_choice[0].GetSelection() == 1:
-            from skimage.transform import iradon
+        if pkg.startswith('scikit'):
+
             if self.ref_cen.GetValue():
                 print 'not refining center here yet.'
             if len(np.shape(sino)) > 2:
@@ -801,12 +876,8 @@ class TomographyPanel(GridPanel):
                 tomo = np.einsum('kij->ijk', np.array(tomo))
             else:
                 tomo = iradon(sino.T, theta=ome, circle=True)
-        else:
-#             try:
-#             except:
-#                 from skimage.transform import iradon
-#                 tomo = iradon(sino.T, theta=ome, circle=True)
-            import tomopy 
+
+        elif pkg.startswith('tomopy'):
 
             if len(np.shape(sino)) > 2:
                 sino = np.einsum('ikj->ijk', sino)
@@ -820,15 +891,20 @@ class TomographyPanel(GridPanel):
                 self.rot_cen.SetValue(rot_center)
                 self.cen_step.SetValue(rot_center*10)
                 self.ref_cen.SetValue(False)
-            
-            tomo = tomopy.recon(sino, theta, center=rot_center,
-                                algorithm=self.alg_choice[1].GetStringSelection())
+
+            try:
+                tomo = tomopy.recon(sino, theta, center=rot_center, algorithm=alg)
+            except:
+                tomo = tomopy.recon(sino, theta, center=rot_center, algorithm='gridrec')            
 
             nx,dx,dy = np.shape(tomo)
             tomo = np.reshape(tomo,(dx,dy)) if nx == 1 else np.einsum('kij->ijk', tomo)
 
         omeoff, xoff = 0, 0
-        title = '[%s] %s' % (self.alg_choice[0].GetStringSelection(),title)
+        if alg != '':
+            title = '[%s : %s] %s' % (pkg,alg,title)        
+        else:
+            title = '[%s] %s' % (pkg,title)
         
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
@@ -1013,9 +1089,9 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
         dtcorrect = self.cor.IsChecked()
         no_hotcols  = suppress_hotcols(self.hotcols, datafile)
-        map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+        map1 = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
-        map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+        map2 = datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect)
 
         x = datafile.get_pos(0, mean=True)
@@ -1060,12 +1136,12 @@ class SimpleMapPanel(GridPanel):
         self.owner.no_hotcols = no_hotcols
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
-        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+        map      = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                        dtcorrect=dtcorrect)
         title    = roiname1
 
         if roiname2 != '1':
-            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+            mapx =datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
                                       dtcorrect=dtcorrect)
             op = self.op.GetStringSelection()
             if   op == '+': map +=  mapx
@@ -1216,16 +1292,16 @@ class TriColorMapPanel(GridPanel):
         bmap = np.ones(mapshape, dtype='float')
         i0map = np.ones(mapshape, dtype='float')
         if r != '1':
-            rmap  = datafile.get_roimap(r, det=det, no_hotcols=no_hotcols,
+            rmap  = datafile.OLDget_roimap(r, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
         if g != '1':
-            gmap  = datafile.get_roimap(g, det=det, no_hotcols=no_hotcols,
+            gmap  = datafile.OLDget_roimap(g, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
         if b != '1':
-            bmap  = datafile.get_roimap(b, det=det, no_hotcols=no_hotcols,
+            bmap  = datafile.OLDget_roimap(b, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
         if i0 != '1':
-            i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
+            i0map = datafile.OLDget_roimap(i0, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
 
         i0min = min(i0map[np.where(i0map>0)])
