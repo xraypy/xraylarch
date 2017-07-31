@@ -323,10 +323,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def set_roi_choices(self, xrmmap):
         if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
-            rois = list(xrmmap['roimap/mcasum'])
-#             if 'work' in xrmmap:
-#                 rois.extend(list(xrmmap['work'].keys()))
-            print 'this is not complete for roi - need to specify detector then list roi'
+            print('MAP MATH: Not YET compatible with new map version')
+            rois = ['']
         else:
             rois = ['1'] + list(xrmmap['roimap/sum_name'])
             if 'work' in xrmmap:
@@ -506,7 +504,7 @@ class TomographyPanel(GridPanel):
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
         
-        self.AddMany((SimpleText(self,''),self.oper), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
         self.Add(self.chk_dftcor,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
@@ -640,20 +638,31 @@ class TomographyPanel(GridPanel):
     
         self.set_roi_choices(self.file.xrmmap,idet=idet)
 
+
     def roiSELECT(self,iroi,event=None):
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        detname = self.det_choice[iroi].GetStringSelection()
+        roiname = self.roi_choice[iroi].GetStringSelection()
 
-            detname = self.det_choice[iroi].GetStringSelection()
-            roiname = self.roi_choice[iroi].GetStringSelection()
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             try:
                 roi = self.file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
                 roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
-                self.roi_label[iroi].SetLabel(roistr)
             except:
-                self.roi_label[iroi].SetLabel('')
+                roistr = ''
+        else:
+            try:
+                roi = self.file.xrmmap[detname]
+                en     = list(roi['energy'][:])
+                index  = list(roi['roi_name'][:]).index(roiname)
+                limits = list(roi['roi_limits'][:][index])
+                roistr = '[%0.1f to %0.1f keV]' % (en[limits[0]],en[limits[1]])
+            except:
+                roistr = ''
+
+        self.roi_label[iroi].SetLabel(roistr)
 
         
 
@@ -796,7 +805,7 @@ class TomographyPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
         if roi_name[-1] == '1' or roi_name[0] == '1':
-            print "WARNING: cannot make correlation plot with matrix of '1'"
+            print("WARNING: cannot make correlation plot with matrix of '1'")
             return
             
         map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
@@ -855,9 +864,6 @@ class TomographyPanel(GridPanel):
 
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
-
-        print 'package',self.alg_choice[0].GetStringSelection()
-        print 'algorithm',self.alg_choice[1].GetStringSelection()
 
         rot_center = self.rot_cen.GetValue()
 
@@ -967,10 +973,8 @@ class TomographyPanel(GridPanel):
             self.update_roi(idet,xrmmap)
 
         self.roi_choice[idet].SetChoices(rois)
-        try:
-            self.roiSELECT(idet)
-        except:
-            pass
+        self.roiSELECT(idet)
+
 
     
     def update_roi(self,idet,xrmmap):
@@ -985,43 +989,61 @@ class TomographyPanel(GridPanel):
             rois = [name for name in xrmmap[detname].keys()]
             rois.insert(0, '1')
         self.roi_choice[idet].SetChoices(rois)
-        try:
-            self.roiSELECT(idet)
-        except:
-            pass
-
+        self.roiSELECT(idet)
 
 ##################################
-class SimpleMapPanel(GridPanel):
-    """Panel of Controls for choosing what to display a simple ROI map"""
-    label  = 'Simple ROI Map'
+class MapPanel(GridPanel):
+    '''Panel of Controls for viewing maps'''
+    label  = 'ROI Map'
     def __init__(self, parent, owner, **kws):
+        
         self.owner = owner
+        self.file,self.xrmmap = None,None
+        
+        GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
+        self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.roi1 = Choice(self, choices=[], size=(120, -1))
-        self.roi2 = Choice(self, choices=[], size=(120, -1))
-        self.op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
-        self.det  = Choice(self, choices=DETCHOICES, size=(90, -1))
-        self.cor  = Check(self, label='Correct Deadtime?')
-        self.hotcols  = Check(self, label='Ignore First/Last Columns?')
+        self.det_choice = [Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1))]
+        self.roi_choice = [Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1)),
+                           Choice(self, choices=[], size=(125, -1))]
+        for i,det_chc in enumerate(self.det_choice):
+            det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
+        for i,roi_chc in enumerate(self.roi_choice):
+            roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
-        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
-                               action=partial(self.onShowMap, new=True))
-        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
-                               action=partial(self.onShowMap, new=False))
-        self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
-                               action=self.onShowCorrel)
+        self.det_label = [SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,'')]
+        self.roi_label = [SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,''),
+                          SimpleText(self,'')]
 
-        self.AddManyText(('Detector', 'Map 1', 'Operator', 'Map 2'))
-        self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
+        self.chk_dftcor  = Check(self, label='Correct Deadtime?')
+        self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
+        
+        self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
-        self.Add(self.cor,       dcol=2, newrow=True, style=LEFT)
-        self.Add(self.hotcols,   dcol=2, style=LEFT)
-        self.Add(self.show_new,  dcol=2, newrow=True, style=LEFT)
-        self.Add(self.show_old,  dcol=2,              style=LEFT)
-        self.Add(self.show_cor,  dcol=2, newrow=True, style=LEFT)
+        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],self.det_choice[1],self.det_choice[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
+        
+        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
+        self.Add(self.chk_dftcor,  dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
+        self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT, newrow = True)
+
 
         fopts = dict(minval=-20000, precision=0, size=(70, -1))
         self.lims = [FloatCtrl(self, value= 0, **fopts),
@@ -1034,20 +1056,77 @@ class SimpleMapPanel(GridPanel):
         self.limrange  = Check(self, default=False,
                                label=' Limit Map Range to Pixel Range:',
                                action=self.onLimitRange)
-        self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
-        self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
-        self.Add(SimpleText(self, 'X Range:'), dcol=1,
-                 newrow=True, style=LEFT)
-        self.Add(self.lims[0], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
-        self.Add(self.lims[1], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, 'Y Range:'), dcol=1,
-                 newrow=True, style=LEFT)
-        self.Add(self.lims[2], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
-        self.Add(self.lims[3], dcol=1, style=LEFT)
+        self.range_txt = [SimpleText(self, 'X Range:'),
+                          SimpleText(self, ':'),
+                          SimpleText(self, 'Y Range:'),
+                          SimpleText(self, ':')]
+        
+        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT, newrow=True)
+        self.Add(self.limrange,               dcol=4, style=LEFT, newrow=True)
+        self.Add(self.range_txt[0],           dcol=1, style=LEFT, newrow=True)
+        self.Add(self.lims[0],                dcol=1, style=LEFT)
+        self.Add(self.range_txt[1],           dcol=1, style=LEFT)
+        self.Add(self.lims[1],                dcol=1, style=LEFT)
+        self.Add(self.range_txt[2],           dcol=1, style=LEFT, newrow=True)
+        self.Add(self.lims[2],                dcol=1, style=LEFT)
+        self.Add(self.range_txt[3],           dcol=1, style=LEFT)
+        self.Add(self.lims[3],                dcol=1, style=LEFT)
+
+        self.map_show = [Button(self, 'Show New',     size=(100, -1),
+                               action=partial(self.onROIMap, new=True)),
+                          Button(self, 'Replace Last', size=(100, -1),
+                               action=partial(self.onROIMap, new=False))]
+
+
+        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
+        self.Add(SimpleText(self,'ROI Map:'),  dcol=1, style=RIGHT, newrow=True)
+        self.Add(self.map_show[0],  dcol=1,   style=LEFT)
+        self.Add(self.map_show[1],  dcol=1,   style=LEFT)
+
+       
 
         self.pack()
+        
+        self.disable_options()
+
+    def disable_options(self):
+        
+        all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+[self.oper]
+        for chc in all_choices: chc.Disable()
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Disable()
+        for btn in self.map_show: btn.Disable()
+
+    def enable_options(self):
+    
+        self.plot_choice.Enable()
+        
+        self.det_choice[0].Enable()
+        self.det_choice[-1].Enable()
+        self.roi_choice[0].Enable()
+        self.roi_choice[-1].Enable()
+        
+        self.oper.Enable()
+        
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Enable()
+        for btn in self.map_show: btn.Enable()
+        
+    def update_xrmmap(self, xrmmap):
+
+        self.file   = self.owner.current_file
+        self.xrmmap = self.file.xrmmap
+
+        try:
+            scan_version = getattr(self.file, 'scan_version', 1.00)
+        except:
+            scan_version = 2.0 ## default off if fails to find parameter
+        
+        if scan_version < 1.36:
+            self.chk_hotcols.SetValue(1)
+        else:
+            self.chk_hotcols.SetValue(0)
+        
+        self.enable_options()
+        self.set_det_choices(xrmmap)
 
     def onLimitRange(self, event=None):
         if self.limrange.IsChecked():
@@ -1057,6 +1136,73 @@ class SimpleMapPanel(GridPanel):
             for wid in self.lims:
                 wid.Disable()
 
+    def detSELECT(self,idet,event=None):
+    
+        self.set_roi_choices(self.file.xrmmap,idet=idet)
+
+    def roiSELECT(self,iroi,event=None):
+
+        detname = self.det_choice[iroi].GetStringSelection()
+        roiname = self.roi_choice[iroi].GetStringSelection()
+
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+            try:
+                roi = self.file.xrmmap['roimap'][detname][roiname]
+                limits = roi['limits'][:]
+                units = roi['limits'].attrs['units']
+                roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+            except:
+                roistr = ''
+        else:
+            try:
+                roi = self.file.xrmmap[detname]
+                en     = list(roi['energy'][:])
+                index  = list(roi['roi_name'][:]).index(roiname)
+                limits = list(roi['roi_limits'][:][index])
+                roistr = '[%0.1f to %0.1f keV]' % (en[limits[0]],en[limits[1]])
+            except:
+                roistr = ''
+
+        self.roi_label[iroi].SetLabel(roistr)
+
+    def plotSELECT(self,event=None):
+    
+        if len(self.owner.filemap) > 0:
+
+            oper_ch = self.oper.GetSelection()
+            
+            if self.plot_choice.GetSelection() == 0:
+
+                self.det_choice[1].Disable()
+                self.det_choice[2].Disable()
+                self.roi_choice[1].Disable()
+                self.roi_choice[2].Disable()
+
+                for lbl in self.det_label:
+                    lbl.SetLabel('')
+                self.roi_label[1].SetLabel('')
+                self.roi_label[2].SetLabel('')
+
+                oper_chs = ['/', '*', '-', '+', 'vs']
+
+            else:
+                self.det_choice[1].Enable()
+                self.det_choice[2].Enable()
+                self.roi_choice[1].Enable()
+                self.roi_choice[2].Enable()
+            
+                self.det_label[0].SetLabel('Red')
+                self.det_label[1].SetLabel('Green')
+                self.det_label[2].SetLabel('Blue')
+
+                oper_chs = ['/', '*', '-', '+']
+           
+            self.oper.SetChoices(oper_chs)
+            if oper_ch >= len(oper_chs):
+                self.oper.SetSelection(0)
+            else:
+                self.oper.SetSelection(oper_ch)
+            
     def onClose(self):
         for p in self.plotframes:
             try:
@@ -1064,56 +1210,130 @@ class SimpleMapPanel(GridPanel):
             except:
                 pass
 
-    def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
-        if xrmfile is None:
-            xrmfile = self.owner.current_file
-        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
-        indices = []
-        for idx in selected:
-            iy, ix = divmod(idx, ny)
-            indices.append((ix, iy))
+    def ShowMap(self,datafile,new=True):
+    
+        subtitles = None
+        plt3 = (self.plot_choice.GetSelection() == 1)
+        oprtr = self.oper.GetStringSelection()
 
+        args={'no_hotcols': self.chk_hotcols.GetValue(),
+              'dtcorrect' : self.chk_dftcor.GetValue()}
 
-    def onShowCorrel(self, event=None):
-        roiname1 = self.roi1.GetStringSelection()
-        roiname2 = self.roi2.GetStringSelection()
-        if roiname1 in ('', '1') or roiname2 in ('', '1'):
-            return
-
-
-        datafile  = self.owner.current_file
-        det =self.det.GetStringSelection()
-        if det == 'sum':
-            det =  None
+        det_name,roi_name = [],[]
+        plt_name = []
+        for det,roi in zip(self.det_choice,self.roi_choice):
+            det_name += [det.GetStringSelection()]
+            roi_name += [roi.GetStringSelection()]
+            if det_name[-1] == 'scalars':
+                plt_name += ['%s' % roi_name[-1]]
+            else:
+                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
+        
+        if roi_name[-1] != '1' and oprtr == '/':
+            mapx = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+            
+            mxmin = min(mapx[np.where(mapx>0)])
+            if mxmin < 1: mxmin = 1.0
+            mapx[np.where(mapx<mxmin)] = mxmin
         else:
-            det = int(det)
-        dtcorrect = self.cor.IsChecked()
-        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
-        map1 = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
-                                   dtcorrect=dtcorrect)
-        map2 = datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
-                                   dtcorrect=dtcorrect)
+            mapx = 1.
+
+        r_map = datafile.get_roimap(det_name[0],roi_name[0],**args)
+        if plt3:
+            g_map = datafile.get_roimap(det_name[1],roi_name[1],**args)
+            b_map = datafile.get_roimap(det_name[2],roi_name[2],**args)
+
+        x = datafile.get_pos(0, mean=True)[::-1]
+        y   = datafile.get_pos(1, mean=True)
+            
+        pref, fname = os.path.split(datafile.filename)
+        if plt3:
+            if   oprtr == '+': map = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
+            elif oprtr == '-': map = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
+            elif oprtr == '*': map = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
+            elif oprtr == '/': map = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            #map = np.flip(map.T,0)
+
+            title = fname
+            info = ''
+            if roi_name[-1] == '1' and oprtr == '/':
+                subtitles = {'red':   'Red: %s'   % plt_name[0],
+                             'green': 'Green: %s' % plt_name[1],
+                             'blue':  'Blue: %s'  % plt_name[2]}
+            else:
+                subtitles = {'red':   'Red: %s %s %s'   % (plt_name[0],oprtr,plt_name[-1]),
+                             'green': 'Green: %s %s %s' % (plt_name[1],oprtr,plt_name[-1]),
+                             'blue':  'Blue: %s %s %s'  % (plt_name[2],oprtr,plt_name[-1])}
+
+        else:
+            if   oprtr == '+': map = r_map+mapx
+            elif oprtr == '-': map = r_map-mapx
+            elif oprtr == '*': map = r_map*mapx
+            elif oprtr == '/': map = r_map/mapx
+            #map = np.flip(map.T,0)
+
+            if roi_name[-1] == '1' and oprtr == '/':
+                title = plt_name[0]
+            else:
+                title = '%s %s %s' % (plt_name[0],oprtr,plt_name[-1])
+            title = '%s: %s' % (fname, title)
+            info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+            subtitle = None
+
+        if len(self.owner.im_displays) == 0 or new:
+            iframe = self.owner.add_imdisplay(title)
+
+        xoff, yoff = 0, 0
+        if self.limrange.IsChecked():
+            lims = [wid.GetValue() for wid in self.lims]
+            map = map[lims[2]:lims[3], lims[0]:lims[1]]
+            xoff, yoff = lims[0], lims[2]
+
+        self.owner.display_map(map, title=title, info=info, x=x, y=y,
+                               xoff=xoff, yoff=yoff, subtitles=subtitles,
+                               xrmfile=self.file)
+
+
+    def ShowCorrel(self,datafile):
+
+        args={'no_hotcols': self.chk_hotcols.GetValue(),
+              'dtcorrect' : self.chk_dftcor.GetValue()}
+
+        det_name,roi_name = [],[]
+        plt_name = []
+        for det,roi in zip(self.det_choice,self.roi_choice):
+            det_name += [det.GetStringSelection()]
+            roi_name += [roi.GetStringSelection()]
+            if det_name[-1] == 'scalars':
+                plt_name += ['%s' % roi_name[-1]]
+            else:
+                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
+        
+        if roi_name[-1] == '1' or roi_name[0] == '1':
+            print "WARNING: cannot make correlation plot with matrix of '1'"
+            return
+            
+        map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
+        map2 = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+        
+#         map1 = np.flip(map1.T,0)
+#         map2 = np.flip(map2.T,0)
 
         x = datafile.get_pos(0, mean=True)
         y = datafile.get_pos(1, mean=True)
 
+        pref, fname = os.path.split(datafile.filename)
+        title ='%s: %s vs. %s' %(fname, plt_name[-1], plt_name[0])
+
         # try to use correlation plot from wxmplot 0.9.23 and later
         if CorrelatedMapFrame is not None:
-            title="%s: %s vs %s" %(datafile.filename, roiname1, roiname2)
             correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
-            correl_plot.display(map1, map2, name1=roiname1, name2=roiname2,
+            correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
                                 x=x, y=y, title=title)
-
         else:
-            if self.limrange.IsChecked():
-                lims = [wid.GetValue() for wid in self.lims]
-                map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
-                map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
-            path, fname = os.path.split(datafile.filename)
-            title ='%s: %s vs %s' %(fname, roiname2, roiname1)
             correl_plot = PlotFrame(title=title, output_title=title)
             correl_plot.plot(map2.flatten(), map1.flatten(),
-                             xlabel=roiname2, ylabel=roiname1,
+                             xlabel=plt_name[-1], ylabel=plt_name[0],
                              marker='o', markersize=4, linewidth=0)
             correl_plot.panel.cursor_mode = 'lasso'
             coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
@@ -1123,244 +1343,447 @@ class SimpleMapPanel(GridPanel):
         self.owner.plot_displays.append(correl_plot)
 
 
-    def onShowMap(self, event=None, new=True):
-        datafile  = self.owner.current_file
-        det =self.det.GetStringSelection()
-        if det == 'sum':
-            det =  None
-        else:
-            det = int(det)
-
-        dtcorrect = self.cor.IsChecked()
-        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
-        self.owner.no_hotcols = no_hotcols
-        roiname1 = self.roi1.GetStringSelection()
-        roiname2 = self.roi2.GetStringSelection()
-        map      = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
-                                       dtcorrect=dtcorrect)
-        title    = roiname1
-
-        if roiname2 != '1':
-            mapx =datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
-                                      dtcorrect=dtcorrect)
-            op = self.op.GetStringSelection()
-            if   op == '+': map +=  mapx
-            elif op == '-': map -=  mapx
-            elif op == '*': map *=  mapx
-            elif op == '/':
-                mxmin = min(mapx[np.where(mapx>0)])
-                if mxmin < 1: mxmin = 1.0
-                mapx[np.where(mapx<mxmin)] = mxmin
-                map =  map/(1.0*mapx)
-
-            title = '(%s) %s (%s)' % (roiname1, op, roiname2)
-
-        try:
-            x = datafile.get_pos(0, mean=True)
-        except:
-            x = None
-        try:
-            y = datafile.get_pos(1, mean=True)
-        except:
-            y = None
-
-        pref, fname = os.path.split(datafile.filename)
-        title = '%s: %s' % (fname, title)
-        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
-
-        xoff, yoff = 0, 0
-        if self.limrange.IsChecked():
-            nx, ny = map.shape
-            lims = [wid.GetValue() for wid in self.lims]
-            map = map[lims[2]:lims[3], lims[0]:lims[1]]
-            if y is not None:
-                y   = y[lims[2]:lims[3]]
-            if x is not None:
-                x   = x[lims[0]:lims[1]]
-            xoff, yoff = lims[0], lims[2]
-
-        if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, det=det)
-        self.owner.display_map(map, title=title, info=info, x=x, y=y,
-                               xoff=xoff, yoff=yoff, det=det,
-                               xrmfile=datafile)
-
-    def update_xrmmap(self, xrmmap):
-        self.set_roi_choices(xrmmap)
-
-    def set_roi_choices(self, xrmmap):
+    def onROIMap(self, event=None, new=True):
         
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
-            rois = ['1'] + list(xrmmap['roimap/mcasum'])
-#             if 'work' in xrmmap:
-#                 rois.extend(list(xrmmap['work'].keys()))
-            print 'this is not complete for roi - need to specify detector then list roi'
+        if self.oper.GetStringSelection() == 'vs':
+            self.ShowCorrel(self.file)
         else:
-            rois = ['1'] + list(xrmmap['roimap/sum_name'])
-            if 'work' in xrmmap:
-                rois.extend(list(xrmmap['work'].keys()))
-        self.roi1.SetChoices(rois[1:])
-        self.roi2.SetChoices(rois)
+            self.ShowMap(self.file,new=new)
 
-class TriColorMapPanel(GridPanel):
-    """Panel of Controls for choosing what to display a 3 color ROI map"""
-    label  = '3-Color ROI Map'
-    def __init__(self, parent, owner, **kws):
-        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
-        self.owner = owner
-        self.SetMinSize((650, 275))
+    def set_det_choices(self, xrmmap):
 
-        self.rcol  = Choice(self, choices=[], size=(120, -1))
-        self.gcol  = Choice(self, choices=[], size=(120, -1))
-        self.bcol  = Choice(self, choices=[], size=(120, -1))
-        self.i0col = Choice(self, choices=[], size=(120, -1))
-        self.det   = Choice(self, choices=DETCHOICES, size=(90, -1))
-        self.cor   = Check(self, label='Correct Deadtime?')
-        self.hotcols  = Check(self, label='Ignore First/Last Columns?')
-
-        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
-                               action=partial(self.onShowMap, new=True))
-        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
-                               action=partial(self.onShowMap, new=False))
-
-        self.AddManyText(('Detector', 'Red', 'Green', 'Blue'))
-        self.AddMany((self.det, self.rcol, self.gcol, self.bcol), newrow=True)
-
-        self.AddText('Normalization:',  newrow=True, style=LEFT)
-        self.Add(self.i0col,    dcol=2,              style=LEFT)
-        self.Add(self.cor,      dcol=2, newrow=True, style=LEFT)
-        self.Add(self.hotcols, dcol=2, style=LEFT)
-
-        self.Add(self.show_new, dcol=2, newrow=True, style=LEFT)
-        self.Add(self.show_old, dcol=2,              style=LEFT)
-
-        fopts = dict(minval=-1, precision=0, size=(70, -1))
-        self.lims = [FloatCtrl(self, value= 0, **fopts),
-                     FloatCtrl(self, value=-1, **fopts),
-                     FloatCtrl(self, value= 0, **fopts),
-                     FloatCtrl(self, value=-1, **fopts)]
-
-        for wid in self.lims: wid.Disable()
-
-        self.limrange  = Check(self, default=False,
-                               label=' Limit Map Range to Pixel Range:',
-                               action=self.onLimitRange)
-        self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
-        self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
-        self.Add(SimpleText(self, 'X Range:'), dcol=1,
-                 newrow=True, style=LEFT)
-        self.Add(self.lims[0], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
-        self.Add(self.lims[1], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, 'Y Range:'), dcol=1,
-                 newrow=True, style=LEFT)
-        self.Add(self.lims[2], dcol=1, style=LEFT)
-        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
-        self.Add(self.lims[3], dcol=1, style=LEFT)
-
-        self.pack()
-
-    def onLimitRange(self, event=None):
-        if self.limrange.IsChecked():
-            for wid in self.lims:
-                wid.Enable()
+        det_list = []
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+            if 'scalars' in xrmmap: det_list += ['scalars']
+            for grp in xrmmap['roimap'].keys():
+                if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
         else:
-            for wid in self.lims:
-                wid.Disable()
+            for grp in xrmmap.keys():
+                if grp.startswith('det'): det_list += [grp]            
+            if 'detsum' in det_list:
+                det_list.remove('detsum')
+                det_list.insert(0, 'detsum')
+            ## allows for adding roi in new format to old files                
+            for grp in xrmmap['roimap'].keys():
+                try:
+                    if xrmmap[grp].attrs.get('type', '').find('det') > -1:
+                        det_list += [grp]
+                except:
+                    pass
 
-    def onShowMap(self, event=None, new=True):
-        """show 3 color map"""
-        datafile = self.owner.current_file
-        det =self.det.GetStringSelection()
-        if det == 'sum':
-            det =  None
-        else:
-            det = int(det)
-        dtcorrect = self.cor.IsChecked()
-        no_hotcols  = suppress_hotcols(self.hotcols, datafile)
-        self.owner.no_hotcols = no_hotcols
-        r = self.rcol.GetStringSelection()
-        g = self.gcol.GetStringSelection()
-        b = self.bcol.GetStringSelection()
-        i0 = self.i0col.GetStringSelection()
-        mapshape = datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
-        if no_hotcols:
-            mapshape = mapshape[0], mapshape[1]-2
+        if len(det_list) < 1: det_list = ['']
 
-        rmap = np.ones(mapshape, dtype='float')
-        gmap = np.ones(mapshape, dtype='float')
-        bmap = np.ones(mapshape, dtype='float')
-        i0map = np.ones(mapshape, dtype='float')
-        if r != '1':
-            rmap  = datafile.OLDget_roimap(r, det=det, no_hotcols=no_hotcols,
-                                        dtcorrect=dtcorrect)
-        if g != '1':
-            gmap  = datafile.OLDget_roimap(g, det=det, no_hotcols=no_hotcols,
-                                        dtcorrect=dtcorrect)
-        if b != '1':
-            bmap  = datafile.OLDget_roimap(b, det=det, no_hotcols=no_hotcols,
-                                        dtcorrect=dtcorrect)
-        if i0 != '1':
-            i0map = datafile.OLDget_roimap(i0, det=det, no_hotcols=no_hotcols,
-                                        dtcorrect=dtcorrect)
+        for det_ch in self.det_choice:
+            det_ch.SetChoices(det_list)
 
-        i0min = min(i0map[np.where(i0map>0)])
-        if i0min < 1: i0min = 1.0
-        i0map[np.where(i0map<i0min)] = i0min
-        i0map = 1.0 * i0map / i0map.max()
-
-        pref, fname = os.path.split(datafile.filename)
-        # title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
-        title = fname
-        subtitles = {'red': 'Red: %s' % r,
-                     'green': 'Green: %s' % g,
-                     'blue': 'Blue: %s' % b}
-
-        try:
-            x = datafile.get_pos(0, mean=True)
-        except:
-            x = None
-        try:
-            y = datafile.get_pos(1, mean=True)
-        except:
-            y = None
-
-        if self.limrange.IsChecked():
-            lims = [wid.GetValue() for wid in self.lims]
-            rmap = rmap[lims[2]:lims[3], lims[0]:lims[1]]
-            gmap = gmap[lims[2]:lims[3], lims[0]:lims[1]]
-            bmap = bmap[lims[2]:lims[3], lims[0]:lims[1]]
-            i0map = i0map[lims[2]:lims[3], lims[0]:lims[1]]
-            if y is not None:
-                y   = y[lims[2]:lims[3]]
-            if x is not None:
-                x   = x[lims[0]:lims[1]]
-
-        map = np.array([rmap/i0map, gmap/i0map, bmap/i0map])
-        map = map.swapaxes(0, 2).swapaxes(0, 1)
-        if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, det=det)
-        self.owner.display_map(map, title=title, subtitles=subtitles,
-                               x=x, y=y, det=det, xrmfile=datafile)
-
-    def update_xrmmap(self, xrmmap):
         self.set_roi_choices(xrmmap)
 
-    def set_roi_choices(self, xrmmap):
+    def set_roi_choices(self, xrmmap, idet=None):
 
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
-            rois = ['1'] + list(xrmmap['roimap/mcasum'])
-#             if 'work' in xrmmap:
-#                 rois.extend(list(xrmmap['work'].keys()))
-            print 'this is not complete for roi - need to specify detector then list roi'
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+
+            if idet is None:
+                for idet,det_ch in enumerate(self.det_choice):
+                    self.update_roi(idet,xrmmap)
+            else:
+                self.update_roi(idet,xrmmap)
         else:
+            if idet is None:
+                for idet,det_ch in enumerate(self.det_choice):
+                    self.update_roi_older(idet,xrmmap)
+            else:
+                self.update_roi_older(idet,xrmmap)
+
+    def update_roi_older(self,idet,xrmmap):
+
+        detname = self.det_choice[idet].GetStringSelection()
+        if detname in xrmmap.keys():
             rois = ['1'] + list(xrmmap['roimap/sum_name'])
-            if 'work' in xrmmap:
-                rois.extend(list(xrmmap['work'].keys()))
+        else:
+            self.update_roi(idet,xrmmap)
 
-        for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
-            cbox.SetChoices(rois)
+        self.roi_choice[idet].SetChoices(rois)
+        self.roiSELECT(idet)
+    
+    def update_roi(self,idet,xrmmap):
 
+        detname = self.det_choice[idet].GetStringSelection()
+        try:
+            limits,names = [],xrmmap['roimap'][detname].keys()
+            for name in names:
+                limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
+            rois = [x for (y,x) in sorted(zip(limits,names))]
+        except:
+            rois = [name for name in xrmmap[detname].keys()]
+            rois.insert(0, '1')
+        self.roi_choice[idet].SetChoices(rois)
+        self.roiSELECT(idet)
+
+# #     class SimpleMapPanel(GridPanel):
+# #         """Panel of Controls for choosing what to display a simple ROI map"""
+# #         label  = 'Simple ROI Map'
+# #         def __init__(self, parent, owner, **kws):
+# #             self.owner = owner
+# # 
+# #             GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+# # 
+# #             self.roi1 = Choice(self, choices=[], size=(120, -1))
+# #             self.roi2 = Choice(self, choices=[], size=(120, -1))
+# #             self.op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+# #             self.det  = Choice(self, choices=DETCHOICES, size=(90, -1))
+# #             self.cor  = Check(self, label='Correct Deadtime?')
+# #             self.hotcols  = Check(self, label='Ignore First/Last Columns?')
+# # 
+# #             self.show_new = Button(self, 'Show New Map',     size=(125, -1),
+# #                                    action=partial(self.onShowMap, new=True))
+# #             self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+# #                                    action=partial(self.onShowMap, new=False))
+# #             self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
+# #                                    action=self.onShowCorrel)
+# # 
+# #             self.AddManyText(('Detector', 'Map 1', 'Operator', 'Map 2'))
+# #             self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
+# # 
+# #             self.Add(self.cor,       dcol=2, newrow=True, style=LEFT)
+# #             self.Add(self.hotcols,   dcol=2, style=LEFT)
+# #             self.Add(self.show_new,  dcol=2, newrow=True, style=LEFT)
+# #             self.Add(self.show_old,  dcol=2,              style=LEFT)
+# #             self.Add(self.show_cor,  dcol=2, newrow=True, style=LEFT)
+# # 
+# #             fopts = dict(minval=-20000, precision=0, size=(70, -1))
+# #             self.lims = [FloatCtrl(self, value= 0, **fopts),
+# #                          FloatCtrl(self, value=-1, **fopts),
+# #                          FloatCtrl(self, value= 0, **fopts),
+# #                          FloatCtrl(self, value=-1, **fopts)]
+# # 
+# #             for wid in self.lims: wid.Disable()
+# #             self.limrange  = Check(self, default=False,
+# #                                    label=' Limit Map Range to Pixel Range:',
+# #                                    action=self.onLimitRange)
+# #             self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
+# #             self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
+# #             self.Add(SimpleText(self, 'X Range:'), dcol=1,
+# #                      newrow=True, style=LEFT)
+# #             self.Add(self.lims[0], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+# #             self.Add(self.lims[1], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, 'Y Range:'), dcol=1,
+# #                      newrow=True, style=LEFT)
+# #             self.Add(self.lims[2], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+# #             self.Add(self.lims[3], dcol=1, style=LEFT)
+# # 
+# # 
+# #             self.pack()
+# # 
+# #         def onLimitRange(self, event=None):
+# #             if self.limrange.IsChecked():
+# #                 for wid in self.lims:
+# #                     wid.Enable()
+# #             else:
+# #                 for wid in self.lims:
+# #                     wid.Disable()
+# # 
+# #         def onClose(self):
+# #             for p in self.plotframes:
+# #                 try:
+# #                     p.Destroy()
+# #                 except:
+# #                     pass
+# # 
+# #         def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
+# #             if xrmfile is None:
+# #                 xrmfile = self.owner.current_file
+# #             ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+# #             indices = []
+# #             for idx in selected:
+# #                 iy, ix = divmod(idx, ny)
+# #                 indices.append((ix, iy))
+# # 
+# # 
+# #         def onShowCorrel(self, event=None):
+# #             roiname1 = self.roi1.GetStringSelection()
+# #             roiname2 = self.roi2.GetStringSelection()
+# #             if roiname1 in ('', '1') or roiname2 in ('', '1'):
+# #                 return
+# # 
+# # 
+# #             datafile  = self.owner.current_file
+# #             det =self.det.GetStringSelection()
+# #             if det == 'sum':
+# #                 det =  None
+# #             else:
+# #                 det = int(det)
+# #             dtcorrect = self.cor.IsChecked()
+# #             no_hotcols  = suppress_hotcols(self.hotcols, datafile)
+# #             map1 = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+# #                                        dtcorrect=dtcorrect)
+# #             map2 = datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+# #                                        dtcorrect=dtcorrect)
+# # 
+# #             x = datafile.get_pos(0, mean=True)
+# #             y = datafile.get_pos(1, mean=True)
+# # 
+# #             try to use correlation plot from wxmplot 0.9.23 and later
+# #             if CorrelatedMapFrame is not None:
+# #                 title="%s: %s vs %s" %(datafile.filename, roiname1, roiname2)
+# #                 correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
+# #                 correl_plot.display(map1, map2, name1=roiname1, name2=roiname2,
+# #                                     x=x, y=y, title=title)
+# # 
+# #             else:
+# #                 if self.limrange.IsChecked():
+# #                     lims = [wid.GetValue() for wid in self.lims]
+# #                     map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
+# #                     map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 path, fname = os.path.split(datafile.filename)
+# #                 title ='%s: %s vs %s' %(fname, roiname2, roiname1)
+# #                 correl_plot = PlotFrame(title=title, output_title=title)
+# #                 correl_plot.plot(map2.flatten(), map1.flatten(),
+# #                                  xlabel=roiname2, ylabel=roiname1,
+# #                                  marker='o', markersize=4, linewidth=0)
+# #                 correl_plot.panel.cursor_mode = 'lasso'
+# #                 coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
+# # 
+# #             correl_plot.Show()
+# #             correl_plot.Raise()
+# #             self.owner.plot_displays.append(correl_plot)
+# # 
+# # 
+# #         def onShowMap(self, event=None, new=True):
+# #             datafile  = self.owner.current_file
+# #             det =self.det.GetStringSelection()
+# #             if det == 'sum':
+# #                 det =  None
+# #             else:
+# #                 det = int(det)
+# # 
+# #             dtcorrect = self.cor.IsChecked()
+# #             no_hotcols  = suppress_hotcols(self.hotcols, datafile)
+# #             self.owner.no_hotcols = no_hotcols
+# #             roiname1 = self.roi1.GetStringSelection()
+# #             roiname2 = self.roi2.GetStringSelection()
+# #             map      = datafile.OLDget_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+# #                                            dtcorrect=dtcorrect)
+# #             title    = roiname1
+# # 
+# #             if roiname2 != '1':
+# #                 mapx =datafile.OLDget_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+# #                                           dtcorrect=dtcorrect)
+# #                 op = self.op.GetStringSelection()
+# #                 if   op == '+': map +=  mapx
+# #                 elif op == '-': map -=  mapx
+# #                 elif op == '*': map *=  mapx
+# #                 elif op == '/':
+# #                     mxmin = min(mapx[np.where(mapx>0)])
+# #                     if mxmin < 1: mxmin = 1.0
+# #                     mapx[np.where(mapx<mxmin)] = mxmin
+# #                     map =  map/(1.0*mapx)
+# # 
+# #                 title = '(%s) %s (%s)' % (roiname1, op, roiname2)
+# # 
+# #             try:
+# #                 x = datafile.get_pos(0, mean=True)
+# #             except:
+# #                 x = None
+# #             try:
+# #                 y = datafile.get_pos(1, mean=True)
+# #             except:
+# #                 y = None
+# # 
+# #             pref, fname = os.path.split(datafile.filename)
+# #             title = '%s: %s' % (fname, title)
+# #             info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+# # 
+# #             xoff, yoff = 0, 0
+# #             if self.limrange.IsChecked():
+# #                 nx, ny = map.shape
+# #                 lims = [wid.GetValue() for wid in self.lims]
+# #                 map = map[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 if y is not None:
+# #                     y   = y[lims[2]:lims[3]]
+# #                 if x is not None:
+# #                     x   = x[lims[0]:lims[1]]
+# #                 xoff, yoff = lims[0], lims[2]
+# # 
+# #             if len(self.owner.im_displays) == 0 or new:
+# #                 iframe = self.owner.add_imdisplay(title, det=det)
+# #             self.owner.display_map(map, title=title, info=info, x=x, y=y,
+# #                                    xoff=xoff, yoff=yoff, det=det,
+# #                                    xrmfile=datafile)
+# # 
+# #         def update_xrmmap(self, xrmmap):
+# #             self.set_roi_choices(xrmmap)
+# # 
+# #         def set_roi_choices(self, xrmmap):
+# #         
+# #             if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+# #                 print('Not YET compatible with new map version')
+# #                 rois = []
+# #             else:
+# #                 rois = ['1'] + list(xrmmap['roimap/sum_name'])
+# #                 if 'work' in xrmmap:
+# #                     rois.extend(list(xrmmap['work'].keys()))
+# #             self.roi1.SetChoices(rois[1:])
+# #             self.roi2.SetChoices(rois)
+# # 
+# #     class TriColorMapPanel(GridPanel):
+# #         """Panel of Controls for choosing what to display a 3 color ROI map"""
+# #         label  = '3-Color ROI Map'
+# #         def __init__(self, parent, owner, **kws):
+# #             GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+# #             self.owner = owner
+# #             self.SetMinSize((650, 275))
+# # 
+# #             self.rcol  = Choice(self, choices=[], size=(120, -1))
+# #             self.gcol  = Choice(self, choices=[], size=(120, -1))
+# #             self.bcol  = Choice(self, choices=[], size=(120, -1))
+# #             self.i0col = Choice(self, choices=[], size=(120, -1))
+# #             self.det   = Choice(self, choices=DETCHOICES, size=(90, -1))
+# #             self.cor   = Check(self, label='Correct Deadtime?')
+# #             self.hotcols  = Check(self, label='Ignore First/Last Columns?')
+# # 
+# #             self.show_new = Button(self, 'Show New Map',     size=(125, -1),
+# #                                    action=partial(self.onShowMap, new=True))
+# #             self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+# #                                    action=partial(self.onShowMap, new=False))
+# # 
+# #             self.AddManyText(('Detector', 'Red', 'Green', 'Blue'))
+# #             self.AddMany((self.det, self.rcol, self.gcol, self.bcol), newrow=True)
+# # 
+# #             self.AddText('Normalization:',  newrow=True, style=LEFT)
+# #             self.Add(self.i0col,    dcol=2,              style=LEFT)
+# #             self.Add(self.cor,      dcol=2, newrow=True, style=LEFT)
+# #             self.Add(self.hotcols, dcol=2, style=LEFT)
+# # 
+# #             self.Add(self.show_new, dcol=2, newrow=True, style=LEFT)
+# #             self.Add(self.show_old, dcol=2,              style=LEFT)
+# # 
+# #             fopts = dict(minval=-1, precision=0, size=(70, -1))
+# #             self.lims = [FloatCtrl(self, value= 0, **fopts),
+# #                          FloatCtrl(self, value=-1, **fopts),
+# #                          FloatCtrl(self, value= 0, **fopts),
+# #                          FloatCtrl(self, value=-1, **fopts)]
+# # 
+# #             for wid in self.lims: wid.Disable()
+# # 
+# #             self.limrange  = Check(self, default=False,
+# #                                    label=' Limit Map Range to Pixel Range:',
+# #                                    action=self.onLimitRange)
+# #             self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
+# #             self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
+# #             self.Add(SimpleText(self, 'X Range:'), dcol=1,
+# #                      newrow=True, style=LEFT)
+# #             self.Add(self.lims[0], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+# #             self.Add(self.lims[1], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, 'Y Range:'), dcol=1,
+# #                      newrow=True, style=LEFT)
+# #             self.Add(self.lims[2], dcol=1, style=LEFT)
+# #             self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+# #             self.Add(self.lims[3], dcol=1, style=LEFT)
+# # 
+# #             self.pack()
+# # 
+# #         def onLimitRange(self, event=None):
+# #             if self.limrange.IsChecked():
+# #                 for wid in self.lims:
+# #                     wid.Enable()
+# #             else:
+# #                 for wid in self.lims:
+# #                     wid.Disable()
+# # 
+# #         def onShowMap(self, event=None, new=True):
+# #             """show 3 color map"""
+# #             datafile = self.owner.current_file
+# #             det =self.det.GetStringSelection()
+# #             if det == 'sum':
+# #                 det =  None
+# #             else:
+# #                 det = int(det)
+# #             dtcorrect = self.cor.IsChecked()
+# #             no_hotcols  = suppress_hotcols(self.hotcols, datafile)
+# #             self.owner.no_hotcols = no_hotcols
+# #             r = self.rcol.GetStringSelection()
+# #             g = self.gcol.GetStringSelection()
+# #             b = self.bcol.GetStringSelection()
+# #             i0 = self.i0col.GetStringSelection()
+# #             mapshape = datafile.xrmmap['roimap/sum_cor'][:, :, 0].shape
+# #             if no_hotcols:
+# #                 mapshape = mapshape[0], mapshape[1]-2
+# # 
+# #             rmap = np.ones(mapshape, dtype='float')
+# #             gmap = np.ones(mapshape, dtype='float')
+# #             bmap = np.ones(mapshape, dtype='float')
+# #             i0map = np.ones(mapshape, dtype='float')
+# #             if r != '1':
+# #                 rmap  = datafile.OLDget_roimap(r, det=det, no_hotcols=no_hotcols,
+# #                                             dtcorrect=dtcorrect)
+# #             if g != '1':
+# #                 gmap  = datafile.OLDget_roimap(g, det=det, no_hotcols=no_hotcols,
+# #                                             dtcorrect=dtcorrect)
+# #             if b != '1':
+# #                 bmap  = datafile.OLDget_roimap(b, det=det, no_hotcols=no_hotcols,
+# #                                             dtcorrect=dtcorrect)
+# #             if i0 != '1':
+# #                 i0map = datafile.OLDget_roimap(i0, det=det, no_hotcols=no_hotcols,
+# #                                             dtcorrect=dtcorrect)
+# # 
+# #             i0min = min(i0map[np.where(i0map>0)])
+# #             if i0min < 1: i0min = 1.0
+# #             i0map[np.where(i0map<i0min)] = i0min
+# #             i0map = 1.0 * i0map / i0map.max()
+# # 
+# #             pref, fname = os.path.split(datafile.filename)
+# #             title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
+# #             title = fname
+# #             subtitles = {'red': 'Red: %s' % r,
+# #                          'green': 'Green: %s' % g,
+# #                          'blue': 'Blue: %s' % b}
+# # 
+# #             try:
+# #                 x = datafile.get_pos(0, mean=True)
+# #             except:
+# #                 x = None
+# #             try:
+# #                 y = datafile.get_pos(1, mean=True)
+# #             except:
+# #                 y = None
+# # 
+# #             if self.limrange.IsChecked():
+# #                 lims = [wid.GetValue() for wid in self.lims]
+# #                 rmap = rmap[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 gmap = gmap[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 bmap = bmap[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 i0map = i0map[lims[2]:lims[3], lims[0]:lims[1]]
+# #                 if y is not None:
+# #                     y   = y[lims[2]:lims[3]]
+# #                 if x is not None:
+# #                     x   = x[lims[0]:lims[1]]
+# # 
+# #             map = np.array([rmap/i0map, gmap/i0map, bmap/i0map])
+# #             map = map.swapaxes(0, 2).swapaxes(0, 1)
+# #             if len(self.owner.im_displays) == 0 or new:
+# #                 iframe = self.owner.add_imdisplay(title, det=det)
+# #             self.owner.display_map(map, title=title, subtitles=subtitles,
+# #                                    x=x, y=y, det=det, xrmfile=datafile)
+# # 
+# #         def update_xrmmap(self, xrmmap):
+# #             self.set_roi_choices(xrmmap)
+# # 
+# #         def set_roi_choices(self, xrmmap):
+# # 
+# #             if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
+# #                 print('Not YET compatible with new map version')
+# #                 rois = []
+# #             else:
+# #                 rois = ['1'] + list(xrmmap['roimap/sum_name'])
+# #                 if 'work' in xrmmap:
+# #                     rois.extend(list(xrmmap['work'].keys()))
+# # 
+# #             for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
+# #                 cbox.SetChoices(rois)
+# # 
 
 class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
@@ -2063,8 +2486,10 @@ class MapViewerFrame(wx.Frame):
 
         self.nbpanels = []
 
-        for creator in (SimpleMapPanel, TriColorMapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
+        for creator in (MapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
+# #         for creator in (SimpleMapPanel, TriColorMapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
+# #                         MapAreaPanel, MapMathPanel):
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label, True)
             #self.nb.AddPage(p, p.label.title(), True)
