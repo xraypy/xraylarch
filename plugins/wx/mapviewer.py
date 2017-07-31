@@ -38,6 +38,20 @@ try:
 except:
     PyDeadObjectError = Exception
 
+HAS_tomopy = False
+try:
+    import tomopy
+    HAS_tomopy = True
+except ImportError:
+    pass
+
+HAS_scikit = False
+try:
+    from skimage.transform import iradon
+    #from skimage.transform import radon, iradon_sart
+    HAS_scikit = True
+except:
+    pass
 
 HAS_DV = False
 try:
@@ -483,6 +497,8 @@ class TomographyPanel(GridPanel):
 
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
+        
+        self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
 
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
@@ -490,7 +506,7 @@ class TomographyPanel(GridPanel):
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
         
-        self.AddMany((SimpleText(self,''),SimpleText(self,'Normalization')), style=LEFT, newrow = True)
+        self.AddMany((SimpleText(self,''),self.oper), style=LEFT, newrow = True)
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
         self.Add(self.chk_dftcor,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
@@ -513,15 +529,26 @@ class TomographyPanel(GridPanel):
         self.Add(self.sino_show[0],  dcol=1,   style=LEFT)
         self.Add(self.sino_show[1],  dcol=1,   style=LEFT)
 
-        tomo_pkg = ['tomopy','scikit-image']
-        tomopy_alg = ['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']
+        
+        self.tomo_pkg,self.tomo_alg = [],[]
+        HAS_tomopy = False
+        if HAS_tomopy:
+            self.tomo_pkg += ['tomopy']
+            self.tomo_alg += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
+        if HAS_scikit:
+            self.tomo_pkg += ['scikit-image']
+            self.tomo_alg += [['']]
 
-        self.alg_choice = [Choice(self, choices=tomo_pkg,   size=(125, -1)),
-                           Choice(self, choices=tomopy_alg, size=(125, -1))]
-        for chc in self.alg_choice:
-            chc.Bind(wx.EVT_CHOICE, self.onALGchoice)
-        self.alg_choice[0].SetSelection(0)
-        self.alg_choice[1].SetSelection(3)
+        self.alg_choice = [Choice(self, choices=self.tomo_pkg,   size=(125, -1)),
+                           Choice(self, choices=self.tomo_alg[0], size=(125, -1))]
+        self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
+        
+        if HAS_tomopy:
+            self.alg_choice[0].SetSelection(0)
+            self.alg_choice[1].SetSelection(3)
+        elif HAS_scikit:
+            self.alg_choice[0].SetSelection(0)
+            self.alg_choice[1].SetSelection(0)
 
         self.rot_cen = FloatCtrl(self, value=1, minval=0, precision=3, size=(100, -1))
         self.ref_cen = Check(self, label='Refine?')
@@ -607,10 +634,7 @@ class TomographyPanel(GridPanel):
 
     def onALGchoice(self,event=None):
     
-        if self.alg_choice[0].GetSelection() == 1:
-            self.alg_choice[1].Disable()
-        else:
-            self.alg_choice[1].Enable()
+        self.alg_choice[1].SetChoices(self.tomo_alg[self.alg_choice[0].GetSelection()])
 
     def detSELECT(self,idet,event=None):
     
