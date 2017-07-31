@@ -53,6 +53,7 @@ development, and has support from the U. S. National Science Foundation.
    installation.rst
    community.rst
    overview.rst
+   guis/index.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst

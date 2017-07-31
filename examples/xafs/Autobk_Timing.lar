@@ -8,46 +8,24 @@ for i in range(n):
 
     timer.add('read data file')
     cu.mu = cu.mutrans
-    autobk(cu, rbkg=0.80)
+    autobk(cu, rbkg=0.80, calc_uncertainties=False)
     timer.add('autobk done')
 
-    xftf(cu.k, cu.chi, kmin=1, kmax=21, dk=2, window='hanning',
-        kweight=2, group=cu, rmax_out=20)
+    xftf(cu.k, cu.chi, kmin=1, kmax=21, dk=2, window='hanning',  kweight=2, group=cu, rmax_out=20)
     timer.add('xftf done')
 
-    xftr(cu.r, cu.chir, rmin=0.1, rmax=4, qmax_out=20,
-         dr=0, window='hanning', group=cu)
+    xftr(cu.r, cu.chir, rmin=0.1, rmax=4, qmax_out=20, dr=0, window='hanning', group=cu)
     timer.add('xftr done')
 
     if doplot:
-        newplot(cu.energy, cu.mutrans)
-        plot(cu.energy, cu.bkg)
-        #  plot(cu.energy, cu.init_bkg)
-        #  plot(cu.spline_e, cu.spline_y, linewidth=0, marker='o', color='red')
-        #  plot(cu.spline_e, cu.spline_yinit, linewidth=0, marker='o', color='black')
-        ##- timer.add('plot e-space done')
-
-        newplot(cu.k, cu.k**2*cu.chi, win=2)
-        # plot(cu.q, cu.chiq_re, win=2)
-        # #   plot(cu.q, cu.chiq_im, color='black', style='dashed')
-        #
-        ##- timer.add('plot k-space done')
-
-        # winscale = int((1.05* max(cu.chir_mag)))
-        newplot(cu.r, cu.chir_mag, win=3, xmax=15)
-        # plot(cu.r, cu.rwin*winscale, win=3, ymax=int(winscale*1.05))
-
-        ##- timer.add('plot r-space done')
-    endif
-
-    # if i % 8  == 0:
-    #     ##- timer.show_report()
-    # endif
-endfor
+        plot_bkg(cu)
+        plot_chik(cu, kweigt=2, win=2)
+        plot_chir(cu, ramx=15, win=3)
+    #endif
+#endfor
 
 timer.show_report()
 
-
 # show(cu)
 
-print( 'Ran %i processing steps in % .4f seconds' % (n, time.time() - t0))
+# print( 'Ran %i processing steps in % .4f seconds' % (n, time.time() - t0))

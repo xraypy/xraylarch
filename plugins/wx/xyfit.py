@@ -310,18 +310,18 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
-        save_config = Button(self, 'Save as Default Settings',
-                             size=(150, 30),
-                             action=self.onSaveConfigBtn)
+        saveconf = Button(self, 'Save as Default Settings',
+                          size=(175, 30),
+                          action=self.onSaveConfigBtn)
+
+        hxline = HLine(self, size=(550, 2))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([((10,10), 0, LCEN, 0),
-                       (gen,  0, LCEN, 10),
-                       ((10,10), 0, LCEN, 0),
-                       (HLine(self, size=(550, 2)), 0, LCEN, 10),
-                       ((10,10), 0, LCEN, 0),
-                       (xas,  1, LCEN|wx.GROW, 10),
-                       (save_config,  1, LCEN, 10)
+
+        sizer.AddMany([((10, 10), 0, LCEN, 10), (gen,      0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (hxline,   0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (xas,      0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (saveconf, 0, LCEN, 10),
                        ])
 
         xas.Disable()
