@@ -3,17 +3,17 @@ fname = '../xafsdata/scorodite_as_xafs.001'
 title = 'FeAsSO4  (scorodite)'
 dat = read_ascii(fname)
 dat.energy = dat.p1
-dat.xmu    = ln(dat.d1/dat.d2)
+dat.mu    = ln(dat.d1/dat.d2)
 
-autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=0)
+autobk(dat.energy, dat.mu, rbkg=1.0, group=dat, clamp_hi=0)
 dat.chi0 = dat.chi * dat.k**2
 dat.bkg0 = dat.bkg
 
-autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=10)
+autobk(dat.energy, dat.mu, rbkg=1.0, group=dat, clamp_hi=10)
 dat.chi10 = dat.chi * dat.k**2
 dat.bkg10 = dat.bkg
 
-autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=50)
+autobk(dat.energy, dat.mu, rbkg=1.0, group=dat, clamp_hi=50)
 dat.chi50 = dat.chi * dat.k**2
 dat.bkg50 = dat.bkg
 
@@ -25,5 +25,3 @@ plot(dat.k, dat.chi10, label='clamp_hi=10', show_legend=True)
 plot(dat.k, dat.chi50, label='clamp_hi=50', show_legend=True)
 
 ## end of examples/xafs/doc_autobk3.lar
-
-

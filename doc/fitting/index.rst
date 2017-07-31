@@ -1,10 +1,11 @@
 .. _fitting-chapter:
 
-.. _lmfit: https://lmfit.github.io/lmfit-py/
-
 =================================
 Fitting and Modeling Data
 =================================
+
+
+.. _lmfit: https://lmfit.github.io/lmfit-py/
 
 A key motivation for Larch is to provide easy and robust ways to model data
 and perform complex fits of data to models.  Data modeling and fitting can
