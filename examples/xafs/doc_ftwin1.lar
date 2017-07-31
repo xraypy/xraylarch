@@ -32,5 +32,3 @@ plot(x, hann_win1, label='Hanning(5, 15, dx=3)', win=3)
 newplot(x, hann_win1, label='Hanning(5, 15, dx=3)', xlabel='x',
          ymin=-0.05, ymax=1.05, show_legend=True, legend_loc='lc', win=4)
 plot(x, hann_win3, label='Hanning(5, 15, dx=3, dx2=7)', win=4)
-
-
