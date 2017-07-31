@@ -573,9 +573,9 @@ class TomographyPanel(GridPanel):
         self.disable_options()
 
     def disable_options(self):
-
-        for chc in ([self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice):
-            chc.Disable()
+        
+        all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]
+        for chc in all_choices: chc.Disable()
         for chk in (self.chk_dftcor,self.chk_hotcols,self.ref_cen):
             chk.Disable()
         for btn in (self.sino_show+self.tomo_show):
@@ -591,6 +591,8 @@ class TomographyPanel(GridPanel):
         self.det_choice[-1].Enable()
         self.roi_choice[0].Enable()
         self.roi_choice[-1].Enable()
+        
+        self.oper.Enable()
         
         for chc in self.alg_choice: chc.Enable()
         
@@ -691,29 +693,25 @@ class TomographyPanel(GridPanel):
             except:
                 pass
 
-#     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
-#         if xrmfile is None:
-#             xrmfile = self.file
-#         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
-#         indices = []
-#         for idx in selected:
-#             iy, ix = divmod(idx, ny)
-#             indices.append((ix, iy))
-
     def calculateSinogram(self,datafile):
     
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
+        oprtr = self.oper.GetStringSelection()
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
-              'dtcorrect' : self.chk_hotcols.GetValue()}
+              'dtcorrect' : self.chk_dftcor.GetValue()}
+              
+        print
+        print args
+        print
         
         det_name,roi_name = [],[]
         for det,roi in zip(self.det_choice,self.roi_choice):
             det_name += [det.GetStringSelection()]
             roi_name += [roi.GetStringSelection()]
         
-        if roi_name[-1] != '1':
+        if roi_name[-1] != '1' and oprtr == '/':
             mapx = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
             
             mxmin = min(mapx[np.where(mapx>0)])
@@ -722,6 +720,8 @@ class TomographyPanel(GridPanel):
             #mapx = np.flip(mapx.T,0)
         else:
             mapx = 1.
+            
+        print 'MAPX',np.shape(mapx)
 
         r_map = datafile.get_roimap(det_name[0],roi_name[0],**args)
         if plt3:
@@ -734,34 +734,37 @@ class TomographyPanel(GridPanel):
         pref, fname = os.path.split(datafile.filename)
         if plt3:
             sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
-#             sino = np.array([np.flip(r_map.T,0)/mapx,
-#                              np.flip(g_map.T,0)/mapx,
-#                              np.flip(b_map.T,0)/mapx])
+            print '1:',np.shape(sino)
             sino = np.flip(sino.T,0)
-            sino = sino.swapaxes(0, 2).swapaxes(0, 1)
+            print '2:',np.shape(sino)
+#             sino = sino.swapaxes(0, 2).swapaxes(0, 1)
+#             print '3:',np.shape(sino)
             title = fname
             info = ''
-            if roi_name[-1] != '1':
-                subtitles = {'red':   'Red: %s / %s'   % (roi_name[0],roi_name[-1]),
-                             'green': 'Green: %s / %s' % (roi_name[1],roi_name[-1]),
-                             'blue':  'Blue: %s / %s'  % (roi_name[2],roi_name[-1])}
-            else:
+            if roi_name[-1] == '1' and oprtr == '/':
                 subtitles = {'red':   'Red: %s'   % roi_name[0],
                              'green': 'Green: %s' % roi_name[1],
                              'blue':  'Blue: %s'  % roi_name[2]}
+            else:
+                subtitles = {'red':   'Red: %s %s %s'   % (roi_name[0],oprtr,roi_name[-1]),
+                             'green': 'Green: %s %s %s' % (roi_name[1],oprtr,roi_name[-1]),
+                             'blue':  'Blue: %s %s %s'  % (roi_name[2],oprtr,roi_name[-1])}
+
+
         else:
             sino = r_map/mapx
             sino = np.flip(sino.T,0)
-#             sino = np.flip(r_map.T,0)/mapx
-            if roi_name[-1] != '1':
-                title = '(%s)/(%s)' % (roi_name[0], roi_name[-1])
-            else:
+
+            if roi_name[-1] == '1' and oprtr == '/':
                 title = roi_name[0]
+            else:
+                title = '%s %s %s' % (roi_name[0],oprtr,roi_name[-1])
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
 
 
+        print 'SHAPE',np.shape(sino)
         return title,subtitles,info,x,ome,sino
 
 
