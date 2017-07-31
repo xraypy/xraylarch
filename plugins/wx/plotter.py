@@ -506,7 +506,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 width=0.00, head_width=0.05, head_length=0.25,
                _larch=None, wxparent=None,  size=None, **kws):
 
-    """plot_arrow(x1, y1, x2, y2, win=1, options)
+    """plot_arrow(x1, y1, x2, y2, win=1, **kws)
 
     draw arrow from x1, y1 to x2, y2.
 
@@ -536,7 +536,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                       head_width=head_width, **kws)
 
 @larch.ValidateLarchPlugin
-def _plot_marker(x, y, marker='o', size=4, color='black',
+def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
                _larch=None, wxparent=None,  win=1, **kws):
 
     """plot_marker(x, y, marker='o', size=4, color='black')
@@ -544,12 +544,12 @@ def _plot_marker(x, y, marker='o', size=4, color='black',
     draw a marker at x, y
 
     Parameters:
-    --------------
+    -----------
         x:      x coordinate
         y:      y coordinate
-        marker: symbol to draw at each point ('+', 'o', 'x', 'square', etc)
-        size:   symbol size
-        color:  color ('black')
+        marker: symbol to draw at each point ('+', 'o', 'x', 'square', etc) ['o']
+        size:   symbol size [4]
+        color:  color  ['black']
 
     See Also: plot, oplot, plot_text
     """
@@ -557,14 +557,11 @@ def _plot_marker(x, y, marker='o', size=4, color='black',
     if plotter is None:
         _larch.raise_exception(None, msg='No Plotter defined')
     plotter.Raise()
-    kwds = {'label': 'marker'}
-    kwds.update(kws)
-    plotter.oplot([x], [y], marker=marker, markersize=size,
-                 color=color, _larch=_larch, wxparent=wxparent,  **kwds)
+    plotter.oplot([x], [y], marker=marker, markersize=size, label=label,
+                 color=color, _larch=_larch, wxparent=wxparent,  **kws)
 
 @larch.ValidateLarchPlugin
-def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
-                  wxparent=None, _larch=None, **kws):
+def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
 
     plot a horizontal line spanning the plot axes
