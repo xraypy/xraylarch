@@ -173,8 +173,8 @@ examples in the following sections in this chapter make use of these macros.
    :param show_deriv: bool whether to show deriv together with mu [``False``]
    :param emin:  min energy to show, relative to E0 [``None``, start of data]
    :param emax:  max energy to show, relative to E0 [``None``, end of data]
-   :param label: string for label [``None``:  'mu', `dmu/dE', or 'mu norm']
-   :param new:  bool whether to start a new plot [`True`]
+   :param label: string for label [``None``:  'mu', 'dmu/dE', or 'mu norm']
+   :param new:  bool whether to start a new plot [``True``]
    :param win:  integer plot window to use [1]
 
    The input data group must have the following attributes: `energy`, `mu`,
