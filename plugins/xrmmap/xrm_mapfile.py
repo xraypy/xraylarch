@@ -114,7 +114,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '1.5.0', ## '2.0.0', ## 
+           'Version': '2.0.0', ## '1.5.0', ## 
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time':'',
@@ -588,9 +588,9 @@ class GSEXRM_MapFile(object):
 
     >>> from epicscollect.io import GSEXRM_MapFile
     >>> map = GSEXRM_MapFile('MyMap.001')
-    >>> fe  = map.get_roimap('Fe')
-    >>> as  = map.get_roimap('As Ka', det=1, dtcorrect=True)
-    >>> rgb = map.get_rgbmap('Fe', 'Ca', 'Zn', det=None, dtcorrect=True, scale_each=False)
+    >>> fe  = map.get_roimap('mca2','Fe')
+    >>> as  = map.get_roimap('mca1', 'As Ka', dtcorrect=True)
+    >>> rgb = map.get_rgbmap('mcasum', 'Fe', 'Ca', 'Zn', dtcorrect=True, scale_each=False)
     >>> en  = map.get_energy(det=1)
 
     All these take the following options:
@@ -1599,52 +1599,6 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def add_xrd1D_roi_array(self, roiname, wedge_raw, whole_raw, roi_limits, **kws):
-        '''
-        add an array to the work group of processed arrays
-        '''
-        
-        roigroup  = ensure_subgroup('roimap',self.xrmmap)
-
-        if roiname in roigroup:
-            raise ValueError("array name '%s' exists in work arrays" % roiname)
-        
-        ds = roigroup.create_group(roiname)
-        ds.create_dataset('roi_limits', data=roi_limits )
-        ds.create_dataset('wedge_name', data=wedge_name )
-        ds.create_dataset('wedge_raw',  data=wedge_raw  )
-        ds.create_dataset('whole_raw',  data=whole_raw  )
-
-        for key, val in kws.items(): ds.attrs[key] = val
-        
-        self.h5root.flush()
-
-
-    def add_xrf_roi_array(self, roiname, det_raw, det_cor, sum_raw, sum_cor, roi_limits,
-                          det_name=None, **kws):
-        '''
-        add an array to the work group of processed arrays
-        '''
-        if det_name is None:
-            det_name = ['mca%i' % (i+1) for i in range(len(roi_limits))]
-        
-        roigroup  = ensure_subgroup('roimap',self.xrmmap)
-
-        if roiname in roigroup:
-            raise ValueError("array name '%s' exists in work arrays" % roiname)
-        
-        ds = roigroup.create_group(roiname)
-        ds.create_dataset('roi_limits', data=roi_limits )
-        ds.create_dataset('det_name',   data=det_name   )
-        ds.create_dataset('det_raw',    data=det_raw    )
-        ds.create_dataset('sum_raw',    data=sum_raw    )
-        ds.create_dataset('det_cor',    data=det_cor    )
-        ds.create_dataset('sum_cor',    data=sum_cor    )
-
-        for key, val in kws.items(): ds.attrs[key] = val
-        
-        self.h5root.flush()
-
     def add_work_array(self, data, name, **kws):
         '''
         add an array to the work group of processed arrays
@@ -2570,6 +2524,26 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
+    def add_xrd1D_roi_array(self, roiname, wedge_raw, whole_raw, roi_limits, **kws):
+        '''
+        add an array to the work group of processed arrays
+        '''
+        
+        roigroup  = ensure_subgroup('roimap',self.xrmmap)
+
+        if roiname in roigroup:
+            raise ValueError("array name '%s' exists in work arrays" % roiname)
+        
+        ds = roigroup.create_group(roiname)
+        ds.create_dataset('roi_limits', data=roi_limits )
+        ds.create_dataset('wedge_name', data=wedge_name )
+        ds.create_dataset('wedge_raw',  data=wedge_raw  )
+        ds.create_dataset('whole_raw',  data=whole_raw  )
+
+        for key, val in kws.items(): ds.attrs[key] = val
+        
+        self.h5root.flush()
+
     def add_xrd1D_roi(self, xarea, roiname):
     
         print 'this does not do anything yet.'
@@ -2594,96 +2568,84 @@ class GSEXRM_MapFile(object):
 
             self.add_xrd1D_roi_array(roiname, xrd1d_counts, roi_limits)
 
-    def add_xrfroi(self, Erange, roiname, nmca=4):
 
-        if self.flag_xrf:
-            roi_limits,dtfctrs,icounts = [],[],[]
-            sumraw,sumcor = None,None
+    def build_mca_roimap(self):
+    
+        roigroup  = ensure_subgroup('roimap',self.xrmmap)
+        for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
+            if grp.attrs.get('type', '').startswith('mca det'):
+                #for s in det.split(): det = 'mca%i' % int(s) if s.isdigit() else det
+                ds = ensure_subgroup(det,roigroup)
+                ds.attrs['type'] = 'mca detector'
+            if grp.attrs.get('type', '').startswith('virtual mca'):
+                #det = 'mcasum'
+                ds = ensure_subgroup(det,roigroup)
+                ds.attrs['type'] = 'virtual mca detector'
+                
+        return roigroup
+
+    def add_xrfroi(self, Erange, roiname):
+
+        if not self.flag_xrf:
+            return
+
+        det_list,roi_limits,dtfctrs,icounts = [],[],[],[]
+        sumraw,sumcor = None,None
             
-            dets = ['det%i' % (i+1) for i in range(nmca)]
-
+        roigroup  = self.build_mca_roimap()
+        try:
+            if roiname in roigroup['sum_name']:
+                raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
+        except:
+            pass
             
-            for i,det in enumerate(dets):
-                
-                xrmdet = self.xrmmap[det]
-                Eaxis = xrmdet['energy'][:]
-                
-                imin = (np.abs(Eaxis-Erange[0])).argmin()
-                imax = (np.abs(Eaxis-Erange[1])).argmin()+1
-               
-                roi_limits += [[imin, imax]]
-                dtfctrs += [xrmdet['dtfactor']]
-                icounts += [np.array(xrmdet['counts'][:])]
-                
-            detraw = [icnt[:,:,slice(*islc)].sum(axis=2)        for icnt,islc        in zip(icounts,roi_limits)]
-            detcor = [icnt[:,:,slice(*islc)].sum(axis=2)*dtfctr for icnt,islc,dtfctr in zip(icounts,roi_limits,dtfctrs)]
-            detraw = np.einsum('kij->ijk', detraw)
-            detcor = np.einsum('kij->ijk', detcor)
+        for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
+            if grp.attrs.get('type', '').startswith('mca det'):
+                det_list   += [det]
+                if roiname in roigroup[det]:
+                    raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
+            if grp.attrs.get('type', '').startswith('virtual mca'):
+                sumdet = det
+                if roiname in roigroup[det]:
+                    raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
 
-            sumraw = detraw.sum(axis=2)
-            sumcor = detcor.sum(axis=2)
+        for det in det_list:
+            
+            xrmdet = self.xrmmap[det]
+            Eaxis = xrmdet['energy'][:]
+            
+            imin = (np.abs(Eaxis-Erange[0])).argmin()
+            imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+           
+            roi_limits += [[imin, imax]]
+            dtfctrs += [xrmdet['dtfactor']]
+            icounts += [np.array(xrmdet['counts'][:])]
+            
+        detraw = [icnt[:,:,slice(*islc)].sum(axis=2)        for icnt,islc        in zip(icounts,roi_limits)]
+        detcor = [icnt[:,:,slice(*islc)].sum(axis=2)*dtfctr for icnt,islc,dtfctr in zip(icounts,roi_limits,dtfctrs)]
+        detraw = np.einsum('kij->ijk', detraw)
+        detcor = np.einsum('kij->ijk', detcor)
+        
+        sumraw = detraw.sum(axis=2)
+        sumcor = detcor.sum(axis=2)
 
-            self.add_xrf_roi_array(roiname, detraw, detcor, sumraw, sumcor,
-                                   roi_limits, type='xrf')
+        for i,det in enumerate(det_list):
+            ds = ensure_subgroup(roiname,roigroup[det])
+            ds.create_dataset('raw',    data=detraw[:,:,i] )
+            ds.create_dataset('cor',    data=detcor[:,:,i] )
+            ds.create_dataset('limits', data=Erange    )
+            ds['limits'].attrs['type']  = 'energy'
+            ds['limits'].attrs['units'] = 'keV'
+        ds = ensure_subgroup(roiname,roigroup[sumdet])
+        ds.create_dataset('raw',    data=sumraw )
+        ds.create_dataset('cor',    data=sumcor )
+        ds.create_dataset('limits', data=Erange )
+        ds['limits'].attrs['type']  = 'energy'
+        ds['limits'].attrs['units'] = 'keV'
+        
+        self.h5root.flush()
 
-    def OLDget_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
-        '''extract roi map for a pre-defined roi by name
-
-        Parameters
-        ---------
-        name :       str    ROI name
-        det  :       optional, None or int [None]  index for detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [True]         suprress hot columns
-
-        Returns
-        -------
-        ndarray for ROI data
-        '''
-        imap = -1
-        roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
-        det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-        work_names = self.work_array_names()
-        dat = 'roimap/sum_raw'
-        scan_version = getattr(self, 'scan_version', 1.00)
-        no_hotcols = no_hotcols and scan_version < 1.36
-        # scaler, non-roi data
-        if name.lower() in det_names and name.lower() not in roi_names:
-            imap = det_names.index(name.lower())
-            if no_hotcols:
-                return self.xrmmap[dat][:, 1:-1, imap]
-            else:
-                return self.xrmmap[dat][:, :, imap]
-        elif name in work_names:
-            map = self.get_work_array(name)
-            if no_hotcols and len(map.shape)==2:
-                map = map[:, 1:-1]
-            return map
-
-        dat = 'roimap/sum_raw'
-        if dtcorrect:
-            dat = 'roimap/sum_cor'
-
-        if self.ndet is None:
-            self.ndet =  self.xrmmap.attrs['N_Detectors']
-
-        if det in range(1, self.ndet+1):
-            name = '%s (mca%i)' % (name, det)
-            det_names = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
-            dat = 'roimap/det_raw'
-            if dtcorrect:
-                dat = 'roimap/det_cor'
-
-        imap = det_names.index(name.lower())
-        if imap < 0:
-            raise GSEXRM_Exception("Could not find ROI '%s'" % name)
-
-        if no_hotcols:
-            return self.xrmmap[dat][:, 1:-1, imap]
-        else:
-            return self.xrmmap[dat][:, :, imap]
-
-    def get_roimap(self, detname, roiname, no_hotcols=True, dtcorrect=True):
+    def get_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
@@ -2691,7 +2653,7 @@ class GSEXRM_MapFile(object):
         detname :    str    ROI name
         roiname :    str    ROI name
         dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [True]         suprress hot columns
+        no_hotcols   optional, bool [False]        suprress hot columns
 
         Returns
         -------
@@ -2717,47 +2679,36 @@ class GSEXRM_MapFile(object):
                 dat = 'roimap/%s/%s' % (detname,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
             
-            try:
+            if no_hotcols:
+                return self.xrmmap[dat][:, 1:-1]
+            else:
+                return self.xrmmap[dat][:, :]
+
+        else:
+            roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+            det_list = ['det1','det2','det3','det4']
+
+            if roiname.lower() in roi_list:
+                imap = roi_list.index(roiname.lower())
+
+                if detname in det_list:
+                    dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'            
+                elif detname == 'detsum':
+                    dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
+
+                if no_hotcols:
+                    return self.xrmmap[dat][:, 1:-1, imap]
+                else:
+                    return self.xrmmap[dat][:, :, imap]
+
+            else:
+                dat = 'roimap/%s/%s' % (detname,roiname)
+                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+
                 if no_hotcols:
                     return self.xrmmap[dat][:, 1:-1]
                 else:
                     return self.xrmmap[dat][:, :]
-
-            except:
-                raise GSEXRM_Exception("Could not find '%s/%s'" % (detname,roiname))
-
-
-        else:
-            roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-            try:
-                imap = roi_list.index(roiname.lower())
-            except:
-                imap = -1
-            
-            det_list = ['det1','det2','det3','det4']
-            if detname in det_list:
-                dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'            
-            elif detname == 'detsum':
-                dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
-            else:
-                dat = 'roimap/%s/%s' % (detname,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-                imap = -2
-            
-            try:
-                if imap < 0:
-                    if no_hotcols:
-                        return self.xrmmap[dat][:, 1:-1]
-                    else:
-                        return self.xrmmap[dat][:, :]
-                else:
-                    if no_hotcols:
-                        return self.xrmmap[dat][:, 1:-1, imap]
-                    else:
-                        return self.xrmmap[dat][:, :, imap]
-            except:
-                raise GSEXRM_Exception("Could not find '%s/%s'" % (detname,roiname))
-               
 
     def get_mca_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):
@@ -2767,7 +2718,7 @@ class GSEXRM_MapFile(object):
         '''
         pass
 
-    def get_rgbmap(self, rroi, groi, broi, det=None, no_hotcols=True,
+    def get_rgbmap(self, detname, rroi, groi, broi, no_hotcols=True,
                    dtcorrect=True, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
@@ -2792,12 +2743,9 @@ class GSEXRM_MapFile(object):
         (1/max intensity of all maps)
 
         '''
-        rmap = self.OLDget_roimap(rroi, det=det, no_hotcols=no_hotcols,
-                               dtcorrect=dtcorrect)
-        gmap = self.OLDget_roimap(groi, det=det, no_hotcols=no_hotcols,
-                               dtcorrect=dtcorrect)
-        bmap = self.OLDget_roimap(broi, det=det, no_hotcols=no_hotcols,
-                               dtcorrect=dtcorrect)
+        rmap = self.get_roimap(detname, rroi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        gmap = self.get_roimap(detname, groi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        bmap = self.get_roimap(detname, broi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())
