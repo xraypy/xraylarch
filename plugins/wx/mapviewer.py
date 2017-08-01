@@ -858,7 +858,6 @@ class TomographyPanel(GridPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
 
-        print 'map',np.shape(sino)
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
                                xrmfile=self.file)
@@ -869,7 +868,6 @@ class TomographyPanel(GridPanel):
         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
 
         rot_center = self.center_value.GetValue()
-        print 'centers?',self.center_value.GetValue()
 
         if np.shape(sino)[0] + 2 == len(ome):
             ome = ome[1:-1]            
@@ -1260,11 +1258,7 @@ class MapPanel(GridPanel):
             elif oprtr == '-': map = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': map = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
             elif oprtr == '/': map = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
-            print '1: map',np.shape(map)
-            map = np.flip(map.T,0)
-            print '2: map',np.shape(map)
-            map = np.einsum('jik->ijk', map)
-            print '3: map',np.shape(map)
+            map = np.einsum('kij->ijk', map)
 
             title = fname
             info = ''
@@ -1282,9 +1276,6 @@ class MapPanel(GridPanel):
             elif oprtr == '-': map = r_map-mapx
             elif oprtr == '*': map = r_map*mapx
             elif oprtr == '/': map = r_map/mapx
-            print '1: map',np.shape(map)
-            map = np.flip(map.T,0)
-            print '2: map',np.shape(map)
 
             if roi_name[-1] == '1' and oprtr == '/':
                 title = plt_name[0]
@@ -1303,7 +1294,6 @@ class MapPanel(GridPanel):
             map = map[lims[2]:lims[3], lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
 
-        print 'map',np.shape(map)
         self.owner.display_map(map, title=title, info=info, x=x, y=y,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
                                xrmfile=self.file)
@@ -1339,9 +1329,6 @@ class MapPanel(GridPanel):
             
         map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
         map2 = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
-        
-#         map1 = np.flip(map1.T,0)
-#         map2 = np.flip(map2.T,0)
 
         x = datafile.get_pos(0, mean=True)
         y = datafile.get_pos(1, mean=True)
