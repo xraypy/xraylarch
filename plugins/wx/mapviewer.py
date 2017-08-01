@@ -411,7 +411,6 @@ class ROIPanel(GridPanel):
         self.file,self.xrmmap = None,None
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
-        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
 
         roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
 
@@ -422,7 +421,7 @@ class ROIPanel(GridPanel):
         self.roi_unt = Choice(self, choices=roiunits, size=(120, -1))
 
         self.Add(SimpleText(self, '--    ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
-        self.AddMany((self.roi_name,self.roi_unt,self.roi_lims[0],self.roi_lims[1],Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow = True)
+        self.AddMany((self.roi_name,self.roi_unt,self.roi_lims[0],self.roi_lims[1],Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
 
         self.pack()
         
@@ -498,19 +497,6 @@ class TomographyPanel(GridPanel):
         
         self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
-        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],self.det_choice[1],self.det_choice[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
-        
-        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
-        self.Add(self.chk_dftcor,  dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
-        self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT, newrow = True)
-
         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowSinogram, new=True)),
                           Button(self, 'Replace Last', size=(100, -1),
@@ -520,13 +506,6 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
-        
-        self.Add(SimpleText(self,'Sinogram:'),  dcol=1, style=RIGHT, newrow=True)
-        self.Add(self.sino_show[0],  dcol=1,   style=LEFT)
-        self.Add(self.sino_show[1],  dcol=1,   style=LEFT)
-
-        
         self.tomo_pkg,self.tomo_alg = [],[]
         if HAS_tomopy:
             self.tomo_pkg += ['tomopy']
@@ -546,38 +525,62 @@ class TomographyPanel(GridPanel):
             self.alg_choice[0].SetSelection(0)
             self.alg_choice[1].SetSelection(0)
 
-        self.rot_cen = FloatCtrl(self, value=1, minval=0, precision=3, size=(100, -1))
-        self.ref_cen = Check(self, label='Refine?')
-        self.ref_cen.SetValue(False)
-        self.cen_step = wx.SpinButton(self, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        self.center_value = wx.wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
+                                     style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        self.refine_center = Check(self, label='Refine?')
 
-        self.cen_step.Bind(wx.EVT_SPIN, self.onStepCenter)
-        
-        center = wx.BoxSizer(wx.HORIZONTAL)
-        center.Add(self.rot_cen,  flag=wx.LEFT, border=5)
-        center.Add(self.cen_step, flag=wx.LEFT, border=5)
 
-        self.Add(SimpleText(self,''), newrow=True)        
+        #################################################################################
+        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
+                                                               style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''),self.det_label[0],
+                        self.det_label[1],self.det_label[2]),  style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],
+                      self.det_choice[1],self.det_choice[2]),  style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],
+                      self.roi_choice[1],self.roi_choice[2]),  style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''),self.roi_label[0],
+                        self.roi_label[1],self.roi_label[2]),  style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
+                                                               style=LEFT,  newrow=True)
+        self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), 
+                                                               style=LEFT,  newrow=True)
+        self.Add(self.chk_hotcols,                     dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
+        #################################################################################
+        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        #################################################################################
+        self.Add(SimpleText(self,'Sinogram:'),         dcol=1, style=RIGHT, newrow=True)
+        self.Add(self.sino_show[0],                    dcol=1, style=LEFT)
+        self.Add(self.sino_show[1],                    dcol=1, style=LEFT)
+        #################################################################################
+        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        #################################################################################
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
-        self.AddMany((self.alg_choice[0],self.alg_choice[1]),  dcol=1,   style=LEFT)
-        self.AddMany((SimpleText(self,''),SimpleText(self,'Center:'),center,self.ref_cen),  dcol=1,   style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self,''),self.tomo_show[0]),  dcol=1,   style=LEFT, newrow=True)
-        self.Add(self.tomo_show[1],  dcol=1,   style=LEFT)
-
+        self.AddMany((self.alg_choice[0],self.alg_choice[1]),
+                                                       dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
+        self.AddMany((self.center_value,self.refine_center),
+                                                       dcol=1, style=LEFT)
+        self.AddMany((SimpleText(self,''),self.tomo_show[0],self.tomo_show[1]),
+                                                       dcol=1, style=LEFT,  newrow=True)
+        #################################################################################
         self.pack()
-        
+
+
         self.disable_options()
 
     def disable_options(self):
         
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]
         for chc in all_choices: chc.Disable()
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.ref_cen):
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center):
             chk.Disable()
         for btn in (self.sino_show+self.tomo_show):
             btn.Disable()
-        self.rot_cen.Disable()
-        self.cen_step.Disable()
+        self.center_value.Disable()
 
     def enable_options(self):
     
@@ -592,11 +595,10 @@ class TomographyPanel(GridPanel):
         
         for chc in self.alg_choice: chc.Enable()
         
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.ref_cen): chk.Enable()
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center): chk.Enable()
         for btn in (self.sino_show+self.tomo_show): btn.Enable()
 
-        self.rot_cen.Enable()
-        self.cen_step.Enable()
+        self.center_value.Enable()
         
     def update_xrmmap(self, xrmmap):
 
@@ -612,23 +614,13 @@ class TomographyPanel(GridPanel):
             self.chk_hotcols.SetValue(1)
         else:
             self.chk_hotcols.SetValue(0)
-
-        
+       
         self.enable_options()
         self.set_det_choices(xrmmap)
 
-
-        center = len(self.file.get_pos(1, mean=True))/2
-
-        self.rot_cen.SetValue(center)
-
-        self.cen_step.SetRange(-20.*center,20.*center)
-        self.cen_step.SetValue(center*10.)
-
-
-    def onStepCenter(self,event=None):
-        self.rot_cen.SetValue(str(event.GetPosition()/10.))
-            
+        center = len(self.file.get_pos(1, mean=True))/2.
+        self.center_value.SetRange(center*-2.,center*2.)
+        self.center_value.SetValue(center)
 
     def onALGchoice(self,event=None):
     
@@ -707,6 +699,16 @@ class TomographyPanel(GridPanel):
                 self.oper.SetSelection(0)
             else:
                 self.oper.SetSelection(oper_ch)
+
+    def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
+        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        indices = []
+        for idx in selected:
+            iy, ix = divmod(idx, ny)
+            indices.append((ix, iy))
+
             
     def onClose(self):
         for p in self.plotframes:
@@ -856,6 +858,7 @@ class TomographyPanel(GridPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
 
+        print 'map',np.shape(sino)
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
                                xrmfile=self.file)
@@ -865,14 +868,15 @@ class TomographyPanel(GridPanel):
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
 
-        rot_center = self.rot_cen.GetValue()
+        rot_center = self.center_value.GetValue()
+        print 'centers?',self.center_value.GetValue()
 
         if np.shape(sino)[0] + 2 == len(ome):
             ome = ome[1:-1]            
         
         if pkg.startswith('scikit'):
 
-            if self.ref_cen.GetValue():
+            if self.refine_center.GetValue():
                 print 'not refining center here yet.'
             if len(np.shape(sino)) > 2:
                 sino = np.einsum('jki->ijk', sino)
@@ -892,11 +896,10 @@ class TomographyPanel(GridPanel):
                 sino = np.reshape(sino,(dome,1,dx))
             theta = np.radians(ome)
             
-            if self.ref_cen.GetValue():
+            if self.refine_center.GetValue():
                 rot_center = tomopy.find_center(sino, theta, init=rot_center, ind=0, tol=0.5)
-                self.rot_cen.SetValue(rot_center)
-                self.cen_step.SetValue(rot_center*10)
-                self.ref_cen.SetValue(False)
+                self.center_value.SetValue(rot_center)
+                self.refine_center.SetValue(False)
 
             try:
                 tomo = tomopy.recon(sino, theta, center=rot_center, algorithm=alg)
@@ -1031,20 +1034,6 @@ class MapPanel(GridPanel):
         
         self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
-        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,''),self.det_label[0],self.det_label[1],self.det_label[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],self.det_choice[1],self.det_choice[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],self.roi_choice[1],self.roi_choice[2]), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,''),self.roi_label[0],self.roi_label[1],self.roi_label[2]), style=LEFT, newrow = True)
-        
-        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT, newrow = True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), style=LEFT, newrow = True)
-        self.Add(self.chk_dftcor,  dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), style=LEFT, newrow = True)
-        self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT, newrow = True)
-
-
         fopts = dict(minval=-20000, precision=0, size=(70, -1))
         self.lims = [FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts),
@@ -1060,31 +1049,50 @@ class MapPanel(GridPanel):
                           SimpleText(self, ':'),
                           SimpleText(self, 'Y Range:'),
                           SimpleText(self, ':')]
-        
-        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT, newrow=True)
-        self.Add(self.limrange,               dcol=4, style=LEFT, newrow=True)
-        self.Add(self.range_txt[0],           dcol=1, style=LEFT, newrow=True)
-        self.Add(self.lims[0],                dcol=1, style=LEFT)
-        self.Add(self.range_txt[1],           dcol=1, style=LEFT)
-        self.Add(self.lims[1],                dcol=1, style=LEFT)
-        self.Add(self.range_txt[2],           dcol=1, style=LEFT, newrow=True)
-        self.Add(self.lims[2],                dcol=1, style=LEFT)
-        self.Add(self.range_txt[3],           dcol=1, style=LEFT)
-        self.Add(self.lims[3],                dcol=1, style=LEFT)
 
         self.map_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onROIMap, new=True)),
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onROIMap, new=False))]
 
-
-        self.Add(HLine(self, size=(500, 10)), dcol=8, newrow=True, style=LEFT)
-        self.Add(SimpleText(self,'ROI Map:'),  dcol=1, style=RIGHT, newrow=True)
-        self.Add(self.map_show[0],  dcol=1,   style=LEFT)
-        self.Add(self.map_show[1],  dcol=1,   style=LEFT)
-
-       
-
+        #################################################################################
+        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), 
+                                                               style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''),self.det_label[0],
+                       self.det_label[1],self.det_label[2]),   style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],
+                       self.det_choice[1],self.det_choice[2]), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],
+                       self.roi_choice[1],self.roi_choice[2]), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''),self.roi_label[0],
+                       self.roi_label[1],self.roi_label[2]),   style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), 
+                                                               style=LEFT,  newrow=True)
+        self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), 
+                                                               style=LEFT,  newrow=True)
+        self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
+        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
+        #################################################################################        
+        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        #################################################################################
+        self.Add(self.limrange,                        dcol=4, style=LEFT,  newrow=True)
+        self.Add(self.range_txt[0],                    dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.lims[0],                         dcol=1, style=LEFT)
+        self.Add(self.range_txt[1],                    dcol=1, style=LEFT)
+        self.Add(self.lims[1],                         dcol=1, style=LEFT)
+        self.Add(self.range_txt[2],                    dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.lims[2],                         dcol=1, style=LEFT)
+        self.Add(self.range_txt[3],                    dcol=1, style=LEFT)
+        self.Add(self.lims[3],                         dcol=1, style=LEFT)
+        #################################################################################
+        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        #################################################################################
+        self.Add(SimpleText(self,'ROI Map:'),          dcol=1, style=RIGHT, newrow=True)
+        self.Add(self.map_show[0],                     dcol=1, style=LEFT)
+        self.Add(self.map_show[1],                     dcol=1, style=LEFT)
+        #################################################################################
         self.pack()
         
         self.disable_options()
@@ -1243,8 +1251,8 @@ class MapPanel(GridPanel):
             g_map = datafile.get_roimap(det_name[1],roi_name[1],**args)
             b_map = datafile.get_roimap(det_name[2],roi_name[2],**args)
 
-        x = datafile.get_pos(0, mean=True)[::-1]
-        y   = datafile.get_pos(1, mean=True)
+        x = datafile.get_pos(0, mean=True)
+        y = datafile.get_pos(1, mean=True)
             
         pref, fname = os.path.split(datafile.filename)
         if plt3:
@@ -1252,7 +1260,11 @@ class MapPanel(GridPanel):
             elif oprtr == '-': map = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': map = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
             elif oprtr == '/': map = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
-            #map = np.flip(map.T,0)
+            print '1: map',np.shape(map)
+            map = np.flip(map.T,0)
+            print '2: map',np.shape(map)
+            map = np.einsum('jik->ijk', map)
+            print '3: map',np.shape(map)
 
             title = fname
             info = ''
@@ -1270,7 +1282,9 @@ class MapPanel(GridPanel):
             elif oprtr == '-': map = r_map-mapx
             elif oprtr == '*': map = r_map*mapx
             elif oprtr == '/': map = r_map/mapx
-            #map = np.flip(map.T,0)
+            print '1: map',np.shape(map)
+            map = np.flip(map.T,0)
+            print '2: map',np.shape(map)
 
             if roi_name[-1] == '1' and oprtr == '/':
                 title = plt_name[0]
@@ -1289,9 +1303,19 @@ class MapPanel(GridPanel):
             map = map[lims[2]:lims[3], lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
 
+        print 'map',np.shape(map)
         self.owner.display_map(map, title=title, info=info, x=x, y=y,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
                                xrmfile=self.file)
+
+    def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
+        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        indices = []
+        for idx in selected:
+            iy, ix = divmod(idx, ny)
+            indices.append((ix, iy))
 
 
     def ShowCorrel(self,datafile):
@@ -1310,7 +1334,7 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
         if roi_name[-1] == '1' or roi_name[0] == '1':
-            print "WARNING: cannot make correlation plot with matrix of '1'"
+            print("WARNING: cannot make correlation plot with matrix of '1'")
             return
             
         map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
