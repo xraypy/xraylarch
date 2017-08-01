@@ -149,6 +149,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     label  = 'Map Math'
     def __init__(self, parent, owner, **kws):
         self.map = None
+        self.file = None
 
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
@@ -187,27 +188,27 @@ class MapMathPanel(scrolled.ScrolledPanel):
         ir += 1
         sizer.Add(SimpleText(self, 'Array'),       (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'File'),        (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'ROI'),         (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Detector'),    (ir, 3), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Detector'),    (ir, 2), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'ROI'),         (ir, 3), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'DT Correct?'), (ir, 4), (1, 1), ALL_CEN, 2)
 
         self.varfile  = {}
         self.varroi   = {}
-        self.varshape   = {}
-        self.varrange   = {}
+        self.varshape = {}
+        self.varrange = {}
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e', 'f'):
-            self.varfile[varname]   = vfile  = Choice(self, choices=[], size=(180, -1),
+            self.varfile[varname]  = vfile  = Choice(self, choices=[], size=(180, -1),
+                                                          action=partial(self.onFILE, varname=varname))
+            self.varroi[varname]   = vroi   = Choice(self, choices=[], size=(100, -1),
                                                           action=partial(self.onROI, varname=varname))
-            self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(100, -1),
-                                                          action=partial(self.onROI, varname=varname))
-            self.vardet[varname]    = vdet   = Choice(self, choices=DETCHOICES,
-                                                      size=(80, -1))
-            self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
-            self.varshape[varname]  = vshape = SimpleText(self, 'Array Shape = (, )',
+            self.vardet[varname]   = vdet   = Choice(self, choices=[], size=(80, -1),
+                                                          action=partial(self.onDET, varname=varname))
+            self.varcor[varname]   = vcor   = wx.CheckBox(self, -1, ' ')
+            self.varshape[varname] = vshape = SimpleText(self, 'Array Shape = (, )',
                                                           size=(200, -1))
-            self.varrange[varname]  = vrange = SimpleText(self, 'Range = [   :    ]',
+            self.varrange[varname] = vrange = SimpleText(self, 'Range = [   :    ]',
                                                           size=(200, -1))
             vcor.SetValue(1)
             vdet.SetSelection(0)
@@ -215,8 +216,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
             ir += 1
             sizer.Add(SimpleText(self, '%s = ' % varname),    (ir, 0), (1, 1), ALL_CEN, 2)
             sizer.Add(vfile,                        (ir, 1), (1, 1), ALL_CEN, 2)
-            sizer.Add(vroi,                         (ir, 2), (1, 1), ALL_CEN, 2)
-            sizer.Add(vdet,                         (ir, 3), (1, 1), ALL_CEN, 2)
+            sizer.Add(vdet,                         (ir, 2), (1, 1), ALL_CEN, 2)
+            sizer.Add(vroi,                         (ir, 3), (1, 1), ALL_CEN, 2)
             sizer.Add(vcor,                         (ir, 4), (1, 1), ALL_CEN, 2)
             ir +=1
             sizer.Add(vshape,                       (ir, 1), (1, 1), ALL_LEFT, 2)
@@ -302,6 +303,18 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile.xrmmap)
 
+    def onFILE(self, evt, varname='a'):
+    
+        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        print('\tNot doing anything yet...')
+        print('\tShould switch from previous file to: %s' %
+                  self.varfile[varname].GetStringSelection())
+        print("\tNeeds to ignore 'currrent file' somehow.")
+        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+
+    def onDET(self, evt, varname='a'):
+
+        self.set_roi_choices(self.xrmmap,varname=varname)
 
 
     def onROI(self, evt, varname='a'):
@@ -309,29 +322,98 @@ class MapMathPanel(scrolled.ScrolledPanel):
         roiname = self.varroi[varname].GetStringSelection()
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
-        det =  None
-        if dname != 'sum':  det = int(dname)
-        map = self.owner.filemap[fname].OLDget_roimap(roiname, det=det,
-                                                   no_hotcols=False,
-                                                   dtcorrect=dtcorr)
+        
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+            map = self.owner.filemap[fname].get_roimap(dname,roiname,dtcorrect=dtcorr)
+        else:
+            det =  None
+            if dname.find('sum') < 0:
+                for s in dname.split(): det = int(s) if s.isdigit() else None
+                print det
+            map = self.owner.filemap[fname].OLDget_roimap(roiname, det=det,
+                                                          dtcorrect=dtcorr)
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmmap):
-        self.set_roi_choices(xrmmap)
+
+        self.file   = self.owner.current_file
+        self.xrmmap = xrmmap
+
+        self.set_det_choices(xrmmap)
         self.set_workarray_choices(xrmmap)
 
-    def set_roi_choices(self, xrmmap):
-        if StrictVersion(self.owner.current_file.version) >= StrictVersion('2.0.0'):
-            print('MAP MATH: Not YET compatible with new map version')
-            rois = ['']
-        else:
-            rois = ['1'] + list(xrmmap['roimap/sum_name'])
-            if 'work' in xrmmap:
-                rois.extend(list(xrmmap['work'].keys()))
+        for vfile in self.varfile.values(): vfile.SetSelection(-1)
 
-        for wid in self.varroi.values():
-            wid.SetChoices(rois)
+    def set_det_choices(self, xrmmap, varname=None):
+
+        det_list = []
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+            if 'scalars' in xrmmap: det_list += ['scalars']
+            for grp in xrmmap['roimap'].keys():
+                if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
+        else:
+            for grp in xrmmap.keys():
+                if grp.startswith('det'): det_list += [grp]            
+            if 'detsum' in det_list:
+                det_list.remove('detsum')
+                det_list.insert(0, 'detsum')
+            ## allows for adding roi in new format to old files                
+            for grp in xrmmap['roimap'].keys():
+                try:
+                    if xrmmap[grp].attrs.get('type', '').find('det') > -1:
+                        det_list += [grp]
+                except:
+                    pass
+
+        if len(det_list) < 1: det_list = ['']
+
+        if varname is None:
+            for wid in self.vardet.values():
+                wid.SetChoices(det_list)
+        else:
+            self.vardet[varname].SetChoices(det_list)
+        self.set_roi_choices(xrmmap,varname=varname)
+
+    def set_roi_choices(self, xrmmap, varname=None):
+
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+
+            if varname is None:
+                for varname in self.vardet.keys():
+                    dname = self.vardet[varname].GetStringSelection()
+                    rois = self.update_roi(dname,xrmmap)
+                    self.varroi[varname].SetChoices(rois)
+            else:
+                dname = self.vardet[varname].GetStringSelection()
+                rois =  self.update_roi(dname,xrmmap)
+                self.varroi[varname].SetChoices(rois)
+        else:
+            if varname is None:
+                for varname in self.vardet.keys():
+                    dname = self.vardet[varname].GetStringSelection()
+                    rois = self.update_roi_older(dname,xrmmap)
+                    self.varroi[varname].SetChoices(rois)
+            else:
+                dname = self.vardet[varname].GetStringSelection()
+                rois = self.update_roi_older(dname,xrmmap)
+                self.varroi[varname].SetChoices(rois)
+
+    def update_roi_older(self, detname, xrmmap):
+
+        if detname in xrmmap.keys():
+            return list(xrmmap['roimap/sum_name'])
+        else:
+            return self.update_roi(detname,xrmmap)
+    
+    def update_roi(self, detname, xrmmap):
+
+        try:
+            names = xrmmap['roimap'][detname].keys()
+            lmts  = [list(xrmmap['roimap'][detname][name]['limits'][:]) for name in names]
+            return [x for (y,x) in sorted(zip(lmts,names))]
+        except:
+            return [name for name in xrmmap[detname].keys()]
 
     def set_workarray_choices(self, xrmmap):
 
@@ -1816,8 +1898,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       'Original data path',
-                      'XRD Calibration', '2DXRD data', '1DXRD data',
-                      'Tomography'):
+                      'XRD Calibration', '2DXRD data', '1DXRD data'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -1935,11 +2016,6 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['1DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd1d'])
         except:
             pass
-        try:
-            self.wids['Tomography'].SetLabel('%s' % xrmmap['flags'].attrs['tomo'])
-        except:
-            pass
-
 
     def onClose(self):
         pass
@@ -2959,7 +3035,6 @@ class MapViewerFrame(wx.Frame):
             FLAGxrf     = myDlg.FLAGxrf
             FLAGxrd1D   = myDlg.FLAGxrd1D
             FLAGxrd2D   = myDlg.FLAGxrd2D
-            FLAGtomo    = myDlg.FLAGtomo
             mask        = myDlg.MaskFile
             wdgs        = int(myDlg.Wdg.GetValue())
             stps        = int(myDlg.Stp.GetValue())
@@ -2970,8 +3045,7 @@ class MapViewerFrame(wx.Frame):
             wdgs    = 0 if wdgs > 36 or wdgs < 2 else wdgs
             xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
                                      azwdgs=wdgs,qstps=stps,flip=flip,
-                                     FLAGxrf=FLAGxrf, FLAGtomo=FLAGtomo,
-                                     FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
+                                     FLAGxrf=FLAGxrf, FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
             self.add_xrmfile(xrmfile)
 
 #             if ponifile is not None:
@@ -3149,7 +3223,6 @@ class OpenMapFolder(wx.Dialog):
         self.FLAGxrf   = True
         self.FLAGxrd1D = False
         self.FLAGxrd2D = False
-        self.FLAGtomo  = False
         self.FldrPath  = None
         self.PoniFile  = None
         self.MaskFile  = None
@@ -3168,7 +3241,6 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx      = Check(panel, label='XRF'   )
         xrd2dCkBx    = Check(panel, label='2DXRD' )
         xrd1dCkBx    = Check(panel, label='1DXRD' )
-        tomoCkBx      = Check(panel, label='Tomography?'   )
 
         self.poniTtl = Choice(panel,   choices=['Dioptas calibration file:',
                                                    'pyFAI calibration file:'] )
@@ -3193,7 +3265,6 @@ class OpenMapFolder(wx.Dialog):
         self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx      )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD2Dcheck, xrd2dCkBx    )
         self.Bind(wx.EVT_CHECKBOX, self.onXRD1Dcheck, xrd1dCkBx    )
-        self.Bind(wx.EVT_CHECKBOX, self.onTOMOcheck,  tomoCkBx    )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSEponi, self.poniBtn )
         self.Bind(wx.EVT_BUTTON,   self.onBROWSEmask, self.maskBtn )
@@ -3230,7 +3301,6 @@ class OpenMapFolder(wx.Dialog):
         ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
         ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT, border=15)
         ckbxsizer.Add(xrdsizer, flag=wx.RIGHT, border=15)
-        ckbxsizer.Add(tomoCkBx, flag=wx.RIGHT, border=15)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
@@ -3261,7 +3331,6 @@ class OpenMapFolder(wx.Dialog):
         xrfCkBx.SetValue(True)
         xrd2dCkBx.SetValue(False)
         xrd1dCkBx.SetValue(False)
-        tomoCkBx.SetValue(False)
 
         self.poniTtl.SetSelection(0)
 
@@ -3329,11 +3398,6 @@ class OpenMapFolder(wx.Dialog):
             self.Wdg.Disable()
             self.wdgSpn.Disable()
         self.checkOK()
-
-    def onTOMOcheck(self,event=None):
-        self.FLAGtomo = event.GetEventObject().GetValue()
-        self.checkOK()
-
 
     def onWdgSPIN(self,event=None):
 

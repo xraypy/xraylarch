@@ -21,7 +21,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
 from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
 
 
-NINIT = 2
+NINIT = 32
 #COMPRESSION_LEVEL = 4
 COMPRESSION_LEVEL = 'lzf' ## faster but larger files;mkak 2016.08.19
 DEFAULT_ROOTNAME = 'xrmmap'
@@ -114,7 +114,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '1.5.0', ## '2.0.0',
+           'Version': '1.5.0', ## '2.0.0', ## 
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time':'',
@@ -210,7 +210,7 @@ class GSEXRM_MapRow:
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
-                 mask=None, wdg=0, steps=STEPS, flip=True, FLAGtomo=False,
+                 mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         ta = time.time()
@@ -608,7 +608,7 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
-                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False, FLAGtomo=False):
+                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
 
         self.filename         = filename
         self.folder           = folder
@@ -633,7 +633,6 @@ class GSEXRM_MapFile(object):
         self.flag_xrf    = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
-        self.flag_tomo  = FLAGtomo
 
         self.calibration = poni
         self.maskfile    = mask
@@ -993,8 +992,8 @@ class GSEXRM_MapFile(object):
                              masterfile=self.masterfile, poni=self.calibration,
                              flip=self.flip, mask=self.maskfile,
                              wdg=self.azwdgs, steps=self.qstps,
-                             FLAGxrf=self.flag_xrf, FLAGtomo=self.flag_tomo,
-                             FLAGxrd2D=self.flag_xrd2d, FLAGxrd1D=self.flag_xrd1d)
+                             FLAGxrf=self.flag_xrf, FLAGxrd2D=self.flag_xrd2d,
+                             FLAGxrd1D=self.flag_xrd1d)
 
 
     def add_rowdata(self, row, verbose=False):
@@ -1182,7 +1181,6 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2D'] = self.flag_xrd2d
         flaggp.attrs['xrd1D'] = self.flag_xrd1d
-        flaggp.attrs['tomo']  = self.flag_tomo
 
         if self.npts is None:
             self.npts = row.npts
@@ -1501,10 +1499,7 @@ class GSEXRM_MapFile(object):
         self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
         self.h5root.flush()
         
-        print 'look for tomography flag, too!'
-        print
-        print 'DO I NEED FLAGS?'
-        print
+        print '***********\nDO I NEED FLAGS?\n***********\n'
 
     def reset_flags(self):
         '''
@@ -1520,7 +1515,6 @@ class GSEXRM_MapFile(object):
         self.flag_xrf   = self.xrmmap['flags'].attrs['xrf']
         self.flag_xrd2d = self.xrmmap['flags'].attrs['xrd2D']
         self.flag_xrd1d = self.xrmmap['flags'].attrs['xrd1D']
-        self.flag_tomo  = self.xrmmap['flags'].attrs['tomo']
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -1574,7 +1568,16 @@ class GSEXRM_MapFile(object):
                     realmca_groups.append(g)
                 elif g.attrs.get('type', '').startswith('virtual mca'):
                     virtmca_groups.append(g)
-            # print('resize arrays ', realmca_groups)
+                elif g.attrs.get('type', '').startswith('xrd2D detector'):
+                    oldnrow, npts, xpixx, xpixy = g['counts'].shape
+                    g['counts'].resize((nrow, npts, xpixx, xpixy))
+                elif g.attrs.get('type', '').startswith('xrd1D detector'):
+                    oldnrow, npts, qstps = g['counts'].shape
+                    g['counts'].resize((nrow, npts, qstps))
+                
+            for g in self.xrmmap['work']['xrdwedge'].values():
+                g['counts'].resize((nrow, npts, qstps))
+
             oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
             for g in realmca_groups:
                 g['counts'].resize((nrow, npts, nchan))
