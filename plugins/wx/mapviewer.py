@@ -130,10 +130,10 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
-DETCHOICES = ['sum', '1', '2', '3', '4']
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 DBCONN = None
-
+BEAMLINE = '13-ID-E'
+FACILITY = 'APS'
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
@@ -464,11 +464,10 @@ class MapMathPanel(scrolled.ScrolledPanel):
         fname = main_file.filename
 
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, det=None)
+            iframe = self.owner.add_imdisplay(title)
 
         self.owner.display_map(omap, title=title, subtitles=subtitles,
-                               info=info, x=x, y=y,
-                               det=None, xrmfile=main_file)
+                               info=info, x=x, y=y, xrmfile=main_file)
 ##################################
 ##  new as of 2017.07.10 mkak
 
@@ -516,9 +515,9 @@ class ROIPanel(GridPanel):
         self.owner.message('Calculating ROI: %s' % xname)
         if 1==1: #try:
             if self.roi_unt.GetStringSelection().startswith('XRD'):
-                self.file.add_xrd1D_roi(xrange,xname)
+                self.file.add_xrd1Droi(xrange,xname)
             elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
-                self.file.add_xrd2D_roi(xarea,xname)
+                self.file.add_xrd2Droi(xarea,xname)
             elif self.roi_unt.GetStringSelection().startswith('XRF'):
                 self.file.add_xrfroi(xrange,xname)
             self.owner.message('Ready')
@@ -1505,14 +1504,15 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         ir = 0
 
-        for label in ('Scan Started', 'User Comments 1', 'User Comments 2',
+        for label in ('Facility','Run Cycle','Proposal Number','User group',                      
+                      'Scan Started', 
+                      'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
+                      'Original data path', 'User Comments 1', 'User Comments 2',
                       'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
                       'Sample Fine Stages',
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
-                      'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
-                      'Original data path',
-                      'XRD Calibration', '2DXRD data', '1DXRD data'):
+                      'XRD Data','XRD Calibration'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -1616,20 +1616,45 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             folderpath = '...'+bytes2str(xrmmap.attrs['Map_Folder'][-35:])
         self.wids['Original data path'].SetLabel('%s' % folderpath)
 
+        self.wids['XRD Calibration'].SetLabel('')
         try:
             xrdgp = xrmmap['xrd1D']
             if os.path.exists(xrdgp.attrs['calfile']):
                 self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
         except:
             pass
+        
         try:
-            self.wids['2DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd2d'])
+            notegrp = xrmmap['config/notes']
         except:
-            pass
-        try:
-            self.wids['1DXRD data'].SetLabel('%s' % xrmmap['flags'].attrs['xrd1d'])
-        except:
-            pass
+            notegrp = None
+            
+        if notegrp is not None:
+            self.wids['Facility'].SetLabel('%s @ %s' % (notegrp.attrs['beamline'],
+                                                        notegrp.attrs['facility']))
+            self.wids['Run Cycle'].SetLabel(notegrp.attrs['run'])
+            self.wids['Proposal Number'].SetLabel(notegrp.attrs['proposal'])
+            self.wids['User group'].SetLabel(notegrp.attrs['user'])
+        else:
+            self.wids['Facility'].SetLabel('')
+            self.wids['Run Cycle'].SetLabel('')
+            self.wids['Proposal Number'].SetLabel('')
+            self.wids['User group'].SetLabel('')
+
+        FLAGXRD2D,FLAGXRD1D = False,False
+        for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
+            if key == 'xrd':             FLAGXRD2D = val
+            elif key.lower() == 'xrd2d': FLAGXRD2D = val
+            elif key.lower() == 'xrd1d': FLAGXRD1D = val
+
+        if FLAGXRD2D and FLAGXRD1D:
+            self.wids['XRD Data'].SetLabel('2D- and 1D-XRD data')
+        elif FLAGXRD2D:
+            self.wids['XRD Data'].SetLabel('2D-XRD data')
+        elif FLAGXRD1D:
+            self.wids['XRD Data'].SetLabel('1D-XRD data')
+        else:
+            self.wids['XRD Data'].SetLabel('')
 
     def onClose(self):
         pass
@@ -1660,15 +1685,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.info2   = wx.StaticText(pane, -1, '',  size=(250, -1))
         self.onmap   = Button(pane, 'Show on Map',  size=(135, -1), action=self.onShow)
         self.clear   = Button(pane, 'Clear Map',    size=(135, -1), action=self.onClear)
-        self.delete  = Button(pane, 'Delete Area',  size=( 90, -1), action=self.onDelete)
-        self.update  = Button(pane, 'Save Label',   size=( 90, -1), action=self.onLabel)
+        self.delete  = Button(pane, 'Delete Area',  size=(135, -1), action=self.onDelete)
+        self.update  = Button(pane, 'Save Label',   size=(135, -1), action=self.onLabel)
         self.bexport = Button(pane, 'Export Areas', size=(135, -1), action=self.onExport)
         self.bimport = Button(pane, 'Import Areas', size=(135, -1), action=self.onImport)
         ######################################
 
         ######################################
         ## SPECIFIC TO XRF MAP AREAS
-        self.onstats  = Button(pane, 'Calculate Stats', size=( 90, -1),
+        self.onstats  = Button(pane, 'Calculate Stats', size=(135, -1),
                                                 action=self.onShowStats)
         self.xrf      = Button(pane, 'Show XRF (Fore)', size=(135, -1),
                                                 action=self.onXRF)
@@ -2215,14 +2240,13 @@ class MapViewerFrame(wx.Frame):
         # if self.nb.GetPage(idx) is self.larch_panel:
         #     self.larch_panel.update()
 
-    def get_mca_area(self, det, mask, xoff=0, yoff=0, xrmfile=None):
+    def get_mca_area(self, mask, xoff=0, yoff=0, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
+        self.sel_mca = xrmfile.get_mca_area(aname)
 
-    def lassoHandler(self, mask=None, det=None, xrmfile=None,
-                     xoff=0, yoff=0, **kws):
+    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, **kws):
         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
         # print('lasso handler ', mask.shape, ny, nx)
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
@@ -2235,7 +2259,7 @@ class MapViewerFrame(wx.Frame):
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
-                            args=(det,mask), kwargs=kwargs)
+                            args=(mask,), kwargs=kwargs)
         mca_thread.start()
         self.show_XRFDisplay()
         mca_thread.join()
@@ -2347,8 +2371,8 @@ class MapViewerFrame(wx.Frame):
                                       notes=json.dumps(notes))
 
 
-    def add_imdisplay(self, title, det=None):
-        on_lasso = partial(self.lassoHandler, det=det)
+    def add_imdisplay(self, title):
+        on_lasso = self.lassoHandler
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels,
@@ -2358,10 +2382,10 @@ class MapViewerFrame(wx.Frame):
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None):
+                    subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+        lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
         if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
@@ -2370,7 +2394,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile)
+                            subtitles=subtitles, xrmfile=xrmfile)
                 #for col, wid in imd.wid_subtitles.items():
                 #    wid.SetLabel('%s: %s' % (col.title(), subtitles[col]))
                 imd.lasso_callback = lasso_cb
@@ -2383,7 +2407,7 @@ class MapViewerFrame(wx.Frame):
                                     save_callback=self.onSavePixel)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, det=det, xrmfile=xrmfile)
+                            subtitles=subtitles, xrmfile=xrmfile)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
@@ -2644,28 +2668,27 @@ class MapViewerFrame(wx.Frame):
         path, read = None, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
-            path        = myDlg.FldrPath
-            poni        = myDlg.PoniFile
-            FLAGxrf     = myDlg.FLAGxrf
-            FLAGxrd1D   = myDlg.FLAGxrd1D
-            FLAGxrd2D   = myDlg.FLAGxrd2D
-#             mask        = myDlg.MaskFile
-            wdgs        = int(myDlg.Wdg.GetValue())
-            stps        = int(myDlg.Stp.GetValue())
-            flip        = False if myDlg.poniTtl.GetSelection() == 1 else True
+            
+            args = {'folder':    myDlg.Fldr.GetValue(),
+                    'FLAGxrf':   myDlg.ChkBx[0].GetValue(),
+                    'FLAGxrd2D': myDlg.ChkBx[1].GetValue(),
+                    'FLAGxrd1D': myDlg.ChkBx[2].GetValue(),
+                    'poni':      myDlg.PoniInfo[1].GetValue(),
+                    'azwdgs':    myDlg.PoniInfo[6].GetValue(),
+                    'qstps':     myDlg.PoniInfo[4].GetValue(),
+                    'flip':      False if myDlg.PoniInfo[0].GetSelection() == 1 else True,
+                    'facility':  myDlg.info[0].GetValue(),
+                    'beamline':  myDlg.info[1].GetValue(),
+                    'date':      myDlg.info[2].GetValue(),
+                    'run':       myDlg.info[3].GetValue(),
+                    'proposal':  myDlg.info[4].GetValue(),
+                    'user':      myDlg.info[5].GetValue()
+                   }
         myDlg.Destroy()
 
         if read:
-            wdgs    = 0 if wdgs > 36 or wdgs < 2 else wdgs
-            xrmfile = GSEXRM_MapFile(folder=str(path),poni=poni,mask=mask,
-                                     azwdgs=wdgs,qstps=stps,flip=flip,
-                                     FLAGxrf=FLAGxrf, FLAGxrd1D=FLAGxrd1D, FLAGxrd2D=FLAGxrd2D)
+            xrmfile = GSEXRM_MapFile(**args)
             self.add_xrmfile(xrmfile)
-
-#             if ponifile is not None:
-#                 xrmfile.calibration = ponifile
-#                 xrmfile.add_calibration()(self, evt=None)
-
 
     def add_xrmfile(self, xrmfile):
         gname = 'map001'
@@ -2834,200 +2857,166 @@ class OpenMapFolder(wx.Dialog):
     #----------------------------------------------------------------------
     def __init__(self):
 
-        self.FLAGxrf   = True
-        self.FLAGxrd1D = False
-        self.FLAGxrd2D = False
-        self.FldrPath  = None
-        self.PoniFile  = None
-#         self.MaskFile  = None
-
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(350, 550))
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(350, 580))
 
         panel = wx.Panel(self)
 
-        fldrTtl      = SimpleText(panel,  label='XRM Map Folder:'           )
-        chTtl        = SimpleText(panel,  label='Build map including data:' )
-#         self.maskTtl = SimpleText(panel,  label='Mask file: (optional)'     )
-        self.wdgTtl  = SimpleText(panel,  label='Az. wedges:'  )
-        self.stpTtl  = SimpleText(panel,  label='Rad. steps:'  )
+        ################################################################################      
+        fldrTtl   = SimpleText(panel,  label='XRM Map Folder:' )
+        self.Fldr = wx.TextCtrl(panel, size=(320, 25)          )
+        fldrBtn   = Button(panel,      label='Browse...'       )
 
-        xrfCkBx      = Check(panel, label='XRF'   )
-        xrd2dCkBx    = Check(panel, label='2DXRD' )
-        xrd1dCkBx    = Check(panel, label='1DXRD' )
-
-        self.poniTtl = Choice(panel,   choices=['Dioptas calibration file:',
-                                                   'pyFAI calibration file:'] )
-
-        self.Fldr = wx.TextCtrl(panel, size=(320, 25) )
-        self.Poni = wx.TextCtrl(panel, size=(320, 25) )
-#         self.Mask = wx.TextCtrl(panel, size=(320, 25) )
-#         self.Wdg  = wx.TextCtrl(panel, size=(30,  25) )
-        self.Stp  = wx.TextCtrl(panel, size=(80,  25) )
-
-        infoTtl =  [ SimpleText(panel,  label='Beamline'),
-                     SimpleText(panel,  label='Run cycle'),
-                     SimpleText(panel,  label='Date'),
-                     SimpleText(panel,  label='Proposal number'),
-                     SimpleText(panel,  label='User group')]
-        self.info = [ wx.TextCtrl(panel, size=(70, 25) ),
-                      wx.TextCtrl(panel, size=(100, 25) ),
-                      wx.TextCtrl(panel, size=(100, 25) ),
-                      wx.TextCtrl(panel, size=(100, 25) ),
-                      wx.TextCtrl(panel, size=(320, 25) )]
-                      
-        infosizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        infosizer1.Add(infoTtl[0],   flag=wx.RIGHT, border=5)
-        infosizer1.Add(self.info[0], flag=wx.RIGHT, border=15)
-        infosizer1.Add(infoTtl[1],   flag=wx.RIGHT, border=5)
-        infosizer1.Add(self.info[1], flag=wx.RIGHT, border=15)
-
-        infosizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        infosizer2.Add(infoTtl[2],   flag=wx.RIGHT, border=5)
-        infosizer2.Add(self.info[2], flag=wx.RIGHT, border=15)
-        infosizer2.Add(infoTtl[3],   flag=wx.RIGHT, border=5)
-        infosizer2.Add(self.info[3], flag=wx.RIGHT, border=15)
+        self.Bind(wx.EVT_BUTTON, self.onBROWSE, fldrBtn)
         
-        infosizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        infosizer3.Add(infoTtl[4],   flag=wx.RIGHT, border=5)
-        infosizer3.Add(self.info[4], flag=wx.RIGHT, border=15)
-        
-        infosizer = wx.BoxSizer(wx.VERTICAL)
-        infosizer.Add(infosizer1, flag=wx.TOP,            border=15)
-        infosizer.Add(infosizer2, flag=wx.TOP|wx.BOTTOM,  border=5)
-        infosizer.Add(infosizer3, flag=wx.BOTTOM,         border=15)
-
-
-        fldrBtn      = Button(panel,   label='Browse...' )
-        self.poniBtn = Button(panel,   label='Browse...' )
-
-        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
-        okBtn        = wx.Button(panel,   wx.ID_OK     )
-        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
-
-        self.Wdg  = wx.SpinCtrl(panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP, size=(100,  -1))
-
-        self.Bind(wx.EVT_CHECKBOX, self.onXRFcheck,   xrfCkBx      )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRD2Dcheck, xrd2dCkBx    )
-        self.Bind(wx.EVT_CHECKBOX, self.onXRD1Dcheck, xrd1dCkBx    )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSE,     fldrBtn      )
-        self.Bind(wx.EVT_BUTTON,   self.onBROWSEponi, self.poniBtn )
-
         fldrsizer = wx.BoxSizer(wx.VERTICAL)
         fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
         fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
         fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,           border=5)
+        ################################################################################
+        ChkTtl        = SimpleText(panel,  label='Build map including data:' )
+        self.ChkBx = [ Check(panel, label='XRF'   ),
+                       Check(panel, label='2DXRD' ),
+                       Check(panel, label='1DXRD (requires calibration file)' )]
+
+        for chkbx in self.ChkBx: chkbx.Bind(wx.EVT_CHECKBOX, self.checkOK)
+
+        ckbxsizer1 = wx.BoxSizer(wx.VERTICAL)
+        ckbxsizer1.Add(self.ChkBx[1], flag=wx.BOTTOM|wx.LEFT, border=5)
+        ckbxsizer1.Add(self.ChkBx[2], flag=wx.BOTTOM|wx.LEFT, border=5)
+
+        ckbxsizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        ckbxsizer2.Add(self.ChkBx[0],  flag=wx.RIGHT, border=15)
+        ckbxsizer2.Add(ckbxsizer1, flag=wx.RIGHT, border=15)
+
+        ckbxsizer = wx.BoxSizer(wx.VERTICAL)
+        ckbxsizer.Add(ChkTtl, flag=wx.BOTTOM|wx.LEFT, border=5)
+        ckbxsizer.Add(ckbxsizer2, flag=wx.BOTTOM|wx.LEFT, border=5)        
+        ################################################################################
+        infoTtl =  [ SimpleText(panel,  label='Facility'),
+                     SimpleText(panel,  label='Beamline'),
+                     SimpleText(panel,  label='Date'),
+                     SimpleText(panel,  label='Run cycle'),
+                     SimpleText(panel,  label='Proposal number'),
+                     SimpleText(panel,  label='User group')]
+        self.info = [ wx.TextCtrl(panel, size=(100, 25) ),
+                      wx.TextCtrl(panel, size=(100, 25) ),
+                      wx.TextCtrl(panel, size=(100, 25) ),
+                      wx.TextCtrl(panel, size=(100, 25) ),
+                      wx.TextCtrl(panel, size=(250, 25) ),
+                      wx.TextCtrl(panel, size=(320, 25) )]
+                      
+        infosizer0 = wx.BoxSizer(wx.HORIZONTAL)
+        infosizer0.Add(infoTtl[0],   flag=wx.RIGHT, border=5)
+        infosizer0.Add(self.info[0], flag=wx.RIGHT, border=15)
+        infosizer0.Add(infoTtl[1],   flag=wx.RIGHT, border=5)
+        infosizer0.Add(self.info[1], flag=wx.RIGHT, border=15)
+        
+        infosizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        infosizer1.Add(infoTtl[2],   flag=wx.RIGHT, border=5)
+        infosizer1.Add(self.info[2], flag=wx.RIGHT, border=15)
+        infosizer1.Add(infoTtl[3],   flag=wx.RIGHT, border=5)
+        infosizer1.Add(self.info[3], flag=wx.RIGHT, border=15)
+
+        infosizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        infosizer2.Add(infoTtl[4],   flag=wx.RIGHT, border=5)
+        infosizer2.Add(self.info[4], flag=wx.RIGHT, border=15)
+        
+        infosizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        infosizer3.Add(infoTtl[5],   flag=wx.RIGHT, border=5)
+        infosizer3.Add(self.info[5], flag=wx.RIGHT, border=15)
+        
+        infosizer = wx.BoxSizer(wx.VERTICAL)
+        infosizer.Add(infosizer0, flag=wx.TOP,            border=15)
+        infosizer.Add(infosizer1, flag=wx.TOP,            border=5)
+        infosizer.Add(infosizer2, flag=wx.TOP|wx.BOTTOM,  border=5)
+        infosizer.Add(infosizer3, flag=wx.BOTTOM,         border=15)
+        ################################################################################
+        poni_chc = ['Dioptas calibration file:','pyFAI calibration file:']
+        poni_spn = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
+        self.PoniInfo = [ Choice(panel,      choices=poni_chc ),
+                          wx.TextCtrl(panel, size=(320, 25)),
+                          Button(panel,      label='Browse...'),
+                          SimpleText(panel,  label='Steps:'),
+                          wx.TextCtrl(panel, size=(80,  25)),
+                          SimpleText(panel,  label='Wedges:'),
+                          wx.SpinCtrl(panel, style=poni_spn, size=(100,  -1))]
+
+        self.PoniInfo[2].Bind(wx.EVT_BUTTON, self.onBROWSEponi)
+
+        ponisizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        ponisizer1.Add(self.PoniInfo[3], flag=wx.RIGHT, border=5)
+        ponisizer1.Add(self.PoniInfo[4], flag=wx.RIGHT, border=5)
+        ponisizer1.Add(self.PoniInfo[5], flag=wx.RIGHT, border=5)
+        ponisizer1.Add(self.PoniInfo[6], flag=wx.RIGHT, border=5)
         
         ponisizer = wx.BoxSizer(wx.VERTICAL)
-        ponisizer.Add(self.poniTtl, flag=wx.TOP|wx.LEFT,           border=5)
-        ponisizer.Add(self.Poni,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
-        ponisizer.Add(self.poniBtn, flag=wx.TOP|wx.LEFT,           border=5)
-
-        stpsizer = wx.BoxSizer(wx.HORIZONTAL)
-        stpsizer.Add(self.stpTtl, flag=wx.RIGHT, border=5)
-        stpsizer.Add(self.Stp,    flag=wx.RIGHT, border=5)
-        stpsizer.Add(self.wdgTtl, flag=wx.RIGHT, border=5)
-        stpsizer.Add(self.Wdg,    flag=wx.RIGHT, border=5)
-
-        xrdsizer = wx.BoxSizer(wx.VERTICAL)
-        xrdsizer.Add(xrd2dCkBx, flag=wx.BOTTOM|wx.LEFT, border=5)
-        xrdsizer.Add(xrd1dCkBx, flag=wx.BOTTOM|wx.LEFT, border=5)
-
-        ckbxsizer = wx.BoxSizer(wx.HORIZONTAL)
-        ckbxsizer.Add(xrfCkBx,  flag=wx.RIGHT, border=15)
-        ckbxsizer.Add(xrdsizer, flag=wx.RIGHT, border=15)
+        ponisizer.Add(self.PoniInfo[0], flag=wx.TOP,            border=15)
+        ponisizer.Add(self.PoniInfo[1], flag=wx.TOP,            border=5)
+        ponisizer.Add(self.PoniInfo[2], flag=wx.TOP|wx.BOTTOM,  border=5)
+        ponisizer.Add(ponisizer1,       flag=wx.BOTTOM,         border=15)
+        ################################################################################
+        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
+        okBtn        = wx.Button(panel,   wx.ID_OK     )
+        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
         minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
-
-
+        ################################################################################
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10))
         sizer.Add(fldrsizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 15))
-        sizer.Add(chTtl,     flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add(ckbxsizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
         sizer.Add(infosizer, flag=wx.TOP|wx.LEFT, border=5) 
         sizer.Add((-1, 8))                                  
         sizer.Add(ponisizer, flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 8))
-        sizer.Add(stpsizer,  flag=wx.TOP|wx.LEFT|wx.BOTTOM, border=5)
         sizer.Add((-1, 15))
         sizer.Add(minisizer, flag=wx.ALIGN_RIGHT, border=5)
 
         panel.SetSizer(sizer)
+        ################################################################################
 
         ## Set defaults
-        xrfCkBx.SetValue(True)
-        xrd2dCkBx.SetValue(False)
-        xrd1dCkBx.SetValue(False)
+        self.ChkBx[0].SetValue(True)
+        self.ChkBx[1].SetValue(False)
+        self.ChkBx[2].SetValue(False)
 
-        self.poniTtl.SetSelection(0)
+        self.PoniInfo[0].SetSelection(0)
 
-        self.Stp.SetValue('5001')
-        self.Wdg.SetValue(1)
-        self.Wdg.SetRange(0,36)
+        self.PoniInfo[4].SetValue('5001')
+        self.PoniInfo[6].SetValue(1)
+        self.PoniInfo[6].SetRange(0,36)
 
         self.FindWindowById(wx.ID_OK).Disable()
 
-        self.poniTtl.Disable()
-        self.poniBtn.Disable()
-        self.Poni.Disable()
-        self.stpTtl.Disable()
-        self.Stp.Disable()
-        self.wdgTtl.Disable()
-        self.Wdg.Disable()
+        for poniinfo in self.PoniInfo: poniinfo.Disable()
         
+        self.info[0].SetValue(FACILITY)
+        self.info[1].SetValue(BEAMLINE)
         self.info[2].SetValue(datetime.date.today().isoformat())
-        self.info[0].SetValue('13-ID-E')
 
+    def checkOK(self,event=None):
 
-    def checkOK(self):
-
-        if self.FldrPath is None:
+        if self.ChkBx[2].GetValue():
+            for poniinfo in self.PoniInfo: poniinfo.Enable()
+        else:
+            for poniinfo in self.PoniInfo: poniinfo.Disable()        
+        
+        if not os.path.exists(self.Fldr.GetValue()):
             self.FindWindowById(wx.ID_OK).Disable()
-        elif not self.FLAGxrf:
+        elif not self.ChkBx[0].GetValue():
             self.FindWindowById(wx.ID_OK).Disable()
         else:
             self.FindWindowById(wx.ID_OK).Enable()
 
-    def onXRFcheck(self,event=None):
-        self.FLAGxrf = event.GetEventObject().GetValue()
-        self.checkOK()
-
-    def onXRD2Dcheck(self,event=None):
-        self.FLAGxrd2D = event.GetEventObject().GetValue()
-        self.checkOK()
-
-    def onXRD1Dcheck(self,event=None):
-        self.FLAGxrd1D = event.GetEventObject().GetValue()
-        if self.FLAGxrd1D:
-            self.poniTtl.Enable()
-            self.poniBtn.Enable()
-            self.Poni.Enable()
-            self.stpTtl.Enable()
-            self.Stp.Enable()
-            self.wdgTtl.Enable()
-            self.Wdg.Enable()
-
-        else:
-            self.poniTtl.Disable()
-            self.poniBtn.Disable()
-            self.Poni.Disable()
-            self.stpTtl.Disable()
-            self.Stp.Disable()
-            self.wdgTtl.Disable()
-            self.Wdg.Disable()
-
-        self.checkOK()
-
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
-        if os.path.exists(self.Poni.GetValue()):
-           dfltDIR = self.Poni.GetValue()
+        if os.path.exists(self.PoniInfo[1].GetValue()):
+           dfltDIR = self.PoniInfo[1].GetValue()
         else:
            dfltDIR = os.getcwd()
 
@@ -3041,10 +3030,8 @@ class OpenMapFolder(wx.Dialog):
         dlg.Destroy()
 
         if read:
-            self.Poni.Clear()
-            self.Poni.SetValue(str(path))
-            self.PoniFile = path
-
+            self.PoniInfo[1].Clear()
+            self.PoniInfo[1].SetValue(str(path))
 
     def onBROWSE(self,event=None):
 
@@ -3066,19 +3053,12 @@ class OpenMapFolder(wx.Dialog):
         if read:
             self.Fldr.Clear()
             self.Fldr.SetValue(str(path))
-            self.FldrPath = path
             
-            try:
-                for line in open(os.path.join(path, 'Scan.ini'), 'r'):
-                    if line.split()[0] == 'basedir':
-                        cycle,usr = line.split()[-1].split('/')
-                        self.info[1].SetValue(cycle)
-                        self.info[4].SetValue(usr)
-                    if line.split()[0] == 'basedir':
-                        cycle,usr = line.split()[-1].split('/')
-                        
-            except:
-                pass
+            for line in open(os.path.join(path, 'Scan.ini'), 'r'):
+                if line.split()[0] == 'basedir':
+                    cycle,usr = line.split()[-1].split('/')
+                    self.info[3].SetValue(cycle)
+                    self.info[5].SetValue(usr)
 
         self.checkOK()
 

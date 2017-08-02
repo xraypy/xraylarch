@@ -117,11 +117,11 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Version': '2.0.0', ## '1.5.0', ## 
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
-           'Start_Time':'',
-           'Stop_Time':'',
+           'Start_Time': '',
+           'Stop_Time': '',
            'Map_Folder': '',
            'Dimension': 2,
-           'Process_Machine':'',
+           'Process_Machine': '',
            'Process_ID': 0}
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
@@ -165,7 +165,7 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     xrmmap.create_group('positions')
 
     conf = xrmmap['config']
-    for name in ('scan', 'general', 'environ', 'positioners',
+    for name in ('scan', 'general', 'environ', 'positioners', 'notes',
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
 
@@ -608,7 +608,8 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
-                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False):
+                 FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
+                 facility='APS', beamline='13-ID-E',run='',date='',proposal='',user=''):
 
         self.filename         = filename
         self.folder           = folder
@@ -636,9 +637,16 @@ class GSEXRM_MapFile(object):
 
         self.calibration = poni
         self.maskfile    = mask
-        self.azwdgs      = int(azwdgs)
-        self.qstps       = qstps
+        self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
+        self.qstps       = int(qstps)
         self.flip        = flip
+        
+        self.notes = {'facility' : facility,
+                      'beamline' : beamline,
+                      'run'      : run,
+                      'date'     : date,
+                      'proposal' : proposal,
+                      'user'     : user}
 
         # initialize from filename or folder
         if self.filename is not None:
@@ -1181,6 +1189,10 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2D'] = self.flag_xrd2d
         flaggp.attrs['xrd1D'] = self.flag_xrd1d
+        
+        conf = xrmmap['config']
+        for key in self.notes:
+            conf['notes'].attrs[key] = self.notes[key]
 
         if self.npts is None:
             self.npts = row.npts
@@ -1217,8 +1229,6 @@ class GSEXRM_MapFile(object):
                                maxshape=(None, npts, npos))
 
             if self.flag_xrf:
-                conf   = self.xrmmap['config']
-            
                 roi_names = [h5str(s) for s in conf['rois/name']]
                 roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
 
@@ -1302,7 +1312,6 @@ class GSEXRM_MapFile(object):
                     prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
                     print(prtxt % (npts, row.npts, nmca, nchan))
 
-                conf   = self.xrmmap['config']
                 en_index = np.arange(nchan)
 
                 offset = conf['mca_calib/offset'].value
@@ -1905,11 +1914,13 @@ class GSEXRM_MapFile(object):
 
     def _det_group(self, det=None):
         "return  XRMMAP group for a detector"
-        dgroup= 'detsum'
+
+        mcastr = 'mca' if StrictVersion(self.version) >= StrictVersion('2.0.0') else 'det'
+        dgroup = '%ssum' % mcastr
         if self.ndet is None:
             self.ndet =  self.xrmmap.attrs['N_Detectors']
         if det in range(1, self.ndet+1):
-            dgroup = 'det%i' % det
+            dgroup = '%s%i' % (mcastr,det)
         return self.xrmmap[dgroup]
 
     def get_energy(self, det=None):
@@ -1929,7 +1940,6 @@ class GSEXRM_MapFile(object):
         Parameters
         ---------
         areaname :   str       name of area
-        det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
 
         Returns
@@ -1944,6 +1954,9 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
         mapdat = self._det_group(det)
+        print 'mapdat'
+        print mapdat
+        print
         ix, iy, nmca = mapdat['counts'].shape
 
         npix = len(np.where(area)[0])
@@ -1961,7 +1974,7 @@ class GSEXRM_MapFile(object):
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
                 counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
-                                           mapdat=mapdat, det=det, area=area,
+                                           mapdat=mapdat, area=area,
                                            dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
@@ -2179,21 +2192,40 @@ class GSEXRM_MapFile(object):
         if npixels is not None:
             _mca.npixels=npixels
 
-        # a workaround for poor practice -- some '1.3.0' files
-        # were built with 'roi_names', some with 'roi_name'
-        roiname = 'roi_name'
-        if roiname not in map:
-            roiname = 'roi_names'
-        roinames = list(map[roiname])
-        roilims  = list(map['roi_limits'])
-        for roi, lims in zip(roinames, roilims):
-            _mca.add_roi(roi, left=lims[0], right=lims[1])
-        _mca.areaname = _mca.title = name
-        path, fname = os.path.split(self.filename)
-        _mca.filename = fix_filename(fname)
-        fmt = "Data from File '%s', detector '%s', area '%s'"
-        mapname = map.name.split('/')[-1]
-        _mca.info  =  fmt % (self.filename, mapname, name)
+        print 'map',map
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+        
+        
+        
+            roiname = 'roi_name'
+            if roiname not in map: roiname = 'roi_names'
+        
+            roinames = list(map[roiname])
+            roilims  = list(map['roi_limits'])
+            for roi, lims in zip(roinames, roilims):
+                _mca.add_roi(roi, left=lims[0], right=lims[1])
+            _mca.areaname = _mca.title = name
+            path, fname = os.path.split(self.filename)
+            _mca.filename = fix_filename(fname)
+            fmt = "Data from File '%s', detector '%s', area '%s'"
+            mapname = map.name.split('/')[-1]
+            _mca.info  =  fmt % (self.filename, mapname, name)
+        else:
+            # a workaround for poor practice -- some '1.3.0' files
+            # were built with 'roi_names', some with 'roi_name'
+            roiname = 'roi_name'
+            if roiname not in map: roiname = 'roi_names'
+        
+            roinames = list(map[roiname])
+            roilims  = list(map['roi_limits'])
+            for roi, lims in zip(roinames, roilims):
+                _mca.add_roi(roi, left=lims[0], right=lims[1])
+            _mca.areaname = _mca.title = name
+            path, fname = os.path.split(self.filename)
+            _mca.filename = fix_filename(fname)
+            fmt = "Data from File '%s', detector '%s', area '%s'"
+            mapname = map.name.split('/')[-1]
+            _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
 
     def check_xrd(self):
@@ -2524,93 +2556,96 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def add_xrd1D_roi_array(self, roiname, wedge_raw, whole_raw, roi_limits, **kws):
-        '''
-        add an array to the work group of processed arrays
-        '''
-        
-        roigroup  = ensure_subgroup('roimap',self.xrmmap)
 
-        if roiname in roigroup:
-            raise ValueError("array name '%s' exists in work arrays" % roiname)
-        
-        ds = roigroup.create_group(roiname)
-        ds.create_dataset('roi_limits', data=roi_limits )
-        ds.create_dataset('wedge_name', data=wedge_name )
-        ds.create_dataset('wedge_raw',  data=wedge_raw  )
-        ds.create_dataset('whole_raw',  data=whole_raw  )
-
-        for key, val in kws.items(): ds.attrs[key] = val
-        
-        self.h5root.flush()
-
-    def add_xrd1D_roi(self, xarea, roiname):
+    def build_xrd_roimap(self):
     
-        print 'this does not do anything yet.'
+        detname = None
 
-    def add_xrd1D_roi(self, qrange, roiname):
-        
+        roigroup = ensure_subgroup('roimap',self.xrmmap)
+        for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
+            #if g.attrs.get('type', '').startswith('xrd2D detector'):
+            if g.attrs.get('type', '').startswith('xrd1D detector'):
+                detname = det
+                ds = ensure_subgroup(det,roigroup)
+                #ds.attrs['type'] = 'xrd2D detector'
+                ds.attrs['type'] = 'xrd1D detector'
+        return roigroup,detname
+
+    def add_xrd2Droi(self, qrange, roiname):
+    
+        print 'not yet...'
+
+    def add_xrd1Droi(self, qrange, roiname):
+
         if self.flag_xrd1d:
- 
-            xrmdet = self.xrmmap['xrd1D']
+            return
+
+        roigroup,detname  = self.build_xrd_roimap()
+        xrmdet = self.xrmmap[detname]
             
-            qaxis = xrmdet['q'][:]
-            imin = (np.abs(qaxis-qrange[0])).argmin()
-            imax = (np.abs(qaxis-qrange[1])).argmin()+1
-
-            roi_limits = [imin, imax]
-            xrd1d_counts = [xrmdet['counts'][:,:,slice(*roi_limits)]]
+        if roiname in roigroup[detname]:
+            raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
             
-            print 'xrd1d_counts',np.shape(xrd1d_counts)
-            xrd1d_counts = xrd1d_counts.sum(axis=2)
-            #xrd1d_counts = np.einsum('kij->ijk', xrd1d_counts)
-            print 'xrd1d_counts - summed  ',np.shape(xrd1d_counts)
+        qaxis = xrmdet['q'][:]
+        imin = (np.abs(qaxis-qrange[0])).argmin()
+        imax = (np.abs(qaxis-qrange[1])).argmin()+1
 
-            self.add_xrd1D_roi_array(roiname, xrd1d_counts, roi_limits)
+        xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)]
+        print 'xrd1d_counts',np.shape(xrd1d_counts)
+        xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
+        #xrd1d_counts = np.einsum('kij->ijk', xrd1d_counts)
+        print 'xrd1d_counts - summed  ',np.shape(xrd1d_counts)
 
+        self.save_roi(roiname,detname,xrd1d_counts,xrd1d_counts,qrange,'q','1/A')
+
+
+
+    def save_roi(self,roiname,det,raw,cor,range,type,units):
+    
+        ds = ensure_subgroup(roiname,self.xrmmap['roimap'][det])
+        ds.create_dataset('raw',    data=raw   )
+        ds.create_dataset('cor',    data=cor   )
+        ds.create_dataset('limits', data=range )
+        ds['limits'].attrs['type']  = type
+        ds['limits'].attrs['units'] = units
+
+        self.h5root.flush()
 
     def build_mca_roimap(self):
     
-        roigroup  = ensure_subgroup('roimap',self.xrmmap)
+        det_list = []
+        sumdet = None
+        
+        roigroup = ensure_subgroup('roimap',self.xrmmap)
         for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
             if grp.attrs.get('type', '').startswith('mca det'):
                 #for s in det.split(): det = 'mca%i' % int(s) if s.isdigit() else det
+                det_list   += [det]
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'mca detector'
             if grp.attrs.get('type', '').startswith('virtual mca'):
                 #det = 'mcasum'
+                sumdet = det
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'virtual mca detector'
                 
-        return roigroup
+        return roigroup,det_list,sumdet
 
     def add_xrfroi(self, Erange, roiname):
 
         if not self.flag_xrf:
             return
 
-        det_list,roi_limits,dtfctrs,icounts = [],[],[],[]
-        sumraw,sumcor = None,None
-            
-        roigroup  = self.build_mca_roimap()
-        try:
-            if roiname in roigroup['sum_name']:
-                raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
-        except:
-            pass
-            
-        for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
-            if grp.attrs.get('type', '').startswith('mca det'):
-                det_list   += [det]
-                if roiname in roigroup[det]:
-                    raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
-            if grp.attrs.get('type', '').startswith('virtual mca'):
-                sumdet = det
-                if roiname in roigroup[det]:
-                    raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
+        roigroup,det_list,sumdet  = self.build_mca_roimap()
 
+        if 'sum_name' in roigroup and roiname in roigroup['sum_name']:
+            raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
+        for det in det_list+[sumdet]:
+            if roiname in roigroup[det]:
+                raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
+
+        roi_limits,dtfctrs,icounts = [],[],[]
         for det in det_list:
-            
             xrmdet = self.xrmmap[det]
             Eaxis = xrmdet['energy'][:]
             
@@ -2630,20 +2665,9 @@ class GSEXRM_MapFile(object):
         sumcor = detcor.sum(axis=2)
 
         for i,det in enumerate(det_list):
-            ds = ensure_subgroup(roiname,roigroup[det])
-            ds.create_dataset('raw',    data=detraw[:,:,i] )
-            ds.create_dataset('cor',    data=detcor[:,:,i] )
-            ds.create_dataset('limits', data=Erange    )
-            ds['limits'].attrs['type']  = 'energy'
-            ds['limits'].attrs['units'] = 'keV'
-        ds = ensure_subgroup(roiname,roigroup[sumdet])
-        ds.create_dataset('raw',    data=sumraw )
-        ds.create_dataset('cor',    data=sumcor )
-        ds.create_dataset('limits', data=Erange )
-        ds['limits'].attrs['type']  = 'energy'
-        ds['limits'].attrs['units'] = 'keV'
-        
-        self.h5root.flush()
+            self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy','keV')
+        if sumdet is not None:
+            self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy','keV')
 
     def get_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
         '''extract roi map for a pre-defined roi by name
