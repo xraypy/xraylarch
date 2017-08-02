@@ -268,7 +268,7 @@ class MapImageFrame(ImageFrame):
         ex, ey = event.x, event.y
         msg = ''
         plotpanel = self.prof_plotter.panel
-        axes  = plotpanel.fig.get_axes()[0]
+        axes  = plotpanel.fig.properties()['axes'][0]
         write = plotpanel.write_message
         try:
             x, y = axes.transData.inverted().transform((ex, ey))

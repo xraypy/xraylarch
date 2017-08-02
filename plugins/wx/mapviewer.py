@@ -1355,7 +1355,12 @@ class MapPanel(GridPanel):
             map = map[lims[2]:lims[3], lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
 
-        self.owner.display_map(map, title=title, info=info, x=x, y=y,
+        det = None
+        if (plt3 and det_name[0]==det_name[1] and det_name[0]==det_name[2]) or not plt3:
+            for s in det_name[0].split():
+                if s.isdigit(): det = int(s)
+        print 'DET TEST',det
+        self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
                                xrmfile=self.file)
 
@@ -2240,13 +2245,13 @@ class MapViewerFrame(wx.Frame):
         # if self.nb.GetPage(idx) is self.larch_panel:
         #     self.larch_panel.update()
 
-    def get_mca_area(self, mask, xoff=0, yoff=0, xrmfile=None):
+    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname)
+        self.sel_mca = xrmfile.get_mca_area(aname,det=det)
 
-    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, **kws):
+    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
         # print('lasso handler ', mask.shape, ny, nx)
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
@@ -2259,7 +2264,7 @@ class MapViewerFrame(wx.Frame):
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
-                            args=(mask,), kwargs=kwargs)
+                            args=(mask,det), kwargs=kwargs)
         mca_thread.start()
         self.show_XRFDisplay()
         mca_thread.join()
@@ -2382,10 +2387,10 @@ class MapViewerFrame(wx.Frame):
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    subtitles=None, xrmfile=None):
+                    det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, xrmfile=xrmfile)
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
         if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]

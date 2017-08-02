@@ -1912,7 +1912,7 @@ class GSEXRM_MapFile(object):
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
 
-    def _det_group(self, det=None):
+    def _det_name(self, det=None):
         "return  XRMMAP group for a detector"
 
         mcastr = 'mca' if StrictVersion(self.version) >= StrictVersion('2.0.0') else 'det'
@@ -1921,6 +1921,12 @@ class GSEXRM_MapFile(object):
             self.ndet =  self.xrmmap.attrs['N_Detectors']
         if det in range(1, self.ndet+1):
             dgroup = '%s%i' % (mcastr,det)
+        return dgroup
+
+    def _det_group(self, det=None):
+        "return  XRMMAP group for a detector"
+
+        dgroup = self._det_name(det)
         return self.xrmmap[dgroup]
 
     def get_energy(self, det=None):
@@ -1953,10 +1959,13 @@ class GSEXRM_MapFile(object):
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
+        dgroup = self._det_name(det)
         mapdat = self._det_group(det)
-        print 'mapdat'
+        print 'detector'
+        print dgroup
         print mapdat
         print
+
         ix, iy, nmca = mapdat['counts'].shape
 
         npix = len(np.where(area)[0])
@@ -2003,7 +2012,7 @@ class GSEXRM_MapFile(object):
 
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
-        return self._getmca(mapdat, counts, areaname, npixels=npix,
+        return self._getmca(dgroup, counts, areaname, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
@@ -2024,6 +2033,7 @@ class GSEXRM_MapFile(object):
 
         '''
 
+        dgroup = self._det_name(det)
         mapdat = self._det_group(det)
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
@@ -2032,7 +2042,7 @@ class GSEXRM_MapFile(object):
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=None)
 
-        return self._getmca(mapdat, counts, name, npixels=npix,
+        return self._getmca(dgroup, counts, name, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
 
@@ -2160,7 +2170,7 @@ class GSEXRM_MapFile(object):
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
 
-    def _getmca(self, map, counts, name, npixels=None, **kws):
+    def _getmca(self, dgroup, counts, name, npixels=None, **kws):
         '''return an MCA object for a detector group
         (map is one of the  'det1', ... 'detsum')
         with specified counts array and a name
@@ -2177,7 +2187,7 @@ class GSEXRM_MapFile(object):
         MCA object
 
         '''
-        # map  = self.xrmmap[dgroup]
+        map  = self.xrmmap[dgroup]
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],
                    slope=cal['cal_slope'], **kws)
@@ -2192,25 +2202,18 @@ class GSEXRM_MapFile(object):
         if npixels is not None:
             _mca.npixels=npixels
 
-        print 'map',map
+
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-        
-        
-        
-            roiname = 'roi_name'
-            if roiname not in map: roiname = 'roi_names'
-        
-            roinames = list(map[roiname])
-            roilims  = list(map['roi_limits'])
-            for roi, lims in zip(roinames, roilims):
-                _mca.add_roi(roi, left=lims[0], right=lims[1])
-            _mca.areaname = _mca.title = name
-            path, fname = os.path.split(self.filename)
-            _mca.filename = fix_filename(fname)
-            fmt = "Data from File '%s', detector '%s', area '%s'"
-            mapname = map.name.split('/')[-1]
-            _mca.info  =  fmt % (self.filename, mapname, name)
+
+            for roi in self.xrmmap['roimap'][dgroup]:
+                emin,emax = self.xrmmap['roimap'][dgroup][roi]['limits'][:]
+                Eaxis = map['energy'][:]
+            
+                imin = (np.abs(Eaxis-emin)).argmin()
+                imax = (np.abs(Eaxis-emax)).argmin()
+                _mca.add_roi(roi, left=imin, right=imax)
         else:
+
             # a workaround for poor practice -- some '1.3.0' files
             # were built with 'roi_names', some with 'roi_name'
             roiname = 'roi_name'
@@ -2220,12 +2223,13 @@ class GSEXRM_MapFile(object):
             roilims  = list(map['roi_limits'])
             for roi, lims in zip(roinames, roilims):
                 _mca.add_roi(roi, left=lims[0], right=lims[1])
-            _mca.areaname = _mca.title = name
-            path, fname = os.path.split(self.filename)
-            _mca.filename = fix_filename(fname)
-            fmt = "Data from File '%s', detector '%s', area '%s'"
-            mapname = map.name.split('/')[-1]
-            _mca.info  =  fmt % (self.filename, mapname, name)
+
+        _mca.areaname = _mca.title = name
+        path, fname = os.path.split(self.filename)
+        _mca.filename = fix_filename(fname)
+        fmt = "Data from File '%s', detector '%s', area '%s'"
+        _mca.info  =  fmt % (self.filename, dgroup, name)
+
         return _mca
 
     def check_xrd(self):
