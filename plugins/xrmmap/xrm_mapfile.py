@@ -903,45 +903,48 @@ class GSEXRM_MapFile(object):
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process(self, maxrow=None, force=False, callback=None, verbose=True):
-        "look for more data from raw folder, process if needed"
-
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
-        if self.status == GSEXRM_FileStatus.created:
-            self.initialize_xrmmap()
-        if (force or len(self.rowdata) < 1 or
-            (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
-            self.read_master()
-        nrows = len(self.rowdata)
-        if maxrow is not None:
-            nrows = min(nrows, maxrow)
-        if force or self.folder_has_newdata():
-            irow = self.last_row + 1
-            while irow < nrows:
-                # self.dt.add('=>PROCESS %i' % irow)
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='reading')
-                row = self.read_rowdata(irow)
-                # self.dt.add('  == read row data')
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='complete')
-
-                if row.read_ok:
-                    self.add_rowdata(row, verbose=verbose)
-                    irow  = irow + 1
-                else:
-                    print("==Warning: Read failed at row %i" % irow)
-                    break
-            # self.dt.show()
-        self.resize_arrays(self.last_row+1)
-        self.h5root.flush()
-        if self.pixeltime is None:
-            self.calc_pixeltime()
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
+## mkak 2016.09.07
+#     def process(self, maxrow=None, force=False, callback=None, verbose=True):
+#         "look for more data from raw folder, process if needed"
+#         print '--- process ---'
+#         if not self.check_hostid():
+#             raise GSEXRM_NotOwner(self.filename)
+# 
+#         if self.status == GSEXRM_FileStatus.created:
+#             self.initialize_xrmmap()
+#         if (force or len(self.rowdata) < 1 or
+#             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
+#             self.read_master()
+#         nrows = len(self.rowdata)
+#         self.reset_flags()
+#         if maxrow is not None:
+#             nrows = min(nrows, maxrow)
+#         if force or self.folder_has_newdata():
+#             irow = self.last_row + 1
+#             while irow < nrows:
+#                 # self.dt.add('=>PROCESS %i' % irow)
+#                 if hasattr(callback, '__call__'):
+#                     callback(row=irow, maxrow=nrows,
+#                              filename=self.filename, status='reading')
+#                 row = self.read_rowdata(irow)
+#                 # self.dt.add('  == read row data')
+#                 if hasattr(callback, '__call__'):
+#                     callback(row=irow, maxrow=nrows,
+#                              filename=self.filename, status='complete')
+# 
+#                 if row.read_ok:
+#                     self.add_rowdata(row, verbose=verbose)
+#                     irow  = irow + 1
+#                 else:
+#                     print("==Warning: Read failed at row %i" % irow)
+#                     break
+#             # self.dt.show()
+#         self.resize_arrays(self.last_row+1)
+#         self.h5root.flush()
+#         if self.pixeltime is None:
+#             self.calc_pixeltime()
+#         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
@@ -957,11 +960,6 @@ class GSEXRM_MapFile(object):
         '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
-        try:
-            self.flag_xrf
-        except:
-            self.reset_flags()
-
 
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
@@ -2537,8 +2535,8 @@ class GSEXRM_MapFile(object):
 
         roigroup = ensure_subgroup('roimap',self.xrmmap)
         for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
-            #if g.attrs.get('type', '').startswith('xrd2D detector'):
-            if g.attrs.get('type', '').startswith('xrd1D detector'):
+            #if grp.attrs.get('type', '').startswith('xrd2D detector'):
+            if grp.attrs.get('type', '').startswith('xrd1D detector'):
                 detname = det
                 ds = ensure_subgroup(det,roigroup)
                 #ds.attrs['type'] = 'xrd2D detector'
@@ -2563,16 +2561,9 @@ class GSEXRM_MapFile(object):
         qaxis = xrmdet['q'][:]
         imin = (np.abs(qaxis-qrange[0])).argmin()
         imax = (np.abs(qaxis-qrange[1])).argmin()+1
-
-        xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)]
-        print 'xrd1d_counts',np.shape(xrd1d_counts)
         xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
-        #xrd1d_counts = np.einsum('kij->ijk', xrd1d_counts)
-        print 'xrd1d_counts - summed  ',np.shape(xrd1d_counts)
 
         self.save_roi(roiname,detname,xrd1d_counts,xrd1d_counts,qrange,'q','1/A')
-
-
 
     def save_roi(self,roiname,det,raw,cor,range,type,units):
     

@@ -369,45 +369,43 @@ class MapMathPanel(scrolled.ScrolledPanel):
             self.vardet[varname].SetChoices(det_list)
         self.set_roi_choices(xrmmap,varname=varname)
 
+
     def set_roi_choices(self, xrmmap, varname=None):
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
-
-            if varname is None:
-                for varname in self.vardet.keys():
-                    dname = self.vardet[varname].GetStringSelection()
-                    rois = self.update_roi(dname,xrmmap)
-                    self.varroi[varname].SetChoices(rois)
-            else:
+        if varname is None:
+            for varname in self.vardet.keys():
                 dname = self.vardet[varname].GetStringSelection()
-                rois =  self.update_roi(dname,xrmmap)
+                rois = self.update_roi(dname,xrmmap)
                 self.varroi[varname].SetChoices(rois)
         else:
-            if varname is None:
-                for varname in self.vardet.keys():
-                    dname = self.vardet[varname].GetStringSelection()
-                    rois = self.update_roi_older(dname,xrmmap)
-                    self.varroi[varname].SetChoices(rois)
-            else:
-                dname = self.vardet[varname].GetStringSelection()
-                rois = self.update_roi_older(dname,xrmmap)
-                self.varroi[varname].SetChoices(rois)
+            dname = self.vardet[varname].GetStringSelection()
+            rois = self.update_roi(dname,xrmmap)
+            self.varroi[varname].SetChoices(rois)
 
-    def update_roi_older(self, detname, xrmmap):
 
-        if detname in xrmmap.keys():
-            return list(xrmmap['roimap/sum_name'])
-        else:
-            return self.update_roi(detname,xrmmap)
-    
     def update_roi(self, detname, xrmmap):
+        
+        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+            if detname == 'scalars':
+                rois = ['1'] + list(xrmmap[detname].keys())
+            else:
+                limits,names = [],xrmmap['roimap'][detname].keys()
+                for name in names:
+                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
+                rois = [x for (y,x) in sorted(zip(limits,names))]
+        else:
+            rois = ['1']
+            if detname in xrmmap.keys():
+                rois += list(xrmmap['roimap/sum_name'])
+            try:
+                limits,names = [],xrmmap['roimap'][detname].keys()
+                for name in names:
+                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
+                rois += [x for (y,x) in sorted(zip(limits,names))]
+            except: 
+                pass
 
-        try:
-            names = xrmmap['roimap'][detname].keys()
-            lmts  = [list(xrmmap['roimap'][detname][name]['limits'][:]) for name in names]
-            return [x for (y,x) in sorted(zip(lmts,names))]
-        except:
-            return [name for name in xrmmap[detname].keys()]
+        return rois
 
     def set_workarray_choices(self, xrmmap):
 
@@ -468,8 +466,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         self.owner.display_map(omap, title=title, subtitles=subtitles,
                                info=info, x=x, y=y, xrmfile=main_file)
-##################################
-##  new as of 2017.07.10 mkak
 
 class ROIPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -501,7 +497,7 @@ class ROIPanel(GridPanel):
         
     def onCreateROI(self,event=None):
 
-        xunt = self.roi_unt.GetSelection()
+        xunt  = self.roi_unt.GetSelection()
         xname = self.roi_name.GetValue()
         
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
@@ -513,16 +509,13 @@ class ROIPanel(GridPanel):
         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
         
         self.owner.message('Calculating ROI: %s' % xname)
-        if 1==1: #try:
-            if self.roi_unt.GetStringSelection().startswith('XRD'):
-                self.file.add_xrd1Droi(xrange,xname)
-            elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
-                self.file.add_xrd2Droi(xarea,xname)
-            elif self.roi_unt.GetStringSelection().startswith('XRF'):
-                self.file.add_xrfroi(xrange,xname)
-            self.owner.message('Ready')
-        #except:
-        #     self.owner.message('Failed to calculate ROI: %s' % xname)
+        if self.roi_unt.GetStringSelection().startswith('XRD'):
+            self.file.add_xrd1Droi(xrange,xname)
+        elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
+            self.file.add_xrd2Droi(xarea,xname)
+        elif self.roi_unt.GetStringSelection().startswith('XRF'):
+            self.file.add_xrfroi(xrange,xname)
+        self.owner.message('Ready')
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -893,9 +886,6 @@ class TomographyPanel(GridPanel):
             correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
             correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
                                 x=x, y=ome, title=title)
-            ## correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
-            ##                     x=x, y=y, title=title)
-
         else:
             correl_plot = PlotFrame(title=title, output_title=title)
             correl_plot.plot(map2.flatten(), map1.flatten(),
@@ -1029,11 +1019,11 @@ class TomographyPanel(GridPanel):
             self.roiSELECT(idet)
 
 
-    def update_roi(self,detname,xrmmap):
+    def update_roi(self, detname, xrmmap):
         
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
-                rois = list(xrmmap[detname].keys())
+                rois = ['1'] + list(xrmmap[detname].keys())
             else:
                 limits,names = [],xrmmap['roimap'][detname].keys()
                 for name in names:
@@ -1472,11 +1462,11 @@ class MapPanel(GridPanel):
             self.roiSELECT(idet)
 
 
-    def update_roi(self,detname,xrmmap):
+    def update_roi(self, detname, xrmmap):
         
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
-                rois = list(xrmmap[detname].keys())
+                rois = ['1'] + list(xrmmap[detname].keys())
             else:
                 limits,names = [],xrmmap['roimap'][detname].keys()
                 for name in names:
@@ -2051,12 +2041,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             title = area.attrs.get('description', aname)
 
-            ## what's a clearer way to do this?
-            ## mkak 2017.03.24
             env_names = list(xrmfile.xrmmap['config/environ/name'])
             env_vals  = list(xrmfile.xrmmap['config/environ/value'])
-            env_addrs = list(xrmfile.xrmmap['config/environ/address'])
-            for name, addr, val in zip(env_names, env_addrs, env_vals):
+            for name, val in zip(env_names, env_vals):
                 if 'mono.energy' in str(name).lower():
                     energy = float(val)/1000.
 
@@ -2219,11 +2206,9 @@ class MapViewerFrame(wx.Frame):
 
         for creator in (MapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
-# #         for creator in (SimpleMapPanel, TriColorMapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
-# #                         MapAreaPanel, MapMathPanel):
+
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label, True)
-            #self.nb.AddPage(p, p.label.title(), True)
             bgcol = p.GetBackgroundColour()
             self.nbpanels.append(p)
             p.SetSize((750, 550))
@@ -2253,7 +2238,6 @@ class MapViewerFrame(wx.Frame):
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
-        # print('lasso handler ', mask.shape, ny, nx)
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             ym, xm = mask.shape
             tmask = np.zeros((ny, nx)).astype(bool)
@@ -2279,7 +2263,6 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.npixels = npix
             self.xrfdisplay.plotmca(self.sel_mca)
 
-            # SET AREA CHOICE
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
@@ -2326,7 +2309,6 @@ class MapViewerFrame(wx.Frame):
 
     def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, datafile=None):
         'save pixel as area, and perhaps to scandb'
-        # print(' On Save Pixel ', name, ix, iy, x, y)
         if len(name) < 1:
             return
         if datafile is None:
@@ -2370,7 +2352,6 @@ class MapViewerFrame(wx.Frame):
                 title = '%s: %s' % (datafile.filename, name)
 
             notes = {'source': title}
-            # print(' Save Position : ', self.inst_name, name, position, notes)
 
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
@@ -2727,7 +2708,6 @@ class MapViewerFrame(wx.Frame):
         myDlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
-        #myDlg = OpenXRDPar()
 
         path, read = None, False
         if myDlg.ShowModal() == wx.ID_OK:
@@ -2800,14 +2780,12 @@ class MapViewerFrame(wx.Frame):
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
-## This routine is almost identical to 'process()' in xrmmap/xrm_mapfile.py ,
-## however 'new_mapdata()' updates messages in mapviewer.py window!!
-## For now, keep as is.
+## This routine processes the data identically to 'process()' in xrmmap/xrm_mapfile.py .
 ## mkak 2016.09.07
     def new_mapdata(self, filename):
-
         xrm_map = self.filemap[filename]
         nrows = len(xrm_map.rowdata)
+        xrm_map.reset_flags()
         self.h5convert_nrow = nrows
         self.h5convert_done = False
         if xrm_map.folder_has_newdata():
