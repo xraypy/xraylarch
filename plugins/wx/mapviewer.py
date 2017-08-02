@@ -1346,8 +1346,13 @@ class MapPanel(GridPanel):
             info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
             subtitle = None
 
+        det = None
+        if (plt3 and det_name[0]==det_name[1] and det_name[0]==det_name[2]) or not plt3:
+            for s in det_name[0]:
+                if s.isdigit(): det = int(s)
+
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title)
+            iframe = self.owner.add_imdisplay(title, det=det)
 
         xoff, yoff = 0, 0
         if self.limrange.IsChecked():
@@ -1355,11 +1360,6 @@ class MapPanel(GridPanel):
             map = map[lims[2]:lims[3], lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
 
-        det = None
-        if (plt3 and det_name[0]==det_name[1] and det_name[0]==det_name[2]) or not plt3:
-            for s in det_name[0].split():
-                if s.isdigit(): det = int(s)
-        print 'DET TEST',det
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
                                xrmfile=self.file)
@@ -2262,9 +2262,9 @@ class MapViewerFrame(wx.Frame):
             mask = tmask
 
 
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
         mca_thread = Thread(target=self.get_mca_area,
-                            args=(mask,det), kwargs=kwargs)
+                            args=(mask,), kwargs=kwargs)
         mca_thread.start()
         self.show_XRFDisplay()
         mca_thread.join()
@@ -2376,8 +2376,8 @@ class MapViewerFrame(wx.Frame):
                                       notes=json.dumps(notes))
 
 
-    def add_imdisplay(self, title):
-        on_lasso = self.lassoHandler
+    def add_imdisplay(self, title, det=None):
+        on_lasso = partial(self.lassoHandler, det=det)
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels,
@@ -2399,7 +2399,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, xrmfile=xrmfile)
+                            det=det, subtitles=subtitles, xrmfile=xrmfile)
                 #for col, wid in imd.wid_subtitles.items():
                 #    wid.SetLabel('%s: %s' % (col.title(), subtitles[col]))
                 imd.lasso_callback = lasso_cb
@@ -2412,7 +2412,7 @@ class MapViewerFrame(wx.Frame):
                                     save_callback=self.onSavePixel)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            subtitles=subtitles, xrmfile=xrmfile)
+                            det=det, subtitles=subtitles, xrmfile=xrmfile)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False

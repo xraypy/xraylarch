@@ -1482,48 +1482,22 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def check_flags(self):
-        '''
-        check if any XRD OR XRF data in mapfile
-        mkak 2016.10.13
-        '''
-        print 'this will no longer work to check. need to actually look for data'
-        
-        self.flag_xrf = True
-
-        try:
-            xrdgp = self.xrmmap['xrd2D']
-            self.flag_xrd2d = True
-        except:
-            self.flag_xrd2d = False
-
-        try:
-            xrdgp = self.xrmmap['xrd1D']
-            self.flag_xrd1d = True
-        except:
-            self.flag_xrd1d = False
-
-        self.xrmmap['flags'].attrs['xrf']   = self.flag_xrf
-        self.xrmmap['flags'].attrs['xrd2D'] = self.flag_xrd2d
-        self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
-        self.h5root.flush()
-        
-        print '***********\nDO I NEED FLAGS?\n***********\n'
-
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
         mkak 2016.08.30
         '''
-        xrmmap = self.xrmmap
         try:
-            xrmmap['flags']
+            self.xrmmap['flags']
         except:
-            check_flags(self)
+            self.flag_xrf = True
+            self.flag_xrd2d,self.flag_xrd1d = False,False
+            return
 
         self.flag_xrf   = self.xrmmap['flags'].attrs['xrf']
         self.flag_xrd2d = self.xrmmap['flags'].attrs['xrd2D']
         self.flag_xrd1d = self.xrmmap['flags'].attrs['xrd1D']
+
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -1961,10 +1935,6 @@ class GSEXRM_MapFile(object):
 
         dgroup = self._det_name(det)
         mapdat = self._det_group(det)
-        print 'detector'
-        print dgroup
-        print mapdat
-        print
 
         ix, iy, nmca = mapdat['counts'].shape
 

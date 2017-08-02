@@ -343,8 +343,8 @@ class MapImageFrame(ImageFrame):
         if hasattr(self.lasso_callback , '__call__'):
 
             self.lasso_callback(data=data, selected=selected, mask=mask,
-                                xoff=self.xoff, yoff=self.yoff,
-                                det=self.det, xrmfile=self.xrmfile, **kws)
+                                xoff=self.xoff, yoff=self.yoff, det=self.det,
+                                xrmfile=self.xrmfile, **kws)
 
         self.zoom_mode.SetSelection(0)
         self.panel.cursor_mode = 'zoom'
