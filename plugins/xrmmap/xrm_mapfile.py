@@ -630,8 +630,8 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.energy      = None
-        self.flag_xrf    = FLAGxrf
+        self.energy     = None
+        self.flag_xrf   = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
 
@@ -907,7 +907,7 @@ class GSEXRM_MapFile(object):
 ## mkak 2016.09.07
 #     def process(self, maxrow=None, force=False, callback=None, verbose=True):
 #         "look for more data from raw folder, process if needed"
-#         print '--- process ---'
+#         print('--- process ---')
 #         if not self.check_hostid():
 #             raise GSEXRM_NotOwner(self.filename)
 # 
@@ -2200,26 +2200,6 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def check_xrd(self):
-        '''
-        check if any XRD data in mapfile; returns flags for 1D and 2D XRD data
-        mkak 2016.09.07
-        '''
-
-        try:
-            xrdgrp = self.xrmmap['xrd2D']
-            flag2D = True
-        except:
-            flag2D = False
-
-        try:
-            xrdgrp = self.xrmmap['xrd1D']
-            flag1D = True
-        except:
-            flag1D = False
-
-        return flag1D,flag2D
-
     def get_1Dxrd_area(self, areaname, nwdg=0, callback=None):
         '''return 1D XRD pattern for a pre-defined area
 
@@ -2529,30 +2509,53 @@ class GSEXRM_MapFile(object):
         return pos
 
 
-    def build_xrd_roimap(self):
+    def build_xrd_roimap(self,xrd='1D'):
     
         detname = None
+        xrdtype = 'xrd%s detector' % xrd
 
         roigroup = ensure_subgroup('roimap',self.xrmmap)
         for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
-            #if grp.attrs.get('type', '').startswith('xrd2D detector'):
-            if grp.attrs.get('type', '').startswith('xrd1D detector'):
+            if grp.attrs.get('type', '').startswith(xrdtype):
                 detname = det
                 ds = ensure_subgroup(det,roigroup)
-                #ds.attrs['type'] = 'xrd2D detector'
-                ds.attrs['type'] = 'xrd1D detector'
+                ds.attrs['type'] = xrdtype
         return roigroup,detname
 
-    def add_xrd2Droi(self, qrange, roiname):
+    def add_xrd2Droi(self, xyrange, roiname, unit='pixels'):
     
-        print 'not yet...'
-
-    def add_xrd1Droi(self, qrange, roiname):
-
-        if self.flag_xrd1d:
+        if not self.flag_xrd2d:
             return
+            
+        roigroup,detname = self.build_xrd_roimap(xrd='2D')
+        xrmdet = self.xrmmap[detname]
+            
+        if roiname in roigroup[detname]:
+            raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
+            
+        xyrange = [int(x) for x in xyrange]
+        xmin,xmax,ymin,ymax = xyrange
+        
+        xrd2d_counts = xrmdet['counts'][:,:,slice(xmin,xmax),slice(ymin,ymax)]
+        xrd2d_counts = xrd2d_counts.sum(axis=2).sum(axis=2)
+        if abs(xmax-xmin) > 0 and abs(ymax-ymin) > 0:
+            xrd2d_cor = xrd2d_counts/(abs(xmax-xmin)*abs(ymax-ymin))
+        else:
+            xrd2d_cor = xrd2d_counts
 
-        roigroup,detname  = self.build_xrd_roimap()
+        self.save_roi(roiname,detname,xrd2d_counts,xrd2d_cor,xyrange,'area','pixels')
+
+    def add_xrd1Droi(self, qrange, roiname, unit='q'):
+
+        if not self.flag_xrd1d:
+            return
+            
+        if unit.startswith('2th'): ## 2th to 1/A
+            xrange = q_from_twth(xrange,lambda_from_E(self.energy))
+        elif unt == 'd':           ## A to 1/A
+            xrange = q_from_d(xrange)
+
+        roigroup,detname  = self.build_xrd_roimap(xrd='1D')
         xrmdet = self.xrmmap[detname]
             
         if roiname in roigroup[detname]:
@@ -2562,8 +2565,12 @@ class GSEXRM_MapFile(object):
         imin = (np.abs(qaxis-qrange[0])).argmin()
         imax = (np.abs(qaxis-qrange[1])).argmin()+1
         xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
+        if abs(imax-imin) > 0:
+            xrd1d_cor = xrd1d_counts/abs(imax-imin)
+        else:
+            xrd1d_cor = xrd1d_counts
 
-        self.save_roi(roiname,detname,xrd1d_counts,xrd1d_counts,qrange,'q','1/A')
+        self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
 
     def save_roi(self,roiname,det,raw,cor,range,type,units):
     
@@ -2596,10 +2603,12 @@ class GSEXRM_MapFile(object):
                 
         return roigroup,det_list,sumdet
 
-    def add_xrfroi(self, Erange, roiname):
+    def add_xrfroi(self, Erange, roiname, unit='keV'):
 
         if not self.flag_xrf:
             return
+            
+        if unit == 'eV': Erange[:] = [x/1000. for x in Erange] ## eV to keV
 
         roigroup,det_list,sumdet  = self.build_mca_roimap()
 
@@ -2612,12 +2621,16 @@ class GSEXRM_MapFile(object):
         roi_limits,dtfctrs,icounts = [],[],[]
         for det in det_list:
             xrmdet = self.xrmmap[det]
-            Eaxis = xrmdet['energy'][:]
+            if unit.startswith('chan'):
+                imin,imax = Erange
+            else:
+                Eaxis = xrmdet['energy'][:]
             
-            imin = (np.abs(Eaxis-Erange[0])).argmin()
-            imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+                imin = (np.abs(Eaxis-Erange[0])).argmin()
+                imax = (np.abs(Eaxis-Erange[1])).argmin()+1
+
            
-            roi_limits += [[imin, imax]]
+            roi_limits += [[int(imin), int(imax)]]
             dtfctrs += [xrmdet['dtfactor']]
             icounts += [np.array(xrmdet['counts'][:])]
             
@@ -2630,9 +2643,9 @@ class GSEXRM_MapFile(object):
         sumcor = detcor.sum(axis=2)
 
         for i,det in enumerate(det_list):
-            self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy','keV')
+            self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy',unit)
         if sumdet is not None:
-            self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy','keV')
+            self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
     def get_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
         '''extract roi map for a pre-defined roi by name

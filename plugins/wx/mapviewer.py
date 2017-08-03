@@ -477,16 +477,32 @@ class ROIPanel(GridPanel):
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
+        #roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
 
-        fopts = dict(minval=0.01, precision=3, size=(100, -1))
-        self.roi_lims = [FloatCtrl(self, value=1, **fopts),
-                         FloatCtrl(self, value=2, **fopts)]
-        self.roi_name =  wx.TextCtrl(self,   -1, 'ROI_001',  size=(120, -1))        
-        self.roi_unt = Choice(self, choices=roiunits, size=(120, -1))
+        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))        
+        self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
+                         Choice(self, choices=[''],        size=(120, -1))]
+        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
+                         FloatCtrl(self, value=-1, **fopts),
+                         FloatCtrl(self, value=0,  **fopts),
+                         FloatCtrl(self, value=-1, **fopts)]
 
-        self.Add(SimpleText(self, '--    ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
-        self.AddMany((self.roi_name,self.roi_unt,self.roi_lims[0],self.roi_lims[1],Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
+
+        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT,  newrow=True)
+        
+        self.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
+        self.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self, ''),SimpleText(self, '')), dcol=1, style=LEFT, newrow=True)
+
+        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT,  newrow=True)
+        
+        self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
+        self.roi_lims[2].Disable()
+        self.roi_lims[3].Disable()
 
         self.pack()
         
@@ -494,28 +510,67 @@ class ROIPanel(GridPanel):
 
         self.file   = self.owner.current_file
         self.xrmmap = self.file.xrmmap
+
+        self.file.reset_flags()
+        self.roiTYPE()
         
+    def roiTYPE(self,event=None):
+        roitype = []
+        if self.file.flag_xrf:  
+            roitype += ['XRF']
+        if self.file.flag_xrd1d:  
+            roitype += ['1DXRD']
+        if self.file.flag_xrd2d:  
+            roitype += ['2DXRD']
+        if len(roitype) < 1: roitype = ['']
+        self.roi_chc[0].SetChoices(roitype)
+        self.roiUNITS()
+        
+    def roiUNITS(self,event=None):
+    
+        choice = self.roi_chc[0].GetStringSelection()
+        roiunit = ['']
+        if choice == 'XRF':
+            roiunit = ['eV','keV','channels']
+            self.roi_lims[2].Disable()
+            self.roi_lims[3].Disable()
+        elif choice == '1DXRD':
+            roiunit = [u'\u212B\u207B\u00B9 (q)',u'\u00B0 (2\u03B8)',u'\u212B (d)']
+            self.roi_lims[2].Disable()
+            self.roi_lims[3].Disable()
+        elif choice == '2DXRD':
+            roiunit = ['pixels']
+            self.roi_lims[2].Enable()
+            self.roi_lims[3].Enable()
+        self.roi_chc[1].SetChoices(roiunit)
+
     def onCreateROI(self,event=None):
 
-        xunt  = self.roi_unt.GetSelection()
+        xtyp  = self.roi_chc[0].GetStringSelection()
+        xunt  = self.roi_chc[1].GetStringSelection()
         xname = self.roi_name.GetValue()
-        
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
-
-        if xunt == 0:   xrange[:] = [x/1000. for x in xrange] ## eV to keV
-        elif xunt == 1: xrange = xrange  ## keV
-        elif xunt == 2: xrange = xrange ## 1/A
-        elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
-        elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
+        if xtyp != '2DXRD': xrange = xrange[:2]
         
         self.owner.message('Calculating ROI: %s' % xname)
-        if self.roi_unt.GetStringSelection().startswith('XRD'):
-            self.file.add_xrd1Droi(xrange,xname)
-        elif self.roi_unt.GetStringSelection().startswith('2DXRD'):
-            self.file.add_xrd2Droi(xarea,xname)
-        elif self.roi_unt.GetStringSelection().startswith('XRF'):
-            self.file.add_xrfroi(xrange,xname)
+        if xtyp == 'XRF':
+            self.file.add_xrfroi(xrange,xname,unit=xunt)
+        elif xtyp == '1DXRD':
+            xrd = ['q','2th','d']
+            unt = xrd[self.roi_chc[1].GetSelection()]
+            self.file.add_xrd1Droi(xrange,xname,unit=unt)
+        elif xtyp == '2DXRD':
+            self.file.add_xrd2Droi(xrange,xname,unit=xunt)            
         self.owner.message('Ready')
+        
+# 
+#         if xunt == 0:   xrange[:] = [x/1000. for x in xrange] ## eV to keV
+#         elif xunt == 1: xrange = xrange  ## keV
+#         elif xunt == 2: xrange = xrange ## 1/A
+#         elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
+#         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
+
+
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -2028,12 +2083,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onXRD(self, event=None, save=False, show=False):
 
-        flag1D,flag2D = self.owner.current_file.check_xrd()
-
-        if not flag1D and not flag2D:
-            print('No XRD data in map file: %s' % self.owner.current_file.filename)
-            return
-
         try:
             aname = self._getarea()
             xrmfile = self.owner.current_file
@@ -2046,10 +2095,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             for name, val in zip(env_names, env_vals):
                 if 'mono.energy' in str(name).lower():
                     energy = float(val)/1000.
-
         except:
             print('No map file and/or areas specified.')
             return
+
+        xrmfile.reset_flags()
+        if not xrmfile.flag_xrd1d and not xrmfile.flag_xrd2d:
+            print('No XRD data in map file: %s' % self.owner.current_file.filename)
+            return
+
         try:
             ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs['calfile'])
             ponifile = ponifile if os.path.exists(ponifile) else None
@@ -2061,7 +2115,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
 
-        if flag1D:
+        if xrmfile.flag_xrd1d:
             self._xrd  = None
             self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
@@ -2079,10 +2133,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 file = '%s.xy' % stem
                 save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
 
-#             if not flag2D:
+#             if not xrmfile.flag_xrd2d:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
 
-        if flag2D:
+        if xrmfile.flag_xrd2d:
             self._xrd  = None
             self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
@@ -2099,7 +2153,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
                                          flip=True)
 
-            if not flag1D:
+            if not xrmfile.flag_xrd1d:
                 if ponifile is not None:
                     self._xrd.calfile = ponifile
                     self._xrd.steps = 5001
