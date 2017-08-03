@@ -1639,6 +1639,7 @@ class GSEXRM_MapFile(object):
 # 
 #         return taggrp.create_dataset(reconname, data=recon)
 
+
     def add_area(self, mask, name=None, desc=None):
         '''add a selected area, with optional name
         the area is encoded as a boolean array the same size as the map
