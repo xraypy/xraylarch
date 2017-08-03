@@ -16,16 +16,19 @@ import os
 import sys
 
 HAS_tomopy = False
-HAS_scikit = False
 try:
     import tomopy
     HAS_tomopy = True
 except ImportError:
-    try:
-        from skimage.transform import radon, iradon, iradon_sart
-        HAS_scikit = True
-    except:
-        pass
+    pass
+
+HAS_scikit = False
+try:
+    from skimage.transform import iradon
+    #from skimage.transform import radon, iradon_sart
+    HAS_scikit = True
+except:
+    pass
 
 HAS_larch = False
 try:

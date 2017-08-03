@@ -88,8 +88,7 @@ from larch.utils.strutils import bytes2str
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
-from larch_plugins.xrd import (lambda_from_E,E_from_lambda,xrd1d,save1D,
-                               q_from_twth,q_from_d)
+from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
@@ -562,15 +561,6 @@ class ROIPanel(GridPanel):
         elif xtyp == '2DXRD':
             self.file.add_xrd2Droi(xrange,xname,unit=xunt)            
         self.owner.message('Ready')
-        
-# 
-#         if xunt == 0:   xrange[:] = [x/1000. for x in xrange] ## eV to keV
-#         elif xunt == 1: xrange = xrange  ## keV
-#         elif xunt == 2: xrange = xrange ## 1/A
-#         elif xunt == 3: xrange = q_from_twth(xrange,lambda_from_E(self.owner.current_energy)) ## 2th to 1/A
-#         elif xunt == 4: xrange = q_from_d(xrange) ## A to 1/A
-
-
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -642,7 +632,6 @@ class TomographyPanel(GridPanel):
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center = Check(self, label='Refine?')
-
 
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
@@ -731,19 +720,18 @@ class TomographyPanel(GridPanel):
        
         self.enable_options()
         self.set_det_choices(xrmmap)
-
-        center = len(self.file.get_pos(1, mean=True))/2.
-        self.center_value.SetRange(center*-2.,center*2.)
-        self.center_value.SetValue(center)
+        
+        xlen = len(self.file.get_pos(1, mean=True))
+        if self.file.tomo_center is None:
+            self.file.tomo_center = xlen/2.
+        self.center_value.SetRange(-0.5*xlen,1.5*xlen)
+        self.center_value.SetValue(self.file.tomo_center)
 
     def onALGchoice(self,event=None):
-    
         self.alg_choice[1].SetChoices(self.tomo_alg[self.alg_choice[0].GetSelection()])
 
     def detSELECT(self,idet,event=None):
-    
         self.set_roi_choices(self.file.xrmmap,idet=idet)
-
 
     def roiSELECT(self,iroi,event=None):
 
@@ -770,44 +758,25 @@ class TomographyPanel(GridPanel):
 
         self.roi_label[iroi].SetLabel(roistr)
 
-        
-
     def plotSELECT(self,event=None):
     
         if len(self.owner.filemap) > 0:
-
             oper_ch = self.oper.GetSelection()
-            
             if self.plot_choice.GetSelection() == 0:
-
-                self.det_choice[1].Disable()
-                self.det_choice[2].Disable()
-                self.roi_choice[1].Disable()
-                self.roi_choice[2].Disable()
-
+                for i in (1,2):
+                    self.det_choice[i].Disable()
+                    self.roi_choice[i].Disable()
+                    self.roi_label[i].SetLabel('')
                 for lbl in self.det_label:
                     lbl.SetLabel('')
-                self.roi_label[1].SetLabel('')
-                self.roi_label[2].SetLabel('')
-
                 oper_chs = ['/', '*', '-', '+', 'vs']
-
-                self.oper.SetSelection(oper_ch)
-         
-                
             else:
-            
-                self.det_choice[1].Enable()
-                self.det_choice[2].Enable()
-                self.roi_choice[1].Enable()
-                self.roi_choice[2].Enable()
-            
-                self.det_label[0].SetLabel('Red')
-                self.det_label[1].SetLabel('Green')
-                self.det_label[2].SetLabel('Blue')
-
+                for i in (1,2):
+                    self.det_choice[i].Enable()
+                    self.roi_choice[i].Enable()
+                for i,label in enumerate(['Red','Green','Blue']):
+                    self.det_label[i].SetLabel(label)
                 oper_chs = ['/', '*', '-', '+']
-           
             self.oper.SetChoices(oper_chs)
             if oper_ch >= len(oper_chs):
                 self.oper.SetSelection(0)
@@ -975,23 +944,53 @@ class TomographyPanel(GridPanel):
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
 
-        rot_center = self.center_value.GetValue()
+        self.file.tomo_center = self.center_value.GetValue()
 
         if np.shape(sino)[0] + 2 == len(ome):
             ome = ome[1:-1]            
         
         if pkg.startswith('scikit'):
-
+            cen_list,neg_list = [],[]
             if self.refine_center.GetValue():
-                print 'not refining center here yet.'
+                sino0 = sino[:,:,0].T if len(np.shape(sino)) > 2 else sino.T
+                npts, nth = sino0.shape
+                center,rng = int(self.file.tomo_center),24
+                for cen in range(center-rng, center+rng, 2):
+                    if cen < npts/2.0:
+                        xslice = slice(npts-2*cen, -1)
+                    else:
+                        xslice = slice(0, npts-2*cen)
+                    recon = iradon(sino0[xslice,:],
+                                   theta=ome, 
+                                   filter='shepp-logan',
+                                   interpolation='linear',
+                                   circle=True)
+                    recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
+                    negentropy = (recon*np.log(recon)).sum()
+                    cen_list += [cen]
+                    neg_list += [negentropy]
+            
+                self.file.tomo_center = cen_list[np.array(neg_list).argmin()]
+                self.center_value.SetValue(self.file.tomo_center)
+                self.refine_center.SetValue(False)
+
             if len(np.shape(sino)) > 2:
                 sino = np.einsum('jki->ijk', sino)
                 tomo = []
                 for sino0 in sino:
-                    tomo += [iradon(sino0.T, theta=ome, circle=True)]
+                    tomo += [iradon(sino0.T,
+                                    theta=ome,
+                                    filter='shepp-logan',
+                                    interpolation='linear',
+                                    circle=True)]
                 tomo = np.einsum('kij->ijk', np.array(tomo))
             else:
-                tomo = iradon(sino.T, theta=ome, circle=True)
+                tomo = iradon(sino.T,
+                              theta=ome,
+                              filter='shepp-logan',
+                              interpolation='linear',
+                              circle=True)
+
 
         elif pkg.startswith('tomopy'):
 
@@ -1003,14 +1002,14 @@ class TomographyPanel(GridPanel):
             theta = np.radians(ome)
             
             if self.refine_center.GetValue():
-                rot_center = tomopy.find_center(sino, theta, init=rot_center, ind=0, tol=0.5)
-                self.center_value.SetValue(rot_center)
+                self.file.tomo_center = tomopy.find_center(sino, theta, init=self.file.tomo_center, ind=0, tol=0.5)
+                self.center_value.SetValue(self.file.tomo_center)
                 self.refine_center.SetValue(False)
 
             try:
-                tomo = tomopy.recon(sino, theta, center=rot_center, algorithm=alg)
+                tomo = tomopy.recon(sino, theta, center=self.file.tomo_center, algorithm=alg)
             except:
-                tomo = tomopy.recon(sino, theta, center=rot_center, algorithm='gridrec')            
+                tomo = tomopy.recon(sino, theta, center=self.file.tomo_center, algorithm='gridrec')            
 
             nx,dx,dy = np.shape(tomo)
             tomo = np.reshape(tomo,(dx,dy)) if nx == 1 else np.einsum('kij->ijk', tomo)
@@ -1280,41 +1279,28 @@ class MapPanel(GridPanel):
     def plotSELECT(self,event=None):
     
         if len(self.owner.filemap) > 0:
-
             oper_ch = self.oper.GetSelection()
-            
             if self.plot_choice.GetSelection() == 0:
-
-                self.det_choice[1].Disable()
-                self.det_choice[2].Disable()
-                self.roi_choice[1].Disable()
-                self.roi_choice[2].Disable()
-
+                for i in (1,2):
+                    self.det_choice[i].Disable()
+                    self.roi_choice[i].Disable()
+                    self.roi_label[i].SetLabel('')
                 for lbl in self.det_label:
                     lbl.SetLabel('')
-                self.roi_label[1].SetLabel('')
-                self.roi_label[2].SetLabel('')
-
                 oper_chs = ['/', '*', '-', '+', 'vs']
-
             else:
-                self.det_choice[1].Enable()
-                self.det_choice[2].Enable()
-                self.roi_choice[1].Enable()
-                self.roi_choice[2].Enable()
-            
-                self.det_label[0].SetLabel('Red')
-                self.det_label[1].SetLabel('Green')
-                self.det_label[2].SetLabel('Blue')
-
+                for i in (1,2):
+                    self.det_choice[i].Enable()
+                    self.roi_choice[i].Enable()
+                for i,label in enumerate(['Red','Green','Blue']):
+                    self.det_label[i].SetLabel(label)
                 oper_chs = ['/', '*', '-', '+']
-           
             self.oper.SetChoices(oper_chs)
             if oper_ch >= len(oper_chs):
                 self.oper.SetSelection(0)
             else:
                 self.oper.SetSelection(oper_ch)
-            
+           
     def onClose(self):
         for p in self.plotframes:
             try:

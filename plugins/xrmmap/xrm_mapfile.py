@@ -18,7 +18,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
-from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row
+from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row,q_from_twth,q_from_d
 
 
 NINIT = 32
@@ -634,6 +634,8 @@ class GSEXRM_MapFile(object):
         self.flag_xrf   = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
+        
+        self.tomo_center = None
 
         self.calibration = poni
         self.maskfile    = mask
@@ -1483,18 +1485,14 @@ class GSEXRM_MapFile(object):
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
-        mkak 2016.08.30
+        mkak 2016.08.30 // rewritten mkak 2017.08.03
         '''
-        try:
-            self.xrmmap['flags']
-        except:
-            self.flag_xrf = True
-            self.flag_xrd2d,self.flag_xrd1d = False,False
-            return
-
-        self.flag_xrf   = self.xrmmap['flags'].attrs['xrf']
-        self.flag_xrd2d = self.xrmmap['flags'].attrs['xrd2D']
-        self.flag_xrd1d = self.xrmmap['flags'].attrs['xrd1D']
+        flggrp = ensure_subgroup('flags',self.xrmmap)
+        for key,val in zip(flggrp.attrs.keys(),flggrp.attrs.values()):
+            if   key         == 'xrf':   self.flag_xrf   = val
+            elif key         == 'xrd':   self.flag_xrd2d = val
+            elif key.lower() == 'xrd2d': self.flag_xrd2d = val
+            elif key.lower() == 'xrd1d': self.flag_xrd1d = val
 
 
     def resize_arrays(self, nrow):
