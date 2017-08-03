@@ -1,21 +1,9 @@
 ## examples/xafs/doc_xafsft3.lar
-dat = read_ascii('../xafsdata/feo_rt1.xmu', labels='energy xmu i0')
-autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
+dat = read_ascii('../xafsdata/feo_rt1.xmu', labels='energy mu i0')
+autobk(dat, rbkg=1, kweight=2, clamp_hi=10)
 
-kweight = 2
+xftf(dat, kmin=3, kmax=13, dk=4, window='hanning',  kweight=2)
 
-xftf(dat.k, dat.chi, kmin=3, kmax=13, dk=4, window='hanning',
-     kweight=kweight, group=dat)
-
-xftr(dat.r, dat.chir, rmin=1, rmax=2, dr=0.1, window='hanning',  group=dat)
-
-## now plot results
-newplot(dat.r, dat.chir_mag, xmax=8, label='data',
-        show_legend=True, legend_loc='ur', color='black',
-        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
-
-plot(dat.r, dat.chir_re, color='red', label='chir_re')
-plot(dat.r, dat.chir_im, color='blue', label='chir_im')
-
+plot_chir(dat, show_mag=True, show_real=True, show_imag=True)
 
 ## end examples/xafs/doc_xafsft3.lar

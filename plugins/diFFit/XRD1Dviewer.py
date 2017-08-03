@@ -400,8 +400,13 @@ class SelectSavingData(wx.Dialog):
 
     def saveXY(self,event=None):
         wildcards = '1DXRD datafile (*.xy)|*.xy|All files (*.*)|*.*'
+        if os.path.exists(self.File.GetValue()):
+           dfltDIR = self.File.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, 'Save file as...',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards,
                            style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
@@ -417,8 +422,13 @@ class SelectSavingData(wx.Dialog):
 
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        if os.path.exists(self.Poni.GetValue()):
+           dfltDIR = self.Poni.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, message='Select XRD calibration file',
-                            defaultDir=os.getcwd(),
+                            defaultDir=dfltDIR,
                             wildcard=wildcards, style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -454,7 +464,7 @@ class SelectSavingData(wx.Dialog):
 # 
 #         #####
 #         ## X-AXIS
-#         self.ch_xaxis = wx.Choice(panel,   choices=['q',u'2\u03B8','d'])
+#         self.ch_xaxis = wx.Choice(panel,   choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)'])
 #         self.val_xmin = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
 #         ttl_xaxis   = SimpleText(panel, label=' to ')
 #         self.val_xmax = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)        
@@ -1736,7 +1746,7 @@ class Viewer1DXRD(wx.Panel):
         ## X-Scale
         hbox_xaxis = wx.BoxSizer(wx.HORIZONTAL)
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-        xunits = ['q',u'2\u03B8','d']
+        xunits = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
 
         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.check1Daxis)
@@ -2374,7 +2384,7 @@ class SelectCIFData(wx.Dialog):
 
         #####
         ## X-AXIS
-        self.ch_xaxis = wx.Choice(panel,   choices=['q',u'2\u03B8','d'])
+        self.ch_xaxis = wx.Choice(panel,   choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)'])
         self.val_xmin = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)
         ttl_xaxis   = SimpleText(panel, label=' to ')
         self.val_xmax = wx.TextCtrl(panel,  style=wx.TE_PROCESS_ENTER)        
@@ -2668,7 +2678,7 @@ class RangeToolsPanel(wx.Panel):
         ## X-Scale
 
         ttl_xaxis = wx.StaticText(self, label='X-SCALE')
-        xunits = ['q',u'2\u03B8','d']
+        xunits = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
         self.ch_xaxis = wx.Choice(self,choices=xunits)
         self.ch_xaxis.Bind(wx.EVT_CHOICE, self.owner.onChangeXscale)
         hbox_xaxis.Add(ttl_xaxis, flag=wx.RIGHT, border=8)

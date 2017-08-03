@@ -141,6 +141,11 @@ class Interpreter:
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
 
+        self.on_try = self.on_tryexcept
+        self.on_tryfinally = self.on_tryexcept
+        self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
+                                   for node in self.supported_nodes))
+
         if with_plugins: # add all plugins in standard plugins folder
             plugins_dir = os.path.join(site_config.larchdir, 'plugins')
             loaded_plugins = []
@@ -160,12 +165,6 @@ class Interpreter:
         reset_fiteval = getattr(mathgroup, 'reset_fiteval', None)
         if callable(reset_fiteval):
             reset_fiteval(_larch=self)
-
-
-        self.on_try = self.on_tryexcept
-        self.on_tryfinally = self.on_tryexcept
-        self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
-                                   for node in self.supported_nodes))
 
 
     def add_plugin(self, mod, **kws):

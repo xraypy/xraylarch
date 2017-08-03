@@ -234,9 +234,43 @@ same meaning, as indicated by the right-most column.
     :param  side: which axis to use ('left' or 'right') for coordinates.
     :param  shape:  arrow head shape ('full', 'left', 'right')
     :param  fg:     arrow fill color ('black')
-    :param  width:  width of arrow line (in points. default=0.01)
-    :param  head_width:  width of arrow head (in points. default=0.1)
+    :param  width:  width of arrow line (in points. default=0.0)
+    :param  head_width:  width of arrow head (in points. default=0.05)
+    :param  head_length:  length of arrow head (in points. default=0.25)
     :param  overhang:    amount the arrow is swept back (in points. default=0)
+
+
+.. method:: plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_', win=1, **kws)
+
+    draw a single marker at x, y
+
+    :param  x:   x coordinate
+    :param  y:   y coordinate
+    :param marker: symbol to draw at each point ('+', 'o', 'x', 'square', etc) ['o']
+    :param size:   symbol size [4]
+    :param color:  color for marker ['black']
+    :param  win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]
+    :param  kws: other arguments are semt to func:`oplot`.
+
+.. method:: plot_axhline(y, xmin=0, xmax=1, win=1, size=None, **kws):
+
+    plot a horizontal line spanning the plot axes
+
+    :param y:      y position of line
+    :param xmin:   starting x fraction (window units -- not user units!) [0]
+    :param xmax:   ending x fraction (window units -- not user units!) [1]
+    :param win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]
+    :param kws: other arguments are semt to func:`axes.axhline`
+
+.. method:: plot_axvline(x, ymin=0, ymax=1, win=1, size=None, **kws):
+
+    plot a horizontal line spanning the plot axes
+
+    :param x:      x position of line
+    :param ymin:   starting y fraction (window units -- not user units!) [0]
+    :param ymax:   ending y fraction (window units -- not user units!) [1]
+    :param win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]
+    :param kws: other arguments are semt to func:`axes.axvline`
 
 
 .. method:: save_plot(filename, dpi=600, format=None, win=1, facecolor='w', edgecolor='w', transparent=False)
@@ -275,7 +309,7 @@ same meaning, as indicated by the right-most column.
 
 
 Plot Examples
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Here are a few example line plots, to whet your appetite::
 
@@ -518,4 +552,3 @@ which generates a plot that looks like
     :width: 60%
 
     A histogram plot made using matplotlib's :func:`hist` function.
-

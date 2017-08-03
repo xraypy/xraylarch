@@ -154,7 +154,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
     # calc k-value and initial guess for y-values of spline params
-    nspl = max(4, min(128, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
+    nspl = max(5, min(64, int(2*rbkg*(kmax-kmin)/np.pi) + 2))
     spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
     for i in range(nspl):
         q  = kmin + i*(kmax-kmin)/(nspl - 1)

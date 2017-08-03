@@ -1,52 +1,27 @@
 ## examples/xafs/doc_xafsft2.lar
-dat = read_ascii('../xafsdata/feo_rt1.xmu', labels='energy xmu i0')
-autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
+dat = read_ascii('../xafsdata/feo_rt1.xmu', labels='energy mu i0')
+autobk(dat, rbkg=1, kweight=2, clamp_hi=10)
 
-kweight = 2
+d1 = group(k=dat.k, chi=dat.chi, filename=dat.filename)
+d2 = group(k=dat.k, chi=dat.chi, filename=dat.filename)
+d3 = group(k=dat.k, chi=dat.chi, filename=dat.filename)
+d4 = group(k=dat.k, chi=dat.chi, filename=dat.filename)
+d5 = group(k=dat.k, chi=dat.chi, filename=dat.filename)
 
-## Hanning
-d1 = group(k=dat.k, chi=dat.chi)
-xftf(d1.k, d1.chi, kmin=3, kmax=13, dk=4, window='hanning',
-     kweight=kweight, group=d1)
+ftopts = dict(kmin=3, kmax=13, dk=4, kweight=2)
 
-## Parzen
-d2 = group(k=dat.k, chi=dat.chi)
-
-xftf(d2.k, d2.chi, kmin=3, kmax=13, dk=4, window='parzen',
-     kweight=kweight, group=d2)
-
-## Welch
-d3 = group(k=dat.k, chi=dat.chi)
-
-xftf(d3.k, d3.chi, kmin=3, kmax=13, dk=4, window='welch',
-     kweight=kweight, group=d3)
+# Do FT with several window function types
+xftf(d1, window='hanning',  **ftopts)
+xftf(d2, window='parzen',   **ftopts)
+xftf(d3, window='welch',    **ftopts)
+xftf(d4, window='kaiser',   **ftopts)
+xftf(d5, window='gaussian', **ftopts)
 
 ## now plot results
-newplot(d1.r, d1.chir_mag, xmax=8, label='Hanning(dk=4)',
-        show_legend=True, legend_loc='ur', color='blue',
-        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
-
-plot(d2.r, d2.chir_mag, color='red', label='Parzen(dk=4)')
-plot(d3.r, d3.chir_mag, color='black', label='Welch(dk=4)')
-
-
-## Kaiser
-d4 = group(k=dat.k, chi=dat.chi)
-xftf(d4.k, d4.chi, kmin=3, kmax=13, dk=4, window='kaiser',
-     kweight=kweight, group=d4)
-
-## Gaussian
-d5 = group(k=dat.k, chi=dat.chi)
-
-xftf(d5.k, d5.chi, kmin=3, kmax=13, dk=4, window='gaussian',
-     kweight=kweight, group=d5)
-
-## now plot results
-newplot(d1.r, d1.chir_mag, xmax=8, label='Hanning(dk=4)', win=2,
-        show_legend=True, legend_loc='ur', color='blue',
-        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
-
-plot(d4.r, d4.chir_mag, color='red', label='Kaiser(dk=4)', win=2)
-plot(d5.r, d5.chir_mag, color='black', label='Gaussian(dk=4)', win=2)
+plot_chir(d1, label='Hanning')
+plot_chir(d2, label='Parzen',   new=False)
+plot_chir(d3, label='Welch',    new=False)
+plot_chir(d4, label='Kaiser',   new=False)
+plot_chir(d5, label='Gaussian', new=False)
 
 ## end examples/xafs/doc_xafsft2.lar

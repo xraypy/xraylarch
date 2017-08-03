@@ -35,11 +35,13 @@ required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
                     'PIL', 'requests']
 graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
 
-xrd_modules = ['pyFAI','CifFile', 'fabio']
+xrd_modules  = ['pyFAI', 'CifFile', 'fabio']
+tomo_modules = ['tomopy','scikit-image']
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphics and plotting': graphics_modules,
                        'xrd modules' : xrd_modules,
+                       'tomography modules' : tomo_modules,
                        'color-enhanced error messages': ('termcolor', ),
                        'using the EPICS control system': ('epics', ),
                        'testing tools': ('nose', ),

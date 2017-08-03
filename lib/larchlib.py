@@ -222,11 +222,7 @@ class Procedure(object):
         self.__name__ = name
 
     def __repr__(self):
-        sig = self._signature()
-        sig = "<Procedure %s, file=%s>" % (sig, self.__file__)
-        if self.__doc__ is not None:
-            sig = "%s\n  %s" % (sig, self.__doc__)
-        return sig
+        return "<Procedure %s, file=%s>" % (self.name, self.__file__)
 
     def _signature(self):
         sig = ""
