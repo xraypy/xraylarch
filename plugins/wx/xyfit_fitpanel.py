@@ -119,7 +119,7 @@ class XYFitPanel(wx.Panel):
         self.mod_nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
 
         self.param_panel = AllParamsPanel(self, controller=self.controller)
-        self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
+        # self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
 
         range_row = wx.Panel(self)
         rsizer = wx.BoxSizer(wx.HORIZONTAL)

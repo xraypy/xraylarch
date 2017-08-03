@@ -35,8 +35,7 @@ enddef
         out, err = self.trytext("print(fcn)")
         self.NoExceptionRaised()
         out = out.split('\n')
-        self.assert_(out[0].startswith('<Procedure fcn(x, scale='))
-        self.assert_('test func' in out[1])
+        self.assert_(out[0].startswith('<Procedure fcn'))
 
         out, err = self.trytext("a = fcn()")
         self.ExceptionRaised()
@@ -70,7 +69,7 @@ enddef
         self.isValue('o', 14)
         out, err = self.trytext("print(fcn)")
         out = out.split('\n')
-        self.assert_(out[0].startswith('<Procedure fcn('))
+        self.assert_(out[0].startswith('<Procedure fcn'))
 
     def test_function_kwargs(self):
         "test function with kw args, no **kws"
@@ -92,7 +91,7 @@ enddef
         out, err = self.trytext("print(fcn)")
         self.NoExceptionRaised()
         out = out.split('\n')
-        self.assert_(out[0].startswith('<Procedure fcn(square'))
+        self.assert_(out[0].startswith('<Procedure fcn'))
 
         self.trytext("o = fcn(x=1, y=2, z=3, square=False)")
         self.NoExceptionRaised()
@@ -131,7 +130,7 @@ enddef
 
         out, err = self.trytext("print(fcn)")
         out = out.split('\n')
-        self.assert_(out[0].startswith('<Procedure fcn(square'))
+        self.assert_(out[0].startswith('<Procedure fcn'))
         self.trytext("o = fcn(x=1, y=2, z=3, square=False)")
         self.isValue('o', 6)
         self.NoExceptionRaised()
@@ -156,7 +155,7 @@ def fcn(x, y, **kws):  # end of line comment
         out, err = self.trytext("print(fcn)")
         self.NoExceptionRaised()
         out = out.split('\n')
-        self.assert_(out[0].startswith('<Procedure fcn(x,'))
+        self.assert_(out[0].startswith('<Procedure fcn'))
 
         self.trytext("o = -1")
         self.NoExceptionRaised()

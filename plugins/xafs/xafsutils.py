@@ -60,9 +60,27 @@ def set_xafsGroup(group, _larch=None):
 
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs"""
-    if _larch is not None:
-        mod = getattr(_larch.symtable, '_xafs')
-        mod.__doc__ = MODDOC
+    if _larch is None:
+        return
+
+    mod = getattr(_larch.symtable, '_xafs')
+    mod.__doc__ = MODDOC
+
+    _larch("import xafs_plots")
+    xplots = getattr(_larch.symtable, 'xafs_plots', None)
+    if xplots is None:
+        return
+
+    # move xafs_plots macros to _xafs group
+    for name in ('plotlabels', 'plot_bkg', 'plot_chifit', 'plot_chik',
+                 'plot_chir', 'plot_mu', 'plot_path_k', 'plot_path_r',
+                 'plot_paths_k', 'plot_paths_r'):
+        item = getattr(xplots, name, None)
+        if item is not None:
+            setattr(_larch.symtable._xafs, name, item)
+        delattr(xplots, name)
+    delattr(_larch.symtable, 'xafs_plots')
+
 
 def registerLarchPlugin():
     return ('_xafs', {'etok': etok, 'ktoe': ktoe})

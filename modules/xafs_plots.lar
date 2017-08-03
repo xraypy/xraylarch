@@ -16,36 +16,40 @@ Plotting macros for XAFS data sets and fits
 """
 
 # common XAFS plot labels
-labels = group(k       = r'$k \rm\,(\AA^{-1})$',
-               r       = r'$R \rm\,(\AA)$',
-               energy  = r'$E\rm\,(eV)$',
-               mu      = r'$\mu(E)$',
-               dmude   = r'$d\mu(E)/dE$',
-               chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
-               chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
-               chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
-               chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
-               e0color = '#B2B282')
-
 def __chir_label__(show_mag, show_real, show_imag, kweight):
     "private method: determine y label for chi(R) plot"
     ylab = []
-    if show_mag:  ylab.append(labels.chirmag)
-    if show_real: ylab.append(labels.chirre)
-    if show_imag: ylab.append(labels.chirim)
-    if len(ylab) > 1:  ylab = [labels.chir]
+    if show_mag:  ylab.append(plotlabels.chirmag)
+    if show_real: ylab.append(plotlabels.chirre)
+    if show_imag: ylab.append(plotlabels.chirim)
+    if len(ylab) > 1:  ylab = [plotlabels.chir]
     return ylab[0].format(kweight+1)
 #enddef
 
+plotlabels = group(k       = r'$k \rm\,(\AA^{-1})$',
+                   r       = r'$R \rm\,(\AA)$',
+                   energy  = r'$E\rm\,(eV)$',
+                   mu      = r'$\mu(E)$',
+                   dmude   = r'$d\mu(E)/dE$',
+                   chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+                   chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
+                   chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
+                   chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chirim  = r'${{\rm Im}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   chirpha = r'${{\rm Phase}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
+                   e0color = '#B2B282',
+                   chirlab = __chir_label__)
+
+
 def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-            show_e0=False, show_deriv=False, emin=None, emax=None, new=True, win=1):
+            show_e0=False, show_deriv=False, emin=None, emax=None, label='mu',
+            new=True, win=1):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-             show_e0=False, emin=None, emax=None, new=True, win=1)
+             show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
+             new=True, win=1)
 
-    Plot mu(E) for XAFS data group in various forms
+    Plot mu(E) for an XAFS data group in various forms
 
     Arguments
     ----------
@@ -58,6 +62,7 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
      show_deriv bool whether to show deriv together with mu [False]
      emin       min energy to show, relative to E0 [None, start of data]
      emax       max energy to show, relative to E0 [None, end of data]
+     label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
      new        bool whether to start a new plot [True]
      win        integer plot window to use [1]
 
@@ -73,20 +78,20 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     else:
         raise ValueError("XAFS data group has no array for mu")
     #endif
-    ylabel = labels.mu
-    label = 'mu'
+    ylabel = plotlabels.mu
     if norm:  mu = dgroup.norm
-
+    if labels is None:
+        label = 'mu'
+    #endif
     if deriv:
         mu = gradient(mu)/gradient(dgroup.energy)
-        ylabel = labels.dmude
-        label = 'dmu/dE'
+        ylabel = plotlabels.dmude
+        dlabel = '%s (deriv)' % label
     #endif
     if norm:
         ylabel = "%s (norm)" % ylabel
-        label = "%s (norm)" % label
+        dlabel = "%s (norm)" % label
     #endif
-
     xmin, xmax = None, None
     if emin is not None: xmin = dgroup.e0 + emin
     if emax is not None: xmax = dgroup.e0 + emax
@@ -95,13 +100,13 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
                 title=dgroup.filename, xmin=xmin, xmax=xmax)
 
 
-    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+    plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          label=label, zorder=20, new=new, **opts)
 
     if show_deriv:
         dmu = gradient(mu)/gradient(dgroup.energy)
-        plot(dgroup.energy, dmu, ylabel=labels.dmude,
-             label='dmu/dE', zorder=18, side='right', **opts)
+        plot(dgroup.energy, dmu, ylabel=plotlabels.dmude,
+             label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
 
     if (not norm and not deriv):
@@ -117,22 +122,21 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
                 ypre = dgroup.pre_edge[i]
                 ypost = dgroup.post_edge[i]
                 plot_arrow(dgroup.e0, ypre, dgroup.e0, ypost,
-                           color=labels.e0color, width=0.25,
+                           color=plotlabels.e0color, width=0.25,
                            head_width=0, zorder=3, win=win)
             #endif
         #endif
     #endif
     if show_e0:
         plot_axvline(dgroup.e0, zorder=2, size=3,
-                     label='E0', color=labels.e0color, win=win)
+                     label='E0', color=plotlabels.e0color, win=win)
         get_display(win=win).panel.conf.draw_legend()
     #endif
-
 #enddef
 
-def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
+def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
     """
-    plot_bkg(dgroup, norm=True, emin=None, emax=None, win=1)
+    plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
 
     Plot mu(E) and background mu0(E) for XAFS data group
 
@@ -142,6 +146,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
      norm     bool whether to show normalized data [True]
      emin     min energy to show, relative to E0 [None, start of data]
      emax     max energy to show, relative to E0 [None, end of data]
+     show_e0  bool whether to show E0 [False]
+     label    string for label [``None``: 'mu']
      new      bool whether to start a new plot [True]
      win      integer plot window to use [1]
 
@@ -159,8 +165,10 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
     #endif
 
     bkg = dgroup.bkg
-    ylabel = labels.mu
-    label = 'mu'
+    ylabel = plotlabels.mu
+    if label is None:
+        label = 'mu'
+    #endif
     xmin, xmax = None, None
     if emin is not None: xmin = dgroup.e0 + emin
     if emax is not None: xmax = dgroup.e0 + emax
@@ -171,17 +179,23 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, new=True, win=1):
         label = "%s (norm)" % label
     #endif
     opts = dict(win=win, show_legend=True, linewidth=3)
-    plot(dgroup.energy, mu, xlabel=labels.energy, ylabel=ylabel,
+    plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          title='%s' % dgroup.filename,
          label=label, zorder=20, new=new, xmin=xmin, xmax=xmax, **opts)
     plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
+    if show_e0:
+        plot_axvline(dgroup.e0, zorder=2, size=3,
+                     label='E0', color=plotlabels.e0color, win=win)
+        get_display(win=win).panel.conf.draw_legend()
+    #endif
 #enddef
 
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
-              label='chi', new=True, win=1):
+              label=None, new=True, win=1):
     """
-    plot_chik(dgroup, kweight=None, kmax=None, show_window=True, win=1)
+    plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
+              new=True, win=1)
 
     Plot k-weighted chi(k) for XAFS data group
 
@@ -190,7 +204,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      dgroup       group of XAFS data after autobk() results (see Note 1)
      kweight      k-weighting for plot [read from last xftf(), or 0]
      kmax         max k to show [None, end of data]
-     show_window  bool whether to also plot k-window [plot if available]
+     show_window  bool whether to also plot k-window [True]
+     label        string for label [``None`` to use 'chi']
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -206,32 +221,34 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
     chi = dgroup.chi * dgroup.k ** kweight
     opts = dict(win=win, show_legend=True, linewidth=3)
-
-    plot(dgroup.k, chi, xlabel=labels.k,
-         ylabel=labels.chikw.format(kweight), title=dgroup.filename,
+    if label is None:
+        label = 'chi'
+    #endif
+    plot(dgroup.k, chi, xlabel=plotlabels.k,
+         ylabel=plotlabels.chikw.format(kweight), title=dgroup.filename,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
-        plot(dgroup.k, 0.75*max(chi)*dgroup.kwin,
-             zorder=12, label='window', **opts)
+        plot(dgroup.k, dgroup.kwin, zorder=12, label='window', **opts)
     #endif
 #enddef
 
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, new=True, win=1):
+              rmax=None, label=None, new=True, win=1):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, new=True, win=1)
+              rmax=None, label=None, new=True, win=1)
 
     Plot chi(R) for XAFS data group
 
     Arguments
     ----------
      dgroup       group of XAFS data after xftf() results (see Note 1)
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
+     label        string for label [``None`` to use 'chir']
      rmax         max R to show [None, end of data]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
@@ -245,21 +262,24 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     kweight = dgroup.xftf_details.call_args['kweight']
     opts = dict(win=win, show_legend=True, linewidth=3,
                 title=dgroup.filename, zorder=20, xmax=rmax,
-                xlabel=labels.r, new=new)
+                xlabel=plotlabels.r, new=new)
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
     opts['ylabel'] = ylabel
 
+    if label is None:
+        label = 'chir'
+    #endif
     if show_mag:
-        plot(dgroup.r, dgroup.chir_mag, label='mag', **opts)
+        plot(dgroup.r, dgroup.chir_mag, label='%s (mag)' % label, **opts)
         opts['new'] = False
     #endif
     if show_real:
-        plot(dgroup.r, dgroup.chir_re, label='real', **opts)
+        plot(dgroup.r, dgroup.chir_re, label='%s (real)' % label, **opts)
         opts['new'] = False
     #endif
     if show_imag:
-        plot(dgroup.r, dgroup.chir_im, label='imag', **opts)
+        plot(dgroup.r, dgroup.chir_im, label='%s (imag)' % label, **opts)
     #endif
 #enddef
 
@@ -279,9 +299,9 @@ def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
      kmin         min k to show [0]
      kmax         max k to show [None, end of data]
      rmax         max R to show [None, end of data]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chidr(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -296,15 +316,15 @@ def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
 
     # k-weighted chi(k) in first plot window
     plot(dataset.data.k, data_chik, xmin=kmin, xmax=kmax,
-            xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+            xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
             label='data', new=new, **opts)
     plot(dataset.model.k, model_chik, label='fit',  **opts)
 
     # show chi(R) in next plot window
     opts['win'] = win+1
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
 
     if show_mag:
@@ -357,7 +377,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     chi_kw = offset + path.chi * path.k**kweight
 
     plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
-         xlabel=labels.k, ylabel=labels.chikw.format(kweight),
+         xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
          win=win, new=new, **kws)
 #enddef
 
@@ -378,9 +398,9 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for plot [0]
      label        path label ['path %d' % ipath]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
@@ -390,9 +410,9 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
         label = 'path %i' % (ipath)
     #endif
     kweight =dataset.transform.kweight
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
 
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
     opts.update(kws)
     if show_mag:
@@ -432,7 +452,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
     model_chi_kw = model.chi * model.k**kweight
 
     plot(model.k, model_chi_kw, title=dataset.dset.filename,
-         xlabel=labels.r, ylabel=labels.chikw.format(kweight),
+         xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
          label='sum', new=new, xmin=xmin, xmax=kmax, win=win, **kws)
 
     for ipath in range(len(dataset.pathlist)):
@@ -454,9 +474,9 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
      dataset      feffit dataset, after running feffit()
      offset       vertical offset to use for paths for plot [-0.5]
      rmax         max R to show [None, end of data]
-     show_mag     bool whether to plot |chir(R)| [True]
-     show_real    bool whether to plot Re[chir(R)] [False]
-     show_imag    bool whether to plot Im[chir(R)] [False]
+     show_mag     bool whether to plot |chi(R)| [True]
+     show_real    bool whether to plot Re[chi(R)] [False]
+     show_imag    bool whether to plot Im[chi(R)] [False]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
@@ -464,9 +484,9 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
     kweight = dataset.transform.kweight
     model = dataset.model
 
-    ylabel = __chir_label__(show_mag, show_real, show_imag, kweight)
+    ylabel = plotlabels.chirlab(show_mag, show_real, show_imag, kweight)
 
-    opts.update({'xlabel': labels.r, 'ylabel': ylabel,
+    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
                  'xmax': rmax, 'new': new})
     opts.update(kws)
     if show_mag:
