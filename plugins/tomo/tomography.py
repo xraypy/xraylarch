@@ -63,19 +63,22 @@ def check_method(method):
 
 def refine_center(sino, center=None, method=None, omega=None):
 
-    method = check_method(None)
+    method = check_method(method)
     if method is None:
         print('No tomographic reconstruction packages available')
         return
 
-    if center is None: center = sino.shape[1]/2. 
-    center0 = center    
 
     if method.lower().startswith('scikit'):
-        rng = 5
-        for cen in np.arange(center-rng, center+rng, 0.2):
+        npts = sino.shape[1]
+        if center is None: center = npts/2. 
+        if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[2])
+
+        rng,cen_list,entropy = 12,[],[]
+        for cen in np.arange(center-rng, center+rng, 1):
+            cen = int(cen)
             xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
-            recon = iradon(sino[xslice,:,0],
+            recon = iradon(sino[0,xslice],
                            theta=omega, 
                            filter='shepp-logan',
                            interpolation='linear',
@@ -83,39 +86,30 @@ def refine_center(sino, center=None, method=None, omega=None):
             recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
             negentropy = (recon*np.log(recon)).sum()
             cen_list += [cen]
-            neg_list += [negentropy]
-            print cen,negentropy
-        print 'CHOICE:',cen_list[np.array(neg_list).argmin()]
-        center = cen_list[np.array(neg_list).argmin()]
+            entropy += [negentropy]
+        center = cen_list[np.array(entropy).argmin()]
+        #for c,e in zip(cen_list,entropy): print('%i %i' %(c,e))
 
     elif method.lower().startswith('tomopy'):
+        if center is None: center = sino.shape[2]/2. 
         if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[0])
         center = tomopy.find_center(sino, omega, init=center, ind=0, tol=0.5)
 
-    print center0,'--->',center    
     return center
-
-
 
 def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algorithm=None, filter=None, interpolation=None, omega=None):
     '''
     sino : slice, x, 2th
     tomo : slice, x, y
     '''
-
-
-    print 'orig : slice,x,2th',sino.shape
-    print 'plotting : 2th,x,slice',np.einsum('kji->ijk', sino).shape
-    print 'scikit : slice,x,2th',sino.shape
-    print 'tomopy : 2th,slice,x',np.einsum('jki->ijk', sino).shape    
-
-    method = check_method(None)
+    
+    method = check_method(method)
     if method is None:
         print('No tomographic reconstruction packages available')
         return
     
     if center is None: center = sino.shape[1]/2.
-    if omega is None or len(omega) != sino.shape[0]: omega = np.linspace(0,360,sino.shape[2])
+    if omega is None: omega = np.linspace(0,360,sino.shape[2])
     
     if method.lower().startswith('scikit'):
         if filter not in SCIKIT_FILT:
@@ -123,12 +117,11 @@ def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algori
         if interpolation not in SCIKIT_INTR:
             interpolation = 'linear'
 
-        print '1: sino scikit',sino.shape        
-        if refine_cen: refine_center(sino,center=center,method=method,omega=omega)
+        if refine_cen: center = refine_center(sino,center=center,method=method,omega=omega)
         tomo = []
         for sino0 in sino:
-            tomo += [iradon(sino0.T, theta=omega, filter=filter, interpolation=interpolation, circle=True)]
-        print '1: tomo scikit',tomo.shape
+            tomo += [iradon(sino0, theta=omega, filter=filter, interpolation=interpolation, circle=True)]
+        tomo = np.flip(tomo,1)
 
     elif method.lower().startswith('tomopy'):
         
@@ -138,24 +131,17 @@ def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algori
             filter = None
 
         ## reorder to: 2th,slice,x for tomopy
-        sino = np.einsum('jki->ijk', sino)
+        sino = np.einsum('jki->ijk', np.einsum('kji->ijk', sino).T )
         
         omega = np.radians(omega)
 
-        print '1: sino tomopy',sino.shape        
-
-        if refine_cen: refine_center(sino,center=center,omega=omega)
-
+        if refine_cen: center = refine_center(sino,center=center,omega=omega)
         tomo = tomopy.recon(sino, omega, center=center, algorithm=algorithm) #filter_name=filter, 
-
-        print '1: tomo tomopy',tomo.shape
         
         ## reorder to slice, x, y
-        tomo = np.einsum('ikj->ijk', tomo)
+        tomo = np.flip(tomo,1)
 
-        print '1: tomo tomopy',tomo.shape
-
-    return tomo
+    return center,tomo
 
 # def registerLarchPlugin():
 #     return ('_tomo', {'create_tomogrp': create_tomogrp})
