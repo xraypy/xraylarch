@@ -1,19 +1,15 @@
 '''
-This module defines a tomography dataset class.
+This module defines a functions necessary for tomography calculations.
 
 Authors/Modifications:
 ----------------------
 * Margaret Koker, koker@cars.uchicago.edu
-* modeled after MCA class
 '''
 
 ##########################################################################
 # IMPORT PYTHON PACKAGES
 
 import numpy as np
-
-import os
-import sys
 
 HAS_tomopy = False
 try:
@@ -30,200 +26,136 @@ try:
 except:
     pass
 
-HAS_larch = False
-try:
-    from larch import Group
-    grpobjt = Group
-    HAS_larch = True
-except:
-    grpobjt = object
+# HAS_larch = False
+# try:
+#     from larch import Group
+#     grpobjt = Group
+#     HAS_larch = True
+# except:
+#     grpobjt = object
+
+
 
 ##########################################################################
-# CLASSES
+# GLOBAL VARIABLES
 
-class tomogrp(grpobjt):
-    '''
-    Tomography dataset class
-    
-    Attributes:
-    ------------
+TOMOPY_ALG  = [ 'art', 'bart', 'fbp', 'gridrec', 'mlem', 'osem', 'ospml_hybrid',
+                'ospml_quad', 'pml_hybrid', 'pml_quad', 'sirt' ]
+TOMOPY_FILT = [ 'none', 'shepp', 'cosine', 'hann', 'hamming', 'ramlak', 'parzen',
+                'butterworth', 'custom', 'custom2d'] 
 
-    # Raw data and collection parameters
-    * self.x_range       = None or array          # x-range for sampled data
-    * self.omega_range   = None or array          # omega-range for sampled data
-    * self.z_range       = None or array          # z-range for sampled data (slices)
-    * self.data_range    = None or array          # range for data sampling (e.g. 2th, E)
+SCIKIT_FILT = [ None, 'ramp', 'shepp-logan', 'cosine', 'hamming', 'hann' ]
+SCIKIT_INTR = [ 'linear', 'nearest', 'cubic']
 
-    * self.x_units       = 'um'|'mm'|'m'|...      # units for x-range
-    * self.omega_units   = 'degrees'|'radians     # units for omega-range
-    * self.z_units       = 'um'|'mm'|'m'|...      # units for z-range
-    * self.data_units    = 'degrees'|'eV'|...     # units for data sampling
+##########################################################################
+# FUNCTIONS
 
-    * self.dark          = None or array          # dark for tomography comparison
-    * self.flat          = None or array          # flat image for tomography
+def check_method(method):
 
-    * self.sinogram      = None or array          # raw data collected [xi,omei,datai,zi]
-
-    # Data fitting parameters
-    * self.rot_center    = 100                    # rotation center along x-axis (pixel number)
-    
-    # Analysis
-    * self.recon         = None or array          # tomographic reconstruction
-
-    mkak 2017.07.07
-    '''
-
-    def __init__(self, sinogram, rot_center=None, dark=None, flat=None,
-                       x_range=None, omega_range=None,  z_range=None, data_range=None,
-                       x_units='mm', omega_units='deg', z_units='mm', data_units='eV'):
-
-        self.x_range     = x_range
-        self.omega_range = omega_range
-        self.z_range     = z_range
-        self.data_range  = data_range
-        
-        self.x_units     = x_units
-        self.omega_units = omega_units
-        self.z_units     = z_units
-        self.data_units  = data_units
-
-        self.dark = dark
-        self.flat = flat
-
-        self.sinogram = sinogram
-
-        self.rot_center = len(x_range)/2 if rot_center is None else rot_center
-    
-        self.recon = None
-
-        if HAS_larch:
-           Group.__init__(self)
-
-    
-    def reconstruction(self, normalize=False, invert=False, log=False, circle=True,
-                       center=False,algorithm='gridrec'):
-    
-        proj = self.sinogram
-        if invert: proj = 1.001*np.max(proj) - proj
-
+    if method is None:
         if HAS_tomopy:
-            if self.omega_units.startswith('deg'):
-                theta = np.radians(omega_range)
-            else:
-                theta = omega_range
-                
-            if normalize: proj = tomopy.normalize(proj, self.flat, self.dark)
-            if log: proj = tomopy.minus_log(proj)
-            if center:
-                cenval = tomopy.find_center(proj, theta, init=self.rot_center, ind=0, tol=0.5)
-            else:
-                cenval = self.rot_center
-
-
-            self.recon = tomopy.recon(proj, theta, center=cenval, algorithm=algorithm)
-
+            method = 'tomopy'
         elif HAS_scikit:
-            if self.omega_units.startswith('deg'):
-                theta = omega_range
-            else:
-                theta = np.degrees(omega_range)
-
-            omei,datai,xi = np.shape(proj)
-            self.recon = np.array([iradon(proj[:,i,:].T, theta=theta, circle=True) for i in np.arange(datai)])
-
-
-def make_slice(xmap, name='Fe Ka', center=None, n_angles=721, max_angle=360):
-    sino = xmap.get_roimap(name)[:, 2:2+n_angles]
-    npts, nth = sino.shape
-    if center is None:
-        mass = sino.sum(axis=1)
-        xx = arange(npts)
-        center = int(round((xx*mass).sum()/mass.sum()))
-    #endif
-    if center < npts/2.0:
-        xslice = slice(npts - 2*center, -1)
-    else:
-        xslice = slice(0, npts-2*center)
-    #endif
-    theta = linspace(0, max_angle, n_angles)
-    return iradon(sino[xslice,:], theta=theta, 
-                  filter='shepp-logan',
-                  interpolation='linear', circle=True)
-#enddef
-
-def guess_center(xmap, name='Fe Ka', n_angles=721, max_angle=360):
-    sino = xmap.get_roimap(name)[:,2:2+n_angles]
-    theta = linspace(0, max_angle, n_angles)
-    npts, nth = sino.shape
-    mass = sino.sum(axis=1)
-    xx = arange(npts)
-    center = int(round((xx*mass).sum()/mass.sum()))
-    print( "Center guess ", npts, center)
-    for cen in range(center-12, center+12, 2):
-        if cen < npts/2.0:
-            xslice = slice(npts-2*cen, -1)
-        else:
-            xslice = slice(0, npts-2*cen)
-        #endif
-        recon = iradon(sino[xslice,:], theta=theta, 
-                       filter='shepp-logan',
-                       interpolation='linear', circle=True)
-        recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
-        negentropy = (recon*log(recon)).sum()
-        print("%3.3i %.4g" % (cen, negentropy))
-    #endfor
-#enddef
-
-def get_slices(xmap, center=None):
-    out = group(fname=xmap.filename)
-    out.fe = make_slice(xmap, name='Fe Ka', center=center)
-    out.mn = make_slice(xmap, name='Mn Ka', center=center)
-    out.ca = make_slice(xmap, name='Ca Ka',center=center) 
-    out.k  = make_slice(xmap, name='K Ka', center=center)
-    out.zn = make_slice(xmap, name='Zn Ka', center=center)
-    return out
-#enddef
-
-def show_3color(out, r, g, b):
-    rmap = getattr(out, r.lower())
-    gmap = getattr(out, g.lower())
-    bmap = getattr(out, b.lower())
-
-    subtitles = {'red': 'Red: %s' % r, 
-                 'green': 'Green: %s' % g, 
-                 'blue': 'Blue: %s' % b}
-
-    rgb = array([rmap, gmap, bmap]).swapaxes(0, 2)
-
-    imshow(rgb, subtitles=subtitles, title=out.fname)
-#enddef
-
-def read_map(fname):
-   xrfmap = read_xrfmap(fname)
-   return xrfmap
-#enddef
+            method = 'scikit-image'
+    return method
 
 
 
+def refine_center(sino, center=None, method=None, omega=None):
 
-def create_tomogrp(sinogram, _larch=None, **kws):
+    method = check_method(None)
+    if method is None:
+        print('No tomographic reconstruction packages available')
+        return
 
+    if center is None: center = sino.shape[1]/2. 
+    center0 = center    
+
+    if method.lower().startswith('scikit'):
+        rng = 5
+        for cen in np.arange(center-rng, center+rng, 0.2):
+            xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
+            recon = iradon(sino[xslice,:,0],
+                           theta=omega, 
+                           filter='shepp-logan',
+                           interpolation='linear',
+                           circle=True)
+            recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
+            negentropy = (recon*np.log(recon)).sum()
+            cen_list += [cen]
+            neg_list += [negentropy]
+            print cen,negentropy
+        print 'CHOICE:',cen_list[np.array(neg_list).argmin()]
+        center = cen_list[np.array(neg_list).argmin()]
+
+    elif method.lower().startswith('tomopy'):
+        if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[0])
+        center = tomopy.find_center(sino, omega, init=center, ind=0, tol=0.5)
+
+    print center0,'--->',center    
+    return center
+
+
+
+def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algorithm=None, filter=None, interpolation=None, omega=None):
     '''
-    create a tomography class
-
-     Parameters:
-     ------------
-      data :     2D diffraction patterns
-
-
-     Returns:
-     ----------
-      a tomography class
-
+    sino : slice, x, 2th
+    tomo : slice, x, y
     '''
-    return tomogrp(sinogram, **kws)
 
-   
+
+    print 'orig : slice,x,2th',sino.shape
+    print 'plotting : 2th,x,slice',np.einsum('kji->ijk', sino).shape
+    print 'scikit : slice,x,2th',sino.shape
+    print 'tomopy : 2th,slice,x',np.einsum('jki->ijk', sino).shape    
+
+    method = check_method(None)
+    if method is None:
+        print('No tomographic reconstruction packages available')
+        return
+    
+    if center is None: center = sino.shape[1]/2.
+    if omega is None or len(omega) != sino.shape[0]: omega = np.linspace(0,360,sino.shape[2])
+    
+    if method.lower().startswith('scikit'):
+        if filter not in SCIKIT_FILT:
+            filter = 'shepp-logan'
+        if interpolation not in SCIKIT_INTR:
+            interpolation = 'linear'
+
+        print '1: sino scikit',sino.shape        
+        if refine_cen: refine_center(sino,center=center,method=method,omega=omega)
+        tomo = []
+        for sino0 in sino:
+            tomo += [iradon(sino0.T, theta=omega, filter=filter, interpolation=interpolation, circle=True)]
+        print '1: tomo scikit',tomo.shape
+
+    elif method.lower().startswith('tomopy'):
+        
+        if algorithm not in TOMOPY_ALG:
+            algorithm = 'gridrec'
+        if filter not in TOMOPY_FILT:
+            filter = None
+
+        ## reorder to: 2th,slice,x for tomopy
+        sino = np.einsum('jki->ijk', sino)
+        
+        omega = np.radians(omega)
+
+        print '1: sino tomopy',sino.shape        
+
+        if refine_cen: refine_center(sino,center=center,omega=omega)
+
+        tomo = tomopy.recon(sino, omega, center=center, algorithm=algorithm) #filter_name=filter, 
+
+        print '1: tomo tomopy',tomo.shape
+        
+        ## reorder to slice, x, y
+        tomo = np.einsum('ikj->ijk', tomo)
+
+        print '1: tomo tomopy',tomo.shape
+
+    return tomo
 
 # def registerLarchPlugin():
 #     return ('_tomo', {'create_tomogrp': create_tomogrp})

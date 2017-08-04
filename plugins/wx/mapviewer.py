@@ -92,6 +92,7 @@ from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
+from larch_plugins.tomo import tomo_reconstruction
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -610,15 +611,15 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.tomo_pkg,self.tomo_alg = [],[]
+        tomo_pkg,self.tomo_alg = [],[]
         if HAS_tomopy:
-            self.tomo_pkg += ['tomopy']
+            tomo_pkg += ['tomopy']
             self.tomo_alg += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
         if HAS_scikit:
-            self.tomo_pkg += ['scikit-image']
+            tomo_pkg += ['scikit-image']
             self.tomo_alg += [['']]
 
-        self.alg_choice = [Choice(self, choices=self.tomo_pkg,   size=(125, -1)),
+        self.alg_choice = [Choice(self, choices=tomo_pkg,         size=(125, -1)),
                            Choice(self, choices=self.tomo_alg[0], size=(125, -1))]
         self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
         
@@ -761,7 +762,6 @@ class TomographyPanel(GridPanel):
     def plotSELECT(self,event=None):
     
         if len(self.owner.filemap) > 0:
-            oper_ch = self.oper.GetSelection()
             if self.plot_choice.GetSelection() == 0:
                 for i in (1,2):
                     self.det_choice[i].Disable()
@@ -769,19 +769,12 @@ class TomographyPanel(GridPanel):
                     self.roi_label[i].SetLabel('')
                 for lbl in self.det_label:
                     lbl.SetLabel('')
-                oper_chs = ['/', '*', '-', '+', 'vs']
             else:
                 for i in (1,2):
                     self.det_choice[i].Enable()
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red','Green','Blue']):
                     self.det_label[i].SetLabel(label)
-                oper_chs = ['/', '*', '-', '+']
-            self.oper.SetChoices(oper_chs)
-            if oper_ch >= len(oper_chs):
-                self.oper.SetSelection(0)
-            else:
-                self.oper.SetSelection(oper_ch)
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None:
@@ -801,6 +794,10 @@ class TomographyPanel(GridPanel):
                 pass
 
     def calculateSinogram(self,datafile):
+    
+        '''
+        returns slice as [slices, x, 2th]
+        '''
     
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
@@ -842,8 +839,6 @@ class TomographyPanel(GridPanel):
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
             elif oprtr == '/': sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
-            sino = np.flip(sino.T,0)
-
             title = fname
             info = ''
             if roi_name[-1] == '1' and oprtr == '/':
@@ -860,7 +855,6 @@ class TomographyPanel(GridPanel):
             elif oprtr == '-': sino = r_map-mapx
             elif oprtr == '*': sino = r_map*mapx
             elif oprtr == '/': sino = r_map/mapx
-            sino = np.flip(sino.T,0)
 
             if roi_name[-1] == '1' and oprtr == '/':
                 title = plt_name[0]
@@ -869,151 +863,55 @@ class TomographyPanel(GridPanel):
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
+            
+        ### axes order: slices, x, 2theta
+        if len(sino.shape) < 3: sino = np.reshape(sino,(1,sino.shape[0],sino.shape[1]))
+        sino = np.flip(sino,1)
 
         return title,subtitles,info,x,ome,sino
 
-
-    def onShowCorrel(self,datafile):
-
-        args={'no_hotcols': self.chk_hotcols.GetValue(),
-              'dtcorrect' : self.chk_dftcor.GetValue()}
-
-        det_name,roi_name = [],[]
-        plt_name = []
-        for det,roi in zip(self.det_choice,self.roi_choice):
-            det_name += [det.GetStringSelection()]
-            roi_name += [roi.GetStringSelection()]
-            if det_name[-1] == 'scalars':
-                plt_name += ['%s' % roi_name[-1]]
-            else:
-                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
-        
-        if roi_name[-1] == '1' or roi_name[0] == '1':
-            print("WARNING: cannot make correlation plot with matrix of '1'")
-            return
-            
-        map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
-        map2 = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
-        
-        map1 = np.flip(map1.T,0)
-        map2 = np.flip(map2.T,0)
-
-        ome = datafile.get_pos(0, mean=True)[::-1]
-        x   = datafile.get_pos(1, mean=True)
-            
-       
-        pref, fname = os.path.split(datafile.filename)
-        title ='%s: %s vs. %s' %(fname, plt_name[-1], plt_name[0])
-
-        # try to use correlation plot from wxmplot 0.9.23 and later
-        if CorrelatedMapFrame is not None:
-            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
-            correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
-                                x=x, y=ome, title=title)
-        else:
-            correl_plot = PlotFrame(title=title, output_title=title)
-            correl_plot.plot(map2.flatten(), map1.flatten(),
-                             xlabel=plt_name[-1], ylabel=plt_name[0],
-                             marker='o', markersize=4, linewidth=0)
-            correl_plot.panel.cursor_mode = 'lasso'
-            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
-
-        correl_plot.Show()
-        correl_plot.Raise()
-        self.owner.plot_displays.append(correl_plot)
-
-
     def onShowSinogram(self, event=None, new=True):
         
-        if self.oper.GetStringSelection() == 'vs':
-            self.onShowCorrel(self.file)
-            return
-        else:
-            title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
+        
+        ## reorder to: 2th, x, slice for viewing
+        sino = np.einsum('kji->ijk', sino)
 
+        ## for one color plot
+        if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
                                xrmfile=self.file)
-
+################################################################################
+################################################################################
     def onShowTomograph(self, event=None, new=True):
 
+        ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
-
+        
+        if len(ome) > sino.shape[2]: 
+            ome = ome[:sino.shape[2]]
+        elif len(ome) < sino.shape[2]:
+            sino = sino[:,:,:len(ome)]
+        
         self.file.tomo_center = self.center_value.GetValue()
 
-        if np.shape(sino)[0] + 2 == len(ome):
-            ome = ome[1:-1]            
+        ## returns tomo in order: slice, x, y
+        tomo = tomo_reconstruction(sino,
+                                     refine_cen=self.refine_center.GetValue(),
+                                     center=self.file.tomo_center,
+                                     method=pkg,
+                                     algorithm=alg,
+                                     filter=None,
+                                     interpolation=None,
+                                     omega=ome)
+        #self.center_value.SetValue(self.file.tomo_center)
         
-        if pkg.startswith('scikit'):
-            cen_list,neg_list = [],[]
-            if self.refine_center.GetValue():
-                sino0 = sino[:,:,0].T if len(np.shape(sino)) > 2 else sino.T
-                npts, nth = sino0.shape
-                center,rng = int(self.file.tomo_center),24
-                for cen in range(center-rng, center+rng, 2):
-                    if cen < npts/2.0:
-                        xslice = slice(npts-2*cen, -1)
-                    else:
-                        xslice = slice(0, npts-2*cen)
-                    recon = iradon(sino0[xslice,:],
-                                   theta=ome, 
-                                   filter='shepp-logan',
-                                   interpolation='linear',
-                                   circle=True)
-                    recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
-                    negentropy = (recon*np.log(recon)).sum()
-                    cen_list += [cen]
-                    neg_list += [negentropy]
-            
-                self.file.tomo_center = cen_list[np.array(neg_list).argmin()]
-                self.center_value.SetValue(self.file.tomo_center)
-                self.refine_center.SetValue(False)
-
-            if len(np.shape(sino)) > 2:
-                sino = np.einsum('jki->ijk', sino)
-                tomo = []
-                for sino0 in sino:
-                    tomo += [iradon(sino0.T,
-                                    theta=ome,
-                                    filter='shepp-logan',
-                                    interpolation='linear',
-                                    circle=True)]
-                tomo = np.einsum('kij->ijk', np.array(tomo))
-            else:
-                tomo = iradon(sino.T,
-                              theta=ome,
-                              filter='shepp-logan',
-                              interpolation='linear',
-                              circle=True)
-
-
-        elif pkg.startswith('tomopy'):
-
-            if len(np.shape(sino)) > 2:
-                sino = np.einsum('ikj->ijk', sino)
-            else:
-                dome,dx = np.shape(sino)
-                sino = np.reshape(sino,(dome,1,dx))
-            theta = np.radians(ome)
-            
-            if self.refine_center.GetValue():
-                self.file.tomo_center = tomopy.find_center(sino, theta, init=self.file.tomo_center, ind=0, tol=0.5)
-                self.center_value.SetValue(self.file.tomo_center)
-                self.refine_center.SetValue(False)
-
-            try:
-                tomo = tomopy.recon(sino, theta, center=self.file.tomo_center, algorithm=alg)
-            except:
-                tomo = tomopy.recon(sino, theta, center=self.file.tomo_center, algorithm='gridrec')            
-
-            nx,dx,dy = np.shape(tomo)
-            tomo = np.reshape(tomo,(dx,dy)) if nx == 1 else np.einsum('kij->ijk', tomo)
-
         omeoff, xoff = 0, 0
         if alg != '':
             title = '[%s : %s] %s' % (pkg,alg,title)        
@@ -1023,11 +921,116 @@ class TomographyPanel(GridPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
 
+        ## reorder to: x,y,slice for viewing
+        tomo = np.einsum('kij->ijk', tomo)
+        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
+        
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.file)
-
-
+################################################################################
+################################################################################
+#     def onShowTomograph(self, event=None, new=True):
+# 
+#         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+#         pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
+# 
+#         self.file.tomo_center = self.center_value.GetValue()
+# 
+#         print 'start 2: sino',np.shape(sino)
+#         if np.shape(sino)[0] + 2 == len(ome):
+#             ome = ome[1:-1]            
+#         
+#         if pkg.startswith('scikit'):
+#             print '2: sino* scikit',np.shape(sino)
+#             cen_list,neg_list = [],[]
+#             if self.refine_center.GetValue():
+#                 sino0 = sino[:,:,0].T if len(np.shape(sino)) > 2 else sino.T
+#                 print '2: sino* scikit',np.shape(sino0)
+#                 npts, nth = sino0.shape
+#                 center,rng = int(self.file.tomo_center),24
+#                 for cen in range(center-rng, center+rng, 2):
+#                     if cen < npts/2.0:
+#                         xslice = slice(npts-2*cen, -1)
+#                     else:
+#                         xslice = slice(0, npts-2*cen)
+#                     recon = iradon(sino0[xslice,:],
+#                                    theta=ome, 
+#                                    filter='shepp-logan',
+#                                    interpolation='linear',
+#                                    circle=True)
+#                     recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
+#                     negentropy = (recon*np.log(recon)).sum()
+#                     cen_list += [cen]
+#                     neg_list += [negentropy]
+#             
+#                 self.file.tomo_center = cen_list[np.array(neg_list).argmin()]
+#                 #self.center_value.SetValue(self.file.tomo_center)
+#                 #self.refine_center.SetValue(False)
+# 
+#             if len(np.shape(sino)) > 2:
+#                 sino = np.einsum('jki->ijk', sino)
+#                 tomo = []
+#                 for sino0 in sino:
+#                     print '2: sino scikit',np.shape(sino0),np.shape(sino0.T)
+#                     tomo += [iradon(sino0.T,
+#                                     theta=ome,
+#                                     filter='shepp-logan',
+#                                     interpolation='linear',
+#                                     circle=True)]
+#                 tomo = np.einsum('kij->ijk', np.array(tomo))
+#             else:
+#                 print '2: sino scikit',np.shape(sino),np.shape(sino.T)
+#                 tomo = iradon(sino.T,
+#                               theta=ome,
+#                               filter='shepp-logan',
+#                               interpolation='linear',
+#                               circle=True)
+#             print '2: tomo scikit',np.shape(tomo)
+# 
+#         elif pkg.startswith('tomopy'):
+# 
+#             if len(np.shape(sino)) > 2:
+#                 sino = np.einsum('ikj->ijk', sino)
+#             else:
+#                 dome,dx = np.shape(sino)
+#                 sino = np.reshape(sino,(dome,1,dx))
+#             omega = np.radians(ome)
+#             
+#             if self.refine_center.GetValue():
+#                 print '2: find center:',sino.shape
+#                 print 'omega',np.shape(omega),np.min(omega),np.max(omega)
+#                 print self.file.tomo_center,'--->',
+#                 self.file.tomo_center = tomopy.find_center(sino, omega, init=self.file.tomo_center, ind=0, tol=0.5)
+#                 print self.file.tomo_center
+#                 self.center_value.SetValue(self.file.tomo_center)
+#                 self.refine_center.SetValue(False)
+# 
+#             print '2: sino tomopy',np.shape(sino)
+#             try:
+#                 tomo = tomopy.recon(sino, omega, center=self.file.tomo_center, algorithm=alg)
+#             except:
+#                 tomo = tomopy.recon(sino, omega, center=self.file.tomo_center, algorithm='gridrec')
+#             print '2: tomo tomopy',np.shape(tomo)
+# 
+#             nx,dx,dy = np.shape(tomo)
+#             tomo = np.reshape(tomo,(dx,dy)) if nx == 1 else np.einsum('kij->ijk', tomo)
+#             print '2: tomo tomopy',np.shape(tomo)
+# 
+#         omeoff, xoff = 0, 0
+#         if alg != '':
+#             title = '[%s : %s] %s' % (pkg,alg,title)        
+#         else:
+#             title = '[%s] %s' % (pkg,title)
+#         
+#         if new:
+#             iframe = self.owner.add_imdisplay(title)
+# 
+#         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
+#                                xoff=xoff, yoff=xoff, subtitles=subtitles,
+#                                xrmfile=self.file)
+################################################################################
+################################################################################
     def set_det_choices(self, xrmmap):
 
         det_list = []
@@ -3079,7 +3082,8 @@ class OpenMapFolder(wx.Dialog):
             
             for line in open(os.path.join(path, 'Scan.ini'), 'r'):
                 if line.split()[0] == 'basedir':
-                    cycle,usr = line.split()[-1].split('/')
+                    path = line.split()[-1].split('/')
+                    cycle,usr = path[-2],path[-1]
                     self.info[3].SetValue(cycle)
                     self.info[5].SetValue(usr)
 
