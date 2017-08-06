@@ -636,14 +636,24 @@ def Make_CallArgs(skipped_args):
 
 def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
-    and that it is a valid Interpeter"""
-    errmsg = "plugin function '%s' needs a valid '_larch' argument"
+    and that it is a valid Interpeter in that it has:
+    1. a symtable attribute
+    2. a writer attribute
+    """
+    errmsg1 = "plugin function '%s' needs a '_larch' argument"
+    errmsg2 = "plugin function '%s' has an invalid '_larch'  '%s'"
 
     def wrapper(*args, **keywords):
         "ValidateLarchPlugin"
-        if ('_larch' not in keywords or
-            ('Interpreter' not in keywords['_larch'].__class__.__name__)):
-            raise LarchPluginException(errmsg % fcn.__name__)
+        _larch = keywords.get('_larch', None)
+        if _larch is None:
+            raise LarchPluginException(errmsg1 % fcn.__name__)
+
+        symtab = getattr(_larch, 'symtable', None)
+        writer = getattr(_larch, 'writer', None)
+        if not (isgroup(symtab) and callable(getattr(writer, 'write', None))):
+            print(" NOT VALID ", symtab, isgroup(symtab), getattr(writer, 'write', None))
+            raise LarchPluginException(errmsg2 % (fcn.__name__, _larch))
         return fcn(*args, **keywords)
     wrapper.__doc__ = fcn.__doc__
     wrapper.__name__ = fcn.__name__
