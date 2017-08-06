@@ -72,9 +72,12 @@ znse_data = get_zinc_mu('../xafsdata/znse_zn_xafs.001',
 paths = {}
 pathargs = dict(degen=4.0, s02='amp', e0='del_e0', sigma2='sig2', deltar='del_r')
 paths['Zn'] = feffpath('Feff_ZnSe/feff_znzn.dat', **pathargs)
+paths['Ga'] = feffpath('Feff_ZnSe/feff_znga.dat', **pathargs)
 paths['Ge'] = feffpath('Feff_ZnSe/feff_znge.dat', **pathargs)
+paths['As'] = feffpath('Feff_ZnSe/feff_znas.dat', **pathargs)
 paths['Se'] = feffpath('Feff_ZnSe/feff_znse.dat', **pathargs)
 paths['Br'] = feffpath('Feff_ZnSe/feff_znbr.dat', **pathargs)
+paths['Kr'] = feffpath('Feff_ZnSe/feff_znkr.dat', **pathargs)
 paths['Rb'] = feffpath('Feff_ZnSe/feff_znrb.dat', **pathargs)
 
 # set FT tranform and Fit ranges
@@ -86,7 +89,7 @@ print( '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R   
 fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
 
 results = {}
-for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
+for ix, scatterer in enumerate(('Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb')):
     dset  = feffit_dataset(data=znse_data, pathlist=[paths[scatterer]],
                            transform=trans)
     pars = group(amp    = guess(1.0),
