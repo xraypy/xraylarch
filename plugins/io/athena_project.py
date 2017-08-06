@@ -47,7 +47,7 @@ def read_athena(filename, match=None, do_preedge=True,
 
     Arguments:
         filename (string): name of Athena Project file
-        match (sring): pattern to use to limit imported groups (see Note 1)
+        match (string): pattern to use to limit imported groups (see Note 1)
         do_preedge (bool): whether to do pre-edge subtraction [True]
         do_bkg (bool): whether to do XAFS background subtraction [True]
         do_fft (bool): whether to do XAFS Fast Fourier transform [True]
@@ -150,7 +150,6 @@ def read_athena(filename, match=None, do_preedge=True,
         if match is not None:
             if not fnmatch(olabel.lower(), match):
                 continue
-
         if do_preedge or do_bkg:
             pars = this.bkg_params
             pre_edge(this, _larch=_larch, e0=float(pars.e0),
