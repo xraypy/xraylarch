@@ -39,7 +39,7 @@ class TransformGroup(Group):
     def __init__(self, kmin=0, kmax=20, kweight=2, dk=4, dk2=None,
                  window='kaiser', nfft=2048, kstep=0.05,
                  rmin = 0, rmax=10, dr=0, dr2=None, rwindow='hanning',
-                 fitspace='r', _larch=None, **kws):
+                 fitspace='r', wavelet_mask=None, _larch=None, **kws):
         Group.__init__(self, **kws)
         self.kmin = kmin
         self.kmax = kmax
@@ -63,6 +63,9 @@ class TransformGroup(Group):
         self.rstep = pi/(self.kstep*self.nfft)
 
         self.fitspace = fitspace
+        self.wavelet_mask = wavelet_mask
+        self._cauchymask = None
+
         self._larch = _larch
 
         self.kwin = None
@@ -79,7 +82,9 @@ class TransformGroup(Group):
                               rmin=self.rmin, rmax=self.rmax,
                               dr=self.dr, dr2=self.dr2,
                               rwindow=self.rwindow, nfft=self.nfft,
-                              fitspace=self.fitspace, _larch=self._larch)
+                              fitspace=self.fitspace,
+                              wavelet_mask=self.wavelet_mask,
+                              _larch=self._larch)
 
     def __deepcopy__(self, memo):
         return TransformGroup(kmin=self.kmin, kmax=self.kmax,
@@ -88,7 +93,9 @@ class TransformGroup(Group):
                               rmin=self.rmin, rmax=self.rmax,
                               dr=self.dr, dr2=self.dr2,
                               rwindow=self.rwindow, nfft=self.nfft,
-                              fitspace=self.fitspace, _larch=self._larch)
+                              fitspace=self.fitspace,
+                              wavelet_mask=self.wavelet_mask,
+                              _larch=self._larch)
 
     def make_karrays(self, k=None, chi=None):
         "this should be run in kstep or nfft changes"
@@ -133,7 +140,8 @@ class TransformGroup(Group):
     def fftf(self, chi, kweight=None):
         """ forward FT -- meant to be used internally.
         chi must be on self.k_ grid"""
-        self.make_karrays()
+        if self.kstep != self.__kstep or self.nfft != self.__nfft:
+            self.make_karrays()
         if self.kwin is None:
             self.kwin = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                  dx=self.dk, dx2=self.dk2, window=self.window)
@@ -144,13 +152,74 @@ class TransformGroup(Group):
 
     def fftr(self, chir):
         " reverse FT -- meant to be used internally"
-        self.make_karrays()
+        if self.kstep != self.__kstep or self.nfft != self.__nfft:
+            self.make_karrays()
         if self.rwin is None:
             self.rwin = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
         cx = chir * self.rwin[:len(chir)]
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
+
+
+    def make_cwt_arrays(self, nkpts, nrpts):
+        if self.kstep != self.__kstep or self.nfft != self.__nfft:
+            self.make_karrays()
+        if self.kwin is None:
+            self.kwin = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
+                                 dx=self.dk, dx2=self.dk2, window=self.window)
+
+        if self._cauchymask is None:
+            if self.wavelet_mask is not None:
+                self._cauchymask = self.wavelet_mask
+            else:
+                ikmin = max(0, int(0.01 + self.kmin/self.kstep))
+                ikmax = min(self.nfft/2,  int(0.01 + self.kmax/self.kstep))
+                irmin = max(0, int(0.01 + self.rmin/self.rstep))
+                irmax = min(self.nfft/2,  int(0.01 + self.rmax/self.rstep))
+                cm = np.zeros(nrpts*nkpts, dtype='int').reshape(nrpts, nkpts)
+                cm[irmin:irmax, ikmin:ikmax] = 1
+                self._cauchymask = cm
+                self._cauchyslice =(slice(irmin, irmax), slice(ikmin, ikmax))
+
+    def cwt(self, chi, rmax=None, kweight=None):
+        """cauchy wavelet transform -- meant to be used internally"""
+        if self.kstep != self.__kstep or self.nfft != self.__nfft:
+            self.make_karrays()
+
+        omega = pi*np.arange(self.nfft)/(self.kstep*self.nfft)
+
+        if kweight is None:
+            kweight = self.get_kweight()
+        if kweight != 0:
+            chi = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**kweight
+
+        nkpts = len(chi)
+        if rmax is not None:
+            self.rmax = rmax
+
+        chix   = np.zeros(self.nfft/2) * self.kstep
+        chix[:nkpts] = chi
+        chix   = chix[:self.nfft/2]
+        _ffchi = np.fft.fft(chix, n=2*self.nfft)[:self.nfft]
+
+        nrpts = int(np.round(self.rmax/self.rstep))
+        r   = self.rstep * arange(nrpts)
+        r[0] = 1.e-19
+        alpha = nrpts/(2*r)
+
+        self.make_cwt_arrays(nkpts, nrpts)
+
+        cauchy_sum = np.log(2*pi) - np.log(1.0+np.arange(nrpts)).sum()
+
+        out = np.zeros(nrpts*nkpts, dtype='complex128').reshape(nrpts, nkpts)
+
+        for i in range(nrpts):
+            aom = alpha[i]*omega
+            filt = cauchy_sum + nrpts*np.log(aom) - aom
+            out[i, :] = np.fft.ifft(np.exp(filt)*_ffchi, 2*self.nfft)[:nkpts]
+
+        return (out*self._cauchymask)[self._cauchyslice]
 
 class FeffitDataSet(Group):
     def __init__(self, data=None, pathlist=None, transform=None,
@@ -253,6 +322,7 @@ class FeffitDataSet(Group):
             kweights = trans.kweight[:]
         else:
             kweights = [trans.kweight]
+
         for i, kw in enumerate(kweights):
             w = 2 * kw + 1
             scale = sqrt((2*pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
@@ -327,7 +397,17 @@ class FeffitDataSet(Group):
                 return np.concatenate(out)
             else:
                 return ((diff/eps_k) * k**trans.kweight)[iqmin:iqmax]
-        else:
+        elif trans.fitspace == 'w':
+            if all_kweights:
+                out = []
+                for i, kw in enumerate(trans.kweight):
+                    cwt = trans.cwt(diff/eps_k, kweight=kw)
+                    out.append(realimag(cwt).ravel())
+                return np.concatenate(out)
+            else:
+                cwt = trans.cwt(diff/eps_k, kweight=trans.kweight)
+                return realimag(cwt).ravel()
+        else: # 'r' space
             out = []
             if all_kweights:
                 chir = [trans.fftf(diff, kweight=kw) for kw in trans.kweight]
