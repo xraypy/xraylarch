@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       = 4, 104
    n_independent      = 15.260
-   chi_square         = 18.3144
-   reduced chi_square = 1.62646
-   r-factor           = 0.00282
-   Akaike info crit   = 10.784
-   Bayesian info crit = 13.685
+   chi_square         = 38.0085
+   reduced chi_square = 3.37545
+   r-factor           = 0.00279
+   Akaike info crit   = 21.9259
+   Bayesian info crit = 24.8269
  
 [[Data]]
    fit space          = 'r'
@@ -15,15 +15,15 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.001560, std=0.003287)
-   epsilon_r          = 0.052420
+   epsilon_k          = Array(mean=0.001076, std=0.003504)
+   epsilon_r          = 0.036161
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.928535 +/- 0.039730   (init=  1.000000)
-   del_e0         =  4.364173 +/- 0.520423   (init=  0.100000)
-   del_r          = -0.005980 +/- 0.002660   (init=  0.000000)
-   sig2           =  0.008669 +/- 0.000313   (init=  0.002000)
+   amp            =  0.928280 +/- 0.039477   (init=  1.000000)
+   del_e0         =  4.356281 +/- 0.517286   (init=  0.000000)
+   del_r          = -0.006018 +/- 0.002643   (init=  0.000000)
+   sig2           =  0.008668 +/- 0.000311   (init=  0.000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, sig2            =  0.928
@@ -38,10 +38,10 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      degen  =  12.000000
-     n*s02  =  0.928535 +/- 0.039730  'amp'
-     e0     =  4.364173 +/- 0.520423  'del_e0'
-     r      =  2.541820 +/- 0.002660  'reff + del_r'
-     deltar = -0.005980 +/- 0.002660  'del_r'
-     sigma2 =  0.008669 +/- 0.000313  'sig2'
+     n*s02  =  0.928280 +/- 0.039477  'amp'
+     e0     =  4.356281 +/- 0.517286  'del_e0'
+     r      =  2.541782 +/- 0.002643  'reff + del_r'
+     deltar = -0.006018 +/- 0.002643  'del_r'
+     sigma2 =  0.008668 +/- 0.000311  'sig2'
 
 =======================================================
