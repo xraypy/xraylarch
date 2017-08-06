@@ -78,7 +78,8 @@ class AthenaImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-        self.all = read_athena(filename, do_bkg=False, do_fft=False, _larch=_larch)
+        self.all = read_athena(self.filename, do_bkg=False,
+                               do_fft=False, _larch=_larch)
         for item in dir(self.all):
             self.grouplist.Append(item)
 
@@ -89,25 +90,10 @@ class AthenaImporter(wx.Frame) :
         self.SetStatusText(msg, panel)
 
     def onOK(self, event=None):
-        """ import groups """
-        for name in self.grouplist.GetCheckedStrings():
-            rawgroup = getattr(self.all, name)
-            npts = len(rawgroup.energy)
-            outgroup = Group(datatype='xas',
-                            path="%s::%s" %(self.filename, name),
-                            filename=name,
-                            groupname = fix_varname(name),
-                            raw=rawgroup,
-                            xdat=rawgroup.energy,
-                            ydat=rawgroup.mu,
-                            y=rawgroup.mu,
-                            yerr=1.0,
-                            npts=npts, _index=1.0*np.arange(npts),
-                            plot_xlabel='Energy (eV)',
-                            plot_ylabel='mu')
-
-            if self.read_ok_cb is not None:
-                self.read_ok_cb(outgroup, array_sel=None, overwrite=True)
+        """generate script to import groups"""
+        namelist = [str(n) for n in self.grouplist.GetCheckedStrings()]
+        if self.read_ok_cb is not None:
+            self.read_ok_cb(self.filename, namelist)
 
         self.Destroy()
 
