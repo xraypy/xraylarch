@@ -3387,7 +3387,7 @@ class XRDSearchGUI(wx.Dialog):
         try:
             self.Mineral.Set(self.srch.mnrlname)
         except:
-            print 'minerals did not work'
+            print('minerals did not work')
             pass
 
         self.Chemistry.SetValue(self.srch.print_chemistry())
