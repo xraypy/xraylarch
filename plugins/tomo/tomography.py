@@ -58,7 +58,19 @@ def check_method(method):
         elif HAS_scikit:
             method = 'scikit-image'
     return method
+    
+def return_methods():
 
+    methods = []
+    algor   = []
+    if HAS_tomopy:
+        methods += ['tomopy']
+        algor   += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
+    eif HAS_scikit:
+        methods += ['scikit-image']
+        algor   += [['']]
+
+    return methods,algor
 
 
 def refine_center(sino, center=None, method=None, omega=None):
@@ -69,7 +81,7 @@ def refine_center(sino, center=None, method=None, omega=None):
         return
 
 
-    if method.lower().startswith('scikit'):
+    if method.lower().startswith('scikit') and HAS_scikit:
         npts = sino.shape[1]
         if center is None: center = npts/2. 
         if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[2])
@@ -90,7 +102,7 @@ def refine_center(sino, center=None, method=None, omega=None):
         center = cen_list[np.array(entropy).argmin()]
         #for c,e in zip(cen_list,entropy): print('%i %i' %(c,e))
 
-    elif method.lower().startswith('tomopy'):
+    elif method.lower().startswith('tomopy') and HAS_tomopy:
         if center is None: center = sino.shape[2]/2. 
         if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[0])
         center = tomopy.find_center(sino, omega, init=center, ind=0, tol=0.5)
@@ -111,7 +123,7 @@ def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algori
     if center is None: center = sino.shape[1]/2.
     if omega is None: omega = np.linspace(0,360,sino.shape[2])
     
-    if method.lower().startswith('scikit'):
+    if method.lower().startswith('scikit') and HAS_scikit:
         if filter not in SCIKIT_FILT:
             filter = 'shepp-logan'
         if interpolation not in SCIKIT_INTR:
@@ -123,7 +135,7 @@ def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algori
             tomo += [iradon(sino0, theta=omega, filter=filter, interpolation=interpolation, circle=True)]
         tomo = np.flip(tomo,1)
 
-    elif method.lower().startswith('tomopy'):
+    elif method.lower().startswith('tomopy') and HAS_tomopy:
         
         if algorithm not in TOMOPY_ALG:
             algorithm = 'gridrec'

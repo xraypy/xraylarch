@@ -38,20 +38,20 @@ try:
 except:
     PyDeadObjectError = Exception
 
-HAS_tomopy = False
-try:
-    import tomopy
-    HAS_tomopy = True
-except ImportError:
-    pass
-
-HAS_scikit = False
-try:
-    from skimage.transform import iradon
-    #from skimage.transform import radon, iradon_sart
-    HAS_scikit = True
-except:
-    pass
+# HAS_tomopy = False
+# try:
+#     import tomopy
+#     HAS_tomopy = True
+# except ImportError:
+#     pass
+# 
+# HAS_scikit = False
+# try:
+#     from skimage.transform import iradon
+#     #from skimage.transform import radon, iradon_sart
+#     HAS_scikit = True
+# except:
+#     pass
 
 HAS_DV = False
 try:
@@ -92,7 +92,7 @@ from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
-from larch_plugins.tomo import tomo_reconstruction
+from larch_plugins.tomo import tomo_reconstruction,return_methods
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -611,24 +611,15 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        tomo_pkg,self.tomo_alg = [],[]
-        if HAS_tomopy:
-            tomo_pkg += ['tomopy']
-            self.tomo_alg += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
-        if HAS_scikit:
-            tomo_pkg += ['scikit-image']
-            self.tomo_alg += [['']]
+        tomo_pkg,self.tomo_alg = return_methods()
 
         self.alg_choice = [Choice(self, choices=tomo_pkg,         size=(125, -1)),
                            Choice(self, choices=self.tomo_alg[0], size=(125, -1))]
         self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
         
-        if HAS_tomopy:
+        if len(tomo_pkg) > 1: ## sets to default tomopy options
             self.alg_choice[0].SetSelection(0)
             self.alg_choice[1].SetSelection(3)
-        elif HAS_scikit:
-            self.alg_choice[0].SetSelection(0)
-            self.alg_choice[1].SetSelection(0)
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
