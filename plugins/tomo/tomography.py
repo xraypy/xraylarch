@@ -66,9 +66,12 @@ def return_methods():
     if HAS_tomopy:
         methods += ['tomopy']
         algor   += [['art','bart','fbp','gridrec','mlem','osem','ospml_hybrid','ospml_quad','pml_hybrid','pml_quad','sirt']]
-    eif HAS_scikit:
+    if HAS_scikit:
         methods += ['scikit-image']
         algor   += [['']]
+    
+    if len(methods) < 1:
+        return [''],[['']]
 
     return methods,algor
 
