@@ -570,6 +570,7 @@ class TomographyPanel(GridPanel):
         
         self.owner = owner
         self.file,self.xrmmap = None,None
+        self.npts = None
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -611,15 +612,12 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        tomo_pkg,self.tomo_alg = return_methods()
+        tomo_pkg,self.tomo_alg_A,self.tomo_alg_B = return_methods()
 
-        self.alg_choice = [Choice(self, choices=tomo_pkg,         size=(125, -1)),
-                           Choice(self, choices=self.tomo_alg[0], size=(125, -1))]
+        self.alg_choice = [Choice(self, choices=tomo_pkg,           size=(125, -1)),
+                           Choice(self, choices=self.tomo_alg_A[0], size=(125, -1)),
+                           Choice(self, choices=self.tomo_alg_B[0], size=(125, -1))]
         self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
-        
-        if len(tomo_pkg) > 1: ## sets to default tomopy options
-            self.alg_choice[0].SetSelection(0)
-            self.alg_choice[1].SetSelection(3)
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
@@ -654,7 +652,7 @@ class TomographyPanel(GridPanel):
         self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
-        self.AddMany((self.alg_choice[0],self.alg_choice[1]),
+        self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
         self.AddMany((self.center_value,self.refine_center),
@@ -713,14 +711,20 @@ class TomographyPanel(GridPanel):
         self.enable_options()
         self.set_det_choices(xrmmap)
         
-        xlen = len(self.file.get_pos(1, mean=True))
+        self.npts = len(self.file.get_pos(1, mean=True))
         if self.file.tomo_center is None:
-            self.file.tomo_center = xlen/2.
-        self.center_value.SetRange(-0.5*xlen,1.5*xlen)
+            self.file.tomo_center = self.npts/2.
+        self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(self.file.tomo_center)
-
+        
     def onALGchoice(self,event=None):
-        self.alg_choice[1].SetChoices(self.tomo_alg[self.alg_choice[0].GetSelection()])
+        self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
+        self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
+#         
+#         ## reference direction changes between algorithms
+#         self.file.tomo_center = self.npts - self.file.tomo_center
+#         self.center_value.SetValue(self.file.tomo_center)
+#         
 
     def detSELECT(self,idet,event=None):
         self.set_roi_choices(self.file.xrmmap,idet=idet)
@@ -883,7 +887,8 @@ class TomographyPanel(GridPanel):
 
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
-        pkg,alg = self.alg_choice[0].GetStringSelection(),self.alg_choice[1].GetStringSelection()
+
+        alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
         
         if len(ome) > sino.shape[2]: 
             ome = ome[:sino.shape[2]]
@@ -896,10 +901,9 @@ class TomographyPanel(GridPanel):
         center, tomo = tomo_reconstruction(sino,
                                      refine_cen=self.refine_center.GetValue(),
                                      center=self.file.tomo_center,
-                                     method=pkg,
-                                     algorithm=alg,
-                                     filter=None,
-                                     interpolation=None,
+                                     method=alg[0],
+                                     algorithm_A=alg[1],
+                                     algorithm_B=alg[2],
                                      omega=ome)
 
         self.file.tomo_center = center
@@ -907,10 +911,10 @@ class TomographyPanel(GridPanel):
         self.refine_center.SetValue(False)
         
         omeoff, xoff = 0, 0
-        if alg != '':
-            title = '[%s : %s] %s' % (pkg,alg,title)        
+        if alg[1] != '' and alg[1] is not None:
+            title = '[%s : %s] %s (%0.2f)' % (alg[0],alg[1],title,self.file.tomo_center)
         else:
-            title = '[%s] %s' % (pkg,title)
+            title = '[%s] %s (%0.2f)' % (alg[0],title,self.file.tomo_center)
         
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
@@ -922,6 +926,7 @@ class TomographyPanel(GridPanel):
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.file)
+
     def set_det_choices(self, xrmmap):
 
         det_list = []
@@ -1356,15 +1361,12 @@ class MapPanel(GridPanel):
 
         det_list = []
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
-            if 'scalars' in xrmmap: det_list += ['scalars']
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
+            if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
                 if grp.startswith('det'): det_list += [grp]            
-            if 'detsum' in det_list:
-                det_list.remove('detsum')
-                det_list.insert(0, 'detsum')
             ## allows for adding roi in new format to old files                
             for grp in xrmmap['roimap'].keys():
                 try:
@@ -1373,10 +1375,17 @@ class MapPanel(GridPanel):
                 except:
                     pass
 
+        for sumname in ('detsum','mcasum'):
+           if sumname in det_list:
+               det_list.remove(sumname)
+               det_list.insert(0,sumname)
+        
         if len(det_list) < 1: det_list = ['']
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
+        if 'scalars' in det_list: ## should set 'denominator' to scalars as default
+            self.det_choice[-1].SetStringSelection('scalars')
 
         self.set_roi_choices(xrmmap)
 
