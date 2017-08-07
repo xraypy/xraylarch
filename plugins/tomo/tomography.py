@@ -153,7 +153,7 @@ def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algori
         for sino0 in sino:
             tomo += [iradon(sino0[xslice], theta=omega, filter=algorithm_A, interpolation=algorithm_B, circle=True)]
         tomo = np.flip(tomo,1)
-        center = sino.shape[1]-sci_center
+        center = sino.shape[1]-cen
 
     elif method.lower().startswith('tomopy') and HAS_tomopy:
         
