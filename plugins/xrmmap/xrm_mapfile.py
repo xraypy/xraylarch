@@ -2645,6 +2645,64 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
+    def ORIGINALget_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
+        '''extract roi map for a pre-defined roi by name
+
+        Parameters
+        ---------
+        name :       str    ROI name
+        det  :       optional, None or int [None]  index for detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        no_hotcols   optional, bool [True]         suprress hot columns
+
+        Returns
+        -------
+        ndarray for ROI data
+        '''
+        imap = -1
+        roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
+        det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+        work_names = self.work_array_names()
+        dat = 'roimap/sum_raw'
+        scan_version = getattr(self, 'scan_version', 1.00)
+        no_hotcols = no_hotcols and scan_version < 1.36
+        # scaler, non-roi data
+        if name.lower() in det_names and name.lower() not in roi_names:
+            imap = det_names.index(name.lower())
+            if no_hotcols:
+                return self.xrmmap[dat][:, 1:-1, imap]
+            else:
+                return self.xrmmap[dat][:, :, imap]
+        elif name in work_names:
+            map = self.get_work_array(name)
+            if no_hotcols and len(map.shape)==2:
+                map = map[:, 1:-1]
+            return map
+
+        dat = 'roimap/sum_raw'
+        if dtcorrect:
+            dat = 'roimap/sum_cor'
+
+        if self.ndet is None:
+            self.ndet =  self.xrmmap.attrs['N_Detectors']
+
+        if det in range(1, self.ndet+1):
+            name = '%s (mca%i)' % (name, det)
+            det_names = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
+            dat = 'roimap/det_raw'
+            if dtcorrect:
+                dat = 'roimap/det_cor'
+
+        imap = det_names.index(name.lower())
+        if imap < 0:
+            raise GSEXRM_Exception("Could not find ROI '%s'" % name)
+
+        if no_hotcols:
+            return self.xrmmap[dat][:, 1:-1, imap]
+        else:
+            return self.xrmmap[dat][:, :, imap]
+
+
     def get_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
         '''extract roi map for a pre-defined roi by name
 
