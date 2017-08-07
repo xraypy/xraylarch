@@ -119,8 +119,8 @@ class TestScripts(TestCase):
 
         self.isTrue('out.nfev > 20')
         self.isTrue('out.nfev < 100')
-        self.isTrue('out.chi_square > 2')
-        self.isTrue('out.chi_square < 20')
+        self.isTrue('out.chi_square > 0.2')
+        self.isTrue('out.chi_square < 2000')
         self.isNear('pars.amp.value',     0.93, places=1)
         self.isNear('pars.del_e0.value',  4.364, places=1)
         self.isNear('pars.del_e0.stderr', 0.52, places=1)

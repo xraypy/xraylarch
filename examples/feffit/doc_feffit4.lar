@@ -1,7 +1,7 @@
 ## examples/feffit/doc_feffit4.lar
 
-feo_dat = read_ascii('../xafsdata/feo_xafs.dat', labels = 'energy xmu')
-autobk(feo_dat.energy, feo_dat.xmu, kweight=2, rbkg=0.8, group=feo_dat)
+feo_dat = read_ascii('../xafsdata/feo_xafs.dat', labels='energy mu')
+autobk(feo_dat, kweight=2, rbkg=0.9)
 
 # define fitting parameter group
 pars = group(n1     = param(6, vary=True),
@@ -29,7 +29,7 @@ path_fefe = feffpath('feff_feo02.dat',
                      deltar = 'delr_2')
 
 # set tranform / fit ranges
-trans = feffit_transform(kmin=2.0, kmax=13.5, kweight=[2,3],
+trans = feffit_transform(kmin=2.0, kmax=13.5, kweight=3,
                          dk=3,  window='kaiser',
                          rmin=1.0, rmax=3.2, fitspace='r')
 
