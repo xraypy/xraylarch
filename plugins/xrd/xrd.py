@@ -319,7 +319,7 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=1, 
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0, 
                  steps=5001, name='xrd', _larch=None, **kws):
 
         self.name    = name
@@ -455,7 +455,7 @@ def calculate_xvalues(x,xtype,wavelength):
 
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
-               data1D=None, nwedge=2, steps=5001, 
+               data1D=None, nwedge=0, steps=5001, 
                name='xrd', _larch=None, **kws):
 
     '''

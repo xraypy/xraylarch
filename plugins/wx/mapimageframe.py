@@ -51,7 +51,7 @@ class MapImageFrame(ImageFrame):
     def __init__(self, parent=None, size=(750, 675), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
-                 output_title='Image',   **kws):
+                 output_title='Image', **kws):
 
         # instdb=None,  inst_name=None,
 
@@ -61,8 +61,7 @@ class MapImageFrame(ImageFrame):
         self.move_callback = move_callback
         self.save_callback = save_callback
         self.wxmplot_version = get_wxmplot_version()
-
-
+        
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -269,7 +268,7 @@ class MapImageFrame(ImageFrame):
         ex, ey = event.x, event.y
         msg = ''
         plotpanel = self.prof_plotter.panel
-        axes  = plotpanel.fig.get_axes()[0]
+        axes  = plotpanel.fig.properties()['axes'][0]
         write = plotpanel.write_message
         try:
             x, y = axes.transData.inverted().transform((ex, ey))
@@ -288,7 +287,7 @@ class MapImageFrame(ImageFrame):
                               self.panel.ydata[iy],
                               self.panel.conf.data[iy, ix])
 
-        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % _point
+        msg = "Pixel [%i, %i], X, OME = [%.4f mm, %.4f deg], Intensity= %g" % _point
         write(msg,  panel=0)
 
     def onCursorMode(self, event=None, mode='zoom'):
@@ -344,8 +343,8 @@ class MapImageFrame(ImageFrame):
         if hasattr(self.lasso_callback , '__call__'):
 
             self.lasso_callback(data=data, selected=selected, mask=mask,
-                                xoff=self.xoff, yoff=self.yoff,
-                                det=self.det, xrmfile=self.xrmfile, **kws)
+                                xoff=self.xoff, yoff=self.yoff, det=self.det,
+                                xrmfile=self.xrmfile, **kws)
 
         self.zoom_mode.SetSelection(0)
         self.panel.cursor_mode = 'zoom'
