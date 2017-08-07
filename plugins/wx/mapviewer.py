@@ -490,7 +490,7 @@ class ROIPanel(GridPanel):
 
         self.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
 
-        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
         
         self.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
         self.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
@@ -498,7 +498,7 @@ class ROIPanel(GridPanel):
         self.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
         self.AddMany((SimpleText(self, ''),SimpleText(self, '')), dcol=1, style=LEFT, newrow=True)
 
-        self.Add(HLine(self, size=(500, 10)), dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
         
         self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.roi_lims[2].Disable()
@@ -645,13 +645,13 @@ class TomographyPanel(GridPanel):
         self.Add(self.chk_hotcols,                     dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
         #################################################################################
-        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(SimpleText(self,'Sinogram:'),         dcol=1, style=RIGHT, newrow=True)
         self.Add(self.sino_show[0],                    dcol=1, style=LEFT)
         self.Add(self.sino_show[1],                    dcol=1, style=LEFT)
         #################################################################################
-        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
         self.AddMany((self.alg_choice[0],self.alg_choice[1]),
@@ -1072,7 +1072,7 @@ class MapPanel(GridPanel):
         self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
         #################################################################################        
-        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(self.limrange,                        dcol=4, style=LEFT,  newrow=True)
         self.Add(self.range_txt[0],                    dcol=1, style=LEFT,  newrow=True)
@@ -1084,7 +1084,7 @@ class MapPanel(GridPanel):
         self.Add(self.range_txt[3],                    dcol=1, style=LEFT)
         self.Add(self.lims[3],                         dcol=1, style=LEFT)
         #################################################################################
-        self.Add(HLine(self, size=(500, 10)),          dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(SimpleText(self,'ROI Map:'),          dcol=1, style=RIGHT, newrow=True)
         self.Add(self.map_show[0],                     dcol=1, style=LEFT)
