@@ -343,15 +343,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         det_list = []
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
-            if 'scalars' in xrmmap: det_list += ['scalars']
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
+            if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
                 if grp.startswith('det'): det_list += [grp]            
-            if 'detsum' in det_list:
-                det_list.remove('detsum')
-                det_list.insert(0, 'detsum')
             ## allows for adding roi in new format to old files                
             for grp in xrmmap['roimap'].keys():
                 try:
@@ -360,6 +357,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 except:
                     pass
 
+        for sumname in ('detsum','mcasum'):
+           if sumname in det_list:
+               det_list.remove(sumname)
+               det_list.insert(0,sumname)
+        
         if len(det_list) < 1: det_list = ['']
 
         if varname is None:
@@ -912,9 +914,9 @@ class TomographyPanel(GridPanel):
         
         omeoff, xoff = 0, 0
         if alg[1] != '' and alg[1] is not None:
-            title = '[%s : %s] %s (%0.2f)' % (alg[0],alg[1],title,self.file.tomo_center)
+            title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],self.file.tomo_center,title)
         else:
-            title = '[%s] %s (%0.2f)' % (alg[0],title,self.file.tomo_center)
+            title = '[%s @ %0.1f] %s' % (alg[0],self.file.tomo_center,title)
         
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
@@ -931,15 +933,12 @@ class TomographyPanel(GridPanel):
 
         det_list = []
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
-            if 'scalars' in xrmmap: det_list += ['scalars']
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
+            if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
                 if grp.startswith('det'): det_list += [grp]            
-            if 'detsum' in det_list:
-                det_list.remove('detsum')
-                det_list.insert(0, 'detsum')
             ## allows for adding roi in new format to old files                
             for grp in xrmmap['roimap'].keys():
                 try:
@@ -948,10 +947,15 @@ class TomographyPanel(GridPanel):
                 except:
                     pass
 
-        if len(det_list) < 1: det_list = ['']
+        for sumname in ('detsum','mcasum'):
+           if sumname in det_list:
+               det_list.remove(sumname)
+               det_list.insert(0,sumname)
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
+        if 'scalars' in det_list: ## should set 'denominator' to scalars as default
+            self.det_choice[-1].SetStringSelection('scalars')
 
         self.set_roi_choices(xrmmap)
 
