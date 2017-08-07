@@ -283,8 +283,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     #endif
 #enddef
 
-def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
-                show_mag=True, show_real=True, show_imag=False,
+def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
+                show_mag=True, show_real=False, show_imag=False,
+                title=None,
                 new=True, win=1):
     """
     plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
@@ -298,21 +299,27 @@ def plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
      dataset      feffit dataset, after running feffit()
      kmin         min k to show [0]
      kmax         max k to show [None, end of data]
+     kweight      kweight to show [None, taken from dataset]
      rmax         max R to show [None, end of data]
      show_mag     bool whether to plot |chidr(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
+     title        string for plot title [None]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
     """
-    kweight = dset.transform.kweight
+    if kweight is None:
+        kweight = dset.transform.kweight
+    #endif
+    if isinstance(kweight, (list, tuple, ndarray)): kweight=kweight[0]
 
     data_chik  = dataset.data.chi * dataset.data.k**kweight
     model_chik = dataset.model.chi * dataset.model.k**kweight
 
+    if title is None: title = dataset.data.filename
     opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
-              show_legend=True, win=win, title=dataset.data.filename)
+              show_legend=True, win=win, title=title)
 
     # k-weighted chi(k) in first plot window
     plot(dataset.data.k, data_chik, xmin=kmin, xmax=kmax,

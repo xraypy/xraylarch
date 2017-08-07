@@ -45,7 +45,7 @@ class LarchWxShell(object):
             self._larch  = larch.Interpreter(historyfile=historyfile,
                                              writer=self)
             self._larch.run_init_scripts()
-
+        self.writer  = self._larch.writer
         self.symtable = self._larch.symtable
         # if self.output is not None:
         #    self.encoding = sys.stdout.encoding
