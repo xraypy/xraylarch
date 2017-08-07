@@ -324,7 +324,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
         
-        map = self.owner.filemap[fname].get_roimap(dname, roiname, dtcorrect=dtcorr)
+        map = self.owner.filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
 
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
@@ -441,7 +441,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             dname   = self.vardet[varname].GetStringSelection()
             dtcorr  = self.varcor[varname].IsChecked()
 
-            self.map = filemap[fname].get_roimap(dname, roiname, dtcorrect=dtcorr)
+            self.map = filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
 
             _larch.symtable.set_symbol(str(varname), self.map)
             if main_file is None:
@@ -624,6 +624,10 @@ class TomographyPanel(GridPanel):
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center = Check(self, label='Refine?')
+        self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
+                                     style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
+
 
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
@@ -657,7 +661,7 @@ class TomographyPanel(GridPanel):
         self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
-        self.AddMany((self.center_value,self.refine_center),
+        self.AddMany((self.center_value,self.refine_center,self.center_range),
                                                        dcol=1, style=LEFT)
         self.AddMany((SimpleText(self,''),self.tomo_show[0],self.tomo_show[1]),
                                                        dcol=1, style=LEFT,  newrow=True)
@@ -676,6 +680,7 @@ class TomographyPanel(GridPanel):
         for btn in (self.sino_show+self.tomo_show):
             btn.Disable()
         self.center_value.Disable()
+        self.center_range.Disable()
 
     def enable_options(self):
     
@@ -694,6 +699,9 @@ class TomographyPanel(GridPanel):
         for btn in (self.sino_show+self.tomo_show): btn.Enable()
 
         self.center_value.Enable()
+        
+        self.center_range.SetValue(10)
+        self.center_range.SetRange(1,20)
         
     def update_xrmmap(self, xrmmap):
 
@@ -719,14 +727,17 @@ class TomographyPanel(GridPanel):
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(self.file.tomo_center)
         
+    def refineCHOICE(self,event=None):
+       
+        if self.alg_choice[0].GetStringSelection().startswith('sci') and self.refine_center.GetValue():
+            self.center_range.Enable()
+        else:
+            self.center_range.Disable()
+    
     def onALGchoice(self,event=None):
         self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
         self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
-#         
-#         ## reference direction changes between algorithms
-#         self.file.tomo_center = self.npts - self.file.tomo_center
-#         self.center_value.SetValue(self.file.tomo_center)
-#         
+        self.refineCHOICE()
 
     def detSELECT(self,idet,event=None):
         self.set_roi_choices(self.file.xrmmap,idet=idet)
@@ -814,7 +825,7 @@ class TomographyPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
         if roi_name[-1] != '1' and oprtr == '/':
-            mapx = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+            mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
             
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
@@ -822,10 +833,10 @@ class TomographyPanel(GridPanel):
         else:
             mapx = 1.
 
-        r_map = datafile.get_roimap(det_name[0],roi_name[0],**args)
+        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
-            g_map = datafile.get_roimap(det_name[1],roi_name[1],**args)
-            b_map = datafile.get_roimap(det_name[2],roi_name[2],**args)
+            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
+            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
 
         ome = datafile.get_pos(0, mean=True)[::-1]
         x   = datafile.get_pos(1, mean=True)
@@ -900,15 +911,15 @@ class TomographyPanel(GridPanel):
         self.file.tomo_center = self.center_value.GetValue()
 
         ## returns tomo in order: slice, x, y
-        center, tomo = tomo_reconstruction(sino,
-                                     refine_cen=self.refine_center.GetValue(),
-                                     center=self.file.tomo_center,
-                                     method=alg[0],
-                                     algorithm_A=alg[1],
-                                     algorithm_B=alg[2],
-                                     omega=ome)
+        self.file.tomo_center, tomo = tomo_reconstruction(sino,
+                                        refine_cen=self.refine_center.GetValue(),
+                                        cen_range=self.center_range.GetValue(),
+                                        center=self.file.tomo_center,
+                                        method=alg[0],
+                                        algorithm_A=alg[1],
+                                        algorithm_B=alg[2],
+                                        omega=ome)
 
-        self.file.tomo_center = center
         self.center_value.SetValue(self.file.tomo_center)
         self.refine_center.SetValue(False)
         
@@ -1231,7 +1242,7 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
         if roi_name[-1] != '1' and oprtr == '/':
-            mapx = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+            mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
             
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
@@ -1239,10 +1250,10 @@ class MapPanel(GridPanel):
         else:
             mapx = 1.
 
-        r_map = datafile.get_roimap(det_name[0],roi_name[0],**args)
+        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
-            g_map = datafile.get_roimap(det_name[1],roi_name[1],**args)
-            b_map = datafile.get_roimap(det_name[2],roi_name[2],**args)
+            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
+            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
 
         x = datafile.get_pos(0, mean=True)
         y = datafile.get_pos(1, mean=True)
@@ -1327,8 +1338,8 @@ class MapPanel(GridPanel):
             print("WARNING: cannot make correlation plot with matrix of '1'")
             return
             
-        map1 = datafile.get_roimap(det_name[0],roi_name[0],**args)
-        map2 = datafile.get_roimap(det_name[-1],roi_name[-1],**args)
+        map1 = datafile.return_roimap(det_name[0],roi_name[0],**args)
+        map2 = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
 
         x = datafile.get_pos(0, mean=True)
         y = datafile.get_pos(1, mean=True)
