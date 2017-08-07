@@ -291,8 +291,13 @@ class CalibrationPopup(wx.Frame):
 
     def loadIMAGE(self,event=None): 
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+        if os.path.exists(self.entr_calimg.GetValue()):
+           dfltDIR = self.entr_calimg.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -626,8 +631,13 @@ class CalXRD(wx.Dialog):
 
     def onBROWSE1(self,event=None):
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+        if os.path.exists(self.calFil.GetValue()):
+           dfltDIR = self.calFil.GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=dfltDIR,
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False

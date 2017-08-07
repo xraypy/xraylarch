@@ -24,8 +24,7 @@ def read_lambda(calfile):
     
     ai = pyFAI.load(calfile)
     return ai._wavelength*1e10 ## units A
-
-def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
+def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=None,
                       mask=None, dark=None, flip=True):
 
     '''
@@ -42,6 +41,7 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
     dark     : dark image array
     flip     : vertically flips image to correspond with Dioptas poni file calibration
     '''
+
     if HAS_pyFAI:
         try:
             ai = pyFAI.load(calfile)
@@ -49,43 +49,95 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=1,
             print('Provided calibration file could not be loaded.')
             return
         
+        dir = -1 if flip else 1
         attrs = {'mask':mask,'dark':dark}
         if unit.startswith('2th'):
             attrs.update({'unit':'2th_deg'})
         else:
             attrs.update({'unit':'q_A^-1'})
-        if wedge != 1:
-            xrd1d = np.zeros((np.shape(rowxrd2d)[0],(wedge+1)*2,steps))
-
-            ii = 0            
-            if flip:
-                xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
-            else:
-                xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
-            
-            slice = 360./wedge
-            for nslc in np.arange(wedge):
-                start = -180 + nslc*slice
-                end   = start+slice
-                attrs.update({'azimuth_range':(start,end)})
-                ii += 2
-                if flip:
-                    xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
-                else:
-                    xrd1d[:,ii:(ii+2),:] = [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
-
-            return xrd1d
-
-
         
-        else:
-            if flip:
-                return [calcXRD1d(xrd2d[::-1,:],ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]        
-            else:
-                return [calcXRD1d(xrd2d,ai,steps,attrs) for i,xrd2d in enumerate(rowxrd2d)]
+        if wedge_limits is not None:
+            attrs.update({'azimuth_range':wedge_limits})
+            
+        q,xrd1d = [],[]
 
+        for i,xrd2d in enumerate(rowxrd2d):
+            row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
+            q     += [row_q]
+            xrd1d += [row_xrd1d]
+        
+        return np.array(q), np.array(xrd1d)
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
+
+
+
+# def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge=0,
+#                       mask=None, dark=None, flip=True):
+# 
+#     '''
+#     Uses pyFAI (poni) calibration file to produce 1D XRD data from a row of 2D XRD images 
+# 
+#     Must provide pyFAI calibration file
+#     
+#     rowxrd2d : 2D diffraction images for integration
+#     calfile  : poni calibration file
+#     unit     : unit for integration data ('2th'/'q'); default is 'q'
+#     steps    : number of steps in integration data; default is 10000
+#     wedge    : azimuthal slices
+#     mask     : mask array for image
+#     dark     : dark image array
+#     flip     : vertically flips image to correspond with Dioptas poni file calibration
+#     '''
+# 
+#     if HAS_pyFAI:
+#         try:
+#             ai = pyFAI.load(calfile)
+#         except:
+#             print('Provided calibration file could not be loaded.')
+#             return
+#         
+#         dir = -1 if flip else 1
+#         attrs = {'mask':mask,'dark':dark}
+#         if unit.startswith('2th'):
+#             attrs.update({'unit':'2th_deg'})
+#         else:
+#             attrs.update({'unit':'q_A^-1'})
+#             
+#         q,xrd1d = [],[]
+# 
+#         for i,xrd2d in enumerate(rowxrd2d):
+#             row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
+#             q     += [row_q]
+#             xrd1d += [row_xrd1d]
+#         q     = np.array(q)
+#         xrd1d = np.array(xrd1d)
+#         
+#         if wedge > 1:
+#             wdg_q,wdg_xrd1d = [],[]
+#             slice = 360./wedge
+#             for iwdg in np.arange(wedge):
+#                 irow_q,irow_xrd1d = [],[]
+#                 
+#                 start = -180 + iwdg*slice
+#                 end   = start+slice
+#                 attrs.update({'azimuth_range':(start,end)})
+# 
+#                 for i,xrd2d in enumerate(rowxrd2d):
+#                     row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
+#                     irow_q     += [row_q]
+#                     irow_xrd1d += [row_xrd1d]
+#                 wdg_q     += [irow_q]
+#                 wdg_xrd1d += [irow_xrd1d]
+#                 
+#             wdg_q     = np.einsum('kij->ijk', wdg_q)
+#             wdg_xrd1d = np.einsum('kij->ijk', wdg_xrd1d)
+#         else:
+#             wdg_q,wdg_xrd1d = None,None
+#         
+#         return q,xrd1d,wdg_q,wdg_xrd1d
+#     else:
+#         print('pyFAI not imported. Cannot calculate 1D integration.')
 
 def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
                   verbose=False):
