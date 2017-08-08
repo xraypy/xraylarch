@@ -720,8 +720,10 @@ class TomographyPanel(GridPanel):
        
         self.enable_options()
         self.set_det_choices(xrmmap)
-        
-        self.npts = len(self.file.get_pos('x', mean=True))
+        try:
+            self.npts = len(self.file.get_pos('fine x', mean=True))       
+        except:
+            self.npts = len(self.file.get_pos('x', mean=True))
         if self.file.tomo_center is None:
             self.file.tomo_center = self.npts/2.
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
@@ -841,8 +843,11 @@ class TomographyPanel(GridPanel):
             b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
 
         try:
-            ome = datafile.get_pos('theta', mean=True)
+            x   = datafile.get_pos('fine x', mean=True)
+        except:
             x   = datafile.get_pos('x', mean=True)
+        try:
+            ome = datafile.get_pos('theta', mean=True)
         except:
             print('Cannot compute sinogram/tomography: no rotation motor specified in map.')
             return
