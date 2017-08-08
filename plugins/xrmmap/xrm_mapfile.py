@@ -2552,7 +2552,7 @@ class GSEXRM_MapFile(object):
             
         if unit.startswith('2th'): ## 2th to 1/A
             xrange = q_from_twth(xrange,lambda_from_E(self.energy))
-        elif unt == 'd':           ## A to 1/A
+        elif unit == 'd':           ## A to 1/A
             xrange = q_from_d(xrange)
 
         roigroup,detname  = self.build_xrd_roimap(xrd='1D')
