@@ -2497,10 +2497,9 @@ class GSEXRM_MapFile(object):
             index = name
         else:
             for ix, nam in enumerate(self.xrmmap['positions/name']):
-                if nam.lower() == nam.lower():
+                if nam.lower() == name.lower():
                     index = ix
                     break
-
         if index == -1:
             raise GSEXRM_Exception("Could not find position '%s'" % repr(name))
         pos = self.xrmmap['positions/pos'][:, :, index]
