@@ -726,6 +726,7 @@ class TomographyPanel(GridPanel):
             self.file.tomo_center = self.npts/2.
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(self.file.tomo_center)
+        self.plotSELECT()
         
     def refineCHOICE(self,event=None):
        
@@ -783,6 +784,7 @@ class TomographyPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red','Green','Blue']):
                     self.det_label[i].SetLabel(label)
+                self.set_roi_choices(self.file.xrmmap)
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None:
@@ -1152,6 +1154,7 @@ class MapPanel(GridPanel):
         
         self.enable_options()
         self.set_det_choices(xrmmap)
+        self.plotSELECT()
 
     def onLimitRange(self, event=None):
         if self.limrange.IsChecked():
@@ -1208,7 +1211,9 @@ class MapPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red','Green','Blue']):
                     self.det_label[i].SetLabel(label)
+                self.set_roi_choices(self.file.xrmmap)
                 oper_chs = ['/', '*', '-', '+']
+
             self.oper.SetChoices(oper_chs)
             if oper_ch >= len(oper_chs):
                 self.oper.SetSelection(0)
