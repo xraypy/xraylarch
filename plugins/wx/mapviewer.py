@@ -818,6 +818,17 @@ class TomographyPanel(GridPanel):
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
 
+        try:
+            x   = datafile.get_pos('fine x', mean=True)
+        except:
+            x   = datafile.get_pos('x', mean=True)
+        try:
+            ome = datafile.get_pos('theta', mean=True)
+        except:
+            print('Cannot compute sinogram/tomography: no rotation motor specified in map.')
+            return
+
+
         det_name,roi_name = [],[]
         plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
@@ -828,35 +839,32 @@ class TomographyPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
+        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
+        if plt3:
+            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
+            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
+          
+        
+        reshape = True if len(x) == r_map.shape[1] and len(ome) == r_map.shape[0] else False
+        if ome[0] > ome[-1]: ome = ome[::-1]
+        if x[0] > x[-1]: x = x[::-1]
+
         if roi_name[-1] != '1' and oprtr == '/':
             mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
             
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
             mapx[np.where(mapx<mxmin)] = mxmin
+            if reshape: mapx = np.einsum('ji->ij', mapx)
         else:
             mapx = 1.
 
-        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
-        if plt3:
-            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
-
-        try:
-            x   = datafile.get_pos('fine x', mean=True)
-        except:
-            x   = datafile.get_pos('x', mean=True)
-        try:
-            ome = datafile.get_pos('theta', mean=True)
-        except:
-            print('Cannot compute sinogram/tomography: no rotation motor specified in map.')
-            return
-        
-        if ome[0] > ome[-1]: ome = ome[::-1]
-        if x[0] > x[-1]: x = x[::-1]
             
         pref, fname = os.path.split(datafile.filename)
+        if reshape: r_map = np.einsum('ji->ij', r_map)
         if plt3:
+            if reshape:
+                g_map,b_map = np.einsum('ji->ij', g_map),np.einsum('ji->ij', b_map) 
             if   oprtr == '+': sino = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
