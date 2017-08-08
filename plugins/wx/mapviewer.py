@@ -603,7 +603,7 @@ class TomographyPanel(GridPanel):
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
         
-        self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
+        self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
 
         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowSinogram, new=True)),
