@@ -2040,7 +2040,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                          label=self._xrd.title)
             if save:
                 file = '%s.xy' % stem
-                save1D(file, self._xrd.data1D[0],self._xrd.data1D[1],calfile=ponifile)
+                save1D(file, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile,
+                       path=os.getcwd())
 
 #             if not xrmfile.flag_xrd2d:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
@@ -2055,7 +2056,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
 
             if save:
-                self._xrd.save_2D(verbose=True)
+                self._xrd.save_2D(path=os.getcwd(),verbose=True)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
@@ -2667,22 +2668,17 @@ class MapViewerFrame(wx.Frame):
         mkak 2016.07.21
         """
 
-        wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
-        myDlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-
-        path, read = None, False
+        myDlg = OpenPoniFile()
         if myDlg.ShowModal() == wx.ID_OK:
             read = True
-            path = myDlg.GetPath().replace('\\', '/')
+            path = myDlg.PoniInfo[1].GetValue()
+            flip = False if myDlg.PoniInfo[0].GetSelection() == 1 else True
 
         myDlg.Destroy()
 
         if read:
             xrmfile = self.current_file
-            xrmfile.calibration = path
-            xrmfile.add_calibration()
+            xrmfile.add_calibration(path,flip)
 
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
@@ -2796,6 +2792,85 @@ class MapViewerFrame(wx.Frame):
                                    style=wx.YES_NO)):
                 self.filemap[fname].claim_hostid()
         return self.filemap[fname].check_hostid()
+
+class OpenPoniFile(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration Ffile', size=(350, 280))
+
+        panel = wx.Panel(self)
+
+        ################################################################################
+        poni_chc = ['Dioptas calibration file:','pyFAI calibration file:']
+        poni_spn = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
+        self.PoniInfo = [ Choice(panel,      choices=poni_chc ),
+                          wx.TextCtrl(panel, size=(320, 25)),
+                          Button(panel,      label='Browse...')]
+                          
+        self.PoniInfo[2].Bind(wx.EVT_BUTTON, self.onBROWSEponi)
+        
+        ponisizer = wx.BoxSizer(wx.VERTICAL)
+        ponisizer.Add(self.PoniInfo[0], flag=wx.TOP,            border=15)
+        ponisizer.Add(self.PoniInfo[1], flag=wx.TOP,            border=5)
+        ponisizer.Add(self.PoniInfo[2], flag=wx.TOP|wx.BOTTOM,  border=5)
+
+        ################################################################################
+        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
+        okBtn        = wx.Button(panel,   wx.ID_OK     )
+        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
+
+        minisizer = wx.BoxSizer(wx.HORIZONTAL)
+        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+        ################################################################################
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((-1, 10))
+        sizer.Add(ponisizer, flag=wx.TOP|wx.LEFT, border=5)
+        sizer.Add((-1, 15))
+        sizer.Add(minisizer, flag=wx.ALIGN_RIGHT, border=5)
+
+        panel.SetSizer(sizer)
+        ################################################################################
+
+        ## Set defaults
+        self.PoniInfo[0].SetSelection(0)
+
+        self.FindWindowById(wx.ID_OK).Disable()
+
+    def checkOK(self,event=None):
+
+        if os.path.exists(self.PoniInfo[1].GetValue()):
+            self.FindWindowById(wx.ID_OK).Enable()
+        else:
+            self.FindWindowById(wx.ID_OK).Disable()
+
+    def onBROWSEponi(self,event=None):
+        wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
+        if os.path.exists(self.PoniInfo[1].GetValue()):
+           dfltDIR = self.PoniInfo[1].GetValue()
+        else:
+           dfltDIR = os.getcwd()
+
+        dlg = wx.FileDialog(self, message='Select XRD calibration file',
+                           defaultDir=dfltDIR,
+                           wildcard=wildcards, style=wx.FD_OPEN)
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            self.PoniInfo[1].Clear()
+            self.PoniInfo[1].SetValue(str(path))
+            self.checkOK()
+
+
 
 class OpenMapFolder(wx.Dialog):
     """"""

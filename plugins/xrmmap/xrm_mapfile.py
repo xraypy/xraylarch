@@ -718,7 +718,7 @@ class GSEXRM_MapFile(object):
             for xkey,xval in zip(self.xrmmap.attrs.keys(),self.xrmmap.attrs.values()):
                 if xkey == 'Version': self.version = xval
 
-            if poni is not None: self.add_calibration()
+            if poni is not None: self.add_calibration(poni,flip)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -797,13 +797,15 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self):
+    def add_calibration(self,ponifile,flip):
         '''
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.11.16
         '''
 
-        xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)        
+        xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
+        self.calibration = ponifile
+        self.flip = flip
 
         if os.path.exists(self.calibration):
             print('Calibration file loaded: %s' % self.calibration)
