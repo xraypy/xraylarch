@@ -2365,17 +2365,17 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, title='image 0', xrmfile=None,flip=True):
+    def display_2Dxrd(self, map, title='image 0', xrmfile=None, flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
+        flptyp = 'vertical' if flip is True else False
         if self.xrddisplay2D is None:
             try:
                 poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
             except:
                 poni = ''
             if not os.path.exists(poni): poni = None
-            flptyp = 'vertical' if flip is True else False
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
                                               xrd1Dviewer=self.xrddisplay1D,
                                               ponifile=poni)
