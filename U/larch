@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+"""Larch program -- interactive command-line interface.
+This will use wx graphics device, if available.
+
+Usage:  larch [option] files(s)
+
+with options
+  --version             show version number and exit
+  -h, --help            show help message and exit
+  -q, --quiet           set quiet mode
+  -d, --debug           set debug mode
+  -x, --nowx            set no wx graphics mode
+  -e, --exec            execute script from file(s) only
+  -r, --remote          run in remote server mode
+  -c, --echo            tell remote server to echo commands
+  -p PORT, --port=PORT  port number for remote server
+"""
+
+import sys
+import numpy
+from optparse import OptionParser
+
+usage = "usage: %prog [options] file(s)"
+
+parser = OptionParser(usage=usage, prog="larch",
+                      version="larch command-line version 0.2")
+
+parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
+                  default=False, help="set quiet mode, default = False")
+
+parser.add_option("-d", "--debug", dest="debug", action="store_true",
+                  default=False, help="set debug mode, default = False")
+
+parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
+                  default=False, help="set no wx graphics mode, default = False")
+
+parser.add_option("-e", "--exec", dest="noshell", action="store_true",
+                  default=False, help="execute script only, default = False")
+
+parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
+                  default=False, help="run in remote server mode")
+
+parser.add_option("-p", "--port", dest="port", default='4966',
+                  metavar='PORT', help="port number for remote server")
+
+parser.add_option("-c", "--echo", dest="echo", action="store_true",
+                  default=False, help="tell remote server to echo commands")
+
+(options, args) = parser.parse_args()
+
+if options.debug:
+    try:
+        import lib as larch
+        larch.site_config.show_site_config()
+    except ImportError:
+        import larch
+else:
+    import larch
+
+# can we, and should we, use wx?
+HAS_WX = False
+if not options.nowx:
+    try:
+        import wx
+        HAS_WX = True
+    except ImportError:
+        HAS_WX = False
+
+
+if options.server_mode:
+    from larch.xmlrpc_server import LarchServer
+    s = LarchServer(host='localhost', port=int(options.port),
+                    local_echo=options.echo, quiet=options.quiet)
+    s.initialize_larch()
+    s.run()
+    sys.exit()
+
+shell = larch.shell(quiet=options.quiet)
+
+def onCtrlC(*args, **kws):
+    return 0
+
+# use inputhook to enable wx
+if HAS_WX:
+    if options.debug:
+        from lib.wxlib import inputhook
+    else:
+        from larch.wxlib import inputhook
+    app = wx.App(redirect=False, clearSigInt=False)
+    # print 'has group _sys.wx? ', shell.larch.symtable.has_group('_sys.wx')
+    shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
+    shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
+    shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+    shell.larch.symtable.set_symbol('_sys.wx.wxapp', app)
+    shell.larch.symtable.set_symbol('_sys.wx.parent',None)
+    inputhook.ON_INTERRUPT = onCtrlC
+    inputhook.WXLARCH_SYM = shell.larch.symtable
+
+# execute scripts listed on command-line
+if len(args)>0:
+    for arg in args:
+        cmd = "run('%s')" % arg
+        if arg.endswith('.py'):
+            cmd = "import %s" %  arg[:-3]
+        shell.default(cmd)
+
+# if interactive, start command loop
+if not options.noshell:
+    shell.cmdloop()

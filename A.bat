@@ -1,0 +1,17 @@
+PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\GitHub\PortableGit_d76a6a98c9315931ec4927243517bc09e9b731a0\cmd;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\GitHub\PortableGit_d76a6a98c9315931ec4927243517bc09e9b731a0\usr\bin;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\GitHub\PortableGit_d76a6a98c9315931ec4927243517bc09e9b731a0\usr\share\git-tfs;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\Apps\2.0\MBTPNXYZ.0MB\YR4YMA95.C0W\gith..tion_317444273a93ac29_0003.0001_cbe40ecbe3e419d4;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\GitHub\lfs-amd64_1.2.0;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\Apps\2.0\MBTPNXYZ.0MB\YR4YMA95.C0W\gith..tion_317444273a93ac29_0003.0001_cbe40ecbe3e419d4\NativeBinaries\x86;
+PATH=%PATH%;C:\GnuWin32\bin;
+PATH=%PATH%;T:\xas_user\bin;
+PATH=%PATH%;C:\epics\bin\;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\Continuum\Anaconda2;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\Continuum\Anaconda2\Scripts;
+PATH=%PATH%;C:\Users\xas_user\AppData\Local\Continuum\Anaconda2\Library\bin;
+PATH=%PATH%;C:\Program Files\caQTDM\bin\windows-x64\;
+PATH=%PATH%;C:\Users\xas_user\AppData\Roaming\DemeterPerl\perl\bin;
+PATH=%PATH%;C:\Users\xas_user\AppData\Roaming\DemeterPerl\perl\site\bin;
+PATH=%PATH%;C:\Users\xas_user\AppData\Roaming\DemeterPerl\c\bin;
