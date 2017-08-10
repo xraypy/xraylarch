@@ -919,7 +919,8 @@ class GSEXRM_MapFile(object):
             self.initialize_xrmmap()
         if (force or len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
-             self.read_master()
+            self.read_master()
+
         nrows = len(self.rowdata)
         self.reset_flags()
         if maxrow is not None:
