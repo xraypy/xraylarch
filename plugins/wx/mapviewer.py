@@ -732,14 +732,18 @@ class TomographyPanel(GridPanel):
         
     def refineCHOICE(self,event=None):
        
-        if self.alg_choice[0].GetStringSelection().startswith('sci') and self.refine_center.GetValue():
-            self.center_range.Enable()
+        self.center_range.Disable()
+        if self.alg_choice[0].GetStringSelection().startswith('sci'):
+            if self.refine_center.GetValue():
+                self.center_range.Enable()
+            self.center_value.SetIncrement(1)
         else:
-            self.center_range.Disable()
+            self.center_value.SetIncrement(0.1)
     
     def onALGchoice(self,event=None):
         self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
         self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
+        
         self.refineCHOICE()
 
     def detSELECT(self,idet,event=None):
