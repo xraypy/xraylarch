@@ -1,0 +1,20 @@
+import numpy as np
+from scipy.io.netcdf import netcdf_file
+
+filename = 'T:/xas_user/2017.1/beam_movies/ssa_movie_pg_007.cdf'
+
+fh = netcdf_file(filename, mmap=False)
+
+
+epics_sec  = fh.variables['epicsTSSec'][:]
+epics_nsec = fh.variables['epicsTSNsec'][:]
+array_data = fh.variables['array_data'][:]
+array_data.dtype= np.uint8
+
+ts = epics_sec + 1.e-9 * epics_nsec
+
+fh.close()
+
+
+
+

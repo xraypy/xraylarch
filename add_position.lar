@@ -1,0 +1,33 @@
+if not hasattr(_scan, '_instdb'):
+    connect_scandb(dbname='epics_scan',
+	        server='postgresql', 
+            host='ion.cars.aps.anl.gov',
+            user='epics',
+            password='microXAFS@13IDE')
+
+#endif
+
+
+idb  = _scan._instdb
+inst = idb.get_instrument('IDE_SampleStage')
+
+plist = idb.get_positionlist('IDE_SampleStage')
+pos1 = idb.get_position('IDE_SampleStage', 'HgO')
+
+
+print 'Positions: ',  len(plist)
+
+print pos1
+
+newpos = {}
+for pv in pos1.pvs:
+    print pv.pv.name, pv.value
+    newpos[str(pv.pv.name)] = float(pv.value)
+#endfor
+
+
+print 'New Position ',  newpos
+idb.save_position('IDE_SampleStage', 'testnew', newpos)
+
+
+
