@@ -634,9 +634,8 @@ class GSEXRM_MapFile(object):
         self.flag_xrf   = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
-        
         self.tomo_center = None
-
+        
         self.calibration = poni
         self.maskfile    = mask
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
@@ -649,7 +648,7 @@ class GSEXRM_MapFile(object):
                       'date'     : date,
                       'proposal' : proposal,
                       'user'     : user}
-
+                      
         # initialize from filename or folder
         if self.filename is not None:
 
@@ -677,6 +676,7 @@ class GSEXRM_MapFile(object):
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
             self.open(self.filename, root=self.root, check_status=False)
+
             return
 
         # file exists but is not hdf5
@@ -1485,6 +1485,21 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
+    def read_tomo_center(self):
+    
+        try:
+            self.tomo_center = self.xrmmap['tomo/center'][:]
+        except:
+            self.tomo_center = None
+
+    def update_tomo_center(self):
+    
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        try:
+            tomogrp.create_dataset('center', data=self.tomo_center)
+        except:
+            self.xrmmap['tomo/center'][...] = self.tomo_center
+   
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.

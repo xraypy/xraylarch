@@ -627,6 +627,8 @@ class TomographyPanel(GridPanel):
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
+        
+        #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
 
 
         #################################################################################
@@ -724,11 +726,13 @@ class TomographyPanel(GridPanel):
             self.npts = len(self.file.get_pos('fine x', mean=True))       
         except:
             self.npts = len(self.file.get_pos('x', mean=True))
+        self.file.read_tomo_center()
         if self.file.tomo_center is None:
             self.file.tomo_center = self.npts/2.
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(self.file.tomo_center)
         self.plotSELECT()
+        self.refineCHOICE()
         
     def refineCHOICE(self,event=None):
        
@@ -946,9 +950,9 @@ class TomographyPanel(GridPanel):
                                         algorithm_B=alg[2],
                                         omega=ome)
 
-        self.center_value.SetValue(self.file.tomo_center)
+        self.set_center()
         self.refine_center.SetValue(False)
-        
+
         omeoff, xoff = 0, 0
         if alg[1] != '' and alg[1] is not None:
             title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],self.file.tomo_center,title)
@@ -965,6 +969,11 @@ class TomographyPanel(GridPanel):
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.file)
+
+    def set_center(self,event=None):
+    
+        self.center_value.SetValue(self.file.tomo_center)
+        self.file.update_tomo_center()
 
     def set_det_choices(self, xrmmap):
 
