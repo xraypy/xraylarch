@@ -1,0 +1,8 @@
+data=read_ascii('../xafsdata/cu_10k.xmu')
+
+mback(data, z=29, edge='K', order=5, fit_erfc=False)
+
+plot(data.energy, data.fpp, label=r'$\mu$', new=True)
+
+plot(data.energy, data.f2, xlabel='Energy (eV)',
+     ylabel=r'$\mu(E), f_2(E) $', label=r'$f_2$',  show_legend=True)
