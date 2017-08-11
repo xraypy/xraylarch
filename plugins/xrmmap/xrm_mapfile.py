@@ -634,7 +634,6 @@ class GSEXRM_MapFile(object):
         self.flag_xrf   = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
-        self.tomo_center = None
         
         self.calibration = poni
         self.maskfile    = mask
@@ -1485,20 +1484,14 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def read_tomo_center(self):
-    
-        try:
-            self.tomo_center = self.xrmmap['tomo/center'][:]
-        except:
-            self.tomo_center = None
-
-    def update_tomo_center(self):
+    def update_tomo_center(self,center):
     
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
-            tomogrp.create_dataset('center', data=self.tomo_center)
+            tomogrp.create_dataset('center', data=center)
         except:
-            self.xrmmap['tomo/center'][...] = self.tomo_center
+            self.xrmmap['tomo/center'][...] = center
+        print 'updated to: ',center,self.xrmmap['tomo/center'][...]
    
     def reset_flags(self):
         '''

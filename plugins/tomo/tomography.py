@@ -113,6 +113,13 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     if method is None:
         print('No tomographic reconstruction packages available')
         return
+        
+    print 'SINOGRAM:',np.shape(sino)
+    print 'METHOD:',method
+    print 'PARAMETRS:',algorithm_A,algorithm_B
+    print 'CENTER:',center
+    print 'REFINE?',refine_cen,'RANGE:',cen_range
+    print 'OMEGA:',len(omega)
     
     if method.lower().startswith('scikit') and HAS_scikit:
 
