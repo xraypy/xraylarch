@@ -201,6 +201,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     group.chie = (mu-obkg)/edge_step
     group.k    = kout
     group.chi  = chi/edge_step
+    group.e0   = e0
 
     # now fill in 'autobk_details' group
     details = Group(params=result.params)

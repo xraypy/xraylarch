@@ -319,7 +319,7 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=1, 
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0, 
                  steps=5001, name='xrd', _larch=None, **kws):
 
         self.name    = name
@@ -380,17 +380,20 @@ class XRD(grpobjt):
             if verbose:
                 print('Could not locate file %s' % self.calfile)
     
-    def save_1D(self):
+    def save_1D(self,path=None):
 
         pref,fname = os.path.split(self.filename)
+        if path is not None: pref = path
+
         counter = 1
         while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)):
             counter += 1
         return '%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)
 
-    def save_2D(self,verbose=False):
+    def save_2D(self,path=None,verbose=False):
     
         pref,fname = os.path.split(self.filename)
+        if path is not None: pref = path
         
         counter = 1
         while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)):
@@ -455,7 +458,7 @@ def calculate_xvalues(x,xtype,wavelength):
 
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
-               data1D=None, nwedge=2, steps=5001, 
+               data1D=None, nwedge=0, steps=5001, 
                name='xrd', _larch=None, **kws):
 
     '''

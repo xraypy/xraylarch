@@ -333,6 +333,7 @@ class Interpreter:
         if not self.input.complete:
             msg = "File '%s' ends with incomplete input" % (filename)
             text = None
+            lineno = 0
             if len(self.input.blocks) > 0 and filename is not None:
                 blocktype, lineno, text = self.input.blocks[0]
                 msg = "File '%s' ends with un-terminated '%s'" % (filename,

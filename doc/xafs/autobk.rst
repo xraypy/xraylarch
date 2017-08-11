@@ -15,6 +15,8 @@ subtleties.  This section is devoted to background subtraction with the
 The :func:`autobk` function
 =============================
 
+
+
 ..  function:: autobk(energy, mu=None, group=None, rbkg=1.0, ...)
 
     Determine the post-edge background function, :math:`\mu_0(E)`, and
@@ -22,7 +24,7 @@ The :func:`autobk` function
 
     :param energy:    1-d array of x-ray energies, in eV
     :param mu:        1-d array of :math:`\mu(E)`
-    :param group:     output group (and input group for ``e0`` and ``edge_step``.
+    :param group:     output group (and input group for ``e0`` and ``edge_step``).
     :param rbkg:      distance (in :math:`\rm\AA`) for :math:`\chi(R)` above
                       which the signal is ignored. Default = 1.
     :param e0:        edge energy, in eV.  If `None`, it will be determined.
@@ -30,22 +32,22 @@ The :func:`autobk` function
     :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
     :param nknots:    number of knots in spline.  If `None`, it will be determined.
     :param kmin:      minimum :math:`k` value   [0]
-    :param kmax:      maximum :math:`k` value   [full data range].
+    :param kmax:      maximum :math:`k` value   [``None``, full data range].
     :param kweight:   :math:`k` weight for FFT.  [1]
-    :param dk:        FFT window window parameter.  [0]
+    :param dk:        FFT window window parameter.  [0.1]
     :param win:       FFT window function name.     ['hanning']
     :param nfft:      array size to use for FFT [2048]
     :param kstep:     :math:`k` step size to use for FFT [0.05]
-    :param k_std:     optional :math:`k` array for standard :math:`\chi(k)`.
-    :param chi_std:   optional :math:`\chi` array for standard :math:`\chi(k)`.
+    :param k_std:     optional :math:`k` array for standard :math:`\chi(k)` [``None``]
+    :param chi_std:   optional :math:`\chi` array for standard :math:`\chi(k)` [``None``]
     :param nclamp:    number of energy end-points for clamp [2]
     :param clamp_lo:  weight of low-energy clamp [1]
     :param clamp_hi:  weight of high-energy clamp [1]
-    :param calc_uncertaintites:  Flag to calculate uncertainties in  :math:`\mu_0(E)` and :math:`\chi(k)` [``False``]
-
+    :param calc_uncertaintites:  Flag to calculate uncertainties in  :math:`\mu_0(E)` and :math:`\chi(k)` [``True``]
+    :param err_sigma: sigma level for uncertainties in mu_0(E) and chi(k) [1]
     :returns: ``None``.
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
     The following data is put into the output group:
 
        ================= ===============================================================
@@ -313,7 +315,7 @@ with the resulting outputs looking like this:
     :target: ../_images/xafs_autobk1a.png
     :width: 100%
     :align: center
-  
+
     Cu metal: :math:`\mu(E)` and background :math:`\mu_0(E)`
 
 .. _fig_xafs2b:
@@ -329,7 +331,7 @@ with the resulting outputs looking like this:
     :width: 0.45
     :alt: a fig
     :label: fig_xafs2
-    
+
     Example of simple usage of :func:`autobk` for Cu metal.
 
 
@@ -407,6 +409,3 @@ As an example:
 
 
 .. literalinclude:: ../../examples/xafs/doc_autobk4.lar
-
-
-

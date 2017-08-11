@@ -408,7 +408,6 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if save:
-            
             tifffile.imsave(path,self.plt_img)
 
     def on1DXRD(self,event=None):

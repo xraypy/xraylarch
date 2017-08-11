@@ -310,18 +310,18 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
-        save_config = Button(self, 'Save as Default Settings',
-                             size=(150, 30),
-                             action=self.onSaveConfigBtn)
+        saveconf = Button(self, 'Save as Default Settings',
+                          size=(175, 30),
+                          action=self.onSaveConfigBtn)
+
+        hxline = HLine(self, size=(550, 2))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([((10,10), 0, LCEN, 0),
-                       (gen,  0, LCEN, 10),
-                       ((10,10), 0, LCEN, 0),
-                       (HLine(self, size=(550, 2)), 0, LCEN, 10),
-                       ((10,10), 0, LCEN, 0),
-                       (xas,  1, LCEN|wx.GROW, 10),
-                       (save_config,  1, LCEN, 10)
+
+        sizer.AddMany([((10, 10), 0, LCEN, 10), (gen,      0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (hxline,   0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (xas,      0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10), (saveconf, 0, LCEN, 10),
                        ])
 
         xas.Disable()
@@ -695,9 +695,9 @@ class XYFitController():
         opts.update(dgroup.proc_opts)
 
         # scaling
-        cmds = ["{group:s}.x = {xscale:f}*({group:s}.xdat + {xshift:f})",
-                "{group:s}.y = {yscale:f}*({group:s}.ydat + {yshift:f})"]
-
+        cmds = []
+        cmds.append("{group:s}.x = {xscale:f}*({group:s}.xdat + {xshift:f})")
+        cmds.append("{group:s}.y = {yscale:f}*({group:s}.ydat + {yshift:f})")
 
         # smoothing
         smop = opts['smooth_op'].lower()
@@ -1139,16 +1139,38 @@ class XYFitFrame(wx.Frame):
             os.chdir(filedir)
             self.controller.set_workdir()
 
-        kwargs = dict(filename=path, _larch=self.larch_buffer.larchshell,
-                      last_array_sel=self.last_array_sel,
-                      read_ok_cb=self.onRead_OK)
-
 
         # check for athena projects
         if is_athena_project(path):
+            kwargs = dict(filename=path,
+                          _larch = self.controller.larch,
+                          read_ok_cb=self.onReadAthenaProject_OK)
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
+
+            kwargs = dict(filename=path,
+                          _larch=self.larch_buffer.larchshell,
+                          last_array_sel = self.last_array_sel,
+                          read_ok_cb=self.onRead_OK)
+
             self.show_subframe('readfile', ColumnDataFileFrame, **kwargs)
+
+    def onReadAthenaProject_OK(self, path, namelist):
+        """read groups from a list of groups from an athena project file"""
+        self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
+
+        s = """{group:s} = _prj.{group:s}
+        {group:s}.datatype = 'xas'
+        {group:s}.x = {group:s}.xdat = {group:s}.energy
+        {group:s}.y = {group:s}.ydat = {group:s}.mu
+        {group:s}.yerr = 1.0
+        {group:s}.plot_ylabel = 'mu'
+        {group:s}.plot_xlabel = 'energy'
+        """
+        for gname in namelist:
+            self.larch.eval(s.format(group=gname))
+            self.install_group(gname, gname)
+        self.larch.eval("del _prj")
 
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
@@ -1176,9 +1198,20 @@ class XYFitFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel = array_sel
 
-        thisgroup = getattr(self.larch.symtable, groupname)
-        #print(thisgroup, thisgroup.gname, thisgroup.filenam)
+        self.install_group(groupname, filename)
 
+        if len(self.paths2read) > 0 :
+            path = self.paths2read.pop(0)
+            path = path.replace('\\', '/')
+            filedir, filename = os.path.split(path)
+            gname = file2groupname(filename, symtable=self.larch.symtable)
+            self.onRead_OK(script, path, groupname=gname)
+
+
+    def install_group(self, groupname, filename):
+        """add groupname / filename to list of available data groups"""
+
+        thisgroup = getattr(self.larch.symtable, groupname)
         thisgroup.groupname = groupname
         thisgroup.filename = filename
 
@@ -1194,16 +1227,8 @@ class XYFitFrame(wx.Frame):
         if filename not in self.controller.file_groups:
             self.controller.filelist.Append(filename)
             self.controller.file_groups[filename] = groupname
-
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname)
-
-        if len(self.paths2read) > 0 :
-            path = self.paths2read.pop(0)
-            path = path.replace('\\', '/')
-            filedir, filename = os.path.split(path)
-            gname = file2groupname(filename, symtable=self.larch.symtable)
-            self.onRead_OK(script, path, groupname=gname)
 
 
 class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):

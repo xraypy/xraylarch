@@ -1,12 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       = 7, 288
+   nvarys, npts       = 7, 144
    n_independent      = 17.106
-   chi_square         = 34.5827
-   reduced chi_square = 3.42184
-   r-factor           = 0.01525
-   Akaike info crit   = 26.0412
-   Bayesian info crit = 31.9174
+   chi_square         = 19.6759
+   reduced chi_square = 1.94686
+   r-factor           = 0.00895
+   Akaike info crit   = 16.3938
+   Bayesian info crit = 22.27
  
 [[Data]]
    fit space          = 'r'
@@ -14,34 +14,34 @@
    k-range            = 2.000, 13.500
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
-   k-weight           = 2, 3
-   epsilon_k          = Array(mean=0.001435, std=0.003614), Array(mean=0.001435, std=0.003614)
-   epsilon_r          = 0.027109, 0.309310
+   k-weight           = 3
+   epsilon_k          = Array(mean=0.000962, std=0.002704)
+   epsilon_r          = 0.207307
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.748273 +/- 0.888785   (init=  0.100000)
-   delr_1         = -0.031455 +/- 0.010076   (init=  0.000000)
-   delr_2         =  0.046370 +/- 0.007766   (init=  0.000000)
-   n1             =  5.622117 +/- 0.961869   (init=  6.000000)
-   n2             =  12.238350 +/- 1.545809   (init=  12.000000)
-   sig2_1         =  0.012780 +/- 0.002610   (init=  0.002000)
-   sig2_2         =  0.013445 +/- 0.001259   (init=  0.002000)
+   de0            = -1.186615 +/- 0.808632   (init=  0.100000)
+   delr_1         = -0.028279 +/- 0.007522   (init=  0.000000)
+   delr_2         =  0.049909 +/- 0.005972   (init=  0.000000)
+   n1             =  4.550833 +/- 0.738706   (init=  6.000000)
+   n2             =  10.986155 +/- 1.043360   (init=  12.000000)
+   sig2_1         =  0.010405 +/- 0.001825   (init=  0.002000)
+   sig2_2         =  0.012472 +/- 0.000828   (init=  0.002000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
-   n2, sig2_2           =  0.935
-   de0, delr_2          =  0.895
-   n1, sig2_1           =  0.890
-   de0, delr_1          =  0.635
-   delr_1, delr_2       =  0.575
-   delr_2, sig2_2       =  0.228
-   delr_2, n2           =  0.222
-   de0, n1              = -0.216
-   delr_1, sig2_1       =  0.214
-   delr_2, n1           = -0.177
-   delr_1, n1           =  0.162
-   de0, sig2_1          = -0.138
-   delr_2, sig2_1       = -0.110
+   n2, sig2_2           =  0.939
+   de0, delr_2          =  0.920
+   n1, sig2_1           =  0.892
+   de0, delr_1          =  0.566
+   delr_1, delr_2       =  0.524
+   delr_1, sig2_1       =  0.219
+   delr_1, n1           =  0.193
+   delr_2, sig2_2       =  0.181
+   de0, n1              = -0.158
+   delr_2, n2           =  0.156
+   delr_2, n1           = -0.139
+   de0, sig2_1          = -0.110
+   n1, n2               =  0.100
  
 [[Paths]]
    Path prqdqp2pm, Feff.dat file = feff_feo01.dat
@@ -50,11 +50,11 @@
        O       0.0000,  2.1387,  0.0000  1
      reff   =  2.13870
      degen  =  1.000000
-     n*s02  =  3.935482 +/- 0.673308  's02*n1'
-     e0     = -1.748273 +/- 0.888785  'de0'
-     r      =  2.107245 +/- 0.010076  'reff + delr_1'
-     deltar = -0.031455 +/- 0.010076  'delr_1'
-     sigma2 =  0.012780 +/- 0.002610  'sig2_1'
+     n*s02  =  3.185583 +/- 0.517094  's02*n1'
+     e0     = -1.186615 +/- 0.808632  'de0'
+     r      =  2.110421 +/- 0.007522  'reff + delr_1'
+     deltar = -0.028279 +/- 0.007522  'delr_1'
+     sigma2 =  0.010405 +/- 0.001825  'sig2_1'
 
    Path pbhrkq5es, Feff.dat file = feff_feo02.dat
      atom      x        y        z       ipot
@@ -62,10 +62,10 @@
       Fe       2.1387,  0.0000, -2.1387  2
      reff   =  3.02460
      degen  =  1.000000
-     n*s02  =  8.566845 +/- 1.082066  's02*n2'
-     e0     = -1.748273 +/- 0.888785  'de0'
-     r      =  3.070970 +/- 0.007766  'reff + delr_2'
-     deltar =  0.046370 +/- 0.007766  'delr_2'
-     sigma2 =  0.013445 +/- 0.001259  'sig2_2'
+     n*s02  =  7.690309 +/- 0.730352  's02*n2'
+     e0     = -1.186615 +/- 0.808632  'de0'
+     r      =  3.074509 +/- 0.005972  'reff + delr_2'
+     deltar =  0.049909 +/- 0.005972  'delr_2'
+     sigma2 =  0.012472 +/- 0.000828  'sig2_2'
 
 =======================================================

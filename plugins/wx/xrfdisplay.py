@@ -169,7 +169,7 @@ class XRFDisplayFrame(wx.Frame):
         if event is None:
             return
         x, y  = event.xdata, event.ydata
-        if len(self.panel.fig.get_axes()) > 1:
+        if len(self.panel.fig.properties()['axes']) > 1:
             try:
                 x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
             except:
@@ -1043,7 +1043,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
             self.panel.conf.show_grid = False
 
-        xview_range = self.panel.axes.get_axes().get_xlim()
+        xview_range = self.panel.axes.properties()['axes'].get_xlim()
 
         if init or xview_range == (0.0, 1.0):
             self.xview_range = (min(self.mca.energy), max(self.mca.energy))
