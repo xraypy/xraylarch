@@ -115,9 +115,8 @@ def isGSEXRM_MapFolder(fname):
     for f in ('xmap.0001', 'xsp3.0001'):
         if f in flist:
             has_xrfdata = True
-        else:
-            print 'missing files: %s' % f
-        
+       
+    if has_xrfdata: print 'it is a map!!!!'
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
