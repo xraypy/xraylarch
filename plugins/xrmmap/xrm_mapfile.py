@@ -100,12 +100,10 @@ def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
     if (fname is None or not os.path.exists(fname) or
         not os.path.isdir(fname)):
-        print 'not found?'
         return False
     flist = os.listdir(fname)
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
         if f not in flist:
-            print 'missing: %s' % f
             return False
 
     has_xrfdata = False
@@ -115,8 +113,7 @@ def isGSEXRM_MapFolder(fname):
     for f in ('xmap.0001', 'xsp3.0001'):
         if f in flist:
             has_xrfdata = True
-       
-    if has_xrfdata: print 'it is a map!!!!'
+
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -1497,7 +1494,6 @@ class GSEXRM_MapFile(object):
             tomogrp.create_dataset('center', data=center)
         except:
             self.xrmmap['tomo/center'][...] = center
-        print 'updated to: ',center,self.xrmmap['tomo/center'][...]
    
     def reset_flags(self):
         '''
