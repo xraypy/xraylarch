@@ -100,15 +100,14 @@ def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
     if (fname is None or not os.path.exists(fname) or
         not os.path.isdir(fname)):
-        return False
-    else:
         print 'not found?'
+        return False
     flist = os.listdir(fname)
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
         if f not in flist:
-            return False
-        else:
             print 'missing: %s' % f
+            return False
+
     has_xrfdata = False
     ## This should read Master.dat for file name and check that it exist.
     ## If file name is listed as __unused__ then flag should be false.
