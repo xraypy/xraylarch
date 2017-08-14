@@ -111,8 +111,7 @@ def isGSEXRM_MapFolder(fname):
     ## If file name is listed as __unused__ then flag should be false.
     ## mkak 2017.03.10
     for f in ('xmap.0001', 'xsp3.0001'):
-        if f in flist:
-            has_xrfdata = True
+        if f in flist: has_xrfdata = True
 
     return has_xrfdata
 
