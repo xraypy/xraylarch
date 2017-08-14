@@ -105,12 +105,14 @@ def isGSEXRM_MapFolder(fname):
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
         if f not in flist:
             return False
+
     has_xrfdata = False
     ## This should read Master.dat for file name and check that it exist.
     ## If file name is listed as __unused__ then flag should be false.
     ## mkak 2017.03.10
     for f in ('xmap.0001', 'xsp3.0001'):
         if f in flist: has_xrfdata = True
+
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -588,8 +590,8 @@ class GSEXRM_MapFile(object):
 
     >>> from epicscollect.io import GSEXRM_MapFile
     >>> map = GSEXRM_MapFile('MyMap.001')
-    >>> fe  = map.get_roimap('mca2','Fe')
-    >>> as  = map.get_roimap('mca1', 'As Ka', dtcorrect=True)
+    >>> fe  = map.return_roimap('mca2','Fe')
+    >>> as  = map.return_roimap('mca1', 'As Ka', dtcorrect=True)
     >>> rgb = map.get_rgbmap('mcasum', 'Fe', 'Ca', 'Zn', dtcorrect=True, scale_each=False)
     >>> en  = map.get_energy(det=1)
 
@@ -635,8 +637,6 @@ class GSEXRM_MapFile(object):
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
         
-        self.tomo_center = None
-
         self.calibration = poni
         self.maskfile    = mask
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
@@ -649,7 +649,7 @@ class GSEXRM_MapFile(object):
                       'date'     : date,
                       'proposal' : proposal,
                       'user'     : user}
-
+                      
         # initialize from filename or folder
         if self.filename is not None:
 
@@ -677,6 +677,7 @@ class GSEXRM_MapFile(object):
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
             self.open(self.filename, root=self.root, check_status=False)
+
             return
 
         # file exists but is not hdf5
@@ -718,7 +719,7 @@ class GSEXRM_MapFile(object):
             for xkey,xval in zip(self.xrmmap.attrs.keys(),self.xrmmap.attrs.values()):
                 if xkey == 'Version': self.version = xval
 
-            if poni is not None: self.add_calibration()
+            if poni is not None: self.add_calibration(poni,flip)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -797,13 +798,15 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self):
+    def add_calibration(self,ponifile,flip):
         '''
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.11.16
         '''
 
-        xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)        
+        xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
+        self.calibration = ponifile
+        self.flip = flip
 
         if os.path.exists(self.calibration):
             print('Calibration file loaded: %s' % self.calibration)
@@ -907,46 +910,47 @@ class GSEXRM_MapFile(object):
 
 ## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
 ## mkak 2016.09.07
-#     def process(self, maxrow=None, force=False, callback=None, verbose=True):
-#         "look for more data from raw folder, process if needed"
-#         print('--- process ---')
-#         if not self.check_hostid():
-#             raise GSEXRM_NotOwner(self.filename)
-# 
-#         if self.status == GSEXRM_FileStatus.created:
-#             self.initialize_xrmmap()
-#         if (force or len(self.rowdata) < 1 or
-#             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
-#             self.read_master()
-#         nrows = len(self.rowdata)
-#         self.reset_flags()
-#         if maxrow is not None:
-#             nrows = min(nrows, maxrow)
-#         if force or self.folder_has_newdata():
-#             irow = self.last_row + 1
-#             while irow < nrows:
-#                 # self.dt.add('=>PROCESS %i' % irow)
-#                 if hasattr(callback, '__call__'):
-#                     callback(row=irow, maxrow=nrows,
-#                              filename=self.filename, status='reading')
-#                 row = self.read_rowdata(irow)
-#                 # self.dt.add('  == read row data')
-#                 if hasattr(callback, '__call__'):
-#                     callback(row=irow, maxrow=nrows,
-#                              filename=self.filename, status='complete')
-# 
-#                 if row.read_ok:
-#                     self.add_rowdata(row, verbose=verbose)
-#                     irow  = irow + 1
-#                 else:
-#                     print("==Warning: Read failed at row %i" % irow)
-#                     break
-#             # self.dt.show()
-#         self.resize_arrays(self.last_row+1)
-#         self.h5root.flush()
-#         if self.pixeltime is None:
-#             self.calc_pixeltime()
-#         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+    def process(self, maxrow=None, force=False, callback=None, verbose=True):
+        "look for more data from raw folder, process if needed"
+        print('--- process ---')
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+
+        if self.status == GSEXRM_FileStatus.created:
+            self.initialize_xrmmap()
+        if (force or len(self.rowdata) < 1 or
+            (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
+            self.read_master()
+
+        nrows = len(self.rowdata)
+        self.reset_flags()
+        if maxrow is not None:
+            nrows = min(nrows, maxrow)
+        if force or self.folder_has_newdata():
+            irow = self.last_row + 1
+            while irow < nrows:
+                # self.dt.add('=>PROCESS %i' % irow)
+                if hasattr(callback, '__call__'):
+                    callback(row=irow, maxrow=nrows,
+                             filename=self.filename, status='reading')
+                row = self.read_rowdata(irow)
+                # self.dt.add('  == read row data')
+                if hasattr(callback, '__call__'):
+                    callback(row=irow, maxrow=nrows,
+                             filename=self.filename, status='complete')
+
+                if row.read_ok:
+                    self.add_rowdata(row, verbose=verbose)
+                    irow  = irow + 1
+                else:
+                    print("==Warning: Read failed at row %i" % irow)
+                    break
+            # self.dt.show()
+        self.resize_arrays(self.last_row+1)
+        self.h5root.flush()
+        if self.pixeltime is None:
+            self.calc_pixeltime()
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
@@ -1482,6 +1486,14 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
+    def update_tomo_center(self,center):
+    
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        try:
+            tomogrp.create_dataset('center', data=center)
+        except:
+            self.xrmmap['tomo/center'][...] = center
+   
     def reset_flags(self):
         '''
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
@@ -2495,10 +2507,9 @@ class GSEXRM_MapFile(object):
             index = name
         else:
             for ix, nam in enumerate(self.xrmmap['positions/name']):
-                if nam.lower() == nam.lower():
+                if nam.lower() == name.lower():
                     index = ix
                     break
-
         if index == -1:
             raise GSEXRM_Exception("Could not find position '%s'" % repr(name))
         pos = self.xrmmap['positions/pos'][:, :, index]
@@ -2550,7 +2561,7 @@ class GSEXRM_MapFile(object):
             
         if unit.startswith('2th'): ## 2th to 1/A
             xrange = q_from_twth(xrange,lambda_from_E(self.energy))
-        elif unt == 'd':           ## A to 1/A
+        elif unit == 'd':           ## A to 1/A
             xrange = q_from_d(xrange)
 
         roigroup,detname  = self.build_xrd_roimap(xrd='1D')
@@ -2645,7 +2656,7 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
-    def ORIGINALget_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
+    def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
@@ -2659,6 +2670,8 @@ class GSEXRM_MapFile(object):
         -------
         ndarray for ROI data
         '''
+        print('''    WARNING: this function is now outdated and will only function with
+    older map file formats.''')
         imap = -1
         roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
         det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
@@ -2703,7 +2716,7 @@ class GSEXRM_MapFile(object):
             return self.xrmmap[dat][:, :, imap]
 
 
-    def get_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
+    def return_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
@@ -2779,7 +2792,7 @@ class GSEXRM_MapFile(object):
     def get_rgbmap(self, detname, rroi, groi, broi, no_hotcols=True,
                    dtcorrect=True, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
-        ROIs (using get_roimap).
+        ROIs (using return_roimap).
 
         Parameters
         ----------
@@ -2801,9 +2814,9 @@ class GSEXRM_MapFile(object):
         (1/max intensity of all maps)
 
         '''
-        rmap = self.get_roimap(detname, rroi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        gmap = self.get_roimap(detname, groi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        bmap = self.get_roimap(detname, broi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        rmap = self.return_roimap(detname, rroi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        gmap = self.return_roimap(detname, groi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        bmap = self.return_roimap(detname, broi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())

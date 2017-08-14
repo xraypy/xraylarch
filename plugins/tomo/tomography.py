@@ -76,99 +76,88 @@ def return_methods():
 
     return alg0,alg1,alg2
 
-
-def refine_center(sino, center=None, method=None, omega=None, algorithm_A=None, algorithm_B=None):
+def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B):
 
     method = check_method(method)
-    if method is None:
-        print('No tomographic reconstruction packages available')
-        return
-
-
-    if method.lower().startswith('scikit') and HAS_scikit:
-
-        if algorithm_A == 'None':
-            algorithm_A = None
-        elif algorithm_A not in SCIKIT_FILT:
-            algorithm_A = 'shepp-logan'
-        if algorithm_B not in SCIKIT_INTR:
-            algorithm_B = 'linear'
-        npts = sino.shape[1]
-
-        if center is None: center = npts/2. 
-        if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[2])
-
-        rng,cen_list,entropy = 12,[],[]
-        print('testing center values in range %i to %i...' % (center-rng,center+rng))
-        for cen in np.arange(center-rng, center+rng, 1):
-            cen = int(cen)
-            xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
-            recon = iradon(sino[0,xslice],
-                           theta=omega, 
-                           filter=algorithm_A,
-                           interpolation=algorithm_B,
-                           circle=True)
-            recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
-            negentropy = (recon*np.log(recon)).sum()
-            cen_list += [cen]
-            entropy += [negentropy]
-        center = cen_list[np.array(entropy).argmin()]
-        print('\tbest: %i' % center)
-
-    elif method.lower().startswith('tomopy') and HAS_tomopy:
-        if center is None: center = sino.shape[2]/2. 
-        if omega is None: omega = np.linspace(0,np.radians(360),sino.shape[0])
-        center = tomopy.find_center(sino, omega, init=center, ind=0, tol=0.5)
-
-    return center
-
-def tomo_reconstruction(sino, refine_cen=False, center=None, method=None, algorithm_A=None, algorithm_B=None, omega=None):
-    '''
-    sino : slice, x, 2th
-    tomo : slice, x, y
-    '''
-    
-    method = check_method(method)
-    if method is None:
-        print('No tomographic reconstruction packages available')
-        return
     
     if center is None: center = sino.shape[1]/2.
     if omega is None: omega = np.linspace(0,360,sino.shape[2])
-    
+
     if method.lower().startswith('scikit') and HAS_scikit:
-        sci_center = sino.shape[1]-center
         if algorithm_A == 'None':
             algorithm_A = None
         elif algorithm_A not in SCIKIT_FILT:
             algorithm_A = 'shepp-logan'
         if algorithm_B not in SCIKIT_INTR:
             algorithm_B = 'linear'
-
-        if refine_cen: sci_center = refine_center(sino,center=sci_center,method=method,omega=omega)
-        tomo = []
         npts = sino.shape[1]
-        cen = int(sci_center)
-        xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
-        for sino0 in sino:
-            tomo += [iradon(sino0[xslice], theta=omega, filter=algorithm_A, interpolation=algorithm_B, circle=True)]
-        tomo = np.flip(tomo,1)
-        center = sino.shape[1]-cen
 
     elif method.lower().startswith('tomopy') and HAS_tomopy:
-        
+
         if algorithm_A not in TOMOPY_ALG:
             algorithm_A = 'gridrec'
         if algorithm_B not in TOMOPY_FILT or algorithm_B == 'None':
             algorithm_B = None
+        
+    return method, center, omega, algorithm_A, algorithm_B
+
+def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, method=None,
+                        algorithm_A=None, algorithm_B=None, omega=None):
+    '''
+    INPUT ->  sino : slice, x, 2th
+    OUTPUT -> tomo : slice, x, y
+    '''
+    
+    method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
+                                                        omega,algorithm_A,algorithm_B)
+    if method is None:
+        print('No tomographic reconstruction packages available')
+        return
+        
+    if method.lower().startswith('scikit') and HAS_scikit:
+
+        tomo = []
+        npts = sino.shape[1]
+        cntr = int(npts - center) # flip axis for compatibility with tomopy convention
+
+        if refine_cen:
+            
+            if cen_range is None: cen_range = 12
+            rng = int(cen_range) if cen_range > 0 and cen_range < 21 else 12
+
+            npts = sino.shape[1]
+            cen_list,negentropy = [],[]
+
+            for cen in np.arange(cntr-rng, cntr+rng, 1, dtype=int):
+                xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
+                recon = iradon(sino[0,xslice],
+                               theta=omega, 
+                               filter=algorithm_A,
+                               interpolation=algorithm_B,
+                               circle=True)
+                recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
+                negentropy += [(recon*np.log(recon)).sum()]
+                cen_list += [cen]
+            center = cen_list[np.array(negentropy).argmin()]
+
+        xslice = slice(npts-2*cntr, -1) if cntr < npts/2. else slice(0, npts-2*cntr)
+
+        for sino0 in sino:
+            tomo += [iradon(sino0[xslice], theta=omega, filter=algorithm_A,
+                                           interpolation=algorithm_B, circle=True)]
+        tomo = np.flip(tomo,1)
+        center = (npts-cntr)/1. # flip axis for compatibility with tomopy convention
+
+    elif method.lower().startswith('tomopy') and HAS_tomopy:
 
         ## reorder to: 2th,slice,x for tomopy
         sino = np.einsum('jki->ijk', np.einsum('kji->ijk', sino).T )
-        
-        omega = np.radians(omega)
 
-        if refine_cen: center = refine_center(sino,center=center,omega=omega)
-        tomo = tomopy.recon(sino, omega, center=center, algorithm=algorithm_A, filter_name=algorithm_B) 
+        if refine_cen: 
+            center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5)
+
+        tomo = tomopy.recon(sino, np.radians(omega), center=center, algorithm=algorithm_A) #,
+#                             filter_name=algorithm_B) 
         
         ## reorder to slice, x, y
         tomo = np.flip(tomo,1)

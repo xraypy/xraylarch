@@ -210,8 +210,9 @@ def calcXRD1d(xrd2d,ai,steps,attrs):
 def calcXRDcake(xrd2d,ai,attrs):
     return ai.integrate2d(xrd2d,2048,2048,**attrs) ## returns I,q,eta
 
-def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
-           has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None, path=None,
+           has_dark=False, has_flat=False, polarization_factor=None,
+           normalization_factor=None):
     '''
     copied and modified from pyFAI/io.py
     '''
@@ -223,6 +224,7 @@ def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
         ai = pyFAI.load(calfile)
 
     xaxis_unit = pyFAI.units.to_unit(xaxis_unit)
+    if path is not None: filename = '%s/%s' % (path,filename)
     with open(filename, 'w') as f:
         f.write(make_headers(has_dark=has_dark, has_flat=has_flat, ai=ai,
                                  polarization_factor=polarization_factor,

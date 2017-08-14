@@ -3,8 +3,7 @@ import time
 import numpy as np
 from scipy.special import erfc
 
-from larch import (Group, Parameter, isParameter, param_value,
-                   isNamedClass, Interpreter, Minimizer)
+from larch import Group
 from larch.utils import interp
 
 from larch_plugins.std  import show

@@ -1,40 +1,38 @@
+from lmfit import Parameter, Parameters, minimize
 
-from larch import Group, Parameter, isgroup, Minimizer, parse_group_args
+from larch import Group, isgroup, parse_group_args
 
 from larch.utils import index_of
 from larch_plugins.xray import xray_edge, xray_line, f1_chantler, f2_chantler, f1f2
-from larch_plugins.xafs import set_xafsGroup, find_e0
+from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
 import numpy as np
 from scipy.special import erfc
 
 MAXORDER = 6
 
-def match_f2(p):
+def match_f2(p, en=0, mu=1, f2=1, e0=0, em=0, weight=1, theta=1, order=None,
+             leexiang=False):
     """
     Objective function for matching mu(E) data to tabulated f''(E) using the MBACK
     algorithm and, optionally, the Lee & Xiang extension.
     """
-    s      = p.s.value
-    a      = p.a.value
-    em     = p.em.value
-    xi     = p.xi.value
-    c0     = p.c0.value
-    eoff   = p.en - p.e0.value
+    pars = p.valuesdict()
+    eoff  = en - e0
 
-    norm = a*erfc((p.en-em)/xi) + c0 # erfc function + constant term of polynomial
-    for i in range(MAXORDER):        # successive orders of polynomial
+    norm = p['a']*erfc((en-em)/p['xi']) + p['c0'] # erfc function + constant term of polynomial
+    for i in range(order):        # successive orders of polynomial
         j = i+1
         attr = 'c%d' % j
-        if hasattr(p, attr):
-            norm = norm + getattr(getattr(p, attr), 'value') * eoff**j
-    func = (p.f2 + norm - s*p.mu) * p.theta / p.weight
-    if p.leexiang:
-        func = func / s*p.mu
+        if attr in p:
+            norm += p[attr] * eoff**j
+    func = (f2 + norm - p['s']*mu) * theta / weight
+    if leexiang:
+        func = func / p['s']*mu
     return func
 
 
-def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
+def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
           whiteline=None, leexiang=False, tables='chantler', fit_erfc=False, return_f1=False,
           _larch=None):
     """
@@ -115,8 +113,6 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     weight1 = 1*(energy<e0)
     weight2 = 1*(energy>e0)
     weight  = np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
-
-
     ## get the f'' function from CL or Chantler
     if tables.lower() == 'chantler':
         f1 = f1_chantler(z, energy, _larch=_larch)
@@ -124,43 +120,49 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     else:
         (f1, f2) = f1f2(z, energy, edge=edge, _larch=_larch)
     group.f2=f2
-    if return_f1: group.f1=f1
+    if return_f1:
+        group.f1=f1
 
-    n = edge
-    if edge.lower().startswith('l'): n = 'L'
-    params = Group(s      = Parameter(1, vary=True, _larch=_larch),     # scale of data
-                   xi     = Parameter(50, vary=fit_erfc, min=0, _larch=_larch), # width of erfc
-                   em     = Parameter(xray_line(z, n, _larch=_larch)[0], vary=False, _larch=_larch), # erfc centroid
-                   e0     = Parameter(e0, vary=False, _larch=_larch),   # abs. edge energy
-                   ## various arrays need by the objective function
-                   en     = energy,
-                   mu     = mu,
-                   f2     = group.f2,
-                   weight = weight,
-                   theta  = theta,
-                   leexiang = leexiang,
-                   _larch = _larch)
+    em = xray_line(z, edge.upper(), _larch=_larch)[0] # erfc centroid
+
+    params = Parameters()
+    params.add(name='s',  value=1,  vary=True)  # scale of data
+    params.add(name='xi', value=50, vary=fit_erfc, min=0) # width of erfc
+    params.add(name='a',  value=0,   vary=False)  # amplitude of erfc
     if fit_erfc:
-        params.a = Parameter(1, vary=True,  _larch=_larch) # amplitude of erfc
-    else:
-        params.a = Parameter(0, vary=False, _larch=_larch) # amplitude of erfc
+        params['a'].value = 1
+        params['a'].vary  = True
 
     for i in range(order): # polynomial coefficients
-        setattr(params, 'c%d' % i, Parameter(0, vary=True, _larch=_larch))
+        params.add(name='c%d' % i, value=0, vary=True)
 
-    fit = Minimizer(match_f2, params, _larch=_larch, toler=1.e-5)
-    fit.leastsq()
+    out = minimize(match_f2, params, method='leastsq',
+                   gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                   kws = dict(en=energy, mu=mu, f2=f2, e0=e0, em=em,
+                              order=order, weight=weight, theta=theta, leexiang=leexiang))
 
-    eoff = energy - params.e0.value
-    normalization_function = params.a.value*erfc((energy-params.em.value)/params.xi.value) + params.c0.value
-    for i in range(MAXORDER):
+    opars = out.params.valuesdict()
+    eoff = energy - e0
+
+    norm_function = opars['a']*erfc((energy-em)/opars['xi']) + opars['c0']
+    for i in range(order):
         j = i+1
         attr = 'c%d' % j
-        if hasattr(params, attr):
-            normalization_function  = normalization_function + getattr(getattr(params, attr), 'value') * eoff**j
+        if attr in opars:
+            norm_function  += opars[attr]* eoff**j
 
-    group.fpp = params.s*mu - normalization_function
-    group.mback_params = params
+    group.e0 = e0
+    group.fpp = opars['s']*mu - norm_function
+    group.mback_params = opars
+    tmp = Group(energy=energy, mu=group.f2-norm_function, e0=0)
+
+    # calculate edge step from f2 + norm_function: should be very smooth
+    pre_f2 = preedge(energy, group.f2+norm_function, e0=e0, nnorm=2, nvict=0)
+    group.edge_step = pre_f2['edge_step'] / opars['s']
+
+    pre_fpp = preedge(energy, mu, e0=e0, nnorm=2, nvict=0)
+
+    group.norm = (mu -  pre_fpp['pre_edge']) / group.edge_step
 
 
 def registerLarchPlugin(): # must have a function with this name!
