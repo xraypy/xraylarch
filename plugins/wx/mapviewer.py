@@ -627,6 +627,8 @@ class TomographyPanel(GridPanel):
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
+        
+        #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
 
 
         #################################################################################
@@ -724,11 +726,14 @@ class TomographyPanel(GridPanel):
             self.npts = len(self.file.get_pos('fine x', mean=True))       
         except:
             self.npts = len(self.file.get_pos('x', mean=True))
-        if self.file.tomo_center is None:
-            self.file.tomo_center = self.npts/2.
+        try:
+            center = self.xrmmap['tomo/center'][...]
+        except:
+            center = self.npts/2.
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
-        self.center_value.SetValue(self.file.tomo_center)
+        self.center_value.SetValue(center)
         self.plotSELECT()
+        self.refineCHOICE()
         
     def refineCHOICE(self,event=None):
        
@@ -933,27 +938,25 @@ class TomographyPanel(GridPanel):
             ome = ome[:sino.shape[2]]
         elif len(ome) < sino.shape[2]:
             sino = sino[:,:,:len(ome)]
-        
-        self.file.tomo_center = self.center_value.GetValue()
 
         ## returns tomo in order: slice, x, y
-        self.file.tomo_center, tomo = tomo_reconstruction(sino,
+        tomo_center, tomo = tomo_reconstruction(sino,
                                         refine_cen=self.refine_center.GetValue(),
                                         cen_range=self.center_range.GetValue(),
-                                        center=self.file.tomo_center,
+                                        center=self.center_value.GetValue(),
                                         method=alg[0],
                                         algorithm_A=alg[1],
                                         algorithm_B=alg[2],
                                         omega=ome)
 
-        self.center_value.SetValue(self.file.tomo_center)
+        self.set_center(tomo_center)
         self.refine_center.SetValue(False)
-        
+
         omeoff, xoff = 0, 0
         if alg[1] != '' and alg[1] is not None:
-            title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],self.file.tomo_center,title)
+            title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],tomo_center,title)
         else:
-            title = '[%s @ %0.1f] %s' % (alg[0],self.file.tomo_center,title)
+            title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
         
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
@@ -965,6 +968,11 @@ class TomographyPanel(GridPanel):
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.file)
+
+    def set_center(self,center):
+    
+        self.center_value.SetValue(center)
+        self.file.update_tomo_center(center)
 
     def set_det_choices(self, xrmmap):
 
