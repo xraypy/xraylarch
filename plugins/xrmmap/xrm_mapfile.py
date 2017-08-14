@@ -101,16 +101,24 @@ def isGSEXRM_MapFolder(fname):
     if (fname is None or not os.path.exists(fname) or
         not os.path.isdir(fname)):
         return False
+    else:
+        print 'not found?'
     flist = os.listdir(fname)
     for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
         if f not in flist:
             return False
+        else:
+            print 'missing: %s' % f
     has_xrfdata = False
     ## This should read Master.dat for file name and check that it exist.
     ## If file name is listed as __unused__ then flag should be false.
     ## mkak 2017.03.10
     for f in ('xmap.0001', 'xsp3.0001'):
-        if f in flist: has_xrfdata = True
+        if f in flist:
+            has_xrfdata = True
+        else:
+            print 'missing files: %s' % f
+        
     return has_xrfdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',

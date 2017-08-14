@@ -27,7 +27,10 @@ def read_xrd_netcdf(fname,verbose=False): #npixels=self.nrows_expected
     xrd_file = netcdf_open(fname,'r')
     xrd_data = xrd_file.variables['array_data'].data.copy()
     xrd_data = xrd_data.astype('uint16')
-    xrd_file.close()
+    try:
+        xrd_file.close()
+    except:
+       pass
     
     ## Forces data into 3D shape
     shape = xrd_data.shape ## (no_images,pixels_x,pixels_y)
