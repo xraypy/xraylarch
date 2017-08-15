@@ -140,7 +140,7 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=Non
 #         print('pyFAI not imported. Cannot calculate 1D integration.')
 
 def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dark=None,
-                  verbose=False):
+                  save=False, verbose=False):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
@@ -170,7 +170,8 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
         if mask:
             if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
         if dark:
-            if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
+            if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
+        attrs.update({'save':save})
 
         if file is not '':
             if verbose:
