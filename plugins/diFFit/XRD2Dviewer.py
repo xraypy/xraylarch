@@ -7,6 +7,7 @@ import os
 import numpy as np
 
 import matplotlib.cm as colormap
+from functools import partial
 
 import wx
 try:
@@ -19,8 +20,11 @@ from wxutils import MenuItem
 
 import larch
 from larch_plugins.io import tifffile
+from larch import Group
+
 
 from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
+from larch_plugins.xrmmap import read_xrd_netcdf
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -64,6 +68,7 @@ class diFFit2DPanel(wx.Panel):
         
         self.SetSizer(vbox)
 
+
 class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
@@ -84,9 +89,9 @@ class diFFit2DFrame(wx.Frame):
         
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
-        ## Default image information
-        self.name_images = []
-        self.data_images = []
+        self.open_image = []
+
+        ## Default image information        
         self.raw_img = np.zeros((2048,2048))
         self.flp_img = np.zeros((2048,2048))
         self.plt_img = np.zeros((2048,2048))
@@ -125,23 +130,33 @@ class diFFit2DFrame(wx.Frame):
 
     def optionsON(self):
     
-        self.ch_clr.Enable()
-        self.sldr_min.Enable()
-        self.entr_min.Enable()
-        self.sldr_max.Enable()
-        self.entr_max.Enable()
-        self.btn_ct1.Enable()
-        self.ch_flp.Enable()
-        self.ch_scl.Enable()
-        self.btn_mask.Enable()
-        self.btn_bkgd.Enable()
+        if len(self.open_image) > 0:
+            img_no = self.ch_img.GetSelection()
+            self.open_image[img_no]
+            
+            self.ch_clr.Enable()
+            self.sldr_cntrst.Enable()
+            self.entr_min.Enable()
+            self.entr_max.Enable()
+            self.btn_ct1.Enable()
+            self.ch_flp.Enable()
+            self.ch_scl.Enable()
+            self.btn_mask.Enable()
+            self.btn_bkgd.Enable()
+        
+            if self.open_image[img_no].frames > 1:
+                self.frmsldr.Enable()
+                for btn in self.frm_btn: btn.Enable()
+            else:
+                self.frmsldr.Disable()
+                for btn in self.frm_btn: btn.Disable()
 
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
     def loadIMAGE(self,event=None):
     
-        wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+        wildcards = 'XRD image (*.*)|*.*|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -153,63 +168,103 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
+            
+            
+            print('Reading file: %s' % path)
             try:
-                newimg = tifffile.imread(path)
-                print('Reading file: %s' % path)
+                image = tifffile.imread(path)
             except:
-                print('Cannot read as an image file: %s' % path)
-                return
-            
-            self.plot2Dxrd(newimg,os.path.split(path)[-1])
-            
-    def plot2Dxrd(self,img,iname):
-        str_msg = 'Displaying image: %s' % iname
-        self.write_message(str_msg,panel=0)
+                image = read_xrd_netcdf(path,verbose=True)
+            finally:
+                print('  Successfully read.')
+            iname = os.path.split(path)[-1]
 
-        img_no = len(self.data_images)
-        self.name_images.append(iname)
-        self.data_images.append(img)
+            self.write_message('Displaying image: %s' % iname, panel=0)
+            self.open_image.append(XRDImg(label=iname, path=path, image=image))
+
+            name_images = [image.label for image in self.open_image]
+            self.ch_img.Set(name_images)
+            self.ch_img.SetStringSelection(iname)
+
+            self.raw_img = self.open_image[-1].get_image()
+            print ' calling displayIMAGE' 
+            self.displayIMAGE()
+                
+            if self.open_image[-1].frames > 1:
+                self.frmsldr.SetRange(0,(self.open_image[-1].frames-1))
+                self.frmsldr.SetValue(self.open_image[-1].i)
+            else:
+                self.frmsldr.Disable()
+                for btn in self.frm_btn: btn.Disable()
+
+            
+    def chng_image(self,flag='slider',event=None):
+    
+        print '  executing chng_image'
+    
+        if len(self.open_image) > 0:
+            img_no = self.ch_img.GetSelection()
+            if flag=='next':
+                i = self.open_image[img_no].i + 1
+            elif flag=='previous':
+                i = self.open_image[img_no].i - 1
+            elif flag=='slider':
+                i = self.frmsldr.GetValue()
         
-        self.ch_img.Set(self.name_images)
-        self.ch_img.SetStringSelection(iname)
-
-        self.raw_img = self.data_images[img_no]
-        self.displayIMAGE()
+            self.raw_img = self.open_image[img_no].get_image(i=i)
+            
+            self.frmsldr.SetValue(self.open_image[img_no].i)
+            print ' calling displayIMAGE' 
+            self.displayIMAGE(contrast=False,unzoom=False)
            
-    def displayIMAGE(self):
+    def displayIMAGE(self,contrast=True,unzoom=True):
+        print '  executing displayIMAGE'
+        
+        print ' calling flipIMAGE'
         self.flipIMAGE()
+        print ' calling checkIMAGE'
         self.checkIMAGE()
+        print ' calling calcIMAGE'
         self.calcIMAGE()
         
-        self.xrd2Dviewer.plot2D.display(self.plt_img)
-        self.displayCAKE()
+        print 'DISPLAY...!'
+        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
+        #self.displayCAKE()
                 
-        self.autoContrast()
+        if contrast: self.autoContrast()
 
-        self.txt_ct2.SetLabel('[ image range: %i, %i ]' % 
+        self.txt_ct2.SetLabel('[ image range: %i to %i ]' % 
                          (np.min(self.plt_img),np.max(self.plt_img)))
 
         self.optionsON()
 
     def redrawIMAGE(self):
+        print '  executing redrawIMAGE'
+
+        print ' calling flipIMAGE'
         self.flipIMAGE()
+        print ' calling checkIMAGE'
         self.checkIMAGE()
+        print ' calling calcIMAGE'
         self.calcIMAGE()
+        print ' calling colorIMAGE'
         self.colorIMAGE()
         
         self.xrd2Dviewer.plot2D.redraw()
-        self.displayCAKE()
+        #self.displayCAKE()
 
     def selectIMAGE(self,event=None):
+        print '  executing selectIMAGE'
         img_no = self.ch_img.GetSelection()
-        self.raw_img = self.data_images[img_no]
+        self.raw_img = self.open_image[img_no].get_image()
+        print ' calling displayIMAGE'        
         self.displayIMAGE()
         
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
     def calcIMAGE(self):
-
+        print '  executing calcIMAGE'
         if self.use_mask is True:
             if self.use_bkgd is True:
                 self.plt_img = self.flp_img * self.msk_img - self.bkgd_img * self.bkgd_scale
@@ -222,6 +277,7 @@ class diFFit2DFrame(wx.Frame):
                 self.plt_img = self.flp_img
 
     def flipIMAGE(self):
+        print '  executing flipIMAGE'
         if self.flip == 'vertical': # Vertical
             self.flp_img = self.raw_img[::-1,:]
         elif self.flip == 'horizontal': # Horizontal
@@ -232,7 +288,7 @@ class diFFit2DFrame(wx.Frame):
             self.flp_img = self.raw_img
 
     def checkIMAGE(self):
-        
+        print '  executing checkIMAGE'        
         ## Reshapes/replaces mask and/or background if shape doesn't match that of image    
         if self.msk_img.shape != self.raw_img.shape:
             self.msk_img = np.ones(self.raw_img.shape)
@@ -253,30 +309,23 @@ class diFFit2DFrame(wx.Frame):
         
         ## Enables background slider and sets range.
         if bkgd_pxls == 0:
-            self.entr_scale.SetLabel('')
-            
             self.sldr_bkgd.Disable()
-            self.entr_scale.Disable()
-            
             self.use_bkgd = False
-            self.entr_scale.SetLabel('0')
         else:
-            self.entr_scale.Enable()
             self.sldr_bkgd.Enable()
-
             self.use_bkgd = True
-            self.entr_scale.SetLabel('1')
 
         self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
 
     def colorIMAGE(self):
+        print '  executing colorIMAGE'
         self.xrd2Dviewer.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-        self.xrd2Dviewer.plot2D.display(self.plt_img)
+        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=False)
 
         if self.cake is not None:
             self.xrd2Dcake.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-            self.xrd2Dcake.plot2D.display(self.cake[0])
+            self.xrd2Dcake.plot2D.display(self.cake[0],unzoom=False)
 
     def setCOLOR(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
@@ -305,83 +354,51 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### BACKGROUND FUNCTIONS
     def onBkgdScale(self,event=None):
-        
         self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
-        self.entr_scale.SetValue(str(self.bkgd_scale))
-        
         self.redrawIMAGE()        
-        
-    def onChangeBkgdScale(self,event=None):
-
-        self.bkgd_scale = float(self.entr_scale.GetValue())
-        self.bkgdMAX = (float(self.entr_scale.GetValue()) * 2) / SLIDER_SCALE
-
-        self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
-        self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
-        
-        self.redrawIMAGE()       
         
 ##############################################
 #### IMAGE CONTRAST FUNCTIONS
     def autoContrast(self,event=None):
 
-        self.minINT = int(np.min(self.plt_img))
-        self.maxINT = int(np.max(self.plt_img)/15) # /15 scales image to viewable 
-        if self.maxINT == self.minINT:
-            self.minINT = self.minINT
-            self.maxINT = self.minINT+100
-        try:
-            self.sldr_min.SetRange(self.minINT,self.maxINT)
-            self.sldr_max.SetRange(self.minINT,self.maxINT)
-        except:
-            pass
-        self.minCURRENT = self.minINT
-        self.maxCURRENT = self.maxINT
-        if self.maxCURRENT > self.maxINT:
-            self.maxCURRENT = self.maxINT
+        self.minCURRENT = int(np.min(self.plt_img))
+        self.maxCURRENT = int(np.max(self.plt_img)) # /15 scales image to viewable 
+        if self.maxCURRENT == self.minCURRENT:
+            self.minCURRENT = self.minCURRENT
+            self.maxCURRENT = self.minCURRENT+100
+        
+        self.entr_min.SetValue('%i' % self.minCURRENT)
+        self.entr_max.SetValue('%i' % self.maxCURRENT)
+        self.sldr_cntrst.SetRange(self.minCURRENT,self.maxCURRENT)
+        self.sldr_cntrst.SetValue(int(self.maxCURRENT*0.4))
 
-        self.setContrast()  
-
+        self.setContrast() 
+        
     def onContrastRange(self,event=None):
     
-        newMIN = int(self.entr_min.GetValue())
-        newMAX = int(self.entr_max.GetValue())
+        self.minCURRENT = int(self.entr_min.GetValue())
+        self.maxCURRENT = int(self.entr_max.GetValue())
         
-        self.sldr_min.SetRange(newMIN,newMAX)
-        self.sldr_max.SetRange(newMIN,newMAX)
-        
-        if newMAX < self.maxCURRENT:
-            self.maxCURRENT = newMAX
-        if newMIN < self.minCURRENT:
-            self.minCURRENT = newMIN
+        self.sldr_cntrst.SetRange(self.minCURRENT,self.maxCURRENT)
+
+        self.sldr_cntrst.SetValue(self.maxCURRENT)
         
         self.setContrast()
             
 
     def onSlider(self,event=None):
 
-        self.minCURRENT = self.sldr_min.GetValue()
-        self.maxCURRENT = self.sldr_max.GetValue()
-
-        if self.minCURRENT > self.maxCURRENT:
-            self.sldr_min.SetValue(self.maxCURRENT)
-            self.sldr_max.SetValue(self.minCURRENT)       
+        self.maxCURRENT = int(self.sldr_cntrst.GetValue())
 
         self.setContrast()
 
     def setContrast(self):
-
-        self.sldr_min.SetValue(self.minCURRENT)
-        self.sldr_max.SetValue(self.maxCURRENT)
 
         self.xrd2Dviewer.plot2D.conf.auto_intensity = False        
         self.xrd2Dviewer.plot2D.conf.int_lo[0] = self.minCURRENT
         self.xrd2Dviewer.plot2D.conf.int_hi[0] = self.maxCURRENT
         
         self.xrd2Dviewer.plot2D.redraw()
-            
-        self.entr_min.SetLabel(str(self.minCURRENT))
-        self.entr_max.SetLabel(str(self.maxCURRENT))
 
         if self.cake is not None:
             self.xrd2Dcake.plot2D.conf.auto_intensity = False        
@@ -453,7 +470,7 @@ class diFFit2DFrame(wx.Frame):
                 attrs = {}
                 wvlngth = read_lambda(self.calfile)
                 attrs.update({'wavelength':wvlngth,'energy':E_from_lambda(wvlngth)})
-                attrs.update({'label':self.name_images[self.ch_img.GetSelection()]})
+                attrs.update({'label':self.open_image[self.ch_img.GetSelection()].label})
                 data1dxrd = xrd1d(**attrs)
                 data1dxrd.xrd_from_2d(data1D,'q')
 
@@ -704,9 +721,25 @@ class diFFit2DFrame(wx.Frame):
         ###########################
         ## DATA CHOICE
 
-        self.ch_img = wx.Choice(self.panel,choices=self.name_images)
+        self.ch_img = wx.Choice(self.panel,choices=[])
         self.ch_img.Bind(wx.EVT_CHOICE, self.selectIMAGE)
         vbox.Add(self.ch_img, flag=wx.EXPAND|wx.ALL, border=8)
+
+        self.frmsldr = wx.Slider(self.panel, minValue=0, maxValue=1, 
+                                 style = wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.frm_btn = [ wx.Button(self.panel,label=u'\u2190', size=(40, -1)),
+                         wx.Button(self.panel,label=u'\u2192', size=(40, -1))]
+
+        frmszr = wx.BoxSizer(wx.HORIZONTAL)
+        frmszr.Add(self.frm_btn[0],   flag=wx.RIGHT,            border=6)
+        frmszr.Add(self.frmsldr,      flag=wx.EXPAND|wx.RIGHT,  border=6)
+        frmszr.Add(self.frm_btn[1],   flag=wx.RIGHT,            border=6)
+        
+        self.frm_btn[0].Bind(wx.EVT_BUTTON, partial(self.chng_image,'previous') )
+        self.frm_btn[1].Bind(wx.EVT_BUTTON, partial(self.chng_image,'next')     )
+        self.frmsldr.Bind(wx.EVT_SLIDER,    partial(self.chng_image,'slider')   )
+
+        vbox.Add(frmszr,flag=wx.ALL, border=8)
     
         return vbox    
 
@@ -748,38 +781,32 @@ class diFFit2DFrame(wx.Frame):
         vbox_ct.Add(hbox_ct1,      flag=wx.TOP|wx.BOTTOM, border=4)
     
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_min = wx.StaticText(self.panel, label='min')
-        self.sldr_min = wx.Slider(self.panel)
-        self.entr_min = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
-
-        self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
-        self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
-            
-        hbox_ct2.Add(self.ttl_min,  flag=wx.RIGHT,         border=6)
-        hbox_ct2.Add(self.sldr_min, flag=wx.RIGHT,         border=6)
-        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
-        vbox_ct.Add(hbox_ct2,       flag=wx.TOP|wx.BOTTOM, border=4)        
-    
-        hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
-        self.ttl_max = wx.StaticText(self.panel, label='max')
-        self.sldr_max = wx.Slider(self.panel)
-        self.entr_max = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
-
-        self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
-        self.entr_max.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
         
-        hbox_ct3.Add(self.ttl_max,  flag=wx.RIGHT,         border=6)
-        hbox_ct3.Add(self.sldr_max, flag=wx.RIGHT,         border=6)
-        hbox_ct3.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
-        vbox_ct.Add(hbox_ct3,       flag=wx.TOP|wx.BOTTOM, border=4)
+        self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_VALUE_LABEL)
+        self.entr_min = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(60,-1))
+        self.entr_max = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(60,-1))
 
-        hbox_ct4 = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_ct1 = wx.Button(self.panel,label='reset range')
+        self.sldr_cntrst.Bind(wx.EVT_SLIDER,self.onSlider)
+        self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
+        self.entr_max.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
+
+        self.btn_ct1 = wx.Button(self.panel,label='reset',size=(50,-1))
 
         self.btn_ct1.Bind(wx.EVT_BUTTON,self.autoContrast)
 
-        hbox_ct4.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
-        vbox_ct.Add(hbox_ct4,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
+            
+        vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT, border=6)
+
+
+        ttl_rng = wx.StaticText(self.panel, label='Range:')
+        ttl_to = wx.StaticText(self.panel, label='to')
+        hbox_ct2.Add(ttl_rng, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
+        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
+        hbox_ct2.Add(ttl_to, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
+        hbox_ct2.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
+        hbox_ct2.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
+        
+        vbox_ct.Add(hbox_ct2,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
         vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
 
         ###########################
@@ -826,27 +853,16 @@ class diFFit2DFrame(wx.Frame):
         ## Background
         hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
-        self.sldr_bkgd = wx.Slider(self.panel)
+        self.sldr_bkgd = wx.Slider(self.panel,style=wx.SL_VALUE_LABEL)
 
         self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
         self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
 
-        hbox_bkgd1.Add(self.btn_bkgd,  flag=wx.RIGHT|wx.TOP,         border=6)
-        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.ALIGN_RIGHT|wx.TOP,   border=6)
-        vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM, border=4)
-
-
-        hbox_bkgd2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.entr_scale = wx.TextCtrl(self.panel,style=wx.TE_PROCESS_ENTER)
-        
-        self.entr_scale.Bind(wx.EVT_TEXT_ENTER,self.onChangeBkgdScale)
-              
-        hbox_bkgd2.Add(self.entr_scale, flag=wx.RIGHT,                        border=6)
-        vbox.Add(hbox_bkgd2,            flag=wx.TOP|wx.BOTTOM|wx.ALIGN_RIGHT, border=4)
+        hbox_bkgd1.Add(self.btn_bkgd,  flag=wx.RIGHT|wx.TOP,                 border=6)
+        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.EXPAND|wx.ALIGN_RIGHT|wx.TOP, border=6)
+        vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM,                border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
-        self.sldr_bkgd.Disable()
-        self.entr_scale.Disable()
 
         ###########################
         ## Set defaults  
@@ -854,15 +870,17 @@ class diFFit2DFrame(wx.Frame):
         self.ch_flp.SetStringSelection(self.flip)
         self.ch_msk.Disable()
         self.ch_clr.Disable()
-        self.sldr_min.Disable()
+        self.sldr_cntrst.Disable()
         self.entr_min.Disable()
-        self.sldr_max.Disable()
         self.entr_max.Disable()
         self.btn_ct1.Disable()
         self.ch_flp.Disable()
         self.ch_scl.Disable()
         self.btn_mask.Disable()
         self.btn_bkgd.Disable()
+        self.sldr_bkgd.Disable()
+        self.frmsldr.Disable()
+        for btn in self.frm_btn: btn.Disable()
         
         return vbox    
 
@@ -887,7 +905,6 @@ class diFFit2DFrame(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.panel2DXRDplot(panel)
         btnbox = self.QuickButtons(panel)
-#         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(self.nb,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
@@ -923,6 +940,72 @@ class diFFit2D(wx.App):
     def OnInit(self):
         self.createApp()
         return True
+
+
+class XRDImg(Group):
+    '''
+    XRD image class
+    
+    Attributes:
+    ------------
+    * self.label         = 'Data: CeO2_Allende'              # name of data set
+    * self.path          = '/Volumes/Data/CeO2_Allende.tif'  # file containing x-y data
+    * self.type          = 'tiff'                            # file type
+
+    # Data parameters
+    * self.image         = None or array          # should be a 3-D array [no * x * y]
+    * self.frames        = 1                      # number of frames in self.image
+    * self.i             = 0                      # integer indicating current frame
+    * self.minval        = 0                      # integer of minimum display contrast
+    * self.maxval        = 100                    # integer of maximum display contrast
+    * self.curval        = 80                     # integer of current display contrast
+
+    mkak 2017.08.15
+    '''
+
+    def __init__(self, label=None, path=None, type='tiff', image=None):
+
+        self.label = label
+        self.path  = path
+        self.type  = type
+        
+        self.frames = 1
+        self.i = 0
+        self.image = np.zeros((1,2048,2048)) if image is None else image
+        
+        self.check_image()
+        self.calc_range()
+        
+
+    def check_image(self):
+
+        shp = np.shape(self.image)
+        if len(shp) == 2:
+            self.image = np.reshape(self.image,(1,shp[0],shp[1]))
+
+        self.frames = np.shape(self.image)[0]
+        self.i = 0 if self.frames < 4 else int(self.frames)/2
+        
+        print 'SHAPE',np.shape(self.image)
+
+
+    def calc_range(self):
+
+        self.minval = self.image[self.i].min()
+        self.maxval = self.image[self.i].max()
+        self.curval = (self.maxval-self.minval) * 0.4 + self.minval
+    
+
+    def get_image(self,i=None):
+    
+        if i is not None and i != self.i:
+            if i < 0: i == self.frames-1
+            if i >= self.frames: i = 0
+            self.i = i
+        
+        return self.image[self.i]
+
+
 
 def registerLarchPlugin():
     return ('_diFFit', {})
