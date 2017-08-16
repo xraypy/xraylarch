@@ -171,7 +171,6 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='', mask=None, dar
             if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
         if dark:
             if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
-        attrs.update({'save':save})
 
         if file is not '':
             if verbose:

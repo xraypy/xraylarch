@@ -436,12 +436,9 @@ class diFFit2DFrame(wx.Frame):
                                    defaultDir=os.getcwd(),
                                    wildcard=wildcards,
                                    style=wx.SAVE|wx.OVERWRITE_PROMPT)
-                path, save = None, False
                 if dlg.ShowModal() == wx.ID_OK:
-                    save = True
-                    path = dlg.GetPath().replace('\\', '/')
-                    if save: print('***** SAVE is not working?! *****')
-                    attrs.update({'file':path}) #,'save':save})
+                    filename = dlg.GetPath().replace('\\', '/')
+                    attrs.update({'file':filename})
                 dlg.Destroy()
             data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
             
