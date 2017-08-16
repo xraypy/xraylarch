@@ -163,15 +163,13 @@ class diFFit2DFrame(wx.Frame):
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
-        path, read = None, False
+        path, read = '', False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
             path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
         
         if read:
-            
-            
             print('Reading file: %s' % path)
             try:
                 try:
@@ -183,23 +181,26 @@ class diFFit2DFrame(wx.Frame):
                 return
 
             iname = os.path.split(path)[-1]
+            self.plot2Dxrd(iname,image,path=path)
 
-            self.write_message('Displaying image: %s' % iname, panel=0)
-            self.open_image.append(XRDImg(label=iname, path=path, image=image))
+    def plot2Dxrd(self,iname,image,path=''):
 
-            name_images = [image.label for image in self.open_image]
-            self.ch_img.Set(name_images)
-            self.ch_img.SetStringSelection(iname)
+        self.write_message('Displaying image: %s' % iname, panel=0)
+        self.open_image.append(XRDImg(label=iname, path=path, image=image))
 
-            self.raw_img = self.open_image[-1].get_image()
-            self.displayIMAGE()
-                
-            if self.open_image[-1].frames > 1:
-                self.frmsldr.SetRange(0,(self.open_image[-1].frames-1))
-                self.frmsldr.SetValue(self.open_image[-1].i)
-            else:
-                self.frmsldr.Disable()
-                for btn in self.frm_btn: btn.Disable()
+        name_images = [image.label for image in self.open_image]
+        self.ch_img.Set(name_images)
+        self.ch_img.SetStringSelection(iname)
+
+        self.raw_img = self.open_image[-1].get_image()
+        self.displayIMAGE()
+            
+        if self.open_image[-1].frames > 1:
+            self.frmsldr.SetRange(0,(self.open_image[-1].frames-1))
+            self.frmsldr.SetValue(self.open_image[-1].i)
+        else:
+            self.frmsldr.Disable()
+            for btn in self.frm_btn: btn.Disable()
 
             
     def changeFRAME(self,flag='slider',event=None):
@@ -1019,7 +1020,7 @@ class XRDImg(Group):
     mkak 2017.08.15
     '''
 
-    def __init__(self, label=None, path=None, type='tiff', image=None):
+    def __init__(self, label=None, path='', type='tiff', image=None):
 
         self.label = label
         self.path  = path
@@ -1038,7 +1039,6 @@ class XRDImg(Group):
         shp = np.shape(self.image)
         if len(shp) == 2:
             self.image = np.reshape(self.image,(1,shp[0],shp[1]))
-
         self.frames = np.shape(self.image)[0]
         self.i = 0 if self.frames < 4 else int(self.frames)/2
 

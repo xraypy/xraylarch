@@ -2407,22 +2407,22 @@ class MapViewerFrame(wx.Frame):
         displays 2D XRD pattern in diFFit viewer
         '''
         flptyp = 'vertical' if flip is True else False
+        poni = ''
         if self.xrddisplay2D is None:
             try:
                 poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
             except:
-                poni = ''
+                pass
             if not os.path.exists(poni): poni = None
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
                                               xrd1Dviewer=self.xrddisplay1D,
                                               ponifile=poni)
         try:
-            self.xrddisplay2D.plot2Dxrd(map,title)
+            self.xrddisplay2D.plot2Dxrd(title,map)
         except PyDeadObjectError:
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
-                                              xrd1Dviewer=self.xrddisplay1D,
-                                              ponifile=poni)
-            self.xrddisplay2D.plot2Dxrd(map,title)
+                                              xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D.plot2Dxrd(title,map)
         self.xrddisplay2D.Show()
         self.xrddisplay2D.displayCAKE()
 
