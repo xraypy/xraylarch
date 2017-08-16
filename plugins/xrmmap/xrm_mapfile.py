@@ -1491,9 +1491,13 @@ class GSEXRM_MapFile(object):
         if os.path.exists(self.xrmmap['xrd1D'].attrs['calfile']):
 
             poni = self.xrmmap['xrd1D'].attrs['calfile']
+            print('Using calibration file : %s' % poni)
             try:
+                print 'Looking for 2D data..'
                 data2D  = self.xrmmap['xrd2D/counts'][:]
+                print 'Found data...'
                 shape2D = data2D.shape
+                print 'And its shape is:',shape2D
             except:
                 return
         
@@ -1503,9 +1507,6 @@ class GSEXRM_MapFile(object):
             print(pform % (shape2D[0],shape2D[1],self.qstps,
                            shape2D[0],shape2D[1],shape2D[2],shape2D[3]))
         
-            self.flag_xrd1d = True
-            self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
-    
             xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
             try:
                 xrd1Dgrp.attrs['type'] = 'xrd1D detector'
@@ -1522,6 +1523,8 @@ class GSEXRM_MapFile(object):
                     data1D += [row1D]
                 xrd1Dgrp.create_dataset('q', data=np.array(rowq[0]))
                 xrd1Dgrp.create_dataset('counts', data=np.array(data1D))
+                self.flag_xrd1d = True
+                self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
             except:
                 print('1DXRD data already in file.')
