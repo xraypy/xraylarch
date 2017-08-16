@@ -2449,7 +2449,10 @@ class GSEXRM_MapFile(object):
         Note:  if mapdat is None, the map data is taken from the 'xrd2D/counts' parameter
         '''
         if mapdat is None:
-            mapdat = self.xrmmap['xrd2D/counts']
+            if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+                mapdat = self.xrmmap['xrd2D']['counts']
+            else:
+                mapdat = self.xrmmap['xrd2D']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
