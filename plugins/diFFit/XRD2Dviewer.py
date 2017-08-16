@@ -252,24 +252,24 @@ class diFFit2DFrame(wx.Frame):
         self.displayIMAGE()
 
 
-    def onCursorMode(self, event=None, mode='zoom'):
-        
-        try:
-            self.xrd2Dviewer.plot2D.cursor_mode = CURSOR_MODES[self.crsr_chc.GetSelection()]
-        except:
-            self.xrd2Dviewer.plot2D.cursor_mode = 'zoom'
-            
-        print ' --- need to trigger onLasso/lasso_callback ---'
-            
-    def onLasso(self, data=None, selected=None, mask=None, **kws):
-        if hasattr(self.lasso_callback , '__call__'):
-
-            self.lasso_callback(data=data, selected=selected, mask=mask,
-                                xoff=self.xoff, yoff=self.yoff, det=self.det,
-                                xrmfile=self.xrmfile, **kws)
-
-        self.xrd2Dviewer.plot2D.cursor_mode = 'zoom'
-        self.crsr_chc.SetSelection(0)
+#     def onCursorMode(self, event=None, mode='zoom'):
+#         
+#         try:
+#             self.xrd2Dviewer.plot2D.cursor_mode = CURSOR_MODES[self.crsr_chc.GetSelection()]
+#         except:
+#             self.xrd2Dviewer.plot2D.cursor_mode = 'zoom'
+#             
+#         print ' --- need to trigger onLasso/lasso_callback ---'
+#             
+#     def onLasso(self, data=None, selected=None, mask=None, **kws):
+#         if hasattr(self.lasso_callback , '__call__'):
+# 
+#             self.lasso_callback(data=data, selected=selected, mask=mask,
+#                                 xoff=self.xoff, yoff=self.yoff, det=self.det,
+#                                 xrmfile=self.xrmfile, **kws)
+# 
+#         self.xrd2Dviewer.plot2D.cursor_mode = 'zoom'
+#         self.crsr_chc.SetSelection(0)
         
 
 #     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
@@ -724,11 +724,11 @@ class diFFit2DFrame(wx.Frame):
         
         imgbox   = self.ImageBox(self.panel)
         vistools = self.Toolbox(self.panel)
-        cursor   = self.CursorBox(self.panel)
+#         cursor   = self.CursorBox(self.panel)
         
         vbox.Add(imgbox,flag=wx.ALL|wx.EXPAND,border=10)
         vbox.Add(vistools,flag=wx.ALL|wx.EXPAND,border=10)
-        vbox.Add(cursor,flag=wx.ALL|wx.EXPAND,border=10)
+#         vbox.Add(cursor,flag=wx.ALL|wx.EXPAND,border=10)
 
         return vbox
 
@@ -922,23 +922,23 @@ class diFFit2DFrame(wx.Frame):
         
         return vbox    
 
-    def CursorBox(self,panel):
-        '''
-        Frame for data toolbox
-        '''
-        
-        tlbx = wx.StaticBox(self.panel,label='CURSOR MODES')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-
-        ###########################
-        ## CURSOR CHOICE
-
-        cursor_choices = ['Zoom to Rectangle','Pick Area for 2DXRD ROI']
-        self.crsr_chc = wx.Choice(self.panel,choices=cursor_choices)
-        self.crsr_chc.Bind(wx.EVT_CHOICE, self.onCursorMode)
-        vbox.Add(self.crsr_chc, flag=wx.EXPAND|wx.ALL, border=8)
-
-        return vbox 
+#     def CursorBox(self,panel):
+#         '''
+#         Frame for data toolbox
+#         '''
+#         
+#         tlbx = wx.StaticBox(self.panel,label='CURSOR MODES')
+#         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+# 
+#         ###########################
+#         ## CURSOR CHOICE
+# 
+#         cursor_choices = ['Zoom to Rectangle','Pick Area for 2DXRD ROI']
+#         self.crsr_chc = wx.Choice(self.panel,choices=cursor_choices)
+#         self.crsr_chc.Bind(wx.EVT_CHOICE, self.onCursorMode)
+#         vbox.Add(self.crsr_chc, flag=wx.EXPAND|wx.ALL, border=8)
+# 
+#         return vbox 
 
     def panel2DXRDplot(self,panel):
     
