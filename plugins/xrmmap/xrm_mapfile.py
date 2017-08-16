@@ -1494,7 +1494,6 @@ class GSEXRM_MapFile(object):
             print('Using calibration file : %s' % poni)
             try:
                 shape2D = self.xrmmap['xrd2D/counts'].shape
-                print 'And its shape is:',shape2D
             except:
                 return
         
@@ -1514,15 +1513,13 @@ class GSEXRM_MapFile(object):
 
                 chunksize_1DXRD  = (1, shape2D[1], self.qstps)
                 self.xrmmap['xrd1D'].create_dataset('counts',
-                                       (NINIT, shape2D[1], self.qstps),
+                                       (shape2D[0], shape2D[1], self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
-                                       maxshape=(None, shape2D[1], self.qstps),
                                        compression=COMPRESSION_LEVEL)
 
                 attrs = {'steps':self.qstps,'mask':self.maskfile,'flip':self.flip}
 
-                
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))                
                 for i in np.arange(shape2D[0]):
                     print(' Add row %4i' % (i+1))
@@ -1536,7 +1533,6 @@ class GSEXRM_MapFile(object):
             except:
                 print('1DXRD data already in file.')
                 return
-
 
     def update_tomo_center(self,center):
     
