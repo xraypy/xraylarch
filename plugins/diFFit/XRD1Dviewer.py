@@ -1305,15 +1305,10 @@ class Fitting1DXRD(BasePanel):
 
     def database_info(self,event=None):
 
-        
         myDlg = DatabaseInfoGUI(self)
 
         change = False
-        if myDlg.ShowModal() == wx.ID_OK:
-#             self.elem_include = myDlg.incl_elm
-#             self.elem_exclude = myDlg.excl_elm
-            change = True
-            print('Eventually, need to save search parameters to restore them for reopening.')
+        if myDlg.ShowModal() == wx.ID_OK: change = True
         myDlg.Destroy()        
 
     def open_database(self,event=None):
@@ -1388,7 +1383,10 @@ class Fitting1DXRD(BasePanel):
             if self.auth_include is not None:
                 list_amcsd = cif.amcsd_by_author(include=self.auth_include,
                                                  list=list_amcsd)
-        self.displayMATCHES(list_amcsd)
+        try:
+            self.displayMATCHES(list_amcsd)
+        except:
+            pass
 
 
     def onMatch(self,event=None):

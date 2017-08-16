@@ -91,7 +91,7 @@ from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
 from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
-from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str
+from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 from larch_plugins.tomo import tomo_reconstruction,return_methods
 
 
@@ -564,6 +564,10 @@ class ROIPanel(GridPanel):
         elif xtyp == '2DXRD':
             self.file.add_xrd2Droi(xrange,xname,unit=xunt)            
         self.owner.message('Ready')
+        
+        for p in self.nbpanels:
+            if hasattr(p, 'update_xrmmap'):
+                p.update_xrmmap(self.current_file.xrmmap)
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -2510,6 +2514,8 @@ class MapViewerFrame(wx.Frame):
 
         MenuItem(self, fmenu, '&Load XRD calibration file',
                  'Load XRD calibration file',  self.openPONI)
+        MenuItem(self, fmenu, '&Add 1DXRD for HDF5 file',
+                 'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
@@ -2709,13 +2715,21 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
-            xrmfile = self.current_file
-            xrmfile.add_calibration(path,flip)
-
+            self.current_file.add_calibration(path,flip)
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
+                    
+    def add1DXRD(self, event=None):
+    
+        try:
+            xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
+            path = xrd1Dgrp.attrs['calfile']
+        except:
+            self.openPONI()
 
+        if os.path.exists(xrd1Dgrp.attrs['calfile']):
+            self.current_file.add_1DXRD()
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
