@@ -1495,6 +1495,8 @@ class GSEXRM_MapFile(object):
             try:
                 shape2D = self.xrmmap['xrd2D/counts'].shape
             except:
+                if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+                    print('Only compatible with newest hdf5 mapfile version.')
                 return
         
             if qstps is not None: self.qstps = qstps
@@ -2344,7 +2346,11 @@ class GSEXRM_MapFile(object):
 
         Note:  if mapdat is None, the map data is taken from the 'xrd1D/counts' parameter
         '''
-        if mapdat is None: mapdat = self.xrmmap['xrd1D/counts']
+        if mapdat is None:
+            try:
+                mapdat = self.xrmmap['xrd1D/counts']
+            except:
+                mapdat = self.xrmmap['xrd/data1D']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2382,8 +2388,13 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        mapdat = self.xrmmap['xrd2D']['counts']
-        mapname = self.xrmmap['xrd2D'].name
+        try:
+            mapdat = self.xrmmap['xrd2D/counts']
+            mapname = self.xrmmap['xrd2D'].name
+        except:
+            mapdat = self.xrmmap['xrd/data2D']
+            mapname = '2D XRD data'
+        
         ix, iy, xpix, ypix = mapdat.shape
 
         npix = len(np.where(area)[0])
@@ -2453,13 +2464,17 @@ class GSEXRM_MapFile(object):
                 mapdat = self.xrmmap['xrd2D']['counts']
             else:
                 mapdat = self.xrmmap['xrd2D']
+                
+        try:
+            mapdat = self.xrmmap['xrd2D/counts']
+        except:
+            mapdat = self.xrmmap['xrd/data2D']
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
         ix, iy, xpix, ypix = mapdat.shape
-        #ix, iy, nmca = mapdat['counts'].shape
 
         cell   = mapdat.regionref[sy, sx, :]
         frames = mapdat[cell]
@@ -2584,53 +2599,60 @@ class GSEXRM_MapFile(object):
 
     def add_xrd2Droi(self, xyrange, roiname, unit='pixels'):
     
-        if not self.flag_xrd2d:
-            return
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):        
+            if not self.flag_xrd2d:
+                return
             
-        roigroup,detname = self.build_xrd_roimap(xrd='2D')
-        xrmdet = self.xrmmap[detname]
+            roigroup,detname = self.build_xrd_roimap(xrd='2D')
+            xrmdet = self.xrmmap[detname]
             
-        if roiname in roigroup[detname]:
-            raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
+            if roiname in roigroup[detname]:
+                raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
             
-        xyrange = [int(x) for x in xyrange]
-        xmin,xmax,ymin,ymax = xyrange
+            xyrange = [int(x) for x in xyrange]
+            xmin,xmax,ymin,ymax = xyrange
         
-        xrd2d_counts = xrmdet['counts'][:,:,slice(xmin,xmax),slice(ymin,ymax)]
-        xrd2d_counts = xrd2d_counts.sum(axis=2).sum(axis=2)
-        if abs(xmax-xmin) > 0 and abs(ymax-ymin) > 0:
-            xrd2d_cor = xrd2d_counts/(abs(xmax-xmin)*abs(ymax-ymin))
-        else:
-            xrd2d_cor = xrd2d_counts
+            xrd2d_counts = xrmdet['counts'][:,:,slice(xmin,xmax),slice(ymin,ymax)]
+            xrd2d_counts = xrd2d_counts.sum(axis=2).sum(axis=2)
+            if abs(xmax-xmin) > 0 and abs(ymax-ymin) > 0:
+                xrd2d_cor = xrd2d_counts/(abs(xmax-xmin)*abs(ymax-ymin))
+            else:
+                xrd2d_cor = xrd2d_counts
 
-        self.save_roi(roiname,detname,xrd2d_counts,xrd2d_cor,xyrange,'area','pixels')
+            self.save_roi(roiname,detname,xrd2d_counts,xrd2d_cor,xyrange,'area','pixels')
+        else:
+            print('Only compatible with newest hdf5 mapfile version.')
+
 
     def add_xrd1Droi(self, qrange, roiname, unit='q'):
 
-        if not self.flag_xrd1d:
-            return
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):     
+            if not self.flag_xrd1d:
+                return
             
-        if unit.startswith('2th'): ## 2th to 1/A
-            xrange = q_from_twth(xrange,lambda_from_E(self.energy))
-        elif unit == 'd':           ## A to 1/A
-            xrange = q_from_d(xrange)
+            if unit.startswith('2th'): ## 2th to 1/A
+                xrange = q_from_twth(xrange,lambda_from_E(self.energy))
+            elif unit == 'd':           ## A to 1/A
+                xrange = q_from_d(xrange)
 
-        roigroup,detname  = self.build_xrd_roimap(xrd='1D')
-        xrmdet = self.xrmmap[detname]
+            roigroup,detname  = self.build_xrd_roimap(xrd='1D')
+            xrmdet = self.xrmmap[detname]
             
-        if roiname in roigroup[detname]:
-            raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
+            if roiname in roigroup[detname]:
+                raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
             
-        qaxis = xrmdet['q'][:]
-        imin = (np.abs(qaxis-qrange[0])).argmin()
-        imax = (np.abs(qaxis-qrange[1])).argmin()+1
-        xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
-        if abs(imax-imin) > 0:
-            xrd1d_cor = xrd1d_counts/abs(imax-imin)
+            qaxis = xrmdet['q'][:]
+            imin = (np.abs(qaxis-qrange[0])).argmin()
+            imax = (np.abs(qaxis-qrange[1])).argmin()+1
+            xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
+            if abs(imax-imin) > 0:
+                xrd1d_cor = xrd1d_counts/abs(imax-imin)
+            else:
+                xrd1d_cor = xrd1d_counts
+
+            self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
         else:
-            xrd1d_cor = xrd1d_counts
-
-        self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
+            print('Only compatible with newest hdf5 mapfile version.')
 
     def save_roi(self,roiname,det,raw,cor,range,type,units):
     
