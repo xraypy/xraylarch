@@ -1493,10 +1493,7 @@ class GSEXRM_MapFile(object):
             poni = self.xrmmap['xrd1D'].attrs['calfile']
             print('Using calibration file : %s' % poni)
             try:
-                print 'Looking for 2D data..'
-                data2D  = self.xrmmap['xrd2D/counts'][:]
-                print 'Found data...'
-                shape2D = data2D.shape
+                shape2D = self.xrmmap['xrd2D/counts'].shape
                 print 'And its shape is:',shape2D
             except:
                 return
@@ -1512,17 +1509,27 @@ class GSEXRM_MapFile(object):
                 xrd1Dgrp.attrs['type'] = 'xrd1D detector'
                 xrd1Dgrp.attrs['desc'] = 'pyFAI calculation from xrd2D data'
 
-                xrd1Dgrp.create_dataset('background', (self.qstps,), np.float32)
+                self.xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32)
+                self.xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32)
+
+                chunksize_1DXRD  = (1, shape2D[1], self.qstps)
+                self.xrmmap['xrd1D'].create_dataset('counts',
+                                       (NINIT, shape2D[1], self.qstps),
+                                       np.float32,
+                                       chunks = chunksize_1DXRD,
+                                       maxshape=(None, shape2D[1], self.qstps),
+                                       compression=COMPRESSION_LEVEL)
+
                 attrs = {'steps':self.qstps,'mask':self.maskfile,'flip':self.flip}
-                data1D = []
+
                 
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))                
-                for i,row2D in enumerate(data2D):
+                for i in np.arange(shape2D[0]):
                     print(' Add row %4i' % (i+1))
-                    rowq,row1D = integrate_xrd_row(row2D,poni,**attrs)
-                    data1D += [row1D]
-                xrd1Dgrp.create_dataset('q', data=np.array(rowq[0]))
-                xrd1Dgrp.create_dataset('counts', data=np.array(data1D))
+                    rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2D/counts'][i],poni,**attrs)
+                    if i == 0: self.xrmmap['xrd1D/q'][:] = rowq[0]
+                    self.xrmmap['xrd1D/counts'][i,] = row1D
+
                 self.flag_xrd1d = True
                 self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
