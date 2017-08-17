@@ -3060,7 +3060,7 @@ class Calc1DPopup(wx.Dialog):
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-                                    size = (210,410))
+                                    size = (210,460))
         self.parent = parent
         self.data2D = xrd2Ddata
         self.steps = 5001
@@ -3072,7 +3072,7 @@ class Calc1DPopup(wx.Dialog):
         self.wedges.SetValue('1')
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+50, iy+50))
         
         self.wedges.Disable()
         self.wedge_arrow.Disable()

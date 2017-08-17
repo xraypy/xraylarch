@@ -2114,7 +2114,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 500),
+    def __init__(self, parent=None,  size=(825, 550),
                  use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
