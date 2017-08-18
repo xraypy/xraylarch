@@ -31,6 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      GridPanel, FileSave, HLine)
 
 import larch
+from larch.larchlib import read_workdir
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
@@ -119,6 +120,8 @@ class diFFit1DFrame(wx.Frame):
         x,y = calcFrameSize(1500, 830)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
+        
+        read_workdir('gsemap.dat')
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 

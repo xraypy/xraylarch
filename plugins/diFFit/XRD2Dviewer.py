@@ -22,7 +22,7 @@ import larch
 from larch_plugins.io import tifffile
 from larch import Group
 
-
+from larch.larchlib import read_workdir
 from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
 from larch_plugins.xrmmap import read_xrd_netcdf
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
@@ -112,6 +112,8 @@ class diFFit2DFrame(wx.Frame):
         
         self.color = 'bone'
         self.flip = flip
+        
+        read_workdir('gsemap.dat')
 
         self.XRD2DMenuBar()
         self.Panel2DViewer()

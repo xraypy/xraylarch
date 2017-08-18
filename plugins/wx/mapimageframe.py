@@ -292,10 +292,13 @@ class MapImageFrame(ImageFrame):
 
     def onCursorMode(self, event=None, mode='zoom'):
         self.panel.cursor_mode = mode
+        choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
         if event is not None:
-            if 1 == event.GetInt():
+            if choice.startswith('Pick Area'):
+            #if 1 == event.GetInt():
                 self.panel.cursor_mode = 'lasso'
-            elif 2 == event.GetInt():
+            elif choice.startswith('Show Line'):
+            #elif 2 == event.GetInt():
                 self.panel.cursor_mode = 'prof'
 
     def report_leftdown(self, event=None):
@@ -353,9 +356,14 @@ class MapImageFrame(ImageFrame):
         """config panel for left-hand-side of frame"""
 
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-        zoom_opts = ('Zoom to Rectangle',
-                     'Pick Area for XRF Spectrum',
-                     'Show Line Profile')
+        
+        if self.lasso_callback is None:
+            zoom_opts = ('Zoom to Rectangle',
+                         'Show Line Profile')
+        else:
+            zoom_opts = ('Zoom to Rectangle',
+                         'Pick Area for XRF Spectrum',
+                         'Show Line Profile')
 
         if self.wxmplot_version > 0.921:
             cpanel = wx.Panel(panel)
