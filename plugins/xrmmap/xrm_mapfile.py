@@ -18,7 +18,8 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
-from larch_plugins.xrd import XRD,E_from_lambda,integrate_xrd_row,q_from_twth,q_from_d
+from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
+                               q_from_d,lambda_from_E)
 
 
 NINIT = 32
@@ -632,7 +633,7 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.energy     = None
+        self.mono_energy     = None
         self.flag_xrf   = FLAGxrf
         self.flag_xrd1d = FLAGxrd1D
         self.flag_xrd2d = FLAGxrd2D
@@ -2624,16 +2625,26 @@ class GSEXRM_MapFile(object):
             print('Only compatible with newest hdf5 mapfile version.')
 
 
-    def add_xrd1Droi(self, qrange, roiname, unit='q'):
+    def add_xrd1Droi(self, xrange, roiname, unit='q'):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):     
             if not self.flag_xrd1d:
                 return
             
+            if self.mono_energy is None:
+                env_names = list(self.xrmmap['config/environ/name'])
+                env_vals  = list(self.xrmmap['config/environ/value'])
+                for name, val in zip(env_names, env_vals):
+                    name = str(name).lower()
+                if ('mono.energy' in name or 'mono energy' in name):
+                    self.mono_energy = float(val)/1000.
+
             if unit.startswith('2th'): ## 2th to 1/A
-                xrange = q_from_twth(xrange,lambda_from_E(self.energy))
+                qrange = q_from_twth(xrange,lambda_from_E(self.mono_energy))
             elif unit == 'd':           ## A to 1/A
-                xrange = q_from_d(xrange)
+                qrange = q_from_d(xrange)
+            else:
+                qrange = xrange
 
             roigroup,detname  = self.build_xrd_roimap(xrd='1D')
             xrmdet = self.xrmmap[detname]

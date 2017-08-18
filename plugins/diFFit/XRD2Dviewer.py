@@ -477,11 +477,14 @@ class diFFit2DFrame(wx.Frame):
                 read = True
                 save = myDlg.ch_save.GetValue()
                 plot = myDlg.ch_plot.GetValue()
+                unts = myDlg.save_choice.GetSelection()
 
                 if int(myDlg.xstep.GetValue()) < 1:
                     attrs = {'steps':5001}
                 else:
                     attrs = {'steps':int(myDlg.steps)}
+                unit = '2th' if unts == 1 else 'q'
+                attrs.update({'unit':unit})
             #attrs = {'wedge':int(myDlg.wedges.GetValues())}
             myDlg.Destroy()
         else:

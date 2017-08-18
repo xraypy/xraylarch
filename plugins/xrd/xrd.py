@@ -380,15 +380,16 @@ class XRD(grpobjt):
             if verbose:
                 print('Could not locate file %s' % self.calfile)
     
-    def save_1D(self,path=None):
+    def save_1D(self,file=None):
 
-        pref,fname = os.path.split(self.filename)
-        if path is not None: pref = path
+        if file is None:
+            counter = 1
+            while os.path.exists('%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)):
+                counter += 1
+            file = '%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)
 
-        counter = 1
-        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)):
-            counter += 1
-        return '%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)
+        return file
+
 
     def save_2D(self,file=None,verbose=False):
     

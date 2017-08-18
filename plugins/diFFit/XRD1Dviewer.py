@@ -3114,12 +3114,18 @@ class Calc1DPopup(wx.Dialog):
 
         self.ch_save = wx.CheckBox(self.panel, label = 'Save 1D?')
         self.ch_plot  = wx.CheckBox(self.panel, label = 'Plot 1D?')
+        
+        self.save_choice = wx.Choice(self.panel, choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)'])
 
         self.ch_save.Bind(wx.EVT_CHECKBOX, self.onCHECK)
         self.ch_plot.Bind(wx.EVT_CHECKBOX, self.onCHECK)
 
+        savesizer = wx.BoxSizer(wx.HORIZONTAL)
+        savesizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
+        savesizer.Add(self.save_choice,  flag=wx.RIGHT, border=5)
+
         minisizer = wx.BoxSizer(wx.VERTICAL)
-        minisizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
+        minisizer.Add(savesizer,  flag=wx.RIGHT, border=5)
         minisizer.Add(self.ch_plot,  flag=wx.RIGHT, border=5)
 
         #####

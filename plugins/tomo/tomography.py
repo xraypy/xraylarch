@@ -138,7 +138,7 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
                 negentropy += [(recon*np.log(recon)).sum()]
                 cen_list += [cen]
             cntr = cen_list[np.array(negentropy).argmin()]
-            print('Best value: %i' % int(npts - cntr))
+            print('  Best value: %i' % int(npts - cntr))
 
         xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
 
