@@ -31,6 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      GridPanel, FileSave, HLine)
 
 import larch
+from larch.larchlib import read_workdir
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
@@ -119,6 +120,8 @@ class diFFit1DFrame(wx.Frame):
         x,y = calcFrameSize(1500, 830)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
+        
+        read_workdir('gsemap.dat')
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
@@ -3060,7 +3063,7 @@ class Calc1DPopup(wx.Dialog):
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-                                    size = (210,410))
+                                    size = (210,460))
         self.parent = parent
         self.data2D = xrd2Ddata
         self.steps = 5001
@@ -3072,7 +3075,7 @@ class Calc1DPopup(wx.Dialog):
         self.wedges.SetValue('1')
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+50, iy+50))
         
         self.wedges.Disable()
         self.wedge_arrow.Disable()
