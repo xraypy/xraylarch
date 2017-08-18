@@ -764,7 +764,10 @@ class TomographyPanel(GridPanel):
                 roi = self.file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
-                roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+                if units == '1/A':
+                    roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+                else:
+                    roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
             except:
                 roistr = ''
         else:
@@ -848,6 +851,7 @@ class TomographyPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
+        
         r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
             g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
@@ -867,6 +871,30 @@ class TomographyPanel(GridPanel):
             if reshape: mapx = np.einsum('ji->ij', mapx)
         else:
             mapx = 1.
+
+
+        ## first images in XRD are always over exposed. this removes them for reconstruction
+        ## only happens along fast direction: needs to check if this is x or ome.
+        ## (could do this before changing shape, but leave like this for now.)        
+        flagxrd = True
+        for det in det_name:
+            if det.startswith('xrd'):
+                flagxrd = True
+        if flagxrd:
+            if datafile.get_pos(0, mean=True).all() == ome.all():
+                ome = ome[10:-11]
+                r_map = r_map[:,10:-11]
+                if plt3:
+                    g_map = g_map[:,10:-11]
+                    b_map = b_map[:,10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[:,10:-11]
+            elif datafile.get_pos(0, mean=True).all() == x.all():
+                x = x[10:-11]
+                r_map = r_map[10:-11]
+                if plt3:
+                    g_map = g_map[10:-11]
+                    b_map = b_map[10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[10:-11]
 
             
         pref, fname = os.path.split(datafile.filename)
