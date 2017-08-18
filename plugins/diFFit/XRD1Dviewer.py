@@ -411,7 +411,7 @@ class SelectSavingData(wx.Dialog):
         dlg = wx.FileDialog(self, 'Save file as...',
                            defaultDir=dfltDIR,
                            wildcard=wildcards,
-                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
         path, save = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -2249,7 +2249,7 @@ class Viewer1DXRD(wx.Panel):
         dlg = wx.FileDialog(self, 'Save data as...',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards,
-                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
         path, save = None, False
         if dlg.ShowModal() == wx.ID_OK:
