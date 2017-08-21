@@ -565,10 +565,6 @@ class ROIPanel(GridPanel):
             self.file.add_xrd2Droi(xrange,xname,unit=xunt)            
         self.owner.message('Ready')
         
-        for p in self.nbpanels:
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(self.current_file.xrmmap)
-
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
     label  = 'Tomography Tools'
@@ -768,7 +764,10 @@ class TomographyPanel(GridPanel):
                 roi = self.file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
-                roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+                if units == '1/A':
+                    roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+                else:
+                    roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
             except:
                 roistr = ''
         else:
@@ -852,6 +851,7 @@ class TomographyPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
         
+        
         r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
             g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
@@ -871,6 +871,30 @@ class TomographyPanel(GridPanel):
             if reshape: mapx = np.einsum('ji->ij', mapx)
         else:
             mapx = 1.
+
+
+        ## first images in XRD are always over exposed. this removes them for reconstruction
+        ## only happens along fast direction: needs to check if this is x or ome.
+        ## (could do this before changing shape, but leave like this for now.)        
+        flagxrd = True
+        for det in det_name:
+            if det.startswith('xrd'):
+                flagxrd = True
+        if flagxrd:
+            if datafile.get_pos(0, mean=True).all() == ome.all():
+                ome = ome[10:-11]
+                r_map = r_map[:,10:-11]
+                if plt3:
+                    g_map = g_map[:,10:-11]
+                    b_map = b_map[:,10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[:,10:-11]
+            elif datafile.get_pos(0, mean=True).all() == x.all():
+                x = x[10:-11]
+                r_map = r_map[10:-11]
+                if plt3:
+                    g_map = g_map[10:-11]
+                    b_map = b_map[10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[10:-11]
 
             
         pref, fname = os.path.split(datafile.filename)
@@ -919,7 +943,7 @@ class TomographyPanel(GridPanel):
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title)
+            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
         
         ## reorder to: 2th, x, slice for viewing
         sino = np.einsum('kji->ijk', sino)
@@ -928,7 +952,7 @@ class TomographyPanel(GridPanel):
         if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
-                               xrmfile=self.file)
+                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
 
 
     def onShowTomograph(self, event=None, new=True):
@@ -963,7 +987,7 @@ class TomographyPanel(GridPanel):
             title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
         
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title)
+            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
         ## reorder to: x,y,slice for viewing
         tomo = np.einsum('kij->ijk', tomo)
@@ -971,7 +995,7 @@ class TomographyPanel(GridPanel):
         
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
-                               xrmfile=self.file)
+                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
 
     def set_center(self,center):
     
@@ -1694,7 +1718,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                                 action=self.onXRF)
         self.xrf2     = Button(pane, 'Show XRF (Back)', size=(135, -1),
                                                 action=partial(self.onXRF, as_mca2=True))
-        self.onreport = Button(pane, 'Save XRF report to file', size=(135, -1),
+        self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
         self.cor = Check(pane, label='Correct Deadtime?')
         legend = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
@@ -2059,6 +2083,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.owner.message('Plotting XRD pattern for area \'%s\'...' % title)
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
+            path,stem = os.path.split(self.owner.current_file.filename)
+            stem = '%s_%s' % (stem,title)
 
         if xrmfile.flag_xrd1d:
             self._xrd  = None
@@ -2069,15 +2095,22 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.energy = self.owner.current_energy
             self._xrd.wavelength = lambda_from_E(self._xrd.energy)
 
-            stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
-
             if show:
                 self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
                                          label=self._xrd.title)
             if save:
-                file = '%s.xy' % stem
-                save1D(file, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile,
-                       path=os.getcwd())
+                wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+                dlg = wx.FileDialog(self, 'Save file as...',
+                                   defaultDir=os.getcwd(),
+                                   defaultFile='%s.xy' % stem,
+                                   wildcard=wildcards,
+                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                if dlg.ShowModal() == wx.ID_OK:
+                    filename = dlg.GetPath().replace('\\', '/')
+                dlg.Destroy()
+                
+                print('Saving 1D XRD in file: %s' % (filename))
+                save1D(filename, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile)
 
 #             if not xrmfile.flag_xrd2d:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
@@ -2092,7 +2125,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
 
             if save:
-                self._xrd.save_2D(path=os.getcwd(),verbose=True)
+                wildcards = '2D XRD file (*.tiff)|*.tiff|All files (*.*)|*.*'
+                dlg = wx.FileDialog(self, 'Save file as...',
+                                   defaultDir=os.getcwd(),
+                                   defaultFile='%s.tiff' % stem,
+                                   wildcard=wildcards,
+                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                if dlg.ShowModal() == wx.ID_OK:
+                    filename = dlg.GetPath().replace('\\', '/')
+                dlg.Destroy()
+                print('Saving 2D XRD in file: %s' % (filename))
+                self._xrd.save_2D(file=filename,verbose=True)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
@@ -2114,7 +2157,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 500),
+    def __init__(self, parent=None,  size=(825, 550),
                  use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
@@ -2357,21 +2400,30 @@ class MapViewerFrame(wx.Frame):
                                       notes=json.dumps(notes))
 
 
-    def add_imdisplay(self, title, det=None):
-        on_lasso = partial(self.lassoHandler, det=det)
-        imframe = MapImageFrame(output_title=title,
-                                lasso_callback=on_lasso,
-                                cursor_labels = self.cursor_menulabels,
-                                move_callback=self.move_callback,
-                                save_callback=self.onSavePixel)
+    def add_imdisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
+
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+        
+        imframe = MapImageFrame(output_title   = title,
+                                lasso_callback = lasso_cb,
+                                cursor_labels  = cursor_labels,
+                                #move_callback  = self.move_callback,
+                                save_callback  = save_callback)
 
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None):
+                    det=None, subtitles=None, xrmfile=None,
+                    _cursorlabels=True, _savecallback=True):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+        
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+        
         if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
@@ -2387,10 +2439,10 @@ class MapViewerFrame(wx.Frame):
                 displayed = True
             except IndexError:
                 imd = MapImageFrame(output_title=title,
-                                    lasso_callback=lasso_cb,
-                                    cursor_labels = self.cursor_menulabels,
-                                    move_callback=self.move_callback,
-                                    save_callback=self.onSavePixel)
+                                    lasso_callback = lasso_cb,
+                                    cursor_labels  = cursor_labels,
+                                    #move_callback  = self.move_callback,
+                                    save_callback  = save_callback)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             det=det, subtitles=subtitles, xrmfile=xrmfile)

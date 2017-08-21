@@ -114,3 +114,19 @@ def readROIFile(hfile):
                 except ValueError:
                     extra[attr] = tmpdat
     return roidata, calib, extra
+
+
+def readXRD1DROIFile(hfile):
+    cp =  ConfigParser()
+    cp.read(hfile)
+    output = []
+    for a in cp.options('rois'):
+        if a.lower().startswith('roi'):
+            iroi = int(a[3:])
+            name,unit,dat = cp.get('rois',a).split('|')
+            lims = [float(i) for i in dat.split()]
+            dat = [lims[0], lims[1]]
+            output.append((iroi, name.strip(), unit.strip(), dat))
+    roidata = sorted(output)
+                          
+    return roidata
