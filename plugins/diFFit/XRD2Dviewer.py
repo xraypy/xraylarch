@@ -455,7 +455,7 @@ class diFFit2DFrame(wx.Frame):
         dlg = wx.FileDialog(self, 'Save image as...',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards,
-                           style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
         path, save = None, False
         if dlg.ShowModal() == wx.ID_OK:
@@ -491,7 +491,7 @@ class diFFit2DFrame(wx.Frame):
                 dlg = wx.FileDialog(self, 'Save file as...',
                                    defaultDir=os.getcwd(),
                                    wildcard=wildcards,
-                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                                   style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
                     attrs.update({'file':filename})
