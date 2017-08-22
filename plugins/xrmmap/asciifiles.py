@@ -128,4 +128,4 @@ def readROIFile(hfile,xrd=False):
                         extra[attr] = tmpdat
     
     
-        return roidata, calib, extra, xrddata
+        return roidata, calib, extra

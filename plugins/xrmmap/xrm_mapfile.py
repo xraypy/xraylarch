@@ -1025,9 +1025,10 @@ class GSEXRM_MapFile(object):
         if self.flag_xrd2d or self.flag_xrd1d:
             pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
         print(pform)
-
+        
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
+            mcasum_raw,mcasum_cor = [],[]
             nrows = 0
             map_items = sorted(self.xrmmap.keys())
             for gname in map_items:
@@ -1057,12 +1058,13 @@ class GSEXRM_MapFile(object):
                 for gname in map_items:
                     g = self.xrmmap[gname]
                     if g.attrs.get('type', None) == 'mca detector':
-                        mca_dets.append(g)
+                        mca_dets.append(gname)
                         nrows, npts, nchan =  g['counts'].shape
 
-                _nr, npts, nchan = mca_dets[0]['counts'].shape
+                _nr, npts, nchan = self.xrmmap[mca_dets[0]]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
-                for idet, grp in enumerate(mca_dets):
+                for idet, gname in enumerate(mca_dets):
+                    grp = self.xrmmap[gname]
                     grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
                     grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
                     grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
@@ -1071,22 +1073,24 @@ class GSEXRM_MapFile(object):
                     grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
                 self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
                 roigrp = self.xrmmap['roimap']
-                for detname in sorted(roigrp.keys()):
-                    if roigrp[detname].attrs.get('type', None) == 'mca detector':
-                        en  = self.xrmmap[detname]['energy'][:]
-                        cts = self.xrmmap[detname]['counts'][thisrow,]
-                        dft = self.xrmmap[detname]['dtfactor'][thisrow,]
-                        if roigrp[detname].attrs.get('type', None) == 'mca detector':
-                            for roiname in roigrp[detname].keys():
-                                en_lim = roigrp[detname][roiname]['limits'][:]
-                                roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
-                                             np.abs(en-en_lim[1]).argmin())
-                                mcaraw = cts[:,roi_slice].sum(axis=1)
-                                mcacor = mcaraw*dft
-                                roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
-                                roigrp[detname][roiname]['cor'][thisrow,] = mcacor
-                                roigrp['mcasum'][roiname]['raw'][thisrow,] += mcaraw
-                                roigrp['mcasum'][roiname]['cor'][thisrow,] += mcacor
+                
+                en  = self.xrmmap['mcasum']['energy'][:]
+                for roiname in roigrp['mcasum'].keys():
+                    en_lim = roigrp['mcasum'][roiname]['limits'][:]
+                    roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
+                                      np.abs(en-en_lim[1]).argmin())
+                    sumraw = roigrp['mcasum'][roiname]['raw'][thisrow,]
+                    sumcor = roigrp['mcasum'][roiname]['cor'][thisrow,]
+                    for detname in mca_dets:
+                        mcaraw = self.xrmmap[detname]['counts'][thisrow,][:,roi_slice].sum(axis=1)
+                        mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][thisrow,]
+                        roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
+                        roigrp[detname][roiname]['cor'][thisrow,] = mcacor
+                        sumraw += mcaraw
+                        sumcor += mcacor
+                    roigrp['mcasum'][roiname]['raw'][thisrow,] = sumraw
+                    roigrp['mcasum'][roiname]['cor'][thisrow,] = sumcor
+                
 
         else:
 
