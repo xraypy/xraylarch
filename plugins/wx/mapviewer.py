@@ -2568,6 +2568,8 @@ class MapViewerFrame(wx.Frame):
                  'Load XRD calibration file',  self.openPONI)
         MenuItem(self, fmenu, '&Add 1DXRD for HDF5 file',
                  'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
+        MenuItem(self, fmenu, 'Load R&OI File for 1DXRD',
+                 'Load ROI File for 1DXRD',  self.add1DXRDFile)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
@@ -2759,11 +2761,11 @@ class MapViewerFrame(wx.Frame):
         """
 
         myDlg = OpenPoniFile()
+        read = False
         if myDlg.ShowModal() == wx.ID_OK:
             read = True
             path = myDlg.PoniInfo[1].GetValue()
             flip = False if myDlg.PoniInfo[0].GetSelection() == 1 else True
-
         myDlg.Destroy()
 
         if read:
@@ -2771,6 +2773,23 @@ class MapViewerFrame(wx.Frame):
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
+
+    def add1DXRDFile(self, event=None):
+    
+        read = False    
+        wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select 1D-XRD ROI file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.FD_OPEN)
+    
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read and os.path.exists(path):
+            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
                     
     def add1DXRD(self, event=None):
     
