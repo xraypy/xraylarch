@@ -2625,6 +2625,16 @@ class GSEXRM_MapFile(object):
             print('Only compatible with newest hdf5 mapfile version.')
 
 
+    def read_xrd1D_ROIFile(self,filename,verbose=True):
+    
+        
+        roidat = readROIFile(filename,xrd=True)
+        for iroi, label, xunit, xrange in roidat:
+            if verbose: print('Adding ROI: %s' % label)
+            self.add_xrd1Droi(xrange,label,unit=xunit)
+
+
+
     def add_xrd1Droi(self, xrange, roiname, unit='q'):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):     
