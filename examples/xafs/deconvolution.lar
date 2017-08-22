@@ -1,10 +1,7 @@
-a = read_ascii('../xafsdata/fe2o3_rt1.xmu', labels='energy mu i0')
+dat = read_ascii('../xafsdata/fe2o3_rt1.xmu', labels='energy mu i0')
 
-pre_edge(a)
+pre_edge(dat)
+xas_deconvolve(dat, esigma=1.0)
 
-plot(a.energy, a.norm, label='orig', xmin=7100, xmax=7180,
-     new=True, show_legend=True)
-
-xas_deconvolve(a.energy, a.norm, group=a, esigma=1.0)
-
-plot(a.energy, a.deconv, label='deconvolved')
+plot_mu(dat, show_norm=True, emin=-30, emax=70)
+plot(dat.energy, dat.deconv, label='deconvolved')
