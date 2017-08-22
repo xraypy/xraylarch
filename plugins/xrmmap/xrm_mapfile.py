@@ -2629,20 +2629,24 @@ class GSEXRM_MapFile(object):
             print('Only compatible with newest hdf5 mapfile version.')
 
 
-    def read_xrd1D_ROIFile(self,filename,verbose=True):
+    def read_xrd1D_ROIFile(self,filename,verbose=False):
     
-        
         roidat = readROIFile(filename,xrd=True)
+        print('Reading 1D-XRD ROI file: %s' % filename)
         for iroi, label, xunit, xrange in roidat:
-            if verbose: print('Adding ROI: %s' % label)
+            if verbose:
+                t0 = time.time()
+                print('Adding ROI: %s' % label)
             self.add_xrd1Droi(xrange,label,unit=xunit)
-
-
+            if verbose:
+                print('    %0.2f s' % (time.time()-t0))
+        print(' Finished.\n')
 
     def add_xrd1Droi(self, xrange, roiname, unit='q'):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):     
-            if not self.flag_xrd1d:
+            if not self.xrmmap['flags'].attrs.get('xrd1D', False):
+                print('No 1D-XRD data in file')
                 return
             
             if self.mono_energy is None:
