@@ -21,12 +21,15 @@ Finally, copying and saving images of the graphics is easy and can be done
 either with keyboard commands such as Ctrl-C or from dropdown menus on the
 graphic elements.
 
+.. module:: _plotter
+   :synopsis: Plotting functions
+
 
 Line Plots
 =========================
 
 Larch provides a few functions for making line plots, with the principle
-function being called :func:`plot`.  The :func:`plot` function takes two
+function being called :meth:`plot`.  The :meth:`plot` function takes two
 arrays: `x`, the abscissa array, and `y`, the ordinate array.  It also
 accepts a very large number of optional arguments for setting properties
 like color, line style, labels, and so on.  Most of these properties can
@@ -42,29 +45,45 @@ Multiple plot windows can be shown simultaneously, each in an independent
 window, and you can control which one is drawn to with a plot window index
 ``win``.
 
-.. module:: _plotter
-   :synopsis: Plotting functions
 
 
-Plotting commands
-~~~~~~~~~~~~~~~~~~~~~
+:func:`plot`, :func:`newplot`, and :func:`oplot`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These functions all create a Line Plot from array of `x` and `y` data that
+are taken to be ordered, and so can be drawn as connected by lines from one
+point to the next.  These functions share many options to set labels,
+colors, and so on to modify the resulting plot.  All options are specified
+by the keyword/value arguments described in the :ref:`Table of Plot
+Arguments <plotopt_table>` below.
+
 
 .. method:: plot(x, y,  **kws)
 
    :param x:     array of x values
    :param y:     array of y values -- same size as x
+   :param kws:  optional commands as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
 
    Plot y(x) given 1-dimensional x and y arrays -- these must be of the
    same size.   Each x, y pair displayed  is called a *trace*.
 
-
-   There are many options for a plot, all specified by the keyword/value
-   parameters described in the   :ref:`Table of Plot Arguments <plotopt_table>` below.
-
 .. method:: newplot(x, y, **kws)
 
+   :param x:     array of x values
+   :param y:     array of y values -- same size as x
+   :param kws:  optional commands as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
+
    This is essentially the same a :func:`plot`, but with the option  `new=True`.
-   The rest of the arguments are as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
+   The rest of the arguments are as
+
+.. method:: plot(x, y,  **kws)
+
+   :param x:     array of x values
+   :param y:     array of y values -- same size as x
+   :param kws:  optional commands as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
+
+   This is essentially the same a :func:`plot`, but with the option  `new=False`.
+
 
 .. _plotopt_table:
 
