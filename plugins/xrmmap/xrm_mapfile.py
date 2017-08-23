@@ -354,6 +354,7 @@ class GSEXRM_MapRow:
                 self.xrd2d[0:xrddat.shape[0]] = xrddat
             else:
                 self.xrd2d = xrddat[0:self.npts]
+            
             tg = time.time()
             if poni is not None and FLAGxrd1D:
                 attrs = {'steps':steps,'mask':mask,'flip':flip}
@@ -633,10 +634,10 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
 
-        self.mono_energy     = None
-        self.flag_xrf   = FLAGxrf
-        self.flag_xrd1d = FLAGxrd1D
-        self.flag_xrd2d = FLAGxrd2D
+        self.mono_energy  = None
+        self.flag_xrf     = FLAGxrf
+        self.flag_xrd1d   = FLAGxrd1D
+        self.flag_xrd2d   = FLAGxrd2D
         
         self.calibration = poni
         self.maskfile    = mask
@@ -723,6 +724,7 @@ class GSEXRM_MapFile(object):
             if poni is not None: self.add_calibration(poni,flip)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
+            
 
     def __repr__(self):
         fname = ''
@@ -967,6 +969,12 @@ class GSEXRM_MapFile(object):
         '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
+        
+        if self.calibration is None:
+            try:
+                self.calibration = self.xrmmap['xrd1D'].attrs['calfile']
+            except:
+                pass
 
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
@@ -1948,6 +1956,17 @@ class GSEXRM_MapFile(object):
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
+            
+#         try:
+#             self.calibration = self.xrmmap['xrd1D'].attrs['calfile']
+#         except:
+#             pass
+#             
+#         flaggp = xrmmap['flags']
+#         flaggp.attrs['xrf']   = self.flag_xrf
+#         flaggp.attrs['xrd2D'] = self.flag_xrd2d
+#         flaggp.attrs['xrd1D'] = self.flag_xrd1d
+        
 
     def _det_name(self, det=None):
         "return  XRMMAP group for a detector"
