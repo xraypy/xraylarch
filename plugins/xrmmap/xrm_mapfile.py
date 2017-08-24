@@ -1549,13 +1549,48 @@ class GSEXRM_MapFile(object):
                 print('1DXRD data already in file.')
                 return
 
+
+
+    def get_slice_y(self):
+        
+        for name, val in zip(list(self.xrmmap['config/environ/name']), 
+                             list(self.xrmmap['config/environ/value'])):
+            name = str(name).lower()
+            if name.startswith('sample'):
+                name = name.replace('samplestage.', '')
+                if name.lower() == 'fine y' or name.lower() == 'finey':
+                    return float(val)
+
+    def get_tomo_center(self):
+    
+        try:
+            return self.xrmmap['tomo/center'][...]
+        except:
+             self.update_tomo_center(None)
+             
+        return self.xrmmap['tomo/center'][...]
+
     def update_tomo_center(self,center):
+    
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        
+        if center is None:
+            try:
+                center = len(self.get_pos('fine x', mean=True))/2      
+            except:
+                center = len(self.get_pos('x', mean=True))/2   
+            
     
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
-            tomogrp.create_dataset('center', data=center)
+            del tomogrp['center']
         except:
-            self.xrmmap['tomo/center'][...] = center
+            pass
+        tomogrp.create_dataset('center', data=center)
+            
+            
+        self.h5root.flush()
    
     def reset_flags(self):
         '''

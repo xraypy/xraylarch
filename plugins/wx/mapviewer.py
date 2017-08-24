@@ -722,14 +722,14 @@ class TomographyPanel(GridPanel):
        
         self.enable_options()
         self.set_det_choices(xrmmap)
+        
         try:
             self.npts = len(self.file.get_pos('fine x', mean=True))       
         except:
             self.npts = len(self.file.get_pos('x', mean=True))
-        try:
-            center = self.xrmmap['tomo/center'][...]
-        except:
-            center = self.npts/2.
+        
+        center = self.file.get_tomo_center()
+        
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(center)
         self.plotSELECT()
