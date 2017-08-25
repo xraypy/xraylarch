@@ -1549,13 +1549,48 @@ class GSEXRM_MapFile(object):
                 print('1DXRD data already in file.')
                 return
 
+
+
+    def get_slice_y(self):
+        
+        for name, val in zip(list(self.xrmmap['config/environ/name']), 
+                             list(self.xrmmap['config/environ/value'])):
+            name = str(name).lower()
+            if name.startswith('sample'):
+                name = name.replace('samplestage.', '')
+                if name.lower() == 'fine y' or name.lower() == 'finey':
+                    return float(val)
+
+    def get_tomo_center(self):
+    
+        try:
+            return self.xrmmap['tomo/center'][...]
+        except:
+             self.update_tomo_center(None)
+             
+        return self.xrmmap['tomo/center'][...]
+
     def update_tomo_center(self,center):
+    
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+        
+        if center is None:
+            try:
+                center = len(self.get_pos('fine x', mean=True))/2      
+            except:
+                center = len(self.get_pos('x', mean=True))/2   
+            
     
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
-            tomogrp.create_dataset('center', data=center)
+            del tomogrp['center']
         except:
-            self.xrmmap['tomo/center'][...] = center
+            pass
+        tomogrp.create_dataset('center', data=center)
+            
+            
+        self.h5root.flush()
    
     def reset_flags(self):
         '''
@@ -2694,13 +2729,45 @@ class GSEXRM_MapFile(object):
             imax = (np.abs(qaxis-qrange[1])).argmin()+1
             xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
             if abs(imax-imin) > 0:
-                xrd1d_cor = xrd1d_counts/abs(imax-imin)
+            
+                A = (xrmdet['counts'][:,:,imin]+xrmdet['counts'][:,:,imax])/2
+                B = abs(imax-imin)
+                
+                ## cor = ( raw - AB ) / B = ( raw/B ) - A
+            
+                xrd1d_counts = xrd1d_counts / B ## divides by number of channels
+                xrd1d_cor    = xrd1d_counts - A ## subtracts 'average' background
             else:
                 xrd1d_cor = xrd1d_counts
 
             self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
         else:
             print('Only compatible with newest hdf5 mapfile version.')
+
+    def del_all_xrd1Droi(self):
+
+        ''' delete all 1D-XRD ROI'''
+        
+        roigrp_xrd1d = ensure_subgroup('xrd1D',self.xrmmap['roimap'])
+        
+        for roiname in roigrp_xrd1d.keys():
+            self.del_xrd1Droi(roiname)
+
+    def del_xrd1Droi(self, roiname):
+
+        ''' delete a 1D-XRD ROI'''
+        
+        roigrp_xrd1d = ensure_subgroup('xrd1D',self.xrmmap['roimap'])
+        
+        if roiname not in roigrp_xrd1d.keys():
+            print("No ROI named '%s' found to delete" % roiname)
+            return
+
+        roiname = h5str(roiname)
+        if roiname in roigrp_xrd1d:
+            del roigrp_xrd1d[roiname]
+            self.h5root.flush()
+
 
     def save_roi(self,roiname,det,raw,cor,range,type,units):
     

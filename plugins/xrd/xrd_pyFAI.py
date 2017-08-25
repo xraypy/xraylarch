@@ -216,8 +216,11 @@ def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
     '''
     copied and modified from pyFAI/io.py
     '''
-    if xaxis_unit is None:
+    if xaxis_unit is None or xaxis_unit == 'q':
         xaxis_unit = pyFAI.units.Q_A
+    elif xaxis_unit.startswith('2th'):
+        xaxis_unit = pyFAI.units.TTH_DEG
+            
     if calfile is None:
         ai = None
     else:

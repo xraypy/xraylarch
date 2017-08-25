@@ -479,8 +479,6 @@ class ROIPanel(GridPanel):
         
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        #roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
-
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))        
         self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
                          Choice(self, choices=[''],        size=(120, -1))]
@@ -498,13 +496,37 @@ class ROIPanel(GridPanel):
         self.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
         self.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
         self.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self, ''),SimpleText(self, '')), dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self, ''),newrow=True)
 
         self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
         
+        ###############################################################################
+
+        self.rm_roi_ch = [Choice(self, choices=[''],        size=(120, -1)),
+                          Choice(self, choices=[''],        size=(120, -1))]
+        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        self.rm_roi_lims = SimpleText(self, '')
+
+        self.Add(SimpleText(self, ''),newrow=True)
+        self.Add(SimpleText(self, '--    Delete saved ROI    --'), dcol=6, style=LEFT, newrow=True)
+
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
+        
+        self.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]), dcol=1, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), dcol=1, style=LEFT,newrow=True)
+        self.Add(SimpleText(self, 'Limits:'), dcol=1, style=LEFT, newrow=True)
+        self.Add(self.rm_roi_lims, dcol=3, style=LEFT)
+        self.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self, ''),newrow=True)
+
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
+        
+               
         self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.roi_lims[2].Disable()
         self.roi_lims[3].Disable()
+        
+        self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
 
         self.pack()
         
@@ -518,15 +540,59 @@ class ROIPanel(GridPanel):
         
     def roiTYPE(self,event=None):
         roitype = []
+        delroi = []
         if self.file.flag_xrf:  
             roitype += ['XRF']
         if self.file.flag_xrd1d:  
             roitype += ['1DXRD']
+            delroi  = ['xrd1D']
         if self.file.flag_xrd2d:  
             roitype += ['2DXRD']
         if len(roitype) < 1: roitype = ['']
         self.roi_chc[0].SetChoices(roitype)
         self.roiUNITS()
+
+        self.rm_roi_ch[0].SetChoices(delroi)
+        if len(delroi) > 0:
+             self.setROI()
+        
+    def onRemoveROI(self,event=None):
+        
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+        
+        if detname == 'xrd1D':
+            self.file.del_xrd1Droi(roiname)
+            self.setROI()
+
+    def setROI(self):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        detgrp = self.file.xrmmap['roimap'][detname]
+        limits,names = [],detgrp.keys()
+        for name in names:
+            limits += [list(detgrp[name]['limits'][:])]
+            
+        self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
+        self.roiSELECT()
+        
+        
+    def roiSELECT(self,event=None):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+
+        roi = self.file.xrmmap['roimap'][detname][roiname]
+        limits = roi['limits'][:]
+        units = roi['limits'].attrs['units']
+        
+        if units == '1/A':
+            roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+        else:
+            roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+
+        self.rm_roi_lims.SetLabel(roistr)
+
         
     def roiUNITS(self,event=None):
     
@@ -628,6 +694,8 @@ class TomographyPanel(GridPanel):
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
         
+        self.refine_center.SetValue(False)
+        
         #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
 
 
@@ -722,14 +790,14 @@ class TomographyPanel(GridPanel):
        
         self.enable_options()
         self.set_det_choices(xrmmap)
+        
         try:
             self.npts = len(self.file.get_pos('fine x', mean=True))       
         except:
             self.npts = len(self.file.get_pos('x', mean=True))
-        try:
-            center = self.xrmmap['tomo/center'][...]
-        except:
-            center = self.npts/2.
+        
+        center = self.file.get_tomo_center()
+        
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(center)
         self.plotSELECT()
@@ -1599,6 +1667,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
                 self.owner.current_energy = float(val)/1000.
+                self.owner.current_file.mono_energy = float(val)/1000.
                 wvlgth = lambda_from_E(self.owner.current_energy)
                 self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
                                                    (self.owner.current_energy,wvlgth))
