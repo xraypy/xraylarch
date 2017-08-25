@@ -1736,6 +1736,10 @@ class Viewer1DXRD(wx.Panel):
         vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
         vbox.Add(ciftools,flag=wx.ALL,border=10)
+        
+        self.ch_xaxis.SetSelection(0)
+        self.ch_yaxis.SetSelection(0)
+        
         return vbox
 
     def RightSidePanel(self,panel):
@@ -2038,6 +2042,7 @@ class Viewer1DXRD(wx.Panel):
 
         self.ch_xaxis.Enable()
         self.ch_yaxis.Enable()
+
         if data:
             self.val_scale.Enable()
             self.btn_reset.Enable()
