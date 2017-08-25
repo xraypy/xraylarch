@@ -2732,9 +2732,11 @@ class GSEXRM_MapFile(object):
             
                 A = (xrmdet['counts'][:,:,imin]+xrmdet['counts'][:,:,imax])/2
                 B = abs(imax-imin)
+                
+                ## cor = ( raw - AB ) / B = ( raw/B ) - A
             
-                xrd1d_counts = xrd1d_counts - (A*B) ## subtracts approximate background
-                xrd1d_cor    = xrd1d_counts/B
+                xrd1d_counts = xrd1d_counts / B ## divides by number of channels
+                xrd1d_cor    = xrd1d_counts - A ## subtracts 'average' background
             else:
                 xrd1d_cor = xrd1d_counts
 

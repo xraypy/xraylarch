@@ -694,6 +694,8 @@ class TomographyPanel(GridPanel):
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
         
+        self.refine_center.SetValue(False)
+        
         #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
 
 
@@ -1665,7 +1667,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
                 self.owner.current_energy = float(val)/1000.
-                self.file.mono_energy = float(val)/1000.
+                self.owner.current_file.mono_energy = float(val)/1000.
                 wvlgth = lambda_from_E(self.owner.current_energy)
                 self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
                                                    (self.owner.current_energy,wvlgth))
