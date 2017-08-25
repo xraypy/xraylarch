@@ -2729,13 +2729,43 @@ class GSEXRM_MapFile(object):
             imax = (np.abs(qaxis-qrange[1])).argmin()+1
             xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
             if abs(imax-imin) > 0:
-                xrd1d_cor = xrd1d_counts/abs(imax-imin)
+            
+                A = (xrmdet['counts'][:,:,imin]+xrmdet['counts'][:,:,imax])/2
+                B = abs(imax-imin)
+            
+                xrd1d_counts = xrd1d_counts - (A*B) ## subtracts approximate background
+                xrd1d_cor    = xrd1d_counts/B
             else:
                 xrd1d_cor = xrd1d_counts
 
             self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
         else:
             print('Only compatible with newest hdf5 mapfile version.')
+
+    def del_all_xrd1Droi(self):
+
+        ''' delete all 1D-XRD ROI'''
+        
+        roigrp_xrd1d = ensure_subgroup('xrd1D',self.xrmmap['roimap'])
+        
+        for roiname in roigrp_xrd1d.keys():
+            self.del_xrd1Droi(roiname)
+
+    def del_xrd1Droi(self, roiname):
+
+        ''' delete a 1D-XRD ROI'''
+        
+        roigrp_xrd1d = ensure_subgroup('xrd1D',self.xrmmap['roimap'])
+        
+        if roiname not in roigrp_xrd1d.keys():
+            print("No ROI named '%s' found to delete" % roiname)
+            return
+
+        roiname = h5str(roiname)
+        if roiname in roigrp_xrd1d:
+            del roigrp_xrd1d[roiname]
+            self.h5root.flush()
+
 
     def save_roi(self,roiname,det,raw,cor,range,type,units):
     
