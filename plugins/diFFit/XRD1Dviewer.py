@@ -321,11 +321,15 @@ class diFFit1DFrame(wx.Frame):
                 index = dlg.slct_1Ddata.GetSelection()
                 filename = dlg.File.GetValue()
                 calfile = dlg.Poni.GetValue() if len(dlg.Poni.GetValue()) > 0 else None
+                unts = dlg.ch_units.GetSelection()
             dlg.Destroy()
 
         if okay:
             savdat = xrdv.xy_data[index]
-            save1D(filename, savdat.q, savdat.I, calfile=calfile)
+            if unts == 1: ## 2theta
+                save1D(filename, savdat.twth, savdat.I, xaxis_unit='2th', calfile=calfile)            
+            else:         ## q
+                save1D(filename, savdat.q, savdat.I, xaxis_unit='q', calfile=calfile)
 
 
 class SelectSavingData(wx.Dialog):
@@ -350,6 +354,17 @@ class SelectSavingData(wx.Dialog):
         datasizer.Add(self.slct_1Ddata, flag=wx.EXPAND|wx.TOP,    border=8)
 
 #         self.slct_1Ddata.Bind(wx.EVT_LISTBOX,  None  )
+
+        ## SELECT UNITS
+        self.ch_units = wx.Choice(panel, choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)'])
+        ttl_units     = SimpleText(panel, label='Units:')
+        
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(ttl_units,           flag=wx.RIGHT,            border=5)
+        hsizer.Add(self.ch_units,       flag=wx.RIGHT,            border=5)
+        
+        unitsizer = wx.BoxSizer(wx.VERTICAL)
+        unitsizer.Add(hsizer,           flag=wx.TOP,              border=5)
 
 
         ## SAVE TO FILE
@@ -389,6 +404,8 @@ class SelectSavingData(wx.Dialog):
 
         mainsizer.AddSpacer(8)
         mainsizer.Add(datasizer, flag=wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(unitsizer, flag=wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(filesizer, flag=wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
