@@ -33,7 +33,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
-              # 'sphinx.ext.linkcode',
               'sphinxcontrib.napoleon',
               'sphinxcontrib.argdoc',
               'numpydoc']
@@ -50,7 +49,7 @@ extensions = ['sphinx.ext.autodoc',
 
 
 # from sphinxtr
-extensions.extend(['fix_equation_ref', 'subfig', 'numfig', 'numsec',
+extensions.extend(['fix_equation_ref', 'subfig', 'numsec',
                    'natbib', 'figtable', 'singlehtml_toc', 'singletext'])
 
 intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
@@ -96,6 +95,14 @@ master_doc = 'index'
 project = u'larch'
 author = u'Matthew Newville'
 copyright = u'Matthew Newville, The University of Chicago, 2012'
+
+numfig = True
+numfig_secnum_depth = 2
+numfig_format = {'figure': 'Figure %s',
+                 'table': 'Table %s',
+                 'code-block': 'Listing %s',
+                  'section': 'Section %s'}
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
