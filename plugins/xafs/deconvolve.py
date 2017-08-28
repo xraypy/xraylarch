@@ -16,13 +16,12 @@ MODNAME = '_xafs'
 
 @ValidateLarchPlugin
 def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
-                   esigma=None, eshift=0.0, smooth=True,
+                   esigma=1.0, eshift=0.0, smooth=True,
                    sgwindow=None, sgorder=3, _larch=None):
     """XAS spectral deconvolution
 
-    This function de-convolves a normalized mu(E) spectra with
-    a peak shape, enhancing the intensity and separation of
-    peaks of a XANES spectrum.
+    de-convolve a normalized mu(E) spectra with a peak shape, enhancing the
+    intensity and separation of peaks of a XANES spectrum.
 
     The results can be unstable, and noisy, and should be used
     with caution!
@@ -38,7 +37,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
               [in eV, default=1.0]
     eshift    energy shift to apply to result. [in eV, default=0]
     smooth    whether to smooth result with savitzky_golay method [True]
-    sgwindow  window for savitzky_golay [found from data step and esigma]
+    sgwindow  window size for savitzky_golay [found from data step and esigma]
     sgorder   order for savitzky_golay [3]
 
     Returns
@@ -53,7 +52,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
 
        Smoothing with savitzky_golay() requires a window and order.  By
        default, window = int(esigma / estep) where estep is step size for
-       the girdded data, approximately the finest energy step in the data.
+       the gridded data, approximately the finest energy step in the data.
     """
     if _larch is None:
         raise Warning("cannot deconvolve -- larch broken?")
@@ -98,13 +97,12 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
 @ValidateLarchPlugin
 def xas_convolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, _larch=None):
-    """broaden XAS spectra by convolving with Lorentzian or Gaussian
-
-    This function convolves a normalized mu(E) spectra with a
-    peak shape, degrading separation of XANES features.
+    """
+    convolve a normalized mu(E) spectra with a Lorentzian or Gaussian peak
+    shape, degrading separation of XANES features.
 
     This is provided as a complement to xas_deconvolve, and to deliberately
-    broaden spectra to compare with spectra measured at lower-resolution
+    broaden spectra to compare with spectra measured at lower resolution.
 
     Arguments
     ----------
@@ -112,10 +110,9 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
     norm:     array of normalized mu(E)
     group:    output group
     form:     form of deconvolution function. One of
-              'gaussian' or 'lorentzian' [default]
-    esigma    energy sigma to pass to gaussian() or lorentzian()
-              [in eV, default=1.0]
-    eshift    energy shift to apply to result. [in eV, default=0]
+              'lorentzian' or  'gaussian' ['lorentzian']
+    esigma    energy sigma (in eV) to pass to gaussian() or lorentzian() [1.0]
+    eshift    energy shift (in eV) to apply to result [0]
 
     Returns
     -------
@@ -124,8 +121,8 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
 
     Notes
     -----
-       Support See First Argument Group convention, requiring group
-       members 'energy' and 'norm'
+       Follows the First Argument Group convention, using group members named
+       'energy' and 'norm'
     """
     if _larch is None:
         raise Warning("cannot xas_convolve -- larch broken?")
