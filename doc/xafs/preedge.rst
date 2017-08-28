@@ -1,6 +1,6 @@
-==============================================
-XAFS: Pre-edge Subtraction and Normalization
-==============================================
+===================================================================
+XAFS: Pre-edge Subtraction, Normalization, and data treatment
+===================================================================
 
 After reading in data and constructing :math:`\mu(E)`, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
@@ -8,6 +8,11 @@ normalization.  Reading data and constructing :math:`\mu(E)` are handled by
 internal larch functions, especially :func:`read_ascii`.  The main
 XAFS-specific function for pre-edge subtraction and normalization is
 :func:`pre_edge`.
+
+This chapter also describes methods for the treatment of XAFS and XANES
+data including corrections for over-absorption (sometimes confusingly
+called *self-absorption*) and for spectral convolution and de-convolution.
+
 
 The :func:`pre_edge` function
 =================================
@@ -211,7 +216,7 @@ Notes:
 
 Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
-result shown in :num:`fig-mback-copper`.
+result shown in :numref:`fig-mback-copper`.
 
 .. code:: python
 
@@ -235,7 +240,7 @@ Here is an example of processing XANES data measured over a rather
 short data range.  This example is the magnesium silicate mineral
 talc, Mg\ :sub:`3`\ Si\ :sub:`4`\ O\ :sub:`10`\ (OH)\ :sub:`2`,
 measured at the Si K edge, with the result shown in
-:num:`fig-mback-talc`.  Note that the order of the Legendre polynomial
+:numref:`fig-mback-talc`.  Note that the order of the Legendre polynomial
 is set to 2 and that the ``whiteline`` parameter is set to avoid the
 large features near the edge.
 
@@ -304,3 +309,191 @@ For XANES, a common correction method from the FLUO program by D. Haskel
     ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will
     be written to the output group, containing :math:`\mu(E)` and
     normalized :math:`\mu(E)` corrected for over-absorption.
+
+
+Spectral deconvolution
+=================================
+
+In order to readily compare XAFS data from different sources, it is
+sometimes necessary to considert the energy resolution used to collect each
+spectum.  To be clear, the resolution of an EXAFS spectrum includes
+contributions from the x-ray sourse, instrumental broadening from the x-ray
+optics (especially the X-ray monochromator used in most measurements), and
+the intrinsic lifetime of the excited core electronic level.  For data
+measured in X-ray fluorescence or electron emission mode, the energy
+resolution can also includes the energy width of the decay channels
+measured.
+
+For a large fraction of XAFS data, the energy resolution is dominated by
+the intrinsic width of the excited core level and by the resolution of a
+silicon (111) double crystal monochromator, and so does not vary
+appreciably between spectra taken at different facilities or at different
+times.  Exceptions to this rule occur when using a higher order reflection
+of a silicon monochromator or a different monochromator altogether.
+Resolution can also be noticeably worse for data taken at older (first and
+second generation) sources and beamlines, either without a collimating
+mirror or slits before the monochromator to improve the resolution.
+In addition, high-resolution X-ray fluorescence measurements can be used to
+dramatically enhance the energy resolution of XAFS spectra, and are
+becoming widely available.
+
+Because of these effects, it is sometimes useful to change the resolution
+of XAFS spectra.  For example, one may need to reduce the resolution to
+match data measured with degraded resolution.  This can be done with
+:func:`xas_convolve` which convolves an XAFS spectrum with either a
+Gaussian or Lorentzian function with a known energy width.  Note that
+convolving with a Gaussian is less dramatic than using a Lorenztian, and
+usually better reflects the effect of an incident X-ray beam with degraded
+resolution due to source or monochromator.
+
+One may also want to try to improve the energy resolution of an XAFS
+spectrum, either to compare it to data taken with higher resolution or to
+better identify and enumerate peaks in a XANES spectrum.  This can be done
+with :func:`xas_deconvolve` function which deconvolves either a Gaussian or
+Lorentzian function from an XAFS spectrum.  This usually requires fairly
+good data.  Whereas a Gaussian most closely reflects broadening from the
+X-ray source, broadening due to the natural energy width of the core levels
+is better described by a Lorenztian.   Therefore, to try to reduce the
+influence of the core level in order better mimic high-resolution
+fluorescence data, deconvolving with a Lorenztian is often better.
+
+
+
+:func:`xas_convolve`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: xas_convolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0):
+
+    convolve a normalized mu(E) spectra with a Lorentzian or Gaussian peak
+    shape, degrading separation of XANES features.
+
+    This is provided as a complement to xas_deconvolve, and to deliberately
+    broaden spectra to compare with spectra measured at lower resolution.
+
+
+    :param energy:   1-d array of :math:`E`
+    :param norm:     1-d array of normalized :math:`\mu(E)`
+    :param group:    output group
+    :param form:     form of deconvolution function. One of
+                     'lorentzian' or  'gaussian' ['lorentzian']
+    :param esigma:   energy :math:`\sigma` (in eV) to pass to
+                     :func:`gaussian` or :func:`lorentzian` lineshape [1.0]
+    :param eshift:   energy shift (in eV) to apply to result. [0.0]
+
+
+    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.
+
+    The following data is put into the output group:
+
+
+       ================= ===============================================================
+        attribute         meaning
+       ================= ===============================================================
+        conv             array of convolved, normalized :math:`\mu(E)`
+       ================= ===============================================================
+
+
+:func:`xas_deconvolve`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: xas_deconvolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0, smooth=True, sgwindow=None, sgorder=3)
+
+    XAS spectral deconvolution
+
+    de-convolve a normalized mu(E) spectra with a peak shape, enhancing the
+    intensity and separation of peaks of a XANES spectrum.
+
+    The results can be unstable, and noisy, and should be used
+    with caution!
+
+    :param energy:   1-d array of :math:`E`
+    :param norm:     1-d array of normalized :math:`\mu(E)`
+    :param group:    output group
+    :param form:     form of deconvolution function. One of
+                     'lorentzian' or  'gaussian' ['lorentzian']
+    :param esigma:   energy :math:`\sigma` (in eV) to pass to
+                     :func:`gaussian` or :func:`lorentzian` lineshape [1.0]
+    :param eshift:   energy shift (in eV) to apply to result. [0.0]
+    :param smooth:   whether to smooth the result with the Savitzky-Golay
+                     method [``True``]
+    :param sgwindow: window size for Savitzky-Golay function [found from data step and esigma]
+    :param sgorder:  order for the Savitzky-Golay function [3]
+
+
+    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.
+
+    Smoothing with :func:`savitzky_golay` requires a window and order.  By
+    default, ``window = int(esigma / estep)`` where estep is step size for
+    the gridded data, approximately the finest energy step in the data.
+
+
+    The following data is put into the output group:
+
+
+       ================= ===============================================================
+        attribute         meaning
+       ================= ===============================================================
+        deconv            array of deconvolved, normalized :math:`\mu(E)`
+       ================= ===============================================================
+
+
+Examples using :func:`xas_deconvolve` and :func:`xas_convolve`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An example using :func:`xas_deconvolve` to deconvolve a XAFS spectrum would
+be:
+
+.. literalinclude:: ../../examples/xafs/doc_deconv1.lar
+
+
+resulting in deconvolved data:
+
+.. _fig_deconv_fe:
+
+.. figure::  ../_images/xafs_deconv1.png
+    :target: ../_images/xafs_deconv1.png
+    :width: 65%
+    :align: center
+
+    Deconvolved XAFS spectrum for :math:`\rm Fe_2O_3`.
+
+
+To de-convolve an XAFS spectrum using the energy width of the core level,
+we can use the :func:`_xray.core_width` functiion, as shown below for Cu metal.
+We can also test that the deconvolution is correct by using
+:func:`xas_convolve` to re-convolve the result and comparing it to original
+data.  This can be done with:
+
+.. literalinclude:: ../../examples/xafs/doc_deconv2.lar
+
+with results shown below:
+
+.. subfigstart::
+
+.. _fig_xafs_deconv2a:
+
+.. figure::  ../_images/xafs_deconv2a.png
+    :target: ../_images/xafs_deconv2a.png
+    :width: 100%
+    :align: center
+
+    Cu metal normalized :math:`\mu(E)` and spectrum deconvolved by the
+    energy of its core level.
+
+.. _fig_xafs_deconv2b:
+
+.. figure::  ../_images/xafs_deconv2b.png
+    :target: ../_images/xafs_deconv2b.png
+    :width: 100%
+    :align: center
+
+    Comparison of original and re-convolved spectrum for Cu metal.  The
+    difference shown in red is multiplied by 100.
+
+.. subfigend::
+    :width: 0.45
+    :alt: deconv figure
+    :label: fig_xafs_deconv2
+
+    Example of simple usage of :func:`xas_deconvolve` and
+    :func:`xas_convolve` for Cu metal.
