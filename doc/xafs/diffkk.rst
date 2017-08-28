@@ -41,13 +41,13 @@ option of using the modification proposed by :cite:ts:`lee-xiang`.
 This scales the measured :math:`\mu(E)` to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
-:num:`fig-cu-diffkk`.
+:numref:`fig-cu-diffkk`.
 
 The difference between the scaled :math:`\mu(E)` and the tabulated
 :math:`f''(E)` is then subjected to the KK transform.  The result is
 added to the tabulated :math:`f'(E)` spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
-shown at the bottom of :num:`fig-cu-diffkk`.
+shown at the bottom of :numref:`fig-cu-diffkk`.
 
 .. _fig-cu-diffkk:
 
@@ -124,7 +124,7 @@ in a relatively unambiguous determination of :math:`f'(E)`.  The
 situation for L edge data is a bit more complicated.
 
 Consider the CeO\ :sub:`2`\ L edge data shown on the right on
-:num:`fig-CeO2-diffkk`.  For these data, the matching algorithm is
+:numref:`fig-CeO2-diffkk`.  For these data, the matching algorithm is
 quite a bit more challenging, in part due to the very large spectral
 weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
@@ -149,7 +149,7 @@ tabulated :math:`f'(E)`.
 
     A poor stab at diffKK analysis of CeO\ :sub:`2`
 
-.. _fig-ceo2-ok:
+.. _fig-ceo2-diffkk:
 
 .. figure::  ../_images/diffkk_ceo2_ok.png
     :target: ../_images/diffkk_ceo2_ok.png
@@ -159,12 +159,12 @@ tabulated :math:`f'(E)`.
 
 .. subfigend::
     :width: 0.32
-    :label: fig-CeO2-diffkk
+    :label: fig-ceo2-diffkkcomp
 
     DiffKK analysis of CeO\ :sub:`2`\  L edge data
 
 
-These larch command created the plot in the middle of :num:`fig-CeO2-diffkk`.
+These larch command created the plot in :numref:`fig-ceo2-notok`.
 
 .. code:: python
 
@@ -186,12 +186,11 @@ The situation is improved somewhat by a simple trick.
   dkk=diffkk(data.e, data.xmu, z=58, edge='L3', mback_kws={'e0':5723, 'order':2, 'whiteline':20})
   dkk.kk()
 
-The result is shown on the left of :num:`fig-CeO2-diffkk`.  A margin
-is placed around the L\ :sub:`3`\ and L\ :sub:`2`\ white lines.  The
-data from the white line energies to 20 eV above are excluded when
-determining the matching parameters.  This does a somewhat nicer job
-of forcing the flat parts of measured data to match the tabulated
-data.
+The result is shown in :numref:`fig-ceo2-xafs`.  A margin is placed around
+the L\ :sub:`3`\ and L\ :sub:`2`\ white lines.  The data from the white
+line energies to 20 eV above are excluded when determining the matching
+parameters.  This does a somewhat nicer job of forcing the flat parts of
+measured data to match the tabulated data.
 
 This seems to do a decent job of producing the :math:`f'(E)` data.
 Still, this exposes a shortcoming of the diffKK algorithm for L edge
