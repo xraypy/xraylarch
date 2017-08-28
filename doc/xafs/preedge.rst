@@ -497,3 +497,46 @@ with results shown below:
 
     Example of simple usage of :func:`xas_deconvolve` and
     :func:`xas_convolve` for Cu metal.
+
+Finally, de-convolution of :math:`L_{\rm III}` XAFS data can be
+particularly dramatic and useful.  As with the copper spectrum above, we'll
+deconvolve :math:`L_{\rm III}` XAFS for platinum, using the nominal energy
+width of the core level (5.17 eV).  For this example, we also see
+noticeable improvement in amplitude of the XAFS.
+
+.. literalinclude:: ../../examples/xafs/doc_deconv3.lar
+
+
+
+with results shown below:
+
+.. subfigstart::
+
+.. _fig_xafs_deconv3a:
+
+.. figure::  ../_images/xafs_deconv3a.png
+    :target: ../_images/xafs_deconv3a.png
+    :width: 100%
+    :align: center
+
+    :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw
+    data and the spectrum deconvolved by the energy of its core level.
+
+.. _fig_xafs_deconv3b:
+
+.. figure::  ../_images/xafs_deconv3b.png
+    :target: ../_images/xafs_deconv3b.png
+    :width: 100%
+    :align: center
+
+    :math:`L_{\rm III}` XAFS of Pt metal, :math:`\chi(R)` for raw data and
+    the spectrum deconvolved by the energy of its core level.
+
+
+.. subfigend::
+    :width: 0.45
+    :alt: deconv figure
+    :label: fig_xafs_deconv3
+
+    Example of simple usage of :func:`xas_deconvolve` and
+    :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
