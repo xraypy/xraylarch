@@ -17,6 +17,7 @@ dylibs/*/*.dylib
 dylibs/*/Mk.install
 dylibs/*/Mk.config
 sandbox/
+tests/.cover
 play/
 AMAP/
 *.h5

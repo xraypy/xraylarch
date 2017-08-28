@@ -49,9 +49,9 @@ plotlabels = group(k       = r'$k \rm\,(\AA^{-1})$',
                    chirlab = chirlab)
 
 
-def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
-            show_e0=False, show_deriv=False, emin=None, emax=None, label='mu',
-            new=True, win=1):
+def plot_mu(dgroup, show_norm=False, show_deriv=False,
+            show_pre=False, show_post=False, show_e0=False, with_deriv=False,
+            emin=None, emax=None, label='mu', new=True, win=1):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
              show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
@@ -62,12 +62,12 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     Arguments
     ----------
      dgroup     group of XAFS data after pre_edge() results (see Note 1)
-     norm       bool whether to show normalized data [False]
-     deriv      bool whether to show derivative of XAFS data [False]
+     show_norm  bool whether to show normalized data [False]
+     show_deriv bool whether to show derivative of XAFS data [False]
      show_pre   bool whether to show pre-edge curve [False]
      show_post  bool whether to show post-edge curve [False]
      show_e0    bool whether to show E0 [False]
-     show_deriv bool whether to show deriv together with mu [False]
+     with_deriv bool whether to show deriv together with mu [False]
      emin       min energy to show, relative to E0 [None, start of data]
      emax       max energy to show, relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
@@ -83,20 +83,21 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
         mu = dgroup.mu
     elif  hasattr(dgroup, 'mutrans'):
         mu = dgroup.mutrans
+    elif  hasattr(dgroup, 'mufluor'):
+        mu = dgroup.mufluor
     else:
         raise ValueError("XAFS data group has no array for mu")
     #endif
     ylabel = plotlabels.mu
-    if norm:  mu = dgroup.norm
-    if labels is None:
+    if label is None:
         label = 'mu'
     #endif
-    if deriv:
+    if show_deriv:
         mu = gradient(mu)/gradient(dgroup.energy)
         ylabel = plotlabels.dmude
         dlabel = '%s (deriv)' % label
-    #endif
-    if norm:
+    elif show_norm:
+        mu = dgroup.norm
         ylabel = "%s (norm)" % ylabel
         dlabel = "%s (norm)" % label
     #endif
@@ -107,17 +108,16 @@ def plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
     opts = dict(win=win, show_legend=True, linewidth=3,
                 title=dgroup.filename, xmin=xmin, xmax=xmax)
 
-
     plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          label=label, zorder=20, new=new, **opts)
 
-    if show_deriv:
+    if with_deriv:
         dmu = gradient(mu)/gradient(dgroup.energy)
         plot(dgroup.energy, dmu, ylabel=plotlabels.dmude,
              label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
 
-    if (not norm and not deriv):
+    if (not show_norm and not show_deriv):
         if show_pre:
             plot(dgroup.energy, dgroup.pre_edge, label='pre_edge',
                  zorder=18, **opts)

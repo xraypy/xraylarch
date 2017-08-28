@@ -101,6 +101,20 @@ class GSEMCA_File(Group):
             dat = dat + mdat
         return dat.astype(np.int)
 
+    def predict_pileup(self, scale=None):
+        """predict pileup for an MCA spectra from its auto-correlation.
+
+        Options:
+        --------
+          scale   factor to apply to convolution [found from data]
+
+        Outputs 'pileup' attribute containing predicted pileup for each mca
+        """
+        for m in self.mcas:
+            m.predict_pileup(scale=scale)
+        mca0 = self.__get_mca0()
+        self.pileup = mca0.pileup
+
     def read(self, filename=None, bad=None):
         """read GSE MCA file"""
         self.filename = filename

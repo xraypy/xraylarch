@@ -11,8 +11,10 @@ import six
 import numpy as np
 from larch import Group, isgroup
 
+from larch.utils import interp
 from larch_plugins.xrf.deadtime import calc_icr, correction_factor
 from larch_plugins.xrf.roi import ROI
+
 
 def isLarchMCAGroup(grp):
     """tests whether variable holds a valid Larch MCAGroup"""
@@ -52,6 +54,7 @@ class MCA(Group):
     * self.name        = 'mca'  # Name of the mca object
     * self.nchans      = 2048   # number of mca channels
     * self.counts      = None   # MCA data
+    * self.pileup      = None   # predicted pileup
 
     # Counting parameters
     * self.start_time   = ''    # Start time and date, a string
@@ -169,6 +172,23 @@ class MCA(Group):
         """add an Environment setting"""
         if len(desc) > 0 and len(val) > 0:
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
+
+    def predict_pileup(self, scale=None):
+        """
+        predict pileup for a spectrum, save to 'pileup' attribute
+        """
+        counts = self.counts.astype(int)/1.e6
+        pileup = np.convolve(counts, counts, 'full')
+        en = self.energy
+        ex = en[0] + np.arange(len(pileup))*(en[1] - en[0])
+        if scale is None:
+            npts = len(en)
+            nhalf = int(npts/2) + 1
+            nmost = int(7*npts/8.0) - 1
+            scale = self.counts[nhalf:].sum()/ pileup[nhalf:nmost].sum()
+
+        self.pileup = interp(ex, scale*pileup, self.energy, kind='cubic')
+        self.pileup_scale = scale
 
     def update_correction(self, tau=None):
         """

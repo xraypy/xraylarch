@@ -1,0 +1,10 @@
+## examples/xafs/doc_deconv1.lar
+dat = read_ascii('../xafsdata/fe2o3_rt1.xmu', labels='energy mu i0')
+
+pre_edge(dat)
+xas_deconvolve(dat, esigma=1.0)
+
+plot_mu(dat, show_norm=True, emin=-30, emax=70)
+plot(dat.energy, dat.deconv, label='deconvolved')
+
+## end of examples/xafs/doc_deconv1.lar
