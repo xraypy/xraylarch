@@ -5,7 +5,7 @@ around a table.
 
 from docutils import nodes
 import docutils.parsers.rst.directives as directives
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from sphinx import addnodes
 
 class figtable(nodes.General, nodes.Element):
