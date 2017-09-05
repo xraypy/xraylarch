@@ -1265,8 +1265,12 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
 
     if verbose:
         print('\n')
+        if len(amcsd) > 100:
+            print('DISPLAYING 100 of %i TOTAL MATCHES FOUND.' % len(amcsd))        
+        else:
+            print('%i TOTAL MATCHES FOUND.' % len(amcsd))
         for i,id_no in enumerate(amcsd):
-            if i < 100:
+            if i < 101:
                 str = 'AMCSD %5d, %s (score of %2d --> %i of %i peaks)' % (id_no,
                          cifdatabase.mineral_by_amcsd(id_no),scores[i],
                          match_peaks[i],total_peaks[i])
