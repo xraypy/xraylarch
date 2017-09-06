@@ -706,7 +706,7 @@ class GSEXRM_MapFile(object):
                 cfile = FastMapConfig()
                 cfile.Read(os.path.join(self.folder, self.ScanFile))
                 cfile.config['scan']['filename'] = self.filename
-                cfile.Save(os.path.join(self.folder, self.ScanFile))
+                # cfile.Save(os.path.join(self.folder, self.ScanFile))
             self.h5root = h5py.File(self.filename)
 
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
