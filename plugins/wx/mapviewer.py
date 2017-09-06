@@ -2471,7 +2471,8 @@ class MapViewerFrame(wx.Frame):
                 print(" Connected to scandb='%s' on server at '%s'" %
                       (DBCONN['dbname'], DBCONN['host']))
             except:
-                print('Could not connect to ScanDB')
+                errmsg, etype, tb = sys.exc_info()
+                print('Could not connect to ScanDB: ' , errmsg)
                 self.use_scandb = False
 
     def ShowFile(self, evt=None, filename=None,  **kws):
