@@ -571,8 +571,10 @@ class cifDB(object):
                      addDB=True,url=None,all=False,minval=None):
     
         maxi = 20573
-        exceptions = [0,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
+        exceptions = [0,7271,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
+        
         ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
+        ##  7271 : author name doubled in cif
         ## 14748 : has label of amcsd code but no number (or anything) assigned
         ## 15049 : page number 'L24307 1' could not be parsed as number
         ## 15050 : page number 'L24307 1' could not be parsed as number
@@ -611,10 +613,10 @@ class cifDB(object):
                         if verbose:
                             print('Saved %s' % file)
                     if addDB:
-                        if 1==1:#try:
+                        try:
                             self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-#                         except:
-#                             pass
+                        except:
+                            pass
 
 
 

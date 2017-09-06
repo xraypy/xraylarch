@@ -126,7 +126,8 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Map_Folder': '',
            'Dimension': 2,
            'Process_Machine': '',
-           'Process_ID': 0}
+           'Process_ID': 0,
+           'Compression': ''}
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     '''creates a skeleton '/xrmmap' group in an open HDF5 file
@@ -142,8 +143,13 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     attrs.update(H5ATTRS)
     if start_time is None:
         start_time = time.ctime()
+    if COMPRESSION != 'lzf':
+        compress_str = '%s %s' % (COMPRESSION,COMPRESSION_OPTS)
+    else:
+        compress_str = COMPRESSION
+    
     attrs.update({'Dimension':dimension, 'Start_Time':start_time,
-                  'Map_Folder': folder, 'Last_Row': -1})
+                  'Map_Folder': folder, 'Last_Row': -1,'Compression':compress_str})
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)

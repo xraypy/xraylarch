@@ -1592,7 +1592,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         ir = 0
 
         for label in ('Facility','Run Cycle','Proposal Number','User group',
-                      'Scan Started',
+                      'Scan Started','File Compression',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       'Original data path', 'User Comments 1', 'User Comments 2',
                       'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
@@ -1614,6 +1614,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
     def update_xrmmap(self, xrmmap):
         self.wids['Scan Started'].SetLabel( bytes2str(xrmmap.attrs['Start_Time']))
+
+        self.wids['File Compression'].SetLabel( bytes2str(xrmmap.attrs['Compression']))
 
         comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
         for i, comm in enumerate(comments):
