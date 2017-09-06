@@ -123,6 +123,10 @@ class diFFit1DFrame(wx.Frame):
         
         read_workdir('gsemap.dat')
 
+        self.default_cifdb = '%s/.larch/cif_amcsd.db' % expanduser('~')
+        if not os.path.exists(self.default_cifdb):
+            self.default_cifdb = 'amcsd_cif.db'
+
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
         panel = wx.Panel(self)
@@ -154,17 +158,23 @@ class diFFit1DFrame(wx.Frame):
 
         self.cifdatabase.close_database()
 
-    def openDB(self,dbname='amcsd_cif.db'):
+    def openDB(self,dbname=None):
 
         try:
             self.closeDB()
         except:
             pass
 
+        if dbname is None:
+            dbname = self.default_cifdb
+
         try:
-            self.cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+            self.cifdatabase = cifDB(dbname=dbname)
         except:
-            self.cifdatabase = cifDB(dbname='amcsd_cif.db')
+            print('Failed to import file as database: %s' % dbname)
+            dbname = self.default_cifdb
+            self.cifdatabase = cifDB(dbname=self.default_cifdb)
+        print('Now using database: %s' % os.path.split(dbname)[-1])
 
     def onExit(self, event=None):
         try:
@@ -1347,9 +1357,8 @@ class Fitting1DXRD(BasePanel):
         if read:
             try:
                 self.owner.openDB(dbname=path)
-                print('Now using database: %s' % os.path.split(path)[-1])
             except:
-               print('Failed to import file as database: %s' % path)
+                pass
                
         return path
 
@@ -1412,7 +1421,7 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
 
         q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
-        print('Still need to determine how best to rank these matches')
+        # print('Still need to determine how best to rank these matches')
         list_amcsd = match_database(self.owner.cifdatabase,q_pks,
                                     minq=np.min(self.plt_data[0]),
                                     maxq=np.max(self.plt_data[0]))
