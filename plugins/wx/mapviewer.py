@@ -2582,7 +2582,6 @@ class MapViewerFrame(wx.Frame):
             try:
                 sys.path.insert(0, '//cars5/Data/xas_user/pylib')
                 from escan_credentials import conn as DBCONN
-                from escan_credentials import soo
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
                 connect_scandb(**DBCONN)
@@ -2593,7 +2592,6 @@ class MapViewerFrame(wx.Frame):
                       (DBCONN['dbname'], DBCONN['host']))
             except:
                 etype, emsg, tb = sys.exc_info()
-
                 print('Could not connect to ScanDB: %s' % (emsg.message))
                 self.use_scandb = False
 
