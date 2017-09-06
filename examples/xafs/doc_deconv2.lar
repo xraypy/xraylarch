@@ -1,0 +1,21 @@
+## examples/xafs/doc_deconv2.lar
+
+dat = read_ascii('../xafsdata/cu_metal_rt.xdi', labels='energy i0 i1 mu')
+dat.mu = -log(dat.i1 / dat.i0)
+
+pre_edge(dat)
+
+esigma = core_width('Cu', edge='K')
+
+xas_deconvolve(dat, esigma=esigma)
+
+plot_mu(dat, show_norm=True, emin=-50, emax=250)
+plot(dat.energy, dat.deconv, label='deconvolved')
+
+# Test convolution:
+test = group(energy=dat.energy, norm=dat.deconv)
+xas_convolve(test, esigma=esigma)
+plot_mu(dat, show_norm=True, emin=-50, emax=250, win=2)
+plot(test.energy, 100*(test.conv-dat.norm),
+     label='(reconvolved - original)x100', win=2)
+## end of examples/xafs/doc_deconv2.lar

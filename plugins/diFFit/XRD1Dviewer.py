@@ -31,6 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      GridPanel, FileSave, HLine)
 
 import larch
+from larch.larchlib import read_workdir
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
@@ -119,6 +120,8 @@ class diFFit1DFrame(wx.Frame):
         x,y = calcFrameSize(1500, 830)
         label = 'diFFit : 1D XRD Data Analysis Software'
         wx.Frame.__init__(self, None,title=label,size=(x,y))
+        
+        read_workdir('gsemap.dat')
 
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
@@ -318,11 +321,15 @@ class diFFit1DFrame(wx.Frame):
                 index = dlg.slct_1Ddata.GetSelection()
                 filename = dlg.File.GetValue()
                 calfile = dlg.Poni.GetValue() if len(dlg.Poni.GetValue()) > 0 else None
+                unts = dlg.ch_units.GetSelection()
             dlg.Destroy()
 
         if okay:
             savdat = xrdv.xy_data[index]
-            save1D(filename, savdat.q, savdat.I, calfile=calfile)
+            if unts == 1: ## 2theta
+                save1D(filename, savdat.twth, savdat.I, xaxis_unit='2th', calfile=calfile)            
+            else:         ## q
+                save1D(filename, savdat.q, savdat.I, xaxis_unit='q', calfile=calfile)
 
 
 class SelectSavingData(wx.Dialog):
@@ -347,6 +354,17 @@ class SelectSavingData(wx.Dialog):
         datasizer.Add(self.slct_1Ddata, flag=wx.EXPAND|wx.TOP,    border=8)
 
 #         self.slct_1Ddata.Bind(wx.EVT_LISTBOX,  None  )
+
+        ## SELECT UNITS
+        self.ch_units = wx.Choice(panel, choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)'])
+        ttl_units     = SimpleText(panel, label='Units:')
+        
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(ttl_units,           flag=wx.RIGHT,            border=5)
+        hsizer.Add(self.ch_units,       flag=wx.RIGHT,            border=5)
+        
+        unitsizer = wx.BoxSizer(wx.VERTICAL)
+        unitsizer.Add(hsizer,           flag=wx.TOP,              border=5)
 
 
         ## SAVE TO FILE
@@ -386,6 +404,8 @@ class SelectSavingData(wx.Dialog):
 
         mainsizer.AddSpacer(8)
         mainsizer.Add(datasizer, flag=wx.LEFT, border=8)
+        mainsizer.AddSpacer(15)
+        mainsizer.Add(unitsizer, flag=wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(filesizer, flag=wx.LEFT, border=8)
         mainsizer.AddSpacer(15)
@@ -1716,6 +1736,10 @@ class Viewer1DXRD(wx.Panel):
         vbox.Add(addbtns,flag=wx.ALL,border=10)
         vbox.Add(dattools,flag=wx.ALL,border=10)
         vbox.Add(ciftools,flag=wx.ALL,border=10)
+        
+        self.ch_xaxis.SetSelection(0)
+        self.ch_yaxis.SetSelection(0)
+        
         return vbox
 
     def RightSidePanel(self,panel):
@@ -2018,6 +2042,7 @@ class Viewer1DXRD(wx.Panel):
 
         self.ch_xaxis.Enable()
         self.ch_yaxis.Enable()
+
         if data:
             self.val_scale.Enable()
             self.btn_reset.Enable()
@@ -3060,7 +3085,7 @@ class Calc1DPopup(wx.Dialog):
         """Constructor"""
         dialog = wx.Dialog.__init__(self, parent, title='Calculate 1DXRD options',
                                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-                                    size = (210,410))
+                                    size = (210,460))
         self.parent = parent
         self.data2D = xrd2Ddata
         self.steps = 5001
@@ -3072,7 +3097,7 @@ class Calc1DPopup(wx.Dialog):
         self.wedges.SetValue('1')
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+50, iy+50))
         
         self.wedges.Disable()
         self.wedge_arrow.Disable()
@@ -3111,12 +3136,18 @@ class Calc1DPopup(wx.Dialog):
 
         self.ch_save = wx.CheckBox(self.panel, label = 'Save 1D?')
         self.ch_plot  = wx.CheckBox(self.panel, label = 'Plot 1D?')
+        
+        self.save_choice = wx.Choice(self.panel, choices=[u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)'])
 
         self.ch_save.Bind(wx.EVT_CHECKBOX, self.onCHECK)
         self.ch_plot.Bind(wx.EVT_CHECKBOX, self.onCHECK)
 
+        savesizer = wx.BoxSizer(wx.HORIZONTAL)
+        savesizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
+        savesizer.Add(self.save_choice,  flag=wx.RIGHT, border=5)
+
         minisizer = wx.BoxSizer(wx.VERTICAL)
-        minisizer.Add(self.ch_save,  flag=wx.RIGHT, border=5)
+        minisizer.Add(savesizer,  flag=wx.RIGHT, border=5)
         minisizer.Add(self.ch_plot,  flag=wx.RIGHT, border=5)
 
         #####

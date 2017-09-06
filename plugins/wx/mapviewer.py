@@ -44,7 +44,7 @@ except:
 #     HAS_tomopy = True
 # except ImportError:
 #     pass
-# 
+#
 # HAS_scikit = False
 # try:
 #     from skimage.transform import iradon
@@ -304,7 +304,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 p.update_xrmmap(xrmfile.xrmmap)
 
     def onFILE(self, evt, varname='a'):
-    
+
         print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         print('\tNot doing anything yet...')
         print('\tShould switch from previous file to: %s' %
@@ -323,7 +323,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         roiname = self.varroi[varname].GetStringSelection()
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
-        
+
         map = self.owner.filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
 
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
@@ -348,8 +348,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]            
-            ## allows for adding roi in new format to old files                
+                if grp.startswith('det'): det_list += [grp]
+            ## allows for adding roi in new format to old files
             for grp in xrmmap['roimap'].keys():
                 try:
                     if xrmmap[grp].attrs.get('type', '').find('det') > -1:
@@ -361,7 +361,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
            if sumname in det_list:
                det_list.remove(sumname)
                det_list.insert(0,sumname)
-        
+
         if len(det_list) < 1: det_list = ['']
 
         if varname is None:
@@ -386,7 +386,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
 
     def update_roi(self, detname, xrmmap):
-        
+
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
@@ -404,7 +404,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 for name in names:
                     limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
                 rois += [x for (y,x) in sorted(zip(limits,names))]
-            except: 
+            except:
                 pass
 
         return rois
@@ -473,15 +473,13 @@ class ROIPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
     label  = 'ROI Tools'
     def __init__(self, parent, owner, **kws):
-        
+
         self.owner = owner
         self.file,self.xrmmap = None,None
-        
+
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        #roiunits=['XRF: E (eV)','XRF: E (keV)',u'XRD: q (\u212B\u207B\u00B9)',u'XRD: 2\u03B8 (\u00B0)',u'XRD: d (\u212B)']
-
-        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))        
+        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
         self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
                          Choice(self, choices=[''],        size=(120, -1))]
         fopts = dict(minval=-1, precision=3, size=(100, -1))
@@ -493,21 +491,45 @@ class ROIPanel(GridPanel):
         self.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
 
         self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-        
+
         self.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
         self.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
         self.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
         self.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self, ''),SimpleText(self, '')), dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self, ''),newrow=True)
 
         self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-        
+
+        ###############################################################################
+
+        self.rm_roi_ch = [Choice(self, choices=[''],        size=(120, -1)),
+                          Choice(self, choices=[''],        size=(120, -1))]
+        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        self.rm_roi_lims = SimpleText(self, '')
+
+        self.Add(SimpleText(self, ''),newrow=True)
+        self.Add(SimpleText(self, '--    Delete saved ROI    --'), dcol=6, style=LEFT, newrow=True)
+
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
+
+        self.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]), dcol=1, style=LEFT, newrow=True)
+        self.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), dcol=1, style=LEFT,newrow=True)
+        self.Add(SimpleText(self, 'Limits:'), dcol=1, style=LEFT, newrow=True)
+        self.Add(self.rm_roi_lims, dcol=3, style=LEFT)
+        self.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self, ''),newrow=True)
+
+        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
+
+
         self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.roi_lims[2].Disable()
         self.roi_lims[3].Disable()
 
+        self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
+
         self.pack()
-        
+
     def update_xrmmap(self, xrmmap):
 
         self.file   = self.owner.current_file
@@ -515,21 +537,65 @@ class ROIPanel(GridPanel):
 
         self.file.reset_flags()
         self.roiTYPE()
-        
+
     def roiTYPE(self,event=None):
         roitype = []
-        if self.file.flag_xrf:  
+        delroi = []
+        if self.file.flag_xrf:
             roitype += ['XRF']
-        if self.file.flag_xrd1d:  
+        if self.file.flag_xrd1d:
             roitype += ['1DXRD']
-        if self.file.flag_xrd2d:  
+            delroi  = ['xrd1D']
+        if self.file.flag_xrd2d:
             roitype += ['2DXRD']
-        if len(roitype) < 1: roitype = ['']
+        if len(roitype) < 1:
+            roitype = ['']
         self.roi_chc[0].SetChoices(roitype)
         self.roiUNITS()
-        
+        if len(delroi) > 0:
+            self.rm_roi_ch[0].SetChoices(delroi)
+            self.setROI()
+
+    def onRemoveROI(self,event=None):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+
+        if detname == 'xrd1D':
+            self.file.del_xrd1Droi(roiname)
+            self.setROI()
+
+    def setROI(self):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        detgrp = self.file.xrmmap['roimap'][detname]
+        limits,names = [],detgrp.keys()
+        for name in names:
+            limits += [list(detgrp[name]['limits'][:])]
+
+        self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
+        self.roiSELECT()
+
+
+    def roiSELECT(self,event=None):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+
+        roi = self.file.xrmmap['roimap'][detname][roiname]
+        limits = roi['limits'][:]
+        units = roi['limits'].attrs['units']
+
+        if units == '1/A':
+            roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+        else:
+            roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+
+        self.rm_roi_lims.SetLabel(roistr)
+
+
     def roiUNITS(self,event=None):
-    
+
         choice = self.roi_chc[0].GetStringSelection()
         roiunit = ['']
         if choice == 'XRF':
@@ -553,7 +619,7 @@ class ROIPanel(GridPanel):
         xname = self.roi_name.GetValue()
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
         if xtyp != '2DXRD': xrange = xrange[:2]
-        
+
         self.owner.message('Calculating ROI: %s' % xname)
         if xtyp == 'XRF':
             self.file.add_xrfroi(xrange,xname,unit=xunt)
@@ -562,22 +628,18 @@ class ROIPanel(GridPanel):
             unt = xrd[self.roi_chc[1].GetSelection()]
             self.file.add_xrd1Droi(xrange,xname,unit=unt)
         elif xtyp == '2DXRD':
-            self.file.add_xrd2Droi(xrange,xname,unit=xunt)            
+            self.file.add_xrd2Droi(xrange,xname,unit=xunt)
         self.owner.message('Ready')
-        
-        for p in self.nbpanels:
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(self.current_file.xrmmap)
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
     label  = 'Tomography Tools'
     def __init__(self, parent, owner, **kws):
-        
+
         self.owner = owner
         self.file,self.xrmmap = None,None
         self.npts = None
-        
+
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
         self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
@@ -606,7 +668,7 @@ class TomographyPanel(GridPanel):
 
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
-        
+
         self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
 
         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
@@ -631,7 +693,9 @@ class TomographyPanel(GridPanel):
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
-        
+
+        self.refine_center.SetValue(False)
+
         #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
 
 
@@ -650,7 +714,7 @@ class TomographyPanel(GridPanel):
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
                                                                style=LEFT,  newrow=True)
         self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), 
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
                                                                style=LEFT,  newrow=True)
         self.Add(self.chk_hotcols,                     dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
@@ -678,7 +742,7 @@ class TomographyPanel(GridPanel):
         self.disable_options()
 
     def disable_options(self):
-        
+
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]
         for chc in all_choices: chc.Disable()
         for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center):
@@ -689,26 +753,26 @@ class TomographyPanel(GridPanel):
         self.center_range.Disable()
 
     def enable_options(self):
-    
+
         self.plot_choice.Enable()
-        
+
         self.det_choice[0].Enable()
         self.det_choice[-1].Enable()
         self.roi_choice[0].Enable()
         self.roi_choice[-1].Enable()
-        
+
         self.oper.Enable()
-        
+
         for chc in self.alg_choice: chc.Enable()
-        
+
         for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center): chk.Enable()
         for btn in (self.sino_show+self.tomo_show): btn.Enable()
 
         self.center_value.Enable()
-        
+
         self.center_range.SetValue(10)
         self.center_range.SetRange(1,20)
-        
+
     def update_xrmmap(self, xrmmap):
 
         self.file   = self.owner.current_file
@@ -718,29 +782,29 @@ class TomographyPanel(GridPanel):
             scan_version = getattr(self.file, 'scan_version', 1.00)
         except:
             scan_version = 2.0 ## default off if fails to find parameter
-        
+
         if scan_version < 1.36:
             self.chk_hotcols.SetValue(1)
         else:
             self.chk_hotcols.SetValue(0)
-       
+
         self.enable_options()
         self.set_det_choices(xrmmap)
+
         try:
-            self.npts = len(self.file.get_pos('fine x', mean=True))       
+            self.npts = len(self.file.get_pos('fine x', mean=True))
         except:
             self.npts = len(self.file.get_pos('x', mean=True))
-        try:
-            center = self.xrmmap['tomo/center'][...]
-        except:
-            center = self.npts/2.
+
+        center = self.file.get_tomo_center()
+
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(center)
         self.plotSELECT()
         self.refineCHOICE()
-        
+
     def refineCHOICE(self,event=None):
-       
+
         self.center_range.Disable()
         if self.alg_choice[0].GetStringSelection().startswith('sci'):
             if self.refine_center.GetValue():
@@ -748,11 +812,11 @@ class TomographyPanel(GridPanel):
             self.center_value.SetIncrement(1)
         else:
             self.center_value.SetIncrement(0.1)
-    
+
     def onALGchoice(self,event=None):
         self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
         self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
-        
+
         self.refineCHOICE()
 
     def detSELECT(self,idet,event=None):
@@ -768,7 +832,10 @@ class TomographyPanel(GridPanel):
                 roi = self.file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
-                roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+                if units == '1/A':
+                    roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+                else:
+                    roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
             except:
                 roistr = ''
         else:
@@ -784,7 +851,7 @@ class TomographyPanel(GridPanel):
         self.roi_label[iroi].SetLabel(roistr)
 
     def plotSELECT(self,event=None):
-    
+
         if len(self.owner.filemap) > 0:
             if self.plot_choice.GetSelection() == 0:
                 for i in (1,2):
@@ -810,7 +877,7 @@ class TomographyPanel(GridPanel):
             iy, ix = divmod(idx, ny)
             indices.append((ix, iy))
 
-            
+
     def onClose(self):
         for p in self.plotframes:
             try:
@@ -819,11 +886,11 @@ class TomographyPanel(GridPanel):
                 pass
 
     def calculateSinogram(self,datafile):
-    
+
         '''
         returns slice as [slices, x, 2th]
         '''
-    
+
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
@@ -851,20 +918,21 @@ class TomographyPanel(GridPanel):
                 plt_name += ['%s' % roi_name[-1]]
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
-        
+
+
         r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
             g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
             b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
-          
-        
+
+
         reshape = True if len(x) == r_map.shape[1] and len(ome) == r_map.shape[0] else False
         if ome[0] > ome[-1]: ome = ome[::-1]
         if x[0] > x[-1]: x = x[::-1]
 
         if roi_name[-1] != '1' and oprtr == '/':
             mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
-            
+
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
             mapx[np.where(mapx<mxmin)] = mxmin
@@ -872,12 +940,36 @@ class TomographyPanel(GridPanel):
         else:
             mapx = 1.
 
-            
+
+        ## first images in XRD are always over exposed. this removes them for reconstruction
+        ## only happens along fast direction: needs to check if this is x or ome.
+        ## (could do this before changing shape, but leave like this for now.)
+        flagxrd = True
+        for det in det_name:
+            if det.startswith('xrd'):
+                flagxrd = True
+        if flagxrd:
+            if datafile.get_pos(0, mean=True).all() == ome.all():
+                ome = ome[10:-11]
+                r_map = r_map[:,10:-11]
+                if plt3:
+                    g_map = g_map[:,10:-11]
+                    b_map = b_map[:,10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[:,10:-11]
+            elif datafile.get_pos(0, mean=True).all() == x.all():
+                x = x[10:-11]
+                r_map = r_map[10:-11]
+                if plt3:
+                    g_map = g_map[10:-11]
+                    b_map = b_map[10:-11]
+                if len(np.shape(mapx)) == 2: mapx = mapx[10:-11]
+
+
         pref, fname = os.path.split(datafile.filename)
         if reshape: r_map = np.einsum('ji->ij', r_map)
         if plt3:
             if reshape:
-                g_map,b_map = np.einsum('ji->ij', g_map),np.einsum('ji->ij', b_map) 
+                g_map,b_map = np.einsum('ji->ij', g_map),np.einsum('ji->ij', b_map)
             if   oprtr == '+': sino = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
@@ -906,7 +998,7 @@ class TomographyPanel(GridPanel):
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
-            
+
         ### axes order: slices, x, 2theta
         if len(sino.shape) < 3: sino = np.reshape(sino,(1,sino.shape[0],sino.shape[1]))
         sino = np.flip(sino,1)
@@ -914,13 +1006,13 @@ class TomographyPanel(GridPanel):
         return title,subtitles,info,x,ome,sino
 
     def onShowSinogram(self, event=None, new=True):
-        
+
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title)
-        
+            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
+
         ## reorder to: 2th, x, slice for viewing
         sino = np.einsum('kji->ijk', sino)
 
@@ -928,7 +1020,7 @@ class TomographyPanel(GridPanel):
         if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
-                               xrmfile=self.file)
+                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
 
 
     def onShowTomograph(self, event=None, new=True):
@@ -937,8 +1029,8 @@ class TomographyPanel(GridPanel):
         title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
 
         alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
-        
-        if len(ome) > sino.shape[2]: 
+
+        if len(ome) > sino.shape[2]:
             ome = ome[:sino.shape[2]]
         elif len(ome) < sino.shape[2]:
             sino = sino[:,:,:len(ome)]
@@ -961,20 +1053,20 @@ class TomographyPanel(GridPanel):
             title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],tomo_center,title)
         else:
             title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
-        
+
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title)
+            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
         ## reorder to: x,y,slice for viewing
         tomo = np.einsum('kij->ijk', tomo)
         if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
-        
+
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
-                               xrmfile=self.file)
+                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
 
     def set_center(self,center):
-    
+
         self.center_value.SetValue(center)
         self.file.update_tomo_center(center)
 
@@ -987,8 +1079,8 @@ class TomographyPanel(GridPanel):
             if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]            
-            ## allows for adding roi in new format to old files                
+                if grp.startswith('det'): det_list += [grp]
+            ## allows for adding roi in new format to old files
             for grp in xrmmap['roimap'].keys():
                 try:
                     if xrmmap[grp].attrs.get('type', '').find('det') > -1:
@@ -1014,19 +1106,19 @@ class TomographyPanel(GridPanel):
             for idet,det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
                 rois = self.update_roi(detname,xrmmap)
-                
+
                 self.roi_choice[idet].SetChoices(rois)
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
             rois = self.update_roi(detname,xrmmap)
-            
+
             self.roi_choice[idet].SetChoices(rois)
             self.roiSELECT(idet)
 
 
     def update_roi(self, detname, xrmmap):
-        
+
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
@@ -1044,7 +1136,7 @@ class TomographyPanel(GridPanel):
                 for name in names:
                     limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
                 rois += [x for (y,x) in sorted(zip(limits,names))]
-            except: 
+            except:
                 pass
 
         return rois
@@ -1054,10 +1146,10 @@ class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
     label  = 'ROI Map'
     def __init__(self, parent, owner, **kws):
-        
+
         self.owner = owner
         self.file,self.xrmmap = None,None
-        
+
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
         self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
@@ -1086,7 +1178,7 @@ class MapPanel(GridPanel):
 
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
-        
+
         self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
         fopts = dict(minval=-20000, precision=0, size=(70, -1))
@@ -1111,7 +1203,7 @@ class MapPanel(GridPanel):
                                action=partial(self.onROIMap, new=False))]
 
         #################################################################################
-        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice), 
+        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
                                                                style=LEFT,  newrow=True)
         self.AddMany((SimpleText(self,''),self.det_label[0],
                        self.det_label[1],self.det_label[2]),   style=LEFT,  newrow=True)
@@ -1122,14 +1214,14 @@ class MapPanel(GridPanel):
         self.AddMany((SimpleText(self,''),self.roi_label[0],
                        self.roi_label[1],self.roi_label[2]),   style=LEFT,  newrow=True)
         self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]), 
+        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
                                                                style=LEFT,  newrow=True)
         self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]), 
+        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
                                                                style=LEFT,  newrow=True)
         self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
-        #################################################################################        
+        #################################################################################
         self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(self.limrange,                        dcol=4, style=LEFT,  newrow=True)
@@ -1149,30 +1241,30 @@ class MapPanel(GridPanel):
         self.Add(self.map_show[1],                     dcol=1, style=LEFT)
         #################################################################################
         self.pack()
-        
+
         self.disable_options()
 
     def disable_options(self):
-        
+
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+[self.oper]
         for chc in all_choices: chc.Disable()
         for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Disable()
         for btn in self.map_show: btn.Disable()
 
     def enable_options(self):
-    
+
         self.plot_choice.Enable()
-        
+
         self.det_choice[0].Enable()
         self.det_choice[-1].Enable()
         self.roi_choice[0].Enable()
         self.roi_choice[-1].Enable()
-        
+
         self.oper.Enable()
-        
+
         for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Enable()
         for btn in self.map_show: btn.Enable()
-        
+
     def update_xrmmap(self, xrmmap):
 
         self.file   = self.owner.current_file
@@ -1182,12 +1274,12 @@ class MapPanel(GridPanel):
             scan_version = getattr(self.file, 'scan_version', 1.00)
         except:
             scan_version = 2.0 ## default off if fails to find parameter
-        
+
         if scan_version < 1.36:
             self.chk_hotcols.SetValue(1)
         else:
             self.chk_hotcols.SetValue(0)
-        
+
         self.enable_options()
         self.set_det_choices(xrmmap)
         self.plotSELECT()
@@ -1201,7 +1293,7 @@ class MapPanel(GridPanel):
                 wid.Disable()
 
     def detSELECT(self,idet,event=None):
-    
+
         self.set_roi_choices(self.file.xrmmap,idet=idet)
 
     def roiSELECT(self,iroi,event=None):
@@ -1230,7 +1322,7 @@ class MapPanel(GridPanel):
         self.roi_label[iroi].SetLabel(roistr)
 
     def plotSELECT(self,event=None):
-    
+
         if len(self.owner.filemap) > 0:
             oper_ch = self.oper.GetSelection()
             if self.plot_choice.GetSelection() == 0:
@@ -1255,7 +1347,7 @@ class MapPanel(GridPanel):
                 self.oper.SetSelection(0)
             else:
                 self.oper.SetSelection(oper_ch)
-           
+
     def onClose(self):
         for p in self.plotframes:
             try:
@@ -1264,7 +1356,7 @@ class MapPanel(GridPanel):
                 pass
 
     def ShowMap(self,datafile,new=True):
-    
+
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
@@ -1281,10 +1373,10 @@ class MapPanel(GridPanel):
                 plt_name += ['%s' % roi_name[-1]]
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
-        
+
         if roi_name[-1] != '1' and oprtr == '/':
             mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
-            
+
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
             mapx[np.where(mapx<mxmin)] = mxmin
@@ -1298,7 +1390,7 @@ class MapPanel(GridPanel):
 
         x = datafile.get_pos(0, mean=True)
         y = datafile.get_pos(1, mean=True)
-            
+
         pref, fname = os.path.split(datafile.filename)
         if plt3:
             if   oprtr == '+': map = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
@@ -1374,11 +1466,11 @@ class MapPanel(GridPanel):
                 plt_name += ['%s' % roi_name[-1]]
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
-        
+
         if roi_name[-1] == '1' or roi_name[0] == '1':
             print("WARNING: cannot make correlation plot with matrix of '1'")
             return
-            
+
         map1 = datafile.return_roimap(det_name[0],roi_name[0],**args)
         map2 = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
 
@@ -1407,7 +1499,7 @@ class MapPanel(GridPanel):
 
 
     def onROIMap(self, event=None, new=True):
-        
+
         if self.oper.GetStringSelection() == 'vs':
             self.ShowCorrel(self.file)
         else:
@@ -1422,8 +1514,8 @@ class MapPanel(GridPanel):
             if 'scalars' in xrmmap: det_list += ['scalars']
         else:
             for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]            
-            ## allows for adding roi in new format to old files                
+                if grp.startswith('det'): det_list += [grp]
+            ## allows for adding roi in new format to old files
             for grp in xrmmap['roimap'].keys():
                 try:
                     if xrmmap[grp].attrs.get('type', '').find('det') > -1:
@@ -1435,7 +1527,7 @@ class MapPanel(GridPanel):
            if sumname in det_list:
                det_list.remove(sumname)
                det_list.insert(0,sumname)
-        
+
         if len(det_list) < 1: det_list = ['']
 
         for det_ch in self.det_choice:
@@ -1451,19 +1543,19 @@ class MapPanel(GridPanel):
             for idet,det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
                 rois = self.update_roi(detname,xrmmap)
-                
+
                 self.roi_choice[idet].SetChoices(rois)
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
             rois = self.update_roi(detname,xrmmap)
-            
+
             self.roi_choice[idet].SetChoices(rois)
             self.roiSELECT(idet)
 
 
     def update_roi(self, detname, xrmmap):
-        
+
         if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
@@ -1481,7 +1573,7 @@ class MapPanel(GridPanel):
                 for name in names:
                     limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
                 rois += [x for (y,x) in sorted(zip(limits,names))]
-            except: 
+            except:
                 pass
 
         return rois
@@ -1499,8 +1591,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         ir = 0
 
-        for label in ('Facility','Run Cycle','Proposal Number','User group',                      
-                      'Scan Started', 
+        for label in ('Facility','Run Cycle','Proposal Number','User group',
+                      'Scan Started',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       'Original data path', 'User Comments 1', 'User Comments 2',
                       'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
@@ -1570,11 +1662,12 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
             name = str(name).lower()
-           
+
             if 'ring_current' in name or 'ring current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
                 self.owner.current_energy = float(val)/1000.
+                self.owner.current_file.mono_energy = float(val)/1000.
                 wvlgth = lambda_from_E(self.owner.current_energy)
                 self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
                                                    (self.owner.current_energy,wvlgth))
@@ -1618,12 +1711,12 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
         except:
             pass
-        
+
         try:
             notegrp = xrmmap['config/notes']
         except:
             notegrp = None
-            
+
         if notegrp is not None:
             self.wids['Facility'].SetLabel('%s @ %s' % (notegrp.attrs['beamline'],
                                                         notegrp.attrs['facility']))
@@ -1694,7 +1787,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                                 action=self.onXRF)
         self.xrf2     = Button(pane, 'Show XRF (Back)', size=(135, -1),
                                                 action=partial(self.onXRF, as_mca2=True))
-        self.onreport = Button(pane, 'Save XRF report to file', size=(135, -1),
+        self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
         self.cor = Check(pane, label='Correct Deadtime?')
         legend = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
@@ -2059,6 +2152,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.owner.message('Plotting XRD pattern for area \'%s\'...' % title)
         if save:
             self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
+            path,stem = os.path.split(self.owner.current_file.filename)
+            stem = '%s_%s' % (stem,title)
 
         if xrmfile.flag_xrd1d:
             self._xrd  = None
@@ -2069,15 +2164,22 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.energy = self.owner.current_energy
             self._xrd.wavelength = lambda_from_E(self._xrd.energy)
 
-            stem = '%s_%s' % (self.owner.current_file.filename.split('.')[0],title)
-
             if show:
                 self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
                                          label=self._xrd.title)
             if save:
-                file = '%s.xy' % stem
-                save1D(file, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile,
-                       path=os.getcwd())
+                wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
+                dlg = wx.FileDialog(self, 'Save file as...',
+                                   defaultDir=os.getcwd(),
+                                   defaultFile='%s.xy' % stem,
+                                   wildcard=wildcards,
+                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                if dlg.ShowModal() == wx.ID_OK:
+                    filename = dlg.GetPath().replace('\\', '/')
+                dlg.Destroy()
+
+                print('Saving 1D XRD in file: %s' % (filename))
+                save1D(filename, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile)
 
 #             if not xrmfile.flag_xrd2d:
 #                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
@@ -2092,7 +2194,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
 
             if save:
-                self._xrd.save_2D(path=os.getcwd(),verbose=True)
+                wildcards = '2D XRD file (*.tiff)|*.tiff|All files (*.*)|*.*'
+                dlg = wx.FileDialog(self, 'Save file as...',
+                                   defaultDir=os.getcwd(),
+                                   defaultFile='%s.tiff' % stem,
+                                   wildcard=wildcards,
+                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                if dlg.ShowModal() == wx.ID_OK:
+                    filename = dlg.GetPath().replace('\\', '/')
+                dlg.Destroy()
+                print('Saving 2D XRD in file: %s' % (filename))
+                self._xrd.save_2D(file=filename,verbose=True)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
@@ -2114,7 +2226,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 500),
+    def __init__(self, parent=None,  size=(825, 550),
                  use_scandb=False, _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
@@ -2170,7 +2282,7 @@ class MapViewerFrame(wx.Frame):
 
         self.larch_buffer.Hide()
         self.onFolderSelect()
-        
+
         self.current_energy = None
 
 
@@ -2357,21 +2469,30 @@ class MapViewerFrame(wx.Frame):
                                       notes=json.dumps(notes))
 
 
-    def add_imdisplay(self, title, det=None):
-        on_lasso = partial(self.lassoHandler, det=det)
-        imframe = MapImageFrame(output_title=title,
-                                lasso_callback=on_lasso,
-                                cursor_labels = self.cursor_menulabels,
-                                move_callback=self.move_callback,
-                                save_callback=self.onSavePixel)
+    def add_imdisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
+
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+
+        imframe = MapImageFrame(output_title   = title,
+                                lasso_callback = lasso_cb,
+                                cursor_labels  = cursor_labels,
+                                #move_callback  = self.move_callback,
+                                save_callback  = save_callback)
 
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None):
+                    det=None, subtitles=None, xrmfile=None,
+                    _cursorlabels=True, _savecallback=True):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+
         if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
@@ -2387,10 +2508,10 @@ class MapViewerFrame(wx.Frame):
                 displayed = True
             except IndexError:
                 imd = MapImageFrame(output_title=title,
-                                    lasso_callback=lasso_cb,
-                                    cursor_labels = self.cursor_menulabels,
-                                    move_callback=self.move_callback,
-                                    save_callback=self.onSavePixel)
+                                    lasso_callback = lasso_cb,
+                                    cursor_labels  = cursor_labels,
+                                    #move_callback  = self.move_callback,
+                                    save_callback  = save_callback)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             det=det, subtitles=subtitles, xrmfile=xrmfile)
@@ -2433,7 +2554,7 @@ class MapViewerFrame(wx.Frame):
         data1dxrd = xrd1d(label=label,
                           energy=energy,
                           wavelength=lambda_from_E(energy))
-        
+
         data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:
@@ -2461,7 +2582,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 sys.path.insert(0, '//cars5/Data/xas_user/pylib')
                 from escan_credentials import conn as DBCONN
-
+                from escan_credentials import soo
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
                 connect_scandb(**DBCONN)
@@ -2471,8 +2592,8 @@ class MapViewerFrame(wx.Frame):
                 print(" Connected to scandb='%s' on server at '%s'" %
                       (DBCONN['dbname'], DBCONN['host']))
             except:
-                errmsg, etype, tb = sys.exc_info()
-                print('Could not connect to ScanDB: ' , errmsg)
+                etype, emsg, tb = sys.exc_info()
+                print('Could not connect to ScanDB: %s' % (emsg.message))
                 self.use_scandb = False
 
     def ShowFile(self, evt=None, filename=None,  **kws):
@@ -2517,6 +2638,8 @@ class MapViewerFrame(wx.Frame):
                  'Load XRD calibration file',  self.openPONI)
         MenuItem(self, fmenu, '&Add 1DXRD for HDF5 file',
                  'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
+        MenuItem(self, fmenu, 'Load R&OI File for 1DXRD',
+                 'Load ROI File for 1DXRD',  self.add1DXRDFile)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
@@ -2657,7 +2780,7 @@ class MapViewerFrame(wx.Frame):
         path, read = None, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
-            
+
             args = {'folder':    myDlg.Fldr.GetValue(),
                     'FLAGxrf':   myDlg.ChkBx[0].GetValue(),
                     'FLAGxrd2D': myDlg.ChkBx[1].GetValue(),
@@ -2708,11 +2831,11 @@ class MapViewerFrame(wx.Frame):
         """
 
         myDlg = OpenPoniFile()
+        read = False
         if myDlg.ShowModal() == wx.ID_OK:
             read = True
             path = myDlg.PoniInfo[1].GetValue()
             flip = False if myDlg.PoniInfo[0].GetSelection() == 1 else True
-
         myDlg.Destroy()
 
         if read:
@@ -2720,9 +2843,26 @@ class MapViewerFrame(wx.Frame):
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
-                    
+
+    def add1DXRDFile(self, event=None):
+
+        read = False
+        wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Select 1D-XRD ROI file',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards,
+                           style=wx.FD_OPEN)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read and os.path.exists(path):
+            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
+
     def add1DXRD(self, event=None):
-    
+
         try:
             xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             path = xrd1Dgrp.attrs['calfile']
@@ -2857,9 +2997,9 @@ class OpenPoniFile(wx.Dialog):
         self.PoniInfo = [ Choice(panel,      choices=poni_chc ),
                           wx.TextCtrl(panel, size=(320, 25)),
                           Button(panel,      label='Browse...')]
-                          
+
         self.PoniInfo[2].Bind(wx.EVT_BUTTON, self.onBROWSEponi)
-        
+
         ponisizer = wx.BoxSizer(wx.VERTICAL)
         ponisizer.Add(self.PoniInfo[0], flag=wx.TOP,            border=15)
         ponisizer.Add(self.PoniInfo[1], flag=wx.TOP,            border=5)
@@ -2930,13 +3070,13 @@ class OpenMapFolder(wx.Dialog):
 
         panel = wx.Panel(self)
 
-        ################################################################################      
+        ################################################################################
         fldrTtl   = SimpleText(panel,  label='XRM Map Folder:' )
         self.Fldr = wx.TextCtrl(panel, size=(320, 25)          )
         fldrBtn   = Button(panel,      label='Browse...'       )
 
         self.Bind(wx.EVT_BUTTON, self.onBROWSE, fldrBtn)
-        
+
         fldrsizer = wx.BoxSizer(wx.VERTICAL)
         fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
         fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
@@ -2959,7 +3099,7 @@ class OpenMapFolder(wx.Dialog):
 
         ckbxsizer = wx.BoxSizer(wx.VERTICAL)
         ckbxsizer.Add(ChkTtl, flag=wx.BOTTOM|wx.LEFT, border=5)
-        ckbxsizer.Add(ckbxsizer2, flag=wx.BOTTOM|wx.LEFT, border=5)        
+        ckbxsizer.Add(ckbxsizer2, flag=wx.BOTTOM|wx.LEFT, border=5)
         ################################################################################
         infoTtl =  [ SimpleText(panel,  label='Facility'),
                      SimpleText(panel,  label='Beamline'),
@@ -2973,13 +3113,13 @@ class OpenMapFolder(wx.Dialog):
                       wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(250, 25) ),
                       wx.TextCtrl(panel, size=(320, 25) )]
-                      
+
         infosizer0 = wx.BoxSizer(wx.HORIZONTAL)
         infosizer0.Add(infoTtl[0],   flag=wx.RIGHT, border=5)
         infosizer0.Add(self.info[0], flag=wx.RIGHT, border=15)
         infosizer0.Add(infoTtl[1],   flag=wx.RIGHT, border=5)
         infosizer0.Add(self.info[1], flag=wx.RIGHT, border=15)
-        
+
         infosizer1 = wx.BoxSizer(wx.HORIZONTAL)
         infosizer1.Add(infoTtl[2],   flag=wx.RIGHT, border=5)
         infosizer1.Add(self.info[2], flag=wx.RIGHT, border=15)
@@ -2989,11 +3129,11 @@ class OpenMapFolder(wx.Dialog):
         infosizer2 = wx.BoxSizer(wx.HORIZONTAL)
         infosizer2.Add(infoTtl[4],   flag=wx.RIGHT, border=5)
         infosizer2.Add(self.info[4], flag=wx.RIGHT, border=15)
-        
+
         infosizer3 = wx.BoxSizer(wx.HORIZONTAL)
         infosizer3.Add(infoTtl[5],   flag=wx.RIGHT, border=5)
         infosizer3.Add(self.info[5], flag=wx.RIGHT, border=15)
-        
+
         infosizer = wx.BoxSizer(wx.VERTICAL)
         infosizer.Add(infosizer0, flag=wx.TOP,            border=15)
         infosizer.Add(infosizer1, flag=wx.TOP,            border=5)
@@ -3017,7 +3157,7 @@ class OpenMapFolder(wx.Dialog):
         ponisizer1.Add(self.PoniInfo[4], flag=wx.RIGHT, border=5)
         ponisizer1.Add(self.PoniInfo[5], flag=wx.RIGHT, border=5)
         ponisizer1.Add(self.PoniInfo[6], flag=wx.RIGHT, border=5)
-        
+
         ponisizer = wx.BoxSizer(wx.VERTICAL)
         ponisizer.Add(self.PoniInfo[0], flag=wx.TOP,            border=15)
         ponisizer.Add(self.PoniInfo[1], flag=wx.TOP,            border=5)
@@ -3039,8 +3179,8 @@ class OpenMapFolder(wx.Dialog):
         sizer.Add((-1, 15))
         sizer.Add(ckbxsizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
-        sizer.Add(infosizer, flag=wx.TOP|wx.LEFT, border=5) 
-        sizer.Add((-1, 8))                                  
+        sizer.Add(infosizer, flag=wx.TOP|wx.LEFT, border=5)
+        sizer.Add((-1, 8))
         sizer.Add(ponisizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 15))
         sizer.Add(minisizer, flag=wx.ALIGN_RIGHT, border=5)
@@ -3062,7 +3202,7 @@ class OpenMapFolder(wx.Dialog):
         self.FindWindowById(wx.ID_OK).Disable()
 
         for poniinfo in self.PoniInfo: poniinfo.Disable()
-        
+
         self.info[0].SetValue(FACILITY)
         self.info[1].SetValue(BEAMLINE)
         self.info[2].SetValue(datetime.date.today().isoformat())
@@ -3072,8 +3212,8 @@ class OpenMapFolder(wx.Dialog):
         if self.ChkBx[2].GetValue():
             for poniinfo in self.PoniInfo: poniinfo.Enable()
         else:
-            for poniinfo in self.PoniInfo: poniinfo.Disable()        
-        
+            for poniinfo in self.PoniInfo: poniinfo.Disable()
+
         if not os.path.exists(self.Fldr.GetValue()):
             self.FindWindowById(wx.ID_OK).Disable()
         elif not self.ChkBx[0].GetValue():
@@ -3107,7 +3247,7 @@ class OpenMapFolder(wx.Dialog):
            dfltDIR = self.Fldr.GetValue()
         else:
            dfltDIR = os.getcwd()
-        
+
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=dfltDIR,
                            style=wx.FD_OPEN)
@@ -3121,7 +3261,7 @@ class OpenMapFolder(wx.Dialog):
         if read:
             self.Fldr.Clear()
             self.Fldr.SetValue(str(path))
-            
+
             for line in open(os.path.join(path, 'Scan.ini'), 'r'):
                 if line.split()[0] == 'basedir':
                     path = line.split()[-1].split('/')

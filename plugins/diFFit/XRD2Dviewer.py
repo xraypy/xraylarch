@@ -22,7 +22,7 @@ import larch
 from larch_plugins.io import tifffile
 from larch import Group
 
-
+from larch.larchlib import read_workdir
 from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
 from larch_plugins.xrmmap import read_xrd_netcdf
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
@@ -112,6 +112,8 @@ class diFFit2DFrame(wx.Frame):
         
         self.color = 'bone'
         self.flip = flip
+        
+        read_workdir('gsemap.dat')
 
         self.XRD2DMenuBar()
         self.Panel2DViewer()
@@ -475,11 +477,14 @@ class diFFit2DFrame(wx.Frame):
                 read = True
                 save = myDlg.ch_save.GetValue()
                 plot = myDlg.ch_plot.GetValue()
+                unts = myDlg.save_choice.GetSelection()
 
                 if int(myDlg.xstep.GetValue()) < 1:
                     attrs = {'steps':5001}
                 else:
                     attrs = {'steps':int(myDlg.steps)}
+                unit = '2th' if unts == 1 else 'q'
+                attrs.update({'unit':unit})
             #attrs = {'wedge':int(myDlg.wedges.GetValues())}
             myDlg.Destroy()
         else:

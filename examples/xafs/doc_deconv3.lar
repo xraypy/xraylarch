@@ -1,0 +1,28 @@
+## examples/xafs/doc_deconv3.lar
+
+data = read_ascii('../xafsdata/pt_metal_rt.xdi', labels='energy time i1 i0')
+data.mu = -log(data.i1 / data.i0)
+
+pre_edge(data)
+autobk(data, rbkg=1.1, kweight=2)
+xftf(data, kmin=2, kmax=17, dk=5, kwindow='kaiser', kweight=2)
+
+xas_deconvolve(data, esigma=core_width('Pt', edge='L3'))
+
+decon = group(energy=data.energy, mu=data.deconv, filename=data.filename)
+autobk(decon, rbkg=1.1, kweight=2)
+xftf(decon, kmin=2, kmax=17, dk=5, kwindow='kaiser', kweight=2)
+
+# plot in E
+plot_mu(data, show_norm=True, emin=-50, emax=250)
+plot(data.energy, data.deconv, label='deconvolved',  win=1)
+
+# plot in k
+plot_chik(data, kweight=2, show_window=False, win=2)
+plot_chik(decon, kweight=2, show_window=False,
+          label='deconvolved', new=False, win=2)
+
+# plot in R
+plot_chir(data,  win=3)
+plot_chir(decon, label='deconvolved', new=False, win=3)
+## end examples/xafs/doc_deconv3.lar

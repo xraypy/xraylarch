@@ -440,33 +440,3 @@ dominated by noise, but has the advantage of being an impartial measure of
 data quality. It is particularly pessimistic for extremely good data.  Then
 again, considering that the estimate for :math:`\epsilon` is probably too
 small, the estimate may not be that bad.
-
-
-:func:`xas_deconvolve`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-..  function:: xas_deconvolve(energy, norm=Noned group=None, form='gaussian', esigma=1.0, eshift=0.0)
-
-    de-convolves a normalized mu(E) spectra with a peak shape, enhancing separation
-    of XANES features.  This procedure can be unstable -- Use results with caution!
-
-
-    :param energy:   1-d array of :math:`E`
-    :param norm:     1-d array of normalized :math:`\mu(E)`
-    :param group:    output group
-    :param form:     form of deconvolution function. One of
-                     'gaussian' (default) or 'lorentzian'
-    :param esigma:   energy :math:`\sigma` (in eV) to pass to
-                     :func:`gaussian` or :func:`lorentzian` lineshape [default=1.0]
-    :param eshift:   energy shift (in eV) to apply to result. [default=0]
-
-
-    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.
-    The following data is put into the output group:
-
-
-       ================= ===============================================================
-        attribute         meaning
-       ================= ===============================================================
-        deconv            array of deconvolved, normalized :math:`\mu(E)`
-       ================= ===============================================================
