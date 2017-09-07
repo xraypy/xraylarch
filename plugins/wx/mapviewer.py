@@ -568,7 +568,10 @@ class ROIPanel(GridPanel):
     def setROI(self):
 
         detname = self.rm_roi_ch[0].GetStringSelection()
-        detgrp = self.file.xrmmap['roimap'][detname]
+        try:
+            detgrp = self.file.xrmmap['roimap'][detname]
+        except:
+            return
         limits,names = [],detgrp.keys()
         for name in names:
             limits += [list(detgrp[name]['limits'][:])]

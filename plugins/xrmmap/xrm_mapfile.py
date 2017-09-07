@@ -25,7 +25,7 @@ from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
 NINIT = 32
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip' 
-# COMPRESSION = 'lzf' ## faster but larger files;mkak 2016.08.19
+#COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
 STEPS = 5001
 

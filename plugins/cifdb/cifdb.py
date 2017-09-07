@@ -571,7 +571,7 @@ class cifDB(object):
                      addDB=True,url=None,all=False,minval=None):
     
         maxi = 20573
-        exceptions = [0,7271,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
+        exceptions = [0,7271,10783,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
         
         ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
         ##  7271 : author name doubled in cif
