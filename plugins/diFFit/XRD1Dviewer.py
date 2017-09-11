@@ -618,9 +618,10 @@ class SelectFittingData(wx.Dialog):
 
         loadXYfile(parent=self,xrdviewer=self.parent.xrd1Dviewer)
 
-        self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
-        self.slct_1Ddata.Set(self.parent.list)
-        self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
+        if self.parent.xrd1Dviewer.data_name[-1] not in self.parent.list:
+            self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
+            self.slct_1Ddata.Set(self.parent.list)
+            self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
 
 class Fitting1DXRD(BasePanel):
     '''
