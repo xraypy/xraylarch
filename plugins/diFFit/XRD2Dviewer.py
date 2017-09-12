@@ -51,14 +51,14 @@ class diFFitCakePanel(wx.Panel):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         
-        
-        self.plot2D = ImagePanel(self,size=(500, 400),messenger=self.owner.write_message)
+        self.plot2D = ImagePanel(self,size=(500, 500),messenger=self.owner.write_message)        
+#         self.plot2D = ImagePanel(self,size=(500, 400),messenger=self.owner.write_message)
         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
 
-        self.plot1D = PlotPanel(self,size=(5000, 100),messenger=self.owner.write_message)
-        self.plot1D.cursor_mode = 'zoom'
-        self.plot1D.cursor_callback = self.on_cursor
-        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+#         self.plot1D = PlotPanel(self,size=(5000, 100),messenger=self.owner.write_message)
+#         self.plot1D.cursor_mode = 'zoom'
+#         self.plot1D.cursor_callback = self.on_cursor
+#         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         
         self.SetSizer(vbox)
     
