@@ -143,13 +143,9 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     attrs.update(H5ATTRS)
     if start_time is None:
         start_time = time.ctime()
-    if COMPRESSION != 'lzf':
-        compress_str = '%s %s' % (COMPRESSION,COMPRESSION_OPTS)
-    else:
-        compress_str = COMPRESSION
     
     attrs.update({'Dimension':dimension, 'Start_Time':start_time,
-                  'Map_Folder': folder, 'Last_Row': -1,'Compression':compress_str})
+                  'Map_Folder': folder, 'Last_Row': -1})
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)
@@ -620,6 +616,7 @@ class GSEXRM_MapFile(object):
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
+                 compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E',run='',date='',proposal='',user=''):
 
         self.filename         = filename
@@ -640,6 +637,10 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
+        
+        self.compress_args = {'compression': compression}
+        if compression != 'lzf':
+            self.compress_args['compression_opts'] = compression_opts
 
         self.mono_energy  = None
         self.flag_xrf     = FLAGxrf
@@ -827,9 +828,8 @@ class GSEXRM_MapFile(object):
         ''' creata an hdf5 dataset'''
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-        kwargs = {'compression': COMPRESSION} # , 'compression_opts': COMPRESSION_OPTS}
-        kwargs.update(kws)
-        d = group.create_dataset(name, data=data, **kwargs)
+        kws.update(self.compress_args)
+        d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
             for key, val in attrs.items():
                 d.attrs[key] = val
@@ -886,6 +886,12 @@ class GSEXRM_MapFile(object):
         self.add_data(group['environ'], 'name',     env_desc)
         self.add_data(group['environ'], 'address',  env_addr)
         self.add_data(group['environ'], 'value',     env_val)
+        
+        cmprstr = '%s' % self.compress_args['compression']
+        if self.compress_args['compression'] != 'lzf':
+            cmprstr = '%s-%s' % (cmprstr,self.compress_args['compression_opts'])
+        self.xrmmap.attrs['Compression'] = cmprstr
+        
         self.h5root.flush()
 
     def initialize_xrmmap(self):
@@ -1213,11 +1219,6 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2D'] = self.flag_xrd2d
         flaggp.attrs['xrd1D'] = self.flag_xrd1d
-
-        compress_opts = {'compression': COMPRESSION}
-        if COMPRESSION != 'lzf':
-            compress_opts['compression_opts'] = COMPRESSION_OPTS
-
         
         conf = xrmmap['config']
         for key in self.notes:
@@ -1242,7 +1243,7 @@ class GSEXRM_MapFile(object):
             for aname in re.findall(r"[\w']+", row.sishead[-1]):
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
-                                      maxshape=(None, npts), **compress_opts)
+                                      maxshape=(None, npts), **self.compress_args)
 
             # positions
             pos = xrmmap['positions']
@@ -1253,7 +1254,7 @@ class GSEXRM_MapFile(object):
             self.add_data(pos, 'name',     self.pos_desc)
             self.add_data(pos, 'address',  self.pos_addr)
             pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
-                               maxshape=(None, npts, npos), **compress_opts)
+                               maxshape=(None, npts, npos), **self.compress_args)
 
             if self.flag_xrf:
                 roi_names = [h5str(s) for s in conf['rois/name']]
@@ -1282,7 +1283,7 @@ class GSEXRM_MapFile(object):
                                                              'cal_slope': slope[i]})
                     dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                         chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **compress_opts)
+                                        maxshape=(None, npts, nchan), **self.compress_args)
 
                     for name, dtype in (('realtime',  np.int    ),
                                         ('livetime',  np.int    ),
@@ -1290,7 +1291,7 @@ class GSEXRM_MapFile(object):
                                         ('inpcounts', np.float32),
                                         ('outcounts', np.float32)):
                         dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
 
                     dgrp = xrmmap['roimap'][imca]
                     for rname,rlimit in zip(roi_names,roi_limits[i]):
@@ -1299,7 +1300,7 @@ class GSEXRM_MapFile(object):
                                             ('cor',  np.float32)):
                             rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                                 chunks=self.chunksize[:-1],
-                                                maxshape=(None, npts), **compress_opts)
+                                                maxshape=(None, npts), **self.compress_args)
                         lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
                         lmtgrp.attrs['type'] = 'energy'
                         lmtgrp.attrs['units'] = 'keV'
@@ -1316,7 +1317,7 @@ class GSEXRM_MapFile(object):
                                                          'cal_slope': slope[0]})
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **compress_opts)
+                                    maxshape=(None, npts, nchan), **self.compress_args)
 
                 dgrp = xrmmap['roimap']['mcasum']
                 for rname,rlimit in zip(roi_names,roi_limits[0]):
@@ -1324,8 +1325,8 @@ class GSEXRM_MapFile(object):
                     for aname,dtype in (('raw',  np.int16  ),('cor',  np.float32)):
                         rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                             chunks=self.chunksize[:-1],
-                                            maxshape=(None, npts), **compress_opts)
-                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
+                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
         else:
@@ -1357,13 +1358,13 @@ class GSEXRM_MapFile(object):
 
                     dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                         chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **compress_opts)
+                                        maxshape=(None, npts, nchan), **self.compress_args)
                     for name, dtype in (('realtime', np.int),  ('livetime', np.int),
                                         ('dtfactor', np.float32),
                                         ('inpcounts', np.float32),
                                         ('outcounts', np.float32)):
                         dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
 
                 # add 'virtual detector' for corrected sum:
                 dgrp = xrmmap.create_group('detsum')
@@ -1377,7 +1378,7 @@ class GSEXRM_MapFile(object):
                 self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **compress_opts)
+                                    maxshape=(None, npts, nchan), **self.compress_args)
                 # roi map data
                 scan = xrmmap['roimap']
                 det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
@@ -1425,7 +1426,7 @@ class GSEXRM_MapFile(object):
                                         ('sum_cor', nsum, np.float32)):
                     scan.create_dataset(name, (NINIT, npts, nx), dtype,
                                         chunks=(2, npts, nx),
-                                        maxshape=(None, npts, nx), **compress_opts)
+                                        maxshape=(None, npts, nx), **self.compress_args)
 
                 # positions
                 pos = xrmmap['positions']
@@ -1436,7 +1437,7 @@ class GSEXRM_MapFile(object):
                 self.add_data(pos, 'name',     self.pos_desc)
                 self.add_data(pos, 'address',  self.pos_addr)
                 pos.create_dataset('pos', (NINIT, npts, npos), dtype,
-                                   maxshape=(None, npts, npos), **compress_opts)
+                                   maxshape=(None, npts, npos), **self.compress_args)
 
 
 
@@ -1452,39 +1453,39 @@ class GSEXRM_MapFile(object):
                 xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
                 xrmmap['xrd2D'].attrs['desc'] = '' #'add detector name eventually'
                 
-                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16, **compress_opts)
-                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16, **compress_opts)
+                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16, **self.compress_args)
+                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16, **self.compress_args)
 
                 chunksize_2DXRD = (1, npts, xpixx, xpixy)
                 xrmmap['xrd2D'].create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint16,
                                        chunks = chunksize_2DXRD,
-                                       maxshape=(None, npts, xpixx, xpixy), **compress_opts)
+                                       maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
 
             if self.flag_xrd1d:
                 xrmmap['xrd1D'].attrs['type'] = 'xrd1D detector'
                 xrmmap['xrd1D'].attrs['desc'] = 'pyFAI calculation from xrd2D data'
 
-                xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32, **compress_opts)
-                xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32, **compress_opts)
+                xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32, **self.compress_args)
+                xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32, **self.compress_args)
 
                 chunksize_1DXRD  = (1, npts, self.qstps)
                 xrmmap['xrd1D'].create_dataset('counts',
                                        (NINIT, npts, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
-                                       maxshape=(None, npts, self.qstps), **compress_opts)
+                                       maxshape=(None, npts, self.qstps), **self.compress_args)
 
                 if self.azwdgs > 1:
                     for azi in range(self.azwdgs):
                         wdggrp = xrmmap['work/xrdwedge'].create_group('wedge_%02d' % azi)
 
-                        wdggrp.create_dataset('q', (self.qstps,), np.float32, **compress_opts)
+                        wdggrp.create_dataset('q', (self.qstps,), np.float32, **self.compress_args)
 
                         wdggrp.create_dataset('counts',
                                       (NINIT, npts, self.qstps),
                                       np.float32,
                                       chunks = chunksize_1DXRD,
-                                      maxshape=(None, npts, self.qstps), **compress_opts)
+                                      maxshape=(None, npts, self.qstps), **self.compress_args)
 
                         #wdggrp.create_dataset('limits', (2,), np.float32)
                         wdg_sz = 360./self.azwdgs

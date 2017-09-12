@@ -2785,20 +2785,23 @@ class MapViewerFrame(wx.Frame):
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
 
-            args = {'folder':    myDlg.Fldr.GetValue(),
-                    'FLAGxrf':   myDlg.ChkBx[0].GetValue(),
-                    'FLAGxrd2D': myDlg.ChkBx[1].GetValue(),
-                    'FLAGxrd1D': myDlg.ChkBx[2].GetValue(),
-                    'poni':      myDlg.PoniInfo[1].GetValue(),
-                    'azwdgs':    myDlg.PoniInfo[6].GetValue(),
-                    'qstps':     myDlg.PoniInfo[4].GetValue(),
-                    'flip':      False if myDlg.PoniInfo[0].GetSelection() == 1 else True,
-                    'facility':  myDlg.info[0].GetValue(),
-                    'beamline':  myDlg.info[1].GetValue(),
-                    'date':      myDlg.info[2].GetValue(),
-                    'run':       myDlg.info[3].GetValue(),
-                    'proposal':  myDlg.info[4].GetValue(),
-                    'user':      myDlg.info[5].GetValue()
+            flipchoice = False if myDlg.PoniInfo[0].GetSelection() == 1 else True
+            args = {'folder':           myDlg.Fldr.GetValue(),
+                    'FLAGxrf':          myDlg.ChkBx[0].GetValue(),
+                    'FLAGxrd2D':        myDlg.ChkBx[1].GetValue(),
+                    'FLAGxrd1D':        myDlg.ChkBx[2].GetValue(),
+                    'poni':             myDlg.PoniInfo[1].GetValue(),
+                    'azwdgs':           myDlg.PoniInfo[6].GetValue(),
+                    'qstps':            myDlg.PoniInfo[4].GetValue(),
+                    'flip':             flipchoice,
+                    'facility':         myDlg.info[0].GetValue(),
+                    'beamline':         myDlg.info[1].GetValue(),
+                    'date':             myDlg.info[2].GetValue(),
+                    'run':              myDlg.info[3].GetValue(),
+                    'proposal':         myDlg.info[4].GetValue(),
+                    'user':             myDlg.info[5].GetValue(),
+                    'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
+                    'compression_opts': myDlg.H5cmprInfo[1].GetSelection()
                    }
         myDlg.Destroy()
 
@@ -2991,7 +2994,7 @@ class OpenPoniFile(wx.Dialog):
     def __init__(self):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration Ffile', size=(350, 280))
+        dialog = wx.Dialog.__init__(self, None, title='XRD Calibration File', size=(350, 280))
 
         panel = wx.Panel(self)
 
@@ -3070,7 +3073,7 @@ class OpenMapFolder(wx.Dialog):
     def __init__(self):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(350, 580))
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(350, 620))
 
         panel = wx.Panel(self)
 
@@ -3168,6 +3171,23 @@ class OpenMapFolder(wx.Dialog):
         ponisizer.Add(self.PoniInfo[2], flag=wx.TOP|wx.BOTTOM,  border=5)
         ponisizer.Add(ponisizer1,       flag=wx.BOTTOM,         border=15)
         ################################################################################
+        h5cmpr_chc = ['gzip','lzf']
+        h5cmpr_opt = ['%i' % i for i in np.arange(10)]
+        
+        self.H5cmprInfo = [Choice(panel,      choices=h5cmpr_chc),
+                           Choice(panel,      choices=h5cmpr_opt)]
+        h5txt = SimpleText(panel, label='H5 File Comppression:')
+                           
+        self.H5cmprInfo[0].SetSelection(0)
+        self.H5cmprInfo[1].SetSelection(2)
+
+        self.H5cmprInfo[0].Bind(wx.EVT_CHOICE, self.onH5cmpr)
+
+        h5cmprsizer = wx.BoxSizer(wx.HORIZONTAL)
+        h5cmprsizer.Add(h5txt, flag=wx.RIGHT, border=5)
+        h5cmprsizer.Add(self.H5cmprInfo[0], flag=wx.RIGHT, border=5)
+        h5cmprsizer.Add(self.H5cmprInfo[1], flag=wx.RIGHT, border=5)
+        ################################################################################
         hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
         okBtn        = wx.Button(panel,   wx.ID_OK     )
         canBtn       = wx.Button(panel,   wx.ID_CANCEL )
@@ -3186,7 +3206,9 @@ class OpenMapFolder(wx.Dialog):
         sizer.Add(infosizer, flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 8))
         sizer.Add(ponisizer, flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 15))
+        sizer.Add((-1, 8))
+        sizer.Add(h5cmprsizer, flag=wx.TOP|wx.LEFT, border=5)
+        sizer.Add((-1, 25))
         sizer.Add(minisizer, flag=wx.ALIGN_RIGHT, border=5)
 
         panel.SetSizer(sizer)
@@ -3224,6 +3246,16 @@ class OpenMapFolder(wx.Dialog):
             self.FindWindowById(wx.ID_OK).Disable()
         else:
             self.FindWindowById(wx.ID_OK).Enable()
+
+    def onH5cmpr(self,event=None):
+    
+        if self.H5cmprInfo[0].GetSelection() == 0:
+            self.H5cmprInfo[1].Enable()
+            self.H5cmprInfo[1].SetChoices(['%i' % i for i in np.arange(10)])
+            self.H5cmprInfo[1].SetSelection(2)
+        else:
+            self.H5cmprInfo[1].Disable()
+            self.H5cmprInfo[1].SetChoices([''])
 
     def onBROWSEponi(self,event=None):
         wildcards = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'

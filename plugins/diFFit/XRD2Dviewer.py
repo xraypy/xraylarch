@@ -469,14 +469,13 @@ class diFFit2DFrame(wx.Frame):
                 save = myDlg.ch_save.GetValue()
                 plot = myDlg.ch_plot.GetValue()
                 unts = myDlg.save_choice.GetSelection()
-
+                wdgs = myDlg.wedges.GetValue()
                 if int(myDlg.xstep.GetValue()) < 1:
                     attrs = {'steps':5001}
                 else:
                     attrs = {'steps':int(myDlg.steps)}
                 unit = '2th' if unts == 1 else 'q'
-                attrs.update({'unit':unit})
-            #attrs = {'wedge':int(myDlg.wedges.GetValues())}
+                attrs.update({'unit':unit,'verbose':True})
             myDlg.Destroy()
         else:
             print('Data and calibration files must be available for this function.')
@@ -490,11 +489,29 @@ class diFFit2DFrame(wx.Frame):
                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
+                    if not filename.endswith('.xy'):
+                        filename = '%s.xy' % filename
                     attrs.update({'file':filename})
+
                 dlg.Destroy()
             data1D = integrate_xrd(self.plt_img,self.calfile,**attrs)
-            
-            ##self.xrd2Dcake.plot2D.display(cake[0])                   
+            if wdgs > 1:
+                xrdq_wdg,xrd1d_wdg,lmts_wdg = [],[],[]
+                wdg_sz = 360./int(wdgs)
+                for iwdg in range(wdgs):
+                    wdg_lmts = np.array([iwdg*wdg_sz, (iwdg+1)*wdg_sz]) - 180
+                    attrs.update({'wedge_limits':wdg_lmts})
+
+                    if save:
+                        wedgename = '%s_%i_to_%ideg.xy' % (filename.split('.xy')[0],
+                                                           (wdg_lmts[0]+180),
+                                                           (wdg_lmts[1]+180))
+                        attrs.update({'file':wedgename})
+                    q,counts = integrate_xrd(self.plt_img,self.calfile,**attrs)
+                    xrdq_wdg  += [q]
+                    xrd1d_wdg += [counts]
+                    lmts_wdg  += [wdg_lmts]
+                    
 
             if plot:
                 if self.xrddisplay1D is None:
@@ -509,11 +526,24 @@ class diFFit2DFrame(wx.Frame):
 
                 try:
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
-                    self.xrddisplay1D.Show()
+ #                   self.xrddisplay1D.Show()
                 except PyDeadObjectError:
                     self.xrddisplay1D = diFFit1DFrame()
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
-                    self.xrddisplay1D.Show()
+#                    self.xrddisplay1D.Show()
+                    
+                if wdgs > 1:
+                    for lmts,q,cnts in zip(lmts_wdg,xrdq_wdg,xrd1d_wdg):
+                        label = '%s (%i to %i deg)' % (self.open_image[self.ch_img.GetSelection()].label,
+                                                        (lmts[0]+180), (lmts[1]+180))
+                        attrs.update({'label':label})
+                        data1dxrd = xrd1d(**attrs)
+                        data1dxrd.xrd_from_2d([q,cnts],'q')
+                        self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
+                self.xrddisplay1D.Show()
+
+
+                    
 
 ##############################################
 #### CALIBRATION FUNCTIONS
@@ -946,7 +976,7 @@ class diFFit2DFrame(wx.Frame):
         self.xrd2Dcake   = diFFitCakePanel(self.nb,owner=self)
 
         ## add the pages to the notebook with the label to show on the tab
-        self.nb.AddPage(self.xrd2Dviewer, '2D XRD Image')
+        self.nb.AddPage(self.xrd2Dviewer, 'Image')
         self.nb.AddPage(self.xrd2Dcake,   'Cake')
 
         ## put the notebook in a sizer for the panel to manage the layout
