@@ -1451,6 +1451,7 @@ class Fitting1DXRD(BasePanel):
             self.txt_amcsd_cnt.SetLabel('')
                 
         self.srchpl.btn_clr.Enable()
+        self.srchpl.btn_shw.Enable()
         self.srchpl.amcsdlistbox.EnsureVisible(0)
 
     def clearMATCHES(self,event=None):
@@ -1463,6 +1464,7 @@ class Fitting1DXRD(BasePanel):
         self.owner.srch_cls = SearchCIFdb()
 
         self.srchpl.btn_clr.Disable()   
+        self.srchpl.btn_shw.Disable()
         
         try:
             self.plot_data()
@@ -2940,21 +2942,66 @@ class SearchPanel(wx.Panel):
     def ResultsTools(self):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
-#         opts = wx.LB_NEEDED_SB #|wx.LB_HSCROLL
-#         self.amcsdlistbox = wx.ListBox(self, style=opts, choices=[''], size=(200,150))
-#         self.amcsdlistbox.Bind(wx.EVT_LISTBOX,  self.owner.showCIF  )
+        
+        self.btn_shw = wx.Button(self,label='Display CIF')
+        self.btn_shw.Bind(wx.EVT_BUTTON, self.displayCIF)
 
         self.btn_clr = wx.Button(self,label='Clear list')
         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
 
+        hbox.Add(self.btn_shw, flag=wx.RIGHT, border=8)
+        hbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+
         vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+        vbox.Add(hbox,               flag=wx.RIGHT, border=8)
+
         
         self.btn_clr.Disable()
+        self.btn_shw.Disable()
 
         return vbox
+        
+    def displayCIF(self,event=None):
+    
+        title = self.amcsdlistbox.GetStringSelection()
+        amcsd = self.amcsdlistbox.GetStringSelection().split()[0]
+        
+        cifframe = CIFFrame(amcsd=int(amcsd), title=title, 
+                            cifdatabase=self.owner.owner.cifdatabase)
+
+
+
+class CIFPanel(wx.Panel):
+
+    def __init__(self, parent,cifdatabase=None,amcsd=None):
+        wx.Panel.__init__(self, parent)
+
+        cif_text_box = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(cif_text_box, 1, wx.ALL|wx.EXPAND)
+
+        self.SetSizer(sizer)
+        
+        if cifdatabase is None:
+            cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+        if amcsd is None: amcsd = 100        
+        cif_text_box.WriteText(cifdatabase.cif_by_amcsd(amcsd))
+
+class CIFFrame(wx.Frame):
+
+    def __init__(self, amcsd=None, title='', cifdatabase=None):
+        title = 'CIF Display - %s' % title
+        wx.Frame.__init__(self, None, size=(650,900), title=title)
+
+        panel = CIFPanel(self, cifdatabase=cifdatabase, amcsd=amcsd)
+
+        self.Show()
+        
+        
 
 class InstrPanel(wx.Panel):
     '''
