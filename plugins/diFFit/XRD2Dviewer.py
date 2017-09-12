@@ -25,7 +25,7 @@ from larch import Group
 
 from larch.larchlib import read_workdir
 from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
-from larch_plugins.xrmmap import read_xrd_netcdf
+from larch_plugins.xrmmap import read_xrd_netcdf,GSEXRM_MapFile
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -161,23 +161,59 @@ class diFFit2DFrame(wx.Frame):
             self.btn_bkgd.Enable()
         
             img_no = self.ch_img.GetSelection()
-            if self.open_image[img_no].frames > 1:
-                self.frmsldr.Enable()
-                self.frmsldr.SetRange(0,(self.open_image[img_no].frames-1))
-                self.frmsldr.SetValue(self.open_image[img_no].i)
-                for btn in self.frm_btn: btn.Enable()
+            if self.open_image[img_no].iframes > 1:
+                self.hrz_frm_sldr.Enable()
+                self.hrz_frm_sldr.SetRange(0,(self.open_image[img_no].iframes-1))
+                self.hrz_frm_sldr.SetValue(self.open_image[img_no].i)
+                for btn in self.hrz_frm_btn: btn.Enable()
+
             else:
-                self.frmsldr.Disable()
-                self.frmsldr.SetRange(0,1)
-                self.frmsldr.SetValue(0)
-                for btn in self.frm_btn: btn.Disable()
+                self.hrz_frm_sldr.Disable()
+                self.hrz_frm_sldr.SetRange(0,0)
+                self.hrz_frm_sldr.SetValue(0)
+                for btn in self.hrz_frm_btn: btn.Disable()
+
+            if self.open_image[img_no].jframes > 1:
+                self.vrt_frm_sldr.Enable()
+                self.vrt_frm_sldr.SetRange(0,(self.open_image[img_no].jframes-1))
+                self.vrt_frm_sldr.SetValue(self.open_image[img_no].j)
+                for btn in self.vrt_frm_btn: btn.Enable()
+            else:
+                self.vrt_frm_sldr.Disable()
+                self.vrt_frm_sldr.SetRange(0,0)
+                self.vrt_frm_sldr.SetValue(0)
+                for btn in self.vrt_frm_btn: btn.Disable()
 
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
+#     def loadH5FILE(self,event=None):
+# 
+#         wildcards = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
+#         dlg = wx.FileDialog(self, message='Choose XRM Map File',
+#                            defaultDir=os.getcwd(),
+#                            wildcard=wildcards, style=wx.FD_OPEN)
+#                            
+#         path, read = None, False
+#         if dlg.ShowModal() == wx.ID_OK:
+#             read = True
+#             path = dlg.GetPath().replace('\\', '/')
+#         dlg.Destroy()
+# 
+#         if read:
+#             print('Reading file: %s' % path)
+#             try:
+#                 iname = os.path.split(path)[-1]
+#                 xrmfile = GSEXRM_MapFile(filename=str(path))
+#                 self.plot2Dxrd(iname, xrmfile.xrmmap['xrd2D/counts'][:], path=path)
+#                 xrmfile.close()
+#             except:
+#                 print('Could not read file.')
+#                 return
+
     def loadIMAGE(self,event=None):
     
-        wildcards = 'XRD image (*.*)|*.*|All files (*.*)|*.*'
+        wildcards = 'XRD image files (*.*)|*.*|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -194,7 +230,12 @@ class diFFit2DFrame(wx.Frame):
                 try:
                     image = tifffile.imread(path)
                 except:
-                    image = read_xrd_netcdf(path,verbose=True)
+                    try:
+                        image = read_xrd_netcdf(path,verbose=True)
+                    except:
+                        xrmfile = GSEXRM_MapFile(filename=str(path))
+                        image = xrmfile.xrmmap['xrd2D/counts'][:]
+                        xrmfile.close()
             except:
                 print('Could not read file.')
                 return
@@ -215,26 +256,34 @@ class diFFit2DFrame(wx.Frame):
         self.raw_img = self.open_image[-1].get_image()
         self.displayIMAGE()
             
-        if self.open_image[-1].frames > 1:
-            self.frmsldr.SetRange(0,(self.open_image[-1].frames-1))
-            self.frmsldr.SetValue(self.open_image[-1].i)
+        if self.open_image[-1].iframes > 1:
+            self.hrz_frm_sldr.SetRange(0,(self.open_image[-1].iframes-1))
+            self.hrz_frm_sldr.SetValue(self.open_image[-1].i)
         else:
-            self.frmsldr.Disable()
-            for btn in self.frm_btn: btn.Disable()
+            self.hrz_frm_sldr.Disable()
+            for btn in self.hrz_frm_btn: btn.Disable()
+
+        if self.open_image[-1].jframes > 1:
+            self.vrt_frm_sldr.SetRange(0,(self.open_image[-1].jframes-1))
+            self.vrt_frm_sldr.SetValue(self.open_image[-1].j)
+        else:
+            self.vrt_frm_sldr.Disable()
+            for btn in self.vrt_frm_btn: btn.Disable()
 
             
-    def changeFRAME(self,flag='slider',event=None):
+    def changeFRAME(self,flag='hslider',event=None):
     
         img_no = self.ch_img.GetSelection()
-        if self.open_image[img_no].frames > 1:
-            if flag=='next':
-                i = self.open_image[img_no].i + 1
-            elif flag=='previous':
-                i = self.open_image[img_no].i - 1
-            elif flag=='slider':
-                i = self.frmsldr.GetValue()
+        i,j = self.open_image[img_no].i,self.open_image[img_no].j
+        if self.open_image[img_no].iframes > 1 or self.open_image[img_no].jframes > 1:
+            if   flag=='next':     i = i + 1
+            elif flag=='previous': i = i - 1
+            elif flag=='hslider':  i = self.hrz_frm_sldr.GetValue()
+            elif flag=='up':       j = j + 1
+            elif flag=='down':     j = j - 1
+            elif flag=='vslider':  j = self.vrt_frm_sldr.GetValue()
         
-            flp_img =  self.open_image[img_no].get_image(i=i)
+            flp_img =  self.open_image[img_no].get_image(i=i,j=j)
             if self.flip == 'vertical': # Vertical
                 self.raw_img = flp_img[::-1,:]
             elif self.flip == 'horizontal': # Horizontal
@@ -244,8 +293,8 @@ class diFFit2DFrame(wx.Frame):
             else: # None
                 self.raw_img = flp_img
             
-            
-            self.frmsldr.SetValue(self.open_image[img_no].i)
+            self.hrz_frm_sldr.SetValue(i)
+            self.vrt_frm_sldr.SetValue(j)
             self.displayIMAGE(contrast=False,unzoom=False)
            
     def displayIMAGE(self,contrast=True,unzoom=True):
@@ -699,6 +748,7 @@ class diFFit2DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
+#         MenuItem(self, diFFitMenu, '&Open h5 xrmmap file', '', self.loadH5FILE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
@@ -786,26 +836,52 @@ class diFFit2DFrame(wx.Frame):
         ###########################
         ## DATA CHOICE
 
+
         self.ch_img = wx.Choice(self.panel,choices=[])
         self.ch_img.Bind(wx.EVT_CHOICE, self.selectIMAGE)
         vbox.Add(self.ch_img, flag=wx.EXPAND|wx.ALL, border=8)
 
-        self.frmsldr = wx.Slider(self.panel, minValue=0, maxValue=1, 
+        self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(120,-1),
                                  style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.frm_btn = [ wx.Button(self.panel,label=u'\u2190', size=(40, -1)),
-                         wx.Button(self.panel,label=u'\u2192', size=(40, -1))]
+        self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(-1,120),
+                                 style = wx.SL_VERTICAL|wx.SL_LABELS)
 
-        frmszr = wx.BoxSizer(wx.HORIZONTAL)
-        frmszr.Add(self.frm_btn[0],   flag=wx.RIGHT,            border=6)
-        frmszr.Add(self.frmsldr,      flag=wx.EXPAND|wx.RIGHT,  border=6)
-        frmszr.Add(self.frm_btn[1],   flag=wx.RIGHT,            border=6)
+        self.vrt_frm_btn = [ wx.Button(self.panel,label=u'\u2191', size=(40, -1)),
+                             wx.Button(self.panel,label=u'\u2193', size=(40, -1))]
+        self.hrz_frm_btn = [ wx.Button(self.panel,label=u'\u2190', size=(40, -1)),
+                             wx.Button(self.panel,label=u'\u2192', size=(40, -1))]
+
+        self.hrz_frm_btn[0].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'previous') )
+        self.hrz_frm_btn[1].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'next')     )
+        self.hrz_frm_sldr.Bind(wx.EVT_SLIDER,    partial(self.changeFRAME,'hslider')   )
+
+        self.vrt_frm_btn[0].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'up') )
+        self.vrt_frm_btn[1].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'down')     )
+        self.vrt_frm_sldr.Bind(wx.EVT_SLIDER,    partial(self.changeFRAME,'vslider')   )
+
+        aszr = wx.BoxSizer(wx.HORIZONTAL)
+        bszr = wx.BoxSizer(wx.VERTICAL)
+        cszr = wx.BoxSizer(wx.VERTICAL)
+        dszr = wx.BoxSizer(wx.HORIZONTAL)
+
+        aszr.Add(self.hrz_frm_btn[0],  flag=wx.RIGHT|wx.CENTER,  border=18)
+        aszr.Add(self.hrz_frm_btn[1],  flag=wx.LEFT|wx.CENTER,   border=18)
         
-        self.frm_btn[0].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'previous') )
-        self.frm_btn[1].Bind(wx.EVT_BUTTON, partial(self.changeFRAME,'next')     )
-        self.frmsldr.Bind(wx.EVT_SLIDER,    partial(self.changeFRAME,'slider')   )
+        bszr.Add(self.vrt_frm_btn[0],  flag=wx.BOTTOM|wx.CENTER,    border=8)
+        bszr.Add(aszr,             flag=wx.CENTER,              border=8)
+        bszr.Add(self.vrt_frm_btn[1],  flag=wx.TOP|wx.CENTER,       border=8)
+        
+        cszr.Add(bszr,             flag=wx.CENTER,    border=6)
+        cszr.Add(self.hrz_frm_sldr,  flag=wx.CENTER,    border=6)
+        
+        dszr.AddSpacer(50)
+        dszr.Add(cszr,             flag=wx.CENTER,    border=6)
+        dszr.Add(self.vrt_frm_sldr,  flag=wx.CENTER,    border=6)
+        
 
-        vbox.Add(frmszr,flag=wx.ALL, border=8)
-    
+        
+        vbox.Add(dszr, flag=wx.EXPAND|wx.CENTER|wx.ALL, border=8)    
+
         return vbox    
 
     
@@ -944,8 +1020,12 @@ class diFFit2DFrame(wx.Frame):
         self.btn_mask.Disable()
         self.btn_bkgd.Disable()
         self.sldr_bkgd.Disable()
-        self.frmsldr.Disable()
-        for btn in self.frm_btn: btn.Disable()
+
+        self.hrz_frm_sldr.Disable()
+        for btn in self.hrz_frm_btn: btn.Disable()
+
+        self.vrt_frm_sldr.Disable()
+        for btn in self.vrt_frm_btn: btn.Disable()
         
         return vbox    
 
@@ -1037,7 +1117,7 @@ class XRDImg(Group):
 
     # Data parameters
     * self.image         = None or array          # should be a 3-D array [no * x * y]
-    * self.frames        = 1                      # number of frames in self.image
+    * self.iframes        = 1                      # number of frames in self.image
     * self.i             = 0                      # integer indicating current frame
     * self.minval        = 0                      # integer of minimum display contrast
     * self.maxval        = 100                    # integer of maximum display contrast
@@ -1051,9 +1131,12 @@ class XRDImg(Group):
         self.path  = path
         self.type  = type
         
-        self.frames = 1
-        self.i = 0
-        self.image = np.zeros((1,PIXELS,PIXELS)) if image is None else image
+        self.image = np.zeros((1,1,PIXELS,PIXELS)) if image is None else image
+                
+#         self.iframes,self.i = 1,0
+#         self.jframes,self.j = 1,0
+#         
+#         self.xpix,self.ypix = PIXELS,PIXELS
         
         self.check_image()
         self.calc_range()
@@ -1063,23 +1146,32 @@ class XRDImg(Group):
 
         shp = np.shape(self.image)
         if len(shp) == 2:
-            self.image = np.reshape(self.image,(1,shp[0],shp[1]))
-        self.frames = np.shape(self.image)[0]
-        self.i = 0 if self.frames < 4 else int(self.frames)/2
+            self.image = np.reshape(self.image,(1,1,shp[0],shp[1]))
+        if len(shp) == 3:
+            self.image = np.reshape(self.image,(1,shp[0],shp[1],shp[2]))
+        
+        self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
+        self.i = 0 if self.iframes < 4 else int(self.iframes)/2
+        self.j = 0 if self.jframes < 4 else int(self.jframes)/2
 
     def calc_range(self):
 
-        self.minval = self.image[self.i].min()
-        self.maxval = self.image[self.i].max()
+        self.minval = self.image[self.j,self.i].min()
+        self.maxval = self.image[self.j,self.i].max()
 
-    def get_image(self,i=None):
+    def get_image(self,i=None,j=None):
     
         if i is not None and i != self.i:
-            if i < 0: i == self.frames-1
-            if i >= self.frames: i = 0
+            if i < 0: i == self.iframes-1
+            if i >= self.iframes: i = 0
             self.i = i
         
-        return self.image[self.i]
+        if j is not None and j != self.j:
+            if j < 0: j == self.jframes-1
+            if j >= self.jframes: j = 0
+            self.j = j
+        
+        return self.image[self.j,self.i]
         
     def set_contrast(self,minval,maxval):
 
