@@ -268,6 +268,7 @@ class diFFit2DFrame(wx.Frame):
             
     def changeFRAME(self,flag='hslider',event=None):
     
+        print 'changeFRAME'
         img_no = self.ch_img.GetSelection()
         i,j = self.open_image[img_no].i,self.open_image[img_no].j
         if self.open_image[img_no].iframes > 1 or self.open_image[img_no].jframes > 1:
@@ -327,6 +328,7 @@ class diFFit2DFrame(wx.Frame):
 
     def selectIMAGE(self,event=None):
 
+        print 'selectIMAGE'
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.open_image[img_no].get_image()
         
@@ -336,6 +338,8 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
     def calcIMAGE(self):
+    
+        print 'calcIMAGE'
         if self.use_mask is True:
             if self.use_bkgd is True:
                 self.plt_img = self.flp_img * self.msk_img - self.bkgd_img * self.bkgd_scale
