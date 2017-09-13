@@ -300,6 +300,8 @@ class diFFit2DFrame(wx.Frame):
     def displayIMAGE(self,contrast=True,unzoom=True):
         
         print 'displayIMAGE'
+        #img_no = self.ch_img.GetSelection()
+        #self.raw_img = self.open_image[img_no].get_image()
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
