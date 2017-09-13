@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.cm as colormap
 from functools import partial
 
+import h5py
+
 import wx
 try:
     from wx._core import PyDeadObjectError
@@ -25,7 +27,7 @@ from larch import Group
 
 from larch.larchlib import read_workdir
 from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
-from larch_plugins.xrmmap import read_xrd_netcdf,GSEXRM_MapFile
+from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -187,29 +189,28 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
-#     def loadH5FILE(self,event=None):
-# 
-#         wildcards = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
-#         dlg = wx.FileDialog(self, message='Choose XRM Map File',
-#                            defaultDir=os.getcwd(),
-#                            wildcard=wildcards, style=wx.FD_OPEN)
-#                            
-#         path, read = None, False
-#         if dlg.ShowModal() == wx.ID_OK:
-#             read = True
-#             path = dlg.GetPath().replace('\\', '/')
-#         dlg.Destroy()
-# 
-#         if read:
-#             print('Reading file: %s' % path)
-#             try:
-#                 iname = os.path.split(path)[-1]
-#                 xrmfile = GSEXRM_MapFile(filename=str(path))
-#                 self.plot2Dxrd(iname, xrmfile.xrmmap['xrd2D/counts'][:], path=path)
-#                 xrmfile.close()
-#             except:
-#                 print('Could not read file.')
-#                 return
+    def loadH5FILE(self,event=None):
+
+        wildcards = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Choose XRM Map File',
+                           defaultDir=os.getcwd(),
+                           wildcard=wildcards, style=wx.FD_OPEN)
+                           
+        path, read = None, False
+        if dlg.ShowModal() == wx.ID_OK:
+            read = True
+            path = dlg.GetPath().replace('\\', '/')
+        dlg.Destroy()
+
+        if read:
+            print('Reading H5file: %s' % path)
+            try:
+                iname = os.path.split(path)[-1]
+                xrmfile = h5py.File(path, 'r')
+                self.plot2Dxrd(iname, None, path=path, h5file=xrmfile)
+            except:
+                print('Could not read file.')
+                return
 
     def loadIMAGE(self,event=None):
     
@@ -225,28 +226,22 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            print('Reading file: %s' % path)
+            print('Reading XRD image file: %s' % path)
             try:
                 try:
                     image = tifffile.imread(path)
                 except:
-                    try:
-                        image = read_xrd_netcdf(path,verbose=True)
-                    except:
-                        xrmfile = GSEXRM_MapFile(filename=str(path))
-                        image = xrmfile.xrmmap['xrd2D/counts'][:]
-                        xrmfile.close()
+                    image = read_xrd_netcdf(path,verbose=True)
             except:
                 print('Could not read file.')
                 return
-
             iname = os.path.split(path)[-1]
             self.plot2Dxrd(iname,image,path=path)
 
-    def plot2Dxrd(self,iname,image,path=''):
+    def plot2Dxrd(self,iname,image,path='',h5file=None):
 
         self.write_message('Displaying image: %s' % iname, panel=0)
-        self.open_image.append(XRDImg(label=iname, path=path, image=image))
+        self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
         
 
         name_images = [image.label for image in self.open_image]
@@ -283,22 +278,27 @@ class diFFit2DFrame(wx.Frame):
             elif flag=='down':     j = j - 1
             elif flag=='vslider':  j = self.vrt_frm_sldr.GetValue()
         
-            flp_img =  self.open_image[img_no].get_image(i=i,j=j)
-            if self.flip == 'vertical': # Vertical
-                self.raw_img = flp_img[::-1,:]
-            elif self.flip == 'horizontal': # Horizontal
-                self.raw_img = flp_img[:,::-1]
-            elif self.flip == 'both': # both
-                self.raw_img = flp_img[::-1,::-1]
-            else: # None
-                self.raw_img = flp_img
-            
+#             if 0==1: #self.open_image[].h5file is None: ## nc files are the ones having trouble?
+#                 flp_img =  self.open_image[img_no].get_image(i=i,j=j)
+#                 if self.flip == 'vertical': # Vertical
+#                     self.raw_img = flp_img[::-1,:]
+#                 elif self.flip == 'horizontal': # Horizontal
+#                     self.raw_img = flp_img[:,::-1]
+#                 elif self.flip == 'both': # both
+#                     self.raw_img = flp_img[::-1,::-1]
+#                 else: # None
+#                     self.raw_img = flp_img
+#             else:
+#                 
+            self.raw_img =  self.open_image[img_no].get_image(i=i,j=j)
+                
             self.hrz_frm_sldr.SetValue(i)
             self.vrt_frm_sldr.SetValue(j)
             self.displayIMAGE(contrast=False,unzoom=False)
            
     def displayIMAGE(self,contrast=True,unzoom=True):
         
+        print 'displayIMAGE'
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
@@ -316,6 +316,7 @@ class diFFit2DFrame(wx.Frame):
 
     def redrawIMAGE(self):
 
+        print 'redrawIMAGE'
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
@@ -347,6 +348,7 @@ class diFFit2DFrame(wx.Frame):
                 self.plt_img = self.flp_img
 
     def flipIMAGE(self):
+        print 'FLIP CHOICE: %s' % self.flip
         if self.flip == 'vertical': # Vertical
             self.flp_img = self.raw_img[::-1,:]
         elif self.flip == 'horizontal': # Horizontal
@@ -727,17 +729,25 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### PANEL DEFINITIONS
     def onExit(self, event=None):
-        try:
-            if hasattr(self.exit_callback, '__call__'):
-                self.exit_callback()
-        except:
-            pass
 
+        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+
+        ret = dlg.ShowModal()
+        if ret != wx.ID_YES:
+            return
+
+        for image in self.open_image:
+            try:
+                image.h5file.close()
+            except:
+                pass
+        
         try:
             self.Destroy()
         except:
             pass
-        
+
 
     def XRD2DMenuBar(self):
 
@@ -748,7 +758,7 @@ class diFFit2DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-#         MenuItem(self, diFFitMenu, '&Open h5 xrmmap file', '', self.loadH5FILE)
+        MenuItem(self, diFFitMenu, '&Open h5 xrmmap file', '', self.loadH5FILE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
@@ -794,6 +804,9 @@ class diFFit2DFrame(wx.Frame):
         ## Create Menu Bar
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
+
+
+
 
     def LeftSidePanel(self,panel):
         
@@ -1116,48 +1129,57 @@ class XRDImg(Group):
     * self.type          = 'tiff'                            # file type
 
     # Data parameters
-    * self.image         = None or array          # should be a 3-D array [no * x * y]
-    * self.iframes        = 1                      # number of frames in self.image
-    * self.i             = 0                      # integer indicating current frame
-    * self.minval        = 0                      # integer of minimum display contrast
-    * self.maxval        = 100                    # integer of maximum display contrast
+    * self.image         = None or array        # should be a 3-D array [no * x * y]
+    * self.iframes       = 1                    # number of frames in self.image   (row)
+    * self.i             = 0                    # integer indicating current frame (row)
+    * self.jframes       = 1                    # number of frames in self.image   (col)
+    * self.j             = 0                    # integer indicating current frame (col)
+    * self.minval        = 0                    # integer of minimum display contrast
+    * self.maxval        = 100                  # integer of maximum display contrast
 
     mkak 2017.08.15
     '''
 
-    def __init__(self, label=None, path='', type='tiff', image=None):
+    def __init__(self, label=None, path='', type='tiff', image=None, h5file=None):
 
         self.label = label
         self.path  = path
         self.type  = type
         
+        self.h5file = h5file
         self.image = np.zeros((1,1,PIXELS,PIXELS)) if image is None else image
                 
-#         self.iframes,self.i = 1,0
-#         self.jframes,self.j = 1,0
-#         
-#         self.xpix,self.ypix = PIXELS,PIXELS
-        
         self.check_image()
         self.calc_range()
         
 
     def check_image(self):
-
-        shp = np.shape(self.image)
-        if len(shp) == 2:
-            self.image = np.reshape(self.image,(1,1,shp[0],shp[1]))
-        if len(shp) == 3:
-            self.image = np.reshape(self.image,(1,shp[0],shp[1],shp[2]))
+    
+        if self.h5file is None:
+            shp = np.shape(self.image)
+            if len(shp) == 2:
+                self.image = np.reshape(self.image,(1,1,shp[0],shp[1]))
+            if len(shp) == 3:
+                self.image = np.reshape(self.image,(1,shp[0],shp[1],shp[2]))
         
-        self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
+            self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
+        else:
+            self.h5xrd = self.h5file['xrmmap/xrd2D/counts']
+
+            ## making an assumption that h5 map file always has multiple rows and cols
+            self.jframes,self.iframes,self.xpix,self.ypix = self.h5xrd.shape
+
         self.i = 0 if self.iframes < 4 else int(self.iframes)/2
         self.j = 0 if self.jframes < 4 else int(self.jframes)/2
 
     def calc_range(self):
 
-        self.minval = self.image[self.j,self.i].min()
-        self.maxval = self.image[self.j,self.i].max()
+        if self.h5file is None:
+            self.minval = self.image[self.j,self.i].min()
+            self.maxval = self.image[self.j,self.i].max()
+        else:
+            self.minval = self.h5xrd[self.j,self.i].min()
+            self.maxval = self.h5xrd[self.j,self.i].max()
 
     def get_image(self,i=None,j=None):
     
@@ -1171,7 +1193,10 @@ class XRDImg(Group):
             if j >= self.jframes: j = 0
             self.j = j
         
-        return self.image[self.j,self.i]
+        if self.h5file is None:
+            return self.image[self.j,self.i]
+        else:
+            return self.h5xrd[self.j,self.i]
         
     def set_contrast(self,minval,maxval):
 
