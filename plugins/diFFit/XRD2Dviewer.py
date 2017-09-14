@@ -20,6 +20,7 @@ except:
 from wxmplot import PlotPanel
 from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
+from wxmplot.imageconf import ImageConfig,ColorMap_List
 
 import larch
 from larch_plugins.io import tifffile
@@ -90,7 +91,7 @@ class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='vertical',
+    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='none',#flip='vertical',
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
@@ -168,7 +169,6 @@ class diFFit2DFrame(wx.Frame):
                 self.hrz_frm_sldr.SetRange(0,(self.open_image[img_no].iframes-1))
                 self.hrz_frm_sldr.SetValue(self.open_image[img_no].i)
                 for btn in self.hrz_frm_btn: btn.Enable()
-
             else:
                 self.hrz_frm_sldr.Disable()
                 self.hrz_frm_sldr.SetRange(0,0)
@@ -231,7 +231,7 @@ class diFFit2DFrame(wx.Frame):
                 try:
                     image = tifffile.imread(path)
                 except:
-                    image = read_xrd_netcdf(path,verbose=True)
+                    image = read_xrd_netcdf(path)
             except:
                 print('Could not read file.')
                 return
@@ -241,11 +241,10 @@ class diFFit2DFrame(wx.Frame):
     def plot2Dxrd(self,iname,image,path='',h5file=None):
 
         self.write_message('Displaying image: %s' % iname, panel=0)
+        
         self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
         
-
-        name_images = [image.label for image in self.open_image]
-        self.ch_img.Set(name_images)
+        self.ch_img.Set([image.label for image in self.open_image])
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.open_image[-1].get_image()
@@ -268,10 +267,9 @@ class diFFit2DFrame(wx.Frame):
             
     def changeFRAME(self,flag='hslider',event=None):
     
-        print 'changeFRAME'
         img_no = self.ch_img.GetSelection()
-        i,j = self.open_image[img_no].i,self.open_image[img_no].j
         if self.open_image[img_no].iframes > 1 or self.open_image[img_no].jframes > 1:
+            i,j = self.open_image[img_no].i,self.open_image[img_no].j
             if   flag=='next':     i = i + 1
             elif flag=='previous': i = i - 1
             elif flag=='hslider':  i = self.hrz_frm_sldr.GetValue()
@@ -279,29 +277,15 @@ class diFFit2DFrame(wx.Frame):
             elif flag=='down':     j = j - 1
             elif flag=='vslider':  j = self.vrt_frm_sldr.GetValue()
         
-#             if 0==1: #self.open_image[].h5file is None: ## nc files are the ones having trouble?
-#                 flp_img =  self.open_image[img_no].get_image(i=i,j=j)
-#                 if self.flip == 'vertical': # Vertical
-#                     self.raw_img = flp_img[::-1,:]
-#                 elif self.flip == 'horizontal': # Horizontal
-#                     self.raw_img = flp_img[:,::-1]
-#                 elif self.flip == 'both': # both
-#                     self.raw_img = flp_img[::-1,::-1]
-#                 else: # None
-#                     self.raw_img = flp_img
-#             else:
-#                 
             self.raw_img =  self.open_image[img_no].get_image(i=i,j=j)
                 
             self.hrz_frm_sldr.SetValue(i)
             self.vrt_frm_sldr.SetValue(j)
-            self.displayIMAGE(contrast=False,unzoom=False)
+            self.displayIMAGE(auto_contrast=False,unzoom=False)
            
-    def displayIMAGE(self,contrast=True,unzoom=True):
-        
-        print 'displayIMAGE'
-        #img_no = self.ch_img.GetSelection()
-        #self.raw_img = self.open_image[img_no].get_image()
+    def displayIMAGE(self,auto_contrast=True,unzoom=True): ## unzoom=False): # ,
+        print '  displayIMAGE (%s,%s)' % (auto_contrast,unzoom)
+
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
@@ -309,7 +293,7 @@ class diFFit2DFrame(wx.Frame):
         self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
         self.displayCAKE()
                 
-        if contrast: self.setContrast(auto=True)
+        if auto_contrast: self.setContrast(auto_contrast=True)
 
         self.txt_ct2.SetLabel('[ image range: %i to %i ]' % 
                          (np.min(self.plt_img),np.max(self.plt_img)))
@@ -317,9 +301,8 @@ class diFFit2DFrame(wx.Frame):
         self.optionsON()
         self.xrd2Dviewer.plot2D.redraw()
 
-    def redrawIMAGE(self):
+    def redrawIMAGE(self,unzoom=False):
 
-        print 'redrawIMAGE'
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
@@ -330,18 +313,15 @@ class diFFit2DFrame(wx.Frame):
 
     def selectIMAGE(self,event=None):
 
-        print 'selectIMAGE'
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.open_image[img_no].get_image()
         
-        self.displayIMAGE(contrast=False)
+        self.displayIMAGE(auto_contrast=False)
         self.setContrast()
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
     def calcIMAGE(self):
-    
-        print 'calcIMAGE'
         if self.use_mask is True:
             if self.use_bkgd is True:
                 self.plt_img = self.flp_img * self.msk_img - self.bkgd_img * self.bkgd_scale
@@ -354,7 +334,6 @@ class diFFit2DFrame(wx.Frame):
                 self.plt_img = self.flp_img
 
     def flipIMAGE(self):
-        print 'FLIP CHOICE: %s' % self.flip
         if self.flip == 'vertical': # Vertical
             self.flp_img = self.raw_img[::-1,:]
         elif self.flip == 'horizontal': # Horizontal
@@ -394,13 +373,13 @@ class diFFit2DFrame(wx.Frame):
         self.sldr_bkgd.SetRange(0,self.bkgdMAX*SLIDER_SCALE)
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
 
-    def colorIMAGE(self):
+    def colorIMAGE(self,unzoom=False):
         self.xrd2Dviewer.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=False)
+        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
 
         if self.cake is not None:
             self.xrd2Dcake.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-            self.xrd2Dcake.plot2D.display(self.cake[0],unzoom=False)
+            self.xrd2Dcake.plot2D.display(self.cake[0],unzoom=unzoom)
 
     def setCOLOR(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
@@ -408,9 +387,10 @@ class diFFit2DFrame(wx.Frame):
             self.colorIMAGE()
 
     def setFLIP(self,event=None):
-        self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
-        self.redrawIMAGE()
-        
+    
+        if self.flip != self.ch_flp.GetString(self.ch_flp.GetSelection()):
+            self.flip = self.ch_flp.GetString(self.ch_flp.GetSelection())
+            self.redrawIMAGE(unzoom=False)
                
     def setZSCALE(self,event=None):
         if self.ch_scl.GetSelection() == 1: ## log
@@ -430,7 +410,7 @@ class diFFit2DFrame(wx.Frame):
 #### BACKGROUND FUNCTIONS
     def onBkgdScale(self,event=None):
         self.bkgd_scale = self.sldr_bkgd.GetValue()/SLIDER_SCALE
-        self.redrawIMAGE()        
+        self.redrawIMAGE(unzoom=False)        
         
 ##############################################
 #### IMAGE CONTRAST FUNCTIONS
@@ -464,23 +444,22 @@ class diFFit2DFrame(wx.Frame):
             self.xrd2Dcake.plot2D.conf.int_hi[0] = curval
             self.xrd2Dcake.plot2D.redraw()
 
-    def setContrast(self,event=None,auto=False):
-    
+    def setContrast(self,event=None,auto_contrast=False):
         img_no = self.ch_img.GetSelection()
         img = self.open_image[img_no]
         
-        if auto: img.set_contrast(np.min(self.plt_img),np.max(self.plt_img))
+        if auto_contrast: img.set_contrast(np.min(self.plt_img),np.max(self.plt_img))
 
         self.xrd2Dviewer.plot2D.conf.auto_intensity = False        
         self.xrd2Dviewer.plot2D.conf.int_lo[0] = img.minval
-        if auto:
+        if auto_contrast:
             self.xrd2Dviewer.plot2D.conf.int_hi[0] = img.maxval*0.4
         else:
             self.xrd2Dviewer.plot2D.conf.int_hi[0] = img.maxval
         self.xrd2Dviewer.plot2D.redraw()
 
         self.sldr_cntrst.SetRange(img.minval,img.maxval)
-        if auto:
+        if auto_contrast:
             self.sldr_cntrst.SetValue(int(img.maxval*0.4))
         else:
             self.sldr_cntrst.SetValue(img.maxval)
@@ -490,7 +469,7 @@ class diFFit2DFrame(wx.Frame):
         if self.cake is not None:
             self.xrd2Dcake.plot2D.conf.auto_intensity = False        
             self.xrd2Dcake.plot2D.conf.int_lo[0] = img.minval
-            if auto:
+            if auto_contrast:
                 self.xrd2Dcake.plot2D.conf.int_hi[0] = img.maxval*0.4
             else:
                 self.xrd2Dcake.plot2D.conf.int_hi[0] = img.maxval
@@ -719,7 +698,7 @@ class diFFit2DFrame(wx.Frame):
     def applyMask(self,event=None):
                     
         self.use_mask = self.ch_msk.GetValue()
-        self.redrawIMAGE() 
+        self.redrawIMAGE(unzoom=False) 
 
 ##############################################
 #### HELP FUNCTIONS
@@ -916,11 +895,13 @@ class diFFit2DFrame(wx.Frame):
         ## Color
         hbox_clr = wx.BoxSizer(wx.HORIZONTAL)
         self.txt_clr = wx.StaticText(self.panel, label='COLOR')
+
         colors = []
         for key in colormap.datad:
             if not key.endswith('_r'):
                 colors.append(key)
         self.ch_clr = wx.Choice(self.panel,choices=colors)
+        #self.ch_clr = wx.Choice(self.panel,choices=ColorMap_List)
 
         self.ch_clr.Bind(wx.EVT_CHOICE,self.setCOLOR)
     
@@ -952,7 +933,7 @@ class diFFit2DFrame(wx.Frame):
 
         self.btn_ct1 = wx.Button(self.panel,label='reset',size=(50,-1))
 
-        self.btn_ct1.Bind(wx.EVT_BUTTON,partial(self.setContrast,auto=True) )
+        self.btn_ct1.Bind(wx.EVT_BUTTON,partial(self.setContrast,auto_contrast=True) )
 
             
         vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT, border=6)
