@@ -44,7 +44,7 @@ CURSOR_MODES = ['zoom','lasso','prof']
 
 class diFFitCakePanel(wx.Panel):
     '''
-    Panel for housing 2D cake XRD image
+    Panel for housing 2D XRD cake
     '''
     label='Cake'
     def __init__(self,parent,owner=None,_larch=None):
@@ -55,24 +55,16 @@ class diFFitCakePanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         
         self.plot2D = ImagePanel(self,size=(500, 500),messenger=self.owner.write_message)        
-#         self.plot2D = ImagePanel(self,size=(500, 400),messenger=self.owner.write_message)
         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
 
-#         self.plot1D = PlotPanel(self,size=(5000, 100),messenger=self.owner.write_message)
-#         self.plot1D.cursor_mode = 'zoom'
-#         self.plot1D.cursor_callback = self.on_cursor
-#         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        
         self.SetSizer(vbox)
     
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
 
-
-        
 class diFFit2DPanel(wx.Panel):
     '''
-    Panel for housing 2D XRD cake
+    Panel for housing 2D XRD Image
     '''
     label='2D XRD'
     def __init__(self,parent,owner=None,_larch=None):
@@ -86,16 +78,32 @@ class diFFit2DPanel(wx.Panel):
         
         self.SetSizer(vbox)
 
+class diFFit1DPanel(wx.Panel):
+    '''
+    Panel for housing 1D XRD cake
+    '''
+    label='1D XRD'
+    def __init__(self,parent,owner=None,_larch=None):
+
+        wx.Panel.__init__(self, parent)
+        self.owner = owner
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot1D = PlotPanel(self,size=(500, 100),messenger=self.owner.write_message)
+        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        
+        self.SetSizer(vbox)
+
 
 class diFFit2DFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
-    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='none',#flip='vertical',
+    def __init__(self, _larch=None, xrd1Dviewer=None, ponifile=None, flip='vertical',
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1000, 720
+        x,y = 1000, 920 #1000, 720
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
@@ -248,7 +256,7 @@ class diFFit2DFrame(wx.Frame):
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.open_image[-1].get_image()
-        self.displayIMAGE()
+        self.displayIMAGE(auto_contrast=True,unzoom=True)
             
         if self.open_image[-1].iframes > 1:
             self.hrz_frm_sldr.SetRange(0,(self.open_image[-1].iframes-1))
@@ -281,16 +289,19 @@ class diFFit2DFrame(wx.Frame):
                 
             self.hrz_frm_sldr.SetValue(i)
             self.vrt_frm_sldr.SetValue(j)
-            self.displayIMAGE(auto_contrast=False,unzoom=False)
-           
-    def displayIMAGE(self,auto_contrast=True,unzoom=True): ## unzoom=False): # ,
-        print '  displayIMAGE (%s,%s)' % (auto_contrast,unzoom)
+            self.displayIMAGE(auto_contrast=False,unzoom=False)#unzoom=True)
+
+    def displayIMAGE(self,auto_contrast=True,unzoom=False):
 
         self.flipIMAGE()
         self.checkIMAGE()
         self.calcIMAGE()
         
-        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
+        if unzoom:
+            self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
+        else:
+            self.xrd2Dviewer.plot2D.conf.data = self.plt_img
+            self.xrd2Dviewer.plot2D.redraw()
         self.displayCAKE()
                 
         if auto_contrast: self.setContrast(auto_contrast=True)
@@ -316,7 +327,7 @@ class diFFit2DFrame(wx.Frame):
         img_no = self.ch_img.GetSelection()
         self.raw_img = self.open_image[img_no].get_image()
         
-        self.displayIMAGE(auto_contrast=False)
+        self.displayIMAGE(auto_contrast=False,unzoom=True)
         self.setContrast()
 
 ##############################################
@@ -375,11 +386,11 @@ class diFFit2DFrame(wx.Frame):
 
     def colorIMAGE(self,unzoom=False):
         self.xrd2Dviewer.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-        self.xrd2Dviewer.plot2D.display(self.plt_img,unzoom=unzoom)
+        self.xrd2Dviewer.plot2D.display(self.plt_img) #,unzoom=unzoom)
 
         if self.cake is not None:
             self.xrd2Dcake.plot2D.conf.cmap[0] = getattr(colormap, self.color)
-            self.xrd2Dcake.plot2D.display(self.cake[0],unzoom=unzoom)
+            self.xrd2Dcake.plot2D.display(self.cake[0]) #,unzoom=unzoom)
 
     def setCOLOR(self,event=None):
         if self.color != self.ch_clr.GetString(self.ch_clr.GetSelection()):
@@ -562,11 +573,9 @@ class diFFit2DFrame(wx.Frame):
 
                 try:
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
- #                   self.xrddisplay1D.Show()
                 except PyDeadObjectError:
                     self.xrddisplay1D = diFFit1DFrame()
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
-#                    self.xrddisplay1D.Show()
                     
                 if wdgs > 1:
                     for lmts,q,cnts in zip(lmts_wdg,xrdq_wdg,xrd1d_wdg):
@@ -583,6 +592,7 @@ class diFFit2DFrame(wx.Frame):
 
 ##############################################
 #### CALIBRATION FUNCTIONS
+
     def Calibrate(self,event=None):
 
         CalibrationPopup(self)
@@ -603,14 +613,20 @@ class diFFit2DFrame(wx.Frame):
         if read:
             self.calfile = path
             print('Loading calibration file: %s' % path)
+            
+            self.
             self.btn_integ.Enable()
             self.displayCAKE()
 
-    def displayCAKE(self):
+    def displayCAKE(self,unzoom=False):
     
         if self.plt_img is not None and self.calfile is not None:
             self.cake = calc_cake(self.plt_img, self.calfile, unit='q') #, mask=self.msk_img, dark=self.bkgd)
             self.xrd2Dcake.plot2D.display(self.cake[0])
+            
+            q,I = integrate_xrd(self.plt_img, self.calfile, unit='q')
+            self.plot1D.plot(q,I,color='red')
+            self.plot1D.axes.yaxis.set_visible(False)
             
             self.xrd2Dcake.plot2D.conf.auto_intensity = False        
             self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
@@ -618,10 +634,17 @@ class diFFit2DFrame(wx.Frame):
         
             self.xrd2Dcake.plot2D.redraw()
 
+    def redrawCAKE(self,unzoom=False):
+    
+        if self.plt_img is not None and self.calfile is not None:
+            self.cake = calc_cake(self.plt_img, self.calfile, unit='q') #, mask=self.msk_img, dark=self.bkgd)
+            self.xrd2Dcake.plot2D.conf.data = self.cake[0]
             
-            ## set to same contrast as 2D viewer
-            ## call again anytime changing something like flip or mask or background
+            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
+            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
+            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
         
+            self.xrd2Dcake.plot2D.redraw()        
    
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -842,7 +865,7 @@ class diFFit2DFrame(wx.Frame):
         self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(120,-1),
                                  style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(-1,120),
-                                 style = wx.SL_VERTICAL|wx.SL_LABELS)
+                                 style = wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_INVERSE)
 
         self.vrt_frm_btn = [ wx.Button(self.panel,label=u'\u2191', size=(40, -1)),
                              wx.Button(self.panel,label=u'\u2193', size=(40, -1))]
@@ -1029,23 +1052,10 @@ class diFFit2DFrame(wx.Frame):
         
         return vbox    
 
-#     def CursorBox(self,panel):
-#         '''
-#         Frame for data toolbox
-#         '''
-#         
-#         tlbx = wx.StaticBox(self.panel,label='CURSOR MODES')
-#         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
-# 
-#         ###########################
-#         ## CURSOR CHOICE
-# 
-#         cursor_choices = ['Zoom to Rectangle','Pick Area for 2DXRD ROI']
-#         self.crsr_chc = wx.Choice(self.panel,choices=cursor_choices)
-#         self.crsr_chc.Bind(wx.EVT_CHOICE, self.onCursorMode)
-#         vbox.Add(self.crsr_chc, flag=wx.EXPAND|wx.ALL, border=8)
-# 
-#         return vbox 
+    def panel1DXRDplot(self,panel):
+
+        self.plot1D = PlotPanel(panel,size=(500, 100),messenger=self.write_message)
+        self.plot1D.cursor_mode = 'zoom'
 
     def panel2DXRDplot(self,panel):
     
@@ -1056,7 +1066,7 @@ class diFFit2DFrame(wx.Frame):
         self.xrd2Dcake   = diFFitCakePanel(self.nb,owner=self)
 
         ## add the pages to the notebook with the label to show on the tab
-        self.nb.AddPage(self.xrd2Dviewer, 'Image')
+        self.nb.AddPage(self.xrd2Dviewer, '2D XRD Image')
         self.nb.AddPage(self.xrd2Dcake,   'Cake')
 
         ## put the notebook in a sizer for the panel to manage the layout
@@ -1066,9 +1076,13 @@ class diFFit2DFrame(wx.Frame):
 
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.panel1DXRDplot(panel)
         self.panel2DXRDplot(panel)
+        
         btnbox = self.QuickButtons(panel)
         vbox.Add(self.nb,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
 
