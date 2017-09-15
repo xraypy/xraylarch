@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import glob
+import tempfile
+from datetime import datetime
+from subprocess import Popen, PIPE
+
+
+def isotime():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+class Feff8LRunner(object):
+    modules = ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
+    def __init__(self, run=True):
+        try:
+            self.logfile = open('feff8l.log', 'w+')
+        except:
+            self.logfile = tempfile.NamedTemporaryFile(prefix='feff8l')
+
+        if run:
+            self.run()
+
+    def write(self, msg):
+        sys.stdout.write(msg)
+        self.logfile.write(msg)
+
+    def run(self):
+        self.write("#== Feff85l {:s}\n".format(isotime()))
+
+        thisdir, thisfile = os.path.split(os.path.realpath(__file__))
+
+        for module in self.modules:
+            self.write(("#== Feff85l {:s} module\n".format(module)))
+
+            cmd = [os.path.join(thisdir, "feff8l_{:s}".format(module))]
+
+            proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            while True:
+                msg = proc.stdout.read(1)
+                if msg == '':
+                    break
+                self.write(msg)
+            while True:
+                msg = proc.stdout.read(1)
+                if msg == '':
+                    break
+                write("#ERROR %s" % msg)
+            self.logfile.flush()
+
+            for fname in glob.glob('log*.dat'):
+                try:
+                    os.unlink(fname)
+                except IOError:
+                    pass
+        self.write("#== Feff85l done {:s}\n".format(isotime()))
+
+Feff8LRunner(run=True)
