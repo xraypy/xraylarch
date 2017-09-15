@@ -55,11 +55,14 @@ class diFFit2DPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        
         self.SetSizer(vbox)
+        
+        self.plot2D.cursor_callback = self.on_cursor
     
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
+        
+        print '2D : clicked here!',self.x,self.y
 
 
 class diFFit1DPanel(wx.Panel):
@@ -74,9 +77,14 @@ class diFFit1DPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot1D = PlotPanel(self,size=size,messenger=self.owner.write_message)
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        
         self.SetSizer(vbox)
 
+        self.plot1D.cursor_callback = self.on_cursor
+
+    def on_cursor(self,x=None, y=None, **kw):
+        self.x,self.y = x,y
+        
+        print '1D : clicked here!',self.x,self.y
 
 class diFFit2DFrame(wx.Frame):
     '''
@@ -183,32 +191,8 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
-    def loadH5FILE(self,event=None):
-
-        wildcards = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRM Map File',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-                           
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            print('Reading H5file: %s' % path)
-            try:
-                iname = os.path.split(path)[-1]
-                xrmfile = h5py.File(path, 'r')
-                self.plot2Dxrd(iname, None, path=path, h5file=xrmfile)
-            except:
-                print('Could not read file.')
-                return
-
     def loadIMAGE(self,event=None):
-    
-        wildcards = 'XRD image files (*.*)|*.*|All files (*.*)|*.*'
+        wildcards = '2DXRD image files (*.*)|*.*|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -221,16 +205,22 @@ class diFFit2DFrame(wx.Frame):
         
         if read:
             print('Reading XRD image file: %s' % path)
+
+            image,xrmfile = None,None
             try:
+                xrmfile = h5py.File(path, 'r')
+            except IOError:
                 try:
-                    image = tifffile.imread(path)
-                except:
                     image = read_xrd_netcdf(path)
-            except:
-                print('Could not read file.')
-                return
+                except TypeError:
+                    try:
+                        image = tifffile.imread(path)
+                    except ValueError:
+                        print('Could not read file.')
+                        return
+
             iname = os.path.split(path)[-1]
-            self.plot2Dxrd(iname,image,path=path)
+            self.plot2Dxrd(iname, image, path=path, h5file=xrmfile)
 
     def plot2Dxrd(self,iname,image,path='',h5file=None):
 
@@ -601,11 +591,34 @@ class diFFit2DFrame(wx.Frame):
                 self.SetSize((1400,720))
 
             self.btn_integ.Enable()
-            self.displayCAKE()
             
-            self.q,self.I = integrate_xrd(self.plt_img, self.calfile, unit='q')
+            STPS = 5000
+
+            ## Cake calculations
+            self.cake = calc_cake(self.plt_img, self.calfile, unit='q', xsteps=STPS, ysteps=STPS)
+            self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2])
+            print ' make this give correct x, y'
+            print 'I,q,eta',np.shape(self.cake[0]),np.shape(self.cake[1]),np.shape(self.cake[2])
+            print 'q range',np.min(self.cake[1]),np.max(self.cake[1])
+
+            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
+            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
+            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
+            self.xrd2Dcake.plot2D.redraw()
+
+            ## 1DXRD calculations            
+            self.q,self.I = integrate_xrd(self.plt_img, self.calfile, unit='q', steps=STPS)
+            print 'q range',np.min(self.q),np.max(self.q)
+
             self.xrd1Dviewer.plot1D.plot(self.q,self.I,color='red')
             self.xrd1Dviewer.plot1D.axes.yaxis.set_visible(False)
+            #self.xrd1Dviewer.plot1D.axes.axis('off')
+            #self.xrd1Dviewer.plot1D.axes.xaxis.set_visible(True)
+            self.xrd1Dviewer.plot1D.axes.spines['left'].set_visible(False)
+            self.xrd1Dviewer.plot1D.axes.spines['right'].set_visible(False)
+            self.xrd1Dviewer.plot1D.axes.spines['top'].set_visible(False)
+            self.xrd1Dviewer.plot1D.draw()
+
 
     def Calibrate(self,event=None):
 
@@ -629,17 +642,6 @@ class diFFit2DFrame(wx.Frame):
             print('Loading calibration file: %s' % path)
             self.display1DXRD()
 
-    def displayCAKE(self,unzoom=False):
-    
-        if self.plt_img is not None and self.calfile is not None:
-            self.cake = calc_cake(self.plt_img, self.calfile, unit='q') #, mask=self.msk_img, dark=self.bkgd)
-            self.xrd2Dcake.plot2D.display(self.cake[0])
-            
-            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
-            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
-            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
-        
-            self.xrd2Dcake.plot2D.redraw()
    
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -761,7 +763,6 @@ class diFFit2DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-        MenuItem(self, diFFitMenu, '&Open h5 xrmmap file', '', self.loadH5FILE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
@@ -1051,11 +1052,11 @@ class diFFit2DFrame(wx.Frame):
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.xrd1Dviewer = diFFit1DPanel(panel,owner=self,size=(400,100))
         self.xrd2Dcake   = diFFit2DPanel(panel,owner=self,size=(400,400))
+        self.xrd1Dviewer = diFFit1DPanel(panel,owner=self,size=(400,100))
         
-        vbox.Add(self.xrd2Dcake,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(self.xrd1Dviewer,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(self.xrd2Dcake,   proportion=1, flag=wx.TOP|wx.EXPAND,    border = 10)
+        vbox.Add(self.xrd1Dviewer, proportion=1, flag=wx.BOTTOM|wx.EXPAND, border = 10)
 
         return vbox
 
