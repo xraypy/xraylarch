@@ -592,6 +592,10 @@ class diFFit2DFrame(wx.Frame):
 
 ##############################################
 #### CALIBRATION FUNCTIONS
+    def display1DXRD(self,event=None):
+    
+        print 'files?',len(self.open_image)
+        #if self.
 
     def Calibrate(self,event=None):
 
@@ -611,10 +615,10 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
+            self.display1DXRD()
             self.calfile = path
             print('Loading calibration file: %s' % path)
-            
-            self.
+
             self.btn_integ.Enable()
             self.displayCAKE()
 
