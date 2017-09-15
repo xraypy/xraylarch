@@ -86,13 +86,13 @@ class diFFit2DFrame(wx.Frame):
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1500, 720 #1000, 720
+        x,y = 1000, 720
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
         
         label = 'diFFit : 2D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(x,y))
+        wx.Frame.__init__(self, None,title=label, size=(x,y))
         
         self.SetMinSize((700,500))
         
@@ -117,6 +117,9 @@ class diFFit2DFrame(wx.Frame):
         self.use_bkgd = False
         
         self.xrddisplay1D = xrd1Dviewer
+
+        self.xrd1Dviewer = None
+        self.xrd2Dcake  = None
         
         self.color = 'bone'
         self.flip = flip
@@ -391,12 +394,21 @@ class diFFit2DFrame(wx.Frame):
     def setZSCALE(self,event=None):
         if self.ch_scl.GetSelection() == 1: ## log
             self.xrd2Dviewer.plot2D.conf.log_scale = True
-            if self.cake is not None:
+            if self.xrd2Dcake is not None:
                 self.xrd2Dcake.plot2D.conf.log_scale = True
+            if self.xrd1Dviewer is not None:
+                self.xrd1Dviewer.plot1D.axes.set_yscale('log')
+                self.xrd1Dviewer.plot1D.set_viewlimits()
+                self.xrd1Dviewer.plot1D.draw() #update_line(0,self.q,self.I)
         else:  ## linear
             self.xrd2Dviewer.plot2D.conf.log_scale = False
-            if self.cake is not None:
+            if self.xrd2Dcake is not None:
                 self.xrd2Dcake.plot2D.conf.log_scale = False
+            if self.xrd1Dviewer is not None:
+                self.xrd1Dviewer.plot1D.axes.set_yscale('linear')
+                self.xrd1Dviewer.plot1D.set_viewlimits()
+                self.xrd1Dviewer.plot1D.draw() #update_line(0,self.q,self.I)
+
         self.xrd2Dviewer.plot2D.redraw()
         if self.cake is not None:
             self.xrd2Dcake.plot2D.redraw()
@@ -580,12 +592,19 @@ class diFFit2DFrame(wx.Frame):
     def display1DXRD(self,event=None):
     
         if len(self.open_image) > 0 and self.calfile is not None:
+        
+            if self.xrd2Dcake is None or self.xrd1Dviewer is None:
+                rightside = self.RightSidePanel(self.panel)        
+                self.panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+                self.panel2D.Layout()
+                self.Fit()
+                self.SetSize((1400,720))
 
             self.btn_integ.Enable()
             self.displayCAKE()
             
-            q,I = integrate_xrd(self.plt_img, self.calfile, unit='q')
-            self.xrd1Dviewer.plot1D.plot(q,I,color='red')
+            self.q,self.I = integrate_xrd(self.plt_img, self.calfile, unit='q')
+            self.xrd1Dviewer.plot1D.plot(self.q,self.I,color='red')
             self.xrd1Dviewer.plot1D.axes.yaxis.set_visible(False)
 
     def Calibrate(self,event=None):
@@ -825,14 +844,14 @@ class diFFit2DFrame(wx.Frame):
 
         leftside = self.LeftSidePanel(self.panel)
         center = self.CenterPanel(self.panel)
-        rightside = self.RightSidePanel(self.panel)        
+        #rightside = self.RightSidePanel(self.panel)        
 
-        panel2D = wx.BoxSizer(wx.HORIZONTAL)
-        panel2D.Add(leftside,flag=wx.ALL,border=10)
-        panel2D.Add(center,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
-        panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+        self.panel2D = wx.BoxSizer(wx.HORIZONTAL)
+        self.panel2D.Add(leftside,flag=wx.ALL,border=10)
+        self.panel2D.Add(center,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
+        #self.panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
 
-        self.panel.SetSizer(panel2D)
+        self.panel.SetSizer(self.panel2D)
 
     def ImageBox(self,panel):
         '''
@@ -1054,7 +1073,6 @@ class diFFit2DFrame(wx.Frame):
         return vbox
 
     def CenterPanel(self,panel):
-#     def RightSidePanel(self,panel):
 
         self.xrd2Dviewer = diFFit2DPanel(panel,owner=self)
         btnbox = self.QuickButtons(panel)
@@ -1063,40 +1081,6 @@ class diFFit2DFrame(wx.Frame):
         vbox.Add(self.xrd2Dviewer,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
         return vbox
-
-#     def panel1DXRDplot(self,panel):
-# 
-#         self.plot1D = PlotPanel(panel,size=(500, 100),messenger=self.write_message)
-#         self.plot1D.cursor_mode = 'zoom'
-# 
-#     def panel2DXRDplot(self,panel):
-#     
-#         self.nb = wx.Notebook(panel)
-#         
-#         ## create the page windows as children of the notebook
-#         self.xrd2Dviewer = diFFit2DPanel(self.nb,owner=self)
-#         self.xrd2Dcake   = diFFit2DPanel(self.nb,owner=self)
-# 
-#         ## add the pages to the notebook with the label to show on the tab
-#         self.nb.AddPage(self.xrd2Dviewer, '2D XRD Image')
-#         self.nb.AddPage(self.xrd2Dcake,   'Cake')
-# 
-#         ## put the notebook in a sizer for the panel to manage the layout
-#         sizer = wx.BoxSizer()
-#         sizer.Add(self.nb, -1, wx.EXPAND)
-#         panel.SetSizer(sizer)
-# 
-#     def RightSidePanel(self,panel):
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-# 
-#         self.panel1DXRDplot(panel)
-#         self.panel2DXRDplot(panel)
-#         
-#         btnbox = self.QuickButtons(panel)
-#         vbox.Add(self.nb,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-#         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-#         vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
-#         return vbox
 
     def QuickButtons(self,panel):
         buttonbox = wx.BoxSizer(wx.HORIZONTAL)
