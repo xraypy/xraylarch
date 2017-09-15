@@ -614,7 +614,6 @@ class diFFit2DFrame(wx.Frame):
             self.calfile = path
             print('Loading calibration file: %s' % path)
             
-            self.
             self.btn_integ.Enable()
             self.displayCAKE()
 
