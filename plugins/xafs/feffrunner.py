@@ -99,12 +99,11 @@ class FeffRunner(Group):
         self.threshold = []
         self.chargetransfer = []
 
-
     def __repr__(self):
         fullfile = os.path.join(self.folder, self.feffinp)
         return '<External Feff Group: %s>' % fullfile
 
-    def run(self, feffinp=None, folder=None, exe='monolithic'):
+    def run(self, feffinp=None, folder=None, exe='feff8l'):
         """
         Make system call to run one or more of the stand-alone executables,
         writing a log file to the folder containing the input file.
@@ -137,7 +136,7 @@ class FeffRunner(Group):
                 self.run(exe=module)
             return
 
-        # 
+        #
         # exe is set, find the corresponding executable file
 
         ## find program to run:
