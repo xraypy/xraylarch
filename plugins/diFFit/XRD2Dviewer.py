@@ -27,7 +27,9 @@ from larch_plugins.io import tifffile
 from larch import Group
 
 from larch.larchlib import read_workdir
-from larch_plugins.xrd import integrate_xrd,E_from_lambda,xrd1d,read_lambda,calc_cake
+from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
+                               calc_cake,twth_from_q,twth_from_d,
+                               return_ai,twth_from_xy,q_from_xy,eta_from_xy)
 from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
@@ -40,6 +42,9 @@ SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 PIXELS = 1024 #2048
 CURSOR_MODES = ['zoom','lasso','prof']
 
+XLABEL = ['q','2th','d']
+XUNITS = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+
 ###################################
 
 class diFFit2DPanel(wx.Panel):
@@ -47,20 +52,40 @@ class diFFit2DPanel(wx.Panel):
     Panel for housing 2D XRD Image
     '''
     label='2D XRD'
-    def __init__(self,parent,owner=None,_larch=None,size=(500, 500)):
+    def __init__(self,parent,type='2D image',owner=None,_larch=None,size=(500, 500)):
 
         wx.Panel.__init__(self, parent)
         self.owner = owner
+        self.type  = type
+        self.ai    = None
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
         vbox.Add(self.plot2D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        
         self.SetSizer(vbox)
+        
+        self.plot2D.cursor_callback = self.on_cursor
+        
+    
+    def on_calibration(self):
+    
+        if self.owner.calfile is not None and os.path.exists(self.owner.calfile):
+            self.ai = return_ai(self.owner.calfile)
     
     def on_cursor(self,x=None, y=None, **kw):
+
+        self.twth,self.q,self.eta = 0,0,0
         self.x,self.y = x,y
 
+#         if self.ai is not None:
+#             if self.type == '2D image':
+#                 self.q    =    q_from_xy(self.x,self.y,ai=self.ai)/10 ## units in 1/A
+#                 self.twth = twth_from_xy(self.x,self.y,ai=self.ai)
+#                 self.eta  =  eta_from_xy(self.x,self.y,ai=self.ai)
+#             elif self.type.startswith('cake'):
+#                 self.q    =    q_from_xy(self.x,self.y,ai=self.ai)/10 ## units in 1/A
+#                 self.twth = twth_from_xy(self.x,self.y,ai=self.ai)
+#                 self.eta  =  eta_from_xy(self.x,self.y,ai=self.ai)
 
 class diFFit1DPanel(wx.Panel):
     '''
@@ -74,8 +99,13 @@ class diFFit1DPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot1D = PlotPanel(self,size=size,messenger=self.owner.write_message)
         vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        
         self.SetSizer(vbox)
+
+        self.plot1D.cursor_callback = self.on_cursor
+
+    def on_cursor(self,x=None, y=None, **kw):
+
+        self.x,self.y = x,y
 
 
 class diFFit2DFrame(wx.Frame):
@@ -183,32 +213,8 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### OPENING AND DISPLAYING IMAGES
 
-    def loadH5FILE(self,event=None):
-
-        wildcards = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Choose XRM Map File',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards, style=wx.FD_OPEN)
-                           
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            print('Reading H5file: %s' % path)
-            try:
-                iname = os.path.split(path)[-1]
-                xrmfile = h5py.File(path, 'r')
-                self.plot2Dxrd(iname, None, path=path, h5file=xrmfile)
-            except:
-                print('Could not read file.')
-                return
-
     def loadIMAGE(self,event=None):
-    
-        wildcards = 'XRD image files (*.*)|*.*|All files (*.*)|*.*'
+        wildcards = '2DXRD image files (*.*)|*.*|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -220,17 +226,23 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
-            print('Reading XRD image file: %s' % path)
+            print('Reading XRD image file:\n\t%s' % path)
+
+            image,xrmfile = None,None
             try:
+                xrmfile = h5py.File(path, 'r')
+            except IOError:
                 try:
-                    image = tifffile.imread(path)
-                except:
                     image = read_xrd_netcdf(path)
-            except:
-                print('Could not read file.')
-                return
+                except TypeError:
+                    try:
+                        image = tifffile.imread(path)
+                    except ValueError:
+                        print('Could not read file.')
+                        return
+
             iname = os.path.split(path)[-1]
-            self.plot2Dxrd(iname,image,path=path)
+            self.plot2Dxrd(iname, image, path=path, h5file=xrmfile)
 
     def plot2Dxrd(self,iname,image,path='',h5file=None):
 
@@ -318,6 +330,20 @@ class diFFit2DFrame(wx.Frame):
         self.displayIMAGE(auto_contrast=False,unzoom=True)
         self.setContrast()
 
+    def onChangeXscale(self,event=None):
+
+        xi = self.xaxis_type.GetSelection()
+
+        self.xrd1Dviewer.plot1D.update_line(0, self.data1dxrd[xi],self.data1dxrd[3])
+        self.xrd1Dviewer.plot1D.set_viewlimits()
+        self.xrd1Dviewer.plot1D.set_xlabel(XUNITS[xi])
+        if xi == 2: self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
+        self.xrd1Dviewer.plot1D.draw()
+
+        self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
+        self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
+#         self.xrd2Dcake.plot2D.redraw()
+
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
     def calcIMAGE(self):
@@ -399,7 +425,7 @@ class diFFit2DFrame(wx.Frame):
             if self.xrd1Dviewer is not None:
                 self.xrd1Dviewer.plot1D.axes.set_yscale('log')
                 self.xrd1Dviewer.plot1D.set_viewlimits()
-                self.xrd1Dviewer.plot1D.draw() #update_line(0,self.q,self.I)
+                self.xrd1Dviewer.plot1D.draw() 
         else:  ## linear
             self.xrd2Dviewer.plot2D.conf.log_scale = False
             if self.xrd2Dcake is not None:
@@ -407,7 +433,7 @@ class diFFit2DFrame(wx.Frame):
             if self.xrd1Dviewer is not None:
                 self.xrd1Dviewer.plot1D.axes.set_yscale('linear')
                 self.xrd1Dviewer.plot1D.set_viewlimits()
-                self.xrd1Dviewer.plot1D.draw() #update_line(0,self.q,self.I)
+                self.xrd1Dviewer.plot1D.draw()
 
         self.xrd2Dviewer.plot2D.redraw()
         if self.cake is not None:
@@ -599,13 +625,44 @@ class diFFit2DFrame(wx.Frame):
                 self.panel2D.Layout()
                 self.Fit()
                 self.SetSize((1400,720))
+                
+                tools1dxrd = self.ToolBox_1DXRD(self.panel)
+                self.leftside.Add(tools1dxrd,flag=wx.ALL|wx.EXPAND,border=10)
+                self.leftside.Layout()
+                
+                self.panel2D.Layout()
+                self.Fit()
+                self.SetSize((1400,720))
 
             self.btn_integ.Enable()
-            self.displayCAKE()
             
-            self.q,self.I = integrate_xrd(self.plt_img, self.calfile, unit='q')
-            self.xrd1Dviewer.plot1D.plot(self.q,self.I,color='red')
+            ## Cake calculations
+            STPS = 5000
+            self.xaxis_type.SetSelection(0)
+            xi = self.xaxis_type.GetSelection()
+            
+
+            self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=STPS, ysteps=STPS)
+            self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
+                                          xlabel=XLABEL[xi],ylabel='eta')
+            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
+            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
+            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
+            self.xrd2Dcake.plot2D.redraw()
+
+            ## 1DXRD calculations  
+            
+            q,I = integrate_xrd(self.plt_img, self.calfile, unit=XLABEL[xi], steps=STPS)
+            self.data1dxrd = xrd1d(x=q,xtype=XLABEL[xi],I=I).all_data()
+
+            self.xrd1Dviewer.plot1D.plot(self.data1dxrd[xi],self.data1dxrd[3],color='red',
+                                         xlabel=XUNIT[xi])
             self.xrd1Dviewer.plot1D.axes.yaxis.set_visible(False)
+            self.xrd1Dviewer.plot1D.axes.spines['left'].set_visible(False)
+            self.xrd1Dviewer.plot1D.axes.spines['right'].set_visible(False)
+            self.xrd1Dviewer.plot1D.axes.spines['top'].set_visible(False)
+            self.xrd1Dviewer.plot1D.draw()
+
 
     def Calibrate(self,event=None):
 
@@ -625,21 +682,11 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if read:
+            print('Loading calibration file:\n\t%s' % path)
             self.calfile = path
-            print('Loading calibration file: %s' % path)
+            self.xrd2Dviewer.on_calibration()
             self.display1DXRD()
 
-    def displayCAKE(self,unzoom=False):
-    
-        if self.plt_img is not None and self.calfile is not None:
-            self.cake = calc_cake(self.plt_img, self.calfile, unit='q') #, mask=self.msk_img, dark=self.bkgd)
-            self.xrd2Dcake.plot2D.display(self.cake[0])
-            
-            self.xrd2Dcake.plot2D.conf.auto_intensity = False        
-            self.xrd2Dcake.plot2D.conf.int_lo[0] = self.xrd2Dviewer.plot2D.conf.int_lo[0]
-            self.xrd2Dcake.plot2D.conf.int_hi[0] = self.xrd2Dviewer.plot2D.conf.int_hi[0]
-        
-            self.xrd2Dcake.plot2D.redraw()
    
 ##############################################
 #### BACKGROUND FUNCTIONS
@@ -665,9 +712,9 @@ class diFFit2DFrame(wx.Frame):
             try:
                 self.bkgd_img = np.array(tifffile.imread(path))
                 self.checkIMAGE()
-                print('Reading background: %s' % path)
+                print('Reading background:\n\t%s' % path)
             except:
-                print('Cannot read as an image file: %s' % path)
+                print('\nCannot read as an image file: %s\n' % path)
                 return
 
 
@@ -695,9 +742,9 @@ class diFFit2DFrame(wx.Frame):
                     raw_mask = fabio.open(path).data
                 self.msk_img = np.ones(raw_mask.shape)-raw_mask
                 self.checkIMAGE()
-                print('Reading mask: %s' % path)
+                print('Reading mask:\n\t%s' % path)
             except:
-                print('Cannot read as mask file: %s' % path)
+                print('\nCannot read as mask file: %s\n' % path)
                 return
 
         self.ch_msk.SetValue(True)
@@ -761,7 +808,6 @@ class diFFit2DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-        MenuItem(self, diFFitMenu, '&Open h5 xrmmap file', '', self.loadH5FILE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
@@ -808,9 +854,6 @@ class diFFit2DFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
 
-
-
-
     def LeftSidePanel(self,panel):
         
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -829,17 +872,34 @@ class diFFit2DFrame(wx.Frame):
         '''
         self.panel = wx.Panel(self)
 
-        leftside = self.LeftSidePanel(self.panel)
+        self.leftside = self.LeftSidePanel(self.panel)
         center = self.CenterPanel(self.panel)
-        #rightside = self.RightSidePanel(self.panel)        
+        #rightside = self.RightSidePanel(self.panel)   
 
         self.panel2D = wx.BoxSizer(wx.HORIZONTAL)
-        self.panel2D.Add(leftside,flag=wx.ALL,border=10)
+        self.panel2D.Add(self.leftside,flag=wx.ALL,border=10)
         self.panel2D.Add(center,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
         #self.panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
 
         self.panel.SetSizer(self.panel2D)
 
+    
+    def ToolBox_1DXRD(self,panel):
+    
+        tlbx = wx.StaticBox(self.panel,label='1DXRD TOOLBOX')
+        hbox = wx.StaticBoxSizer(tlbx,wx.HORIZONTAL)
+
+        ttl_xaxis = wx.StaticText(self, label='X-SCALE')
+        xunits = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+
+        self.xaxis_type = wx.Choice(self,choices=xunits)
+        self.xaxis_type.Bind(wx.EVT_CHOICE, self.onChangeXscale)
+
+        hbox.Add(ttl_xaxis, flag=wx.RIGHT, border=8)
+        hbox.Add(self.xaxis_type, flag=wx.EXPAND, border=8)
+        
+        return hbox
+    
     def ImageBox(self,panel):
         '''
         Frame for data toolbox
@@ -1051,11 +1111,11 @@ class diFFit2DFrame(wx.Frame):
     def RightSidePanel(self,panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
+        self.xrd2Dcake   = diFFit2DPanel(panel,owner=self,size=(400,400),type='cake')
         self.xrd1Dviewer = diFFit1DPanel(panel,owner=self,size=(400,100))
-        self.xrd2Dcake   = diFFit2DPanel(panel,owner=self,size=(400,400))
         
-        vbox.Add(self.xrd2Dcake,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(self.xrd1Dviewer,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
+        vbox.Add(self.xrd2Dcake,   proportion=1, flag=wx.TOP|wx.EXPAND,    border = 10)
+        vbox.Add(self.xrd1Dviewer, proportion=1, flag=wx.BOTTOM|wx.EXPAND, border = 10)
 
         return vbox
 

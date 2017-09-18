@@ -7,6 +7,7 @@ mkak 2017.03.14
 
 ##########################################################################
 # IMPORT PYTHON PACKAGES
+import os
 import numpy as np
 
 HAS_pyFAI = False
@@ -19,6 +20,48 @@ except ImportError:
 
 ##########################################################################
 # FUNCTIONS
+
+def return_ai(calfile):
+
+    if calfile is not None and os.path.exists(calfile):
+        return pyFAI.load(calfile)
+
+def q_from_xy(x, y, ai=None, calfile=None):
+
+    if ai is None: ai = pyFAI.load(calfile)
+
+    try:
+        return ai.qFunction(np.array([y,]),np.array([x,]))[0]
+    except:
+        return 0
+    
+def twth_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
+
+    if ai is None: ai = pyFAI.load(calfile)
+     
+    try:
+        twth = ai.tth(np.array([y,]),np.array([x,]))
+    except:
+        return 0
+    
+    if ang_units.startswith('rad'):
+        return twth[0]
+    else:
+        return np.degrees(twth[0])
+
+def eta_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
+
+    if ai is None: ai = pyFAI.load(calfile)
+     
+    try:
+        eta = ai.chi(np.array([y,]),np.array([x,]))
+    except:
+        return 0
+    
+    if ang_units.startswith('rad'):
+        return eta[0]
+    else:
+        return np.degrees(eta[0])
 
 def read_lambda(calfile):
     
@@ -117,7 +160,8 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='',  wedge_limits=
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
 
-def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
+def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, 
+              xsteps=2048, ysteps=2048, verbose=False):
     
     if HAS_pyFAI:
         try:
@@ -136,7 +180,7 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
         if dark:
             if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
 
-        return calcXRDcake(xrd2d,ai,attrs)
+        return calcXRDcake(xrd2d,ai,xsteps,ysteps,attrs)
         
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
@@ -144,8 +188,8 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, verbose=False):
 def calcXRD1d(xrd2d,ai,steps,attrs):
     return ai.integrate1d(xrd2d,steps,**attrs)
 
-def calcXRDcake(xrd2d,ai,attrs):
-    return ai.integrate2d(xrd2d,2048,2048,**attrs) ## returns I,q,eta
+def calcXRDcake(xrd2d,ai,xstp,ystp,attrs):
+    return ai.integrate2d(xrd2d,xstp,ystp,**attrs) ## returns I,q,eta
 
 def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
            has_dark=False, has_flat=False, polarization_factor=None,

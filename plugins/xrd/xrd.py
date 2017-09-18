@@ -105,14 +105,8 @@ class xrd1d(grpobjt):
             self.polarization  = None
             self.normalization = None
 
-            if I is not None:
-                if xytq is not None:
-                    self.xrd_from_2d([q,I],'q')
-                elif twth is not None:
-                    self.xrd_from_2d([twth,I],'2th')
-                elif d is not None:
-                    self.xrd_from_2d([d,I],'d')
-        
+            if I is not None and x is not None:
+                self.xrd_from_2d([x,I],xtype)
                 self.bkgd = np.zeros(np.shape(self.I))
             else:
                 self.q    = None
