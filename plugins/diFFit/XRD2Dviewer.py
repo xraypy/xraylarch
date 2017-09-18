@@ -1026,7 +1026,7 @@ class diFFit2DFrame(wx.Frame):
         hbox_ct2.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
         
         vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT,    border=6)
-        vbox_ct.Add(hbox_ct2,         flag=wx.CENTER|wx.TOP, border=6)
+        vbox_ct.Add(hbox_ct2,         flag=wx.CENTER|wx.TOP,      border=6)
         vbox.Add(vbox_ct,             flag=wx.ALL,                border=4)
 
         ###########################
