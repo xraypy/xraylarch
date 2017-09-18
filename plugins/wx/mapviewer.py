@@ -3241,11 +3241,17 @@ class OpenMapFolder(wx.Dialog):
             for poniinfo in self.PoniInfo: poniinfo.Disable()
 
         if not os.path.exists(self.Fldr.GetValue()):
+            self.Fldr.SetValue('')
             self.FindWindowById(wx.ID_OK).Disable()
-        elif not self.ChkBx[0].GetValue():
-            self.FindWindowById(wx.ID_OK).Disable()
-        else:
+            return
+        
+        add_data = False
+        for ckbk in self.ChkBx:
+            if ckbk.GetValue(): add_data = True
+        if add_data:
             self.FindWindowById(wx.ID_OK).Enable()
+        else:
+            self.FindWindowById(wx.ID_OK).Disable()
 
     def onH5cmpr(self,event=None):
     
