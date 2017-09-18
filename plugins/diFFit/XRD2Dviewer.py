@@ -42,8 +42,10 @@ SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 PIXELS = 1024 #2048
 CURSOR_MODES = ['zoom','lasso','prof']
 
+QSTPS = 5000
+
 XLABEL = ['q','2th','d']
-XUNITS = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+XUNIT  = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
 
 ###################################
 
@@ -336,13 +338,18 @@ class diFFit2DFrame(wx.Frame):
 
         self.xrd1Dviewer.plot1D.update_line(0, self.data1dxrd[xi],self.data1dxrd[3])
         self.xrd1Dviewer.plot1D.set_viewlimits()
-        self.xrd1Dviewer.plot1D.set_xlabel(XUNITS[xi])
-        if xi == 2: self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
+        self.xrd1Dviewer.plot1D.set_xlabel(XUNIT[xi])
+        if xi == 2:
+            self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
+            xi = 0
         self.xrd1Dviewer.plot1D.draw()
 
-        self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
-        self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
-#         self.xrd2Dcake.plot2D.redraw()
+        self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
+        self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
+                                          xlabel=XLABEL[xi],ylabel='eta')
+#         self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
+#         self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
+
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
@@ -637,12 +644,11 @@ class diFFit2DFrame(wx.Frame):
             self.btn_integ.Enable()
             
             ## Cake calculations
-            STPS = 5000
             self.xaxis_type.SetSelection(0)
             xi = self.xaxis_type.GetSelection()
             
 
-            self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=STPS, ysteps=STPS)
+            self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
             self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
                                           xlabel=XLABEL[xi],ylabel='eta')
             self.xrd2Dcake.plot2D.conf.auto_intensity = False        
@@ -652,7 +658,7 @@ class diFFit2DFrame(wx.Frame):
 
             ## 1DXRD calculations  
             
-            q,I = integrate_xrd(self.plt_img, self.calfile, unit=XLABEL[xi], steps=STPS)
+            q,I = integrate_xrd(self.plt_img, self.calfile, unit=XLABEL[xi], steps=QSTPS)
             self.data1dxrd = xrd1d(x=q,xtype=XLABEL[xi],I=I).all_data()
 
             self.xrd1Dviewer.plot1D.plot(self.data1dxrd[xi],self.data1dxrd[3],color='red',
@@ -1001,9 +1007,9 @@ class diFFit2DFrame(wx.Frame):
     
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_VALUE_LABEL)
-        self.entr_min = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(60,-1))
-        self.entr_max = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(60,-1))
+        self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_VALUE_LABEL,   size=(275,-1))
+        self.entr_min = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(50,-1))
+        self.entr_max = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(80,-1))
 
         self.sldr_cntrst.Bind(wx.EVT_SLIDER,self.onSlider)
         self.entr_min.Bind(wx.EVT_TEXT_ENTER,self.onContrastRange)
@@ -1013,20 +1019,15 @@ class diFFit2DFrame(wx.Frame):
 
         self.btn_ct1.Bind(wx.EVT_BUTTON,partial(self.setContrast,auto_contrast=True) )
 
-            
-        vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT, border=6)
-
-
-        ttl_rng = wx.StaticText(self.panel, label='Range:')
         ttl_to = wx.StaticText(self.panel, label='to')
-        hbox_ct2.Add(ttl_rng, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         hbox_ct2.Add(ttl_to, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         hbox_ct2.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
         hbox_ct2.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
         
-        vbox_ct.Add(hbox_ct2,      flag=wx.ALIGN_RIGHT|wx.TOP, border=6)
-        vbox.Add(vbox_ct,          flag=wx.ALL,                border=4)
+        vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT,    border=6)
+        vbox_ct.Add(hbox_ct2,         flag=wx.CENTER|wx.TOP, border=6)
+        vbox.Add(vbox_ct,             flag=wx.ALL,                border=4)
 
         ###########################
         ## Flip
