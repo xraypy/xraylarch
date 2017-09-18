@@ -108,14 +108,13 @@ def isGSEXRM_MapFolder(fname):
         if f not in flist:
             return False
 
-    has_xrfdata = False
-    ## This should read Master.dat for file name and check that it exist.
-    ## If file name is listed as __unused__ then flag should be false.
-    ## mkak 2017.03.10
-    for f in ('xmap.0001', 'xsp3.0001'):
-        if f in flist: has_xrfdata = True
+    has_xrmdata = False
 
-    return has_xrfdata
+    header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
+    for f in rows[0]:
+        if f in flist: has_xrmdata = True
+
+    return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
            'Version': '2.0.0', ## '1.5.0', ## 
@@ -219,8 +218,9 @@ class GSEXRM_MapRow:
                  mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
-        ta = time.time()
-        if not FLAGxrf and not FLAGxrd2D:
+        ## need one type of data to build file; could be modified for just scalars?
+        ## mkak 2017.09.18
+        if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
             return
 
         self.read_ok = False
@@ -301,26 +301,21 @@ class GSEXRM_MapRow:
         t0 = time.time()
         atime = -1
 
-        xrfdat = None
-        xmfile = os.path.join(folder, xrffile)
-        xrddat = None
-        xdfile = os.path.join(folder, xrdfile)
+        xrf_dat,xrf_file = None,os.path.join(folder, xrffile)
+        xrd_dat,xrd_file = None,os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
-                atime = os.stat(xmfile).st_ctime
+                atime = os.stat(xrf_file).st_ctime
 
-                tb = time.time()
                 if FLAGxrf:
-                    xrfdat = xrf_reader(xmfile, npixels=self.nrows_expected, verbose=False)
-                    if xrfdat is None:
+                    xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
+                    if xrf_dat is None:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
-                tc = time.time()
                 if FLAGxrd2D or FLAGxrd1D:
-                    xrddat = xrd_reader(xdfile, verbose=False)
-                    if xrddat is None:
+                    xrd_dat = xrd_reader(xrd_file, verbose=False)
+                    if xrd_dat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
-                td = time.time()
 
             except (IOError, IndexError):
                 time.sleep(0.010)
@@ -331,34 +326,30 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
-        te = time.time()
         if FLAGxrf:
-            self.counts    = xrfdat.counts[ioff:]
-            self.inpcounts = xrfdat.inputCounts[ioff:]
-            self.outcounts = xrfdat.outputCounts[ioff:]
+            self.counts    = xrf_dat.counts[ioff:]
+            self.inpcounts = xrf_dat.inputCounts[ioff:]
+            self.outcounts = xrf_dat.outputCounts[ioff:]
 
             # times are extracted from the netcdf file as floats of ms
             # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrfdat.liveTime[ioff:]).astype('int')
-            self.realtime  = (xrfdat.realTime[ioff:]).astype('int')
+            self.livetime  = (xrf_dat.liveTime[ioff:]).astype('int')
+            self.realtime  = (xrf_dat.realTime[ioff:]).astype('int')
 
-            dt_denom = xrfdat.outputCounts[ioff:]*xrfdat.liveTime[ioff:]
+            dt_denom = xrf_dat.outputCounts[ioff:]*xrf_dat.liveTime[ioff:]
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
-
-        tf = time.time()
+            self.dtfactor  = xrf_dat.inputCounts[ioff:]*xrf_dat.realTime[ioff:]/dt_denom
 
         ## SPECIFIC TO XRD data
         if FLAGxrd2D or FLAGxrd1D:
-            if self.npts == xrddat.shape[0]:
-                self.xrd2d = xrddat
-            elif self.npts > xrddat.shape[0]:
-                self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat
+            if self.npts == xrd_dat.shape[0]:
+                self.xrd2d = xrd_dat
+            elif self.npts > xrd_dat.shape[0]:
+                self.xrd2d = np.zeros((self.npts,xrd_dat.shape[1],xrd_dat.shape[2]))
+                self.xrd2d[0:xrd_dat.shape[0]] = xrd_dat
             else:
-                self.xrd2d = xrddat[0:self.npts]
+                self.xrd2d = xrd_dat[0:self.npts]
             
-            tg = time.time()
             if poni is not None and FLAGxrd1D:
                 attrs = {'steps':steps,'mask':mask,'flip':flip}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
@@ -377,13 +368,13 @@ class GSEXRM_MapRow:
                     self.xrdq_wdg  = np.einsum('kij->ijk', self.xrdq_wdg)
                     self.xrd1d_wdg = np.einsum('kij->ijk', self.xrd1d_wdg)
 
-        th = time.time()
-
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
-        xnpts, nmca, nchan = self.counts.shape
-        if self.npts is None:
-            self.npts = min(gnpts, xnpts)
+        
+        xnpts,nmca = gnpts,1
+        if FLAGxrf: xnpts, nmca, nchan = self.counts.shape
+        
+        if self.npts is None: self.npts = min(gnpts, xnpts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -437,10 +428,10 @@ class GSEXRM_MapRow:
 
         if FLAGxrf:
             xvals = [(gdata[i, ixaddr] + gdata[i-1, ixaddr])/2.0 for i in points]
-
             self.posvals = [np.array(xvals)]
             if dimension == 2:
                 self.posvals.append(np.array([float(yvalue) for i in points]))
+
             self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
             self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
 
@@ -452,6 +443,7 @@ class GSEXRM_MapRow:
                     total = self.counts[:, imca, :] * cor
                 else:
                     total = total + self.counts[:, imca, :] * cor
+
             self.total = total.astype('int16')
             self.dtfactor = self.dtfactor.astype('float32')
             self.dtfactor = self.dtfactor.transpose()
@@ -462,13 +454,6 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
-        ti = time.time()
-
-        self.xrfreadtime   = ((tc-tb)+(tf-te)) if FLAGxrf else 0.0
-        self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd2D else 0.0
-        self.xrd1dcalctime = (th-tg) if FLAGxrd1D and poni is not None else 0.0
-        self.readtime      = (ti-ta)
-
 
 class GSEMCA_Detector(object):
     '''Detector class, representing 1 detector element (real or virtual)
@@ -997,23 +982,25 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
 
-        if self.flag_xrf:
-            if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
-                yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
-                if xrff.startswith('None'):
-                    xrff = xrff.replace('None', 'xsp3')
-                if sisf.startswith('None'):
-                    sisf = sisf.replace('None', 'struck')
-                if xpsf.startswith('None'):
-                    xpsf = xpsf.replace('None', 'xps')
-                if xrdf.startswith('None'):
-                    xrdf = xrdf.replace('None', 'pexrd')
-            else:
-                yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
-                xrdf = ''
-        else:
+        if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
             raise IOError('No XRF or XRD flags provided.')
             return
+
+
+        if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
+            yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+            if xrff.startswith('None'):
+                xrff = xrff.replace('None', 'xsp3')
+            if sisf.startswith('None'):
+                sisf = sisf.replace('None', 'struck')
+            if xpsf.startswith('None'):
+                xpsf = xpsf.replace('None', 'xps')
+            if xrdf.startswith('None'):
+                xrdf = xrdf.replace('None', 'pexrd')
+        else:
+            yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
+            xrdf = ''
+
         reverse = None # (irow % 2 != 0)
 
         ioffset = 0
@@ -1064,15 +1051,14 @@ class GSEXRM_MapFile(object):
             for ai,aname in enumerate(re.findall(r"[\w']+", row.sishead[-1])):
                 sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
 
-            npts = np.shape(row.posvals)[1]
-            pos    = self.xrmmap['positions/pos']
-            rowpos = np.array([p[:npts] for p in row.posvals])
-
-            tpos = rowpos.transpose()
-            pos[thisrow, :npts, :] = tpos[:npts, :]
-
             if self.flag_xrf:
 
+                npts = np.shape(row.posvals)[1]
+                pos    = self.xrmmap['positions/pos']
+                rowpos = np.array([p[:npts] for p in row.posvals])
+
+                tpos = rowpos.transpose()
+                pos[thisrow, :npts, :] = tpos[:npts, :]
                 nmca, xnpts, nchan = row.counts.shape
                 mca_dets = []
 
@@ -1115,9 +1101,7 @@ class GSEXRM_MapFile(object):
 
         else:
 
-            if verbose: t0 = time.time()
             if self.flag_xrf:
-
                 nmca, xnpts, nchan = row.counts.shape
                 xrm_dets = []
 
@@ -1227,7 +1211,11 @@ class GSEXRM_MapFile(object):
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
-        nmca, xnpts, nchan = row.counts.shape
+        
+        if self.flag_xrf:
+            nmca, xnpts, nchan = row.counts.shape
+        else:
+            nmca, xnpts, nchan = 1, self.npts, 1
         
         if self.chunksize is None:
             if xnpts < 10: xnpts=10
@@ -1439,15 +1427,12 @@ class GSEXRM_MapFile(object):
                 pos.create_dataset('pos', (NINIT, npts, npos), dtype,
                                    maxshape=(None, npts, npos), **self.compress_args)
 
-
-
-
         if self.flag_xrd2d or self.flag_xrd1d:
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             if verbose:
                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
-                print(prtxt % (npts, row.npts, xpixx, xpixy))
+                print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
 
             if self.flag_xrd2d:
                 xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
