@@ -7,6 +7,7 @@ mkak 2017.03.14
 
 ##########################################################################
 # IMPORT PYTHON PACKAGES
+import os
 import numpy as np
 
 HAS_pyFAI = False
@@ -19,6 +20,48 @@ except ImportError:
 
 ##########################################################################
 # FUNCTIONS
+
+def return_ai(calfile):
+
+    if calfile is not None and os.path.exists(calfile):
+        return pyFAI.load(calfile)
+
+def q_from_xy(x, y, ai=None, calfile=None):
+
+    if ai is None: ai = pyFAI.load(calfile)
+
+    try:
+        return ai.qFunction(np.array([y,]),np.array([x,]))[0]
+    except:
+        return 0
+    
+def twth_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
+
+    if ai is None: ai = pyFAI.load(calfile)
+     
+    try:
+        twth = ai.tth(np.array([y,]),np.array([x,]))
+    except:
+        return 0
+    
+    if ang_units.startswith('rad'):
+        return twth[0]
+    else:
+        return np.degrees(twth[0])
+
+def eta_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
+
+    if ai is None: ai = pyFAI.load(calfile)
+     
+    try:
+        eta = ai.chi(np.array([y,]),np.array([x,]))
+    except:
+        return 0
+    
+    if ang_units.startswith('rad'):
+        return eta[0]
+    else:
+        return np.degrees(eta[0])
 
 def read_lambda(calfile):
     
