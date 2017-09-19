@@ -22,6 +22,8 @@ from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 from wxmplot.imageconf import ImageConfig,ColorMap_List
 
+import matplotlib.pyplot as plt
+
 import larch
 from larch_plugins.io import tifffile
 from larch import Group
@@ -60,6 +62,8 @@ class diFFit2DPanel(wx.Panel):
         self.owner = owner
         self.type  = type
         self.ai    = None
+        self.ring  = None
+        self.fig_lin  = None
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
@@ -73,25 +77,80 @@ class diFFit2DPanel(wx.Panel):
     
         if self.owner.calfile is not None and os.path.exists(self.owner.calfile):
             self.ai = return_ai(self.owner.calfile)
-    
+            
+            self.ai.detector.shape = np.shape(self.owner.plt_img)
+            
+            fit2d_param = self.ai.getFit2D()
+            self.center = (fit2d_param['centerX'],fit2d_param['centerY'])
+
     def on_cursor(self,x=None, y=None, **kw):
 
-        self.twth,self.q,self.eta = 0,0,0
-        self.x,self.y = x,y
+        if self.ai is not None:
+            self.owner.twth = twth_from_xy(x,y,ai=self.ai)
+            
+            self.owner.xrd2Dviewer.plot_ring(x=x,y=y)
+            self.owner.xrd2Dcake.plot_line()
+
+        elif self.type == 'cake':
+            self.owner.twth = x
+
+            self.owner.xrd2Dviewer.plot_ring()
+            self.owner.xrd2Dcake.plot_line()
+
+        self.owner.xrd1Dviewer.plot_line()
+        
+    def plot_line(self,x=None):
+
+        if x is None:
+            x = np.abs(self.plot2D.xdata-self.owner.twth).argmin()
+
+#         xrd_line = plt.axvline(x=x, color='red')#, linestyle='--')
+#         self.plot2D.axes.plot(xrd_line)
+        
+        #if self.fig_lin is not None: self.fig_lin.remove()
+        #self.fig_lin = self.plot2D.axes.add_artist(xrd_line)
+
+        xvals,yvals = np.array((x,x)),np.array(self.plot2D.axes.get_ylim())
+        
+        if self.fig_lin is None:
+            self.fig_lin = self.plot2D.fig.add_axes(self.plot2D.axes._position.bounds)
+            self.fig_lin.set_axis_off()
+        self.fig_lin.plot(xvals,yvals, color='red', linestyle='-')
+        self.plot2D.canvas.draw()
+
+#         self.plot2D.axes.scatters(xvals,yvals,'-',color='red')
+#         self.plot2D.canvas.draw()
+#         if self.fig_lin is None:
+#             self.fig_lin = self.plot2D.scatter(xvals,yvals, color='red')
+#         else:
+#             self.plot2D.update_line(1,xvals,yvals,update_limits=False,draw=True)
+    
+    def plot_ring(self,x=None,y=None):
+
+        if x is not None and y is not None:
+            radius = np.sqrt((x-self.center[0])**2+(y-self.center[1])**2)
+        else:
+            radius = self.ai._dist * np.tan(np.radians(self.owner.twth))
+            radius = radius / self.ai.detector.pixel1
+        xrd_ring = plt.Circle(self.center, radius, color='red', fill=False)
+        
+        if self.ring is not None: self.ring.remove()
+        self.ring = self.plot2D.axes.add_artist(xrd_ring)
+        self.plot2D.canvas.draw()
 
 #         if self.ai is not None:
 #             if self.type == '2D image':
-#                 self.q    =    q_from_xy(self.x,self.y,ai=self.ai)/10 ## units in 1/A
-#                 self.twth = twth_from_xy(self.x,self.y,ai=self.ai)
-#                 self.eta  =  eta_from_xy(self.x,self.y,ai=self.ai)
+#                 self.q    =    q_from_xy(x,y,ai=self.ai)/10 ## units in 1/A
+#                 self.twth = twth_from_xy(x,y,ai=self.ai)
+#                 self.eta  =  eta_from_xy(x,y,ai=self.ai)
 #             elif self.type.startswith('cake'):
-#                 self.q    =    q_from_xy(self.x,self.y,ai=self.ai)/10 ## units in 1/A
-#                 self.twth = twth_from_xy(self.x,self.y,ai=self.ai)
-#                 self.eta  =  eta_from_xy(self.x,self.y,ai=self.ai)
+#                 self.q    =    q_from_xy(x,y,ai=self.ai)/10 ## units in 1/A
+#                 self.twth = twth_from_xy(x,y,ai=self.ai)
+#                 self.eta  =  eta_from_xy(x,y,ai=self.ai)
 
 class diFFit1DPanel(wx.Panel):
     '''
-    Panel for housing 1D XRD cake
+    Panel for housing 1D XRD
     '''
     def __init__(self,parent,owner=None,_larch=None,size=(500, 100)):
 
@@ -104,10 +163,37 @@ class diFFit1DPanel(wx.Panel):
         self.SetSizer(vbox)
 
         self.plot1D.cursor_callback = self.on_cursor
+        self.fig_lin = None
 
     def on_cursor(self,x=None, y=None, **kw):
 
-        self.x,self.y = x,y
+        xi = self.owner.xaxis_type.GetSelection()
+        if xi == 1:
+            self.owner.twth = x
+        else:
+            ix = np.abs(self.owner.data1dxrd[1]-self.owner.twth).argmin()
+            self.owner.twth = self.owner.data1dxrd[1][ix]
+
+        self.owner.xrd1Dviewer.plot_line(x=x)
+        self.owner.xrd2Dviewer.plot_ring()
+        self.owner.xrd2Dcake.plot_line()
+        
+
+    def plot_line(self,x=None):
+        
+        if x is None:
+            xi = self.owner.xaxis_type.GetSelection()
+            if xi != 1:
+                ix = np.abs(self.owner.data1dxrd[1]-self.owner.twth).argmin()
+                x = self.owner.data1dxrd[xi][ix]
+            else:
+                x = self.owner.twth
+
+        xvals,yvals = np.array((x,x)),np.array(self.plot1D.axes.get_ylim())
+        if self.fig_lin is None:
+            self.fig_lin = self.plot1D.oplot(xvals,yvals, color='red')
+        else:
+            self.plot1D.update_line(1,xvals,yvals,update_limits=False,draw=True)
 
 
 class diFFit2DFrame(wx.Frame):
@@ -138,6 +224,7 @@ class diFFit2DFrame(wx.Frame):
         self.flp_img = np.zeros((PIXELS,PIXELS))
         self.plt_img = np.zeros((PIXELS,PIXELS))
         self.cake    = None
+        self.twth    = None
         
         self.msk_img  = np.ones((PIXELS,PIXELS))
         self.bkgd_img = np.zeros((PIXELS,PIXELS))
@@ -337,18 +424,17 @@ class diFFit2DFrame(wx.Frame):
         xi = self.xaxis_type.GetSelection()
 
         self.xrd1Dviewer.plot1D.update_line(0, self.data1dxrd[xi],self.data1dxrd[3])
+        if self.twth is not None: self.xrd1Dviewer.plot_line()
         self.xrd1Dviewer.plot1D.set_viewlimits()
         self.xrd1Dviewer.plot1D.set_xlabel(XUNIT[xi])
-        if xi == 2:
-            self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
-            xi = 0
+        if xi == 2: self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
         self.xrd1Dviewer.plot1D.draw()
 
-        self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
-        self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
-                                          xlabel=XLABEL[xi],ylabel='eta')
-#         self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
-#         self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
+#         self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
+#         self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
+#                                           xlabel=XLABEL[xi],ylabel='eta')
+# #         self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
+# #         self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
 
 
 ##############################################
@@ -644,9 +730,8 @@ class diFFit2DFrame(wx.Frame):
             self.btn_integ.Enable()
             
             ## Cake calculations
-            self.xaxis_type.SetSelection(0)
-            xi = self.xaxis_type.GetSelection()
-            
+            xi = 1
+            self.xaxis_type.SetSelection(xi)
 
             self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
             self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
@@ -661,7 +746,7 @@ class diFFit2DFrame(wx.Frame):
             q,I = integrate_xrd(self.plt_img, self.calfile, unit=XLABEL[xi], steps=QSTPS)
             self.data1dxrd = xrd1d(x=q,xtype=XLABEL[xi],I=I).all_data()
 
-            self.xrd1Dviewer.plot1D.plot(self.data1dxrd[xi],self.data1dxrd[3],color='red',
+            self.xrd1Dviewer.plot1D.plot(self.data1dxrd[xi],self.data1dxrd[3],color='blue',
                                          xlabel=XUNIT[xi])
             self.xrd1Dviewer.plot1D.axes.yaxis.set_visible(False)
             self.xrd1Dviewer.plot1D.axes.spines['left'].set_visible(False)

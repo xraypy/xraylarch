@@ -1595,14 +1595,14 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         ir = 0
 
         for label in ('Facility','Run Cycle','Proposal Number','User group',
-                      'Scan Started','File Compression',
+                      'Scan Started','File Compression','Map Data',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       'Original data path', 'User Comments 1', 'User Comments 2',
                       'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
                       'Sample Fine Stages',
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
-                      'XRD Data','XRD Calibration'):
+                      'XRD Calibration'):
 
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label, style=wx.LEFT, size=(125, -1))
@@ -1734,20 +1734,32 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['Proposal Number'].SetLabel('')
             self.wids['User group'].SetLabel('')
 
-        FLAGXRD2D,FLAGXRD1D = False,False
+        FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
         for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
-            if key == 'xrd':             FLAGXRD2D = val
+            if   key == 'xrf':           FLAGXRF = val
+            elif key == 'xrd':           FLAGXRD2D = val
             elif key.lower() == 'xrd2d': FLAGXRD2D = val
             elif key.lower() == 'xrd1d': FLAGXRD1D = val
 
-        if FLAGXRD2D and FLAGXRD1D:
-            self.wids['XRD Data'].SetLabel('2D- and 1D-XRD data')
-        elif FLAGXRD2D:
-            self.wids['XRD Data'].SetLabel('2D-XRD data')
-        elif FLAGXRD1D:
-            self.wids['XRD Data'].SetLabel('1D-XRD data')
+        if FLAGXRF:
+            if FLAGXRD2D and FLAGXRD1D:
+                datastr = 'XRF, 2D- and 1D-XRD data'
+            elif FLAGXRD2D:
+                datastr = 'XRF, 2D-XRD data'
+            elif FLAGXRD1D:
+                datastr = 'XRF, 1D-XRD data'
+            else:
+                datastr = 'XRF data'
         else:
-            self.wids['XRD Data'].SetLabel('')
+            if FLAGXRD2D and FLAGXRD1D:
+                datastr = '2D- and 1D-XRD data'
+            elif FLAGXRD2D:
+                datastr = '2D-XRD data'
+            elif FLAGXRD1D:
+                datastr = '1D-XRD data'
+            else:
+                datastr = ''
+        self.wids['Map Data'].SetLabel(datastr)
 
     def onClose(self):
         pass
