@@ -1618,7 +1618,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
     def update_xrmmap(self, xrmmap):
         self.wids['Scan Started'].SetLabel( bytes2str(xrmmap.attrs['Start_Time']))
 
-        self.wids['File Compression'].SetLabel( bytes2str(xrmmap.attrs['Compression']))
+        try:
+            self.wids['File Compression'].SetLabel( bytes2str(xrmmap.attrs['Compression']))
+        except:
+            self.wids['File Compression'].SetLabel('')
 
         comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
         for i, comm in enumerate(comments):
@@ -2813,8 +2816,7 @@ class MapViewerFrame(wx.Frame):
                     'proposal':         myDlg.info[4].GetValue(),
                     'user':             myDlg.info[5].GetValue(),
                     'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
-                    'compression_opts': myDlg.H5cmprInfo[1].GetSelection()
-                   }
+                    'compression_opts': myDlg.H5cmprInfo[1].GetSelection()}
         myDlg.Destroy()
 
         if read:
