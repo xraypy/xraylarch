@@ -42,8 +42,8 @@ from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
 VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 PIXELS = 1024 #2048
-CURSOR_MODES = ['zoom','lasso','prof']
-CURSOR_LABEL = ['click','ROI select','zoom']
+# CURSOR_MODES = ['zoom','lasso','prof']
+# CURSOR_LABEL = ['zoom','ROI select','click']
 
 QSTPS = 5000
 
@@ -63,8 +63,6 @@ class diFFit2DPanel(wx.Panel):
         self.owner = owner
         self.type  = type
         self.ai    = None
-        self.xrd_ring  = None
-        self.xrd_line  = None
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
@@ -102,14 +100,15 @@ class diFFit2DPanel(wx.Panel):
         
     def plot_line(self,x=None):
 
-        if x is None:
-            x = np.abs(self.plot2D.xdata-self.owner.twth).argmin()
+        if x is None: x = np.abs(self.plot2D.xdata-self.owner.twth).argmin()
 
+        try:
+            self.xrd_line.remove()
+        except:
+            pass
 
-        if self.xrd_line is not None: self.xrd_line.remove()
         self.xrd_line = self.plot2D.axes.axvline(x=x, color='r', linewidth=1)
         self.plot2D.canvas.draw()
-
 
     def plot_ring(self,x=None,y=None):
 
@@ -120,19 +119,13 @@ class diFFit2DPanel(wx.Panel):
             radius = radius / self.ai.detector.pixel1
         xrd_ring = plt.Circle(self.center, radius, color='red', fill=False)
         
-        if self.xrd_ring is not None: self.xrd_ring.remove()
+        try:
+            self.xrd_ring.remove()
+        except:
+            pass
+
         self.xrd_ring = self.plot2D.axes.add_artist(xrd_ring)
         self.plot2D.canvas.draw()
-
-#         if self.ai is not None:
-#             if self.type == '2D image':
-#                 self.q    =    q_from_xy(x,y,ai=self.ai)/10 ## units in 1/A
-#                 self.twth = twth_from_xy(x,y,ai=self.ai)
-#                 self.eta  =  eta_from_xy(x,y,ai=self.ai)
-#             elif self.type.startswith('cake'):
-#                 self.q    =    q_from_xy(x,y,ai=self.ai)/10 ## units in 1/A
-#                 self.twth = twth_from_xy(x,y,ai=self.ai)
-#                 self.eta  =  eta_from_xy(x,y,ai=self.ai)
 
 class diFFit1DPanel(wx.Panel):
     '''
@@ -149,7 +142,6 @@ class diFFit1DPanel(wx.Panel):
         self.SetSizer(vbox)
 
         self.plot1D.cursor_callback = self.on_cursor
-        self.xrd_line = None
 
     def on_cursor(self,x=None, y=None, **kw):
 
@@ -175,11 +167,14 @@ class diFFit1DPanel(wx.Panel):
             else:
                 x = self.owner.twth
 
-        xvals,yvals = np.array((x,x)),np.array(self.plot1D.axes.get_ylim())
-        if self.xrd_line is None:
-            self.xrd_line = self.plot1D.oplot(xvals,yvals,color='red',linewidth=1)
-        else:
-            self.plot1D.update_line(1,xvals,yvals,update_limits=False,draw=True)
+        try:
+            self.xrd_line.remove()
+        except:
+            pass
+
+        self.xrd_line = self.plot1D.axes.axvline(x=x, color='r', linewidth=1)
+        self.plot1D.draw()
+
 
 
 class diFFit2DFrame(wx.Frame):
@@ -190,7 +185,7 @@ class diFFit2DFrame(wx.Frame):
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1000,760
+        x,y = 1000,720 #1000,760
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
@@ -329,6 +324,7 @@ class diFFit2DFrame(wx.Frame):
         self.ch_img.SetStringSelection(iname)
 
         self.raw_img = self.open_image[-1].get_image()
+        self.twth = None
         self.displayIMAGE(auto_contrast=True,unzoom=True)
             
         if self.open_image[-1].iframes > 1:
@@ -425,6 +421,12 @@ class diFFit2DFrame(wx.Frame):
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
+
+    def setCursorMode(self,event=None):
+    
+        print 'changing cursor mode for all figures'
+
+
     def calcIMAGE(self):
         if self.use_mask is True:
             if self.use_bkgd is True:
@@ -703,7 +705,8 @@ class diFFit2DFrame(wx.Frame):
                 self.panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
                 self.panel2D.Layout()
                 self.Fit()
-                self.SetSize((1400,760))
+                self.SetSize((1400,720))
+#                 self.SetSize((1400,760))
                 
                 tools1dxrd = self.ToolBox_1DXRD(self.panel)
                 self.leftside.Add(tools1dxrd,flag=wx.ALL|wx.EXPAND,border=10)
@@ -711,7 +714,8 @@ class diFFit2DFrame(wx.Frame):
                 
                 self.panel2D.Layout()
                 self.Fit()
-                self.SetSize((1400,760))
+                self.SetSize((1400,720))
+#                 self.SetSize((1400,760))
 
             self.btn_integ.Enable()
             
@@ -1154,6 +1158,18 @@ class diFFit2DFrame(wx.Frame):
         vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM,                border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
+#         
+#         ###########################
+#         ## Cursor
+#         hbox_csr = wx.BoxSizer(wx.HORIZONTAL)
+#         self.txt_csr = wx.StaticText(self.panel, label='CURSOR MODE')
+#         self.ch_csr = wx.Choice(self.panel,choices=CURSOR_LABEL)
+# 
+#         self.ch_csr.Bind(wx.EVT_CHOICE,self.setCursorMode)
+#     
+#         hbox_csr.Add(self.txt_csr, flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+#         hbox_csr.Add(self.ch_csr,  flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
+#         vbox.Add(hbox_csr,         flag=wx.ALL,   border=4)
 
         ###########################
         ## Set defaults  
