@@ -43,6 +43,7 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 PIXELS = 1024 #2048
 CURSOR_MODES = ['zoom','lasso','prof']
+CURSOR_LABEL = ['click','ROI select','zoom']
 
 QSTPS = 5000
 
@@ -62,8 +63,8 @@ class diFFit2DPanel(wx.Panel):
         self.owner = owner
         self.type  = type
         self.ai    = None
-        self.ring  = None
-        self.fig_lin  = None
+        self.xrd_ring  = None
+        self.xrd_line  = None
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
@@ -92,10 +93,10 @@ class diFFit2DPanel(wx.Panel):
             self.owner.xrd2Dcake.plot_line()
 
         elif self.type == 'cake':
-            self.owner.twth = x
+            self.owner.twth = self.plot2D.xdata[int(x)]
 
+            self.owner.xrd2Dcake.plot_line(x=x)
             self.owner.xrd2Dviewer.plot_ring()
-            self.owner.xrd2Dcake.plot_line()
 
         self.owner.xrd1Dviewer.plot_line()
         
@@ -104,27 +105,12 @@ class diFFit2DPanel(wx.Panel):
         if x is None:
             x = np.abs(self.plot2D.xdata-self.owner.twth).argmin()
 
-#         xrd_line = plt.axvline(x=x, color='red')#, linestyle='--')
-#         self.plot2D.axes.plot(xrd_line)
-        
-        #if self.fig_lin is not None: self.fig_lin.remove()
-        #self.fig_lin = self.plot2D.axes.add_artist(xrd_line)
 
-        xvals,yvals = np.array((x,x)),np.array(self.plot2D.axes.get_ylim())
-        
-        if self.fig_lin is None:
-            self.fig_lin = self.plot2D.fig.add_axes(self.plot2D.axes._position.bounds)
-            self.fig_lin.set_axis_off()
-        self.fig_lin.plot(xvals,yvals, color='red', linestyle='-')
+        if self.xrd_line is not None: self.xrd_line.remove()
+        self.xrd_line = self.plot2D.axes.axvline(x=x, color='r', linewidth=1)
         self.plot2D.canvas.draw()
 
-#         self.plot2D.axes.scatters(xvals,yvals,'-',color='red')
-#         self.plot2D.canvas.draw()
-#         if self.fig_lin is None:
-#             self.fig_lin = self.plot2D.scatter(xvals,yvals, color='red')
-#         else:
-#             self.plot2D.update_line(1,xvals,yvals,update_limits=False,draw=True)
-    
+
     def plot_ring(self,x=None,y=None):
 
         if x is not None and y is not None:
@@ -134,8 +120,8 @@ class diFFit2DPanel(wx.Panel):
             radius = radius / self.ai.detector.pixel1
         xrd_ring = plt.Circle(self.center, radius, color='red', fill=False)
         
-        if self.ring is not None: self.ring.remove()
-        self.ring = self.plot2D.axes.add_artist(xrd_ring)
+        if self.xrd_ring is not None: self.xrd_ring.remove()
+        self.xrd_ring = self.plot2D.axes.add_artist(xrd_ring)
         self.plot2D.canvas.draw()
 
 #         if self.ai is not None:
@@ -163,7 +149,7 @@ class diFFit1DPanel(wx.Panel):
         self.SetSizer(vbox)
 
         self.plot1D.cursor_callback = self.on_cursor
-        self.fig_lin = None
+        self.xrd_line = None
 
     def on_cursor(self,x=None, y=None, **kw):
 
@@ -190,8 +176,8 @@ class diFFit1DPanel(wx.Panel):
                 x = self.owner.twth
 
         xvals,yvals = np.array((x,x)),np.array(self.plot1D.axes.get_ylim())
-        if self.fig_lin is None:
-            self.fig_lin = self.plot1D.oplot(xvals,yvals, color='red')
+        if self.xrd_line is None:
+            self.xrd_line = self.plot1D.oplot(xvals,yvals,color='red',linewidth=1)
         else:
             self.plot1D.update_line(1,xvals,yvals,update_limits=False,draw=True)
 
@@ -204,7 +190,7 @@ class diFFit2DFrame(wx.Frame):
                  *args, **kw):
         
         screenSize = wx.DisplaySize()
-        x,y = 1000, 720
+        x,y = 1000,760
         if x > screenSize[0] * 0.9:
             x = int(screenSize[0] * 0.9)
             y = int(x*0.6)
@@ -717,7 +703,7 @@ class diFFit2DFrame(wx.Frame):
                 self.panel2D.Add(rightside,proportion=1,flag=wx.EXPAND|wx.ALL,border=10)
                 self.panel2D.Layout()
                 self.Fit()
-                self.SetSize((1400,720))
+                self.SetSize((1400,760))
                 
                 tools1dxrd = self.ToolBox_1DXRD(self.panel)
                 self.leftside.Add(tools1dxrd,flag=wx.ALL|wx.EXPAND,border=10)
@@ -725,7 +711,7 @@ class diFFit2DFrame(wx.Frame):
                 
                 self.panel2D.Layout()
                 self.Fit()
-                self.SetSize((1400,720))
+                self.SetSize((1400,760))
 
             self.btn_integ.Enable()
             
@@ -1057,7 +1043,7 @@ class diFFit2DFrame(wx.Frame):
         Frame for visual toolbox
         '''
         
-        tlbx = wx.StaticBox(self.panel,label='TOOLBOX')#, size=(200, 200))
+        tlbx = wx.StaticBox(self.panel,label='2DXRD TOOLBOX')#, size=(200, 200))
         vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
 
         ###########################
