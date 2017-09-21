@@ -73,7 +73,7 @@ def flat_resid(pars, en, mu):
 
 
 def preedge(energy, mu, e0=None, step=None,
-            nnorm=3, nvict=0, pre1=None, pre2=-50,
+            nnorm=2, nvict=0, pre1=None, pre2=-50,
             norm1=100, norm2=None):
     """pre edge subtraction, normalization for XAFS (straight python)
 
@@ -95,7 +95,7 @@ def preedge(energy, mu, e0=None, step=None,
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
-             post-edge normalization curve. Default=3 (quadratic), max=5
+             post-edge normalization curve. Default=2 (quadratic), max=5
     Returns
     -------
       dictionary with elements (among others)
@@ -116,7 +116,6 @@ def preedge(energy, mu, e0=None, step=None,
 
     """
     energy = remove_dups(energy)
-
     if e0 is None or e0 < energy[0] or e0 > energy[-1]:
         energy = remove_dups(energy)
         dmu = np.gradient(mu)/np.gradient(energy)
@@ -159,6 +158,10 @@ def preedge(energy, mu, e0=None, step=None,
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
+
+    # reduce dimension to linear if less than 75 eV given
+    if abs(norm2-norm1) < 75.0:
+        nnorm = min(nnorm, 1)
 
     coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
