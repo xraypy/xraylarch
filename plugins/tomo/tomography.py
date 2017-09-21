@@ -110,6 +110,7 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     
     method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
                                                         omega,algorithm_A,algorithm_B)
+                                                        
     if method is None:
         print('No tomographic reconstruction packages available')
         return
