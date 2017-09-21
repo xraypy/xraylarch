@@ -2406,7 +2406,7 @@ class MapViewerFrame(wx.Frame):
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
         if xrmfile is None:
-            xrmfile = self.cfile
+            xrmfile = self.current_file
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
 
@@ -2427,7 +2427,7 @@ class MapViewerFrame(wx.Frame):
         if not HAS_EPICS:
             return
 
-        xrmmap = self.cfile.xrmmap
+        xrmmap = self.current_file.xrmmap
         pos_addrs = [str(x) for x in xrmmap['config/positioners'].keys()]
         pos_label = [str(x.value) for x in xrmmap['config/positioners'].values()]
 
@@ -2448,7 +2448,7 @@ class MapViewerFrame(wx.Frame):
         if len(name) < 1:
             return
         if xrmfile is None:
-            xrmfile = self.cfile
+            xrmfile = self.current_file
         xrmmap  = xrmfile.xrmmap
 
         # first, create 1-pixel mask for area, and save that
@@ -2555,7 +2555,7 @@ class MapViewerFrame(wx.Frame):
         poni = ''
         if self.xrddisplay2D is None:
             try:
-                poni = bytes2str(self.cfile.xrmmap['xrd1D'].attrs['calfile'])
+                poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
             except:
                 pass
             if not os.path.exists(poni): poni = None
@@ -2630,7 +2630,7 @@ class MapViewerFrame(wx.Frame):
             self.process_file(filename)
 
 
-        self.cfile = self.filemap[filename]
+        self.current_file = self.filemap[filename]
         ny, nx, npos = self.filemap[filename].xrmmap['positions/pos'].shape
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
@@ -2638,7 +2638,7 @@ class MapViewerFrame(wx.Frame):
 
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(self.cfile.xrmmap)
+                p.update_xrmmap(self.current_file.xrmmap)
             if hasattr(p, 'set_file_choices'):
                 p.set_file_choices(fnames)
 
@@ -2864,10 +2864,10 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
-            self.cfile.add_calibration(path,flip)
+            self.current_file.add_calibration(path,flip)
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(self.cfile.xrmmap)
+                    p.update_xrmmap(self.current_file.xrmmap)
 
     def add1DXRDFile(self, event=None):
 
@@ -2884,18 +2884,18 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
         if read and os.path.exists(path):
-            self.cfile.read_xrd1D_ROIFile(path,verbose=True)
+            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
 
     def add1DXRD(self, event=None):
 
         try:
-            xrd1Dgrp = ensure_subgroup('xrd1D',self.cfile.xrmmap)
+            xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             path = xrd1Dgrp.attrs['calfile']
         except:
             self.openPONI()
 
         if os.path.exists(xrd1Dgrp.attrs['calfile']):
-            self.cfile.add_1DXRD()
+            self.current_file.add_1DXRD()
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
