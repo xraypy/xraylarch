@@ -2914,11 +2914,14 @@ class GSEXRM_MapFile(object):
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
             if detname == 'scalars':
-                dat = '%s/%s' % (detname,roiname)            
+                dat = '%s/%s' % (detname,roiname)
+            elif detname.startswith('roimap'):
+                dat = '%s/%s' % (detname,roiname)
+                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat            
             else:
                 dat = 'roimap/%s/%s' % (detname,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-            
+
             if no_hotcols:
                 return self.xrmmap[dat][:, 1:-1]
             else:

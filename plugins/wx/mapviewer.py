@@ -2778,20 +2778,35 @@ class MapViewerFrame(wx.Frame):
         dlg = wx.FileDialog(self, message='Read XRM Map File',
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
-                            style=wx.FD_OPEN)
+                            style=wx.FD_OPEN|wx.FD_MULTIPLE)
+                            #style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
-            path = dlg.GetPath().replace('\\', '/')
-            if path in self.filemap:
-                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
-                                           'Re-read file?', style=wx.YES_NO))
-
+            paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
         dlg.Destroy()
 
         if read:
-            xrmfile = GSEXRM_MapFile(filename=str(path))
-            self.add_xrmfile(xrmfile)
+            for path in paths:
+                read2 = read
+                if path in self.filemap:
+                    read2 = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
+                                                   'Re-read file?', style=wx.YES_NO))
+                if read2:
+                    xrmfile = GSEXRM_MapFile(filename=str(path))
+                    self.add_xrmfile(xrmfile)
+
+
+#             path = dlg.GetPath().replace('\\', '/')
+#             if path in self.filemap:
+#                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
+#                                            'Re-read file?', style=wx.YES_NO))
+# 
+#         dlg.Destroy()
+# 
+#         if read:
+#             xrmfile = GSEXRM_MapFile(filename=str(path))
+#             self.add_xrmfile(xrmfile)
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
