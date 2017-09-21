@@ -138,9 +138,9 @@ FACILITY = 'APS'
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
 
-def suppress_hotcols(hotcols_wid, datafile):
+def suppress_hotcols(hotcols_wid, xrmfile):
     """returns whether to suppress hot columns"""
-    scanversion = getattr(datafile, 'scan_version', 1.00)
+    scanversion = getattr(xrmfile, 'scan_version', 1.00)
     return hotcols_wid.IsChecked() and scanversion < 1.36
 
 
@@ -149,7 +149,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     label  = 'Map Math'
     def __init__(self, parent, owner, **kws):
         self.map = None
-        self.file = None
+        self.current_file = None
 
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
@@ -331,7 +331,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def update_xrmmap(self, xrmmap):
 
-        self.file   = self.owner.current_file
+        self.current_file = self.owner.current_file
         self.xrmmap = xrmmap
 
         self.set_det_choices(xrmmap)
@@ -342,7 +342,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
     def set_det_choices(self, xrmmap, varname=None):
 
         det_list = []
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.current_file.version) >= StrictVersion('2.0.0'):
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
             if 'scalars' in xrmmap: det_list += ['scalars']
@@ -387,7 +387,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.current_file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -475,7 +475,7 @@ class ROIPanel(GridPanel):
     def __init__(self, parent, owner, **kws):
 
         self.owner = owner
-        self.file,self.xrmmap = None,None
+        self.current_file,self.xrmmap = None,None
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -532,21 +532,21 @@ class ROIPanel(GridPanel):
 
     def update_xrmmap(self, xrmmap):
 
-        self.file   = self.owner.current_file
-        self.xrmmap = self.file.xrmmap
+        self.current_file   = self.owner.current_file
+        self.xrmmap = self.current_file.xrmmap
 
-        self.file.reset_flags()
+        self.current_file.reset_flags()
         self.roiTYPE()
 
     def roiTYPE(self,event=None):
         roitype = []
         delroi = []
-        if self.file.flag_xrf:
+        if self.current_file.flag_xrf:
             roitype += ['XRF']
-        if self.file.flag_xrd1d:
+        if self.current_file.flag_xrd1d:
             roitype += ['1DXRD']
             delroi  = ['xrd1D']
-        if self.file.flag_xrd2d:
+        if self.current_file.flag_xrd2d:
             roitype += ['2DXRD']
         if len(roitype) < 1:
             roitype = ['']
@@ -562,14 +562,14 @@ class ROIPanel(GridPanel):
         roiname = self.rm_roi_ch[1].GetStringSelection()
 
         if detname == 'xrd1D':
-            self.file.del_xrd1Droi(roiname)
+            self.current_file.del_xrd1Droi(roiname)
             self.setROI()
 
     def setROI(self):
 
         detname = self.rm_roi_ch[0].GetStringSelection()
         try:
-            detgrp = self.file.xrmmap['roimap'][detname]
+            detgrp = self.current_file.xrmmap['roimap'][detname]
         except:
             return
         limits,names = [],detgrp.keys()
@@ -585,7 +585,7 @@ class ROIPanel(GridPanel):
         detname = self.rm_roi_ch[0].GetStringSelection()
         roiname = self.rm_roi_ch[1].GetStringSelection()
 
-        roi = self.file.xrmmap['roimap'][detname][roiname]
+        roi = self.current_file.xrmmap['roimap'][detname][roiname]
         limits = roi['limits'][:]
         units = roi['limits'].attrs['units']
 
@@ -625,13 +625,13 @@ class ROIPanel(GridPanel):
 
         self.owner.message('Calculating ROI: %s' % xname)
         if xtyp == 'XRF':
-            self.file.add_xrfroi(xrange,xname,unit=xunt)
+            self.crnt_file.add_xrfroi(xrange,xname,unit=xunt)
         elif xtyp == '1DXRD':
             xrd = ['q','2th','d']
             unt = xrd[self.roi_chc[1].GetSelection()]
-            self.file.add_xrd1Droi(xrange,xname,unit=unt)
+            self.crnt_file.add_xrd1Droi(xrange,xname,unit=unt)
         elif xtyp == '2DXRD':
-            self.file.add_xrd2Droi(xrange,xname,unit=xunt)
+            self.crnt_file.add_xrd2Droi(xrange,xname,unit=xunt)
         self.owner.message('Ready')
 
 class TomographyPanel(GridPanel):
@@ -640,7 +640,7 @@ class TomographyPanel(GridPanel):
     def __init__(self, parent, owner, **kws):
 
         self.owner = owner
-        self.file,self.xrmmap = None,None
+        self.crnt_file,self.xrmmap = None,None
         self.npts = None
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
@@ -778,11 +778,11 @@ class TomographyPanel(GridPanel):
 
     def update_xrmmap(self, xrmmap):
 
-        self.file   = self.owner.current_file
-        self.xrmmap = self.file.xrmmap
+        self.crnt_file   = self.owner.current_file
+        self.xrmmap = self.crnt_file.xrmmap
 
         try:
-            scan_version = getattr(self.file, 'scan_version', 1.00)
+            scan_version = getattr(self.crnt_file, 'scan_version', 1.00)
         except:
             scan_version = 2.0 ## default off if fails to find parameter
 
@@ -795,11 +795,11 @@ class TomographyPanel(GridPanel):
         self.set_det_choices(xrmmap)
 
         try:
-            self.npts = len(self.file.get_pos('fine x', mean=True))
+            self.npts = len(self.crnt_file.get_pos('fine x', mean=True))
         except:
-            self.npts = len(self.file.get_pos('x', mean=True))
+            self.npts = len(self.crnt_file.get_pos('x', mean=True))
 
-        center = self.file.get_tomo_center()
+        center = self.crnt_file.get_tomo_center()
 
         self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
         self.center_value.SetValue(center)
@@ -823,16 +823,16 @@ class TomographyPanel(GridPanel):
         self.refineCHOICE()
 
     def detSELECT(self,idet,event=None):
-        self.set_roi_choices(self.file.xrmmap,idet=idet)
+        self.set_roi_choices(self.crnt_file.xrmmap,idet=idet)
 
     def roiSELECT(self,iroi,event=None):
 
         detname = self.det_choice[iroi].GetStringSelection()
         roiname = self.roi_choice[iroi].GetStringSelection()
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             try:
-                roi = self.file.xrmmap['roimap'][detname][roiname]
+                roi = self.crnt_file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
                 if units == '1/A':
@@ -843,7 +843,7 @@ class TomographyPanel(GridPanel):
                 roistr = ''
         else:
             try:
-                roi = self.file.xrmmap[detname]
+                roi = self.crnt_file.xrmmap[detname]
                 en     = list(roi['energy'][:])
                 index  = list(roi['roi_name'][:]).index(roiname)
                 limits = list(roi['roi_limits'][:][index])
@@ -869,11 +869,10 @@ class TomographyPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red','Green','Blue']):
                     self.det_label[i].SetLabel(label)
-                self.set_roi_choices(self.file.xrmmap)
+                self.set_roi_choices(self.crnt_file.xrmmap)
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
-        if xrmfile is None:
-            xrmfile = self.owner.current_file
+        if xrmfile is None: xrmfile = self.owner.current_file
         ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
         indices = []
         for idx in selected:
@@ -888,7 +887,7 @@ class TomographyPanel(GridPanel):
             except:
                 pass
 
-    def calculateSinogram(self,datafile):
+    def calculateSinogram(self,xrmfile=None):
 
         '''
         returns slice as [slices, x, 2th]
@@ -897,21 +896,22 @@ class TomographyPanel(GridPanel):
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
+        
+        if xrmfile is None: xrmfile = self.owner.current_file
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
 
         try:
-            x   = datafile.get_pos('fine x', mean=True)
+            x   = xrmfile.get_pos('fine x', mean=True)
         except:
-            x   = datafile.get_pos('x', mean=True)
+            x   = xrmfile.get_pos('x', mean=True)
         try:
-            ome = datafile.get_pos('theta', mean=True)
+            ome = xrmfile.get_pos('theta', mean=True)
         except:
             print('Cannot compute sinogram/tomography: no rotation motor specified in map.')
             return
-
-
+            
         det_name,roi_name = [],[]
         plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
@@ -923,10 +923,10 @@ class TomographyPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
 
-        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
+        r_map = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
-            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
+            g_map = xrmfile.return_roimap(det_name[1],roi_name[1],**args)
+            b_map = xrmfile.return_roimap(det_name[2],roi_name[2],**args)
 
 
         reshape = True if len(x) == r_map.shape[1] and len(ome) == r_map.shape[0] else False
@@ -934,7 +934,7 @@ class TomographyPanel(GridPanel):
         if x[0] > x[-1]: x = x[::-1]
 
         if roi_name[-1] != '1' and oprtr == '/':
-            mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
+            mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
 
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
@@ -947,19 +947,19 @@ class TomographyPanel(GridPanel):
         ## first images in XRD are always over exposed. this removes them for reconstruction
         ## only happens along fast direction: needs to check if this is x or ome.
         ## (could do this before changing shape, but leave like this for now.)
-        flagxrd = True
+        flagxrd = False
         for det in det_name:
             if det.startswith('xrd'):
                 flagxrd = True
         if flagxrd:
-            if datafile.get_pos(0, mean=True).all() == ome.all():
+            if xrmfile.get_pos(0, mean=True).all() == ome.all():
                 ome = ome[10:-11]
                 r_map = r_map[:,10:-11]
                 if plt3:
                     g_map = g_map[:,10:-11]
                     b_map = b_map[:,10:-11]
                 if len(np.shape(mapx)) == 2: mapx = mapx[:,10:-11]
-            elif datafile.get_pos(0, mean=True).all() == x.all():
+            elif xrmfile.get_pos(0, mean=True).all() == x.all():
                 x = x[10:-11]
                 r_map = r_map[10:-11]
                 if plt3:
@@ -968,7 +968,7 @@ class TomographyPanel(GridPanel):
                 if len(np.shape(mapx)) == 2: mapx = mapx[10:-11]
 
 
-        pref, fname = os.path.split(datafile.filename)
+        pref, fname = os.path.split(xrmfile.filename)
         if reshape: r_map = np.einsum('ji->ij', r_map)
         if plt3:
             if reshape:
@@ -1010,7 +1010,7 @@ class TomographyPanel(GridPanel):
 
     def onShowSinogram(self, event=None, new=True):
 
-        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+        title,subtitles,info,x,ome,sino = self.calculateSinogram()
 
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
@@ -1023,13 +1023,13 @@ class TomographyPanel(GridPanel):
         if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
-                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
+                               xrmfile=self.crnt_file, _cursorlabels=False, _savecallback=False)
 
 
     def onShowTomograph(self, event=None, new=True):
 
         ## returns sino in order: slice, x, 2theta
-        title,subtitles,info,x,ome,sino = self.calculateSinogram(self.file)
+        title,subtitles,info,x,ome,sino = self.calculateSinogram()
 
         alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
 
@@ -1066,17 +1066,17 @@ class TomographyPanel(GridPanel):
 
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
-                               xrmfile=self.file, _cursorlabels=False, _savecallback=False)
+                               xrmfile=self.crnt_file, _cursorlabels=False, _savecallback=False)
 
     def set_center(self,center):
 
         self.center_value.SetValue(center)
-        self.file.update_tomo_center(center)
+        self.crnt_file.update_tomo_center(center)
 
     def set_det_choices(self, xrmmap):
 
         det_list = []
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
             if 'scalars' in xrmmap: det_list += ['scalars']
@@ -1122,7 +1122,7 @@ class TomographyPanel(GridPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -1151,7 +1151,7 @@ class MapPanel(GridPanel):
     def __init__(self, parent, owner, **kws):
 
         self.owner = owner
-        self.file,self.xrmmap = None,None
+        self.crnt_file,self.xrmmap = None,None
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -1270,11 +1270,11 @@ class MapPanel(GridPanel):
 
     def update_xrmmap(self, xrmmap):
 
-        self.file   = self.owner.current_file
-        self.xrmmap = self.file.xrmmap
+        self.crnt_file   = self.owner.current_file
+        self.xrmmap = self.crnt_file.xrmmap
 
         try:
-            scan_version = getattr(self.file, 'scan_version', 1.00)
+            scan_version = getattr(self.crnt_file, 'scan_version', 1.00)
         except:
             scan_version = 2.0 ## default off if fails to find parameter
 
@@ -1297,16 +1297,16 @@ class MapPanel(GridPanel):
 
     def detSELECT(self,idet,event=None):
 
-        self.set_roi_choices(self.file.xrmmap,idet=idet)
+        self.set_roi_choices(self.crnt_file.xrmmap,idet=idet)
 
     def roiSELECT(self,iroi,event=None):
 
         detname = self.det_choice[iroi].GetStringSelection()
         roiname = self.roi_choice[iroi].GetStringSelection()
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             try:
-                roi = self.file.xrmmap['roimap'][detname][roiname]
+                roi = self.crnt_file.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
                 units = roi['limits'].attrs['units']
                 roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
@@ -1314,7 +1314,7 @@ class MapPanel(GridPanel):
                 roistr = ''
         else:
             try:
-                roi = self.file.xrmmap[detname]
+                roi = self.crnt_file.xrmmap[detname]
                 en     = list(roi['energy'][:])
                 index  = list(roi['roi_name'][:]).index(roiname)
                 limits = list(roi['roi_limits'][:][index])
@@ -1342,7 +1342,7 @@ class MapPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red','Green','Blue']):
                     self.det_label[i].SetLabel(label)
-                self.set_roi_choices(self.file.xrmmap)
+                self.set_roi_choices(self.crnt_file.xrmmap)
                 oper_chs = ['/', '*', '-', '+']
 
             self.oper.SetChoices(oper_chs)
@@ -1358,7 +1358,7 @@ class MapPanel(GridPanel):
             except:
                 pass
 
-    def ShowMap(self,datafile,new=True):
+    def ShowMap(self,xrmfile=None,new=True):
 
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
@@ -1366,6 +1366,8 @@ class MapPanel(GridPanel):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
+              
+        if xrmfile is None: xrmfile = self.owner.current_file
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -1378,7 +1380,7 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
         if roi_name[-1] != '1' and oprtr == '/':
-            mapx = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
+            mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
 
             mxmin = min(mapx[np.where(mapx>0)])
             if mxmin < 1: mxmin = 1.0
@@ -1386,15 +1388,15 @@ class MapPanel(GridPanel):
         else:
             mapx = 1.
 
-        r_map = datafile.return_roimap(det_name[0],roi_name[0],**args)
+        r_map = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
-            g_map = datafile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = datafile.return_roimap(det_name[2],roi_name[2],**args)
+            g_map = xrmfile.return_roimap(det_name[1],roi_name[1],**args)
+            b_map = xrmfile.return_roimap(det_name[2],roi_name[2],**args)
 
-        x = datafile.get_pos(0, mean=True)
-        y = datafile.get_pos(1, mean=True)
+        x = xrmfile.get_pos(0, mean=True)
+        y = xrmfile.get_pos(1, mean=True)
 
-        pref, fname = os.path.split(datafile.filename)
+        pref, fname = os.path.split(xrmfile.filename)
         if plt3:
             if   oprtr == '+': map = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
             elif oprtr == '-': map = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
@@ -1443,7 +1445,7 @@ class MapPanel(GridPanel):
 
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
-                               xrmfile=self.file)
+                               xrmfile=self.crnt_file)
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None:
@@ -1455,10 +1457,12 @@ class MapPanel(GridPanel):
             indices.append((ix, iy))
 
 
-    def ShowCorrel(self,datafile):
+    def ShowCorrel(self,xrmfile=None):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
+              
+        if xrmfile is None: xrmfile = self.owner.current_file
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -1474,18 +1478,18 @@ class MapPanel(GridPanel):
             print("WARNING: cannot make correlation plot with matrix of '1'")
             return
 
-        map1 = datafile.return_roimap(det_name[0],roi_name[0],**args)
-        map2 = datafile.return_roimap(det_name[-1],roi_name[-1],**args)
+        map1 = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
+        map2 = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
 
-        x = datafile.get_pos(0, mean=True)
-        y = datafile.get_pos(1, mean=True)
+        x = xrmfile.get_pos(0, mean=True)
+        y = xrmfile.get_pos(1, mean=True)
 
-        pref, fname = os.path.split(datafile.filename)
+        pref, fname = os.path.split(xrmfile.filename)
         title ='%s: %s vs. %s' %(fname, plt_name[-1], plt_name[0])
 
         # try to use correlation plot from wxmplot 0.9.23 and later
         if CorrelatedMapFrame is not None:
-            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=datafile)
+            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=xrmfile)
             correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
                                 x=x, y=y, title=title)
         else:
@@ -1494,7 +1498,7 @@ class MapPanel(GridPanel):
                              xlabel=plt_name[-1], ylabel=plt_name[0],
                              marker='o', markersize=4, linewidth=0)
             correl_plot.panel.cursor_mode = 'lasso'
-            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
+            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=xrmfile)
 
         correl_plot.Show()
         correl_plot.Raise()
@@ -1504,14 +1508,14 @@ class MapPanel(GridPanel):
     def onROIMap(self, event=None, new=True):
 
         if self.oper.GetStringSelection() == 'vs':
-            self.ShowCorrel(self.file)
+            self.ShowCorrel()
         else:
-            self.ShowMap(self.file,new=new)
+            self.ShowMap(new=new)
 
     def set_det_choices(self, xrmmap):
 
         det_list = []
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             for grp in xrmmap['roimap'].keys():
                 if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
             if 'scalars' in xrmmap: det_list += ['scalars']
@@ -1559,7 +1563,7 @@ class MapPanel(GridPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.file.version) >= StrictVersion('2.0.0'):
+        if StrictVersion(self.crnt_file.version) >= StrictVersion('2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -2254,7 +2258,7 @@ class MapViewerFrame(wx.Frame):
 
         self.data = None
         self.use_scandb = use_scandb
-        self.filemap = {}
+        self.crnt_filemap = {}
         self.im_displays = []
         self.plot_displays = []
 
@@ -2271,9 +2275,9 @@ class MapViewerFrame(wx.Frame):
         self.xrddisplay2D = None
 
         self.watch_files = False
-        self.file_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
-        self.files_in_progress = []
+        self.crnt_file_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.crnt_file_timer)
+        self.crnt_files_in_progress = []
         self.no_hotcols = True
         self.SetTitle('GSE XRM MapViewer')
 
@@ -2307,21 +2311,21 @@ class MapViewerFrame(wx.Frame):
 
 
     def CloseFile(self, filename, event=None):
-        if filename in self.filemap:
-            self.filemap[filename].close()
-            self.filemap.pop(filename)
+        if filename in self.crnt_filemap:
+            self.crnt_filemap[filename].close()
+            self.crnt_filemap.pop(filename)
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(250)
 
-        self.filelist = EditableListBox(splitter, self.ShowFile,
+        self.crnt_filelist = EditableListBox(splitter, self.ShowFile,
                                         remove_action=self.CloseFile,
                                         size=(250, -1))
 
         dpanel = self.detailspanel = wx.Panel(splitter)
         self.createNBPanels(dpanel)
-        splitter.SplitVertically(self.filelist, self.detailspanel, 1)
+        splitter.SplitVertically(self.crnt_filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
         pack(self, sizer)
@@ -2439,19 +2443,19 @@ class MapViewerFrame(wx.Frame):
             caput(pos_addrs[i1], xval)
             caput(pos_addrs[i2], yval)
 
-    def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, datafile=None):
+    def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, xrmfile=None):
         'save pixel as area, and perhaps to scandb'
         if len(name) < 1:
             return
-        if datafile is None:
-            datafile = self.current_file
-        xrmmap  = datafile.xrmmap
+        if xrmfile is None:
+            xrmfile = self.current_file
+        xrmmap  = xrmfile.xrmmap
 
         # first, create 1-pixel mask for area, and save that
         ny, nx, npos = xrmmap['positions/pos'].shape
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
-        datafile.add_area(tmask, name=name)
+        xrmfile.add_area(tmask, name=name)
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmmap)
@@ -2469,9 +2473,9 @@ class MapViewerFrame(wx.Frame):
                 position[p] = None
 
             if x is None:
-                x = float(datafile.get_pos(0, mean=True)[ix])
+                x = float(xrmfile.get_pos(0, mean=True)[ix])
             if y is None:
-                y = float(datafile.get_pos(1, mean=True)[iy])
+                y = float(xrmfile.get_pos(1, mean=True)[iy])
 
             position[pvn(conf['scan/pos1'].value)] = x
             position[pvn(conf['scan/pos2'].value)] = y
@@ -2481,7 +2485,7 @@ class MapViewerFrame(wx.Frame):
                     position[addr] = float(val)
 
             if title is None:
-                title = '%s: %s' % (datafile.filename, name)
+                title = '%s: %s' % (xrmfile.filename, name)
 
             notes = {'source': title}
 
@@ -2619,18 +2623,18 @@ class MapViewerFrame(wx.Frame):
         if filename is None and evt is not None:
             filename = evt.GetString()
 
-        if not self.h5convert_done or filename not in self.filemap:
+        if not self.h5convert_done or filename not in self.crnt_filemap:
             return
         if (self.check_ownership(filename) and
-            self.filemap[filename].folder_has_newdata()):
+            self.crnt_filemap[filename].folder_has_newdata()):
             self.process_file(filename)
 
 
-        self.current_file = self.filemap[filename]
-        ny, nx, npos = self.filemap[filename].xrmmap['positions/pos'].shape
+        self.current_file = self.crnt_filemap[filename]
+        ny, nx, npos = self.crnt_filemap[filename].xrmmap['positions/pos'].shape
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
-        fnames = self.filelist.GetItems()
+        fnames = self.crnt_filelist.GetItems()
 
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
@@ -2723,7 +2727,7 @@ class MapViewerFrame(wx.Frame):
             return
 
         save_workdir('gsemap.dat')
-        for xrmfile in self.filemap.values():
+        for xrmfile in self.crnt_filemap.values():
             xrmfile.close()
 
         ## Closes maps, 2D XRD image
@@ -2779,7 +2783,7 @@ class MapViewerFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             read = True
             path = dlg.GetPath().replace('\\', '/')
-            if path in self.filemap:
+            if path in self.crnt_filemap:
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
 
@@ -2833,10 +2837,10 @@ class MapViewerFrame(wx.Frame):
 
         parent, fname = os.path.split(xrmfile.filename)
 
-        if fname not in self.filemap:
-            self.filemap[fname] = xrmfile
-        if fname not in self.filelist.GetItems():
-            self.filelist.Append(fname)
+        if fname not in self.crnt_filemap:
+            self.crnt_filemap[fname] = xrmfile
+        if fname not in self.crnt_filelist.GetItems():
+            self.crnt_filelist.Append(fname)
         if self.check_ownership(fname):
             self.process_file(fname)
         self.ShowFile(filename=fname)
@@ -2896,17 +2900,17 @@ class MapViewerFrame(wx.Frame):
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
         if not self.watch_files:
-            self.file_timer.Stop()
+            self.crnt_file_timer.Stop()
             self.message('Watching Files/Folders for Changes: Off')
         else:
-            self.file_timer.Start(10000)
+            self.crnt_file_timer.Start(10000)
             self.message('Watching Files/Folders for Changes: On')
 
 
     def onFileWatchTimer(self, event=None):
-        for filename in self.filemap:
-            if (filename not in self.files_in_progress and
-                self.filemap[filename].folder_has_newdata()):
+        for filename in self.crnt_filemap:
+            if (filename not in self.crnt_files_in_progress and
+                self.crnt_filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
                 thispanel = self.nbpanels[self.nb.GetSelection()]
                 thispanel.onShowMap(event=None, new=False)
@@ -2917,21 +2921,21 @@ class MapViewerFrame(wx.Frame):
         This can take awhile, so is done in a separate thread,
         with updates displayed in message bar
         """
-        xrm_map = self.filemap[filename]
+        xrm_map = self.crnt_filemap[filename]
         if xrm_map.status == GSEXRM_FileStatus.created:
             xrm_map.initialize_xrmmap()
 
         if xrm_map.dimension is None and isGSEXRM_MapFolder(self.folder):
             xrm_map.read_master()
 
-        if self.filemap[filename].folder_has_newdata():
-            self.files_in_progress.append(filename)
+        if self.crnt_filemap[filename].folder_has_newdata():
+            self.crnt_files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
             self.h5convert_irow, self.h5convert_nrow = 0, 0
             self.h5convert_t0 = time.time()
             self.htimer.Start(150)
-            ##self.h5convert_thread = Thread(target=self.filemap[filename].process)
+            ##self.h5convert_thread = Thread(target=self.crnt_filemap[filename].process)
             self.h5convert_thread = Thread(target=self.new_mapdata,
                                            args=(filename,))
             self.h5convert_thread.start()
@@ -2942,15 +2946,15 @@ class MapViewerFrame(wx.Frame):
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
-            if fname in self.files_in_progress:
-                self.files_in_progress.remove(fname)
+            if fname in self.crnt_files_in_progress:
+                self.crnt_files_in_progress.remove(fname)
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
 ## This routine processes the data identically to 'process()' in xrmmap/xrm_mapfile.py .
 ## mkak 2016.09.07
     def new_mapdata(self, filename):
-        xrm_map = self.filemap[filename]
+        xrm_map = self.crnt_filemap[filename]
         nrows = len(xrm_map.rowdata)
         xrm_map.reset_flags()
         self.h5convert_nrow = nrows
@@ -2994,12 +2998,12 @@ class MapViewerFrame(wx.Frame):
         check whether we're currently owner of the file.
         this is important!! HDF5 files can be corrupted.
         """
-        if not self.filemap[fname].check_hostid():
+        if not self.crnt_filemap[fname].check_hostid():
             if (wx.ID_YES == Popup(self, NOT_OWNER_MSG % fname,
                                    'Not Owner of HDF5 File',
                                    style=wx.YES_NO)):
-                self.filemap[fname].claim_hostid()
-        return self.filemap[fname].check_hostid()
+                self.crnt_filemap[fname].claim_hostid()
+        return self.crnt_filemap[fname].check_hostid()
 
 class OpenPoniFile(wx.Dialog):
     """"""

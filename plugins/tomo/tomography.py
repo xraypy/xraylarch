@@ -110,6 +110,15 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     
     method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
                                                         omega,algorithm_A,algorithm_B)
+    print '======================================='                                                     
+    print 'method',method
+    print 'center',center
+    print 'omega',len(omega)
+    print 'algA',algorithm_A
+    print 'algB',algorithm_B
+    print
+    print 'shape sino',np.shape(sino)
+                                                        
     if method is None:
         print('No tomographic reconstruction packages available')
         return
@@ -162,6 +171,10 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
         ## reorder to slice, x, y
         tomo = np.flip(tomo,1)
 
+    print 'center',center
+    print 'shape tomo',np.shape(tomo)
+    print '======================================='
+    
     return center,tomo
 
 # def registerLarchPlugin():
