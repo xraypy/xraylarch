@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-#!/usr/bin/env pythonw
-=======
 #!/usr/bin/env python
 """
 Feff85L monolithic main program.
->>>>>>> upstream/master
+
 
 This runs all (or selected) modules of Feff85L in order:
      feff8l_rdinp
