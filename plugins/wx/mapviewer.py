@@ -92,7 +92,7 @@ from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch_plugins.tomo import tomo_reconstruction,return_methods
+from larch_plugins.tomo import return_methods
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -134,6 +134,7 @@ FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 DBCONN = None
 BEAMLINE = '13-ID-E'
 FACILITY = 'APS'
+
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
@@ -899,19 +900,6 @@ class TomographyPanel(GridPanel):
         
         if xrmfile is None: xrmfile = self.owner.current_file
 
-        args={'no_hotcols': self.chk_hotcols.GetValue(),
-              'dtcorrect' : self.chk_dftcor.GetValue()}
-
-        try:
-            x   = xrmfile.get_pos('fine x', mean=True)
-        except:
-            x   = xrmfile.get_pos('x', mean=True)
-        try:
-            ome = xrmfile.get_pos('theta', mean=True)
-        except:
-            print('Cannot compute sinogram/tomography: no rotation motor specified in map.')
-            return
-            
         det_name,roi_name = [],[]
         plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
@@ -922,57 +910,32 @@ class TomographyPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
-
-        r_map = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
         if plt3:
-            g_map = xrmfile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = xrmfile.return_roimap(det_name[2],roi_name[2],**args)
+            flagxrd = False
+            for det in det_name:
+                if det.startswith('xrd'): flagxrd = True
+        else:
+            flagxrd = True if det_name[0].startswith('xrd') else False
 
+        args={'trim_sino'  : flagxrd,
+              'no_hotcols' : self.chk_hotcols.GetValue(),
+              'dtcorrect'  : self.chk_dftcor.GetValue()}
+        
+        r_map = xrmfile.get_sinogram(det_name[0],roi_name[0],**args)
+        if plt3:
+            g_map = xrmfile.get_sinogram(det_name[1],roi_name[1],**args)
+            b_map = xrmfile.get_sinogram(det_name[2],roi_name[2],**args)
 
-        reshape = True if len(x) == r_map.shape[1] and len(ome) == r_map.shape[0] else False
-        if ome[0] > ome[-1]: ome = ome[::-1]
-        if x[0] > x[-1]: x = x[::-1]
+        if roi_name[-1] != '1':
+            mapx = xrmfile.get_sinogram(det_name[-1],roi_name[-1],**args)
 
-        if roi_name[-1] != '1' and oprtr == '/':
-            mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
-
-            mxmin = min(mapx[np.where(mapx>0)])
-            if mxmin < 1: mxmin = 1.0
-            mapx[np.where(mapx<mxmin)] = mxmin
-            if reshape: mapx = np.einsum('ji->ij', mapx)
+            ## remove negative background counts for dividing
+            if oprtr == '/': mapx[np.where(mapx==mxmin)] = 1.
         else:
             mapx = 1.
 
-
-        ## first images in XRD are always over exposed. this removes them for reconstruction
-        ## only happens along fast direction: needs to check if this is x or ome.
-        ## (could do this before changing shape, but leave like this for now.)
-        flagxrd = False
-        for det in det_name:
-            if det.startswith('xrd'):
-                flagxrd = True
-        if flagxrd:
-            if xrmfile.get_pos(0, mean=True).all() == ome.all():
-                ome = ome[10:-11]
-                r_map = r_map[:,10:-11]
-                if plt3:
-                    g_map = g_map[:,10:-11]
-                    b_map = b_map[:,10:-11]
-                if len(np.shape(mapx)) == 2: mapx = mapx[:,10:-11]
-            elif xrmfile.get_pos(0, mean=True).all() == x.all():
-                x = x[10:-11]
-                r_map = r_map[10:-11]
-                if plt3:
-                    g_map = g_map[10:-11]
-                    b_map = b_map[10:-11]
-                if len(np.shape(mapx)) == 2: mapx = mapx[10:-11]
-
-
         pref, fname = os.path.split(xrmfile.filename)
-        if reshape: r_map = np.einsum('ji->ij', r_map)
         if plt3:
-            if reshape:
-                g_map,b_map = np.einsum('ji->ij', g_map),np.einsum('ji->ij', b_map)
             if   oprtr == '+': sino = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
@@ -1006,7 +969,7 @@ class TomographyPanel(GridPanel):
         if len(sino.shape) < 3: sino = np.reshape(sino,(1,sino.shape[0],sino.shape[1]))
         sino = np.flip(sino,1)
 
-        return title,subtitles,info,x,ome,sino
+        return title,subtitles,info,xrmfile.x,xrmfile.ome,sino
 
     def onShowSinogram(self, event=None, new=True):
 
@@ -1028,30 +991,27 @@ class TomographyPanel(GridPanel):
 
     def onShowTomograph(self, event=None, new=True):
 
+        xrmfile = self.owner.current_file
+
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino = self.calculateSinogram()
 
-        alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
+        args = {'refine_cen'  : self.refine_center.GetValue(),
+                'cen_range'   : self.center_range.GetValue(),
+                'center'      : self.center_value.GetValue(),
+                'method'      : self.alg_choice[0].GetStringSelection(),
+                'algorithm_A' : self.alg_choice[1].GetStringSelection(),
+                'algorithm_B' : self.alg_choice[2].GetStringSelection(),
+                'omega'       : ome}
+                
 
-        if len(ome) > sino.shape[2]:
-            ome = ome[:sino.shape[2]]
-        elif len(ome) < sino.shape[2]:
-            sino = sino[:,:,:len(ome)]
-
-        ## returns tomo in order: slice, x, y
-        tomo_center, tomo = tomo_reconstruction(sino,
-                                        refine_cen=self.refine_center.GetValue(),
-                                        cen_range=self.center_range.GetValue(),
-                                        center=self.center_value.GetValue(),
-                                        method=alg[0],
-                                        algorithm_A=alg[1],
-                                        algorithm_B=alg[2],
-                                        omega=ome)
+        tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
 
         self.set_center(tomo_center)
         self.refine_center.SetValue(False)
 
         omeoff, xoff = 0, 0
+        alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
         if alg[1] != '' and alg[1] is not None:
             title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],tomo_center,title)
         else:
@@ -1059,10 +1019,6 @@ class TomographyPanel(GridPanel):
 
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
-
-        ## reorder to: x,y,slice for viewing
-        tomo = np.einsum('kij->ijk', tomo)
-        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
 
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
