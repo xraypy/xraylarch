@@ -13,13 +13,13 @@ from larch.utils.debugtime import debugtime
 from larch.utils.strutils import fix_filename
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
-
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
                                q_from_d,lambda_from_E)
+from larch_plugins.tomo import tomo_reconstruction
 
 
 NINIT = 32
@@ -27,7 +27,9 @@ COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip' 
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
+
 STEPS = 5001
+PIXEL_TRIM = 10
 
 def h5str(obj):
     '''strings stored in an HDF5 from Python2 may look like
@@ -117,7 +119,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.0', ## '1.5.0', ## 
+           'Version': '2.0.0',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
@@ -632,11 +634,17 @@ class GSEXRM_MapFile(object):
         self.flag_xrd1d   = FLAGxrd1D
         self.flag_xrd2d   = FLAGxrd2D
         
+        ## used for XRD
         self.calibration = poni
         self.maskfile    = mask
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
+        
+        ## used for tomography orientation
+        self.x           = None
+        self.ome         = None
+        self.reshape     = None
         
         self.notes = {'facility' : facility,
                       'beamline' : beamline,
@@ -1846,6 +1854,79 @@ class GSEXRM_MapFile(object):
                 self.h5root.flush()
 
         return roidata
+
+    def set_sinogram_axes(self):
+    
+        try:
+            self.ome = self.get_pos('theta', mean=True)
+        except:
+            return
+
+        try:
+            self.x   = self.get_pos('fine x', mean=True)
+        except:
+            self.x   = self.get_pos('x', mean=True)
+            
+        if self.ome[0] > self.ome[-1]: self.ome = self.ome[::-1]
+        if self.x[0]   > self.x[-1]:   self.x   = self.x[::-1]
+
+    def set_sinogram_orientation(self, sino, verbose=False):
+
+        if self.reshape is None: 
+            if (len(self.ome),len(self.x)) == np.shape(sino):
+                fast,slow = 'x','theta'
+                self.reshape = True
+            elif (len(self.x),len(self.ome)) == np.shape(sino):
+                fast,slow = 'theta','x'
+                self.reshape = False
+        if verbose:
+            prnt_str = "  Fast motor identified as '%s';slow motor identified as '%s'."
+            print(prnt_str % (fast,slow))            
+        if self.reshape: return np.einsum('ji->ij', sino)
+        
+        ## is this needed? moved from "onShowTomograph"
+        #if len(self.ome) > sino.shape[2]:
+        #    self.ome = self.ome[:sino.shape[2]]
+        #elif len(self.ome) < sino.shape[2]:
+        #    sino = sino[:,:,:len(self.ome)]
+        
+        return sino
+
+    def trim_sinogram(self, sino):
+        
+        sino = sino[:,PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+
+        if xrmfile.reshape:
+            self.ome = self.ome[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+        else:
+            self.x = self.x[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]    
+
+    def get_sinogram(self, det_name, roi_name, trim_sino=False, **kws):
+    
+        if self.x is None or self.ome is None: self.set_sinogram_axes()
+        
+        if self.ome is None:
+            print('Cannot compute tomography: no rotation motor specified in map.')
+            return
+            
+        sino = self.return_roimap(det_name, roi_name, **kws)
+        
+        sino = self.set_sinogram_orientation(sino)
+        
+        if trim_sino: sino = self.trim_sinogram()
+        
+        return sino
+        
+    def get_tomograph(self, sino, **kws):
+    
+        ## returns tomo in order: slice, x, y
+        tomo_center, tomo = tomo_reconstruction(sino, **kws)
+
+        ## reorder to: x,y,slice for viewing
+        tomo = np.einsum('kij->ijk', tomo)
+        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
+        
+        return tomo_center, tomo
 
     def claim_hostid(self):
         "claim ownershipf of file"
