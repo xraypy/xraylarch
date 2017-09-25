@@ -2509,12 +2509,13 @@ class MapViewerFrame(wx.Frame):
         '''
         flptyp = 'vertical' if flip is True else False
         poni = ''
+        try:
+            poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
+        except:
+            pass
+        if not os.path.exists(poni): poni = None
+
         if self.xrddisplay2D is None:
-            try:
-                poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
-            except:
-                pass
-            if not os.path.exists(poni): poni = None
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
                                               xrd1Dviewer=self.xrddisplay1D,
                                               ponifile=poni)
@@ -2525,7 +2526,6 @@ class MapViewerFrame(wx.Frame):
                                               xrd1Dviewer=self.xrddisplay1D)
             self.xrddisplay2D.plot2Dxrd(title,map)
         self.xrddisplay2D.Show()
-        self.xrddisplay2D.displayCAKE()
 
     def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
         '''
