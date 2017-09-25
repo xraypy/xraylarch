@@ -433,10 +433,14 @@ class GSEXRM_MapRow:
             self.posvals = [np.array(xvals)]
             if dimension == 2:
                 self.posvals.append(np.array([float(yvalue) for i in points]))
-
+#             realtime = self.realtime.sum(axis=1).astype('float32')
+#             livetime = self.livetime.sum(axis=1).astype('float32')
+#             while len(realtime) < self.npts: realtime.append(1.)
+#             while len(livetime) < self.npts: livetime.append(1.)
+#             self.posvals.append(realtime / nmca)
+#             self.posvals.append(livetime / nmca)
             self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
             self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
-
             total = None
             for imca in range(nmca):
                 dtcorr = self.dtfactor[:, imca].astype('float32')
@@ -456,6 +460,7 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
+#         print '   ',np.shape(self.posvals)
 
 class GSEMCA_Detector(object):
     '''Detector class, representing 1 detector element (real or virtual)
