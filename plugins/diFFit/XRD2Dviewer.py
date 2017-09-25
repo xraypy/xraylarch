@@ -63,6 +63,7 @@ class diFFit2DPanel(wx.Panel):
         self.owner = owner
         self.type  = type
         self.ai    = None
+        self.on_calibration()
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.plot2D = ImagePanel(self,size=size,messenger=self.owner.write_message)
