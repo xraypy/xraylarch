@@ -207,6 +207,8 @@ class diFFit2DFrame(wx.Frame):
         self.plt_img = np.zeros((PIXELS,PIXELS))
         self.cake    = None
         self.twth    = None
+
+        self.calfile = ponifile
         
         self.msk_img  = np.ones((PIXELS,PIXELS))
         self.bkgd_img = np.zeros((PIXELS,PIXELS))
@@ -234,10 +236,8 @@ class diFFit2DFrame(wx.Frame):
         self.Show()
         
         if ponifile is None:
-            self.calfile = None
             self.btn_integ.Disable()
         else:
-            self.calfile = ponifile
             self.btn_integ.Enable()
 
     def write_message(self, s, panel=0):
@@ -595,7 +595,7 @@ class diFFit2DFrame(wx.Frame):
 ##############################################
 #### XRD MANIPULATION FUNTIONS 
 
-    def saveIMAGE(self,event=None):
+    def saveIMAGE(self,event=None,raw=False):
         wildcards = 'XRD image (*.tiff)|*.tiff|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save image as...',
                            defaultDir=os.getcwd(),
@@ -609,7 +609,10 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
         
         if save:
-            tifffile.imsave(path,self.plt_img)
+            if raw:
+                tifffile.imsave(path,self.raw_img)
+            else:
+                tifffile.imsave(path,self.plt_img)
 
     def on1DXRD(self,event=None):
         
@@ -890,7 +893,8 @@ class diFFit2DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
         
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
-        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.saveIMAGE)
+        MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', partial(self.saveIMAGE,raw=False))
+        MenuItem(self, diFFitMenu, 'Save r&aw image to file', '', partial(self.saveIMAGE,raw=True))
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
 #         MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
