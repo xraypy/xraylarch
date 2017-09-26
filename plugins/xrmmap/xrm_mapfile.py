@@ -13,21 +13,23 @@ from larch.utils.debugtime import debugtime
 from larch.utils.strutils import fix_filename
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
-
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
                                q_from_d,lambda_from_E)
+from larch_plugins.tomo import tomo_reconstruction
 
 
 NINIT = 32
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip' 
-# COMPRESSION = 'lzf' ## faster but larger files;mkak 2016.08.19
+#COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
+
 STEPS = 5001
+PIXEL_TRIM = 10
 
 def h5str(obj):
     '''strings stored in an HDF5 from Python2 may look like
@@ -108,17 +110,16 @@ def isGSEXRM_MapFolder(fname):
         if f not in flist:
             return False
 
-    has_xrfdata = False
-    ## This should read Master.dat for file name and check that it exist.
-    ## If file name is listed as __unused__ then flag should be false.
-    ## mkak 2017.03.10
-    for f in ('xmap.0001', 'xsp3.0001'):
-        if f in flist: has_xrfdata = True
+    has_xrmdata = False
 
-    return has_xrfdata
+    header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
+    for f in rows[0]:
+        if f in flist: has_xrmdata = True
+
+    return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.0', ## '1.5.0', ## 
+           'Version': '2.0.0',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
@@ -126,7 +127,8 @@ H5ATTRS = {'Type': 'XRM 2D Map',
            'Map_Folder': '',
            'Dimension': 2,
            'Process_Machine': '',
-           'Process_ID': 0}
+           'Process_ID': 0,
+           'Compression': ''}
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     '''creates a skeleton '/xrmmap' group in an open HDF5 file
@@ -142,6 +144,7 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     attrs.update(H5ATTRS)
     if start_time is None:
         start_time = time.ctime()
+    
     attrs.update({'Dimension':dimension, 'Start_Time':start_time,
                   'Map_Folder': folder, 'Last_Row': -1})
     if root in ('', None):
@@ -217,8 +220,9 @@ class GSEXRM_MapRow:
                  mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
-        ta = time.time()
-        if not FLAGxrf and not FLAGxrd2D:
+        ## need one type of data to build file; could be modified for just scalars?
+        ## mkak 2017.09.18
+        if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
             return
 
         self.read_ok = False
@@ -299,26 +303,21 @@ class GSEXRM_MapRow:
         t0 = time.time()
         atime = -1
 
-        xrfdat = None
-        xmfile = os.path.join(folder, xrffile)
-        xrddat = None
-        xdfile = os.path.join(folder, xrdfile)
+        xrf_dat,xrf_file = None,os.path.join(folder, xrffile)
+        xrd_dat,xrd_file = None,os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
-                atime = os.stat(xmfile).st_ctime
+                atime = os.stat(xrf_file).st_ctime
 
-                tb = time.time()
                 if FLAGxrf:
-                    xrfdat = xrf_reader(xmfile, npixels=self.nrows_expected, verbose=False)
-                    if xrfdat is None:
+                    xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
+                    if xrf_dat is None:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
-                tc = time.time()
                 if FLAGxrd2D or FLAGxrd1D:
-                    xrddat = xrd_reader(xdfile, verbose=False)
-                    if xrddat is None:
+                    xrd_dat = xrd_reader(xrd_file, verbose=False)
+                    if xrd_dat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
-                td = time.time()
 
             except (IOError, IndexError):
                 time.sleep(0.010)
@@ -329,34 +328,30 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
-        te = time.time()
         if FLAGxrf:
-            self.counts    = xrfdat.counts[ioff:]
-            self.inpcounts = xrfdat.inputCounts[ioff:]
-            self.outcounts = xrfdat.outputCounts[ioff:]
+            self.counts    = xrf_dat.counts[ioff:]
+            self.inpcounts = xrf_dat.inputCounts[ioff:]
+            self.outcounts = xrf_dat.outputCounts[ioff:]
 
             # times are extracted from the netcdf file as floats of ms
             # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrfdat.liveTime[ioff:]).astype('int')
-            self.realtime  = (xrfdat.realTime[ioff:]).astype('int')
+            self.livetime  = (xrf_dat.liveTime[ioff:]).astype('int')
+            self.realtime  = (xrf_dat.realTime[ioff:]).astype('int')
 
-            dt_denom = xrfdat.outputCounts[ioff:]*xrfdat.liveTime[ioff:]
+            dt_denom = xrf_dat.outputCounts[ioff:]*xrf_dat.liveTime[ioff:]
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrfdat.inputCounts[ioff:]*xrfdat.realTime[ioff:]/dt_denom
-
-        tf = time.time()
+            self.dtfactor  = xrf_dat.inputCounts[ioff:]*xrf_dat.realTime[ioff:]/dt_denom
 
         ## SPECIFIC TO XRD data
         if FLAGxrd2D or FLAGxrd1D:
-            if self.npts == xrddat.shape[0]:
-                self.xrd2d = xrddat
-            elif self.npts > xrddat.shape[0]:
-                self.xrd2d = np.zeros((self.npts,xrddat.shape[1],xrddat.shape[2]))
-                self.xrd2d[0:xrddat.shape[0]] = xrddat
+            if self.npts == xrd_dat.shape[0]:
+                self.xrd2d = xrd_dat
+            elif self.npts > xrd_dat.shape[0]:
+                self.xrd2d = np.zeros((self.npts,xrd_dat.shape[1],xrd_dat.shape[2]))
+                self.xrd2d[0:xrd_dat.shape[0]] = xrd_dat
             else:
-                self.xrd2d = xrddat[0:self.npts]
+                self.xrd2d = xrd_dat[0:self.npts]
             
-            tg = time.time()
             if poni is not None and FLAGxrd1D:
                 attrs = {'steps':steps,'mask':mask,'flip':flip}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
@@ -375,13 +370,13 @@ class GSEXRM_MapRow:
                     self.xrdq_wdg  = np.einsum('kij->ijk', self.xrdq_wdg)
                     self.xrd1d_wdg = np.einsum('kij->ijk', self.xrd1d_wdg)
 
-        th = time.time()
-
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
-        xnpts, nmca, nchan = self.counts.shape
-        if self.npts is None:
-            self.npts = min(gnpts, xnpts)
+        
+        xnpts,nmca = gnpts,1
+        if FLAGxrf: xnpts, nmca, nchan = self.counts.shape
+        
+        if self.npts is None: self.npts = min(gnpts, xnpts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -435,13 +430,17 @@ class GSEXRM_MapRow:
 
         if FLAGxrf:
             xvals = [(gdata[i, ixaddr] + gdata[i-1, ixaddr])/2.0 for i in points]
-
             self.posvals = [np.array(xvals)]
             if dimension == 2:
                 self.posvals.append(np.array([float(yvalue) for i in points]))
+#             realtime = self.realtime.sum(axis=1).astype('float32')
+#             livetime = self.livetime.sum(axis=1).astype('float32')
+#             while len(realtime) < self.npts: realtime.append(1.)
+#             while len(livetime) < self.npts: livetime.append(1.)
+#             self.posvals.append(realtime / nmca)
+#             self.posvals.append(livetime / nmca)
             self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
             self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
-
             total = None
             for imca in range(nmca):
                 dtcorr = self.dtfactor[:, imca].astype('float32')
@@ -450,6 +449,7 @@ class GSEXRM_MapRow:
                     total = self.counts[:, imca, :] * cor
                 else:
                     total = total + self.counts[:, imca, :] * cor
+
             self.total = total.astype('int16')
             self.dtfactor = self.dtfactor.astype('float32')
             self.dtfactor = self.dtfactor.transpose()
@@ -460,13 +460,7 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
-        ti = time.time()
-
-        self.xrfreadtime   = ((tc-tb)+(tf-te)) if FLAGxrf else 0.0
-        self.xrd2dreadtime = ((td-tc)+(tg-tf)) if FLAGxrd2D else 0.0
-        self.xrd1dcalctime = (th-tg) if FLAGxrd1D and poni is not None else 0.0
-        self.readtime      = (ti-ta)
-
+#         print '   ',np.shape(self.posvals)
 
 class GSEMCA_Detector(object):
     '''Detector class, representing 1 detector element (real or virtual)
@@ -614,6 +608,7 @@ class GSEXRM_MapFile(object):
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
+                 compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E',run='',date='',proposal='',user=''):
 
         self.filename         = filename
@@ -634,17 +629,27 @@ class GSEXRM_MapFile(object):
         self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
+        
+        self.compress_args = {'compression': compression}
+        if compression != 'lzf':
+            self.compress_args['compression_opts'] = compression_opts
 
         self.mono_energy  = None
         self.flag_xrf     = FLAGxrf
         self.flag_xrd1d   = FLAGxrd1D
         self.flag_xrd2d   = FLAGxrd2D
         
+        ## used for XRD
         self.calibration = poni
         self.maskfile    = mask
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
+        
+        ## used for tomography orientation
+        self.x           = None
+        self.ome         = None
+        self.reshape     = None
         
         self.notes = {'facility' : facility,
                       'beamline' : beamline,
@@ -821,9 +826,8 @@ class GSEXRM_MapFile(object):
         ''' creata an hdf5 dataset'''
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-        kwargs = {'compression': COMPRESSION} # , 'compression_opts': COMPRESSION_OPTS}
-        kwargs.update(kws)
-        d = group.create_dataset(name, data=data, **kwargs)
+        kws.update(self.compress_args)
+        d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
             for key, val in attrs.items():
                 d.attrs[key] = val
@@ -880,6 +884,12 @@ class GSEXRM_MapFile(object):
         self.add_data(group['environ'], 'name',     env_desc)
         self.add_data(group['environ'], 'address',  env_addr)
         self.add_data(group['environ'], 'value',     env_val)
+        
+        cmprstr = '%s' % self.compress_args['compression']
+        if self.compress_args['compression'] != 'lzf':
+            cmprstr = '%s-%s' % (cmprstr,self.compress_args['compression_opts'])
+        self.xrmmap.attrs['Compression'] = cmprstr
+        
         self.h5root.flush()
 
     def initialize_xrmmap(self):
@@ -985,23 +995,25 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
 
-        if self.flag_xrf:
-            if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
-                yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
-                if xrff.startswith('None'):
-                    xrff = xrff.replace('None', 'xsp3')
-                if sisf.startswith('None'):
-                    sisf = sisf.replace('None', 'struck')
-                if xpsf.startswith('None'):
-                    xpsf = xpsf.replace('None', 'xps')
-                if xrdf.startswith('None'):
-                    xrdf = xrdf.replace('None', 'pexrd')
-            else:
-                yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
-                xrdf = ''
-        else:
+        if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
             raise IOError('No XRF or XRD flags provided.')
             return
+
+
+        if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
+            yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+            if xrff.startswith('None'):
+                xrff = xrff.replace('None', 'xsp3')
+            if sisf.startswith('None'):
+                sisf = sisf.replace('None', 'struck')
+            if xpsf.startswith('None'):
+                xpsf = xpsf.replace('None', 'xps')
+            if xrdf.startswith('None'):
+                xrdf = xrdf.replace('None', 'pexrd')
+        else:
+            yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
+            xrdf = ''
+
         reverse = None # (irow % 2 != 0)
 
         ioffset = 0
@@ -1052,15 +1064,14 @@ class GSEXRM_MapFile(object):
             for ai,aname in enumerate(re.findall(r"[\w']+", row.sishead[-1])):
                 sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
 
-            npts = np.shape(row.posvals)[1]
-            pos    = self.xrmmap['positions/pos']
-            rowpos = np.array([p[:npts] for p in row.posvals])
-
-            tpos = rowpos.transpose()
-            pos[thisrow, :npts, :] = tpos[:npts, :]
-
             if self.flag_xrf:
 
+                npts = np.shape(row.posvals)[1]
+                pos    = self.xrmmap['positions/pos']
+                rowpos = np.array([p[:npts] for p in row.posvals])
+
+                tpos = rowpos.transpose()
+                pos[thisrow, :npts, :] = tpos[:npts, :]
                 nmca, xnpts, nchan = row.counts.shape
                 mca_dets = []
 
@@ -1103,9 +1114,7 @@ class GSEXRM_MapFile(object):
 
         else:
 
-            if verbose: t0 = time.time()
             if self.flag_xrf:
-
                 nmca, xnpts, nchan = row.counts.shape
                 xrm_dets = []
 
@@ -1207,11 +1216,6 @@ class GSEXRM_MapFile(object):
         flaggp.attrs['xrf']   = self.flag_xrf
         flaggp.attrs['xrd2D'] = self.flag_xrd2d
         flaggp.attrs['xrd1D'] = self.flag_xrd1d
-
-        compress_opts = {'compression': COMPRESSION}
-        if COMPRESSION != 'lzf':
-            compress_opts['compression_opts'] = COMPRESSION_OPTS
-
         
         conf = xrmmap['config']
         for key in self.notes:
@@ -1220,7 +1224,11 @@ class GSEXRM_MapFile(object):
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
-        nmca, xnpts, nchan = row.counts.shape
+        
+        if self.flag_xrf:
+            nmca, xnpts, nchan = row.counts.shape
+        else:
+            nmca, xnpts, nchan = 1, self.npts, 1
         
         if self.chunksize is None:
             if xnpts < 10: xnpts=10
@@ -1236,7 +1244,7 @@ class GSEXRM_MapFile(object):
             for aname in re.findall(r"[\w']+", row.sishead[-1]):
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
-                                      maxshape=(None, npts), **compress_opts)
+                                      maxshape=(None, npts), **self.compress_args)
 
             # positions
             pos = xrmmap['positions']
@@ -1247,7 +1255,7 @@ class GSEXRM_MapFile(object):
             self.add_data(pos, 'name',     self.pos_desc)
             self.add_data(pos, 'address',  self.pos_addr)
             pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
-                               maxshape=(None, npts, npos), **compress_opts)
+                               maxshape=(None, npts, npos), **self.compress_args)
 
             if self.flag_xrf:
                 roi_names = [h5str(s) for s in conf['rois/name']]
@@ -1276,7 +1284,7 @@ class GSEXRM_MapFile(object):
                                                              'cal_slope': slope[i]})
                     dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                         chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **compress_opts)
+                                        maxshape=(None, npts, nchan), **self.compress_args)
 
                     for name, dtype in (('realtime',  np.int    ),
                                         ('livetime',  np.int    ),
@@ -1284,7 +1292,7 @@ class GSEXRM_MapFile(object):
                                         ('inpcounts', np.float32),
                                         ('outcounts', np.float32)):
                         dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
 
                     dgrp = xrmmap['roimap'][imca]
                     for rname,rlimit in zip(roi_names,roi_limits[i]):
@@ -1293,7 +1301,7 @@ class GSEXRM_MapFile(object):
                                             ('cor',  np.float32)):
                             rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                                 chunks=self.chunksize[:-1],
-                                                maxshape=(None, npts), **compress_opts)
+                                                maxshape=(None, npts), **self.compress_args)
                         lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
                         lmtgrp.attrs['type'] = 'energy'
                         lmtgrp.attrs['units'] = 'keV'
@@ -1310,7 +1318,7 @@ class GSEXRM_MapFile(object):
                                                          'cal_slope': slope[0]})
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **compress_opts)
+                                    maxshape=(None, npts, nchan), **self.compress_args)
 
                 dgrp = xrmmap['roimap']['mcasum']
                 for rname,rlimit in zip(roi_names,roi_limits[0]):
@@ -1318,8 +1326,8 @@ class GSEXRM_MapFile(object):
                     for aname,dtype in (('raw',  np.int16  ),('cor',  np.float32)):
                         rgrp.create_dataset(aname, (NINIT, npts), dtype,
                                             chunks=self.chunksize[:-1],
-                                            maxshape=(None, npts), **compress_opts)
-                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
+                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
         else:
@@ -1351,13 +1359,13 @@ class GSEXRM_MapFile(object):
 
                     dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                         chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **compress_opts)
+                                        maxshape=(None, npts, nchan), **self.compress_args)
                     for name, dtype in (('realtime', np.int),  ('livetime', np.int),
                                         ('dtfactor', np.float32),
                                         ('inpcounts', np.float32),
                                         ('outcounts', np.float32)):
                         dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **compress_opts)
+                                            maxshape=(None, npts), **self.compress_args)
 
                 # add 'virtual detector' for corrected sum:
                 dgrp = xrmmap.create_group('detsum')
@@ -1371,7 +1379,7 @@ class GSEXRM_MapFile(object):
                 self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                     chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **compress_opts)
+                                    maxshape=(None, npts, nchan), **self.compress_args)
                 # roi map data
                 scan = xrmmap['roimap']
                 det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
@@ -1419,7 +1427,7 @@ class GSEXRM_MapFile(object):
                                         ('sum_cor', nsum, np.float32)):
                     scan.create_dataset(name, (NINIT, npts, nx), dtype,
                                         chunks=(2, npts, nx),
-                                        maxshape=(None, npts, nx), **compress_opts)
+                                        maxshape=(None, npts, nx), **self.compress_args)
 
                 # positions
                 pos = xrmmap['positions']
@@ -1430,55 +1438,52 @@ class GSEXRM_MapFile(object):
                 self.add_data(pos, 'name',     self.pos_desc)
                 self.add_data(pos, 'address',  self.pos_addr)
                 pos.create_dataset('pos', (NINIT, npts, npos), dtype,
-                                   maxshape=(None, npts, npos), **compress_opts)
-
-
-
+                                   maxshape=(None, npts, npos), **self.compress_args)
 
         if self.flag_xrd2d or self.flag_xrd1d:
 
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             if verbose:
                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
-                print(prtxt % (npts, row.npts, xpixx, xpixy))
+                print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
 
             if self.flag_xrd2d:
                 xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
                 xrmmap['xrd2D'].attrs['desc'] = '' #'add detector name eventually'
                 
-                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16, **compress_opts)
-                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16, **compress_opts)
+                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16, **self.compress_args)
+                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16, **self.compress_args)
 
                 chunksize_2DXRD = (1, npts, xpixx, xpixy)
                 xrmmap['xrd2D'].create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint16,
                                        chunks = chunksize_2DXRD,
-                                       maxshape=(None, npts, xpixx, xpixy), **compress_opts)
+                                       maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
 
             if self.flag_xrd1d:
                 xrmmap['xrd1D'].attrs['type'] = 'xrd1D detector'
                 xrmmap['xrd1D'].attrs['desc'] = 'pyFAI calculation from xrd2D data'
 
-                xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32, **compress_opts)
-                xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32, **compress_opts)
+                xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32, **self.compress_args)
+                xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32, **self.compress_args)
 
                 chunksize_1DXRD  = (1, npts, self.qstps)
                 xrmmap['xrd1D'].create_dataset('counts',
                                        (NINIT, npts, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD,
-                                       maxshape=(None, npts, self.qstps), **compress_opts)
+                                       maxshape=(None, npts, self.qstps), **self.compress_args)
 
                 if self.azwdgs > 1:
                     for azi in range(self.azwdgs):
                         wdggrp = xrmmap['work/xrdwedge'].create_group('wedge_%02d' % azi)
 
-                        wdggrp.create_dataset('q', (self.qstps,), np.float32, **compress_opts)
+                        wdggrp.create_dataset('q', (self.qstps,), np.float32, **self.compress_args)
 
                         wdggrp.create_dataset('counts',
                                       (NINIT, npts, self.qstps),
                                       np.float32,
                                       chunks = chunksize_1DXRD,
-                                      maxshape=(None, npts, self.qstps), **compress_opts)
+                                      maxshape=(None, npts, self.qstps), **self.compress_args)
 
                         #wdggrp.create_dataset('limits', (2,), np.float32)
                         wdg_sz = 360./self.azwdgs
@@ -1854,6 +1859,79 @@ class GSEXRM_MapFile(object):
                 self.h5root.flush()
 
         return roidata
+
+    def set_sinogram_axes(self):
+    
+        try:
+            self.ome = self.get_pos('theta', mean=True)
+        except:
+            return
+
+        try:
+            self.x   = self.get_pos('fine x', mean=True)
+        except:
+            self.x   = self.get_pos('x', mean=True)
+            
+        if self.ome[0] > self.ome[-1]: self.ome = self.ome[::-1]
+        if self.x[0]   > self.x[-1]:   self.x   = self.x[::-1]
+
+    def set_sinogram_orientation(self, sino, verbose=False):
+
+        if self.reshape is None: 
+            if (len(self.ome),len(self.x)) == np.shape(sino):
+                fast,slow = 'x','theta'
+                self.reshape = True
+            elif (len(self.x),len(self.ome)) == np.shape(sino):
+                fast,slow = 'theta','x'
+                self.reshape = False
+        if verbose:
+            prnt_str = "  Fast motor identified as '%s';slow motor identified as '%s'."
+            print(prnt_str % (fast,slow))            
+        if self.reshape: return np.einsum('ji->ij', sino)
+        
+        ## is this needed? moved from "onShowTomograph"
+        #if len(self.ome) > sino.shape[2]:
+        #    self.ome = self.ome[:sino.shape[2]]
+        #elif len(self.ome) < sino.shape[2]:
+        #    sino = sino[:,:,:len(self.ome)]
+        
+        return sino
+
+    def trim_sinogram(self, sino):
+        
+        sino = sino[:,PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+
+        if xrmfile.reshape:
+            self.ome = self.ome[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+        else:
+            self.x = self.x[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]    
+
+    def get_sinogram(self, det_name, roi_name, trim_sino=False, **kws):
+    
+        if self.x is None or self.ome is None: self.set_sinogram_axes()
+        
+        if self.ome is None:
+            print('Cannot compute tomography: no rotation motor specified in map.')
+            return
+            
+        sino = self.return_roimap(det_name, roi_name, **kws)
+        
+        sino = self.set_sinogram_orientation(sino)
+        
+        if trim_sino: sino = self.trim_sinogram()
+        
+        return sino
+        
+    def get_tomograph(self, sino, **kws):
+    
+        ## returns tomo in order: slice, x, y
+        tomo_center, tomo = tomo_reconstruction(sino, **kws)
+
+        ## reorder to: x,y,slice for viewing
+        tomo = np.einsum('kij->ijk', tomo)
+        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
+        
+        return tomo_center, tomo
 
     def claim_hostid(self):
         "claim ownershipf of file"
@@ -2922,11 +3000,14 @@ class GSEXRM_MapFile(object):
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
             if detname == 'scalars':
-                dat = '%s/%s' % (detname,roiname)            
+                dat = '%s/%s' % (detname,roiname)
+            elif detname.startswith('roimap'):
+                dat = '%s/%s' % (detname,roiname)
+                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat            
             else:
                 dat = 'roimap/%s/%s' % (detname,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-            
+
             if no_hotcols:
                 return self.xrmmap[dat][:, 1:-1]
             else:

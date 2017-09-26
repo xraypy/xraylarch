@@ -123,6 +123,10 @@ class diFFit1DFrame(wx.Frame):
         
         read_workdir('gsemap.dat')
 
+        self.default_cifdb = '%s/.larch/cif_amcsd.db' % expanduser('~')
+        if not os.path.exists(self.default_cifdb):
+            self.default_cifdb = 'amcsd_cif.db'
+
         self.statusbar = self.CreateStatusBar(3,wx.CAPTION)
 
         panel = wx.Panel(self)
@@ -154,17 +158,23 @@ class diFFit1DFrame(wx.Frame):
 
         self.cifdatabase.close_database()
 
-    def openDB(self,dbname='amcsd_cif.db'):
+    def openDB(self,dbname=None):
 
         try:
             self.closeDB()
         except:
             pass
 
+        if dbname is None:
+            dbname = self.default_cifdb
+
         try:
-            self.cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+            self.cifdatabase = cifDB(dbname=dbname)
         except:
-            self.cifdatabase = cifDB(dbname='amcsd_cif.db')
+            print('Failed to import file as database: %s' % dbname)
+            dbname = self.default_cifdb
+            self.cifdatabase = cifDB(dbname=self.default_cifdb)
+        print('Now using database: %s' % os.path.split(dbname)[-1])
 
     def onExit(self, event=None):
         try:
@@ -608,9 +618,10 @@ class SelectFittingData(wx.Dialog):
 
         loadXYfile(parent=self,xrdviewer=self.parent.xrd1Dviewer)
 
-        self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
-        self.slct_1Ddata.Set(self.parent.list)
-        self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
+        if self.parent.xrd1Dviewer.data_name[-1] not in self.parent.list:
+            self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
+            self.slct_1Ddata.Set(self.parent.list)
+            self.slct_1Ddata.SetSelection(self.slct_1Ddata.FindString(self.parent.list[-1]))
 
 class Fitting1DXRD(BasePanel):
     '''
@@ -1347,9 +1358,8 @@ class Fitting1DXRD(BasePanel):
         if read:
             try:
                 self.owner.openDB(dbname=path)
-                print('Now using database: %s' % os.path.split(path)[-1])
             except:
-               print('Failed to import file as database: %s' % path)
+                pass
                
         return path
 
@@ -1412,7 +1422,7 @@ class Fitting1DXRD(BasePanel):
     def onMatch(self,event=None):
 
         q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
-        print('Still need to determine how best to rank these matches')
+        # print('Still need to determine how best to rank these matches')
         list_amcsd = match_database(self.owner.cifdatabase,q_pks,
                                     minq=np.min(self.plt_data[0]),
                                     maxq=np.max(self.plt_data[0]))
@@ -1441,6 +1451,7 @@ class Fitting1DXRD(BasePanel):
             self.txt_amcsd_cnt.SetLabel('')
                 
         self.srchpl.btn_clr.Enable()
+        self.srchpl.btn_shw.Enable()
         self.srchpl.amcsdlistbox.EnsureVisible(0)
 
     def clearMATCHES(self,event=None):
@@ -1453,6 +1464,7 @@ class Fitting1DXRD(BasePanel):
         self.owner.srch_cls = SearchCIFdb()
 
         self.srchpl.btn_clr.Disable()   
+        self.srchpl.btn_shw.Disable()
         
         try:
             self.plot_data()
@@ -2474,7 +2486,7 @@ class SelectCIFData(wx.Dialog):
         ix,iy = panel.GetBestSize()
         self.SetSize((ix+20, iy+20))
         
-        self.val_cifE.SetValue(str(energy))
+        self.val_cifE.SetValue('%0.4f' % energy)
         self.ch_xaxis.SetSelection(self.xaxis)
         self.val_xmin.SetValue('%0.4f' % minq)
         self.val_xmax.SetValue('%0.4f' % maxq)
@@ -2930,21 +2942,66 @@ class SearchPanel(wx.Panel):
     def ResultsTools(self):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
-#         opts = wx.LB_NEEDED_SB #|wx.LB_HSCROLL
-#         self.amcsdlistbox = wx.ListBox(self, style=opts, choices=[''], size=(200,150))
-#         self.amcsdlistbox.Bind(wx.EVT_LISTBOX,  self.owner.showCIF  )
+        
+        self.btn_shw = wx.Button(self,label='Display CIF')
+        self.btn_shw.Bind(wx.EVT_BUTTON, self.displayCIF)
 
         self.btn_clr = wx.Button(self,label='Clear list')
         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
 
+        hbox.Add(self.btn_shw, flag=wx.RIGHT, border=8)
+        hbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+
         vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
-        vbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
+        vbox.Add(hbox,               flag=wx.RIGHT, border=8)
+
         
         self.btn_clr.Disable()
+        self.btn_shw.Disable()
 
         return vbox
+        
+    def displayCIF(self,event=None):
+    
+        title = self.amcsdlistbox.GetStringSelection()
+        amcsd = self.amcsdlistbox.GetStringSelection().split()[0]
+        
+        cifframe = CIFFrame(amcsd=int(amcsd), title=title, 
+                            cifdatabase=self.owner.owner.cifdatabase)
+
+
+
+class CIFPanel(wx.Panel):
+
+    def __init__(self, parent,cifdatabase=None,amcsd=None):
+        wx.Panel.__init__(self, parent)
+
+        cif_text_box = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(cif_text_box, 1, wx.ALL|wx.EXPAND)
+
+        self.SetSizer(sizer)
+        
+        if cifdatabase is None:
+            cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+        if amcsd is None: amcsd = 100        
+        cif_text_box.WriteText(cifdatabase.cif_by_amcsd(amcsd))
+
+class CIFFrame(wx.Frame):
+
+    def __init__(self, amcsd=None, title='', cifdatabase=None):
+        title = 'CIF Display - %s' % title
+        wx.Frame.__init__(self, None, size=(650,900), title=title)
+
+        panel = CIFPanel(self, cifdatabase=cifdatabase, amcsd=amcsd)
+
+        self.Show()
+        
+        
 
 class InstrPanel(wx.Panel):
     '''
@@ -3091,16 +3148,13 @@ class Calc1DPopup(wx.Dialog):
         self.steps = 5001
 
         self.createPanel()
-        self.setDefaults()
-
+        
         ## Set defaults
-        self.wedges.SetValue('1')
+        self.setDefaults()
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+50, iy+50))
         
-        self.wedges.Disable()
-        self.wedge_arrow.Disable()
 
     def createPanel(self):
 
@@ -3112,15 +3166,12 @@ class Calc1DPopup(wx.Dialog):
         wedgesizer = wx.BoxSizer(wx.VERTICAL)
         ttl_wedges = wx.StaticText(self.panel, label='AZIMUTHAL WEDGES')
         wsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.wedges = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        spstyle = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
-        self.wedge_arrow = wx.SpinButton(self.panel, style=spstyle)
-        self.wedge_arrow.Bind(wx.EVT_SPIN, self.onSPIN)
+        self.wedges = wx.SpinCtrl(self.panel, style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         wsizer.Add(self.wedges,flag=wx.RIGHT,border=8)
-        wsizer.Add(self.wedge_arrow,flag=wx.RIGHT,border=8)
+
         wedgesizer.Add(ttl_wedges,flag=wx.BOTTOM,border=8)
         wedgesizer.Add(wsizer,flag=wx.BOTTOM,border=8)
-
+        
         ## X-Range
         xsizer = wx.BoxSizer(wx.VERTICAL)
         ttl_xrange = wx.StaticText(self.panel, label='X-RANGE')
@@ -3181,9 +3232,8 @@ class Calc1DPopup(wx.Dialog):
 
         self.xstep.SetValue(str(5001))
         
-        self.wedges.SetValue('1')
-        self.wedge_arrow.SetValue(1)
-        self.wedge_arrow.SetRange(1,36)
+        self.wedges.SetValue(1)
+        self.wedges.SetRange(1,36)
 
         self.okBtn.Disable()
 
@@ -3413,11 +3463,9 @@ class XRDSearchGUI(wx.Dialog):
         key = 'amcsd'
         self.AMCSD.SetValue(self.srch.print_parameter(key=key))
 
-        try:
-            self.Mineral.Set(self.srch.mnrlname)
-        except:
-            print('minerals did not work')
-            pass
+        if len(np.shape(self.srch.mnrlname)) > 0:
+            self.srch.mnrlname = self.srch.mnrlname[0]
+        self.Mineral.SetStringSelection(self.srch.mnrlname)
 
         self.Chemistry.SetValue(self.srch.print_chemistry())
 
@@ -3447,13 +3495,13 @@ class XRDSearchGUI(wx.Dialog):
         self.AMCSD.SetValue(self.srch.print_parameter(key=key))
 
     def entrMineral(self,event=None):
-        ## need to integrate with SearchCIFdb somehow...
-        ## mkak 2017.03.01
-        if event.GetString() not in self.minerals:
-            self.minerals.insert(1,event.GetString())
+        key = 'mnrlname'
+        self.srch.mnrlname = event.GetString()
+        if self.srch.mnrlname not in self.minerals:
+            self.minerals.insert(1,self.srch.mnrlname)
             self.Mineral.Set(self.minerals)
-            self.Mineral.SetSelection(1)
-            self.srch.read_parameter(event.GetString(),key='mnrlname')
+            self.Mineral.SetStringSelection(self.srch.mnrlname)
+        self.srch.read_parameter(self.srch.mnrlname,key=key)
 
     def entrChemistry(self,event=None):
         self.srch.read_chemistry(self.Chemistry.GetValue())
