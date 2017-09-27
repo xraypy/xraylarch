@@ -222,8 +222,8 @@ class GSEXRM_MapRow:
 
         ## need one type of data to build file; could be modified for just scalars?
         ## mkak 2017.09.18
-        if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
-            return
+        # if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
+        #     return
 
         self.read_ok = False
         self.nrows_expected = nrows_expected
@@ -301,15 +301,16 @@ class GSEXRM_MapRow:
         self.sishead = shead
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
-        atime = -1
+
+        atime = os.stat(os.path.join(folder, sisfile)).st_ctime
 
         xrf_dat,xrf_file = None,os.path.join(folder, xrffile)
         xrd_dat,xrd_file = None,os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
-                atime = os.stat(xrf_file).st_ctime
-
+                if os.file.exists(xrf_file):
+                    atime = os.stat(xrf_file).st_ctime
                 if FLAGxrf:
                     xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
                     if xrf_dat is None:
@@ -325,7 +326,8 @@ class GSEXRM_MapRow:
         if atime < 0:
             print( 'Failed to read data.')
             return
-        if dtime is not None:  dtime.add('maprow: read XRM files')
+        if dtime is not None: 
+            dtime.add('maprow: read XRM files')
 
         ## SPECIFIC TO XRF data
         if FLAGxrf:
@@ -374,9 +376,13 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
         
         xnpts,nmca = gnpts,1
-        if FLAGxrf: xnpts, nmca, nchan = self.counts.shape
+        if FLAGxrf: 
+            xnpts, nmca, nchan = self.counts.shape
         
-        if self.npts is None: self.npts = min(gnpts, xnpts)
+        if self.npts is None: 
+            self.npts = min(gnpts, xnpts)
+
+        # print("Row ", sisfile, snpts, self.npts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
@@ -460,7 +466,6 @@ class GSEXRM_MapRow:
             self.counts   = self.counts.swapaxes(0, 1)
 
         self.read_ok = True
-#         print '   ',np.shape(self.posvals)
 
 class GSEMCA_Detector(object):
     '''Detector class, representing 1 detector element (real or virtual)
@@ -851,32 +856,37 @@ class GSEXRM_MapFile(object):
 
         group['scan'].create_dataset('text', data=scantext)
 
-        roidat, calib, extra = readROIFile(os.path.join(self.folder, self.ROIFile))
-        self.ndet = len(calib['slope'])
-        self.xrmmap.attrs['N_Detectors'] = self.ndet
-        roi_desc, roi_addr, roi_lim = [], [], []
-        roi_slices = []
-        for iroi, label, lims in roidat:
-            roi_desc.append(label)
-            roi_addr.append("%smca%%i.R%i" % (config['xrf']['prefix'], iroi))
-            roi_lim.append([lims[i] for i in range(self.ndet)])
-            roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
-        roi_lim = np.array(roi_lim)
+        roifile = os.path.join(self.folder, self.ROIFile)
+        self.ndet = 0
+        if os.path.exists(roifile):
+            roidat, calib, extra = readROIFile(roifile)
 
-        self.add_data(group['rois'], 'name',     roi_desc)
-        self.add_data(group['rois'], 'address',  roi_addr)
-        self.add_data(group['rois'], 'limits',   roi_lim)
+            self.ndet = len(calib['slope'])
+            self.xrmmap.attrs['N_Detectors'] = self.ndet
+            roi_desc, roi_addr, roi_lim = [], [], []
+            roi_slices = []
 
-        for key, val in calib.items():
-            self.add_data(group['mca_calib'], key, val)
+            for iroi, label, lims in roidat:
+                roi_desc.append(label)
+                roi_addr.append("%smca%%i.R%i" % (config['xrf']['prefix'], iroi))
+                roi_lim.append([lims[i] for i in range(self.ndet)])
+                roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
+            roi_lim = np.array(roi_lim)
 
-        for key, val in extra.items():
-            self.add_data(group['mca_settings'], key, val)
+            self.add_data(group['rois'], 'name',     roi_desc)
+            self.add_data(group['rois'], 'address',  roi_addr)
+            self.add_data(group['rois'], 'limits',   roi_lim)
 
-        self.roi_desc = roi_desc
-        self.roi_addr = roi_addr
-        self.roi_slices = roi_slices
-        self.calib = calib
+            for key, val in calib.items():
+                self.add_data(group['mca_calib'], key, val)
+
+            for key, val in extra.items():
+                self.add_data(group['mca_settings'], key, val)
+
+            self.roi_desc = roi_desc
+            self.roi_addr = roi_addr
+            self.roi_slices = roi_slices
+            self.calib = calib
         # add env data
         envdat = readEnvironFile(os.path.join(self.folder, self.EnvFile))
         env_desc, env_addr, env_val = parseEnviron(envdat)
@@ -915,9 +925,9 @@ class GSEXRM_MapFile(object):
 
         self.last_row = -1
         self.add_map_config(self.mapconf)
+
         row = self.read_rowdata(0)
         self.build_schema(row,verbose=True)
-
         self.add_rowdata(row)
 
         self.status = GSEXRM_FileStatus.hasdata
@@ -948,6 +958,7 @@ class GSEXRM_MapFile(object):
                     callback(row=irow, maxrow=nrows,
                              filename=self.filename, status='reading')
                 row = self.read_rowdata(irow)
+                # print("process row ", irow, row, row.read_ok)
                 # self.dt.add('  == read row data')
                 if hasattr(callback, '__call__'):
                     callback(row=irow, maxrow=nrows,
@@ -995,10 +1006,9 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
 
-        if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
-            raise IOError('No XRF or XRD flags provided.')
-            return
-
+        # if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
+        #    raise IOError('No XRF or XRD flags provided.')
+        #    return
 
         if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
@@ -1019,6 +1029,7 @@ class GSEXRM_MapFile(object):
         ioffset = 0
         if scan_version > 1.35:
             ioffset = 1
+        self.flag_xrf = self.flag_xrf and xrff != '_unused_'
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
@@ -1036,8 +1047,8 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
-            return
+        # if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
+        #   return
 
         thisrow = self.last_row + 1
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
@@ -1997,15 +2008,19 @@ class GSEXRM_MapFile(object):
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
-        _yl, _xl = None, None
+        _yl, _xl, _s1 = None, None, None
         for row in rows:
-            yval, xrff = row[0], row[1]
+            yval, xrff, sisf = row[0], row[1], row[2]
             il = len(self.rowdata)-1
             if il > -1:
-                _yl, _xl = self.rowdata[il][0], self.rowdata[il][1]
-
-            if yval != _yl and xrff != _xl:  # skip repeated rows in master file
+                _yl, _xl, _s1 = (self.rowdata[il][0],
+                                 self.rowdata[il][1],
+                                 self.rowdata[il][2])
+            # skip repeated rows in master file
+            if yval != _yl and (xrff != _xl or sisf != _s1): 
                 self.rowdata.append(row)
+            else:
+                print(" skip row ", yval, xrff, sisf)
         self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
