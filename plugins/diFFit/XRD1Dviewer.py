@@ -328,7 +328,8 @@ class diFFit1DFrame(wx.Frame):
                     xrdf.clearMATCHES()
                     
                 xrdf.xrd1dgrp = seldat
-                xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
+                #xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
+                xrdf.plot1D.set_title(xrdf.xrd1dgrp.label)
                 xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
@@ -739,7 +740,7 @@ class Fitting1DXRD(BasePanel):
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
-            self.plot_data()
+#             self.plot_data()
             cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
             try:
                 cifdata = []
@@ -1267,15 +1268,15 @@ class Fitting1DXRD(BasePanel):
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
         
-        ## 'title':self.xrd1dgrp.label
+        ## .set_title(title)'title':self.xrd1dgrp.label
         pltargs = {'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.plot([0,1],[0,0],**pltargs)
+        self.plot1D.plot([0],[0],**pltargs)
         bgrarg = {'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0,1],[0,0],**bgrarg)
+        self.plot1D.oplot([0],[0],**bgrarg)
         pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-        self.plot1D.oplot([0,1],[0,0],**pkarg)
+        self.plot1D.oplot([0],[0],**pkarg)
         cifargs = {'color':'green','label':'CIF data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0,1],[0,0],**pltargs)
+        self.plot1D.oplot([0],[0],**cifargs)
         
         ## =trace= =type=
         ##    0     data
