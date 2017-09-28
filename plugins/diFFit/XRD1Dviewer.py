@@ -212,7 +212,7 @@ class diFFit1DFrame(wx.Frame):
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
         MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.chooseCIF)
-        MenuItem(self, diFFitMenu, 'Change &Working Folder', '', self.onFolderSelect)
+        MenuItem(self, diFFitMenu, 'Change larch &working folder', '', self.onFolderSelect)
         diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, 'Save 1D dataset to file', '', self.save1Dxrd)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
