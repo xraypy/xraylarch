@@ -930,7 +930,7 @@ class TomographyPanel(GridPanel):
             mapx = xrmfile.get_sinogram(det_name[-1],roi_name[-1],**args)
 
             ## remove negative background counts for dividing
-            if oprtr == '/': mapx[np.where(mapx==mxmin)] = 1.
+            if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
             mapx = 1.
 
@@ -1335,12 +1335,11 @@ class MapPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
-        if roi_name[-1] != '1' and oprtr == '/':
+        if roi_name[-1] != '1':
             mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
-
-            mxmin = min(mapx[np.where(mapx>0)])
-            if mxmin < 1: mxmin = 1.0
-            mapx[np.where(mapx<mxmin)] = mxmin
+            
+            ## remove negative background counts for dividing
+            if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
             mapx = 1.
 

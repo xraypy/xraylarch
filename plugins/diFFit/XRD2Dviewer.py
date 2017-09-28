@@ -25,14 +25,15 @@ from wxmplot.imageconf import ImageConfig,ColorMap_List
 import matplotlib.pyplot as plt
 
 import larch
-from larch_plugins.io import tifffile
 from larch import Group
+from larch.larchlib import read_workdir, save_workdir
 
-from larch.larchlib import read_workdir
+from larch_plugins.io import tifffile
+from larch_plugins.io import nativepath
+from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                                calc_cake,twth_from_q,twth_from_d,
                                return_ai,twth_from_xy,q_from_xy,eta_from_xy)
-from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
@@ -862,7 +863,24 @@ class diFFit2DFrame(wx.Frame):
         dlg = wx.AboutBox(info)
 
 ##############################################
-#### PANEL DEFINITIONS
+#### MENU FUNCTIONS
+    def onFolderSelect(self, evt=None):
+        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
+        dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
+                           style=style)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            basedir = os.path.abspath(str(dlg.GetPath()))
+            try:
+                if len(basedir)  > 0:
+                    os.chdir(nativepath(basedir))
+                    save_workdir(nativepath(basedir))
+            except OSError:
+                print( 'Changed folder failed')
+                pass
+        save_workdir('gsemap.dat')
+        dlg.Destroy()
+
     def onExit(self, event=None):
 
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
@@ -883,7 +901,8 @@ class diFFit2DFrame(wx.Frame):
         except:
             pass
 
-
+##############################################
+#### PANEL DEFINITIONS
     def XRD2DMenuBar(self):
 
         menubar = wx.MenuBar()
@@ -895,6 +914,7 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, '&Open diffration image', '', self.loadIMAGE)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', partial(self.saveIMAGE,raw=False))
         MenuItem(self, diFFitMenu, 'Save r&aw image to file', '', partial(self.saveIMAGE,raw=True))
+        MenuItem(self, diFFitMenu, 'Change larch &working folder', '', self.onFolderSelect)
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
 #         MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
