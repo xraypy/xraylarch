@@ -31,8 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      GridPanel, FileSave, HLine)
 
 import larch
-from larch.larchlib import read_workdir, save_workdir
-from larch_plugins.io import nativepath
+from larch.larchlib import read_workdir
 from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
@@ -178,14 +177,6 @@ class diFFit1DFrame(wx.Frame):
         print('Now using database: %s' % os.path.split(dbname)[-1])
 
     def onExit(self, event=None):
-
-        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-
-        ret = dlg.ShowModal()
-        if ret != wx.ID_YES:
-            return
-
         try:
             if hasattr(self.exit_callback, '__call__'):
                 self.exit_callback()
@@ -212,7 +203,6 @@ class diFFit1DFrame(wx.Frame):
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
         MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.chooseCIF)
-        MenuItem(self, diFFitMenu, 'Change &Working Folder', '', self.onFolderSelect)
         diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, 'Save 1D dataset to file', '', self.save1Dxrd)
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', self.xrd1Dviewer.onSAVEfig)
@@ -265,25 +255,6 @@ class diFFit1DFrame(wx.Frame):
 
 ##############################################
 #### 
-
-    def onFolderSelect(self, evt=None):
-        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
-        dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
-                           style=style)
-
-        if dlg.ShowModal() == wx.ID_OK:
-            basedir = os.path.abspath(str(dlg.GetPath()))
-            try:
-                if len(basedir)  > 0:
-                    os.chdir(nativepath(basedir))
-                    save_workdir(nativepath(basedir))
-            except OSError:
-                print( 'Changed folder failed')
-                pass
-        save_workdir('gsemap.dat')
-        dlg.Destroy()
-
-
     def fit1Dxrd(self,event=None):
         '''
         GUI interface for loading data to fitting panel (from data in viewer or file)
@@ -328,8 +299,7 @@ class diFFit1DFrame(wx.Frame):
                     xrdf.clearMATCHES()
                     
                 xrdf.xrd1dgrp = seldat
-                #xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
-                xrdf.plot1D.set_title(xrdf.xrd1dgrp.label)
+                xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
                 xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
                 xrdf.xmin     = np.min(xrdf.plt_data[xi])
@@ -721,6 +691,7 @@ class Fitting1DXRD(BasePanel):
 
         self.SetSizer(panel1D)
 
+
     def showCIF(self, event=None, **kws):
 
         if event is not None and self.xrd1dgrp is not None:
@@ -740,7 +711,7 @@ class Fitting1DXRD(BasePanel):
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
-#             self.plot_data()
+            self.plot_data()
             cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
             try:
                 cifdata = []
@@ -750,13 +721,12 @@ class Fitting1DXRD(BasePanel):
                 u,v,w = self.xrd1dgrp.uvw
                 D = self.xrd1dgrp.D
                 I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
-#                 self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
-                self.plot1D.update_line(3,self.plt_data[xi],I)
+                self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
             except:
                 qall,Iall = plot_sticks(qall,Iall)
                 cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
-#                 self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
-                self.plot1D.update_line(3,cifpks[xi],cifpks[3])
+                self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
+
     
     def createFittingPanels(self,parent):
         
@@ -905,12 +875,11 @@ class Fitting1DXRD(BasePanel):
     def plot_data(self,event=None):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-#         pltargs = {'title':self.xrd1dgrp.label,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-#         self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**pltargs)
-        self.plot1D.update_line(0,self.plt_data[xi],self.plt_data[3])
+        pltargs = {'title':self.xrd1dgrp.label,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+        self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**pltargs)
         
-#         self.plot_background()
-#         self.plot_peaks()
+        self.plot_background()
+        self.plot_peaks()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
 
@@ -1039,9 +1008,8 @@ class Fitting1DXRD(BasePanel):
         if self.xrd1dgrp is not None and not self.bkgdpl.ck_bkgd.GetValue():
             if np.max(self.plt_data[4]) > 0:
                 xi = self.rngpl.ch_xaxis.GetSelection()
-#                 bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-#                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
-                self.plot1D.update_line(1,self.plt_data[xi],self.plt_data[4])
+                bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
 
     def background_options(self,event=None):
 
@@ -1198,9 +1166,8 @@ class Fitting1DXRD(BasePanel):
             self.define_peaks()
             
             xi = self.rngpl.ch_xaxis.GetSelection()
-#             pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-#             self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
-            self.plot1D.update_line(2,self.plt_peaks[xi],self.plt_peaks[3])
+            pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
+            self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
 
     def remove_all_peaks(self,event=None):
 
@@ -1267,22 +1234,6 @@ class Fitting1DXRD(BasePanel):
         self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
-        
-        ## .set_title(title)'title':self.xrd1dgrp.label
-        pltargs = {'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.plot([0],[0],**pltargs)
-        bgrarg = {'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0],[0],**bgrarg)
-        pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-        self.plot1D.oplot([0],[0],**pkarg)
-        cifargs = {'color':'green','label':'CIF data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0],[0],**cifargs)
-        
-        ## =trace= =type=
-        ##    0     data
-        ##    1     background
-        ##    2     peaks
-        ##    3     cif
 
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
@@ -2991,18 +2942,18 @@ class SearchPanel(wx.Panel):
     def ResultsTools(self):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
         
-        self.btn_shw = wx.Button(self,label='Open CIF viewer')
+        self.btn_shw = wx.Button(self,label='Display CIF')
         self.btn_shw.Bind(wx.EVT_BUTTON, self.displayCIF)
 
         self.btn_clr = wx.Button(self,label='Clear list')
         self.btn_clr.Bind(wx.EVT_BUTTON, self.owner.clearMATCHES)
 
-        hbox.Add(self.btn_shw, flag=wx.BOTTOM, border=8)
-        hbox.Add(self.btn_clr, flag=wx.BOTTOM, border=8)
+        hbox.Add(self.btn_shw, flag=wx.RIGHT, border=8)
+        hbox.Add(self.btn_clr, flag=wx.RIGHT, border=8)
 
         vbox.Add(self.amcsdlistbox,  flag=wx.BOTTOM, border=8)
         vbox.Add(hbox,               flag=wx.RIGHT, border=8)
