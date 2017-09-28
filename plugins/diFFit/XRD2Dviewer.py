@@ -208,6 +208,8 @@ class diFFit2DFrame(wx.Frame):
         self.cake    = None
         self.twth    = None
         
+        self.calfile = ponifile
+        
         self.msk_img  = np.ones((PIXELS,PIXELS))
         self.bkgd_img = np.zeros((PIXELS,PIXELS))
         
@@ -234,10 +236,8 @@ class diFFit2DFrame(wx.Frame):
         self.Show()
         
         if ponifile is None:
-            self.calfile = None
             self.btn_integ.Disable()
         else:
-            self.calfile = ponifile
             self.btn_integ.Enable()
 
     def write_message(self, s, panel=0):
