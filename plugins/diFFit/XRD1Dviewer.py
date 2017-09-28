@@ -909,8 +909,8 @@ class Fitting1DXRD(BasePanel):
 #         self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**pltargs)
         self.plot1D.update_line(0,self.plt_data[xi],self.plt_data[3])
         
-        self.plot_background()
-        self.plot_peaks()
+#         self.plot_background()
+#         self.plot_peaks()
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
 
