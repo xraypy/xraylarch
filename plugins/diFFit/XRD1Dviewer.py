@@ -48,6 +48,9 @@ VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
 
+MT01 = np.array([0,1])
+MT00 = np.zeros(2)
+
 ENERGY = 19.0
 
 SRCH_MTHDS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
@@ -104,7 +107,7 @@ def plot_sticks(x,y):
     xy = np.zeros((2,len(x)*3+2))
 
     xstep = (x[1]-x[0])/2
-    xy[0,0] = x[0]-xstep
+    xyMT00 = x[0]-xstep
     xy[0,-1] = x[-1]+xstep
 
     for i,xyi in enumerate(zip(x,y)):
@@ -228,12 +231,18 @@ class diFFit1DFrame(wx.Frame):
 
         MenuItem(self, AnalyzeMenu, '&Select data for fitting', '', self.fit1Dxrd)
         AnalyzeMenu.AppendSeparator()
-        MenuItem(self, AnalyzeMenu, '&Database information', '', self.xrd1Dfitting.database_info)
-        MenuItem(self, AnalyzeMenu, '&Change database', '', self.xrd1Dfitting.open_database)
-        AnalyzeMenu.AppendSeparator()
         MenuItem(self, AnalyzeMenu, '&Fit instrumental broadening coefficients', '', self.xrd1Dfitting.fit_instrumental)
 
         menubar.Append(AnalyzeMenu, '&Analyze')
+
+        ###########################
+        ## Analyze
+        DatabaseMenu = wx.Menu()
+
+        MenuItem(self, DatabaseMenu, '&Database information', '', self.xrd1Dfitting.database_info)
+        MenuItem(self, DatabaseMenu, '&Change database', '', self.xrd1Dfitting.open_database)
+
+        menubar.Append(DatabaseMenu, '&Database')
 
         ###########################
         ## Help
@@ -619,7 +628,7 @@ class SelectFittingData(wx.Dialog):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Add things
-        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (170, 130),
+        self.slct_1Ddata = wx.ListBox(self.panel, 26, wx.DefaultPosition, (-1, 130),
                                       self.parent.list, wx.LB_SINGLE)
         btn_new = wx.Button(self.panel,label='Load data from file')
         btn_new.Bind(wx.EVT_BUTTON, self.load_file)
@@ -635,7 +644,10 @@ class SelectFittingData(wx.Dialog):
         oksizer.Add(canBtn, flag=wx.RIGHT, border=8)
         oksizer.Add(self.okBtn,  flag=wx.RIGHT,  border=8)
 
-        mainsizer.Add(self.slct_1Ddata, flag=wx.ALL, border=8)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(self.slct_1Ddata, flag=wx.ALL|wx.EXPAND, border=8)
+
+        mainsizer.Add(hsizer, flag=wx.BOTTOM|wx.EXPAND, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(btn_new, flag=wx.ALL, border=5)
         mainsizer.AddSpacer(15)
@@ -721,42 +733,43 @@ class Fitting1DXRD(BasePanel):
 
         self.SetSizer(panel1D)
 
-    def showCIF(self, event=None, **kws):
+    def plot_CIFpeaks(self, event=None, show=True, **kws):
 
-        if event is not None and self.xrd1dgrp is not None:
-            cifname = event.GetString()
-            amcsd_id = int(cifname.split()[0])
-            ciffile = '/%s' % cifname
+        if show:
+            if event is not None and self.xrd1dgrp is not None:
+                cifname = event.GetString()
+                amcsd_id = int(cifname.split()[0])
+                ciffile = '/%s' % cifname
             
-            energy = self.xrd1dgrp.energy
-            wavelength = self.xrd1dgrp.wavelength
-            maxI = np.max(self.plt_data[3])*0.95
-            maxq = np.max(self.plt_data[0])*1.05
+                energy = self.xrd1dgrp.energy
+                wavelength = self.xrd1dgrp.wavelength
+                maxI = np.max(self.plt_data[3])*0.95
+                maxq = np.max(self.plt_data[0])*1.05
             
-            xi = self.rngpl.ch_xaxis.GetSelection()
+                xi = self.rngpl.ch_xaxis.GetSelection()
 
-            cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
-            cif.structure_factors(wvlgth=wavelength,q_max=maxq)
-            qall,Iall = cif.qhkl,cif.Ihkl
-            Iall = Iall/max(Iall)*maxI
+                cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
+                cif.structure_factors(wvlgth=wavelength,q_max=maxq)
+                qall,Iall = cif.qhkl,cif.Ihkl
+                Iall = Iall/max(Iall)*maxI
 
-#             self.plot_data()
-            cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-            try:
-                cifdata = []
-                for i,I in enumerate(Iall):
-                    cifdata.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), I])
-                cifdata = np.array(zip(*cifdata))
-                u,v,w = self.xrd1dgrp.uvw
-                D = self.xrd1dgrp.D
-                I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
-#                 self.plot1D.oplot(self.plt_data[xi],I,**cifargs)  
-                self.plot1D.update_line(3,self.plt_data[xi],I)
-            except:
-                qall,Iall = plot_sticks(qall,Iall)
-                cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
-#                 self.plot1D.oplot(cifpks[xi],cifpks[3],**cifargs)
-                self.plot1D.update_line(3,cifpks[xi],cifpks[3])
+                cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+                try:
+                    cifdata = []
+                    for i,I in enumerate(Iall):
+                        cifdata.append([qall[i], twth_from_q(qall[i],wavelength), d_from_q(qall[i]), I])
+                    cifdata = np.array(zip(*cifdata))
+                    u,v,w = self.xrd1dgrp.uvw
+                    D = self.xrd1dgrp.D
+                    I = calc_broadening(cifdata,self.plt_data[1],wavelength,u=u,v=v,w=w,D=D)
+                    self.plot1D.update_line(3,self.plt_data[xi],I,draw=True,update_limits=False)
+                except:
+                    qall,Iall = plot_sticks(qall,Iall)
+                    cifpks = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
+                    self.plot1D.update_line(3,cifpks[xi],cifpks[3],draw=True,update_limits=False)
+        else:
+            self.plot1D.update_line(3,MT00,MT00,draw=True,update_limits=False)
+    
     
     def createFittingPanels(self,parent):
         
@@ -902,17 +915,41 @@ class Fitting1DXRD(BasePanel):
 ##############################################
 #### DATA CALCULATIONS FUNCTIONS
 
+    def plot_all(self,show=True,showbkg=None):
+    
+        if showbkg is None: showbkg = show
+
+        self.plot_background(show=showbkg)
+        self.plot_peaks(show=show)
+        self.plot_data()        
+
     def plot_data(self,event=None):
 
         xi = self.rngpl.ch_xaxis.GetSelection()
-#         pltargs = {'title':self.xrd1dgrp.label,'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-#         self.plot1D.plot(self.plt_data[xi],self.plt_data[3],**pltargs)
-        self.plot1D.update_line(0,self.plt_data[xi],self.plt_data[3])
-        
-#         self.plot_background()
-#         self.plot_peaks()
+        self.plot1D.update_line(0,self.plt_data[xi],self.plt_data[3],draw=True)
 
         self.rescale1Daxis(xaxis=True,yaxis=False)
+
+    def plot_background(self,show=True):
+
+        if show:
+            if self.xrd1dgrp is not None and not self.bkgdpl.ck_bkgd.GetValue():
+                xi = self.rngpl.ch_xaxis.GetSelection()
+                self.plot1D.update_line(1,self.plt_data[xi],self.plt_data[4],draw=True,update_limits=False)
+        else:
+            self.plot1D.update_line(1,MT00,MT00,draw=True,update_limits=False)
+            self.plot1D.update_line(4,MT00,MT00,draw=True,update_limits=False)
+
+    def plot_peaks(self,show=True):
+
+        if show:
+            if len(self.xrd1dgrp.pki) > 0:
+                self.define_peaks()
+            
+                xi = self.rngpl.ch_xaxis.GetSelection()
+                self.plot1D.update_line(2,self.plt_peaks[xi],self.plt_peaks[3],draw=True,update_limits=False)
+        else:
+            self.plot1D.update_line(2,MT00,MT00,draw=True,update_limits=False)
 
 ##############################################
 #### RANGE FUNCTIONS
@@ -943,7 +980,12 @@ class Fitting1DXRD(BasePanel):
         self.remove_background()
 
         self.SetFittingDefaults()
-        self.plot_data()
+
+        self.plot_all(show=False)
+
+#         self.plot_background(show=False)
+#         self.plot_peaks(show=False)
+#         self.plot_data()
 
     def onSetRange(self,event=None):
 
@@ -979,7 +1021,11 @@ class Fitting1DXRD(BasePanel):
         self.peaklist = []
 
         self.reset_range()
-        self.plot_data()
+
+        self.plot_all(show=False)
+#         self.plot_background(show=False)
+#         self.plot_peaks(show=False)
+#         self.plot_data()
 
     def reset_range(self,event=None):
 
@@ -1006,24 +1052,32 @@ class Fitting1DXRD(BasePanel):
 
     def onFitBkgd(self,event=None):
 
-        self.xrd1dgrp.fit_background()
+        bkgrdtest = self.xrd1dgrp.fit_background()
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
-
-        self.plot_data()
         
+        self.plot_background()
+
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        self.plot1D.update_line(4,self.plt_data[xi],bkgrdtest,draw=True,update_limits=False)
+
         self.bkgdpl.btn_rbkgd.Enable()
         self.bkgdpl.ck_bkgd.Enable()
 
     def onSbtrctBkgd(self,event=None):
 
         self.plt_data = self.xrd1dgrp.plot(bkgd=self.bkgdpl.ck_bkgd.GetValue())
-        self.plot_data()
+        
+        self.plot_all(showbkg=False)
+
+#         self.plot_background(show=False)
+#         self.plot_peaks()
+#         self.plot_data()
 
 
     def onRmvBkgd(self,event=None):
 
         self.remove_background()
-        self.plot_data()
+        self.plot_background(show=False)
 
     def remove_background(self,event=None):
 
@@ -1033,15 +1087,6 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
         self.bkgdpl.btn_rbkgd.Disable()
-
-    def plot_background(self,event=None):
-
-        if self.xrd1dgrp is not None and not self.bkgdpl.ck_bkgd.GetValue():
-            if np.max(self.plt_data[4]) > 0:
-                xi = self.rngpl.ch_xaxis.GetSelection()
-#                 bgrarg = {'title':self.xrd1dgrp.label,'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-#                 self.plot1D.oplot(self.plt_data[xi],self.plt_data[4],**bgrarg)
-                self.plot1D.update_line(1,self.plt_data[xi],self.plt_data[4])
 
     def background_options(self,event=None):
 
@@ -1076,16 +1121,17 @@ class Fitting1DXRD(BasePanel):
         self.xrd1dgrp.pki.append(idx)
 
         self.peak_display()
-        self.plot_data()
+        self.plot_peaks()
+
     
     def onRmvPksAll(self,event=None,filter=False):
 
         self.remove_all_peaks()
         self.srchpl.btn_mtch.Disable()
+        self.plot_peaks(show=False)
 
-    def find_peaks(self,event=None,filter=False):
+    def find_peaks(self,event=None,newpeaks=True,filter=False):
 
-        newpeaks = True
         if len(self.xrd1dgrp.pki) > 0:
             question = 'Are you sure you want to remove current peaks and search again?'
             newpeaks = YesNo(self,question,caption='Replace peaks warning')
@@ -1190,23 +1236,11 @@ class Fitting1DXRD(BasePanel):
 #         self.plt_peaks[2] = d_from_twth(pktwth,wavelength)
 #         self.plt_peaks[3] = pkI
 # 
-#         self.plot_data()
-
-    def plot_peaks(self):
-
-        if len(self.xrd1dgrp.pki) > 0:
-            self.define_peaks()
-            
-            xi = self.rngpl.ch_xaxis.GetSelection()
-#             pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-#             self.plot1D.oplot(self.plt_peaks[xi],self.plt_peaks[3],**pkarg)
-            self.plot1D.update_line(2,self.plt_peaks[xi],self.plt_peaks[3])
+#         self.plot_peaks()
 
     def remove_all_peaks(self,event=None):
 
         self.delete_all_peaks()
-        self.plot_data()
-
         self.pkpl.btn_rmvpks.Disable()
 
     def delete_all_peaks(self,event=None):
@@ -1254,9 +1288,7 @@ class Fitting1DXRD(BasePanel):
             self.peaklist.pop(pki)
             self.xrd1dgrp.pki.pop(pki)
 
-            self.define_peaks()
-
-            self.plot_data()
+            self.plot_peaks()
 
         self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
 
@@ -1270,14 +1302,16 @@ class Fitting1DXRD(BasePanel):
         
         ## .set_title(title)'title':self.xrd1dgrp.label
         pltargs = {'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.plot([0],[0],**pltargs)
+        self.plot1D.plot(MT01,MT01,**pltargs)
         bgrarg = {'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0],[0],**bgrarg)
+        self.plot1D.oplot(MT00,MT00,**bgrarg)
         pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-        self.plot1D.oplot([0],[0],**pkarg)
+        self.plot1D.oplot(MT00,MT00,**pkarg)
         cifargs = {'color':'green','label':'CIF data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot([0],[0],**cifargs)
-        
+        self.plot1D.oplot(MT00,MT00,**cifargs)
+        newargs = {'linestyle':'.','color':'purple','label':'pyFAI bayes bkgd','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
+        self.plot1D.oplot(MT00,MT00,**newargs)
+
         ## =trace= =type=
         ##    0     data
         ##    1     background
@@ -1516,7 +1550,7 @@ class Fitting1DXRD(BasePanel):
         self.srchpl.btn_shw.Disable()
         
         try:
-            self.plot_data()
+            self.plot_CIFpeaks(show=False)
         except:
             pass 
 
@@ -2993,7 +3027,7 @@ class SearchPanel(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.amcsdlistbox = EditableListBox(self, self.owner.showCIF, size=(200,150))
+        self.amcsdlistbox = EditableListBox(self, self.owner.plot_CIFpeaks, size=(200,150))
         
         self.btn_shw = wx.Button(self,label='Open CIF viewer')
         self.btn_shw.Bind(wx.EVT_BUTTON, self.displayCIF)
