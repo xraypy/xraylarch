@@ -159,16 +159,19 @@ class xrd1d(grpobjt):
             if 'SplineFile' in line:
                 self.splinefile = line.split()[-1]
             if 'PixelSize' in line:
-                self.pixelsize = [float(line.split()[2]),float(line.split()[3])]
+                self.pixelsize = [float(line.split()[-3]),float(line.split()[-2])]
             if 'PONI' in line:
                 self.poni = [float(line.split()[2]),float(line.split()[3])]
-            if 'Detector' in line:
+            if 'Distance Sample to Detector' in line:
                 self.distance = float(line.split()[-2])
             if 'Rotations' in line:
                 self.rotation = [float(line.split()[2]),float(line.split()[3]),float(line.split()[4])]
 
             if 'Wavelength' in line:
-                self.wavelength = float(line.split()[-1])*1e10
+                try:
+                    self.wavelength = float(line.split()[-1])*1e10
+                except:
+                    self.wavelength = float(line.split()[-2])*1e10
                 self.energy = E_from_lambda(self.wavelength)
             if 'Polarization' in line:
                 if line.split()[-1] != 'None': self.polarization = float(line.split()[-1])
