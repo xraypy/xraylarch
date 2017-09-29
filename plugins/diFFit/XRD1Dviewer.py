@@ -792,7 +792,6 @@ class Fitting1DXRD(BasePanel):
                 self.plot1D.update_line(1,self.plt_data[xi],self.plt_data[4],draw=True,update_limits=False)
         else:
             self.plot1D.update_line(1,MT00,MT00,draw=True,update_limits=False)
-            self.plot1D.update_line(4,MT00,MT00,draw=True,update_limits=False)
 
     def plot_peaks(self,show=True):
 
