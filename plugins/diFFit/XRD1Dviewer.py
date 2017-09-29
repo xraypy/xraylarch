@@ -825,7 +825,6 @@ class Fitting1DXRD(BasePanel):
                 qall,Iall = cif.qhkl,cif.Ihkl
                 Iall = Iall/max(Iall)*maxI
 
-                cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
                 try:
                     cifdata = []
                     for i,I in enumerate(Iall):
@@ -1177,22 +1176,21 @@ class Fitting1DXRD(BasePanel):
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
 
-        pltargs = {'color':'blue', 'label':'Data', 'xlabel':self.xlabel, 
-                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                   'show_legend':True}
-        self.plot1D.plot(MT01,MT01,**pltargs)
-        bgrarg = {'color':'red', 'label':'Background', 'xlabel':self.xlabel,
-                  'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                  'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**bgrarg)
-        pkarg = {'color':'red', 'label':'Peaks', 'xlabel':self.xlabel,
-                 'ylabel':self.ylabel, 'marker':'o','markersize':8 ,'linewidth':0,
-                 'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**pkarg)
-        cifargs = {'color':'green', 'label':'CIF data', 'xlabel':self.xlabel,
-                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                   'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**cifargs)
+        ## initialize plots
+        color      = ['blue', 'red',        'red',   'green',    'purple'      ]
+        marker     = [''    , '',           'o',     '',         ''            ]
+        label      = ['Data', 'Background', 'Peaks', 'CIF data', 'pyFAI Bayes' ]
+        markersize = [0,      0,            8,       0,          0             ]
+        linewidth  = [1,      1,            0,       1,          1             ]
+        args = {'xlabel':'self.xlabel','ylabel':'self.ylabel','show_legend':True}
+
+        for i in np.arange(len(label)):
+            args.update({'label':label[i],'color':color[i],'marker':marker[i],
+                        'markersize':markersize[i],'linewidth':linewidth[i]})
+            if i == 0:
+                self.plot1D.plot(MT01,MT01,**args)
+            else:
+                self.plot1D.oplot(MT00,MT00,**args)
 
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
