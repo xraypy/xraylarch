@@ -934,10 +934,13 @@ class Fitting1DXRD(BasePanel):
 
     def onFitBkgd(self,event=None):
 
-        self.xrd1dgrp.fit_background()
+        pyFAIbkgd = self.xrd1dgrp.fit_background()
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
         
         self.plot_background()
+        
+        xi = self.rngpl.ch_xaxis.GetSelection()
+        self.plot1D.update_line(4,self.plt_data[xi],pyFAIbkgd,draw=True,update_limits=False)
 
         self.bkgdpl.btn_rbkgd.Enable()
         self.bkgdpl.ck_bkgd.Enable()

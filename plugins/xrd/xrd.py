@@ -267,7 +267,6 @@ class xrd1d(grpobjt):
         self.bkgd = xrd_background(x,y)
         if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
         
-        
         print 'remove this or use this, I think; remove pyFAI from here?'
         import pyFAI
         from pyFAI.utils.bayes import BayesianBackground
