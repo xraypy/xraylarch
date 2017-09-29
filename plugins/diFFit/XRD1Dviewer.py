@@ -1173,22 +1173,19 @@ class Fitting1DXRD(BasePanel):
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
 
-        pltargs = {'color':'blue', 'label':'Data', 'xlabel':self.xlabel, 
-                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                   'show_legend':True}
-        self.plot1D.plot(MT01,MT01,**pltargs)
-        bgrarg = {'color':'red', 'label':'Background', 'xlabel':self.xlabel,
-                  'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                  'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**bgrarg)
-        pkarg = {'color':'red', 'label':'Peaks', 'xlabel':self.xlabel,
-                 'ylabel':self.ylabel, 'marker':'o','markersize':8 ,'linewidth':0,
-                 'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**pkarg)
-        cifargs = {'color':'green', 'label':'CIF data', 'xlabel':self.xlabel,
-                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
-                   'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**cifargs)
+        ## initialize plots
+        keys = ['label', 'color', 'linewidth', 'marker', 'markersize', 'show_legend',
+                'xlabel', 'ylabel']
+        argplt = [['Data',       'blue',  None, '', 0, True, self.xlabel, self.ylabel],
+                  ['Background', 'red',   None, '', 0, True, self.xlabel, self.ylabel],
+                  ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
+                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel]]
+        for i,argi in enumerate(argplt):
+            args = dict(zip(keys, argi))
+            if i == 0:
+                self.plot1D.plot(MT01,MT01,**args)
+            else:
+                self.plot1D.oplot(MT00,MT00,**args)
 
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
