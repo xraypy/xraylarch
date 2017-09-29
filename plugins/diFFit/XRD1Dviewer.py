@@ -934,13 +934,10 @@ class Fitting1DXRD(BasePanel):
 
     def onFitBkgd(self,event=None):
 
-        bkgrdtest = self.xrd1dgrp.fit_background()
+        self.xrd1dgrp.fit_background()
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
         
         self.plot_background()
-
-        xi = self.rngpl.ch_xaxis.GetSelection()
-        self.plot1D.update_line(4,self.plt_data[xi],bkgrdtest,draw=True,update_limits=False)
 
         self.bkgdpl.btn_rbkgd.Enable()
         self.bkgdpl.ck_bkgd.Enable()
@@ -1176,24 +1173,23 @@ class Fitting1DXRD(BasePanel):
         self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
-        
-        ## .set_title(title)'title':self.xrd1dgrp.label
-        pltargs = {'color':'blue','label':'Data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.plot(MT01,MT01,**pltargs)
-        bgrarg = {'color':'red','label':'Background','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**bgrarg)
-        pkarg = {'marker':'o','color':'red','markersize':8,'linewidth':0,'label':'Found peaks','show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**pkarg)
-        cifargs = {'color':'green','label':'CIF data','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**cifargs)
-        newargs = {'linestyle':'.','color':'purple','label':'pyFAI bayes bkgd','xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
-        self.plot1D.oplot(MT00,MT00,**newargs)
 
-        ## =trace= =type=
-        ##    0     data
-        ##    1     background
-        ##    2     peaks
-        ##    3     cif
+        pltargs = {'color':'blue', 'label':'Data', 'xlabel':self.xlabel, 
+                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
+                   'show_legend':True}
+        self.plot1D.plot(MT01,MT01,**pltargs)
+        bgrarg = {'color':'red', 'label':'Background', 'xlabel':self.xlabel,
+                  'ylabel':self.ylabel, 'marker':'', 'markersize':0,
+                  'show_legend':True}
+        self.plot1D.oplot(MT00,MT00,**bgrarg)
+        pkarg = {'color':'red', 'label':'Peaks', 'xlabel':self.xlabel,
+                 'ylabel':self.ylabel, 'marker':'o','markersize':8 ,'linewidth':0,
+                 'show_legend':True}
+        self.plot1D.oplot(MT00,MT00,**pkarg)
+        cifargs = {'color':'green', 'label':'CIF data', 'xlabel':self.xlabel,
+                   'ylabel':self.ylabel, 'marker':'', 'markersize':0,
+                   'show_legend':True}
+        self.plot1D.oplot(MT00,MT00,**cifargs)
 
     def on_cursor(self,x=None, y=None, **kw):
         self.x,self.y = x,y
