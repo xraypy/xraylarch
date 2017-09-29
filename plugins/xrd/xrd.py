@@ -261,10 +261,10 @@ class xrd1d(grpobjt):
                 self.I[self.imin:self.imax],
                 self.bkgd]
             
-    def fit_background(self):
+    def fit_background(self,**kwargs):
     
         x,y = self.q[self.imin:self.imax],self.I[self.imin:self.imax]
-        self.bkgd = xrd_background(x,y)
+        self.bkgd = xrd_background(x,y,**kwargs)
         if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
 
 #         print 'remove this or use this, I think; remove pyFAI from here?'
