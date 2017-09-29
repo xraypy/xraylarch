@@ -824,7 +824,6 @@ class Fitting1DXRD(BasePanel):
                 qall,Iall = cif.qhkl,cif.Ihkl
                 Iall = Iall/max(Iall)*maxI
 
-                cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
                 try:
                     cifdata = []
                     for i,I in enumerate(Iall):
