@@ -266,7 +266,7 @@ class xrd1d(grpobjt):
         x,y = self.q[self.imin:self.imax],self.I[self.imin:self.imax]
         self.bkgd = xrd_background(x,y)
         if len(self.bkgd) < len(y): self.bkgd = np.append(self.bkgd,self.bkgd[-1])
-        
+
 #         print 'remove this or use this, I think; remove pyFAI from here?'
 #         import pyFAI
 #         from pyFAI.utils.bayes import BayesianBackground
@@ -274,7 +274,7 @@ class xrd1d(grpobjt):
 #         b = background.__call__(x,y)
 # 
 #         return b
-        
+
     def find_peaks(self,bkgd=False,threshold=None,**kwargs):
     
         all_data = np.array(self.all_data(bkgd=bkgd))

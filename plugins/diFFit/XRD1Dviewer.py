@@ -792,7 +792,6 @@ class Fitting1DXRD(BasePanel):
                 self.plot1D.update_line(1,self.plt_data[xi],self.plt_data[4],draw=True,update_limits=False)
         else:
             self.plot1D.update_line(1,MT00,MT00,draw=True,update_limits=False)
-            self.plot1D.update_line(4,MT00,MT00,draw=True,update_limits=False)
 
     def plot_peaks(self,show=True):
 
@@ -938,7 +937,6 @@ class Fitting1DXRD(BasePanel):
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
         
         self.plot_background()
-        
 #         xi = self.rngpl.ch_xaxis.GetSelection()
 #         self.plot1D.update_line(4,self.plt_data[xi],pyFAIbkgd,draw=True,update_limits=False)
 
@@ -1183,8 +1181,12 @@ class Fitting1DXRD(BasePanel):
         argplt = [['Data',       'blue',  None, '', 0, True, self.xlabel, self.ylabel],
                   ['Background', 'red',   None, '', 0, True, self.xlabel, self.ylabel],
                   ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
+<<<<<<< HEAD
                   ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel],
                   ['pyFAI Bayes','purple',None, '', 0, True, self.xlabel, self.ylabel]]
+=======
+                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel]]
+>>>>>>> master
         for i,argi in enumerate(argplt):
             args = dict(zip(keys, argi))
             if i == 0:

@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonw
+#!/usr/bin/env python
 #
 # run larch script on remote larch server
 from __future__ import print_function
