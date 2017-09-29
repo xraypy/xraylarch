@@ -3,6 +3,7 @@
 
 exes/* -text
 exes/*/* -text
+dlls/*/* -text
 *.nib -text
 *.jpg -text
 *.png -text
@@ -11,6 +12,7 @@ exes/*/* -text
 *.so.* -text
 *.dylib -text
 *.ico -text
+*.a -text
 *.icns -text
 *.db -text
 *.exe -text
