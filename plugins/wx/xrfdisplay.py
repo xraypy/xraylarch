@@ -422,6 +422,9 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
         pack(zoompanel, zsizer)
 
+        pileup_opt = Check(ctrlpanel, ' Show Pileup Prediction ',
+                           action=self.onPileupPrediction, default=False)
+        self.wids['pileup'] = pileup_opt
         #
         self.wids['xray_lines'] = None
         if HAS_DV:
@@ -442,9 +445,10 @@ class XRFDisplayFrame(wx.Frame):
             xlines.SetMinSize((300, 240))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
+            store = xlines.GetStore()
+
         # main layout
         # may have to adjust comparison....
-        store = xlines.GetStore()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
@@ -454,6 +458,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
         sizer.Add(arrowpanel,          0, labstyle)
+        sizer.Add(pileup_opt,          0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         if self.wids['xray_lines'] is not None:
@@ -998,6 +1003,14 @@ class XRFDisplayFrame(wx.Frame):
             self.wids['ptable'].set_subtitle(out, index=index)
 
         self.draw()
+
+    def onPileupPrediction(self, event=None):
+        show = self.wids['pileup'].IsChecked()
+        if show:
+            self.mca.predict_pileup()
+            self.oplot(self.mca.energy, self.mca.pileup)
+        else:
+            self.plotmca(self.mca)
 
     def onYAxis(self, event=None):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()

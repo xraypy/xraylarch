@@ -110,10 +110,11 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     
     method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
                                                         omega,algorithm_A,algorithm_B)
+                                                        
     if method is None:
         print('No tomographic reconstruction packages available')
         return
-    
+        
     if method.lower().startswith('scikit') and HAS_scikit:
 
         tomo = []
@@ -121,15 +122,14 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
         cntr = int(npts - center) # flip axis for compatibility with tomopy convention
 
         if refine_cen:
-            
             if cen_range is None: cen_range = 12
             rng = int(cen_range) if cen_range > 0 and cen_range < 21 else 12
 
-            npts = sino.shape[1]
             cen_list,negentropy = [],[]
-
+            
+            print('Testing centers in range %i to % i...' % (cntr-rng, cntr+rng))
             for cen in np.arange(cntr-rng, cntr+rng, 1, dtype=int):
-                xslice = slice(npts-2*cen, -1) if cen < npts/2. else slice(0, npts-2*cen)
+                xslice = slice(npts-2*cen, -1) if cen <= npts/2. else slice(0, npts-2*cen)
                 recon = iradon(sino[0,xslice],
                                theta=omega, 
                                filter=algorithm_A,
@@ -138,9 +138,10 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
                 recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
                 negentropy += [(recon*np.log(recon)).sum()]
                 cen_list += [cen]
-            center = cen_list[np.array(negentropy).argmin()]
+            cntr = cen_list[np.array(negentropy).argmin()]
+            print('  Best value: %i' % int(npts - cntr))
 
-        xslice = slice(npts-2*cntr, -1) if cntr < npts/2. else slice(0, npts-2*cntr)
+        xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
 
         for sino0 in sino:
             tomo += [iradon(sino0[xslice], theta=omega, filter=algorithm_A,

@@ -159,9 +159,9 @@ def conv(e, mu, kernel='gaussian', fwhm_e=None, efermi=None):
         ### kernel ###
         hwhm = fwhm_e[n]/2.0
         if ('gauss' in kernel.lower()):
-            ky = gaussian(kx, cen=eup[n], sigma=hwhm)
+            ky = gaussian(kx, center=eup[n], sigma=hwhm)
         elif ('lor' in kernel.lower()):
-            ky = lorentzian(kx, cen=eup[n], sigma=hwhm)
+            ky = lorentzian(kx, center=eup[n], sigma=hwhm)
         else:
             raise ValueError("convolution kernel '{0}' not implemented".format(kernel))
         ky = ky/ky.sum() # normalize

@@ -2,11 +2,11 @@
 # Column.1: energy eV
 # Column.2: mutrans
 # Column.3: i0
-# Scan.element: Fe
-# Scan.edge: K
+# Element.edge: K
+# Element.symbol: Fe
 # Scan.start_time: 2001-08-10T11:10:00
 # Mono.name: Si 111
-# Mono.dspacing: 3.13553
+# Mono.d_spacing: 3.13553
 # Beamline.name: 20BM
 # Beamline.focusing: no
 # Beamline.harmonic_rejection: detuned
@@ -17,7 +17,7 @@
 # ///
 #  data from NXS school, 2001
 #------------------------
-#   energy     mu       i0
+#   energy     mutrans       i0
   6911.7671      -0.35992590E-01    280101.00
   6916.8730      -0.39081634E-01    278863.00
   6921.7030      -0.42193483E-01    278149.00

@@ -75,42 +75,57 @@ def readScanConfig(folder):
     # return scan, general, timestamp
     return scan
 
-def readROIFile(hfile):
+def readROIFile(hfile,xrd=False):
+
     cp =  ConfigParser()
     cp.read(hfile)
     output = []
-    for a in cp.options('rois'):
-        if a.lower().startswith('roi'):
-            iroi = int(a[3:])
-            name, dat = cp.get('rois',a).split('|')
-            lims = [int(i) for i in dat.split()]
-            ndet = len(lims)/2
-            dat = []
-            for i in range(ndet):
-                dat.append((lims[i*2], lims[i*2+1]))
-            output.append((iroi, name.strip(), dat))
-    roidata = sorted(output)
-                          
-    calib = {}
 
-    caldat = cp.options('calibration')
-    for attr in ('offset', 'slope', 'quad'):
-        calib[attr] = [float(x) for x in cp.get('calibration', attr).split()]
-    extra = {}
-    ndet = len(calib['offset'])
-    file_sections = cp.sections()
-    for section in ('dxp', 'extra'):
-        if section not in file_sections:
-            continue
-        for attr in cp.options(section):
-            tmpdat = [x for x in cp.get(section, attr).split()]
-            if len(tmpdat) == 2*ndet:
-                tmpdat = ['%s %s' % (i, j) for i, j in zip(tmpdat[::2], tmpdat[1::2])]
-            try:
-                extra[attr] = [int(x) for x in tmpdat]
-            except ValueError:
+    if xrd:
+        for a in cp.options('xrd1d'):
+            if a.lower().startswith('roi'):
+                iroi = int(a[3:])
+                name,unit,dat = cp.get('xrd1d',a).split('|')
+                lims = [float(i) for i in dat.split()]
+                dat = [lims[0], lims[1]]
+                output.append((iroi, name.strip(), unit.strip(), dat))
+        return sorted(output)
+    
+    else:
+        for a in cp.options('rois'):
+            if a.lower().startswith('roi'):
+                iroi = int(a[3:])
+                name, dat = cp.get('rois',a).split('|')
+                lims = [int(i) for i in dat.split()]
+                ndet = len(lims)/2
+                dat = []
+                for i in range(ndet):
+                    dat.append((lims[i*2], lims[i*2+1]))
+                output.append((iroi, name.strip(), dat))
+        roidata = sorted(output)
+                          
+        calib = {}
+
+        caldat = cp.options('calibration')
+        for attr in ('offset', 'slope', 'quad'):
+            calib[attr] = [float(x) for x in cp.get('calibration', attr).split()]
+        extra = {}
+        ndet = len(calib['offset'])
+        file_sections = cp.sections()
+        for section in ('dxp', 'extra'):
+            if section not in file_sections:
+                continue
+            for attr in cp.options(section):
+                tmpdat = [x for x in cp.get(section, attr).split()]
+                if len(tmpdat) == 2*ndet:
+                    tmpdat = ['%s %s' % (i, j) for i, j in zip(tmpdat[::2], tmpdat[1::2])]
                 try:
-                    extra[attr] = [float(x) for x in tmpdat]
+                    extra[attr] = [int(x) for x in tmpdat]
                 except ValueError:
-                    extra[attr] = tmpdat
-    return roidata, calib, extra
+                    try:
+                        extra[attr] = [float(x) for x in tmpdat]
+                    except ValueError:
+                        extra[attr] = tmpdat
+    
+    
+        return roidata, calib, extra

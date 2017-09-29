@@ -12,7 +12,10 @@
         0   30   Zn
         1   30   Zn
         2   34   Se
-        3   35   Br
+        3   36   Kr
+      # 3   33   As
+      # 3   32   Ge
+      # 3   31   Ga
 
  ATOMS                          * this list contains 35 atoms
  *   x          y          z      ipot  tag              distance

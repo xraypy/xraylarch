@@ -27,7 +27,7 @@ try:
     HAS_larch = True
 except:
     grpobjt = object
-
+    
 ##########################################################################
 # CLASSES
 
@@ -105,14 +105,8 @@ class xrd1d(grpobjt):
             self.polarization  = None
             self.normalization = None
 
-            if I is not None:
-                if xytq is not None:
-                    self.xrd_from_2d([q,I],'q')
-                elif twth is not None:
-                    self.xrd_from_2d([twth,I],'2th')
-                elif d is not None:
-                    self.xrd_from_2d([d,I],'d')
-        
+            if I is not None and x is not None:
+                self.xrd_from_2d([x,I],xtype)
                 self.bkgd = np.zeros(np.shape(self.I))
             else:
                 self.q    = None
@@ -165,16 +159,19 @@ class xrd1d(grpobjt):
             if 'SplineFile' in line:
                 self.splinefile = line.split()[-1]
             if 'PixelSize' in line:
-                self.pixelsize = [float(line.split()[2]),float(line.split()[3])]
+                self.pixelsize = [float(line.split()[-3]),float(line.split()[-2])]
             if 'PONI' in line:
                 self.poni = [float(line.split()[2]),float(line.split()[3])]
-            if 'Detector' in line:
+            if 'Distance Sample to Detector' in line:
                 self.distance = float(line.split()[-2])
             if 'Rotations' in line:
                 self.rotation = [float(line.split()[2]),float(line.split()[3]),float(line.split()[4])]
 
             if 'Wavelength' in line:
-                self.wavelength = float(line.split()[-1])*1e10
+                try:
+                    self.wavelength = float(line.split()[-1])*1e10
+                except:
+                    self.wavelength = float(line.split()[-2])*1e10
                 self.energy = E_from_lambda(self.wavelength)
             if 'Polarization' in line:
                 if line.split()[-1] != 'None': self.polarization = float(line.split()[-1])
@@ -380,29 +377,26 @@ class XRD(grpobjt):
             if verbose:
                 print('Could not locate file %s' % self.calfile)
     
-    def save_1D(self,path=None):
+    def save_1D(self,file=None):
 
-        pref,fname = os.path.split(self.filename)
-        if path is not None: pref = path
+        if file is None:
+            counter = 1
+            while os.path.exists('%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)):
+                counter += 1
+            file = '%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)
 
-        counter = 1
-        while os.path.exists('%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)):
-            counter += 1
-        return '%s/%s-%s-%03d.xy' % (pref,fname,self.title,counter)
+        return file
 
-    def save_2D(self,path=None,verbose=False):
+
+    def save_2D(self,file=None,verbose=False):
     
-        pref,fname = os.path.split(self.filename)
-        if path is not None: pref = path
-        
-        counter = 1
-        while os.path.exists('%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)):
-            counter += 1
-        tiffname = '%s/%s-%s-%03d.tiff' % (pref,fname,self.title,counter)
-        
-        if verbose:
-            print('Saving 2D data in file: %s' % (tiffname))
-        tifffile.imsave(tiffname,self.data2D)
+        if file is None:
+            counter = 1
+            while os.path.exists('%s/%s_%03d.tiff' % (os.getcwd(),self.title,counter)):
+                counter += 1
+            file = '%s/%s_%03d.tiff' % (os.getcwd(),self.title,counter)
+
+        tifffile.imsave(file,self.data2D)
 
 
 

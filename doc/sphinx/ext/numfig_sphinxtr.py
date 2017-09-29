@@ -58,9 +58,9 @@ def doctree_read(app, doctree):
                                                   isinstance(n, figtable.figtable)):
 
         for id in figure_info['ids']:
-            docnames_by_figname[id] = env.docname
 
-            fig_docname = docnames_by_figname[id]
+            fig_docname = docnames_by_figname[id] = env.docname
+
             if fig_docname not in docname_figs:
                 docname_figs[fig_docname] = OrderedDict()
 
@@ -77,6 +77,16 @@ def doctree_read(app, doctree):
 
     env.docnames_by_figname = docnames_by_figname
     env.docname_figs = docname_figs
+
+def figname_is_id(s):
+    "determine if string is 'idX' where X is an integer"
+    if s.startswith('id') and len(s) > 2:
+        isint = False
+        try:
+            isint = int(s[2:]) is not None
+        except ValueError:
+            isint = False
+        return isint
 
 def doctree_resolved(app, doctree, docname):
     # replace numfig nodes with links
@@ -100,15 +110,20 @@ def doctree_resolved(app, doctree, docname):
         last_secnum = 0
         secnums = sorted(secnums)
         figid = 1
+        istrs = [str(i) for i in range(10)]
         for secnum in secnums:
             if secnum[0] != last_secnum:
                 figid = 1
             for figname, subfigs in fignames_by_secnum[secnum].iteritems():
                 figids[figname] = str(secnum[0]) + '.' + str(figid)
-                for i, subfigname in enumerate(subfigs):
-                    subfigid = figids[figname] + chr(ord('a') + i)
+                isub = 0
+                for subfigname in subfigs:
+                    subfigid = figids[figname] + chr(ord('a') + isub)
                     figids[subfigname] = subfigid
-                figid += 1
+                    if not figname_is_id(subfigname):
+                        isub += 1
+                if not figname_is_id(figname):
+                    figid += 1
             last_secnum = secnum[0]
 
             env.figids = figids
@@ -116,15 +131,24 @@ def doctree_resolved(app, doctree, docname):
         for figure_info in doctree.traverse(lambda n: isinstance(n, nodes.figure) or \
                                                       isinstance(n, subfig.subfigend) or \
                                                       isinstance(n, figtable.figtable)):
-            id = figure_info['ids'][0]
-            fignum = figids[id]
+
+
+            try:
+                id = figure_info['ids'][0]
+                fignum = figids[id]
+            except (IndexError, KeyError):
+                continue
+
             for cap in figure_info.traverse(nodes.caption):
                 cap.insert(1, nodes.Text(" %s" % cap[0]))
-                if fignum[-1] in map(str, range(10)):
+                print(" CAPTION ", cap, fignum[-1])
+                if fignum[-1] in istrs:
                     boldcaption = "%s %s:" % (app.config.figure_caption_prefix, fignum)
                 else:
                     boldcaption = "(%s)" % fignum[-1]
                 cap[0] = nodes.strong('', boldcaption)
+                print(" --> ", boldcaption, cap)
+
 
         for ref_info in doctree.traverse(num_ref):
             if '#' in ref_info['reftarget']:
@@ -144,10 +168,14 @@ def doctree_resolved(app, doctree, docname):
                 if app.builder.name == 'singlehtml':
                     link = "#%s" % target
                 else:
-                    link = "%s#%s" % (app.builder.get_relative_uri(docname, target_doc),
-                                      target)
+                    link = "%s#%s"%(app.builder.get_relative_uri(docname,
+                                                                 target_doc),
+                                    target)
+                if target in figids:
+                    linktext = labelfmt % figids[target]
+                else:
+                    linktext = target
 
-                linktext = labelfmt % figids[target]
 
             html = '<a href="%s">%s</a>' % (link, linktext)
             ref_info.replace_self(nodes.raw(html, html, format='html'))

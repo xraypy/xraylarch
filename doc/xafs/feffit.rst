@@ -481,11 +481,15 @@ and generates the plots shown below
     :target: ../_images/feffit_example1.png
     :width: 100%
 
+    Data and Fit in :math:`k` space
+
 .. _fig-feffit1b:
 
 .. figure::  ../_images/feffit_example2.png
     :target: ../_images/feffit_example2.png
     :width: 100%
+
+    Data and Fit in :math:`R` space
 
 .. subfigend::
     :width: 0.45
@@ -914,7 +918,7 @@ manipulating the arrays of data.
     Zn K-edge XAFS data for ZnSe.
 
 For this example, we'll use Zn K-edge data of ZnSe, with :math:`\chi(k)`
-data shown in Figure :num:`fig-znse-xafs`.  The data is pretty good but not
+data shown in :numref:`fig-znse-xafs`.  The data is pretty good but not
 perfect, and is useful for the study here mainly because the structure is
 simple, with a well-isolated and well-ordered shell of scatterers (the
 cubic ZnS structure with 1 Zn site surrounded by 4 Se at 2.45
@@ -997,7 +1001,7 @@ has a slight negative dependence on :math:`Z`.
 
 .. subfigstart::
 
-.. _fig-znse-fit:
+.. _fig_znse_fit-zn:
 
 .. figure::  ../_images/Feffit_ZnSe_Zn.png
     :target: ../_images/Feffit_ZnSe_Zn.png
@@ -1040,7 +1044,7 @@ has a slight negative dependence on :math:`Z`.
 
 .. subfigend::
     :width: 0.30
-    :label: fig_znse_fits
+    :label: fig_znse_fitscomp
 
     Fits to ZnSe XAFS data using different back-scattering atoms.
 
@@ -1056,24 +1060,26 @@ Feff phase shift (:math:`\delta(k)` in the EXAFS Equation of Section
 complex math, we use the :func:`xftf_fast` function to the complex Fourier
 transform and build the magnitude of the transform explicitly.
 
-The phase corrected transforms are shown in black in Figure
-:num:`fig_znse_fits`, and show the key benefit of these transforms -- the
-peak in the phase corrected :math:`\chi(R)` peaks much closer to an :math:`R`
-that is the bond distance (for Zn-Se, around 2.45 :math:`\rm\AA`), whereas
-the normal XAFS Fourier transform peaks much lower.  This suggests a further
-test on whether the bond distance and :math:`Z` of the scattering atom are
-correct.  That is, in order for the phase-correction to give the correct
-interatomic distance, the total phase-shift has to be correct, which means
-that the :math:`Z` for the scatterer has to be correct (see the EXAFS
-Equation in Section :ref:`xafs-exafsequation_sec`).  So, we can compare the
-refined distance with the peak in the phase-corrected transform -- if they
-agree, it gives good confidence that the scatterer is correct.
+The phase corrected transforms are shown in black in
+:numref:`fig_znse_fit-zn` through :numref:`fig_znse_fit-rb`, and show the
+key benefit of these transforms -- the peak in the phase corrected
+:math:`\chi(R)` peaks much closer to an :math:`R` that is the bond distance
+(for Zn-Se, around 2.45 :math:`\rm\AA`), whereas the normal XAFS Fourier
+transform peaks much lower.  This suggests a further test on whether the
+bond distance and :math:`Z` of the scattering atom are correct.  That is,
+in order for the phase-correction to give the correct interatomic distance,
+the total phase-shift has to be correct, which means that the :math:`Z` for
+the scatterer has to be correct (see the EXAFS Equation in Section
+:ref:`xafs-exafsequation_sec`).  So, we can compare the refined distance
+with the peak in the phase-corrected transform -- if they agree, it gives
+good confidence that the scatterer is correct.
 
 Since the spacing of points in :math:`R` is :math:`\sim 0.03\rm\AA`, using
-the peak position may not be accurate enough.  Instead, we can use the value
-where :math:`\rm Im[\chi(R)_{\rm{ph cor}}]` passes through zero (see dashed
-lines in Figure :num:`fig_znse_fits`).  These values are reported in the
-:ref:`Table of ZnSe Results <xafs-feffit_znse_results>` as :math:`R_{\rm{phcor}}`.
+the peak position may not be accurate enough.  Instead, we can use the
+value where :math:`\rm Im[\chi(R)_{\rm{ph cor}}]` passes through zero (see
+dashed lines in :numref:`fig_znse_fit-zn` through
+:numref:`fig_znse_fit-rb`).  These values are reported in the :ref:`Table
+of ZnSe Results <xafs-feffit_znse_results>` as :math:`R_{\rm{phcor}}`.
 
 We see an interesting trend that while the refined distance *decreases* with
 :math:`Z`, the value for :math:`R_{\rm{phcor}}` increases slightly.  The two

@@ -186,6 +186,10 @@ class TransformGroup(Group):
         """cauchy wavelet transform -- meant to be used internally"""
         if self.kstep != self.__kstep or self.nfft != self.__nfft:
             self.make_karrays()
+        nkpts = len(chi)
+        nrpts = int(np.round(self.rmax/self.rstep))
+        if self.kwin is None:
+            self.make_cwt_arrays(nkpts, nrpts)
 
         omega = pi*np.arange(self.nfft)/(self.kstep*self.nfft)
 
@@ -194,7 +198,6 @@ class TransformGroup(Group):
         if kweight != 0:
             chi = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**kweight
 
-        nkpts = len(chi)
         if rmax is not None:
             self.rmax = rmax
 
