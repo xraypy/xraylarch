@@ -1177,16 +1177,15 @@ class Fitting1DXRD(BasePanel):
         self.plot1D.cursor_callback = self.on_cursor
 
         ## initialize plots
-        color      = ['blue', 'red',        'red',   'green',    'purple'      ]
-        marker     = [''    , '',           'o',     '',         ''            ]
-        label      = ['Data', 'Background', 'Peaks', 'CIF data', 'pyFAI Bayes' ]
-        markersize = [0,      0,            8,       0,          0             ]
-        linewidth  = [1,      1,            0,       1,          1             ]
-        args = {'xlabel':'self.xlabel','ylabel':'self.ylabel','show_legend':True}
-
-        for i in np.arange(len(label)):
-            args.update({'label':label[i],'color':color[i],'marker':marker[i],
-                        'markersize':markersize[i],'linewidth':linewidth[i]})
+        keys = ['label', 'color', 'linewidth', 'marker', 'markersize', 'show_legend',
+                'xlabel', 'ylabel']
+        argplt = [['Data',       'blue',  None, '', 0, True, self.xlabel, self.ylabel],
+                  ['Background', 'red',   None, '', 0, True, self.xlabel, self.ylabel],
+                  ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
+                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel],
+                  ['pyFAI Bayes','purple',None, '', 0, True, self.xlabel, self.ylabel]]
+        for i,argi in enumerate(argplt):
+            args = dict(zip(keys, argi))
             if i == 0:
                 self.plot1D.plot(MT01,MT01,**args)
             else:
