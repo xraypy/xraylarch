@@ -915,6 +915,7 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, diFFitMenu, 'Sa&ve displayed image to file', '', partial(self.saveIMAGE,raw=False))
         MenuItem(self, diFFitMenu, 'Save r&aw image to file', '', partial(self.saveIMAGE,raw=True))
         MenuItem(self, diFFitMenu, 'Change larch &working folder', '', self.onFolderSelect)
+
 #         MenuItem(self, diFFitMenu, '&Save settings', '', None)
 #         MenuItem(self, diFFitMenu, '&Load settings', '', None)
 #         MenuItem(self, diFFitMenu, 'A&dd analysis to map file', '', None)
