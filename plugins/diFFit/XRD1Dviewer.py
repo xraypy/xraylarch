@@ -1183,7 +1183,6 @@ class Fitting1DXRD(BasePanel):
                   ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
                   ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel],
                   ['pyFAI Bayes','purple',None, '', 0, True, self.xlabel, self.ylabel]]
-                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel]]
 
         for i,argi in enumerate(argplt):
             args = dict(zip(keys, argi))
