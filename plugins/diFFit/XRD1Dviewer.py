@@ -3096,7 +3096,6 @@ class Calc1DPopup(wx.Dialog):
                                     size = (210,460))
         self.parent = parent
         self.data2D = xrd2Ddata
-        self.steps = 5001
 
         self.createPanel()
         
@@ -3190,10 +3189,6 @@ class Calc1DPopup(wx.Dialog):
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
-
-    def getValues(self):
-
-        self.steps = int(self.xstep.GetValue())
 
 class DatabaseInfoGUI(wx.Dialog):
     '''
