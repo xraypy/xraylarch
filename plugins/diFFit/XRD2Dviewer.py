@@ -629,7 +629,7 @@ class diFFit2DFrame(wx.Frame):
                 if int(myDlg.xstep.GetValue()) < 1:
                     attrs = {'steps':5001}
                 else:
-                    attrs = {'steps':int(myDlg.steps)}
+                    attrs = {'steps':int(myDlg.xstep.GetValue())}
                 unit = '2th' if unts == 1 else 'q'
                 attrs.update({'unit':unit,'verbose':True})
             myDlg.Destroy()

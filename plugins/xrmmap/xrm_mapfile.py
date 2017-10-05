@@ -220,11 +220,6 @@ class GSEXRM_MapRow:
                  mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
-        ## need one type of data to build file; could be modified for just scalars?
-        ## mkak 2017.09.18
-        # if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
-        #     return
-
         self.read_ok = False
         self.nrows_expected = nrows_expected
 
@@ -302,14 +297,14 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
 
-        atime = os.stat(os.path.join(folder, sisfile)).st_ctime
+        atime = -1
 
         xrf_dat,xrf_file = None,os.path.join(folder, xrffile)
         xrd_dat,xrd_file = None,os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
-                if os.file.exists(xrf_file):
+                if os.path.exists(xrf_file):
                     atime = os.stat(xrf_file).st_ctime
                 if FLAGxrf:
                     xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
