@@ -304,8 +304,7 @@ class GSEXRM_MapRow:
 
         while atime < 0 and time.time()-t0 < 10:
             try:
-                if os.path.exists(xrf_file):
-                    atime = os.stat(xrf_file).st_ctime
+                atime = os.stat(os.path.join(folder, sisfile)).st_ctime
                 if FLAGxrf:
                     xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
                     if xrf_dat is None:
