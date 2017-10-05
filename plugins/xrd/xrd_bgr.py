@@ -253,12 +253,13 @@ class XRDBackground:
         # Expand spectrum
         if compress > 1:
             bckgnd = expand_array(bckgnd, compress)
-
-        # Bgr should be positive integers??
-        bgr = bckgnd.astype(int)
-        idx = np.where(bgr <= 0)
-        bgr[idx] = 0
-        self.bgr = bgr
+# 
+#         # Bgr should be positive integers??
+#         bgr = bckgnd.astype(int)
+#         idx = np.where(bgr <= 0)
+#         bgr[idx] = 0
+#         self.bgr = bgr
+        self.bgr = bckgnd
 
 def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None):
     """fit background for XRF spectra.  Arguments:

@@ -220,11 +220,6 @@ class GSEXRM_MapRow:
                  mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
-        ## need one type of data to build file; could be modified for just scalars?
-        ## mkak 2017.09.18
-        # if not FLAGxrf and not FLAGxrd2D and not FLAGxrd1D:
-        #     return
-
         self.read_ok = False
         self.nrows_expected = nrows_expected
 

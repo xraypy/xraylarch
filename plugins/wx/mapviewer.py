@@ -3228,18 +3228,25 @@ class OpenMapFolder(wx.Dialog):
         else:
             for poniinfo in self.PoniInfo: poniinfo.Disable()
 
-        if not os.path.exists(self.Fldr.GetValue()):
+        ## build map without need for any XRD or XRF data (just scalars)
+        if os.path.exists(self.Fldr.GetValue()):
+            self.FindWindowById(wx.ID_OK).Enable()      
+        else:
             self.Fldr.SetValue('')
             self.FindWindowById(wx.ID_OK).Disable()
-            return
-        
-        add_data = False
-        for ckbk in self.ChkBx:
-            if ckbk.GetValue(): add_data = True
-        if add_data:
-            self.FindWindowById(wx.ID_OK).Enable()
-        else:
-            self.FindWindowById(wx.ID_OK).Disable()
+
+#         if not os.path.exists(self.Fldr.GetValue()):
+#             self.Fldr.SetValue('')
+#             self.FindWindowById(wx.ID_OK).Disable()
+#             return
+# 
+#         add_data = False
+#         for ckbk in self.ChkBx:
+#             if ckbk.GetValue(): add_data = True
+#         if add_data:
+#             self.FindWindowById(wx.ID_OK).Enable()
+#         else:
+#             self.FindWindowById(wx.ID_OK).Disable()
 
     def onH5cmpr(self,event=None):
     
