@@ -130,7 +130,7 @@ def scan_from_db(scanname, filename='scan.001',  _larch=None):
     if _larch.symtable._scan._scandb is None:
         return
     scandb = _larch.symtable._scan._scandb
-    print(" Scan From DB ", scanname, scandb)
+    # print(" Scan From DB ", scanname, scandb)
     try:
         scan = scandb.make_scan(scanname, larch=_larch)
         scan.filename = filename
