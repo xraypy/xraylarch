@@ -114,7 +114,7 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     if method is None:
         print('No tomographic reconstruction packages available')
         return
-        
+    
     if method.lower().startswith('scikit') and HAS_scikit:
 
         tomo = []
@@ -162,6 +162,9 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
         
         ## reorder to slice, x, y
         tomo = np.flip(tomo,1)
+
+    else:
+        tomo = np.zeros((1,np.shape(sino)[0],np.shape(sino)[0]))
 
     return center,tomo
 
