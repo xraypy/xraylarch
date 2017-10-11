@@ -325,7 +325,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
 
-        map = self.owner.filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
+        map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
 
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
@@ -442,7 +442,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             dname   = self.vardet[varname].GetStringSelection()
             dtcorr  = self.varcor[varname].IsChecked()
 
-            self.map = filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
+            self.map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
 
             _larch.symtable.set_symbol(str(varname), self.map)
             if main_file is None:
@@ -1164,17 +1164,17 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
+            mapx = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
             
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
             mapx = 1.
 
-        r_map = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
+        r_map = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
         if plt3:
-            g_map = xrmfile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = xrmfile.return_roimap(det_name[2],roi_name[2],**args)
+            g_map = xrmfile.get_roimap(roi_name[1],det=det_name[1],**args)
+            b_map = xrmfile.get_roimap(roi_name[2],det=det_name[2],**args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
@@ -1261,8 +1261,8 @@ class MapPanel(GridPanel):
             print("WARNING: cannot make correlation plot with matrix of '1'")
             return
 
-        map1 = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
-        map2 = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
+        map1 = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
+        map2 = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
