@@ -897,7 +897,7 @@ class TomographyPanel(GridPanel):
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
-        
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         det_name,roi_name = [],[]
@@ -920,7 +920,7 @@ class TomographyPanel(GridPanel):
         args={'trim_sino'  : flagxrd,
               'no_hotcols' : self.chk_hotcols.GetValue(),
               'dtcorrect'  : self.chk_dftcor.GetValue()}
-        
+
         r_map = xrmfile.get_sinogram(det_name[0],roi_name[0],**args)
         if plt3:
             g_map = xrmfile.get_sinogram(det_name[1],roi_name[1],**args)
@@ -1003,7 +1003,7 @@ class TomographyPanel(GridPanel):
                 'algorithm_A' : self.alg_choice[1].GetStringSelection(),
                 'algorithm_B' : self.alg_choice[2].GetStringSelection(),
                 'omega'       : ome}
-                
+
 
         tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
 
@@ -1322,7 +1322,7 @@ class MapPanel(GridPanel):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
-              
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         det_name,roi_name = [],[]
@@ -1337,7 +1337,7 @@ class MapPanel(GridPanel):
 
         if roi_name[-1] != '1':
             mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
-            
+
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
@@ -1416,7 +1416,7 @@ class MapPanel(GridPanel):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
-              
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         det_name,roi_name = [],[]
@@ -2152,7 +2152,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                    defaultDir=os.getcwd(),
                                    defaultFile='%s.xy' % stem,
                                    wildcard=wildcards,
-                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                                   style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
                 dlg.Destroy()
@@ -2178,7 +2178,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                    defaultDir=os.getcwd(),
                                    defaultFile='%s.tiff' % stem,
                                    wildcard=wildcards,
-                                   style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                                   style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
                 dlg.Destroy()
@@ -2756,9 +2756,9 @@ class MapViewerFrame(wx.Frame):
 #             if path in self.filemap:
 #                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
 #                                            'Re-read file?', style=wx.YES_NO))
-# 
+#
 #         dlg.Destroy()
-# 
+#
 #         if read:
 #             xrmfile = GSEXRM_MapFile(filename=str(path))
 #             self.add_xrmfile(xrmfile)
@@ -3161,11 +3161,11 @@ class OpenMapFolder(wx.Dialog):
         ################################################################################
         h5cmpr_chc = ['gzip','lzf']
         h5cmpr_opt = ['%i' % i for i in np.arange(10)]
-        
+
         self.H5cmprInfo = [Choice(panel,      choices=h5cmpr_chc),
                            Choice(panel,      choices=h5cmpr_opt)]
         h5txt = SimpleText(panel, label='H5 File Comppression:')
-                           
+
         self.H5cmprInfo[0].SetSelection(0)
         self.H5cmprInfo[1].SetSelection(2)
 
@@ -3235,7 +3235,7 @@ class OpenMapFolder(wx.Dialog):
             self.FindWindowById(wx.ID_OK).Disable()
 
     def onH5cmpr(self,event=None):
-    
+
         if self.H5cmprInfo[0].GetSelection() == 0:
             self.H5cmprInfo[1].Enable()
             self.H5cmprInfo[1].SetChoices(['%i' % i for i in np.arange(10)])
