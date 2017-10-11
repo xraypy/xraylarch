@@ -670,8 +670,8 @@ class TomographyPanel(GridPanel):
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-        self.chk_dftcor  = Check(self, label='Correct Deadtime?')
-        self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
+        self.chk_dftcor  = wx.CheckBox(self, label='Correct Deadtime?')
+        self.chk_hotcols = wx.CheckBox(self, label='Ignore First/Last Columns?')
 
         self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
 
@@ -684,16 +684,16 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        tomo_pkg,self.tomo_alg_A,self.tomo_alg_B = return_methods()
+        self.tomo_pkg,self.tomo_alg_A,self.tomo_alg_B = return_methods()
 
-        self.alg_choice = [Choice(self, choices=tomo_pkg,           size=(125, -1)),
+        self.alg_choice = [Choice(self, choices=self.tomo_pkg,      size=(125, -1)),
                            Choice(self, choices=self.tomo_alg_A[0], size=(125, -1)),
                            Choice(self, choices=self.tomo_alg_B[0], size=(125, -1))]
         self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
-        self.refine_center = Check(self, label='Refine?')
+        self.refine_center = wx.CheckBox(self, label='Refine?')
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
@@ -769,28 +769,25 @@ class TomographyPanel(GridPanel):
 
         for chc in self.alg_choice: chc.Enable()
 
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center): chk.Enable()
-        for btn in (self.sino_show+self.tomo_show): btn.Enable()
+        for chk in (self.chk_dftcor,self.chk_hotcols): chk.Enable()
+        for btn in (self.sino_show): btn.Enable()
 
-        self.center_value.Enable()
-
-        self.center_range.SetValue(10)
-        self.center_range.SetRange(1,20)
+        if self.tomo_pkg[0] != '':
+            for btn in (self.tomo_show): btn.Enable()
+            self.refine_center.Enable()
+            self.center_value.Enable()
+            self.center_range.SetValue(10)
+            self.center_range.SetRange(1,20)
 
     def update_xrmmap(self, xrmmap):
 
         self.cfile  = self.owner.current_file
         self.xrmmap = self.cfile.xrmmap
+        scan_version = getattr(self.cfile, 'scan_version', 2.00)
+        hotcol = True if scan_version < 1.36 else False
 
-        try:
-            scan_version = getattr(self.cfile, 'scan_version', 1.00)
-        except:
-            scan_version = 2.0 ## default off if fails to find parameter
-
-        if scan_version < 1.36:
-            self.chk_hotcols.SetValue(1)
-        else:
-            self.chk_hotcols.SetValue(0)
+        self.chk_hotcols.SetValue(hotcol)
+        self.chk_dftcor.SetValue(True)
 
         self.enable_options()
         self.set_det_choices(xrmmap)
@@ -800,10 +797,11 @@ class TomographyPanel(GridPanel):
         except:
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
-        center = self.cfile.get_tomo_center()
+        if self.tomo_pkg[0] != '':
+            center = self.cfile.get_tomo_center()
+            self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
+            self.center_value.SetValue(center)
 
-        self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
-        self.center_value.SetValue(center)
         self.plotSELECT()
         self.refineCHOICE()
 
@@ -974,7 +972,7 @@ class TomographyPanel(GridPanel):
     def onShowSinogram(self, event=None, new=True):
 
         title,subtitles,info,x,ome,sino = self.calculateSinogram()
-
+        
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
@@ -1228,16 +1226,11 @@ class MapPanel(GridPanel):
 
         self.cfile  = self.owner.current_file
         self.xrmmap = self.cfile.xrmmap
+        scan_version = getattr(self.cfile, 'scan_version', 2.00)
+        hotcol = True if scan_version < 1.36 else False
 
-        try:
-            scan_version = getattr(self.cfile, 'scan_version', 1.00)
-        except:
-            scan_version = 2.0 ## default off if fails to find parameter
-
-        if scan_version < 1.36:
-            self.chk_hotcols.SetValue(1)
-        else:
-            self.chk_hotcols.SetValue(0)
+        self.chk_hotcols.SetValue(hotcol)
+        self.chk_dftcor.SetValue(True)
 
         self.enable_options()
         self.set_det_choices(xrmmap)
@@ -2815,8 +2808,11 @@ class MapViewerFrame(wx.Frame):
             self.process_file(fname)
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
-            os.chdir(nativepath(parent))
-            save_workdir(nativepath(parent))
+            try:
+                os.chdir(nativepath(parent))
+                save_workdir(nativepath(parent))
+            except:
+                pass
 
 
     def openPONI(self, evt=None):
