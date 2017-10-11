@@ -1758,13 +1758,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             choice_labels.append(desc)
 
         c.AppendItems(choice_labels)
+        this_label = ''
         if len(self.choices) > 0:
             idx = 0
         if show_last:
             idx = len(self.choices)-1
         try:
             this_label = choice_labels[idx]
-        except IndexError:
+        except:
             return
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
@@ -2440,14 +2441,14 @@ class MapViewerFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'D&efine new ROI',
-                 'D&efine new ROI',  self.defineROI)
-        MenuItem(self, fmenu, 'Load R&OI File for 1DXRD',
+        MenuItem(self, fmenu, 'Define new ROI',
+                 'Define new ROI',  self.defineROI)
+        MenuItem(self, fmenu, 'Load ROI File for 1DXRD',
                  'Load ROI File for 1DXRD',  self.add1DXRDFile)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, '&Load XRD calibration file',
+        MenuItem(self, fmenu, 'Load XRD calibration file',
                  'Load XRD calibration file',  self.openPONI)
-        MenuItem(self, fmenu, '&Add 1DXRD for HDF5 file',
+        MenuItem(self, fmenu, 'Add 1DXRD for HDF5 file',
                  'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
         fmenu.AppendSeparator()
 
@@ -2675,40 +2676,21 @@ class MapViewerFrame(wx.Frame):
 
     def defineROI(self, event=None):
     
-#         if not self.h5convert_done:
-#             print( 'cannot open file while processing a map folder')
-#             return
+        if not self.h5convert_done:
+            print( 'cannot open file while processing a map folder')
+            return
 
         myDlg = ROIPopUp(self)
 
         path, read = None, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
-
-#             flipchoice = False if myDlg.PoniInfo[0].GetSelection() == 1 else True
-#             args = {'folder':           myDlg.Fldr.GetValue(),
-#                     'FLAGxrf':          myDlg.ChkBx[0].GetValue(),
-#                     'FLAGxrd2D':        myDlg.ChkBx[1].GetValue(),
-#                     'FLAGxrd1D':        myDlg.ChkBx[2].GetValue(),
-#                     'poni':             myDlg.PoniInfo[1].GetValue(),
-#                     'azwdgs':           myDlg.PoniInfo[6].GetValue(),
-#                     'qstps':            myDlg.PoniInfo[4].GetValue(),
-#                     'flip':             flipchoice,
-#                     'facility':         myDlg.info[0].GetValue(),
-#                     'beamline':         myDlg.info[1].GetValue(),
-#                     'date':             myDlg.info[2].GetValue(),
-#                     'run':              myDlg.info[3].GetValue(),
-#                     'proposal':         myDlg.info[4].GetValue(),
-#                     'user':             myDlg.info[5].GetValue(),
-#                     'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
-#                     'compression_opts': myDlg.H5cmprInfo[1].GetSelection()}
         myDlg.Destroy()
 
-#         if read:
-#             xrmfile = GSEXRM_MapFile(**args)
-#             self.add_xrmfile(xrmfile)
-#     
-# 
+        if read:
+            for p in self.nbpanels:
+                if hasattr(p, 'update_xrmmap'):
+                    p.update_xrmmap(self.current_file.xrmmap)
 
     def add1DXRDFile(self, event=None):
 
