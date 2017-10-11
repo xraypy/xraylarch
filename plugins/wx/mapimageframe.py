@@ -425,7 +425,7 @@ class MapImageFrame(ImageFrame):
             x = float(self.panel.xdata[int(ix)])
             y = float(self.panel.ydata[int(iy)])
             self.save_callback(name, ix, iy, x=x, y=y,
-                               title=self.title, datafile=self.xrmfile)
+                               title=self.title, xrmfile=self.xrmfile)
 
 CorrelatedMapFrame = None
 if get_wxmplot_version() > 0.922:
