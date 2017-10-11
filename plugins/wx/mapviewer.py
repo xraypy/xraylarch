@@ -325,7 +325,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
 
-        map = self.owner.filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
+        map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
 
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
@@ -442,7 +442,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
             dname   = self.vardet[varname].GetStringSelection()
             dtcorr  = self.varcor[varname].IsChecked()
 
-            self.map = filemap[fname].return_roimap(dname, roiname, dtcorrect=dtcorr)
+            self.map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
 
             _larch.symtable.set_symbol(str(varname), self.map)
             if main_file is None:
@@ -469,171 +469,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         self.owner.display_map(omap, title=title, subtitles=subtitles,
                                info=info, x=x, y=y, xrmfile=main_file)
-
-class ROIPanel(GridPanel):
-    '''Panel of Controls for reconstructing a tomographic slice'''
-    label  = 'ROI Tools'
-    def __init__(self, parent, owner, **kws):
-
-        self.owner = owner
-        self.cfile,self.xrmmap = None,None
-
-        GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
-
-        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
-        self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
-                         Choice(self, choices=[''],        size=(120, -1))]
-        fopts = dict(minval=-1, precision=3, size=(100, -1))
-        self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
-                         FloatCtrl(self, value=-1, **fopts),
-                         FloatCtrl(self, value=0,  **fopts),
-                         FloatCtrl(self, value=-1, **fopts)]
-
-        self.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=6, style=LEFT, newrow=True)
-
-        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-
-        self.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
-        self.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
-        self.Add(SimpleText(self, ''),newrow=True)
-
-        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-
-        ###############################################################################
-
-        self.rm_roi_ch = [Choice(self, choices=[''],        size=(120, -1)),
-                          Choice(self, choices=[''],        size=(120, -1))]
-        fopts = dict(minval=-1, precision=3, size=(100, -1))
-        self.rm_roi_lims = SimpleText(self, '')
-
-        self.Add(SimpleText(self, ''),newrow=True)
-        self.Add(SimpleText(self, '--    Delete saved ROI    --'), dcol=6, style=LEFT, newrow=True)
-
-        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-
-        self.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]), dcol=1, style=LEFT, newrow=True)
-        self.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), dcol=1, style=LEFT,newrow=True)
-        self.Add(SimpleText(self, 'Limits:'), dcol=1, style=LEFT, newrow=True)
-        self.Add(self.rm_roi_lims, dcol=3, style=LEFT)
-        self.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), dcol=1, style=LEFT, newrow=True)
-        self.Add(SimpleText(self, ''),newrow=True)
-
-        self.Add(HLine(self, size=(500, 4)), dcol=8, style=LEFT,  newrow=True)
-
-
-        self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
-        self.roi_lims[2].Disable()
-        self.roi_lims[3].Disable()
-
-        self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
-
-        self.pack()
-
-    def update_xrmmap(self, xrmmap):
-
-        self.cfile   = self.owner.current_file
-        self.xrmmap = self.cfile.xrmmap
-
-        self.cfile.reset_flags()
-        self.roiTYPE()
-
-    def roiTYPE(self,event=None):
-        roitype = []
-        delroi = []
-        if self.cfile.flag_xrf:
-            roitype += ['XRF']
-        if self.cfile.flag_xrd1d:
-            roitype += ['1DXRD']
-            delroi  = ['xrd1D']
-        if self.cfile.flag_xrd2d:
-            roitype += ['2DXRD']
-        if len(roitype) < 1:
-            roitype = ['']
-        self.roi_chc[0].SetChoices(roitype)
-        self.roiUNITS()
-        if len(delroi) > 0:
-            self.rm_roi_ch[0].SetChoices(delroi)
-            self.setROI()
-
-    def onRemoveROI(self,event=None):
-
-        detname = self.rm_roi_ch[0].GetStringSelection()
-        roiname = self.rm_roi_ch[1].GetStringSelection()
-
-        if detname == 'xrd1D':
-            self.cfile.del_xrd1Droi(roiname)
-            self.setROI()
-
-    def setROI(self):
-
-        detname = self.rm_roi_ch[0].GetStringSelection()
-        try:
-            detgrp = self.cfile.xrmmap['roimap'][detname]
-        except:
-            return
-        limits,names = [],detgrp.keys()
-        for name in names:
-            limits += [list(detgrp[name]['limits'][:])]
-
-        self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
-        self.roiSELECT()
-
-
-    def roiSELECT(self,event=None):
-
-        detname = self.rm_roi_ch[0].GetStringSelection()
-        roiname = self.rm_roi_ch[1].GetStringSelection()
-
-        roi = self.cfile.xrmmap['roimap'][detname][roiname]
-        limits = roi['limits'][:]
-        units = roi['limits'].attrs['units']
-
-        if units == '1/A':
-            roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
-        else:
-            roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
-
-        self.rm_roi_lims.SetLabel(roistr)
-
-
-    def roiUNITS(self,event=None):
-
-        choice = self.roi_chc[0].GetStringSelection()
-        roiunit = ['']
-        if choice == 'XRF':
-            roiunit = ['eV','keV','channels']
-            self.roi_lims[2].Disable()
-            self.roi_lims[3].Disable()
-        elif choice == '1DXRD':
-            roiunit = [u'\u212B\u207B\u00B9 (q)',u'\u00B0 (2\u03B8)',u'\u212B (d)']
-            self.roi_lims[2].Disable()
-            self.roi_lims[3].Disable()
-        elif choice == '2DXRD':
-            roiunit = ['pixels']
-            self.roi_lims[2].Enable()
-            self.roi_lims[3].Enable()
-        self.roi_chc[1].SetChoices(roiunit)
-
-    def onCreateROI(self,event=None):
-
-        xtyp  = self.roi_chc[0].GetStringSelection()
-        xunt  = self.roi_chc[1].GetStringSelection()
-        xname = self.roi_name.GetValue()
-        xrange = [float(lims.GetValue()) for lims in self.roi_lims]
-        if xtyp != '2DXRD': xrange = xrange[:2]
-
-        self.owner.message('Calculating ROI: %s' % xname)
-        if xtyp == 'XRF':
-            self.cfile.add_xrfroi(xrange,xname,unit=xunt)
-        elif xtyp == '1DXRD':
-            xrd = ['q','2th','d']
-            unt = xrd[self.roi_chc[1].GetSelection()]
-            self.cfile.add_xrd1Droi(xrange,xname,unit=unt)
-        elif xtyp == '2DXRD':
-            self.cfile.add_xrd2Droi(xrange,xname,unit=xunt)
-        self.owner.message('Ready')
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -1329,17 +1164,16 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
-
+            mapx = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
             mapx = 1.
 
-        r_map = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
+        r_map = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
         if plt3:
-            g_map = xrmfile.return_roimap(det_name[1],roi_name[1],**args)
-            b_map = xrmfile.return_roimap(det_name[2],roi_name[2],**args)
+            g_map = xrmfile.get_roimap(roi_name[1],det=det_name[1],**args)
+            b_map = xrmfile.get_roimap(roi_name[2],det=det_name[2],**args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
@@ -1426,8 +1260,8 @@ class MapPanel(GridPanel):
             print("WARNING: cannot make correlation plot with matrix of '1'")
             return
 
-        map1 = xrmfile.return_roimap(det_name[0],roi_name[0],**args)
-        map2 = xrmfile.return_roimap(det_name[-1],roi_name[-1],**args)
+        map1 = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
+        map2 = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
@@ -1923,13 +1757,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             choice_labels.append(desc)
 
         c.AppendItems(choice_labels)
+        this_label = ''
         if len(self.choices) > 0:
             idx = 0
         if show_last:
             idx = len(self.choices)-1
         try:
             this_label = choice_labels[idx]
-        except IndexError:
+        except:
             return
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
@@ -2288,7 +2123,7 @@ class MapViewerFrame(wx.Frame):
 
         self.nbpanels = []
 
-        for creator in (MapPanel, TomographyPanel, ROIPanel, MapInfoPanel,
+        for creator in (MapPanel, TomographyPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
 
             p = creator(parent, owner=self)
@@ -2604,13 +2439,16 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
-
-        MenuItem(self, fmenu, '&Load XRD calibration file',
-                 'Load XRD calibration file',  self.openPONI)
-        MenuItem(self, fmenu, '&Add 1DXRD for HDF5 file',
-                 'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
-        MenuItem(self, fmenu, 'Load R&OI File for 1DXRD',
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Define new ROI',
+                 'Define new ROI',  self.defineROI)
+        MenuItem(self, fmenu, 'Load ROI File for 1DXRD',
                  'Load ROI File for 1DXRD',  self.add1DXRDFile)
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Load XRD calibration file',
+                 'Load XRD calibration file',  self.openPONI)
+        MenuItem(self, fmenu, 'Add 1DXRD for HDF5 file',
+                 'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
@@ -2835,6 +2673,24 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(self.current_file.xrmmap)
 
+    def defineROI(self, event=None):
+    
+        if not self.h5convert_done:
+            print( 'cannot open file while processing a map folder')
+            return
+
+        myDlg = ROIPopUp(self)
+
+        path, read = None, False
+        if myDlg.ShowModal() == wx.ID_OK:
+            read        = True
+        myDlg.Destroy()
+
+        if read:
+            for p in self.nbpanels:
+                if hasattr(p, 'update_xrmmap'):
+                    p.update_xrmmap(self.current_file.xrmmap)
+
     def add1DXRDFile(self, event=None):
 
         read = False
@@ -3048,6 +2904,173 @@ class OpenPoniFile(wx.Dialog):
             self.PoniInfo[1].SetValue(str(path))
             self.checkOK()
 
+##################
+class ROIPopUp(wx.Dialog):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, owner, **kws):
+
+        """Constructor"""
+        dialog = wx.Dialog.__init__(self, None, title='ROI Tools', size=(450, 500))
+
+        panel = wx.Panel(self)
+
+        ################################################################################
+
+        self.owner = owner
+        
+        self.cfile   = self.owner.current_file
+        self.xrmmap = self.cfile.xrmmap
+
+        self.gp = GridPanel(panel, nrows=8, ncols=4, **kws)
+
+        self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
+        self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
+                         Choice(self, choices=[''],        size=(120, -1))]
+        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
+                         FloatCtrl(self, value=-1, **fopts),
+                         FloatCtrl(self, value=0,  **fopts),
+                         FloatCtrl(self, value=-1, **fopts)]
+
+        self.gp.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=4, style=CEN, newrow=True)
+
+#         self.gp.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, 'Name:'),self.roi_name), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
+        self.gp.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
+        self.gp.Add(SimpleText(self, ''),newrow=True)
+
+
+        ###############################################################################
+
+        self.rm_roi_ch = [Choice(self, choices=[''],        size=(120, -1)),
+                          Choice(self, choices=[''],        size=(120, -1))]
+        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        self.rm_roi_lims = SimpleText(self, '')
+
+        self.gp.Add(SimpleText(self, ''),newrow=True)
+        self.gp.Add(SimpleText(self, '--    Delete saved ROI    --'), dcol=4, style=CEN, newrow=True)
+
+        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), dcol=1, style=LEFT,newrow=True)
+        self.gp.Add(SimpleText(self, 'Limits:'), dcol=1, style=LEFT, newrow=True)
+        self.gp.Add(self.rm_roi_lims, dcol=3, style=LEFT)
+        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), dcol=1, style=LEFT, newrow=True)
+        self.gp.Add(SimpleText(self, ''),newrow=True)
+#         self.gp.Add(SimpleText(self, ''),newrow=True)
+        self.gp.AddMany((SimpleText(self, ''),SimpleText(self, ''),SimpleText(self, ''),wx.Button(self, wx.ID_OK, label='Close window')), dcol=1, style=LEFT, newrow=True)
+
+        self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
+        self.roi_lims[2].Disable()
+        self.roi_lims[3].Disable()
+
+        self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
+
+        self.gp.pack()
+        
+        self.cfile.reset_flags()
+        self.roiTYPE()
+
+    def roiTYPE(self,event=None):
+        roitype = []
+        delroi = []
+        if self.cfile.flag_xrf:
+            roitype += ['XRF']
+        if self.cfile.flag_xrd1d:
+            roitype += ['1DXRD']
+            delroi  = ['xrd1D']
+        if self.cfile.flag_xrd2d:
+            roitype += ['2DXRD']
+        if len(roitype) < 1:
+            roitype = ['']
+        self.roi_chc[0].SetChoices(roitype)
+        self.roiUNITS()
+        if len(delroi) > 0:
+            self.rm_roi_ch[0].SetChoices(delroi)
+            self.setROI()
+
+    def onRemoveROI(self,event=None):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+
+        if detname == 'xrd1D':
+            self.cfile.del_xrd1Droi(roiname)
+            self.setROI()
+
+    def setROI(self):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        try:
+            detgrp = self.cfile.xrmmap['roimap'][detname]
+        except:
+            return
+        limits,names = [],detgrp.keys()
+        for name in names:
+            limits += [list(detgrp[name]['limits'][:])]
+
+        self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
+        self.roiSELECT()
+
+
+    def roiSELECT(self,event=None):
+
+        detname = self.rm_roi_ch[0].GetStringSelection()
+        roiname = self.rm_roi_ch[1].GetStringSelection()
+
+        roi = self.cfile.xrmmap['roimap'][detname][roiname]
+        limits = roi['limits'][:]
+        units = roi['limits'].attrs['units']
+
+        if units == '1/A':
+            roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
+        else:
+            roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
+
+        self.rm_roi_lims.SetLabel(roistr)
+
+
+    def roiUNITS(self,event=None):
+
+        choice = self.roi_chc[0].GetStringSelection()
+        roiunit = ['']
+        if choice == 'XRF':
+            roiunit = ['eV','keV','channels']
+            self.roi_lims[2].Disable()
+            self.roi_lims[3].Disable()
+        elif choice == '1DXRD':
+            roiunit = [u'\u212B\u207B\u00B9 (q)',u'\u00B0 (2\u03B8)',u'\u212B (d)']
+            self.roi_lims[2].Disable()
+            self.roi_lims[3].Disable()
+        elif choice == '2DXRD':
+            roiunit = ['pixels']
+            self.roi_lims[2].Enable()
+            self.roi_lims[3].Enable()
+        self.roi_chc[1].SetChoices(roiunit)
+
+    def onCreateROI(self,event=None):
+
+        xtyp  = self.roi_chc[0].GetStringSelection()
+        xunt  = self.roi_chc[1].GetStringSelection()
+        xname = self.roi_name.GetValue()
+        xrange = [float(lims.GetValue()) for lims in self.roi_lims]
+        if xtyp != '2DXRD': xrange = xrange[:2]
+
+        self.owner.message('Calculating ROI: %s' % xname)
+        if xtyp == 'XRF':
+            self.cfile.add_xrfroi(xrange,xname,unit=xunt)
+        elif xtyp == '1DXRD':
+            xrd = ['q','2th','d']
+            unt = xrd[self.roi_chc[1].GetSelection()]
+            self.cfile.add_xrd1Droi(xrange,xname,unit=unt)
+        elif xtyp == '2DXRD':
+            self.cfile.add_xrd2Droi(xrange,xname,unit=xunt)
+        self.owner.message('Ready')
+##################
 
 
 class OpenMapFolder(wx.Dialog):
