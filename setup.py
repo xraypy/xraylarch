@@ -116,7 +116,6 @@ uname  = 'linux'
 libfmt = 'lib%s.so'
 bindir = 'bin'
 pyexe = pjoin(bindir, 'python')
-is_anaconda = 'Anaconda' in sys.version
 
 if os.name == 'nt':
     uname  = 'win'
@@ -183,25 +182,6 @@ for pdir in pluginpaths:
     data_files.append((pjoin(larchdir, pdir), pfiles))
 
 
-altered_py_scripts = []
-if INSTALL and is_anaconda and uname.startswith('darwin'):
-    for fname in scripts:
-        fh = open(fname, 'r')
-        try:
-            lines = fh.readlines()
-        except:
-            lines = ['binary file?']
-        fh.close()
-        line0 = lines[0].strip()
-        if (line0.startswith('#!/usr/bin/env python')
-            and 'pythonw' not in line0):
-            fh = open(fname, 'w')
-            fh.write('#!/usr/bin/env pythonw\n')
-            fh.write("".join(lines[1:]))
-            fh.close()
-            altered_py_scripts.append(fname)
-
-
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = __version__,
@@ -240,20 +220,6 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
 
-if INSTALL and is_anaconda and uname.startswith('darwin'):
-    for fname in altered_py_scripts:
-        fh = open(fname, 'r')
-        try:
-            lines = fh.readlines()
-        except:
-            lines = ['binary file?']
-        fh.close()
-        line0 = lines[0].strip()
-        if line0.startswith('#!/usr/bin/env pythonw'):
-            fh = open(fname, 'w')
-            fh.write('#!/usr/bin/env python\n')
-            fh.write("".join(lines[1:]))
-            fh.close()
 
 def fix_permissions(dirname, stat=None):
     """
