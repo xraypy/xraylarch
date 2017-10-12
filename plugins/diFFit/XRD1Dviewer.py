@@ -824,7 +824,6 @@ class Fitting1DXRD(BasePanel):
                 qall,Iall = cif.qhkl,cif.Ihkl
                 Iall = Iall/max(Iall)*maxI
 
-                cifargs = {'label':cifname,'title':self.xrd1dgrp.label,'color':'green','label':cifname,'xlabel':self.xlabel,'ylabel':self.ylabel,'marker':'','markersize':0,'show_legend':True}
                 try:
                     cifdata = []
                     for i,I in enumerate(Iall):
@@ -3097,7 +3096,6 @@ class Calc1DPopup(wx.Dialog):
                                     size = (210,460))
         self.parent = parent
         self.data2D = xrd2Ddata
-        self.steps = 5001
 
         self.createPanel()
         
@@ -3191,10 +3189,6 @@ class Calc1DPopup(wx.Dialog):
 
     def onSPIN(self,event=None):
         self.wedges.SetValue(str(event.GetPosition()))
-
-    def getValues(self):
-
-        self.steps = int(self.xstep.GetValue())
 
 class DatabaseInfoGUI(wx.Dialog):
     '''

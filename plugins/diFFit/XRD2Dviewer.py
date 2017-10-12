@@ -629,7 +629,7 @@ class diFFit2DFrame(wx.Frame):
                 if int(myDlg.xstep.GetValue()) < 1:
                     attrs = {'steps':5001}
                 else:
-                    attrs = {'steps':int(myDlg.steps)}
+                    attrs = {'steps':int(myDlg.xstep.GetValue())}
                 unit = '2th' if unts == 1 else 'q'
                 attrs.update({'unit':unit,'verbose':True})
             myDlg.Destroy()
@@ -1024,9 +1024,9 @@ class diFFit2DFrame(wx.Frame):
         self.ch_img.Bind(wx.EVT_CHOICE, self.selectIMAGE)
         vbox.Add(self.ch_img, flag=wx.EXPAND|wx.ALL, border=8)
 
-        self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(120,-1),
+        self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=1, size=(120,-1),
                                  style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=0, size=(-1,120),
+        self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=1, size=(-1,120),
                                  style = wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_INVERSE)
 
         self.vrt_frm_btn = [ wx.Button(self.panel,label=u'\u2191', size=(40, -1)),
