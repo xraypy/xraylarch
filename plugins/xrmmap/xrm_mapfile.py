@@ -586,9 +586,9 @@ class GSEXRM_MapFile(object):
 
     >>> from epicscollect.io import GSEXRM_MapFile
     >>> map = GSEXRM_MapFile('MyMap.001')
-    >>> fe  = map.return_roimap('mca2','Fe')
-    >>> as  = map.return_roimap('mca1', 'As Ka', dtcorrect=True)
-    >>> rgb = map.get_rgbmap('mcasum', 'Fe', 'Ca', 'Zn', dtcorrect=True, scale_each=False)
+    >>> fe  = map.get_roimap('Fe', det='mca2')
+    >>> as  = map.get_roimap('As Ka', det='mca1', dtcorrect=True)
+    >>> rgb = map.get_rgbmap('Fe', 'Ca', 'Zn', dtcorrect=True, scale_each=False)
     >>> en  = map.get_energy(det=1)
 
     All these take the following options:
@@ -1919,7 +1919,7 @@ class GSEXRM_MapFile(object):
             print('Cannot compute tomography: no rotation motor specified in map.')
             return
 
-        sino = self.return_roimap(det_name, roi_name, **kws)
+        sino = self.get_roimap(roi_name, det=det_name, **kws)
 
         sino = self.set_sinogram_orientation(sino)
 
@@ -2920,72 +2920,12 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
-    def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
+    def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
         ---------
-        name :       str    ROI name
-        det  :       optional, None or int [None]  index for detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [True]         suprress hot columns
-
-        Returns
-        -------
-        ndarray for ROI data
-        '''
-        print('''    WARNING: this function is now outdated and will only function with
-    older map file formats.''')
-        imap = -1
-        roi_names = [h5str(r).lower() for r in self.xrmmap['config/rois/name']]
-        det_names = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-        work_names = self.work_array_names()
-        dat = 'roimap/sum_raw'
-        scan_version = getattr(self, 'scan_version', 1.00)
-        no_hotcols = no_hotcols and scan_version < 1.36
-        # scaler, non-roi data
-        if name.lower() in det_names and name.lower() not in roi_names:
-            imap = det_names.index(name.lower())
-            if no_hotcols:
-                return self.xrmmap[dat][:, 1:-1, imap]
-            else:
-                return self.xrmmap[dat][:, :, imap]
-        elif name in work_names:
-            map = self.get_work_array(name)
-            if no_hotcols and len(map.shape)==2:
-                map = map[:, 1:-1]
-            return map
-
-        dat = 'roimap/sum_raw'
-        if dtcorrect:
-            dat = 'roimap/sum_cor'
-
-        if self.ndet is None:
-            self.ndet =  self.xrmmap.attrs['N_Detectors']
-
-        if det in range(1, self.ndet+1):
-            name = '%s (mca%i)' % (name, det)
-            det_names = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
-            dat = 'roimap/det_raw'
-            if dtcorrect:
-                dat = 'roimap/det_cor'
-
-        imap = det_names.index(name.lower())
-        if imap < 0:
-            raise GSEXRM_Exception("Could not find ROI '%s'" % name)
-
-        if no_hotcols:
-            return self.xrmmap[dat][:, 1:-1, imap]
-        else:
-            return self.xrmmap[dat][:, :, imap]
-
-
-    def return_roimap(self, detname, roiname, dtcorrect=True, no_hotcols=False):
-        '''extract roi map for a pre-defined roi by name
-
-        Parameters
-        ---------
-        detname :    str    ROI name
+        det :    str    ROI name
         roiname :    str    ROI name
         dtcorrect :  optional, bool [True]         dead-time correct data
         no_hotcols   optional, bool [False]        suprress hot columns
@@ -2998,7 +2938,6 @@ class GSEXRM_MapFile(object):
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
 
-
         if roiname == '1':
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
             if no_hotcols:
@@ -3008,13 +2947,14 @@ class GSEXRM_MapFile(object):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
-            if detname == 'scalars':
-                dat = '%s/%s' % (detname,roiname)
-            elif detname.startswith('roimap'):
-                dat = '%s/%s' % (detname,roiname)
+            if det == 'scalars':
+                dat = '%s/%s' % (det,roiname)
+            elif det.startswith('roimap'):
+                dat = '%s/%s' % (det,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
             else:
-                dat = 'roimap/%s/%s' % (detname,roiname)
+                if det is None: det = 'mcasum'
+                dat = 'roimap/%s/%s' % (det,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
 
             if no_hotcols:
@@ -3029,9 +2969,9 @@ class GSEXRM_MapFile(object):
             if roiname.lower() in roi_list:
                 imap = roi_list.index(roiname.lower())
 
-                if detname in det_list:
+                if det in det_list:
                     dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'
-                elif detname == 'detsum':
+                elif det == 'detsum':
                     dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
 
                 if no_hotcols:
@@ -3040,7 +2980,7 @@ class GSEXRM_MapFile(object):
                     return self.xrmmap[dat][:, :, imap]
 
             else:
-                dat = 'roimap/%s/%s' % (detname,roiname)
+                dat = 'roimap/%s/%s' % (det,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
 
                 if no_hotcols:
@@ -3056,10 +2996,10 @@ class GSEXRM_MapFile(object):
         '''
         pass
 
-    def get_rgbmap(self, detname, rroi, groi, broi, no_hotcols=True,
-                   dtcorrect=True, scale_each=True, scales=None):
+    def get_rgbmap(self, rroi, groi, broi, det=None, rdet=None, gdet=None, bdet=None, 
+                   no_hotcols=True, dtcorrect=True, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
-        ROIs (using return_roimap).
+        ROIs (using get_roimap).
 
         Parameters
         ----------
@@ -3081,9 +3021,11 @@ class GSEXRM_MapFile(object):
         (1/max intensity of all maps)
 
         '''
-        rmap = self.return_roimap(detname, rroi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        gmap = self.return_roimap(detname, groi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        bmap = self.return_roimap(detname, broi, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        if det is not None: rdet = gdet = bdet = det
+        
+        rmap = self.get_roimap(rroi, det=rdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        gmap = self.get_roimap(groi, det=gdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        bmap = self.get_roimap(broi, det=bdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())

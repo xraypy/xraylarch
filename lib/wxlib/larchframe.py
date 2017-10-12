@@ -119,23 +119,16 @@ class LarchWxShell(object):
         if self.output is None:
             self.write_sys(text)
         else:
-            try:
-                self.output.SetInsertionPointEnd()
-                pos0 = self.output.GetLastPosition()
-                self.output.WriteText(text)
-                pos1 = self.output.GetLastPosition()
-                self.output.SetStyle(pos0, pos1, self.textstyle)
-                self.needs_flush = True
-            except:
-                self.write_sys(text)
+            self.output.SetInsertionPointEnd()
+            pos0 = self.output.GetLastPosition()
+            self.output.WriteText(text)
+            pos1 = self.output.GetLastPosition()
+            self.output.SetStyle(pos0, pos1, self.textstyle)
+            self.output.EmulateKeyPress(wx.KeyEvent())
+            self.input.SetFocus()
 
     def flush(self, *args):
-        try:
-            self.output.SetInsertionPointEnd()
-        except:
-            pass
         self.output.Refresh()
-        self.output.Update()
         self.needs_flush = False
 
     def clear_input(self):
@@ -356,7 +349,6 @@ class LarchFrame(wx.Frame):
             self.mainpanel.output.SetFont(self.font)
             self.mainpanel.objtree.SetFont(self.font)
             self.mainpanel.objtree.text.SetFont(self.font)
-
         dlg.Destroy()
 
     def onWxInspect(self, event=None):
