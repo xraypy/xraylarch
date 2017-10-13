@@ -47,4 +47,4 @@ post_install: post_install_windows.bat # [win]
 
 license_file: LICENSE
 
-welcome_image: larchcone1.png          #        [win]
+welcome_image: larch_3cones.png          #        [win]
