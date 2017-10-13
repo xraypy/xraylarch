@@ -38,7 +38,7 @@ specs:
     - asteval
     - pycifrw
     - scikit-image
-    - xraylarch 0.9.35rc1
+    - xraylarch 0.9.35rc2
 
 
 post_install: post_install_linux.sh # [linux64]
