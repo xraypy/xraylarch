@@ -507,6 +507,7 @@ class TomographyPanel(GridPanel):
 
         self.chk_dftcor  = wx.CheckBox(self, label='Correct Deadtime?')
         self.chk_hotcols = wx.CheckBox(self, label='Ignore First/Last Columns?')
+        self.chk_hotcols.SetValue(False)
 
         self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
 
@@ -970,6 +971,7 @@ class MapPanel(GridPanel):
 
         self.chk_dftcor  = Check(self, label='Correct Deadtime?')
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
+        self.chk_hotcols.SetValue(False)
 
         self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
 
@@ -2480,7 +2482,6 @@ class MapViewerFrame(wx.Frame):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
         dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
                            style=style)
-
 
         if dlg.ShowModal() == wx.ID_OK:
             basedir = os.path.abspath(str(dlg.GetPath()))
