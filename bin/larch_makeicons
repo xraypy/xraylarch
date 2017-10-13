@@ -35,11 +35,14 @@ apps = (('Larch',          'larch',          'larch',      'Larch Command Line',
         ('Larch GUI',      'larch_gui',      'larch',      'Larch GUI',       True),
         ('XYFit',          'xyfit',          'epics_scan', 'XY Data Viewer and Peak Fitter',  True),
         ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE XRF Map Viewer',   True),
-        ('GSE ScanViewer', 'gse_scanviewer', 'epics_scan', 'GSE XY Scan Viewer',  True),
         ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display', True),
         ('2D XRD Viewer',  'diFFit2D',       'larch',      '2D XRD Viewer', True),
         ('1D XRD Viewer',  'diFFit1D',       'larch',      '1D XRD Viewer', True),
         )
+
+# fix scripts to use pythonw instead of python on Mac OSX
+other_binscripts=('gse_dtcorrect', 'larch_client', 'larch_server',
+                  'xrfdisplay', 'xrfdisplay_epics')
 
 mac_script_gui = """#!/bin/bash
 ## Run X-ray Larch script with Python that created this script
@@ -69,6 +72,25 @@ mac_info = """<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 """
 
+def fix_anacondapy_pythonw(script):
+    """fix shebang line for scripts using anaconda python
+    to use 'pythonw' instead of 'python'
+    """
+    # print(" fix anaconda py (%s) for %s" % (sys.prefix, script))
+    fname = os.path.join(sys.prefix, 'bin', script)
+    with open(fname, 'r') as fh:
+        try:
+            lines = fh.readlines()
+        except IOError:
+            lines = ['-']
+    firstline= lines[0][:-1].strip()
+    if (firstline.startswith('#!') and firstline.endswith('python')):
+        firstline = firstline.replace('python', 'pythonw')
+        fh = open(fname, 'w')
+        fh.write('%s\n' % firstline)
+        fh.write("".join(lines[1:]))
+        fh.close()
+
 if sys.platform == 'darwin':
     prefix = sys.prefix
     pyexe = sys.executable
@@ -77,6 +99,8 @@ if sys.platform == 'darwin':
 
     def make_shortcut(name, script, desc, icon, isgui):
         """create minimal Mac App"""
+        if 'Anaconda' in sys.version:
+            fix_anacondapy_pythonw(script)
         dest = os.path.join(top_folder, name + '.app')
         if os.path.exists(dest):
             shutil.rmtree(dest)
@@ -147,3 +171,7 @@ elif os.name == 'nt':
 
 for name, script, icon, desc, isgui  in apps:
     make_shortcut(name, script, desc, icon, isgui)
+
+if sys.platform == 'darwin':
+    for script in other_binscripts:
+        fix_anacondapy_pythonw(script)
