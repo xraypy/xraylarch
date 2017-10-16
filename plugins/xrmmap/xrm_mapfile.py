@@ -224,6 +224,11 @@ class GSEXRM_MapRow:
         self.nrows_expected = nrows_expected
 
         ioff = ioffset
+        offslice = slice(None, None, None)
+        if ioff > 0:
+            offslice = slice(ioff, None, None)
+        elif ioff < 0:
+            offslice = slice(None, ioff, None)
 
         self.npts = npts
         self.irow = irow
@@ -280,8 +285,7 @@ class GSEXRM_MapRow:
                 time.sleep(0.25)
             try:
                 shead, sdata = readASCII(os.path.join(folder, sisfile))
-                if ioff > 0:
-                    sdata = sdata[ioff:]
+                sdata = sdata[offslice]
                 sis_ok = len(sdata) > 1
             except IOError:
                 if (time.time() - t0) > 5.0:
@@ -325,18 +329,18 @@ class GSEXRM_MapRow:
 
         ## SPECIFIC TO XRF data
         if FLAGxrf:
-            self.counts    = xrf_dat.counts[ioff:]
-            self.inpcounts = xrf_dat.inputCounts[ioff:]
-            self.outcounts = xrf_dat.outputCounts[ioff:]
+            self.counts    = xrf_dat.counts[offslice]
+            self.inpcounts = xrf_dat.inputCounts[offslice]
+            self.outcounts = xrf_dat.outputCounts[offslice]
 
             # times are extracted from the netcdf file as floats of ms
             # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrf_dat.liveTime[ioff:]).astype('int')
-            self.realtime  = (xrf_dat.realTime[ioff:]).astype('int')
+            self.livetime  = (xrf_dat.liveTime[offslice]).astype('int')
+            self.realtime  = (xrf_dat.realTime[offslice]).astype('int')
 
-            dt_denom = xrf_dat.outputCounts[ioff:]*xrf_dat.liveTime[ioff:]
+            dt_denom = xrf_dat.outputCounts[offslice]*xrf_dat.liveTime[offslice]
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrf_dat.inputCounts[ioff:]*xrf_dat.realTime[ioff:]/dt_denom
+            self.dtfactor  = xrf_dat.inputCounts[offslice]*xrf_dat.realTime[offslice]/dt_denom
 
         ## SPECIFIC TO XRD data
         if FLAGxrd2D or FLAGxrd1D:
@@ -981,7 +985,7 @@ class GSEXRM_MapFile(object):
         self.pixeltime = rowtime/npts
         return self.pixeltime
 
-    def read_rowdata(self, irow):
+    def read_rowdata(self, irow, offset=None):
         '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
@@ -1023,6 +1027,8 @@ class GSEXRM_MapFile(object):
         ioffset = 0
         if scan_version > 1.35:
             ioffset = 1
+        if offset is not None:
+            ioffset = offset
         self.flag_xrf = self.flag_xrf and xrff != '_unused_'
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
@@ -2946,7 +2952,8 @@ class GSEXRM_MapFile(object):
                 return map
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-
+            if det is None:
+                det = 'mcasum'
             if det == 'scalars':
                 dat = '%s/%s' % (det,roiname)
             elif det.startswith('roimap'):
@@ -2963,6 +2970,8 @@ class GSEXRM_MapFile(object):
                 return self.xrmmap[dat][:, :]
 
         else:
+            if det is None:
+                det = 'detsum'
             roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
             det_list = ['det1','det2','det3','det4']
 

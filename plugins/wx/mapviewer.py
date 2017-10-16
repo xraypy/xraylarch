@@ -2028,6 +2028,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                     if show:
                         self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+                        
+        self.owner.message('ready')
 
 
 
