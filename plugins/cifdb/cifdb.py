@@ -101,7 +101,7 @@ def iscifDB(dbname):
                'qtbl',
                'cattbl',
                'symref',
-               'compref',
+               ##'compref',
                'authref',
                'catref')
     result = False
