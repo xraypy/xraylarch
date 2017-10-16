@@ -2,4 +2,4 @@
 
 %PREFIX%\Scripts\pip.exe install --upgrade --use-wheel fabio pyFAI
 
-%PREFIX%\bin\larch_makeicons.exe
+%PREFIX%\Scripts\larch_makeicons.exe
