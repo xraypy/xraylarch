@@ -497,11 +497,11 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
 
-        fico = os.path.join(site_config.larchdir, 'icons', ICON_FILE)
-        try:
-            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        except:
-            pass
+#         fico = os.path.join(site_config.larchdir, 'icons', ICON_FILE)
+#         try:
+#             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+#         except:
+#             pass
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
