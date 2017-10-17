@@ -268,8 +268,11 @@ def make_headers(hdr='#', has_dark=False, has_flat=False, ai=None,
                 headerLst.append('Flat field: %s' % ai.flatfiles)
             else:
                 headerLst.append('Flat field: Done with unknown file')
-        if polarization_factor is None and ai._polarization is not None:
-            polarization_factor = ai._polarization_factor
+        if polarization_factor is None:
+            try:
+                polarization_factor = ai._polarization_factor
+            except:
+                pass
         headerLst.append('Polarization factor: %s' % polarization_factor)
         headerLst.append('Normalization factor: %s' % normalization_factor)
     else:
