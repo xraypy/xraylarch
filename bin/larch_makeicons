@@ -84,8 +84,8 @@ def fix_anacondapy_pythonw(script):
         except IOError:
             lines = ['-']
     firstline= lines[0][:-1].strip()
-    if (firstline.startswith('#!') and firstline.endswith('python')):
-        firstline = firstline.replace('python', 'pythonw')
+    if firstline.startswith('#!') and 'python' in firstline:
+        firstline = '#!/usr/bin/env pythonw'
         fh = open(fname, 'w')
         fh.write('%s\n' % firstline)
         fh.write("".join(lines[1:]))
@@ -94,7 +94,7 @@ def fix_anacondapy_pythonw(script):
 if sys.platform == 'darwin':
     prefix = sys.prefix
     pyexe = sys.executable
-    if 'anaconda' in prefix.lower():
+    if 'Anaconda' in sys.version:
         pyexe = "{prefix:s}/python.app/Contents/MacOS/python".format(prefix=prefix)
 
     def make_shortcut(name, script, desc, icon, isgui):
