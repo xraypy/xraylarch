@@ -2019,8 +2019,8 @@ class GSEXRM_MapFile(object):
             # skip repeated rows in master file
             if yval != _yl and (xrff != _xl or sisf != _s1):
                 self.rowdata.append(row)
-            else:
-                print(" skip row ", yval, xrff, sisf)
+            #else:
+            #    print(" skip row ", yval, xrff, sisf)
         self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
@@ -2943,7 +2943,10 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
-
+        
+        if det is None:
+           det = 'mcasum' if StrictVersion(self.version) >= StrictVersion('2.0.0') else 'detsum'
+        
         if roiname == '1':
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
             if no_hotcols:
@@ -2952,26 +2955,28 @@ class GSEXRM_MapFile(object):
                 return map
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-            if det is None:
-                det = 'mcasum'
+
             if det == 'scalars':
                 dat = '%s/%s' % (det,roiname)
-            elif det.startswith('roimap'):
+            else:
+                if not det.startswith('roimap'): det = 'roimap/%s' % det 
+                roi_list = [r for r in self.xrmmap[det]]
+                if roiname not in roi_list:
+                    for roi in roi_list:
+                        if roi.lower().startswith(roiname.lower()): roiname = roi
+           
                 dat = '%s/%s' % (det,roiname)
                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-            else:
-                if det is None: det = 'mcasum'
-                dat = 'roimap/%s/%s' % (det,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
 
-            if no_hotcols:
-                return self.xrmmap[dat][:, 1:-1]
-            else:
-                return self.xrmmap[dat][:, :]
+            try:
+                if no_hotcols:
+                    return self.xrmmap[dat][:, 1:-1]
+                else:
+                    return self.xrmmap[dat][:, :]
+            except:
+                return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
         else:
-            if det is None:
-                det = 'detsum'
             roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
             det_list = ['det1','det2','det3','det4']
 
