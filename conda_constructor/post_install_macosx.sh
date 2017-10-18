@@ -6,7 +6,7 @@ $PREFIX/bin/pip install --upgrade --use-wheel fabio pyFAI
 
 #  fix what seems to be a broken python.app install
 mv $PREFIX/python.app  $PREFIX/orig_python_app
-$PREFIX/bin/conda install python.app
+$PREFIX/bin/conda install -y python.app
 
 # fix scripts to use pythonw instead of python
 # make folder of simple Apps / Icons
