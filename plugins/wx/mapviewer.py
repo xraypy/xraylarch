@@ -755,13 +755,13 @@ class TomographyPanel(GridPanel):
               'no_hotcols' : self.chk_hotcols.GetValue(),
               'dtcorrect'  : self.chk_dftcor.GetValue()}
 
-        r_map = xrmfile.get_sinogram(det_name[0],roi_name[0],**args)
+        r_map = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:
-            g_map = xrmfile.get_sinogram(det_name[1],roi_name[1],**args)
-            b_map = xrmfile.get_sinogram(det_name[2],roi_name[2],**args)
+            g_map = xrmfile.get_sinogram(roi_name[1],det=det_name[1],**args)
+            b_map = xrmfile.get_sinogram(roi_name[2],det=det_name[2],**args)
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.get_sinogram(det_name[-1],roi_name[-1],**args)
+            mapx = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
 
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
