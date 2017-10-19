@@ -2985,13 +2985,9 @@ class GSEXRM_MapFile(object):
                 roiname = sum_roi.index(roiname)
 
             else:
-                if detname in self.xrmmap['roimap'].keys():
-                    print 'added roi/det in new file style'
-                    detname = 'roimap/%s' % detname
-                else:
-                    ## provide summed output counts if fail
-                    detname = 'roimap/sum_'
-                    roiname = 8
+                ## provide summed output counts if fail
+                detname = 'roimap/sum_'
+                roiname = 8
 
         return roiname, detname
     
@@ -3014,7 +3010,7 @@ class GSEXRM_MapFile(object):
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
         
-        if roiname == '1':
+        if roiname == '1' or roiname == 1:
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
             if no_hotcols:
                 return map[:, 1:-1]
@@ -3023,9 +3019,6 @@ class GSEXRM_MapFile(object):
         if roiname.endswith('raw'): dtcorrect = False
 
         roi,det = self.check_roi(roiname,det)
-        print 'roi,det'
-        print roi,det
-        print
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
            
@@ -3044,24 +3037,13 @@ class GSEXRM_MapFile(object):
 
         else:
 
-            if det == 'detsum':
-                detname = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
+            detname = '%scor' % det if dtcorrect else '%sraw' % det
+
+            if no_hotcols:
+                return self.xrmmap[detname][:, 1:-1, roi]
             else:
-                detname = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'
+                return self.xrmmap[detname][:, :, roi]
 
-                if no_hotcols:
-                    return self.xrmmap[detname][:, 1:-1, roi]
-                else:
-                    return self.xrmmap[detname][:, :, roi]
-
-#             else:
-#                 dat = 'roimap/%s/%s' % (det,roiname)
-#                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-# 
-#                 if no_hotcols:
-#                     return self.xrmmap[dat][:, 1:-1]
-#                 else:
-#                     return self.xrmmap[dat][:, :]
 
     def get_mca_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):
