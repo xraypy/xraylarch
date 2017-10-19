@@ -1917,7 +1917,7 @@ class GSEXRM_MapFile(object):
         else:
             self.x = self.x[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
 
-    def get_sinogram(self, det_name, roi_name, trim_sino=False, **kws):
+    def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
 
         if self.x is None or self.ome is None: self.set_sinogram_axes()
 
@@ -1925,7 +1925,7 @@ class GSEXRM_MapFile(object):
             print('Cannot compute tomography: no rotation motor specified in map.')
             return
 
-        sino = self.get_roimap(roi_name, det=det_name, **kws)
+        sino = self.get_roimap(roi_name, det=det, **kws)
 
         sino = self.set_sinogram_orientation(sino)
 
@@ -2926,81 +2926,130 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
-    def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
-        '''extract roi map for a pre-defined roi by name
-
-        Parameters
-        ---------
-        det :    str    ROI name
-        roiname :    str    ROI name
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [False]        suprress hot columns
-
-        Returns
-        -------
-        ndarray for ROI data
-        '''
-
-        scan_version = getattr(self, 'scan_version', 1.00)
-        no_hotcols = no_hotcols and scan_version < 1.36
-        
-        if det is None:
-           det = 'mcasum' if StrictVersion(self.version) >= StrictVersion('2.0.0') else 'detsum'
-        
-        if roiname == '1':
-            map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
-            if no_hotcols:
-                return map[:, 1:-1]
-            else:
-                return map
-
-        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-
-            if det == 'scalars':
-                dat = '%s/%s' % (det,roiname)
-            else:
-                if not det.startswith('roimap'): det = 'roimap/%s' % det 
-                roi_list = [r for r in self.xrmmap[det]]
-                if roiname not in roi_list:
-                    for roi in roi_list:
-                        if roi.lower().startswith(roiname.lower()): roiname = roi
-           
-                dat = '%s/%s' % (det,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-
-            try:
-                if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1]
-                else:
-                    return self.xrmmap[dat][:, :]
-            except:
-                return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
-
-        else:
-            roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-            det_list = ['det1','det2','det3','det4']
-
-            if roiname.lower() in roi_list:
-                imap = roi_list.index(roiname.lower())
-
-                if det in det_list:
-                    dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'
-                elif det == 'detsum':
-                    dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
-
-                if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1, imap]
-                else:
-                    return self.xrmmap[dat][:, :, imap]
-
-            else:
-                dat = 'roimap/%s/%s' % (det,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
-
-                if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1]
-                else:
-                    return self.xrmmap[dat][:, :]
+#     def check_roi(self, roiname, detname):
+#     
+#         scalar_list = ['TSCALAR','I0','I1','I2']
+#         for sclr in scalar_list:
+#             if roiname.startswith(sclr):
+#                 roiname = sclr
+#                 if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+#                     detname = 'scalars'
+#                 else:
+#                     if detname in ['det1','det2','det3','det4']:
+#                         detname = 'roimap/det'                    
+#                     else:
+#                         detname = 'roimap/sum'
+#                         
+#                 return roiname, detname
+#     
+#         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+#         
+#             if detname is None: detname = 'mcasum'
+# 
+#             if detname != 'scalars':
+#                 if not detname.startswith('roimap'):
+#                     detname = 'roimap/%s' % detname 
+# 
+#                 roi_list = [r for r in self.xrmmap[detname]]
+#                 if roiname not in roi_list:
+#                     for roi in roi_list:
+#                         if roi.lower().startswith(roiname.lower()): roiname = roi
+# 
+#             return roiname, detname
+# 
+#         else:
+#             if detname is None: detname = 'detsum'
+#             
+#             if detname in ['det1','det2','det3','det4','detsum']:
+#                 roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+#                 print
+#                 print 'ROI_LIST'
+#                 print roi_list
+#                 print
+#                 print
+#                 if roiname.lower() in roi_list:
+#                     roiname = roi_list.index(roiname.lower())
+#             else:
+#                 detname = 'roimap/%s' % detname
+#           
+# 
+# 
+#                 
+#             else:
+#                 dat = 'roimap/%s/%s' % (det,roiname)
+#                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+# 
+#                 if no_hotcols:
+#                     return self.xrmmap[dat][:, 1:-1]
+#                 else:
+#                     return self.xrmmap[dat][:, :]
+# 
+#             return imap, detname
+#     
+#     
+#     def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
+#         '''extract roi map for a pre-defined roi by name
+# 
+#         Parameters
+#         ---------
+#         det :    str    ROI name
+#         roiname :    str    ROI name
+#         dtcorrect :  optional, bool [True]         dead-time correct data
+#         no_hotcols   optional, bool [False]        suprress hot columns
+# 
+#         Returns
+#         -------
+#         ndarray for ROI data
+#         '''
+# 
+#         scan_version = getattr(self, 'scan_version', 1.00)
+#         no_hotcols = no_hotcols and scan_version < 1.36
+#         
+#         if roiname == '1':
+#             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
+#             if no_hotcols:
+#                 return map[:, 1:-1]
+#             else:
+#                 return map
+# 
+#         roi,det = self.check_roi(roiname,det)
+#         print 'roi,det'
+#         print roi,det
+#         print
+# 
+#         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+#            
+#             detname = '%s/%s' % (det,roi)
+#             detname = '%s/cor' % detname if dtcorrect else '%s/raw' % detname
+# 
+#             try:
+#                 if no_hotcols:
+#                     return self.xrmmap[detname][:, 1:-1]
+#                 else:
+#                     return self.xrmmap[detname][:, :]
+#             except:
+#                 return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
+# 
+#         else:
+# 
+#             if det == 'detsum':
+#                 detname = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
+#             else:
+#                 detname = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'
+# 
+#                 if no_hotcols:
+#                     return self.xrmmap[detname][:, 1:-1, roi]
+#                 else:
+#                     return self.xrmmap[detname][:, :, roi]
+# 
+# #             else:
+# #                 dat = 'roimap/%s/%s' % (det,roiname)
+# #                 dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+# # 
+# #                 if no_hotcols:
+# #                     return self.xrmmap[dat][:, 1:-1]
+# #                 else:
+# #                     return self.xrmmap[dat][:, :]
 
     def get_mca_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):
