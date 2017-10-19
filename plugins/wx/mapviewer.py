@@ -732,8 +732,6 @@ class TomographyPanel(GridPanel):
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
 
-        if xrmfile is None: xrmfile = self.owner.current_file
-
         det_name,roi_name = [],[]
         plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
@@ -754,6 +752,10 @@ class TomographyPanel(GridPanel):
         args={'trim_sino'  : flagxrd,
               'no_hotcols' : self.chk_hotcols.GetValue(),
               'dtcorrect'  : self.chk_dftcor.GetValue()}
+
+        if xrmfile is None: xrmfile = self.owner.current_file
+        x,omega = return_sinogram_axes(xrmfile)
+
 
         r_map = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:

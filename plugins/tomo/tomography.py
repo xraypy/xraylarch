@@ -47,6 +47,8 @@ TOMOPY_FILT = [ 'None', 'shepp', 'cosine', 'hann', 'hamming', 'ramlak', 'parzen'
 SCIKIT_FILT = [ 'shepp-logan', 'ramp','cosine', 'hamming', 'hann', 'None' ]
 SCIKIT_INTR = [ 'linear', 'nearest', 'cubic']
 
+PIXEL_TRIM = 10
+
 ##########################################################################
 # FUNCTIONS
 
@@ -100,6 +102,63 @@ def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B):
             algorithm_B = None
         
     return method, center, omega, algorithm_A, algorithm_B
+
+def reshape_sinogram(A,x=[],omega=[]):
+
+    ## == INPUTS ==
+    ## A              :    array from .get_roimap()
+    ## x              :    x array for checking shape of A
+    ## omega          :    omega array for checking shape of A
+    ##
+    ## == RETURNS ==
+    ## A              :    A in shape/format needed for tomopy reconstruction
+    ## sinogram_order :  flag/argument for tomopy reconstruction (shape dependent)  
+    
+    A = np.array(A)
+    if len(x) < 1 or len(omega) < 1:
+        return
+    if len(A.shape) != 3:
+       if len(A.shape) == 2:
+           A = A.reshape(1,A.shape[0],A.shape[1])
+
+    if len(A.shape) == 3:
+        if len(x) == A.shape[0]:
+             A = np.einsum('kij->ijk', A)
+        if len(x) == A.shape[1]:
+             A = np.einsum('ikj->ijk', A)
+        sinogram_order = len(omega) == A.shape[1]     
+    
+    return A,sinogram_order
+
+def get_sinogram_axes_from_mapfile(xrmfile):
+    
+    try:
+        x = xrmfile.get_pos('fine x', mean=True)
+    except:
+        x = xrmfile.get_pos('x', mean=True)
+        
+    try:
+        omega = xrmfile.get_pos('theta', mean=True)
+    except:
+        omega = None
+        #print('Not a TOMOGRAPHY dataset: "theta" axis not found.')
+        return
+        
+    return x,omega
+
+def trim_sinogram(sino,x,omega,pixel_trim=None):
+
+    if pixel_trim is None: pixel_trim = PIXEL_TRIM
+
+    print ' need check to see which is fast axes... then trim theses same as sino'
+    print 'as-is is NOT correct'
+
+    sino = sino[:,pixel_trim:-1*(pixel_trim+1)]    
+    omega = omega[pixel_trim:-1*(pixel_trim+1)]
+    x     = x[pixel_trim:-1*(pixel_trim+1)]
+    
+    return sino,x,omega
+            
 
 def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, method=None,
                         algorithm_A=None, algorithm_B=None, omega=None):

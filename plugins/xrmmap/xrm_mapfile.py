@@ -30,7 +30,7 @@ COMPRESSION = 'gzip'
 DEFAULT_ROOTNAME = 'xrmmap'
 
 STEPS = 5001
-PIXEL_TRIM = 10
+
 
 def h5str(obj):
     '''strings stored in an HDF5 from Python2 may look like
@@ -1872,65 +1872,19 @@ class GSEXRM_MapFile(object):
 
         return roidata
 
-    def set_sinogram_axes(self):
-
-        try:
-            self.ome = self.get_pos('theta', mean=True)
-        except:
-            return
-
-        try:
-            self.x   = self.get_pos('fine x', mean=True)
-        except:
-            self.x   = self.get_pos('x', mean=True)
-
-        if self.ome[0] > self.ome[-1]: self.ome = self.ome[::-1]
-        if self.x[0]   > self.x[-1]:   self.x   = self.x[::-1]
-
-    def set_sinogram_orientation(self, sino, verbose=False):
-
-        if self.reshape is None:
-            if (len(self.ome),len(self.x)) == np.shape(sino):
-                fast,slow = 'x','theta'
-                self.reshape = True
-            elif (len(self.x),len(self.ome)) == np.shape(sino):
-                fast,slow = 'theta','x'
-                self.reshape = False
-        if verbose:
-            prnt_str = "  Fast motor identified as '%s';slow motor identified as '%s'."
-            print(prnt_str % (fast,slow))
-        if self.reshape: return np.einsum('ji->ij', sino)
-
-        ## is this needed? moved from "onShowTomograph"
-        #if len(self.ome) > sino.shape[2]:
-        #    self.ome = self.ome[:sino.shape[2]]
-        #elif len(self.ome) < sino.shape[2]:
-        #    sino = sino[:,:,:len(self.ome)]
-
-        return sino
-
-    def trim_sinogram(self, sino):
-
-        sino = sino[:,PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
-
-        if xrmfile.reshape:
-            self.ome = self.ome[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
-        else:
-            self.x = self.x[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
 
     def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
 
-        if self.x is None or self.ome is None: self.set_sinogram_axes()
+        sino = self.get_roimap(roi_name, det=det, **kws)
+        x,omega = get_sinogram_axes_from_mapfile(self)
 
-        if self.ome is None:
+        if omega is None:
             print('Cannot compute tomography: no rotation motor specified in map.')
             return
 
-        sino = self.get_roimap(roi_name, det=det, **kws)
+        sino,sinogram_order = reshape_sinogram(sino,x,omega)
 
-        sino = self.set_sinogram_orientation(sino)
-
-        if trim_sino: sino = self.trim_sinogram()
+        if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
 
         return sino
 
