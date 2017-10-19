@@ -3017,15 +3017,12 @@ class GSEXRM_MapFile(object):
             else:
                 return map
         if roiname.endswith('raw'): dtcorrect = False
+        ext = 'cor' if dtcorrect else 'raw'
 
         roi,det = self.check_roi(roiname,det)
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-           
-            if dtcorrect:
-                detname = '%s/%s/cor' % (det,roi)
-            else:
-                detname = '%s/%s/raw' % (det,roi)            
+            detname = '%s/%s/%s' % (det,roi,ext)
 
             try:
                 if no_hotcols:
@@ -3036,8 +3033,7 @@ class GSEXRM_MapFile(object):
                 return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
         else:
-
-            detname = '%scor' % det if dtcorrect else '%sraw' % det
+            detname = '%s%s' % (det,ext)
 
             if no_hotcols:
                 return self.xrmmap[detname][:, 1:-1, roi]
