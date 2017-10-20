@@ -176,6 +176,7 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
                 'circle':True}
 
         if refine_center:
+            print(' Refining center; start value: %i' % center)
             if center_range is None: center_range = 12
             rng = int(center_range) if center_range > 0 and center_range < 21 else 12
 
@@ -187,12 +188,12 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
                     recon = iradon(sino[0,:,xslice].T, **args)
                 else:
                     recon = iradon(sino[0,xslice], **args)
-                print
                 recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
                 negentropy += [(recon*np.log(recon)).sum()]
                 center_list += [cen]
             cntr = center_list[np.array(negentropy).argmin()]
             center = float(npts-cntr) # flip axis for compatibility with tomopy convention
+            print('   Best center: %i' % center)
 
         xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
 

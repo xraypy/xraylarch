@@ -1878,6 +1878,9 @@ class GSEXRM_MapFile(object):
 
 
     def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
+        '''
+        returns sino,sinogram_order
+        '''
 
         sino = self.get_roimap(roi_name, det=det, **kws)
         x,omega = self.get_translation_axis(),self.get_rotation_axis()
@@ -1888,20 +1891,14 @@ class GSEXRM_MapFile(object):
 
         if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
 
-        sino,sinogram_order = reshape_sinogram(sino,x,omega)
-
-        return sino,sinogram_order
+        return reshape_sinogram(sino,x,omega)
 
     def get_tomograph(self, sino, **kws):
-
-        ## returns tomo in order: slice, x, y
-        tomo_center, tomo = tomo_reconstruction(sino, **kws)
-
-#         ## reorder to: x,y,slice for viewing
-#         tomo = np.einsum('kij->ijk', tomo)
-#         if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
-
-        return tomo_center, tomo
+        '''
+        returns tomo_center, tomo
+        '''
+        return tomo_reconstruction(sino, **kws)
+        return 
 
     def claim_hostid(self):
         "claim ownershipf of file"
