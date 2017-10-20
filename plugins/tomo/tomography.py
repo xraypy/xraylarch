@@ -78,12 +78,16 @@ def return_methods():
 
     return alg0,alg1,alg2
 
-def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B):
+def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B,sinogram_order):
 
     method = check_method(method)
     
     if center is None: center = sino.shape[1]/2.
-    if omega is None: omega = np.linspace(0,360,sino.shape[2])
+    if omega is None:
+        if sinogram_order:
+            omega = np.linspace(0,360,sino.shape[1])        
+        else:
+            omega = np.linspace(0,360,sino.shape[0])
 
     if method.lower().startswith('scikit') and HAS_scikit:
         if algorithm_A == 'None':
@@ -130,32 +134,16 @@ def reshape_sinogram(A,x=[],omega=[]):
     
     return A,sinogram_order
 
-def get_sinogram_axes_from_mapfile(xrmfile):
-    
-    try:
-        x = xrmfile.get_pos('fine x', mean=True)
-    except:
-        x = xrmfile.get_pos('x', mean=True)
-        
-    try:
-        omega = xrmfile.get_pos('theta', mean=True)
-    except:
-        omega = None
-        #print('Not a TOMOGRAPHY dataset: "theta" axis not found.')
-        return
-        
-    return x,omega
-
 def trim_sinogram(sino,x,omega,pixel_trim=None):
 
     if pixel_trim is None: pixel_trim = PIXEL_TRIM
 
-    print ' need check to see which is fast axes... then trim theses same as sino'
-    print 'as-is is NOT correct'
+    if len(omega) == sino.shape[-1]:
+        omega = omega[pixel_trim:-1*(pixel_trim+1)]
+    elif len(x) == sino.shape[-1]:
+        x = x[pixel_trim:-1*(pixel_trim+1)]    
 
     sino = sino[:,pixel_trim:-1*(pixel_trim+1)]    
-    omega = omega[pixel_trim:-1*(pixel_trim+1)]
-    x     = x[pixel_trim:-1*(pixel_trim+1)]
     
     return sino,x,omega
             
@@ -163,12 +151,19 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
 def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, method=None,
                         algorithm_A=None, algorithm_B=None, omega=None, sinogram_order=False):
     '''
-    INPUT ->  sino : slice, x, 2th
+    INPUT ->  sino : slice, x, 2th OR x, slice, 2th (with flag sinogram_order=True)
     OUTPUT -> tomo : slice, x, y
     '''
     
+
     method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
-                                                        omega,algorithm_A,algorithm_B)
+                                                        omega,algorithm_A,algorithm_B,
+                                                        sinogram_order)
+                                                        
+    print
+    print 'method,center,omega,algorithm_A,algorithm_B',method,center,len(omega),algorithm_A,algorithm_B
+    print sino.shape,len(omega)
+    print
                                                         
     if method is None:
         print('No tomographic reconstruction packages available')
@@ -211,13 +206,15 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
     elif method.lower().startswith('tomopy') and HAS_tomopy:
 
         ## reorder to: 2th,slice,x for tomopy
-        sino = np.einsum('jki->ijk', np.einsum('kji->ijk', sino).T )
+        ##sino = np.einsum('jki->ijk', np.einsum('kji->ijk', sino).T )
 
         if refine_cen: 
-            center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5)
+            center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
 
-        tomo = tomopy.recon(sino, np.radians(omega), center=center, algorithm=algorithm_A, sinogram_order=sinogram_order) #,
-#                             filter_name=algorithm_B) 
+        tomo = tomopy.recon(sino, np.radians(omega),
+                            center=center,
+                            algorithm=algorithm_A,
+                            sinogram_order=sinogram_order) #, filter_name=algorithm_B) 
         
         ## reorder to slice, x, y
         tomo = np.flip(tomo,1)

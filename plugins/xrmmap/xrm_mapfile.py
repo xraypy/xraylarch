@@ -20,8 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
                                q_from_d,lambda_from_E)
-from larch_plugins.tomo import (tomo_reconstruction,get_sinogram_axes_from_mapfile,
-                                reshape_sinogram,trim_sinogram)
+from larch_plugins.tomo import tomo_reconstruction,reshape_sinogram,trim_sinogram
 
 
 NINIT = 32
@@ -1556,8 +1555,6 @@ class GSEXRM_MapFile(object):
                 print('1DXRD data already in file.')
                 return
 
-
-
     def get_slice_y(self):
 
         for name, val in zip(list(self.xrmmap['config/environ/name']),
@@ -1567,37 +1564,6 @@ class GSEXRM_MapFile(object):
                 name = name.replace('samplestage.', '')
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
-
-    def get_tomo_center(self):
-
-        try:
-            return self.xrmmap['tomo/center'][...]
-        except:
-             self.update_tomo_center(None)
-
-        return self.xrmmap['tomo/center'][...]
-
-    def update_tomo_center(self,center):
-
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
-        if center is None:
-            try:
-                center = len(self.get_pos('fine x', mean=True))/2
-            except:
-                center = len(self.get_pos('x', mean=True))/2
-
-
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        try:
-            del tomogrp['center']
-        except:
-            pass
-        tomogrp.create_dataset('center', data=center)
-
-
-        self.h5root.flush()
 
     def reset_flags(self):
         '''
@@ -1873,30 +1839,70 @@ class GSEXRM_MapFile(object):
 
         return roidata
 
+    def get_translation_axis(self):
+    
+        try:
+            return self.get_pos('fine x', mean=True)
+        except:
+            return self.get_pos('x', mean=True)
+        
+    def get_rotation_axis(self):
+    
+        try:
+            return self.get_pos('theta', mean=True)
+        except:
+            return
+
+
+    def get_tomography_center(self):
+
+        try:
+            return self.xrmmap['tomo/center'][...]
+        except:
+             self.set_tomography_center()
+
+        return self.xrmmap['tomo/center'][...]
+
+    def set_tomography_center(self,center=None):
+
+        if not self.check_hostid():
+            raise GSEXRM_NotOwner(self.filename)
+
+        if center is None: center = len(self.get_translation_axis())/2.
+
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        try:
+            del tomogrp['center']
+        except:
+            pass
+        tomogrp.create_dataset('center', data=center)
+
+        self.h5root.flush()
+
 
     def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
 
         sino = self.get_roimap(roi_name, det=det, **kws)
-        x,omega = get_sinogram_axes_from_mapfile(self)
+        x,omega = self.get_translation_axis(),self.get_rotation_axis()
 
         if omega is None:
             print('Cannot compute tomography: no rotation motor specified in map.')
             return
 
-        sino,sinogram_order = reshape_sinogram(sino,x,omega)
-
         if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
 
-        return sino
+        sino,sinogram_order = reshape_sinogram(sino,x,omega)
+
+        return sino,sinogram_order
 
     def get_tomograph(self, sino, **kws):
 
         ## returns tomo in order: slice, x, y
         tomo_center, tomo = tomo_reconstruction(sino, **kws)
 
-        ## reorder to: x,y,slice for viewing
-        tomo = np.einsum('kij->ijk', tomo)
-        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
+#         ## reorder to: x,y,slice for viewing
+#         tomo = np.einsum('kij->ijk', tomo)
+#         if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
 
         return tomo_center, tomo
 

@@ -92,7 +92,8 @@ from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch_plugins.tomo import return_methods
+from larch_plugins.tomo import (tomo_reconstruction, reshape_sinogram, trim_sinogram,
+                                return_methods)
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -634,7 +635,7 @@ class TomographyPanel(GridPanel):
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
         if self.tomo_pkg[0] != '':
-            center = self.cfile.get_tomo_center()
+            center = self.cfile.get_tomography_center()
             self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
             self.center_value.SetValue(center)
 
@@ -754,8 +755,7 @@ class TomographyPanel(GridPanel):
               'dtcorrect'  : self.chk_dftcor.GetValue()}
 
         if xrmfile is None: xrmfile = self.owner.current_file
-        x,omega = return_sinogram_axes(xrmfile)
-
+        x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
 
         r_map = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:
@@ -860,10 +860,10 @@ class TomographyPanel(GridPanel):
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
 
-    def set_center(self,center):
+    def set_center(self,cen):
 
-        self.center_value.SetValue(center)
-        self.cfile.update_tomo_center(center)
+        self.center_value.SetValue(cen)
+        self.cfile.set_tomography_center(center=cen)
 
     def set_det_choices(self, xrmmap):
 
