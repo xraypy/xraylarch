@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.35rc2
+version: 0.9.35
 
 channels:
     - http://repo.continuum.io/pkgs/main
@@ -30,6 +30,8 @@ specs:
     - yaml
     - pillow
     - requests
+    - scikit-image
+    - pywin32 # [win64 or win32]
     - wxpython
     - wxmplot
     - wxutils
@@ -38,7 +40,7 @@ specs:
     - asteval
     - pycifrw
     - scikit-image
-    - xraylarch 0.9.35rc2
+    - xraylarch 0.9.35
 
 
 post_install: post_install_linux.sh # [linux64]
