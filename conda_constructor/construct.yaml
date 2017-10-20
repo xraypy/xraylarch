@@ -24,7 +24,7 @@ specs:
     - sqlalchemy
     - psycopg2
     - termcolor
-    - fontconfig 2.12.4 # [osx or linux64]
+    - fontconfig # [osx or linux64]
     - pango # [linux64]
     - pcre
     - yaml
@@ -40,7 +40,7 @@ specs:
     - asteval
     - pycifrw
     - scikit-image
-    - xraylarch 0.9.35
+    - xraylarch
 
 
 post_install: post_install_linux.sh # [linux64]
