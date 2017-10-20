@@ -1865,9 +1865,6 @@ class GSEXRM_MapFile(object):
 
     def set_tomography_center(self,center=None):
 
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
         if center is None: center = len(self.get_translation_axis())/2.
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)

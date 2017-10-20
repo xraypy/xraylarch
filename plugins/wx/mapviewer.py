@@ -757,13 +757,13 @@ class TomographyPanel(GridPanel):
         if xrmfile is None: xrmfile = self.owner.current_file
         x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
 
-        r_map = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
+        r_map,sino_order = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:
-            g_map = xrmfile.get_sinogram(roi_name[1],det=det_name[1],**args)
-            b_map = xrmfile.get_sinogram(roi_name[2],det=det_name[2],**args)
+            g_map,sino_order = xrmfile.get_sinogram(roi_name[1],det=det_name[1],**args)
+            b_map,sino_order = xrmfile.get_sinogram(roi_name[2],det=det_name[2],**args)
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
+            mapx,sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
 
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
@@ -776,6 +776,7 @@ class TomographyPanel(GridPanel):
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
             elif oprtr == '/': sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            sino.resize(tuple(i for i in sino.shape if i!=1))
             title = fname
             info = ''
             if roi_name[-1] == '1' and oprtr == '/':
@@ -801,25 +802,18 @@ class TomographyPanel(GridPanel):
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
 
-        ### axes order: slices, x, 2theta
-        if len(sino.shape) < 3: sino = np.reshape(sino,(1,sino.shape[0],sino.shape[1]))
-        sino = np.flip(sino,1)
-
-        return title,subtitles,info,xrmfile.x,xrmfile.ome,sino
+        return title,subtitles,info,x,omega,sino_order,sino
 
     def onShowSinogram(self, event=None, new=True):
 
-        title,subtitles,info,x,ome,sino = self.calculateSinogram()
+        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
         
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
-        ## reorder to: 2th, x, slice for viewing
-        sino = np.einsum('kji->ijk', sino)
-
-        ## for one color plot
-        if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
+       
+        if sino.shape[0] == 1: sino = sino[0] ## for one color plot
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
@@ -830,15 +824,16 @@ class TomographyPanel(GridPanel):
         xrmfile = self.owner.current_file
 
         ## returns sino in order: slice, x, 2theta
-        title,subtitles,info,x,ome,sino = self.calculateSinogram()
+        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
 
-        args = {'refine_cen'  : self.refine_center.GetValue(),
-                'cen_range'   : self.center_range.GetValue(),
-                'center'      : self.center_value.GetValue(),
-                'method'      : self.alg_choice[0].GetStringSelection(),
-                'algorithm_A' : self.alg_choice[1].GetStringSelection(),
-                'algorithm_B' : self.alg_choice[2].GetStringSelection(),
-                'omega'       : ome}
+        args = {'refine_center'  : self.refine_center.GetValue(),
+                'center_range'   : self.center_range.GetValue(),
+                'center'         : self.center_value.GetValue(),
+                'method'         : self.alg_choice[0].GetStringSelection(),
+                'algorithm_A'    : self.alg_choice[1].GetStringSelection(),
+                'algorithm_B'    : self.alg_choice[2].GetStringSelection(),
+                'sinogram_order' : sino_order,
+                'omega'          : ome}
 
 
         tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
@@ -856,6 +851,7 @@ class TomographyPanel(GridPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
+        if tomo.shape[0] == 1: tomo = tomo[0] ## for one color plot
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
