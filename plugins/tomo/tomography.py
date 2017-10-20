@@ -161,7 +161,7 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
             
 
 def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, method=None,
-                        algorithm_A=None, algorithm_B=None, omega=None):
+                        algorithm_A=None, algorithm_B=None, omega=None, sinogram_order=False):
     '''
     INPUT ->  sino : slice, x, 2th
     OUTPUT -> tomo : slice, x, y
@@ -216,7 +216,7 @@ def tomo_reconstruction(sino, refine_cen=False, cen_range=None, center=None, met
         if refine_cen: 
             center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5)
 
-        tomo = tomopy.recon(sino, np.radians(omega), center=center, algorithm=algorithm_A) #,
+        tomo = tomopy.recon(sino, np.radians(omega), center=center, algorithm=algorithm_A, sinogram_order=sinogram_order) #,
 #                             filter_name=algorithm_B) 
         
         ## reorder to slice, x, y

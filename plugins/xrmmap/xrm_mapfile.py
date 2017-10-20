@@ -20,7 +20,8 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
                                q_from_d,lambda_from_E)
-from larch_plugins.tomo import tomo_reconstruction
+from larch_plugins.tomo import (tomo_reconstruction,get_sinogram_axes_from_mapfile,
+                                reshape_sinogram,trim_sinogram)
 
 
 NINIT = 32
