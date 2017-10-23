@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>1. Downloading and Installation &#8212; larch 0.9.34 documentation</title>
-    
+    <title>1. Downloading and Installation &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="2. Larch Community and Support" href="community.html" />
@@ -82,17 +79,18 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">1. Downloading and Installation</a><ul>
-<li><a class="reference internal" href="#python-versions-2-7-or-3-6">1.1. Python Versions: 2.7 or 3.6?</a></li>
-<li><a class="reference internal" href="#using-anaconda-python">1.2. Using Anaconda Python</a></li>
-<li><a class="reference internal" href="#source-installation">1.3. Source Installation</a><ul>
-<li><a class="reference internal" href="#prerequisites">1.3.1. Prerequisites</a></li>
-<li><a class="reference internal" href="#installation-from-source">1.3.2. Installation from Source</a></li>
+<li><a class="reference internal" href="#single-file-installers">1.1. Single-File Installers</a></li>
+<li><a class="reference internal" href="#installing-with-anaconda-python">1.2. Installing with Anaconda Python</a></li>
+<li><a class="reference internal" href="#python-versions-2-7-or-3-6">1.3. Python Versions: 2.7 or 3.6?</a></li>
+<li><a class="reference internal" href="#source-installation">1.4. Source Installation</a><ul>
+<li><a class="reference internal" href="#prerequisites">1.4.1. Prerequisites</a></li>
+<li><a class="reference internal" href="#installation-from-source">1.4.2. Installation from Source</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#documentation-and-examples">1.4. Documentation and Examples</a></li>
-<li><a class="reference internal" href="#funding-and-support">1.5. Funding and Support</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.6. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.7. License</a></li>
+<li><a class="reference internal" href="#documentation-and-examples">1.5. Documentation and Examples</a></li>
+<li><a class="reference internal" href="#funding-and-support">1.6. Funding and Support</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.7. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.8. License</a></li>
 </ul>
 </li>
 </ul>
@@ -130,68 +128,76 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.34.  Larch is in active and
-continuing development, and the intention is to tag a new release version
-every three to six months.  Of course, there may be bugs and unintended
-features, and some missing or incomplete desired features.  Still, most of
-what is in Larch is working and ready for use.  New and in-development
-features and application will be explicitly described as “beta”.</p>
-<p>Larch is written in Python and requires and existing Python interpreter to be
-installed on your computer, along with a handful of common libraries for
-scientific computing.</p>
-<p>The <strong>recommended</strong> way to install and run Larch is with <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a>
-version 2.7.  Larch can be installed from its source code, which can work
-fairly easily on most computers and operating systems, but the Anaconda
-package is certainly easier to use and comes with the packages that Larch
-needs already installed or automatically fetched when installing Larch.</p>
-<div class="section" id="python-versions-2-7-or-3-6">
-<h2>1.1. Python Versions: 2.7 or 3.6?<a class="headerlink" href="#python-versions-2-7-or-3-6" title="Permalink to this headline">¶</a></h2>
-<p>As of this writing (Summer, 2017) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch can now work with either
-version of Python.  The GUI toolkit (wxPython) used by Larch is still not
-officially released for Python 3, but Larch does work well with the
-in-development version of wxPython.  Support for Larch running with Python
-3.6 should be considered experimental, and we invite brave users to try it
-out.  We are eager to migrate Larch to Python 3.6, and expect to do so
-within year or so.</p>
-</div>
-<div class="section" id="using-anaconda-python">
-<h2>1.2. Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and well-supported version of Python for
-scientific work with many useful packages included.  By default, Anaconda
-Python installs into your own home folder (on Windows, it will use the
-<cite>APPDATA</cite> location, which is typically something like
-<cite>C:\Users\YourName\AppData\Local\Continuum\Anaconda2</cite>).  Installing does
-not require extra permissions to install, upgrade, or remove components.
-Anaconda includes a robust package manager called <em>conda</em> that makes it
-easy to update the packages it manages, including Larch.</p>
-<p>Begin by installing the latest version of Anaconda Python (as described
-above Python 2.7 is currently recommended over Python 3.6 except for the
-most adventerous users) from the <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is
-installed, you can open a Terminal (on Linux or Mac OSX) or the Anaconda
-prompt (on Windows) and type these 2 commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
-
-<span class="n">larch_makeicons</span>
+<p>The latest release version of Larch is 0.9.35.  Larch is in active and
+continuing development, and the intention is to tag a new release version every
+three to six months.  Of course, there may be bugs and unintended features, and
+some missing or incomplete desired features as we add new functionality.  Still,
+most of what is in Larch for XAFS data analysis and working with XRF maps from
+X-ray microprobes is working and ready for use.</p>
+<div class="section" id="single-file-installers">
+<h2>1.1. Single-File Installers<a class="headerlink" href="#single-file-installers" title="Permalink to this headline">¶</a></h2>
+<p>For Windows, Mac OSX, and Linux, Larch now comes with simple installers,
+available at <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads">Larch Installers (cars.uchicago.edu)</a>.  These are
+self-contained files that will install a complete Python environment from
+Anaconda Python and all of X-rayLarch onto your computer.  Installing Larch
+this way will be create a folder in your home folder called <cite>xraylarch</cite> by
+default (you can change it).  This does not require administrative
+privilege and will not interfere with anything on your system – you can
+uninstall simply by removing this folder.  The installers are fairly large
+(300 to 500 Mb), but includes an entire scientific python environment.
+Installing by the other means described below will not take less disk
+space.</p>
+<p id="installers-table"><strong>Table of Larch Installers</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="35%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Operating System</th>
+<th class="head">installer</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Windows (64bit)</td>
+<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86_64.exe">Larch for 64bit Windows</a></td>
+</tr>
+<tr class="row-odd"><td>Windows (32bit)</td>
+<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86.exe">Larch for 32bit Windows</a></td>
+</tr>
+<tr class="row-even"><td>Mac OSX (64bit)</td>
+<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-MacOSX-x86_64.sh">Larch for Mac OSX</a></td>
+</tr>
+<tr class="row-odd"><td>Linux (64bit)</td>
+<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Linux-x86_64.sh">Larch for Linux</a></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>For Windows, download the appropriate executable installer corresponding to
+the architecture of your OS, and run it.  Most modern computers (including
+Windows 10) will be running 64-bit Windows, but a 32-bit version is
+provided for older systems.</p>
+<p>For Mac OSX or Linux, download the appropriate file then open a Terminal
+(Applications-&gt;Utilities-&gt;Terminal on Mac OSX), use <cite>cd</cite> to move to the
+download folder (typically <cite>cd Downloads</cite>) and run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">35</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>This will install all the software needed to run Larch and all its
-components.  On Windows and Mac OSX, the second command will also create a
-Folder called <em>Larch</em> on your desktop that includes shortcuts (Windows) or
-small Apps (Mac OSX) that you can click on to run the following Larch
-applications:</p>
-<blockquote>
-<div><ul class="simple">
-<li><cite>larch</cite>  – simplest command-line interface.</li>
-<li><cite>larch_gui</cite> – Enhanced command-line interface with GUI data browser.</li>
-<li><cite>gse_mapviewer</cite> – XRF Mapviewer for GSECARS XRF Map data.</li>
-<li><cite>gse_scanviewer</cite> – Simple XAFS and Scan viewer for GSECARS data.</li>
-<li><cite>xrfdisplay</cite> – Display XRF Spectrum.</li>
-<li><cite>xyfit</cite> – Display and Peak Fitting of XANES and other 1D spectra (beta).</li>
-<li><cite>1D XRD Viewer</cite> – Display and work with XRD diffraction patterns (beta).</li>
-<li><cite>2D XRD Viewer</cite> – Display and work with XRD diffraction images (beta).</li>
-</ul>
-</div></blockquote>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">35</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>Once installed, you will be able to upgrade to future versions of Larch using:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">xraylarch</span>
+</pre></div>
+</div>
+<p>and you will be able to completely uninstall simply by removing the
+<cite>xraylarch</cite> folder in your home directory.</p>
+<p>On Windows and Mac OSX, the installer will create a <em>Larch</em> folder on your
+Desktop containing links to many of the Larch GUI applications listed above in
+<a class="reference internal" href="index.html#larch-app-table"><span class="std std-ref">Table of Larch Applications and Programs</span></a>.</p>
 <p>A key advantage of using Anaconda is that once installed, updates can be
 installed with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
@@ -202,39 +208,78 @@ need additional libraries installed, and some of these libraries may not be
 available for Python3.6 or for all platforms.   We’re working on this, but
 if you need help, please contact us.</p>
 </div>
+<div class="section" id="installing-with-anaconda-python">
+<h2>1.2. Installing with Anaconda Python<a class="headerlink" href="#installing-with-anaconda-python" title="Permalink to this headline">¶</a></h2>
+<p>For those familiar with Python, Larch can be installed into an existing
+Python environment.  We highly recommended using <a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> for
+Larch.  While Larch can be installed from source code with standard
+versions of Python, Anaconda Python makes getting and installing the many
+packages needed for Larch.</p>
+<p><a class="reference external" href="http://www.continuum.io/">Anaconda Python</a> provides a free and well-supported version of Python for
+scientific work with many useful packages included.  By default, Anaconda Python
+installs into your own home folder (on Windows, this will be the <cite>APPDATA</cite>
+location, which is typically something like
+<cite>C:\Users\YourName\AppData\Local\Continuum\Anaconda2</cite>).  As with the
+single-file installers above, installing Anaconda Python does not require extra
+permissions to install, upgrade, or remove components.  Anaconda includes a
+robust package manager called <em>conda</em> that makes it easy to update the packages
+it manages, including Larch.</p>
+<p>Begin by installing the latest version of Anaconda Python – either Python 2.7
+or 3.6 should work (though Python 3.6 may have undiscovered bugs) from the
+<a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is installed, you can open a Terminal (on
+Linux or Mac OSX) or the Anaconda prompt (on Windows) and type:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
+</pre></div>
+</div>
+<p>to install Larch.  On Windows or Mac OSX, then type:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch_makeicons</span>
+</pre></div>
+</div>
+<p>to make a <cite>Larch</cite> folder on your desktop with shortcuts (Windows) or
+Applications (Mac OSX) for the main Larch applications.</p>
+</div>
+<div class="section" id="python-versions-2-7-or-3-6">
+<h2>1.3. Python Versions: 2.7 or 3.6?<a class="headerlink" href="#python-versions-2-7-or-3-6" title="Permalink to this headline">¶</a></h2>
+<p>As of this writing (October, 2017) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch works with both versions of Python.
+We invite Python-savvy users to try out Larch with Python 3.6, but warn that
+there may be undiscovered bugs.  We are eager to migrate Larch so that it works
+only with Python 3.6 and higher so that we can take advantage of many language
+features not available in earlier versions.  Following the schedule of many
+scientific Python libraries and tools, we expect to make this transition in
+early 2019.</p>
+</div>
 <div class="section" id="source-installation">
-<h2>1.3. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
-<p>Larch can be installed from source code.  The latest releases of the source
-code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases (github.com)</a>.  In addition, you
-can use <cite>git</cite> to grab the latest development version of the source code:</p>
+<h2>1.4. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
+<p>For Python-savvy users, Larch can be installed from source code.  The latest
+releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases
+(github.com)</a>.  In addition, you can use <cite>git</cite> to grab the latest development
+version of the source code:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <div class="section" id="prerequisites">
-<h3>1.3.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
-<p>Larch requires Python version 2.7 or 3.6. Larch works with Python 3.6 but
-requires the not-yet-officially released Phoenix branch of wxPython.  The
-following Python packages are all required:</p>
+<h3>1.4.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>Larch requires Python version 2.7 or 3.6. In addiion, the following Python
+packages are all required for Larch to work:</p>
 <blockquote>
 <div>numpy, scipy, matplotlib, h5py, sqlalchemy, six, lmfit, wxPython,
 wxmplot, wxutils, asteval.</div></blockquote>
-<p>These are all available for Anaconda Python 2.7 and 3.6, either from the
-core Anaconda packages or from the GSECARS conda channel, and will be
-installed with <cite>conda install -c GSECARS xraylarch</cite>.</p>
-<p>If you’re installing from source or using a Python distribution other than
-Anaconda, all these packages are also available from PyPI and can be
-installed with  <cite>pip install</cite></p>
-<p>There are a fair number of packages that are required for some of the
-advanced and in-development X-ray diffraction analysis capabilities.  These
-include</p>
+<p>These are all widely available, either from PyPI or for Anaconda Python 2.7 and
+3.6.  Those packages not included with core Anaconda packages can be installed
+from the GSECARS conda channel, and will be installed with <cite>conda install -c
+GSECARS xraylarch</cite>.  If you’re installing from source or using a Python
+distribution other than Anaconda, all these packages are also available from
+PyPI and can be installed with <cite>pip install</cite></p>
+<p>There are a few packages that are required for some of the advanced and
+in-development X-ray diffraction analysis capabilities.  These include</p>
 <blockquote>
 <div>fabio, pyfai, pycifrw</div></blockquote>
-<p>For the most part, these are available from Anaconda channels for most
-systems and versions.  There may be some missing features or poorly-tested
-features.  If you experience problems, please let us know!</p>
+<p>As with the other packages listed above, these are either available from the
+GSECARS anaconda channel or from PyPI.</p>
 </div>
 <div class="section" id="installation-from-source">
-<h3>1.3.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<h3>1.4.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
 <p>If installing from source, first unpack the source distribution kit, move
 into the created xraylarch-VERSION directory, and type:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
@@ -243,13 +288,13 @@ into the created xraylarch-VERSION directory, and type:</p>
 </div>
 </div>
 <div class="section" id="documentation-and-examples">
-<h2>1.4. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
+<h2>1.5. Documentation and Examples<a class="headerlink" href="#documentation-and-examples" title="Permalink to this headline">¶</a></h2>
 <p>The source kit includes sources for documentation in the <cite>docs</cite> folder and
 several examples (including all those shown in this documentation) in the
 <cite>examples</cite> folder.</p>
 </div>
 <div class="section" id="funding-and-support">
-<h2>1.5. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
+<h2>1.6. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
 <p>Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
@@ -258,16 +303,17 @@ specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).</p>
 </div>
 <div class="section" id="acknowledgements">
-<h2>1.6. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2>1.7. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
-&lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable
-influence on the design and implementation of this code and has provided
-countless fixes for serious problems in design and execution in the early
-stages.  More than that, Larch would simply not exist without the long and
-fruitful collaboration we’ve enjoyed.  Tom Trainor had a very strong
-influence on the original design of Larch, and helped with the initial
-version of the python implementation.  Yong Choi wrote the code for X-ray
-standing wave and reflectivity analysis and graciously allowed it to be
+&lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable influence on
+the design and implementation of this code and has provided countless fixes for
+serious problems in design and execution in the early stages.  More than that,
+Larch would simply not exist without the long and fruitful collaboration we’ve
+enjoyed.  Margaret Koker wrote most of the X-ray diffraction analysis code, and
+much of the advanced functionality of the GSECARS XRF Map Viewer.  Tom Trainor
+had a very strong influence on the original design of Larch, and helped with the
+initial version of the python implementation.  Yong Choi wrote the code for
+X-ray standing wave and reflectivity analysis and graciously allowed it to be
 included and modified for Larch.</p>
 <p>Having begun as a rewrite of the Ifeffit XAFS Analysis Package, Larch also
 references and builds on quite a bit of code developed for XAFS over many
@@ -288,7 +334,7 @@ read the X-ray Scattering data from the Elam Tables was modified from code
 originally written by Darren S. Dale.  Refined values for anomalous
 scattering factors have been provided directly by Christopher T. Chantler.
 Further details of the origin of much of the tabularized X-ray data is
-given in <a class="reference internal" href="xray/index.html#xraydb-chapter"><span class="std std-ref">9</span></a>.</p>
+given in <a class="reference internal" href="xray/index.html#xraydb-chapter"><span class="std std-ref">10</span></a>.</p>
 <p>As Larch depends on the fantastic scientific librarie written and
 maintained in python, especially the numpy, scipy, and matplotlib, the
 entire scientific python community deserves a hearty thanks.  In
@@ -301,41 +347,41 @@ uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
 <div class="section" id="license">
-<h2>1.7. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>1.8. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Copyright</span><span class="p">,</span> <span class="n">Licensing</span><span class="p">,</span> <span class="ow">and</span> <span class="n">Re</span><span class="o">-</span><span class="n">distribution</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">BSD</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">CLAUSE</span> <span class="n">LICENSE</span>
+
+<span class="n">Copyright</span><span class="p">,</span> <span class="n">Licensing</span><span class="p">,</span> <span class="ow">and</span> <span class="n">Re</span><span class="o">-</span><span class="n">distribution</span>
 <span class="o">-----------------------------------------</span>
 
 <span class="n">Unless</span> <span class="n">otherwise</span> <span class="n">stated</span><span class="p">,</span> <span class="nb">all</span> <span class="n">files</span> <span class="n">included</span> <span class="n">here</span> <span class="n">are</span> <span class="n">copyrighted</span> <span class="ow">and</span>
 <span class="n">distributed</span> <span class="n">under</span> <span class="n">the</span> <span class="n">following</span> <span class="n">license</span><span class="p">:</span>
 
-  <span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">2013</span> <span class="n">Matthew</span> <span class="n">Newville</span><span class="p">,</span> <span class="n">The</span> <span class="n">University</span> <span class="n">of</span> <span class="n">Chicago</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">2017</span> <span class="n">Matthew</span> <span class="n">Newville</span><span class="p">,</span> <span class="n">The</span> <span class="n">University</span> <span class="n">of</span> <span class="n">Chicago</span>
+<span class="n">All</span> <span class="n">rights</span> <span class="n">reserved</span><span class="o">.</span>
 
-  <span class="n">Redistribution</span> <span class="ow">and</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">source</span> <span class="ow">and</span> <span class="n">binary</span> <span class="n">forms</span><span class="p">,</span> <span class="k">with</span> <span class="ow">or</span> <span class="n">without</span>
-  <span class="n">modification</span><span class="p">,</span> <span class="n">are</span> <span class="n">permitted</span> <span class="n">provided</span> <span class="n">that</span> <span class="n">the</span> <span class="n">following</span> <span class="n">conditions</span> <span class="n">are</span> <span class="n">met</span><span class="p">:</span>
+<span class="n">Redistribution</span> <span class="ow">and</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">source</span> <span class="ow">and</span> <span class="n">binary</span> <span class="n">forms</span><span class="p">,</span> <span class="k">with</span> <span class="ow">or</span> <span class="n">without</span>
+<span class="n">modification</span><span class="p">,</span> <span class="n">are</span> <span class="n">permitted</span> <span class="n">provided</span> <span class="n">that</span> <span class="n">the</span> <span class="n">following</span> <span class="n">conditions</span> <span class="n">are</span> <span class="n">met</span><span class="p">:</span>
 
-  <span class="o">*</span> <span class="n">Redistributions</span> <span class="n">of</span> <span class="n">source</span> <span class="n">code</span> <span class="n">must</span> <span class="n">retain</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span> <span class="n">notice</span><span class="p">,</span>
-    <span class="n">this</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span><span class="o">.</span>
-  <span class="o">*</span> <span class="n">Redistributions</span> <span class="ow">in</span> <span class="n">binary</span> <span class="n">form</span> <span class="n">must</span> <span class="n">reproduce</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span>
-    <span class="n">notice</span><span class="p">,</span> <span class="n">this</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span> <span class="ow">in</span> <span class="n">the</span>
-    <span class="n">documentation</span> <span class="ow">and</span><span class="o">/</span><span class="ow">or</span> <span class="n">other</span> <span class="n">materials</span> <span class="n">provided</span> <span class="k">with</span> <span class="n">the</span> <span class="n">distribution</span><span class="o">.</span>
-  <span class="o">*</span> <span class="n">The</span> <span class="n">names</span> <span class="n">of</span> <span class="n">the</span> <span class="n">copyright</span> <span class="n">holders</span> <span class="ow">or</span> <span class="n">contributers</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">used</span> <span class="n">to</span>
-    <span class="n">endorse</span> <span class="ow">or</span> <span class="n">promote</span> <span class="n">products</span> <span class="n">derived</span> <span class="kn">from</span> <span class="nn">this</span> <span class="n">software</span> <span class="n">without</span> <span class="n">specific</span>
-    <span class="n">prior</span> <span class="n">written</span> <span class="n">permission</span><span class="o">.</span>
+<span class="o">*</span> <span class="n">Redistributions</span> <span class="n">of</span> <span class="n">source</span> <span class="n">code</span> <span class="n">must</span> <span class="n">retain</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span> <span class="n">notice</span><span class="p">,</span> <span class="n">this</span>
+  <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span><span class="o">.</span>
 
-  <span class="n">THIS</span> <span class="n">SOFTWARE</span> <span class="n">IS</span> <span class="n">PROVIDED</span> <span class="n">BY</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDERS</span> <span class="n">AND</span> <span class="n">CONTRIBUTORS</span> <span class="s2">&quot;AS</span>
-  <span class="n">IS</span><span class="s2">&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,</span>
-  <span class="n">THE</span> <span class="n">IMPLIED</span> <span class="n">WARRANTIES</span> <span class="n">OF</span> <span class="n">MERCHANTABILITY</span> <span class="n">AND</span> <span class="n">FITNESS</span> <span class="n">FOR</span> <span class="n">A</span> <span class="n">PARTICULAR</span>
-  <span class="n">PURPOSE</span> <span class="n">ARE</span> <span class="n">DISCLAIMED</span><span class="o">.</span> <span class="n">IN</span> <span class="n">NO</span> <span class="n">EVENT</span> <span class="n">SHALL</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDER</span> <span class="n">OR</span>
-  <span class="n">CONTRIBUTORS</span> <span class="n">BE</span> <span class="n">LIABLE</span> <span class="n">FOR</span> <span class="n">ANY</span> <span class="n">DIRECT</span><span class="p">,</span> <span class="n">INDIRECT</span><span class="p">,</span> <span class="n">INCIDENTAL</span><span class="p">,</span> <span class="n">SPECIAL</span><span class="p">,</span>
-  <span class="n">EXEMPLARY</span><span class="p">,</span> <span class="n">OR</span> <span class="n">CONSEQUENTIAL</span> <span class="n">DAMAGES</span> <span class="p">(</span><span class="n">INCLUDING</span><span class="p">,</span> <span class="n">BUT</span> <span class="n">NOT</span> <span class="n">LIMITED</span> <span class="n">TO</span><span class="p">,</span>
-  <span class="n">PROCUREMENT</span> <span class="n">OF</span> <span class="n">SUBSTITUTE</span> <span class="n">GOODS</span> <span class="n">OR</span> <span class="n">SERVICES</span><span class="p">;</span> <span class="n">LOSS</span> <span class="n">OF</span> <span class="n">USE</span><span class="p">,</span> <span class="n">DATA</span><span class="p">,</span> <span class="n">OR</span>
-  <span class="n">PROFITS</span><span class="p">;</span> <span class="n">OR</span> <span class="n">BUSINESS</span> <span class="n">INTERRUPTION</span><span class="p">)</span> <span class="n">HOWEVER</span> <span class="n">CAUSED</span> <span class="n">AND</span> <span class="n">ON</span> <span class="n">ANY</span> <span class="n">THEORY</span> <span class="n">OF</span>
-  <span class="n">LIABILITY</span><span class="p">,</span> <span class="n">WHETHER</span> <span class="n">IN</span> <span class="n">CONTRACT</span><span class="p">,</span> <span class="n">STRICT</span> <span class="n">LIABILITY</span><span class="p">,</span> <span class="n">OR</span> <span class="n">TORT</span> <span class="p">(</span><span class="n">INCLUDING</span>
-  <span class="n">NEGLIGENCE</span> <span class="n">OR</span> <span class="n">OTHERWISE</span><span class="p">)</span> <span class="n">ARISING</span> <span class="n">IN</span> <span class="n">ANY</span> <span class="n">WAY</span> <span class="n">OUT</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">USE</span> <span class="n">OF</span> <span class="n">THIS</span>
-  <span class="n">SOFTWARE</span><span class="p">,</span> <span class="n">EVEN</span> <span class="n">IF</span> <span class="n">ADVISED</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">POSSIBILITY</span> <span class="n">OF</span> <span class="n">SUCH</span> <span class="n">DAMAGE</span><span class="o">.</span>
+<span class="o">*</span> <span class="n">Redistributions</span> <span class="ow">in</span> <span class="n">binary</span> <span class="n">form</span> <span class="n">must</span> <span class="n">reproduce</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span> <span class="n">notice</span><span class="p">,</span>
+  <span class="n">this</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">documentation</span>
+  <span class="ow">and</span><span class="o">/</span><span class="ow">or</span> <span class="n">other</span> <span class="n">materials</span> <span class="n">provided</span> <span class="k">with</span> <span class="n">the</span> <span class="n">distribution</span><span class="o">.</span>
+
+<span class="n">THIS</span> <span class="n">SOFTWARE</span> <span class="n">IS</span> <span class="n">PROVIDED</span> <span class="n">BY</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDERS</span> <span class="n">AND</span> <span class="n">CONTRIBUTORS</span> <span class="s2">&quot;AS IS&quot;</span>
+<span class="n">AND</span> <span class="n">ANY</span> <span class="n">EXPRESS</span> <span class="n">OR</span> <span class="n">IMPLIED</span> <span class="n">WARRANTIES</span><span class="p">,</span> <span class="n">INCLUDING</span><span class="p">,</span> <span class="n">BUT</span> <span class="n">NOT</span> <span class="n">LIMITED</span> <span class="n">TO</span><span class="p">,</span> <span class="n">THE</span>
+<span class="n">IMPLIED</span> <span class="n">WARRANTIES</span> <span class="n">OF</span> <span class="n">MERCHANTABILITY</span> <span class="n">AND</span> <span class="n">FITNESS</span> <span class="n">FOR</span> <span class="n">A</span> <span class="n">PARTICULAR</span> <span class="n">PURPOSE</span> <span class="n">ARE</span>
+<span class="n">DISCLAIMED</span><span class="o">.</span> <span class="n">IN</span> <span class="n">NO</span> <span class="n">EVENT</span> <span class="n">SHALL</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDER</span> <span class="n">OR</span> <span class="n">CONTRIBUTORS</span> <span class="n">BE</span> <span class="n">LIABLE</span>
+<span class="n">FOR</span> <span class="n">ANY</span> <span class="n">DIRECT</span><span class="p">,</span> <span class="n">INDIRECT</span><span class="p">,</span> <span class="n">INCIDENTAL</span><span class="p">,</span> <span class="n">SPECIAL</span><span class="p">,</span> <span class="n">EXEMPLARY</span><span class="p">,</span> <span class="n">OR</span> <span class="n">CONSEQUENTIAL</span>
+<span class="n">DAMAGES</span> <span class="p">(</span><span class="n">INCLUDING</span><span class="p">,</span> <span class="n">BUT</span> <span class="n">NOT</span> <span class="n">LIMITED</span> <span class="n">TO</span><span class="p">,</span> <span class="n">PROCUREMENT</span> <span class="n">OF</span> <span class="n">SUBSTITUTE</span> <span class="n">GOODS</span> <span class="n">OR</span>
+<span class="n">SERVICES</span><span class="p">;</span> <span class="n">LOSS</span> <span class="n">OF</span> <span class="n">USE</span><span class="p">,</span> <span class="n">DATA</span><span class="p">,</span> <span class="n">OR</span> <span class="n">PROFITS</span><span class="p">;</span> <span class="n">OR</span> <span class="n">BUSINESS</span> <span class="n">INTERRUPTION</span><span class="p">)</span> <span class="n">HOWEVER</span>
+<span class="n">CAUSED</span> <span class="n">AND</span> <span class="n">ON</span> <span class="n">ANY</span> <span class="n">THEORY</span> <span class="n">OF</span> <span class="n">LIABILITY</span><span class="p">,</span> <span class="n">WHETHER</span> <span class="n">IN</span> <span class="n">CONTRACT</span><span class="p">,</span> <span class="n">STRICT</span> <span class="n">LIABILITY</span><span class="p">,</span>
+<span class="n">OR</span> <span class="n">TORT</span> <span class="p">(</span><span class="n">INCLUDING</span> <span class="n">NEGLIGENCE</span> <span class="n">OR</span> <span class="n">OTHERWISE</span><span class="p">)</span> <span class="n">ARISING</span> <span class="n">IN</span> <span class="n">ANY</span> <span class="n">WAY</span> <span class="n">OUT</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">USE</span>
+<span class="n">OF</span> <span class="n">THIS</span> <span class="n">SOFTWARE</span><span class="p">,</span> <span class="n">EVEN</span> <span class="n">IF</span> <span class="n">ADVISED</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">POSSIBILITY</span> <span class="n">OF</span> <span class="n">SUCH</span> <span class="n">DAMAGE</span><span class="o">.</span>
 </pre></div>
 </div>
 </div>
@@ -371,7 +417,7 @@ the BSD License:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

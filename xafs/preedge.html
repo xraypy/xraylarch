@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>8.2. XAFS: Pre-edge Subtraction and Normalization &#8212; larch 0.9.34 documentation</title>
-    
+    <title>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
-    <link rel="prev" title="8.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
+    <link rel="next" title="9.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="prev" title="9.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="8.3. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="8.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,21 +79,27 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.2. XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li><a class="reference internal" href="#the-pre-edge-function">8.2.1. The <code class="docutils literal"><span class="pre">pre_edge()</span></code> function</a></li>
-<li><a class="reference internal" href="#pre-edge-subtraction-example">8.2.2. Pre-Edge Subtraction Example</a></li>
-<li><a class="reference internal" href="#the-mback-algorithm">8.2.3. The MBACK algorithm</a></li>
-<li><a class="reference internal" href="#over-absorption-corrections">8.2.4. Over-absorption Corrections</a></li>
+<li><a class="reference internal" href="#">9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
+<li><a class="reference internal" href="#the-pre-edge-function">9.2.1. The <code class="docutils literal"><span class="pre">pre_edge()</span></code> function</a></li>
+<li><a class="reference internal" href="#pre-edge-subtraction-example">9.2.2. Pre-Edge Subtraction Example</a></li>
+<li><a class="reference internal" href="#the-mback-algorithm">9.2.3. The MBACK algorithm</a></li>
+<li><a class="reference internal" href="#over-absorption-corrections">9.2.4. Over-absorption Corrections</a></li>
+<li><a class="reference internal" href="#spectral-deconvolution">9.2.5. Spectral deconvolution</a><ul>
+<li><a class="reference internal" href="#xas-convolve">9.2.5.1. <code class="docutils literal"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-deconvolve">9.2.5.2. <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code></a></li>
+<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">9.2.5.3. Examples using <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code> and <code class="docutils literal"><span class="pre">xas_convolve()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="utilities.html"
-                        title="previous chapter">8.1. XAFS Functions: Overview and Naming Conventions</a></p>
+                        title="previous chapter">9.1. XAFS Functions: Overview and Naming Conventions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="next chapter">8.3. XAFS: Post-edge Background Subtraction</a></p>
+                        title="next chapter">9.3. XAFS: Post-edge Background Subtraction</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -122,19 +125,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
-<h1>8.2. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-pre-edge-subtraction-normalization-and-data-treatment">
+<h1>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this headline">¶</a></h1>
 <p>After reading in data and constructing <span class="math">\(\mu(E)\)</span>, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
 normalization.  Reading data and constructing <span class="math">\(\mu(E)\)</span> are handled by
 internal larch functions, especially <code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code>.  The main
 XAFS-specific function for pre-edge subtraction and normalization is
 <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
+<p>This chapter also describes methods for the treatment of XAFS and XANES
+data including corrections for over-absorption (sometimes confusingly
+called <em>self-absorption</em>) and for spectral convolution and de-convolution.</p>
 <div class="section" id="the-pre-edge-function">
-<h2>8.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pre_edge">
-<code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
@@ -244,7 +250,7 @@ That is, a line <span class="math">\((m E + b)\)</span> is fit to
 
 <dl class="function">
 <dt id="find_e0">
-<code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine <span class="math">\(E_0\)</span>, the energy threshold of the absorption edge,
 from the arrays energy and mu for <span class="math">\(\mu(E)\)</span>.</p>
 <p>This finds the point with maximum derivative with some
@@ -268,7 +274,7 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 
 </div>
 <div class="section" id="pre-edge-subtraction-example">
-<h2>8.2.2. Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.2. Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
@@ -292,11 +298,11 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 <p>gives the following results:</p>
 <div class="figure align-center" id="id1">
 <span id="xafs-fig1"></span><a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> XAFS Pre-edge subtraction.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.1 </span><span class="caption-text">XAFS Pre-edge subtraction.</span></p>
 </div>
 </div>
 <div class="section" id="the-mback-algorithm">
-<h2>8.2.3. The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.3. The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span> with an option of using the modification proposed by
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-lee-xiang">Lee, Xiang, Ravel, Kortright and Flanagan</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lee-xiang">8</a><span>]</span></span>.  In MBACK, the data are matched to the tabulated
@@ -331,7 +337,7 @@ the total number of data points.</p>
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span>.</p>
 <dl class="function">
 <dt id="mback">
-<code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -409,7 +415,7 @@ and 6.</li>
 </div></blockquote>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
-result shown in <a href="#fig-mback-copper">8.4</a>.</p>
+result shown in <a class="reference internal" href="#fig-mback-copper"><span class="std std-numref">Figure 9.2.2</span></a>.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
@@ -419,13 +425,13 @@ result shown in <a href="#fig-mback-copper">8.4</a>.</p>
 </div>
 <div class="figure align-center" id="id2">
 <span id="fig-mback-copper"></span><a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(a)</strong> Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.2 </span><span class="caption-text">Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
 </div>
 <p>Here is an example of processing XANES data measured over a rather
 short data range.  This example is the magnesium silicate mineral
 talc, Mg<sub>3</sub>Si<sub>4</sub>O<sub>10</sub>(OH)<sub>2</sub>,
 measured at the Si K edge, with the result shown in
-<a href="#fig-mback-talc">8.6</a>.  Note that the order of the Legendre polynomial
+<a class="reference internal" href="#fig-mback-talc"><span class="std std-numref">Figure 9.2.3</span></a>.  Note that the order of the Legendre polynomial
 is set to 2 and that the <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
@@ -437,11 +443,11 @@ large features near the edge.</p>
 </div>
 <div class="figure align-center" id="id3">
 <span id="fig-mback-talc"></span><a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> Using MBACK to match Si K edge data measured on talc.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.3 </span><span class="caption-text">Using MBACK to match Si K edge data measured on talc.</span></p>
 </div>
 </div>
 <div class="section" id="over-absorption-corrections">
-<h2>8.2.4. Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.4. Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
 <p>For XAFS data measured in fluorescence, a common problem of
 <em>over-absorption</em> in which too much of the total X-ray absorption
 coefficient is from the absorbing element.  In such cases, the implicit
@@ -462,7 +468,7 @@ effect can be corrected for small over-absorption.</p>
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
-<code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge=’K’</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge='K'</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
 XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
 EXAFS).</p>
@@ -495,6 +501,269 @@ normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</
 </dd></dl>
 
 </div>
+<div class="section" id="spectral-deconvolution">
+<h2>9.2.5. Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
+<p>In order to readily compare XAFS data from different sources, it is
+sometimes necessary to considert the energy resolution used to collect each
+spectum.  To be clear, the resolution of an EXAFS spectrum includes
+contributions from the x-ray sourse, instrumental broadening from the x-ray
+optics (especially the X-ray monochromator used in most measurements), and
+the intrinsic lifetime of the excited core electronic level.  For data
+measured in X-ray fluorescence or electron emission mode, the energy
+resolution can also includes the energy width of the decay channels
+measured.</p>
+<p>For a large fraction of XAFS data, the energy resolution is dominated by
+the intrinsic width of the excited core level and by the resolution of a
+silicon (111) double crystal monochromator, and so does not vary
+appreciably between spectra taken at different facilities or at different
+times.  Exceptions to this rule occur when using a higher order reflection
+of a silicon monochromator or a different monochromator altogether.
+Resolution can also be noticeably worse for data taken at older (first and
+second generation) sources and beamlines, either without a collimating
+mirror or slits before the monochromator to improve the resolution.
+In addition, high-resolution X-ray fluorescence measurements can be used to
+dramatically enhance the energy resolution of XAFS spectra, and are
+becoming widely available.</p>
+<p>Because of these effects, it is sometimes useful to change the resolution
+of XAFS spectra.  For example, one may need to reduce the resolution to
+match data measured with degraded resolution.  This can be done with
+<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> which convolves an XAFS spectrum with either a
+Gaussian or Lorentzian function with a known energy width.  Note that
+convolving with a Gaussian is less dramatic than using a Lorenztian, and
+usually better reflects the effect of an incident X-ray beam with degraded
+resolution due to source or monochromator.</p>
+<p>One may also want to try to improve the energy resolution of an XAFS
+spectrum, either to compare it to data taken with higher resolution or to
+better identify and enumerate peaks in a XANES spectrum.  This can be done
+with <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> function which deconvolves either a Gaussian or
+Lorentzian function from an XAFS spectrum.  This usually requires fairly
+good data.  Whereas a Gaussian most closely reflects broadening from the
+X-ray source, broadening due to the natural energy width of the core levels
+is better described by a Lorenztian.   Therefore, to try to reduce the
+influence of the core level in order better mimic high-resolution
+fluorescence data, deconvolving with a Lorenztian is often better.</p>
+<div class="section" id="xas-convolve">
+<h3>9.2.5.1. <code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt>
+<code class="descname">xas_convolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0):</code></dt>
+<dd><p>convolve a normalized mu(E) spectra with a Lorentzian or Gaussian peak
+shape, degrading separation of XANES features.</p>
+<p>This is provided as a complement to xas_deconvolve, and to deliberately
+broaden spectra to compare with spectra measured at lower resolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
+<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>form</strong> – form of deconvolution function. One of
+‘lorentzian’ or  ‘gaussian’ [‘lorentzian’]</li>
+<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
+<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
+<li><strong>eshift</strong> – energy shift (in eV) to apply to result. [0.0]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.</p>
+<p>The following data is put into the output group:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>conv</td>
+<td>array of convolved, normalized <span class="math">\(\mu(E)\)</span></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="xas-deconvolve">
+<h3>9.2.5.2. <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="xas_deconvolve">
+<code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=None</em>, <em>group=None</em>, <em>form='lorentzian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em>, <em>smooth=True</em>, <em>sgwindow=None</em>, <em>sgorder=3</em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>XAS spectral deconvolution</p>
+<p>de-convolve a normalized mu(E) spectra with a peak shape, enhancing the
+intensity and separation of peaks of a XANES spectrum.</p>
+<p>The results can be unstable, and noisy, and should be used
+with caution!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
+<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>form</strong> – form of deconvolution function. One of
+‘lorentzian’ or  ‘gaussian’ [‘lorentzian’]</li>
+<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
+<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
+<li><strong>eshift</strong> – energy shift (in eV) to apply to result. [0.0]</li>
+<li><strong>smooth</strong> – whether to smooth the result with the Savitzky-Golay
+method [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>sgwindow</strong> – window size for Savitzky-Golay function [found from data step and esigma]</li>
+<li><strong>sgorder</strong> – order for the Savitzky-Golay function [3]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.</p>
+<p>Smoothing with <code class="xref py py-func docutils literal"><span class="pre">savitzky_golay()</span></code> requires a window and order.  By
+default, <code class="docutils literal"><span class="pre">window</span> <span class="pre">=</span> <span class="pre">int(esigma</span> <span class="pre">/</span> <span class="pre">estep)</span></code> where estep is step size for
+the gridded data, approximately the finest energy step in the data.</p>
+<p>The following data is put into the output group:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>deconv</td>
+<td>array of deconvolved, normalized <span class="math">\(\mu(E)\)</span></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="examples-using-xas-deconvolve-and-xas-convolve">
+<h3>9.2.5.3. Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
+<p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
+be:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
+
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">xas_deconvolve</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">)</span>
+
+<span class="c1">## end of examples/xafs/doc_deconv1.lar</span>
+</pre></div>
+</div>
+<p>resulting in deconvolved data:</p>
+<div class="figure align-center" id="id4">
+<span id="fig-deconv-fe"></span><a class="reference external image-reference" href="../_images/xafs_deconv1.png"><img alt="../_images/xafs_deconv1.png" src="../_images/xafs_deconv1.png" style="width: 65%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.2.4 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math">\(\rm Fe_2O_3\)</span>.</span></p>
+</div>
+<p>To de-convolve an XAFS spectrum using the energy width of the core level,
+we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal"><span class="pre">_xray.core_width()</span></code></a> functiion, as shown below for Cu metal.
+We can also test that the deconvolution is correct by using
+<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
+data.  This can be done with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv2.lar</span>
+
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy i0 i1 mu&#39;</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+
+<span class="n">esigma</span> <span class="o">=</span> <span class="n">core_width</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">)</span>
+
+<span class="n">xas_deconvolve</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="n">esigma</span><span class="p">)</span>
+
+<span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">)</span>
+
+<span class="c1"># Test convolution:</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">dat</span><span class="o">.</span><span class="n">deconv</span><span class="p">)</span>
+<span class="n">xas_convolve</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="n">esigma</span><span class="p">)</span>
+<span class="n">plot_mu</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">conv</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">),</span>
+     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;(reconvolved - original)x100&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1">## end of examples/xafs/doc_deconv2.lar</span>
+</pre></div>
+</div>
+<p>with results shown below:</p>
+<div class="figure compound align-center" id="fig_xafs_deconv2">
+<div style="width: 45%" class="subfigure align-center" id="id5">
+<span id="fig-xafs-deconv2a"></span><a class="reference external image-reference" href="../_images/xafs_deconv2a.png"><img alt="../_images/xafs_deconv2a.png" src="../_images/xafs_deconv2a.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.2.5 </span><span class="caption-text">Cu metal normalized <span class="math">\(\mu(E)\)</span> and spectrum deconvolved by the
+energy of its core level.</span></p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="id6">
+<span id="fig-xafs-deconv2b"></span><a class="reference external image-reference" href="../_images/xafs_deconv2b.png"><img alt="../_images/xafs_deconv2b.png" src="../_images/xafs_deconv2b.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.2.6 </span><span class="caption-text">Comparison of original and re-convolved spectrum for Cu metal.  The
+difference shown in red is multiplied by 100.</span></p>
+</div>
+<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and
+<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> for Cu metal.</span></p>
+</div><p id="fig_xafs_deconv2">Finally, de-convolution of <span class="math">\(L_{\rm III}\)</span> XAFS data can be
+particularly dramatic and useful.  As with the copper spectrum above, we’ll
+deconvolve <span class="math">\(L_{\rm III}\)</span> XAFS for platinum, using the nominal energy
+width of the core level (5.17 eV).  For this example, we also see
+noticeable improvement in amplitude of the XAFS.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv3.lar</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/pt_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy time i1 i0&#39;</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwindow</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">xas_deconvolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">esigma</span><span class="o">=</span><span class="n">core_width</span><span class="p">(</span><span class="s1">&#39;Pt&#39;</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">))</span>
+
+<span class="n">decon</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwindow</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># plot in E</span>
+<span class="n">plot_mu</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">show_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">50</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">deconv</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># plot in k</span>
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show_window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show_window</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># plot in R</span>
+<span class="n">plot_chir</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plot_chir</span><span class="p">(</span><span class="n">decon</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;deconvolved&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1">## end examples/xafs/doc_deconv3.lar</span>
+</pre></div>
+</div>
+<p>with results shown below:</p>
+<div class="figure compound align-center" id="fig_xafs_deconv3">
+<div style="width: 45%" class="subfigure align-center" id="id7">
+<span id="fig-xafs-deconv3a"></span><a class="reference external image-reference" href="../_images/xafs_deconv3a.png"><img alt="../_images/xafs_deconv3a.png" src="../_images/xafs_deconv3a.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.2.7 </span><span class="caption-text"><span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal, normalized <span class="math">\(\mu(E)\)</span> for raw
+data and the spectrum deconvolved by the energy of its core level.</span></p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="id8">
+<span id="fig-xafs-deconv3b"></span><a class="reference external image-reference" href="../_images/xafs_deconv3b.png"><img alt="../_images/xafs_deconv3b.png" src="../_images/xafs_deconv3b.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.2.8 </span><span class="caption-text"><span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal, <span class="math">\(\chi(R)\)</span> for raw data and
+the spectrum deconvolved by the energy of its core level.</span></p>
+</div>
+<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and
+<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> for <span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal.</span></p>
+<span class="target" id="fig_xafs_deconv3"></span></div></div>
+</div>
 </div>
 
 
@@ -510,10 +779,10 @@ normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="8.3. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
              >next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="8.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -523,12 +792,12 @@ normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

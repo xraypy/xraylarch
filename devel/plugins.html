@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>11.3. Plugins &#8212; larch 0.9.34 documentation</title>
-    
+    <title>12.3. Plugins &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="11.4. Using Larch from Python" href="frompython.html" />
-    <link rel="prev" title="11.2. Modules" href="modules.html" />
+    <link rel="next" title="12.4. Using Larch from Python" href="frompython.html" />
+    <link rel="prev" title="12.2. Modules" href="modules.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="frompython.html" title="11.4. Using Larch from Python"
+          <a href="frompython.html" title="12.4. Using Larch from Python"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="11.2. Modules"
+          <a href="modules.html" title="12.2. Modules"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">11. Programming with Larch</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">12. Programming with Larch</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,19 +79,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">11.3. Plugins</a><ul>
-<li><a class="reference internal" href="#locations-of-plugins">11.3.1. Locations of Plugins</a></li>
-<li><a class="reference internal" href="#customizing-plugins-and-folders-of-plugins">11.3.2. Customizing Plugins and  Folders of Plugins</a></li>
+<li><a class="reference internal" href="#">12.3. Plugins</a><ul>
+<li><a class="reference internal" href="#locations-of-plugins">12.3.1. Locations of Plugins</a></li>
+<li><a class="reference internal" href="#customizing-plugins-and-folders-of-plugins">12.3.2. Customizing Plugins and  Folders of Plugins</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="previous chapter">11.2. Modules</a></p>
+                        title="previous chapter">12.2. Modules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="frompython.html"
-                        title="next chapter">11.4. Using Larch from Python</a></p>
+                        title="next chapter">12.4. Using Larch from Python</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -121,7 +118,7 @@
           <div class="body" role="main">
             
   <div class="section" id="plugins">
-<span id="plugins-section"></span><h1>11.3. Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
+<span id="plugins-section"></span><h1>12.3. Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
 <p>A Larch plugin is a Python module that adds functionality to Larch at
 run-time.  Plugins are a powerful part of Larch that allow it to be
 extended without the requiring detailed knowledge of all of Larch’s
@@ -183,7 +180,7 @@ Larch Group.</p>
 </dd></dl>
 
 <div class="section" id="locations-of-plugins">
-<h2>11.3.1. Locations of Plugins<a class="headerlink" href="#locations-of-plugins" title="Permalink to this headline">¶</a></h2>
+<h2>12.3.1. Locations of Plugins<a class="headerlink" href="#locations-of-plugins" title="Permalink to this headline">¶</a></h2>
 <p>Plugins are meant to be long-lived and reused, and so are not expected to
 be placed in the current working directory.  Plugins are located in the the
 installed Larch Plugin folder ( $HOME/.larch/plugins/ on Unix or Mac OS X
@@ -223,7 +220,7 @@ organized into sub-folders, and generally each plugin folder contains
 multiple files (modules) providing Larch functionality.</p>
 </div>
 <div class="section" id="customizing-plugins-and-folders-of-plugins">
-<h2>11.3.2. Customizing Plugins and  Folders of Plugins<a class="headerlink" href="#customizing-plugins-and-folders-of-plugins" title="Permalink to this headline">¶</a></h2>
+<h2>12.3.2. Customizing Plugins and  Folders of Plugins<a class="headerlink" href="#customizing-plugins-and-folders-of-plugins" title="Permalink to this headline">¶</a></h2>
 <p>Plugins are meant to be organized in folders.  The standard system plugins
 have several folders, each with several functions.  Generally every file
 (module) in the folder is treated as a plugin module, and if it has a
@@ -275,10 +272,10 @@ not be installed.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="frompython.html" title="11.4. Using Larch from Python"
+          <a href="frompython.html" title="12.4. Using Larch from Python"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="11.2. Modules"
+          <a href="modules.html" title="12.2. Modules"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -288,12 +285,12 @@ not be installed.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >11. Programming with Larch</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >12. Programming with Larch</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>9. X-ray Databases &#8212; larch 0.9.34 documentation</title>
-    
+    <title>10. X-ray Databases &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="10. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
-    <link rel="prev" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="../xafs/diffkk.html" />
+    <link rel="next" title="11. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
+    <link rel="prev" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data" href="../xafs/diffkk.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xrf/index.html" title="10. X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/index.html" title="11. X-ray Fluorescence Analysis with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xafs/diffkk.html" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="../xafs/diffkk.html" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -81,19 +78,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9. X-ray Databases</a><ul>
-<li><a class="reference internal" href="#x-ray-properties-of-the-elements">9.1. X-ray Properties of the Elements</a></li>
-<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">9.2. X-ray Properties of Materials and Chemicals</a></li>
+<li><a class="reference internal" href="#">10. X-ray Databases</a><ul>
+<li><a class="reference internal" href="#x-ray-properties-of-the-elements">10.1. X-ray Properties of the Elements</a></li>
+<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">10.2. X-ray Properties of Materials and Chemicals</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../xafs/diffkk.html"
-                        title="previous chapter">8.8. XAFS: Computing anomalous scattering factors from XAFS data</a></p>
+                        title="previous chapter">9.8. XAFS: Computing anomalous scattering factors from XAFS data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../xrf/index.html"
-                        title="next chapter">10. X-ray Fluorescence Analysis with Larch</a></p>
+                        title="next chapter">11. X-ray Fluorescence Analysis with Larch</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -120,7 +117,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xray">
-<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1>9. X-ray Databases<a class="headerlink" href="#module-_xray" title="Permalink to this headline">¶</a></h1>
+<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1>10. X-ray Databases<a class="headerlink" href="#module-_xray" title="Permalink to this headline">¶</a></h1>
 <p>An important aspect of X-ray spectroscopies and scattering analysis is
 having access to tabulated values for X-ray properties of various elements
 and compounds.  Larch provides several functions to access these X-ray
@@ -149,7 +146,7 @@ SQLite3 database file.  This implementation was originally done by Darren
 Dale from CHESS (see <a class="reference external" href="https://github.com/praxes/elam_physical_reference">https://github.com/praxes/elam_physical_reference</a>),
 with some additions and alterations made for Larch.</p>
 <div class="section" id="x-ray-properties-of-the-elements">
-<h2>9.1. X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Permalink to this headline">¶</a></h2>
+<h2>10.1. X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><span class="std std-ref">Table of X-ray data functions</span></a> gives a brief
 description to the available functions for accessing these data.  More
 detailed descriptions of function arguments, returned values, and so on are
@@ -225,7 +222,7 @@ from Elam, Ravel, and Sieber.</p>
 <td>f’  anomalous factor (Chantler)</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.f2_chantler" title="_xray.f2_chantler"><code class="xref py py-func docutils literal"><span class="pre">f2_chantler()</span></code></a></td>
-<td>f” anomalous factor (Chantler)</td>
+<td>f’’ anomalous factor (Chantler)</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><code class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></code></a></td>
 <td>absorption cross-section (Chantler)</td>
@@ -234,7 +231,7 @@ from Elam, Ravel, and Sieber.</p>
 <td>anomalous components of the index of refraction for a material</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><code class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></code></a></td>
-<td>f’ and f” anomalous factors (Cromer and Liberman)</td>
+<td>f’ and f’’ anomalous factors (Cromer and Liberman)</td>
 </tr>
 </tbody>
 </table>
@@ -533,7 +530,7 @@ name of the edge.  widths are in eV.</p>
 
 <dl class="function">
 <dt id="_xray.mu_elam">
-<code class="descclassname">_xray.</code><code class="descname">mu_elam</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energy</em>, <em>kind=’total’</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xray.</code><code class="descname">mu_elam</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energy</em>, <em>kind='total'</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
 <dd><p>return X-ray mass attenuation coefficient <span class="math">\(\mu/\rho\)</span> in cm^2/gr
 for an atomic number or symbol at specified energy values.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -603,7 +600,7 @@ of electron numbers, and represent the correction to Thomson scattering term.</p
 <dl class="function">
 <dt id="_xray.f2_chantler">
 <code class="descclassname">_xray.</code><code class="descname">f2_chantler</code><span class="sig-paren">(</span><em>z_or_symbol</em>, <em>energies</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.f2_chantler" title="Permalink to this definition">¶</a></dt>
-<dd><p>return array of f”, the imaginary part of the anomalous scattering factor for an
+<dd><p>return array of f’‘, the imaginary part of the anomalous scattering factor for an
 element at the given energies, using the tabulation of Chantler.  The returned values
 are in units of electron numbers.  These values scale to the values of the mass
 attenuation coefficient.</p>
@@ -619,14 +616,14 @@ specified energy values, using the tabulation of Chantler.</p>
 <dl class="function">
 <dt id="_xray.f1f2_cl">
 <code class="descclassname">_xray.</code><code class="descname">f1f2_cl</code><span class="sig-paren">(</span><em>z_or_element</em>, <em>energies</em>, <em>width=None</em>, <em>edge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xray.f1f2_cl" title="Permalink to this definition">¶</a></dt>
-<dd><p>return tuple of (f’, f”), the real and imaginary anomalous scattering factors for an
+<dd><p>return tuple of (f’, f’‘), the real and imaginary anomalous scattering factors for an
 element at the specified energies, using the calculation scheme of Cromer and
 Liberman, as implemented by Brennan and Cowan.  The optional argument <code class="docutils literal"><span class="pre">width</span></code> can be
 used to specify an energy width (in eV) to use to convolve the output with a
 Lorentzian profile (with <code class="docutils literal"><span class="pre">width</span></code> used as <span class="math">\(2\gamma\)</span> in the Lorentzian).  If
 <code class="docutils literal"><span class="pre">edge</span></code> is given (‘K’, ‘L3’, etc), the core-level width is looked up from
 <a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal"><span class="pre">core_width()</span></code></a>, and its value is used.</p>
-<p>Note that both f’ and f” are returned here.</p>
+<p>Note that both f’ and f’’ are returned here.</p>
 </dd></dl>
 
 <div class="admonition warning">
@@ -641,7 +638,7 @@ compatibility, but may be dropped in the future.</p>
 </div>
 </div>
 <div class="section" id="x-ray-properties-of-materials-and-chemicals">
-<h2>9.2. X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Permalink to this headline">¶</a></h2>
+<h2>10.2. X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Permalink to this headline">¶</a></h2>
 <p>Compositional data for several common materials are included with Larch,
 and can be read at run time.  The variable <code class="docutils literal"><span class="pre">_xray.materials</span></code> contains a
 dictionary of material names, with values of (chemical forumla, density)
@@ -883,10 +880,10 @@ factor <span class="math">\(f_j\)</span>.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xrf/index.html" title="10. X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/index.html" title="11. X-ray Fluorescence Analysis with Larch"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xafs/diffkk.html" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="../xafs/diffkk.html" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -900,7 +897,7 @@ factor <span class="math">\(f_j\)</span>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

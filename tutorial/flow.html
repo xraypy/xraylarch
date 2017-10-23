@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>4.4. Tutorial: Conditional Execution and Flow Control &#8212; larch 0.9.34 documentation</title>
-    
+    <title>5.4. Tutorial: Conditional Execution and Flow Control &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="4.5. Tutorial: Dealing With Errors" href="errors.html" />
-    <link rel="prev" title="4.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
+    <link rel="next" title="5.5. Tutorial: Dealing With Errors" href="errors.html" />
+    <link rel="prev" title="5.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="errors.html" title="4.5. Tutorial: Dealing With Errors"
+          <a href="errors.html" title="5.5. Tutorial: Dealing With Errors"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="arrays.html" title="4.3. Tutorial: Basic Array Manipulation"
+          <a href="arrays.html" title="5.3. Tutorial: Basic Array Manipulation"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,20 +79,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4.4. Tutorial: Conditional Execution and Flow Control</a><ul>
-<li><a class="reference internal" href="#conditional-evaluation-with-if-and-else">4.4.1. Conditional Evaluation with if and else</a></li>
-<li><a class="reference internal" href="#for-loops">4.4.2. For loops</a></li>
-<li><a class="reference internal" href="#while-loops">4.4.3. While loops</a></li>
+<li><a class="reference internal" href="#">5.4. Tutorial: Conditional Execution and Flow Control</a><ul>
+<li><a class="reference internal" href="#conditional-evaluation-with-if-and-else">5.4.1. Conditional Evaluation with if and else</a></li>
+<li><a class="reference internal" href="#for-loops">5.4.2. For loops</a></li>
+<li><a class="reference internal" href="#while-loops">5.4.3. While loops</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="arrays.html"
-                        title="previous chapter">4.3. Tutorial: Basic Array Manipulation</a></p>
+                        title="previous chapter">5.3. Tutorial: Basic Array Manipulation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="errors.html"
-                        title="next chapter">4.5. Tutorial: Dealing With Errors</a></p>
+                        title="next chapter">5.5. Tutorial: Dealing With Errors</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -122,7 +119,7 @@
           <div class="body" role="main">
             
   <div class="section" id="tutorial-conditional-execution-and-flow-control">
-<h1>4.4. Tutorial: Conditional Execution and Flow Control<a class="headerlink" href="#tutorial-conditional-execution-and-flow-control" title="Permalink to this headline">¶</a></h1>
+<h1>5.4. Tutorial: Conditional Execution and Flow Control<a class="headerlink" href="#tutorial-conditional-execution-and-flow-control" title="Permalink to this headline">¶</a></h1>
 <p>Two important needs for a full-featured language are the ability to run
 different statements under different conditions, and to repeat certain
 calculations.  These are generally called ‘flow control’, as these
@@ -167,7 +164,7 @@ many more types of statements.  We will introduce a few more statement
 types here, including compound statements that take up more than one line
 of test.</p>
 <div class="section" id="conditional-evaluation-with-if-and-else">
-<h2>4.4.1. Conditional Evaluation with if and else<a class="headerlink" href="#conditional-evaluation-with-if-and-else" title="Permalink to this headline">¶</a></h2>
+<h2>5.4.1. Conditional Evaluation with if and else<a class="headerlink" href="#conditional-evaluation-with-if-and-else" title="Permalink to this headline">¶</a></h2>
 <p>A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the <strong>if</strong> statement, an example of
 which is:</p>
@@ -202,7 +199,7 @@ this:</p>
 </pre></div>
 </div>
 <p>where ‘&lt;statements&gt;’ here means a list of statements, and the ‘endif’ is
-required (see <a class="reference internal" href="../devel/notpython.html#code-block-ends"><span class="std std-ref">11.1.1</span></a>). For the above, two statements will
+required (see <a class="reference internal" href="../devel/notpython.html#code-block-ends"><span class="std std-ref">12.1.1</span></a>). For the above, two statements will
 be run if x is equal to 0 – there is no restriction on how many statements
 can be run.</p>
 <p>An ‘else’ statement can be added to execute code if the test is False:</p>
@@ -285,7 +282,7 @@ the value 0 is treated as <code class="docutils literal"><span class="pre">False
 interpreted as <code class="docutils literal"><span class="pre">True</span></code>.</p>
 </div>
 <div class="section" id="for-loops">
-<h2>4.4.2. For loops<a class="headerlink" href="#for-loops" title="Permalink to this headline">¶</a></h2>
+<h2>5.4.2. For loops<a class="headerlink" href="#for-loops" title="Permalink to this headline">¶</a></h2>
 <p>It is often necessary to repeat a calculation multiple times.  A common
 method of doing this is to use a <strong>loop</strong>, including using a loop counter
 to iterate over some set of values.  In Larch, this is done with a <strong>for
@@ -449,7 +446,7 @@ statement:</p>
 </div>
 </div>
 <div class="section" id="while-loops">
-<h2>4.4.3. While loops<a class="headerlink" href="#while-loops" title="Permalink to this headline">¶</a></h2>
+<h2>5.4.3. While loops<a class="headerlink" href="#while-loops" title="Permalink to this headline">¶</a></h2>
 <p>While a for loop generally walks through a pre-defined set of values, a
 <em>while</em> loop executes as long as some test is <code class="docutils literal"><span class="pre">True</span></code>.   The basic form
 is:</p>
@@ -517,10 +514,10 @@ while loop:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="errors.html" title="4.5. Tutorial: Dealing With Errors"
+          <a href="errors.html" title="5.5. Tutorial: Dealing With Errors"
              >next</a> |</li>
         <li class="right" >
-          <a href="arrays.html" title="4.3. Tutorial: Basic Array Manipulation"
+          <a href="arrays.html" title="5.3. Tutorial: Basic Array Manipulation"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -530,12 +527,12 @@ while loop:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

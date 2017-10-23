@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>4. Larch Tutorial &#8212; larch 0.9.34 documentation</title>
-    
+    <title>5. Larch Tutorial &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="4.1. Tutorial: Getting Started" href="start.html" />
-    <link rel="prev" title="3. Larch: Motivation and Overview" href="../overview.html" />
+    <link rel="next" title="5.1. Tutorial: Getting Started" href="start.html" />
+    <link rel="prev" title="4.3. XYFit" href="../guis/xyfit.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="start.html" title="4.1. Tutorial: Getting Started"
+          <a href="start.html" title="5.1. Tutorial: Getting Started"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../overview.html" title="3. Larch: Motivation and Overview"
+          <a href="../guis/xyfit.html" title="4.3. XYFit"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -80,11 +77,11 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../overview.html"
-                        title="previous chapter">3. Larch: Motivation and Overview</a></p>
+  <p class="topless"><a href="../guis/xyfit.html"
+                        title="previous chapter">4.3. XYFit</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="start.html"
-                        title="next chapter">4.1. Tutorial: Getting Started</a></p>
+                        title="next chapter">5.1. Tutorial: Getting Started</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -111,7 +108,7 @@
           <div class="body" role="main">
             
   <div class="section" id="larch-tutorial">
-<span id="tutorial-chapter"></span><h1>4. Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-chapter"></span><h1>5. Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>At its core, Larch is a language for processing of scientific data.  This
 chapter describes the Larch language and introduces data processing using
 Larch.  An important goal of Larch is to make writing and modifying data
@@ -132,56 +129,56 @@ Python, including tutorials, see the Python documentation at
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="start.html">4.1. Tutorial: Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">4.1.1. Larch as a Basic Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">5.1. Tutorial: Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">5.1.1. Larch as a Basic Calculator</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="datatypes.html">4.2. Tutorial: Basic and Complex Data Types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">4.2.1. Basic Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">4.2.2. Objects and Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">4.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#object-identities-copying-and-equality-vs-identity">4.2.4. Object identities, copying, and equality vs. identity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datatypes.html">5.2. Tutorial: Basic and Complex Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">5.2.1. Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">5.2.2. Objects and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">5.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#object-identities-copying-and-equality-vs-identity">5.2.4. Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="arrays.html">4.3. Tutorial: Basic Array Manipulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#functions-for-creating-arrays">4.3.1. Functions for creating arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#the-array-dtype-datatype">4.3.2. The array <em>dtype</em> – datatype</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#basic-array-manipulation">4.3.3. Basic array manipulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#slicing-and-extracting-sub-arrays">4.3.4. Slicing and extracting sub-arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#array-attributes-and-methods">4.3.5. Array attributes and methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#mathematical-functions-for-arrays">4.3.6. Mathematical functions for arrays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arrays.html">5.3. Tutorial: Basic Array Manipulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#functions-for-creating-arrays">5.3.1. Functions for creating arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#the-array-dtype-datatype">5.3.2. The array <em>dtype</em> – datatype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#basic-array-manipulation">5.3.3. Basic array manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#slicing-and-extracting-sub-arrays">5.3.4. Slicing and extracting sub-arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#array-attributes-and-methods">5.3.5. Array attributes and methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#mathematical-functions-for-arrays">5.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">4.4. Tutorial: Conditional Execution and Flow Control</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">4.4.1. Conditional Evaluation with if and else</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">4.4.2. For loops</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">4.4.3. While loops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">5.4. Tutorial: Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">5.4.1. Conditional Evaluation with if and else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">5.4.2. For loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">5.4.3. While loops</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="errors.html">4.5. Tutorial: Dealing With Errors</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">4.5.1. Syntax Errors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">4.5.2. Exceptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">4.5.3. Try and Except</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">4.5.4. Raising your own exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">5.5. Tutorial: Dealing With Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">5.5.1. Syntax Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">5.5.2. Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">5.5.3. Try and Except</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">5.5.4. Raising your own exceptions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="procedures.html">4.6. Tutorial: Writing Functions or Procedures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">4.6.1. Def statement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">4.6.2. Namespace and “Scope” inside a Procedure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">4.6.3. The return statement, and multiple Return values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#keyword-arguments">4.6.4. Keyword arguments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">4.6.5. Documentation Strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedures.html">5.6. Tutorial: Writing Functions or Procedures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">5.6.1. Def statement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">5.6.2. Namespace and “Scope” inside a Procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">5.6.3. The return statement, and multiple Return values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#keyword-arguments">5.6.4. Keyword arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">5.6.5. Documentation Strings</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">4.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">4.7.1. Running a larch script with <code class="docutils literal"><span class="pre">run()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">4.7.2. Importing a Larch Script as a Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">5.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">5.7.1. Running a larch script with <code class="docutils literal"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">5.7.2. Importing a Larch Script as a Module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="builtins.html">4.8. Tutorial: Builtin Functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-data-values">4.8.1. Builtin data values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#larch-specific-builtin-functions">4.8.2. Larch-Specific Builtin functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-functions-inherited-from-python">4.8.3. Builtin functions inherited from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="builtins.html">5.8. Tutorial: Builtin Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-data-values">5.8.1. Builtin data values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#larch-specific-builtin-functions">5.8.2. Larch-Specific Builtin functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-functions-inherited-from-python">5.8.3. Builtin functions inherited from Python</a></li>
 </ul>
 </li>
 </ul>
@@ -201,10 +198,10 @@ Python, including tutorials, see the Python documentation at
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="start.html" title="4.1. Tutorial: Getting Started"
+          <a href="start.html" title="5.1. Tutorial: Getting Started"
              >next</a> |</li>
         <li class="right" >
-          <a href="../overview.html" title="3. Larch: Motivation and Overview"
+          <a href="../guis/xyfit.html" title="4.3. XYFit"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -218,7 +215,7 @@ Python, including tutorials, see the Python documentation at
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

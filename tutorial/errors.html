@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>4.5. Tutorial: Dealing With Errors &#8212; larch 0.9.34 documentation</title>
-    
+    <title>5.5. Tutorial: Dealing With Errors &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="4.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
-    <link rel="prev" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="next" title="5.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
+    <link rel="prev" title="5.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="5.6. Tutorial: Writing Functions or Procedures"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="5.4. Tutorial: Conditional Execution and Flow Control"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,21 +79,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4.5. Tutorial: Dealing With Errors</a><ul>
-<li><a class="reference internal" href="#syntax-errors">4.5.1. Syntax Errors</a></li>
-<li><a class="reference internal" href="#exceptions">4.5.2. Exceptions</a></li>
-<li><a class="reference internal" href="#try-and-except">4.5.3. Try and Except</a></li>
-<li><a class="reference internal" href="#raising-your-own-exceptions">4.5.4. Raising your own exceptions</a></li>
+<li><a class="reference internal" href="#">5.5. Tutorial: Dealing With Errors</a><ul>
+<li><a class="reference internal" href="#syntax-errors">5.5.1. Syntax Errors</a></li>
+<li><a class="reference internal" href="#exceptions">5.5.2. Exceptions</a></li>
+<li><a class="reference internal" href="#try-and-except">5.5.3. Try and Except</a></li>
+<li><a class="reference internal" href="#raising-your-own-exceptions">5.5.4. Raising your own exceptions</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="previous chapter">4.4. Tutorial: Conditional Execution and Flow Control</a></p>
+                        title="previous chapter">5.4. Tutorial: Conditional Execution and Flow Control</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="procedures.html"
-                        title="next chapter">4.6. Tutorial: Writing Functions or Procedures</a></p>
+                        title="next chapter">5.6. Tutorial: Writing Functions or Procedures</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -123,12 +120,12 @@
           <div class="body" role="main">
             
   <div class="section" id="tutorial-dealing-with-errors">
-<h1>4.5. Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
+<h1>5.5. Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
 <p>When an error exists in the syntax of your script, or an error happens when
 running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
 execution of your script is stopped.</p>
 <div class="section" id="syntax-errors">
-<h2>4.5.1. Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
+<h2>5.5.1. Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span>
@@ -149,7 +146,7 @@ form, then execute that intermediate form), syntax errors are sometimes
 referred to as a parsing errors.</p>
 </div>
 <div class="section" id="exceptions">
-<h2>4.5.2. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>5.5.2. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
@@ -189,7 +186,7 @@ modern computer languages, and Larch has this capability with
 its <strong>try</strong> and <strong>except</strong> statements.</p>
 </div>
 <div class="section" id="try-and-except">
-<h2>4.5.3. Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+<h2>5.5.3. Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
 <p>The <strong>try</strong> statement will execute a block of code and look for certain
 types of exceptions.  One or more <strong>except</strong> statements can be added to
 specify blocks of code to execute if the specified exception occurs.
@@ -244,7 +241,7 @@ inherited from Python.   See the standard Python documentation for more
 details.</p>
 </div>
 <div class="section" id="raising-your-own-exceptions">
-<h2>4.5.4. Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>5.5.4. Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
 <p>In certain cases, you may want to cause an exception to occur.  This need is
 most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
@@ -269,10 +266,10 @@ be “raising an exception”:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="5.6. Tutorial: Writing Functions or Procedures"
              >next</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="5.4. Tutorial: Conditional Execution and Flow Control"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -282,12 +279,12 @@ be “raising an exception”:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

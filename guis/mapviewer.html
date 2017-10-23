@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4.2. GSECARS Mapviewr &#8212; larch 0.9.35 documentation</title>
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.35',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.3. XYFit" href="xyfit.html" />
+    <link rel="prev" title="4.1. Basic Larch GUI" href="larch_gui.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+			 "HTML-CSS": {scale: 90}});
+  </script>
+
+  </head>
+  <body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xyfit.html" title="4.3. XYFit"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="larch_gui.html" title="4.1. Basic Larch GUI"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch GUIs</a> &#187;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="larch_gui.html"
+                        title="previous chapter">4.1. Basic Larch GUI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xyfit.html"
+                        title="next chapter">4.3. XYFit</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/guis/mapviewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gsecars-mapviewr">
+<span id="guis-mapviewer"></span><h1>4.2. GSECARS Mapviewr<a class="headerlink" href="#gsecars-mapviewr" title="Permalink to this headline">¶</a></h1>
+<p>The main Larch GUI gives a simple view of a Larch session.</p>
+<a class="reference external image-reference" href="../_images/Mapviewer_3ColorSelect.png"><img alt="../_images/Mapviewer_3ColorSelect.png" src="../_images/Mapviewer_3ColorSelect.png" style="width: 45%;" /></a>
+<a class="reference external image-reference" href="../_images/Mapviewer_ImageDisplayColormap.png"><img alt="../_images/Mapviewer_ImageDisplayColormap.png" src="../_images/Mapviewer_ImageDisplayColormap.png" style="width: 45%;" /></a>
+<p>The GSECARS Mapviewer is a main GUI for Larch, allowing users to read and
+display HDF5 files containing X-ray fluorescence maps from synchrotron
+X-ray microprobes. In the main frame (left), the user can select what map
+files and what portions of the data set to view.  On the right, is one of
+the views of XRF map, shown in a false-color image (using using <a class="reference external" href="http://newville.github.io/wxmplot">wxmplot</a>
+and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>).  Images are interactive, allowing zooming, changing
+color thresholds, and drawing lasso boxes to extract full X-ray
+fluorescence spectra, show below.</p>
+<a class="reference external image-reference" href="../_images/XRFDisplay.png"><img alt="../_images/XRFDisplay.png" src="../_images/XRFDisplay.png" style="width: 75%;" /></a>
+<p>The X-ray fluorescence spectra extracted from a XRF Map.</p>
+<a class="reference external image-reference" href="../_images/Mapviewer_3ColorImageDisplay.png"><img alt="../_images/Mapviewer_3ColorImageDisplay.png" src="../_images/Mapviewer_3ColorImageDisplay.png" style="width: 45%;" /></a>
+<a class="reference external image-reference" href="../_images/Mapviewer_correlation_maps.png"><img alt="../_images/Mapviewer_correlation_maps.png" src="../_images/Mapviewer_correlation_maps.png" style="width: 45%;" /></a>
+<p>Other displays of the same XRF Map data.  On the left, 3 different elements are
+encoded into Red, Green, and Blue. On the right, an interactive display of
+the correlation of two maps is shown.</p>
+<a class="reference external image-reference" href="../_images/Mapviewer_XRD_Display.png"><img alt="../_images/Mapviewer_XRD_Display.png" src="../_images/Mapviewer_XRD_Display.png" style="width: 75%;" /></a>
+<p>Larch can also handle micro-X-ray Diffraction maps, with a simple view of a
+diffraction pattern shown here.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xyfit.html" title="4.3. XYFit"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="larch_gui.html" title="4.1. Basic Larch GUI"
+             >previous</a> |</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch GUIs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

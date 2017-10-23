@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>8.7. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.34 documentation</title>
-    
+    <title>9.7. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data" href="diffkk.html" />
-    <link rel="prev" title="8.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="next" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data" href="diffkk.html" />
+    <link rel="prev" title="9.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="diffkk.html" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="diffkk.html" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="feffpaths.html" title="8.6. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="9.6. XAFS: Reading and using Feff Paths"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,30 +79,30 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.7. XAFS: Fitting XAFS to Feff Paths</a><ul>
-<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">8.7.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">8.7.2. Fit statistics and goodness-of-fit meassures for <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
-<li><a class="reference internal" href="#the-feffit-functions-in-larch">8.7.3. The Feffit functions in Larch</a></li>
-<li><a class="reference internal" href="#feffit-transform-and-the-feffit-transform-group">8.7.4. <code class="docutils literal"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a></li>
-<li><a class="reference internal" href="#feffit-dataset">8.7.5. <code class="docutils literal"><span class="pre">feffit_dataset()</span></code></a></li>
-<li><a class="reference internal" href="#feffit">8.7.6. <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
-<li><a class="reference internal" href="#feffit-report">8.7.7. <code class="docutils literal"><span class="pre">feffit_report()</span></code></a></li>
-<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">8.7.8. Example 1: Simple fit with 1 Path</a></li>
-<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">8.7.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">8.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
-<li><a class="reference internal" href="#example-4-measuring-coordination-number">8.7.11. Example 4: Measuring Coordination number</a></li>
-<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">8.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to">8.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span></a></li>
+<li><a class="reference internal" href="#">9.7. XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">9.7.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">9.7.2. Fit statistics and goodness-of-fit meassures for <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li><a class="reference internal" href="#the-feffit-functions-in-larch">9.7.3. The Feffit functions in Larch</a></li>
+<li><a class="reference internal" href="#feffit-transform-and-the-feffit-transform-group">9.7.4. <code class="docutils literal"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a></li>
+<li><a class="reference internal" href="#feffit-dataset">9.7.5. <code class="docutils literal"><span class="pre">feffit_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#feffit">9.7.6. <code class="docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li><a class="reference internal" href="#feffit-report">9.7.7. <code class="docutils literal"><span class="pre">feffit_report()</span></code></a></li>
+<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">9.7.8. Example 1: Simple fit with 1 Path</a></li>
+<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">9.7.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">9.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li><a class="reference internal" href="#example-4-measuring-coordination-number">9.7.11. Example 4: Measuring Coordination number</a></li>
+<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">9.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to">9.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span></a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="feffpaths.html"
-                        title="previous chapter">8.6. XAFS: Reading and using Feff Paths</a></p>
+                        title="previous chapter">9.6. XAFS: Reading and using Feff Paths</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="diffkk.html"
-                        title="next chapter">8.8. XAFS: Computing anomalous scattering factors from XAFS data</a></p>
+                        title="next chapter">9.8. XAFS: Computing anomalous scattering factors from XAFS data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -132,20 +129,20 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-fitting-xafs-to-feff-paths"></span><h1>8.7. XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-fitting-xafs-to-feff-paths"></span><h1>9.7. XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
 process, and those sections will be referenced here.</p>
 <div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
-<h2>8.7.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-feffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-feffit">11</a><span>]</span></span>) is to create a model EXAFS <span class="math">\(\chi(k)\)</span> as a
 sum of scattering paths that will be compared to experimentally derived
 <span class="math">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
-As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec"><span class="std std-ref">8.6</span></a>, these FEFF Paths have a fixed
+As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec"><span class="std std-ref">9.6</span></a>, these FEFF Paths have a fixed
 set of physically meaningful parameters than can be modified to alter the
 predicted contribution to <span class="math">\(\chi(k)\)</span>.  Any of these values can be
 defined as algebraic expressions of Larch Parameters defined by
@@ -153,14 +150,14 @@ defined as algebraic expressions of Larch Parameters defined by
 as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></code></a> to refine the values of the variable
 parameters in the model so as to best match the experimental data.  Because
 <span class="math">\(\chi(k)\)</span> has known properties and <span class="math">\(k\)</span> dependencies, it is
-common to weight and Fourier transform (as described in <a class="reference internal" href="xafsft.html#xafs-ft-sec"><span class="std std-ref">8.4</span></a>)
+common to weight and Fourier transform (as described in <a class="reference internal" href="xafsft.html#xafs-ft-sec"><span class="std std-ref">9.4</span></a>)
 for the analysis.  In general term, the the refinement process will compare
 experimental and model <span class="math">\(\chi(k)\)</span> after a <em>Transformation</em>.</p>
 <p>The model for <span class="math">\(\chi(k)\)</span> used to compare to data is</p>
 <div class="math">
 \[\chi(k) = \sum_{j} \chi_{j}(k, p_j)\]</div>
 <p>where <span class="math">\(\chi_j\)</span> is the EXAFS contribution for a FEFF Path, as given in
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a> for path <span class="math">\(j\)</span>, where <span class="math">\(p_j\)</span> is the
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">9.6.5</span></a> for path <span class="math">\(j\)</span>, where <span class="math">\(p_j\)</span> is the
 set of adjustable Path Parameters (<span class="math">\(S_0^2\)</span>, <span class="math">\(E_0\)</span>,
 <span class="math">\(\delta{R}\)</span>, <span class="math">\(\sigma^2\)</span>, and so on) listed as <code class="docutils literal"><span class="pre">Adjustable</span></code> in
 the <a class="reference internal" href="feffpaths.html#xafs-pathparams-table"><span class="std std-ref">Table of Feff Path Parameters</span></a>.</p>
@@ -208,14 +205,14 @@ Fourier transforms.   Fitting in unfiltred <span class="math">\(k\)</span> space
 recommended.</p>
 </div>
 <div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
-<h2>8.7.2. Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.2. Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
 <p>The fit done by <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a> is conceptually very similar to the fits
-described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec"><span class="std std-ref">7.3</span></a>.   Therefore, many of the
-statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">7.4</span></a> are also generated for
+described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec"><span class="std std-ref">8.3</span></a>.   Therefore, many of the
+statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">8.4</span></a> are also generated for
 <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>. In view of the limited amount of information, some of the
 traditional statistical definitions need to be carefully examid, and
 possibly altered slightly.   For example, the typical <span class="math">\(\chi^2\)</span>
-statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec"><span class="std std-ref">7.1</span></a>) is</p>
+statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec"><span class="std std-ref">8.1</span></a>) is</p>
 <div class="math">
 \[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
 <p>seems simple enough, but actually raises several questions, as we have to
@@ -268,7 +265,7 @@ defined as</p>
 <p>which is to say, the misfit scaled by the magnitude of the data.</p>
 </div>
 <div class="section" id="the-feffit-functions-in-larch">
-<h2>8.7.3. The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.3. The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
 <p>The function <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a> is the principle function to do the fit of a
 set of Feff paths to XAFS spectra.  This essentially runs
 <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></code></a> with a parameter group holding all the variable and
@@ -309,10 +306,10 @@ or list of datasets groups.</li>
 </div></blockquote>
 </div>
 <div class="section" id="feffit-transform-and-the-feffit-transform-group">
-<h2>8.7.4. <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><code class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></code></a> and the Feffit Transform Group<a class="headerlink" href="#feffit-transform-and-the-feffit-transform-group" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.4. <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><code class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></code></a> and the Feffit Transform Group<a class="headerlink" href="#feffit-transform-and-the-feffit-transform-group" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_transform">
-<code class="descclassname">_xafs.</code><code class="descname">feffit_transform</code><span class="sig-paren">(</span><em>fitspace=’r’</em>, <em>kmin=0</em>, <em>kmax=20</em>, <em>kweight=2</em>, <em>…</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">feffit_transform</code><span class="sig-paren">(</span><em>fitspace='r'</em>, <em>kmin=0</em>, <em>kmax=20</em>, <em>kweight=2</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return Feffit Transform group to be used in a Feffit dataset.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -418,7 +415,7 @@ functions (such as generating output arrays for plotting) may need to
 assume 1 <span class="math">\(k\)</span> weight – these will take the first one listed.</p>
 </div>
 <div class="section" id="feffit-dataset">
-<h2>8.7.5. <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><code class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></code></a><a class="headerlink" href="#feffit-dataset" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.5. <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><code class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></code></a><a class="headerlink" href="#feffit-dataset" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_dataset">
 <code class="descclassname">_xafs.</code><code class="descname">feffit_dataset</code><span class="sig-paren">(</span><em>data=None</em>, <em>pathlist=[]</em>, <em>transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffit_dataset" title="Permalink to this definition">¶</a></dt>
@@ -490,7 +487,7 @@ experimental data.</p>
 
 </div>
 <div class="section" id="feffit">
-<h2>8.7.6. <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a><a class="headerlink" href="#feffit" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.6. <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a><a class="headerlink" href="#feffit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit">
 <code class="descclassname">_xafs.</code><code class="descname">feffit</code><span class="sig-paren">(</span><em>paramgroup</em>, <em>datasets</em>, <em>rmax_out=10</em>, <em>path_outputs=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
@@ -543,14 +540,14 @@ FeffPath group.</p>
 <p>A final note on the outputs of <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>: the <code class="docutils literal"><span class="pre">param</span></code> sub-group in
 the output is truly identical to the input <code class="docutils literal"><span class="pre">paramgroup</span></code>.  It is not a
 copy but points to the same group of values (see
-<a class="reference internal" href="../tutorial/datatypes.html#tutor-objectids-sec"><span class="std std-ref">4.2.4</span></a>).</p>
+<a class="reference internal" href="../tutorial/datatypes.html#tutor-objectids-sec"><span class="std std-ref">5.2.4</span></a>).</p>
 </dd></dl>
 
 <blockquote id="xafs-feffit-stats-table">
 <span id="index-1"></span><div><p>Table of Feffit Output Statistics.  These values will be written to the
 <code class="docutils literal"><span class="pre">paramgroup</span></code> group. Listed here are the group component name and a
 description of its content.  Many of these are described in more detail
-in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">7.4</span></a></p>
+in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><span class="std std-ref">8.4</span></a></p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -646,7 +643,7 @@ Transforms for XAFS</span></a>.</p>
 </div></blockquote>
 </div>
 <div class="section" id="feffit-report">
-<h2>8.7.7. <a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><code class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></code></a><a class="headerlink" href="#feffit-report" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.7. <a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><code class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></code></a><a class="headerlink" href="#feffit-report" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_report">
 <code class="descclassname">_xafs.</code><code class="descname">feffit_report</code><span class="sig-paren">(</span><em>fit_result</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffit_report" title="Permalink to this definition">¶</a></dt>
@@ -663,21 +660,20 @@ Transforms for XAFS</span></a>.</p>
 
 </div>
 <div class="section" id="example-1-simple-fit-with-1-path">
-<h2>8.7.8. Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.8. Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
 <p>We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit1.lar</span>
 
 <span class="c1"># read data</span>
 <span class="n">cu_data</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">)</span>
-<span class="n">autobk</span><span class="p">(</span><span class="n">cu_data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu_data</span><span class="o">.</span><span class="n">mutrans</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu_data</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu_data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu_data</span><span class="o">.</span><span class="n">mutrans</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu_data</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># define fitting parameter group</span>
-<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-             <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
-             <span class="n">sig2</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-             <span class="n">del_r</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">del_e0</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">sig2</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">del_r</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="p">)</span>
 
 <span class="c1"># define a Feff Path, give expressions for Path Parameters</span>
 <span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;feffcu01.dat&#39;</span><span class="p">,</span>
@@ -694,7 +690,6 @@ file with a single Feff Path.</p>
 
 <span class="c1"># perform fit!</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -705,17 +700,7 @@ file with a single Feff Path.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;could not write doc_feffit1.out&#39;</span><span class="p">)</span>
 <span class="c1">#endtry</span>
 
-<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-     <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
-     <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \rm\,(\AA^{-2})$&#39;</span><span class="p">,</span>
-     <span class="n">title</span><span class="o">=</span><span class="s1">&#39;First shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">)</span>
-
-<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-     <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$R \rm\,(\AA)$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
-     <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$|\chi(R)| \rm\,(\AA^{-3})$&#39;</span><span class="p">,</span>
-     <span class="n">title</span><span class="o">=</span><span class="s1">&#39;First shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>
 
 <span class="c1">## end examples/feffit/doc_feffit1.lar</span>
 </pre></div>
@@ -745,11 +730,11 @@ commands.</p>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
    <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">104</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">15.260</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">18.3144</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">1.62646</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00282</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">10.784</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">13.685</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">38.0085</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">3.37545</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00279</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">21.9259</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">24.8269</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -758,15 +743,15 @@ commands.</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feffcu01.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001560</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003287</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.052420</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001076</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003504</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.036161</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">15.260</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.928535</span> <span class="o">+/-</span> <span class="mf">0.039730</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.364173</span> <span class="o">+/-</span> <span class="mf">0.520423</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
-   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.005980</span> <span class="o">+/-</span> <span class="mf">0.002660</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.008669</span> <span class="o">+/-</span> <span class="mf">0.000313</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.928280</span> <span class="o">+/-</span> <span class="mf">0.039477</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.356281</span> <span class="o">+/-</span> <span class="mf">0.517286</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.006018</span> <span class="o">+/-</span> <span class="mf">0.002643</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.008668</span> <span class="o">+/-</span> <span class="mf">0.000311</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2</span>            <span class="o">=</span>  <span class="mf">0.928</span>
@@ -781,24 +766,26 @@ commands.</p>
       <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.928535</span> <span class="o">+/-</span> <span class="mf">0.039730</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">4.364173</span> <span class="o">+/-</span> <span class="mf">0.520423</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.541820</span> <span class="o">+/-</span> <span class="mf">0.002660</span>  <span class="s1">&#39;reff + del_r&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.005980</span> <span class="o">+/-</span> <span class="mf">0.002660</span>  <span class="s1">&#39;del_r&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.008669</span> <span class="o">+/-</span> <span class="mf">0.000313</span>  <span class="s1">&#39;sig2&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.928280</span> <span class="o">+/-</span> <span class="mf">0.039477</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">4.356281</span> <span class="o">+/-</span> <span class="mf">0.517286</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.541782</span> <span class="o">+/-</span> <span class="mf">0.002643</span>  <span class="s1">&#39;reff + del_r&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.006018</span> <span class="o">+/-</span> <span class="mf">0.002643</span>  <span class="s1">&#39;del_r&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.008668</span> <span class="o">+/-</span> <span class="mf">0.000311</span>  <span class="s1">&#39;sig2&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
 </div>
 <p>and generates the plots shown below</p>
 <div class="figure compound align-center" id="fig-feffit1">
-<div style="width: 45%" class="subfigure" id="fig-feffit1a">
-<a class="reference external image-reference" href="../_images/feffit_example1.png"><img alt="../_images/feffit_example1.png" src="../_images/feffit_example1.png" style="width: 100%;" /></a>
+<div style="width: 45%" class="subfigure" id="id1">
+<span id="fig-feffit1a"></span><a class="reference external image-reference" href="../_images/feffit_example1.png"><img alt="../_images/feffit_example1.png" src="../_images/feffit_example1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.1 </span><span class="caption-text">Data and Fit in <span class="math">\(k\)</span> space</span></p>
 </div>
-<div style="width: 45%" class="subfigure" id="fig-feffit1b">
-<a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 100%;" /></a>
+<div style="width: 45%" class="subfigure" id="id2">
+<span id="fig-feffit1b"></span><a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.2 </span><span class="caption-text">Data and Fit in <span class="math">\(R\)</span> space</span></p>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.29:</strong> Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+<p class="caption"><span class="caption-text">Results for Feffit for a simple 1-shell fit to a spectrum from Cu
 metal.</span></p>
 </div><p id="fig-feffit1">This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -812,141 +799,7 @@ useful for the other examples as well, so we’ll create a slightly
 generalized function to make such plots and put this and several other
 plotting functions into a separate file, <em>doc_macros.lar</em>.  This will look
 like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_macros.lar</span>
-<span class="c1">## general purpose macros, mostly for showing XAFS data</span>
-<span class="c1">##</span>
-<span class="n">label_k</span>     <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$k \rm\,(\AA^{-1})$&#39;</span>
-<span class="n">label_r</span>     <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$R \rm\,(\AA)$&#39;</span>
-<span class="n">label_chikw</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \rm\,(\AA^{-</span><span class="si">%i</span><span class="s1">})$&#39;</span>
-<span class="n">label_chir</span>  <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$|\chi(R)| \rm\,(\AA^{-</span><span class="si">%i</span><span class="s1">})$&#39;</span>
-<span class="n">label_chirre</span>  <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;${\rm Re}[\chi(R)] \rm\,(\AA^{-</span><span class="si">%i</span><span class="s1">})$&#39;</span>
-<span class="n">label_chirim</span>  <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;${\rm Im}[\chi(R)] \rm\,(\AA^{-</span><span class="si">%i</span><span class="s1">})$&#39;</span>
-<span class="n">label_chirpha</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;${\rm Phase}[\chi(R)] \rm\,(\AA^{-</span><span class="si">%i</span><span class="s1">})$&#39;</span>
-
-<span class="k">def</span> <span class="nf">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;extract kweight from dataset that may have multiple kweights</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">kweight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">kweight</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">kweight</span>
-    <span class="c1">#endif</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kweight</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-        <span class="n">kweight</span> <span class="o">=</span> <span class="n">kweight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c1">#endif</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">kweight</span><span class="p">)</span>
-<span class="c1">#enddef</span>
-
-<span class="k">def</span> <span class="nf">plot_chifit</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Data and Best-Fit&#39;</span><span class="p">,</span>
-                <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;show chi(k) and chi(r) data and best-fit for a dataset&quot;&quot;&quot;</span>
-    <span class="c1"># make k-weighted chi(k)</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">)</span>
-    <span class="n">data_chi_kw</span>  <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
-    <span class="n">model_chi_kw</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
-
-    <span class="c1"># show k-weighted chi(k) in first plot window</span>
-    <span class="n">newplot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">data_chi_kw</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="n">label_k</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">label_chikw</span> <span class="o">%</span> <span class="n">kw</span><span class="p">,</span>
-            <span class="n">show_legend</span><span class="o">=</span><span class="n">show_legend</span><span class="p">,</span>     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">model_chi_kw</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
-
-    <span class="c1"># show chi(R) in second plot window</span>
-    <span class="n">newplot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">rmax</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="n">label_r</span><span class="p">,</span>  <span class="n">ylabel</span><span class="o">=</span><span class="n">label_chir</span> <span class="o">%</span> <span class="p">(</span><span class="n">kw</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
-            <span class="n">show_legend</span><span class="o">=</span><span class="n">show_legend</span><span class="p">,</span>              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>     <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>     <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<span class="c1">#enddef</span>
-
-
-<span class="k">def</span> <span class="nf">plot_path_k</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">ipath</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">):</span>
-    <span class="s2">&quot;plot k-weighted chi(k) for a particular path in a dataset&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pathlist</span><span class="p">[</span><span class="n">ipath</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;path </span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipath</span><span class="p">)</span>
-    <span class="n">endif</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">)</span>
-    <span class="n">chi_kw</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">path</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
-
-    <span class="n">plot</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi_kw</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
-        <span class="n">xlabel</span><span class="o">=</span><span class="n">label_k</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">label_chikw</span> <span class="o">%</span> <span class="n">kw</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">)</span>
-<span class="c1">#enddef</span>
-
-<span class="k">def</span> <span class="nf">plot_path_r</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">ipath</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">):</span>
-    <span class="s2">&quot;plot chi(r) for a particular path in a dataset&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pathlist</span><span class="p">[</span><span class="n">ipath</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;path </span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipath</span><span class="p">)</span>
-    <span class="c1">#endif</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;re&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">chir_re</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirre</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">elif</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;im&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">chir_im</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirim</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">elif</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;phase&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">chir_pha</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirpha</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">chir</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">chir_mag</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chir</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="n">endif</span>
-
-    <span class="n">chir</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">chir</span><span class="o">*</span><span class="n">scale</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">chir</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">label_r</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">)</span>
-
-<span class="n">enddef</span>
-
-<span class="k">def</span> <span class="nf">plot_modelpaths_k</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Model and Paths&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;show chi(k) for sum and individual paths&quot;&quot;&quot;</span>
-    <span class="c1"># make k-weighted chi(k)</span>
-    <span class="k">if</span> <span class="n">kweight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">kweight</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">kweight</span>
-    <span class="c1">#endif</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">)</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span>
-
-    <span class="n">model_chi_kw</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
-
-    <span class="n">newplot</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">model_chi_kw</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="n">label_r</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">label_chikw</span> <span class="o">%</span> <span class="n">kw</span><span class="p">,</span>
-            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">ipath</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">pathlist</span><span class="p">)):</span>
-        <span class="n">plot_path_k</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">ipath</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kw</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="n">ipath</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">offset</span><span class="p">)</span>
-    <span class="n">endfor</span>
-<span class="n">enddef</span>
-
-<span class="k">def</span> <span class="nf">plot_modelpaths_r</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">offset</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Model and Paths&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;show chi(r) for sum and individual paths&quot;&quot;&quot;</span>
-    <span class="c1"># make k-weighted chi(k)</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">get_kweight</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">)</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span>
-    <span class="k">if</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;re&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">chir_re</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirre</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">elif</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;im&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">chir_im</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirim</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">elif</span> <span class="n">comp</span> <span class="o">==</span> <span class="s1">&#39;phase&#39;</span><span class="p">:</span>
-        <span class="n">chir</span><span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">chir_pha</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chirpha</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">chir</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">label_chir</span> <span class="o">%</span> <span class="n">kw</span>
-    <span class="n">endif</span>
-
-    <span class="n">newplot</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">chir</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">label_r</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">ipath</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">pathlist</span><span class="p">)):</span>
-        <span class="n">plot_path_r</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">ipath</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span><span class="n">comp</span><span class="o">=</span><span class="n">comp</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="n">ipath</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">offset</span><span class="p">)</span>
-    <span class="n">endfor</span>
-<span class="n">enddef</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span>
 
 <span class="k">def</span> <span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
     <span class="s2">&quot;write report to file&quot;</span>
@@ -956,14 +809,14 @@ like this:</p>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;could not write </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="n">endtry</span>
-<span class="n">enddef</span>
+    <span class="c1">#endtry</span>
+<span class="c1">#enddef</span>
 
 <span class="c1">## end of examples/feffit/doc_macros.lar</span>
 </pre></div>
 </div>
-<p>This defines several new plotting functions <code class="xref py py-func docutils literal"><span class="pre">plot_chifit()</span></code>,
-<code class="xref py py-func docutils literal"><span class="pre">plot_path_k()</span></code>, and <code class="xref py py-func docutils literal"><span class="pre">plot_path_r()</span></code>, and so on which we’ll find
+<p>This defines several new plotting functions <a class="reference internal" href="utilities.html#_xafs.plot_chifit" title="_xafs.plot_chifit"><code class="xref py py-func docutils literal"><span class="pre">plot_chifit()</span></code></a>,
+<a class="reference internal" href="utilities.html#_xafs.plot_path_k" title="_xafs.plot_path_k"><code class="xref py py-func docutils literal"><span class="pre">plot_path_k()</span></code></a>, and <a class="reference internal" href="utilities.html#_xafs.plot_path_r" title="_xafs.plot_path_r"><code class="xref py py-func docutils literal"><span class="pre">plot_path_r()</span></code></a>, and so on which we’ll find
 useful in later examples.  Using the first of these, we can then replace
 the plot commands in the script above with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
@@ -974,7 +827,7 @@ the plot commands in the script above with:</p>
 fragment everywhere.  We’ll use this in the examples below.</p>
 </div>
 <div class="section" id="example-2-fit-1-dataset-with-3-paths">
-<h2>8.7.9. Example 2: Fit 1 dataset with 3 Paths<a class="headerlink" href="#example-2-fit-1-dataset-with-3-paths" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.9. Example 2: Fit 1 dataset with 3 Paths<a class="headerlink" href="#example-2-fit-1-dataset-with-3-paths" title="Permalink to this headline">¶</a></h2>
 <p>We’ll continue with the Cu data set, and add more paths to model further
 shells.  This is fairly straightforward, but in the interest of space,
 we’ll limit the example here to 3 paths to model the first two shells of
@@ -1001,19 +854,23 @@ one another.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit2.lar</span>
 
 <span class="c1"># read data</span>
-<span class="n">cu_data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu.chi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;k, chi&#39;</span><span class="p">)</span>
+<span class="c1"># read data</span>
+<span class="n">cu_data</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">)</span>
+<span class="n">cu_data</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">cu_data</span><span class="o">.</span><span class="n">mutrans</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu_data</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># define fitting parameter group</span>
-<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-             <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">del_e0</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">c3_1</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="o">.</span><span class="mi">002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">sig2_1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="o">.</span><span class="mi">002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">sig2_2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="o">.</span><span class="mi">002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">sig2_3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="o">.</span><span class="mi">002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-             <span class="n">alpha</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span>
+             <span class="n">alpha</span>  <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="p">)</span>
 
 <span class="c1"># define 3 Feff Path, give expressions for Path Parameters</span>
 <span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;feff0001.dat&#39;</span><span class="p">,</span>     <span class="n">s02</span> <span class="o">=</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="s1">&#39;del_e0&#39;</span><span class="p">,</span>
-                 <span class="n">sigma2</span> <span class="o">=</span> <span class="s1">&#39;sig2_1&#39;</span><span class="p">,</span>  <span class="n">deltar</span>  <span class="o">=</span> <span class="s1">&#39;alpha*reff&#39;</span><span class="p">)</span>
+                 <span class="n">sigma2</span> <span class="o">=</span> <span class="s1">&#39;sig2_1&#39;</span><span class="p">,</span>  <span class="n">deltar</span>  <span class="o">=</span> <span class="s1">&#39;alpha*reff&#39;</span><span class="p">,</span> <span class="n">third</span><span class="o">=</span><span class="s1">&#39;c3_1&#39;</span><span class="p">)</span>
 
 <span class="n">path2</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;feff0002.dat&#39;</span><span class="p">,</span>     <span class="n">s02</span> <span class="o">=</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="s1">&#39;del_e0&#39;</span><span class="p">,</span>
                  <span class="n">sigma2</span> <span class="o">=</span> <span class="s1">&#39;sig2_2&#39;</span><span class="p">,</span>  <span class="n">deltar</span>  <span class="o">=</span> <span class="s1">&#39;alpha*reff&#39;</span><span class="p">)</span>
@@ -1021,17 +878,16 @@ one another.</p>
 <span class="n">path3</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;feff0003.dat&#39;</span><span class="p">,</span>     <span class="n">s02</span> <span class="o">=</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="s1">&#39;del_e0&#39;</span><span class="p">,</span>
                   <span class="n">sigma2</span> <span class="o">=</span> <span class="s1">&#39;sig2_3&#39;</span><span class="p">,</span> <span class="n">deltar</span>  <span class="o">=</span> <span class="s1">&#39;alpha*reff&#39;</span><span class="p">)</span>
 
-<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.4</span><span class="p">)</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.5</span><span class="p">)</span>
 
 <span class="c1"># define dataset to include data, pathlist, transform</span>
 <span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cu_data</span><span class="p">,</span> <span class="n">pathlist</span><span class="o">=</span><span class="p">[</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">,</span> <span class="n">path3</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
 
-
 <span class="c1"># perform fit!</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
-<span class="n">report</span> <span class="o">=</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">report</span><span class="p">)</span>
 <span class="n">run</span><span class="p">(</span><span class="s1">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
 <span class="n">write_report</span><span class="p">(</span><span class="s1">&#39;doc_feffit2.out&#39;</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span>
 
@@ -1048,45 +904,53 @@ vary independently for each path.</p>
 <p>The output for this fit is a bit longer, being:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
-   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">130</span>
-   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">18.825</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">843.762</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">65.7886</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00239</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">83.5865</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">89.1978</span>
+   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">138</span>
+   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">19.717</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">5.01788</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">0.394592</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00248</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="o">-</span><span class="mf">12.9813</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="o">-</span><span class="mf">6.11108</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
-   <span class="n">r</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">1.400</span><span class="p">,</span> <span class="mf">3.400</span>
+   <span class="n">r</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">1.400</span><span class="p">,</span> <span class="mf">3.500</span>
    <span class="n">k</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">3.000</span><span class="p">,</span> <span class="mf">17.000</span>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff0001.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff0002.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff0003.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="mf">0.000150</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.007111</span>
-   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">18.825</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.002788</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.010181</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.093696</span>
+   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">19.717</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">alpha</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.002470</span> <span class="o">+/-</span> <span class="mf">0.000913</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.928995</span> <span class="o">+/-</span> <span class="mf">0.034710</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">3.821553</span> <span class="o">+/-</span> <span class="mf">0.453974</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
-   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.008643</span> <span class="o">+/-</span> <span class="mf">0.000274</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
-   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.014079</span> <span class="o">+/-</span> <span class="mf">0.001384</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
-   <span class="n">sig2_3</span>         <span class="o">=</span>  <span class="mf">0.008410</span> <span class="o">+/-</span> <span class="mf">0.003616</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.002880</span> <span class="o">+/-</span> <span class="mf">0.002964</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.932893</span> <span class="o">+/-</span> <span class="mf">0.035852</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
+   <span class="n">c3_1</span>           <span class="o">=</span>  <span class="mf">0.000147</span> <span class="o">+/-</span> <span class="mf">0.000082</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.721577</span> <span class="o">+/-</span> <span class="mf">0.815158</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">3.000000</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.008679</span> <span class="o">+/-</span> <span class="mf">0.000282</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013117</span> <span class="o">+/-</span> <span class="mf">0.001131</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">sig2_3</span>         <span class="o">=</span>  <span class="mf">0.006285</span> <span class="o">+/-</span> <span class="mf">0.003059</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_1</span>          <span class="o">=</span>  <span class="mf">0.930</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">del_e0</span>        <span class="o">=</span>  <span class="mf">0.922</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_3</span>          <span class="o">=</span>  <span class="mf">0.239</span>
-   <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_3</span>       <span class="o">=</span>  <span class="mf">0.237</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_2</span>          <span class="o">=</span>  <span class="mf">0.222</span>
-   <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span>  <span class="mf">0.208</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_1</span>        <span class="o">=</span>  <span class="mf">0.179</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">amp</span>           <span class="o">=</span>  <span class="mf">0.159</span>
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">sig2_3</span>       <span class="o">=</span>  <span class="mf">0.155</span>
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span> <span class="o">-</span><span class="mf">0.140</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_3</span>        <span class="o">=</span>  <span class="mf">0.138</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">c3_1</span>          <span class="o">=</span>  <span class="mf">0.952</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">del_e0</span>        <span class="o">=</span>  <span class="mf">0.951</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_1</span>          <span class="o">=</span>  <span class="mf">0.929</span>
+   <span class="n">c3_1</span><span class="p">,</span> <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">0.837</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_2</span>          <span class="o">=</span>  <span class="mf">0.297</span>
+   <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span>  <span class="mf">0.276</span>
+   <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_3</span>       <span class="o">=</span>  <span class="mf">0.213</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_3</span>          <span class="o">=</span>  <span class="mf">0.213</span>
+   <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_3</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.189</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">amp</span>           <span class="o">=</span>  <span class="mf">0.186</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_1</span>        <span class="o">=</span>  <span class="mf">0.172</span>
+   <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.169</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_2</span>        <span class="o">=</span>  <span class="mf">0.152</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_3</span>        <span class="o">=</span> <span class="o">-</span><span class="mf">0.148</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">del_e0</span>          <span class="o">=</span>  <span class="mf">0.148</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">c3_1</span>            <span class="o">=</span>  <span class="mf">0.145</span>
+   <span class="n">del_e0</span><span class="p">,</span> <span class="n">sig2_1</span>       <span class="o">=</span>  <span class="mf">0.143</span>
+   <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.125</span>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
    <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
@@ -1095,11 +959,12 @@ vary independently for each path.</p>
       <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.928995</span> <span class="o">+/-</span> <span class="mf">0.034710</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">3.821553</span> <span class="o">+/-</span> <span class="mf">0.453974</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.541508</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.006292</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.008643</span> <span class="o">+/-</span> <span class="mf">0.000274</span>  <span class="s1">&#39;sig2_1&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.932893</span> <span class="o">+/-</span> <span class="mf">0.035852</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.721577</span> <span class="o">+/-</span> <span class="mf">0.815158</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.555137</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.007337</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.008679</span> <span class="o">+/-</span> <span class="mf">0.000282</span>  <span class="s1">&#39;sig2_1&#39;</span>
+     <span class="n">third</span>  <span class="o">=</span>  <span class="mf">0.000147</span> <span class="o">+/-</span> <span class="mf">0.000082</span>  <span class="s1">&#39;c3_1&#39;</span>
 
    <span class="n">Path</span> <span class="n">pe3tkyh7w</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0002</span><span class="o">.</span><span class="n">dat</span>
      <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
@@ -1107,11 +972,11 @@ vary independently for each path.</p>
       <span class="n">Cu</span>      <span class="o">-</span><span class="mf">3.6032</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">3.60320</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">6.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.928995</span> <span class="o">+/-</span> <span class="mf">0.034710</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">3.821553</span> <span class="o">+/-</span> <span class="mf">0.453974</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.594301</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.008899</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.014079</span> <span class="o">+/-</span> <span class="mf">0.001384</span>  <span class="s1">&#39;sig2_2&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.932893</span> <span class="o">+/-</span> <span class="mf">0.035852</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.721577</span> <span class="o">+/-</span> <span class="mf">0.815158</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.613576</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.010376</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.013117</span> <span class="o">+/-</span> <span class="mf">0.001131</span>  <span class="s1">&#39;sig2_2&#39;</span>
 
    <span class="n">Path</span> <span class="n">pkky2qtk6</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0003</span><span class="o">.</span><span class="n">dat</span>
      <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
@@ -1120,11 +985,11 @@ vary independently for each path.</p>
       <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">3.82180</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">48.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.928995</span> <span class="o">+/-</span> <span class="mf">0.034710</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">3.821553</span> <span class="o">+/-</span> <span class="mf">0.453974</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.812361</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.009439</span> <span class="o">+/-</span> <span class="mf">0.003488</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.008410</span> <span class="o">+/-</span> <span class="mf">0.003616</span>  <span class="s1">&#39;sig2_3&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.932893</span> <span class="o">+/-</span> <span class="mf">0.035852</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.721577</span> <span class="o">+/-</span> <span class="mf">0.815158</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.832806</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.011006</span> <span class="o">+/-</span> <span class="mf">0.011329</span>  <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.006285</span> <span class="o">+/-</span> <span class="mf">0.003059</span>  <span class="s1">&#39;sig2_3&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
@@ -1137,7 +1002,7 @@ vary independently for each path.</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit2b">
 <a class="reference external image-reference" href="../_images/feffit_example4.png"><img alt="../_images/feffit_example4.png" src="../_images/feffit_example4.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.30:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+<p class="caption"><span class="caption-text">Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
 constraining all path distances to expand with a single variable.</span></p>
 </div><p id="fig-feffit2">Here, we show both the magnitude and real part of <span class="math">\(\chi(R)\)</span>.  The fit
 to the real part shows excellent agreement over the fit <span class="math">\(R\)</span> range of
@@ -1156,10 +1021,10 @@ straightforward, as we can just do:</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit3b">
 <a class="reference external image-reference" href="../_images/feffit_example6.png"><img alt="../_images/feffit_example6.png" src="../_images/feffit_example6.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.31:</strong> Path contributions to full mode for the 3-shell fit to Cu spectrum.</span></p>
+<p class="caption"><span class="caption-text">Path contributions to full mode for the 3-shell fit to Cu spectrum.</span></p>
 </div></div>
 <div class="section" id="example-3-fit-3-datasets-with-1-path-each">
-<span id="fig-feffit3"></span><h2>8.7.10. Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
+<span id="fig-feffit3"></span><h2>9.7.10. Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
 <p>We’ll extend the above example by adding two more data sets.  Since the
 three data sets have some things in common, we’ll be able to use some a
 smaller number of total variable parameters for all data sets than if we
@@ -1251,11 +1116,11 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
    <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">390</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">56.476</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">162.221</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">3.1514</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.01651</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">69.5905</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">79.7596</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">150.382</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">2.92139</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.01631</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">65.3103</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">75.4794</span>
  
 <span class="p">[[</span><span class="n">Datasets</span> <span class="p">(</span><span class="mi">3</span><span class="p">)]]</span>
  <span class="n">dataset</span> <span class="mi">1</span><span class="p">:</span>
@@ -1265,8 +1130,8 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff0001.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.004637</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.014449</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.155856</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.010379</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.040095</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.348846</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">18.825</span>
  <span class="n">dataset</span> <span class="mi">2</span><span class="p">:</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -1275,8 +1140,8 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff0001.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.004352</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.013651</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.146282</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.003540</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.011780</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.118996</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">18.825</span>
  <span class="n">dataset</span> <span class="mi">3</span><span class="p">:</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -1285,22 +1150,22 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">4.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff0001.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.003287</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.010981</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.110476</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.003239</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.011981</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.108852</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">18.825</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.000005</span> <span class="o">+/-</span> <span class="mf">0.000007</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.869628</span> <span class="o">+/-</span> <span class="mf">0.030026</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.385041</span> <span class="o">+/-</span> <span class="mf">0.616831</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.000000</span><span class="p">)</span>
-   <span class="n">dr_off</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.000267</span> <span class="o">+/-</span> <span class="mf">0.002702</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">theta</span>          <span class="o">=</span>  <span class="mf">233.016464</span> <span class="o">+/-</span> <span class="mf">8.374752</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">250.000000</span><span class="p">)</span>
+   <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.000006</span> <span class="o">+/-</span> <span class="mf">0.000008</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.869093</span> <span class="o">+/-</span> <span class="mf">0.030460</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.374299</span> <span class="o">+/-</span> <span class="mf">0.612596</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.000000</span><span class="p">)</span>
+   <span class="n">dr_off</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.000559</span> <span class="o">+/-</span> <span class="mf">0.002877</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">theta</span>          <span class="o">=</span>  <span class="mf">233.110576</span> <span class="o">+/-</span> <span class="mf">8.207755</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">250.000000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">theta</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.852</span>
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">dr_off</span>       <span class="o">=</span>  <span class="mf">0.809</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">dr_off</span>        <span class="o">=</span> <span class="o">-</span><span class="mf">0.363</span>
-   <span class="n">alpha</span><span class="p">,</span> <span class="n">del_e0</span>        <span class="o">=</span>  <span class="mf">0.103</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">theta</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.858</span>
+   <span class="n">del_e0</span><span class="p">,</span> <span class="n">dr_off</span>       <span class="o">=</span>  <span class="mf">0.741</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">dr_off</span>        <span class="o">=</span> <span class="o">-</span><span class="mf">0.489</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">del_e0</span>        <span class="o">=</span>  <span class="mf">0.105</span>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="n">dataset</span> <span class="mi">1</span><span class="p">:</span>
@@ -1310,11 +1175,11 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
       <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869628</span> <span class="o">+/-</span> <span class="mf">0.030026</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.385041</span> <span class="o">+/-</span> <span class="mf">0.616831</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.547667</span> <span class="o">+/-</span> <span class="mf">0.002643</span>  <span class="s1">&#39;reff + dr_off + 10*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.000133</span> <span class="o">+/-</span> <span class="mf">0.002643</span>  <span class="s1">&#39;dr_off + 10*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.003276</span> <span class="o">+/-</span> <span class="mf">0.000118</span>  <span class="s1">&#39;sigma2_eins(10, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869093</span> <span class="o">+/-</span> <span class="mf">0.030460</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.374299</span> <span class="o">+/-</span> <span class="mf">0.612596</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.547394</span> <span class="o">+/-</span> <span class="mf">0.002786</span>  <span class="s1">&#39;reff + dr_off + 10*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.000406</span> <span class="o">+/-</span> <span class="mf">0.002786</span>  <span class="s1">&#39;dr_off + 10*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.003275</span> <span class="o">+/-</span> <span class="mf">0.000115</span>  <span class="s1">&#39;sigma2_eins(10, theta)&#39;</span>
 
  <span class="n">dataset</span> <span class="mi">2</span><span class="p">:</span>
    <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
@@ -1323,11 +1188,11 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
       <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869628</span> <span class="o">+/-</span> <span class="mf">0.030026</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.385041</span> <span class="o">+/-</span> <span class="mf">0.616831</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.548201</span> <span class="o">+/-</span> <span class="mf">0.002520</span>  <span class="s1">&#39;reff + dr_off + 50*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.000401</span> <span class="o">+/-</span> <span class="mf">0.002520</span>  <span class="s1">&#39;dr_off + 50*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.003339</span> <span class="o">+/-</span> <span class="mf">0.000131</span>  <span class="s1">&#39;sigma2_eins(50, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869093</span> <span class="o">+/-</span> <span class="mf">0.030460</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.374299</span> <span class="o">+/-</span> <span class="mf">0.612596</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.548002</span> <span class="o">+/-</span> <span class="mf">0.002544</span>  <span class="s1">&#39;reff + dr_off + 50*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.000202</span> <span class="o">+/-</span> <span class="mf">0.002544</span>  <span class="s1">&#39;dr_off + 50*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.003337</span> <span class="o">+/-</span> <span class="mf">0.000128</span>  <span class="s1">&#39;sigma2_eins(50, theta)&#39;</span>
 
  <span class="n">dataset</span> <span class="mi">3</span><span class="p">:</span>
    <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
@@ -1336,11 +1201,11 @@ of <span class="math">\(R\)</span>. The output for this fit is:</p>
       <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869628</span> <span class="o">+/-</span> <span class="mf">0.030026</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.385041</span> <span class="o">+/-</span> <span class="mf">0.616831</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.549536</span> <span class="o">+/-</span> <span class="mf">0.003005</span>  <span class="s1">&#39;reff + dr_off + 150*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.001736</span> <span class="o">+/-</span> <span class="mf">0.003005</span>  <span class="s1">&#39;dr_off + 150*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.005034</span> <span class="o">+/-</span> <span class="mf">0.000305</span>  <span class="s1">&#39;sigma2_eins(150, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.869093</span> <span class="o">+/-</span> <span class="mf">0.030460</span>  <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.374299</span> <span class="o">+/-</span> <span class="mf">0.612596</span>  <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.549524</span> <span class="o">+/-</span> <span class="mf">0.002960</span>  <span class="s1">&#39;reff + dr_off + 150*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.001724</span> <span class="o">+/-</span> <span class="mf">0.002960</span>  <span class="s1">&#39;dr_off + 150*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.005030</span> <span class="o">+/-</span> <span class="mf">0.000299</span>  <span class="s1">&#39;sigma2_eins(150, theta)&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
@@ -1365,31 +1230,31 @@ the automatically derived uncertainties.  In this case, including this
 correlation significantly reduces the estimated uncertainty.</p>
 <p>The output plots for the fits to the three datasets are given below.</p>
 <div class="figure compound align-center" id="fig-feffit3temps">
-<div style="width: 32%" class="subfigure" id="id1">
-<span id="fig-feffit3temp10k"></span><a class="reference external image-reference" href="../_images/feffit_3temp1.png"><img alt="../_images/feffit_3temp1.png" src="../_images/feffit_3temp1.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 10 K</span></p>
-</div>
-<div style="width: 32%" class="subfigure" id="id2">
-<span id="fig-feffit3temp50k"></span><a class="reference external image-reference" href="../_images/feffit_3temp3.png"><img alt="../_images/feffit_3temp3.png" src="../_images/feffit_3temp3.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(a)</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 50 K</span></p>
-</div>
 <div style="width: 32%" class="subfigure" id="id3">
-<span id="fig-feffit3temp150k"></span><a class="reference external image-reference" href="../_images/feffit_3temp5.png"><img alt="../_images/feffit_3temp5.png" src="../_images/feffit_3temp5.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 150 K</span></p>
+<span id="fig-feffit3temp10k"></span><a class="reference external image-reference" href="../_images/feffit_3temp1.png"><img alt="../_images/feffit_3temp1.png" src="../_images/feffit_3temp1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.7 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(k)\)</span> at 10 K</span></p>
 </div>
 <div style="width: 32%" class="subfigure" id="id4">
-<span id="fig-feffit3temp10r"></span><a class="reference external image-reference" href="../_images/feffit_3temp2.png"><img alt="../_images/feffit_3temp2.png" src="../_images/feffit_3temp2.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(e)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 10 K</span></p>
+<span id="fig-feffit3temp50k"></span><a class="reference external image-reference" href="../_images/feffit_3temp3.png"><img alt="../_images/feffit_3temp3.png" src="../_images/feffit_3temp3.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.8 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(k)\)</span> at 50 K</span></p>
 </div>
 <div style="width: 32%" class="subfigure" id="id5">
-<span id="fig-feffit3temp50r"></span><a class="reference external image-reference" href="../_images/feffit_3temp4.png"><img alt="../_images/feffit_3temp4.png" src="../_images/feffit_3temp4.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(i)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 50 K</span></p>
+<span id="fig-feffit3temp150k"></span><a class="reference external image-reference" href="../_images/feffit_3temp5.png"><img alt="../_images/feffit_3temp5.png" src="../_images/feffit_3temp5.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.9 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(k)\)</span> at 150 K</span></p>
 </div>
 <div style="width: 32%" class="subfigure" id="id6">
-<span id="fig-feffit3temp150r"></span><a class="reference external image-reference" href="../_images/feffit_3temp6.png"><img alt="../_images/feffit_3temp6.png" src="../_images/feffit_3temp6.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(k)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 150 K</span></p>
+<span id="fig-feffit3temp10r"></span><a class="reference external image-reference" href="../_images/feffit_3temp2.png"><img alt="../_images/feffit_3temp2.png" src="../_images/feffit_3temp2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.10 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(R)\)</span> at 10 K</span></p>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.32:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
+<div style="width: 32%" class="subfigure" id="id7">
+<span id="fig-feffit3temp50r"></span><a class="reference external image-reference" href="../_images/feffit_3temp4.png"><img alt="../_images/feffit_3temp4.png" src="../_images/feffit_3temp4.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.11 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(R)\)</span> at 50 K</span></p>
+</div>
+<div style="width: 32%" class="subfigure" id="id8">
+<span id="fig-feffit3temp150r"></span><a class="reference external image-reference" href="../_images/feffit_3temp6.png"><img alt="../_images/feffit_3temp6.png" src="../_images/feffit_3temp6.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.12 </span><span class="caption-text">Fit to Cu <span class="math">\(\chi(R)\)</span> at 150 K</span></p>
+</div>
+<p class="caption"><span class="caption-text">Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
 3 datasets with 5 variables used.</span></p>
 </div><p id="fig-feffit3temps">Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -1397,7 +1262,7 @@ capabilities and procedures and should not be viewed as limiting the types
 of problems that can be modeled.</p>
 </div>
 <div class="section" id="example-4-measuring-coordination-number">
-<h2>8.7.11. Example 4: Measuring Coordination number<a class="headerlink" href="#example-4-measuring-coordination-number" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.11. Example 4: Measuring Coordination number<a class="headerlink" href="#example-4-measuring-coordination-number" title="Permalink to this headline">¶</a></h2>
 <p>For this and the following example, we switch from Cu metal data to data on
 a simple metal oxide, FeO.  The structure is a basic rock-salt structure,
 and we’ll model 2 paths for Fe-O and Fe-Fe in this structure.  While the
@@ -1417,8 +1282,8 @@ parameters for the other path parameters, including separate variables for
 <span class="math">\(\Delta R\)</span> and <span class="math">\(\sigma^2\)</span>.  The script for this fit is below:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffit4.lar</span>
 
-<span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="s1">&#39;energy xmu&#39;</span><span class="p">)</span>
-<span class="n">autobk</span><span class="p">(</span><span class="n">feo_dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">feo_dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">feo_dat</span><span class="p">)</span>
+<span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu&#39;</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">feo_dat</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 
 <span class="c1"># define fitting parameter group</span>
 <span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">n1</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
@@ -1446,7 +1311,7 @@ parameters for the other path parameters, including separate variables for
                      <span class="n">deltar</span> <span class="o">=</span> <span class="s1">&#39;delr_2&#39;</span><span class="p">)</span>
 
 <span class="c1"># set tranform / fit ranges</span>
-<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mf">13.5</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mf">13.5</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                          <span class="n">dk</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="n">window</span><span class="o">=</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span>
                          <span class="n">rmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.2</span><span class="p">,</span> <span class="n">fitspace</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
@@ -1471,13 +1336,13 @@ used in the fit.</p>
 <p>The resulting output is</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
-   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">288</span>
+   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">144</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">34.5827</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">3.42184</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.01525</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">26.0412</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">31.9174</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">19.6759</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">1.94686</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00895</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">16.3938</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">22.27</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -1485,34 +1350,34 @@ used in the fit.</p>
    <span class="n">k</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">2.000</span><span class="p">,</span> <span class="mf">13.500</span>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">3.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff_feo01.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff_feo02.dat&#39;</span><span class="p">]</span>
-   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">),</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.027109</span><span class="p">,</span> <span class="mf">0.309310</span>
+   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">3</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.000962</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.002704</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.207307</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span> <span class="o">+/-</span> <span class="mf">0.888785</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.031455</span> <span class="o">+/-</span> <span class="mf">0.010076</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.046370</span> <span class="o">+/-</span> <span class="mf">0.007766</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.622117</span> <span class="o">+/-</span> <span class="mf">0.961869</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">6.000000</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">12.238350</span> <span class="o">+/-</span> <span class="mf">1.545809</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.000000</span><span class="p">)</span>
-   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.012780</span> <span class="o">+/-</span> <span class="mf">0.002610</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
-   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013445</span> <span class="o">+/-</span> <span class="mf">0.001259</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span> <span class="o">+/-</span> <span class="mf">0.808632</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span> <span class="o">+/-</span> <span class="mf">0.007522</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.049909</span> <span class="o">+/-</span> <span class="mf">0.005972</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">4.550833</span> <span class="o">+/-</span> <span class="mf">0.738706</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">6.000000</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">10.986155</span> <span class="o">+/-</span> <span class="mf">1.043360</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.000000</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.010405</span> <span class="o">+/-</span> <span class="mf">0.001825</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.012472</span> <span class="o">+/-</span> <span class="mf">0.000828</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.935</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.895</span>
-   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.890</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.635</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.575</span>
-   <span class="n">delr_2</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span>  <span class="mf">0.228</span>
-   <span class="n">delr_2</span><span class="p">,</span> <span class="n">n2</span>           <span class="o">=</span>  <span class="mf">0.222</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">n1</span>              <span class="o">=</span> <span class="o">-</span><span class="mf">0.216</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">sig2_1</span>       <span class="o">=</span>  <span class="mf">0.214</span>
-   <span class="n">delr_2</span><span class="p">,</span> <span class="n">n1</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.177</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">n1</span>           <span class="o">=</span>  <span class="mf">0.162</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">sig2_1</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.138</span>
-   <span class="n">delr_2</span><span class="p">,</span> <span class="n">sig2_1</span>       <span class="o">=</span> <span class="o">-</span><span class="mf">0.110</span>
+   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.939</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.920</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.892</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.566</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.524</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">sig2_1</span>       <span class="o">=</span>  <span class="mf">0.219</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">n1</span>           <span class="o">=</span>  <span class="mf">0.193</span>
+   <span class="n">delr_2</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span>  <span class="mf">0.181</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">n1</span>              <span class="o">=</span> <span class="o">-</span><span class="mf">0.158</span>
+   <span class="n">delr_2</span><span class="p">,</span> <span class="n">n2</span>           <span class="o">=</span>  <span class="mf">0.156</span>
+   <span class="n">delr_2</span><span class="p">,</span> <span class="n">n1</span>           <span class="o">=</span> <span class="o">-</span><span class="mf">0.139</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">sig2_1</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.110</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span>               <span class="o">=</span>  <span class="mf">0.100</span>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
    <span class="n">Path</span> <span class="n">prqdqp2pm</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo01</span><span class="o">.</span><span class="n">dat</span>
@@ -1521,11 +1386,11 @@ used in the fit.</p>
        <span class="n">O</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">2.1387</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.13870</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">1.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">3.935482</span> <span class="o">+/-</span> <span class="mf">0.673308</span>  <span class="s1">&#39;s02*n1&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span> <span class="o">+/-</span> <span class="mf">0.888785</span>  <span class="s1">&#39;de0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.107245</span> <span class="o">+/-</span> <span class="mf">0.010076</span>  <span class="s1">&#39;reff + delr_1&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.031455</span> <span class="o">+/-</span> <span class="mf">0.010076</span>  <span class="s1">&#39;delr_1&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.012780</span> <span class="o">+/-</span> <span class="mf">0.002610</span>  <span class="s1">&#39;sig2_1&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">3.185583</span> <span class="o">+/-</span> <span class="mf">0.517094</span>  <span class="s1">&#39;s02*n1&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span> <span class="o">+/-</span> <span class="mf">0.808632</span>  <span class="s1">&#39;de0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.110421</span> <span class="o">+/-</span> <span class="mf">0.007522</span>  <span class="s1">&#39;reff + delr_1&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span> <span class="o">+/-</span> <span class="mf">0.007522</span>  <span class="s1">&#39;delr_1&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.010405</span> <span class="o">+/-</span> <span class="mf">0.001825</span>  <span class="s1">&#39;sig2_1&#39;</span>
 
    <span class="n">Path</span> <span class="n">pbhrkq5es</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff_feo02</span><span class="o">.</span><span class="n">dat</span>
      <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
@@ -1533,29 +1398,29 @@ used in the fit.</p>
       <span class="n">Fe</span>       <span class="mf">2.1387</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.1387</span>  <span class="mi">2</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">3.02460</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">1.000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">8.566845</span> <span class="o">+/-</span> <span class="mf">1.082066</span>  <span class="s1">&#39;s02*n2&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span> <span class="o">+/-</span> <span class="mf">0.888785</span>  <span class="s1">&#39;de0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.070970</span> <span class="o">+/-</span> <span class="mf">0.007766</span>  <span class="s1">&#39;reff + delr_2&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.046370</span> <span class="o">+/-</span> <span class="mf">0.007766</span>  <span class="s1">&#39;delr_2&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.013445</span> <span class="o">+/-</span> <span class="mf">0.001259</span>  <span class="s1">&#39;sig2_2&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">7.690309</span> <span class="o">+/-</span> <span class="mf">0.730352</span>  <span class="s1">&#39;s02*n2&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span> <span class="o">+/-</span> <span class="mf">0.808632</span>  <span class="s1">&#39;de0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.074509</span> <span class="o">+/-</span> <span class="mf">0.005972</span>  <span class="s1">&#39;reff + delr_2&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.049909</span> <span class="o">+/-</span> <span class="mf">0.005972</span>  <span class="s1">&#39;delr_2&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.012472</span> <span class="o">+/-</span> <span class="mf">0.000828</span>  <span class="s1">&#39;sig2_2&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
 </div>
 <p>with plots:</p>
 <div class="figure compound align-center" id="fig-feffit-feo">
-<div style="width: 45%" class="subfigure" id="id7">
+<div style="width: 45%" class="subfigure" id="id9">
 <span id="fig-feffit-feo-a"></span><a class="reference external image-reference" href="../_images/feffit_feo_k.png"><img alt="../_images/feffit_feo_k.png" src="../_images/feffit_feo_k.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(a)</strong> Fit to FeO spectra, <span class="math">\(k\)</span> space</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.13 </span><span class="caption-text">Fit to FeO spectra, <span class="math">\(k\)</span> space</span></p>
 </div>
-<div style="width: 45%" class="subfigure" id="id8">
+<div style="width: 45%" class="subfigure" id="id10">
 <span id="fig-feffit-feo-b"></span><a class="reference external image-reference" href="../_images/feffit_feo_r.png"><img alt="../_images/feffit_feo_r.png" src="../_images/feffit_feo_r.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> Fit to FeO spectra, <span class="math">\(R\)</span> space</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.14 </span><span class="caption-text">Fit to FeO spectra, <span class="math">\(R\)</span> space</span></p>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.33:</strong> Fits to 2-path fit to FeO EXAFS.</span></p>
+<p class="caption"><span class="caption-text">Fits to 2-path fit to FeO EXAFS.</span></p>
 </div></div>
 <div class="section" id="example-5-comparing-fits-in-different-fit-spaces">
-<span id="fig-feffit-feo"></span><h2>8.7.12. Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
+<span id="fig-feffit-feo"></span><h2>9.7.12. Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
 <p>We now turn to comparing fits in unfiltered k-space, R-space, and filter
 k-space (or “q space”).  This is partly to illustrate the preference for
 using R- or q-space for fitting, and partly to demonstrate how one can run
@@ -1730,11 +1595,11 @@ what parametres are varied, and what constraints are placed between
 parameters.</p>
 </div>
 <div class="section" id="example-6-testing-exafs-sensitivity-to">
-<h2>8.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
+<h2>9.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
 <p id="index-3">EXAFS is known to be sensitive to the atomic number <span class="math">\(Z\)</span> of the
 scattering atom.  This is due to the <span class="math">\(Z\)</span> dependence of the scattering
 amplitude and phase shift (<span class="math">\(f(k)\)</span> and <span class="math">\(\delta(k)\)</span> in the EXAFS
-Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>).  A rule-of-thumb that
+Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">9.6.5</span></a>).  A rule-of-thumb that
 is often stated is that EXAFS is sensitive to <span class="math">\(Z \pm 5\)</span>, or perhaps
 pessimistically to <em>row of the Periodic Table</em>, but not as sensitive as
 <span class="math">\(Z \pm 1\)</span>.  Occassionally, you may see work that claims very fine
@@ -1751,12 +1616,12 @@ to better determine both <span class="math">\(R\)</span> and <span class="math">
 is a little more complex than what we’ve seen above, using many feature of
 the Larch scripting language to do repeated fits and mathematically
 manipulating the arrays of data.</p>
-<div class="figure align-center" id="id9">
+<div class="figure align-center" id="id11">
 <span id="fig-znse-xafs"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Data.png"><img alt="../_images/Feffit_ZnSe_Data.png" src="../_images/Feffit_ZnSe_Data.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 8.34:</strong> Zn K-edge XAFS data for ZnSe.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.15 </span><span class="caption-text">Zn K-edge XAFS data for ZnSe.</span></p>
 </div>
 <p>For this example, we’ll use Zn K-edge data of ZnSe, with <span class="math">\(\chi(k)\)</span>
-data shown in Figure <a href="#fig-znse-xafs">8.35</a>.  The data is pretty good but not
+data shown in <a class="reference internal" href="#fig-znse-xafs"><span class="std std-numref">Figure 9.7.15</span></a>.  The data is pretty good but not
 perfect, and is useful for the study here mainly because the structure is
 simple, with a well-isolated and well-ordered shell of scatterers (the
 cubic ZnS structure with 1 Zn site surrounded by 4 Se at 2.45
@@ -1783,7 +1648,10 @@ convenience).  The resulting feff.inp file for Br looks this:</p>
         <span class="mi">0</span>   <span class="mi">30</span>   <span class="n">Zn</span>
         <span class="mi">1</span>   <span class="mi">30</span>   <span class="n">Zn</span>
         <span class="mi">2</span>   <span class="mi">34</span>   <span class="n">Se</span>
-        <span class="mi">3</span>   <span class="mi">35</span>   <span class="n">Br</span>
+        <span class="mi">3</span>   <span class="mi">36</span>   <span class="n">Kr</span>
+      <span class="c1"># 3   33   As</span>
+      <span class="c1"># 3   32   Ge</span>
+      <span class="c1"># 3   31   Ga</span>
 
  <span class="n">ATOMS</span>                          <span class="o">*</span> <span class="n">this</span> <span class="nb">list</span> <span class="n">contains</span> <span class="mi">35</span> <span class="n">atoms</span>
  <span class="o">*</span>   <span class="n">x</span>          <span class="n">y</span>          <span class="n">z</span>      <span class="n">ipot</span>  <span class="n">tag</span>              <span class="n">distance</span>
@@ -1910,9 +1778,12 @@ correction.  The full script is:</p>
 <span class="n">paths</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">pathargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">degen</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">s02</span><span class="o">=</span><span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">e0</span><span class="o">=</span><span class="s1">&#39;del_e0&#39;</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="s1">&#39;sig2&#39;</span><span class="p">,</span> <span class="n">deltar</span><span class="o">=</span><span class="s1">&#39;del_r&#39;</span><span class="p">)</span>
 <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Zn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znzn.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Ga&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znga.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
 <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Ge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znge.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s1">&#39;As&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znas.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
 <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Se&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znse.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
 <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Br&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znbr.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Kr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znkr.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
 <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;Rb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s1">&#39;Feff_ZnSe/feff_znrb.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
 
 <span class="c1"># set FT tranform and Fit ranges</span>
@@ -1924,7 +1795,7 @@ correction.  The full script is:</p>
 <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;|  </span><span class="si">%s</span><span class="s1">     | </span><span class="si">%5.1f</span><span class="s1"> |</span><span class="si">%s</span><span class="s1">|</span><span class="si">%s</span><span class="s1">|</span><span class="si">%s</span><span class="s1">|</span><span class="si">%s</span><span class="s1">|</span><span class="si">%7.3f</span><span class="s1">|&#39;</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">scatterer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s1">&#39;Zn&#39;</span><span class="p">,</span> <span class="s1">&#39;Ge&#39;</span><span class="p">,</span> <span class="s1">&#39;Se&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;Rb&#39;</span><span class="p">)):</span>
+<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">scatterer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s1">&#39;Zn&#39;</span><span class="p">,</span> <span class="s1">&#39;Ga&#39;</span><span class="p">,</span> <span class="s1">&#39;Ge&#39;</span><span class="p">,</span> <span class="s1">&#39;As&#39;</span><span class="p">,</span> <span class="s1">&#39;Se&#39;</span><span class="p">,</span> <span class="s1">&#39;Br&#39;</span><span class="p">,</span> <span class="s1">&#39;Kr&#39;</span><span class="p">,</span> <span class="s1">&#39;Rb&#39;</span><span class="p">)):</span>
     <span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">znse_data</span><span class="p">,</span> <span class="n">pathlist</span><span class="o">=</span><span class="p">[</span><span class="n">paths</span><span class="p">[</span><span class="n">scatterer</span><span class="p">]],</span>
                            <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
     <span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
@@ -2042,53 +1913,55 @@ might lead us to suspect a trend in the opposite direction.  The confounding
 factor here is <span class="math">\(\sigma^2\)</span> – if we fix <span class="math">\(\sigma^2\)</span> to 0.006 (by
 changing <code class="docutils literal"><span class="pre">vary=True</span></code> to <code class="docutils literal"><span class="pre">vary=False</span></code>) and re-run the fits, <span class="math">\(S_0^2\)</span>
 has a slight negative dependence on <span class="math">\(Z\)</span>.</p>
-<div class="figure compound align-center" id="fig_znse_fits">
-<div style="width: 30%" class="subfigure" id="id10">
-<span id="fig-znse-fit"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Zn.png"><img alt="../_images/Feffit_ZnSe_Zn.png" src="../_images/Feffit_ZnSe_Zn.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(a)</strong> Fit to ZnSe with Zn back-scatterer</span></p>
-</div>
-<div style="width: 30%" class="subfigure" id="id11">
-<span id="fig-znse-fit-ge"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Ge.png"><img alt="../_images/Feffit_ZnSe_Ge.png" src="../_images/Feffit_ZnSe_Ge.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(c)</strong> Fit to ZnSe with Ge back-scatterer</span></p>
-</div>
+<div class="figure compound align-center" id="fig_znse_fitscomp">
 <div style="width: 30%" class="subfigure" id="id12">
-<span id="fig-znse-fit-se"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Se.png"><img alt="../_images/Feffit_ZnSe_Se.png" src="../_images/Feffit_ZnSe_Se.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(e)</strong> Fit to ZnSe with Se back-scatterer</span></p>
+<span id="fig-znse-fit-zn"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Zn.png"><img alt="../_images/Feffit_ZnSe_Zn.png" src="../_images/Feffit_ZnSe_Zn.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.16 </span><span class="caption-text">Fit to ZnSe with Zn back-scatterer</span></p>
 </div>
 <div style="width: 30%" class="subfigure" id="id13">
-<span id="fig-znse-fit-br"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Br.png"><img alt="../_images/Feffit_ZnSe_Br.png" src="../_images/Feffit_ZnSe_Br.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(g)</strong> Fit to ZnSe with Br back-scatterer</span></p>
+<span id="fig-znse-fit-ge"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Ge.png"><img alt="../_images/Feffit_ZnSe_Ge.png" src="../_images/Feffit_ZnSe_Ge.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.17 </span><span class="caption-text">Fit to ZnSe with Ge back-scatterer</span></p>
 </div>
 <div style="width: 30%" class="subfigure" id="id14">
-<span id="fig-znse-fit-rb"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Rb.png"><img alt="../_images/Feffit_ZnSe_Rb.png" src="../_images/Feffit_ZnSe_Rb.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>(i)</strong> Fit to ZnSe with Rb back-scatterer</span></p>
+<span id="fig-znse-fit-se"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Se.png"><img alt="../_images/Feffit_ZnSe_Se.png" src="../_images/Feffit_ZnSe_Se.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.18 </span><span class="caption-text">Fit to ZnSe with Se back-scatterer</span></p>
 </div>
-<p class="caption"><span class="caption-text"><strong>Figure 8.36:</strong> Fits to ZnSe XAFS data using different back-scattering atoms.</span></p>
-<span class="target" id="fig_znse_fits"></span></div><p id="index-5">The figures also show <strong>phase-corrected</strong> Fourier transforms using the total
+<div style="width: 30%" class="subfigure" id="id15">
+<span id="fig-znse-fit-br"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Br.png"><img alt="../_images/Feffit_ZnSe_Br.png" src="../_images/Feffit_ZnSe_Br.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.19 </span><span class="caption-text">Fit to ZnSe with Br back-scatterer</span></p>
+</div>
+<div style="width: 30%" class="subfigure" id="id16">
+<span id="fig-znse-fit-rb"></span><a class="reference external image-reference" href="../_images/Feffit_ZnSe_Rb.png"><img alt="../_images/Feffit_ZnSe_Rb.png" src="../_images/Feffit_ZnSe_Rb.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 9.7.20 </span><span class="caption-text">Fit to ZnSe with Rb back-scatterer</span></p>
+</div>
+<p class="caption"><span class="caption-text">Fits to ZnSe XAFS data using different back-scattering atoms.</span></p>
+<span class="target" id="fig_znse_fitscomp"></span></div><p id="index-5">The figures also show <strong>phase-corrected</strong> Fourier transforms using the total
 scattering phase from the Feff calculation to correct the data.  This
 correction is done in the <code class="docutils literal"><span class="pre">phase_correct()</span></code> procedure, where the data from
 the <em>feffNNNN.dat</em> file (in the <code class="docutils literal"><span class="pre">_feffdat</span></code> group) is used to construct the
 Feff phase shift (<span class="math">\(\delta(k)\)</span> in the EXAFS Equation of Section
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>), and apply it to the data.  Because this uses
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">9.6.5</span></a>), and apply it to the data.  Because this uses
 complex math, we use the <a class="reference internal" href="xafsft.html#_xafs.xftf_fast" title="_xafs.xftf_fast"><code class="xref py py-func docutils literal"><span class="pre">xftf_fast()</span></code></a> function to the complex Fourier
 transform and build the magnitude of the transform explicitly.</p>
-<p>The phase corrected transforms are shown in black in Figure
-<a href="#fig_znse_fits">8.36</a>, and show the key benefit of these transforms – the
-peak in the phase corrected <span class="math">\(\chi(R)\)</span> peaks much closer to an <span class="math">\(R\)</span>
-that is the bond distance (for Zn-Se, around 2.45 <span class="math">\(\rm\AA\)</span>), whereas
-the normal XAFS Fourier transform peaks much lower.  This suggests a further
-test on whether the bond distance and <span class="math">\(Z\)</span> of the scattering atom are
-correct.  That is, in order for the phase-correction to give the correct
-interatomic distance, the total phase-shift has to be correct, which means
-that the <span class="math">\(Z\)</span> for the scatterer has to be correct (see the EXAFS
-Equation in Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">8.6.5</span></a>).  So, we can compare the
-refined distance with the peak in the phase-corrected transform – if they
-agree, it gives good confidence that the scatterer is correct.</p>
+<p>The phase corrected transforms are shown in black in
+<a class="reference internal" href="#fig-znse-fit-zn"><span class="std std-numref">Figure 9.7.16</span></a> through <a class="reference internal" href="#fig-znse-fit-rb"><span class="std std-numref">Figure 9.7.20</span></a>, and show the
+key benefit of these transforms – the peak in the phase corrected
+<span class="math">\(\chi(R)\)</span> peaks much closer to an <span class="math">\(R\)</span> that is the bond distance
+(for Zn-Se, around 2.45 <span class="math">\(\rm\AA\)</span>), whereas the normal XAFS Fourier
+transform peaks much lower.  This suggests a further test on whether the
+bond distance and <span class="math">\(Z\)</span> of the scattering atom are correct.  That is,
+in order for the phase-correction to give the correct interatomic distance,
+the total phase-shift has to be correct, which means that the <span class="math">\(Z\)</span> for
+the scatterer has to be correct (see the EXAFS Equation in Section
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><span class="std std-ref">9.6.5</span></a>).  So, we can compare the refined distance
+with the peak in the phase-corrected transform – if they agree, it gives
+good confidence that the scatterer is correct.</p>
 <p>Since the spacing of points in <span class="math">\(R\)</span> is <span class="math">\(\sim 0.03\rm\AA\)</span>, using
-the peak position may not be accurate enough.  Instead, we can use the value
-where <span class="math">\(\rm Im[\chi(R)_{\rm{ph cor}}]\)</span> passes through zero (see dashed
-lines in Figure <a href="#fig_znse_fits">8.36</a>).  These values are reported in the
-<a class="reference internal" href="#xafs-feffit-znse-results"><span class="std std-ref">Table of ZnSe Results</span></a> as <span class="math">\(R_{\rm{phcor}}\)</span>.</p>
+the peak position may not be accurate enough.  Instead, we can use the
+value where <span class="math">\(\rm Im[\chi(R)_{\rm{ph cor}}]\)</span> passes through zero (see
+dashed lines in <a class="reference internal" href="#fig-znse-fit-zn"><span class="std std-numref">Figure 9.7.16</span></a> through
+<a class="reference internal" href="#fig-znse-fit-rb"><span class="std std-numref">Figure 9.7.20</span></a>).  These values are reported in the <a class="reference internal" href="#xafs-feffit-znse-results"><span class="std std-ref">Table
+of ZnSe Results</span></a> as <span class="math">\(R_{\rm{phcor}}\)</span>.</p>
 <p>We see an interesting trend that while the refined distance <em>decreases</em> with
 <span class="math">\(Z\)</span>, the value for <span class="math">\(R_{\rm{phcor}}\)</span> increases slightly.  The two
 values cross between Ge and Se.  This is pretty good agreement, especially
@@ -2120,10 +1993,10 @@ powerful, and give increased confidence in the refined structure.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="diffkk.html" title="8.8. XAFS: Computing anomalous scattering factors from XAFS data"
+          <a href="diffkk.html" title="9.8. XAFS: Computing anomalous scattering factors from XAFS data"
              >next</a> |</li>
         <li class="right" >
-          <a href="feffpaths.html" title="8.6. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="9.6. XAFS: Reading and using Feff Paths"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -2133,12 +2006,12 @@ powerful, and give increased confidence in the refined structure.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

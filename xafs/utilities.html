@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>8.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.34 documentation</title>
-    
+    <title>9.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
-    <link rel="prev" title="8. XAFS Analysis" href="index.html" />
+    <link rel="next" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
+    <link rel="prev" title="9. XAFS Analysis" href="index.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="8. XAFS Analysis"
+          <a href="index.html" title="9. XAFS Analysis"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,16 +79,27 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.1. XAFS Functions: Overview and Naming Conventions</a><ul>
-<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">8.1.1. Naming conventions for XAFS arrays</a><ul>
-<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">8.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code></a></li>
-<li><a class="reference internal" href="#first-argument-group-convention">8.1.1.2. First Argument Group convention</a></li>
+<li><a class="reference internal" href="#">9.1. XAFS Functions: Overview and Naming Conventions</a><ul>
+<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">9.1.1. Naming conventions for XAFS arrays</a><ul>
+<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">9.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code></a></li>
+<li><a class="reference internal" href="#first-argument-group-convention">9.1.1.2. First Argument Group convention</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#utility-functions-for-xafs">8.1.2. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#the-ktoe-and-etok-functions">8.1.2.1. The <code class="docutils literal"><span class="pre">ktoe()</span></code> and <code class="docutils literal"><span class="pre">etok()</span></code> functions</a></li>
-<li><a class="reference internal" href="#the-estimate-noise-function">8.1.2.2. The <code class="docutils literal"><span class="pre">estimate_noise()</span></code> function</a></li>
-<li><a class="reference internal" href="#the-xas-deconvolve-function">8.1.2.3. The <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code> function</a></li>
+<li><a class="reference internal" href="#plotting-macros-for-xafs">9.1.2. Plotting Macros for XAFS</a><ul>
+<li><a class="reference internal" href="#plot-mu">9.1.2.1. <code class="docutils literal"><span class="pre">plot_mu()</span></code></a></li>
+<li><a class="reference internal" href="#plot-bkg">9.1.2.2. <code class="docutils literal"><span class="pre">plot_bkg()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chik">9.1.2.3. <code class="docutils literal"><span class="pre">plot_chik()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chir">9.1.2.4. <code class="docutils literal"><span class="pre">plot_chir()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chifit">9.1.2.5. <code class="docutils literal"><span class="pre">plot_chifit()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-k">9.1.2.6. <code class="docutils literal"><span class="pre">plot_path_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-r">9.1.2.7. <code class="docutils literal"><span class="pre">plot_path_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-k">9.1.2.8. <code class="docutils literal"><span class="pre">plot_paths_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-r">9.1.2.9. <code class="docutils literal"><span class="pre">plot_paths_r()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utility-functions-for-xafs">9.1.3. Utility Functions for XAFS</a><ul>
+<li><a class="reference internal" href="#ktoe-and-etok">9.1.3.1. <code class="docutils literal"><span class="pre">ktoe()</span></code> and <code class="docutils literal"><span class="pre">etok()</span></code></a></li>
+<li><a class="reference internal" href="#estimate-noise">9.1.3.2. <code class="docutils literal"><span class="pre">estimate_noise()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -100,10 +108,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">8. XAFS Analysis</a></p>
+                        title="previous chapter">9. XAFS Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="next chapter">8.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
+                        title="next chapter">9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -130,7 +138,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-functions-overview-and-naming-conventions"></span><h1>8.1. XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-functions-overview-and-naming-conventions"></span><h1>9.1. XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
@@ -138,7 +146,7 @@ out several output values, including both scalaras and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.</p>
 <div class="section" id="naming-conventions-for-xafs-arrays">
-<h2>8.1.1. Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>9.1.1. Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
 <p>In Larch, it is most natural to put related data into a Group.  This is
 often natural as data read in from a file is already held in a Group.  If a
 set of XAFS data is held within a Group, then the Group members named
@@ -305,7 +313,7 @@ the physical quantity described, and the name of function that will generate thi
 <p>The XAFS functions encourage following this convention, in that they are consistent in wanting
 <span class="math">\(\chi(k)\)</span> to be represented by the two arrays <code class="docutils literal"><span class="pre">GROUP.k</span></code> and <code class="docutils literal"><span class="pre">GROUP.chi</span></code></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
-<h3>8.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
+<h3>9.1.1.1. <cite>group</cite> argument and <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
 <p>The XAFS functions need to write outputs to some group – there are simply too many outputs to
 return and expect you to manage.   So, all functions take a <strong>group</strong> argument, which is used
 as the group into which results are written.  Again, this allows maximum flexibility, but gets
@@ -317,7 +325,7 @@ contained within a single group (which is expected to be the normal case), the <
 does not need to be typed repeatedly.</p>
 </div>
 <div class="section" id="first-argument-group-convention">
-<span id="index-0"></span><h3>8.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
+<span id="index-0"></span><h3>9.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
 <p>In addition to the <code class="docutils literal"><span class="pre">_sys.xafsGroup</span></code> convention above, there is an even simpler approach when
 working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
 generally meant to take arrays of data as the first two arguments, they allow the first argument to
@@ -338,11 +346,286 @@ equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or i
 <strong>Group oriented</strong>.</p>
 </div>
 </div>
+<div class="section" id="plotting-macros-for-xafs">
+<h2>9.1.2. Plotting Macros for XAFS<a class="headerlink" href="#plotting-macros-for-xafs" title="Permalink to this headline">¶</a></h2>
+<p>XAFS analysis often uses several different standard views of the data arrays
+for <span class="math">\(\mu(E)\)</span>, <span class="math">\(\chi(k)\)</span>, and <span class="math">\(\chi(R)\)</span>.  Larch’s plotting
+capabilities provide wide flexibility in how plots can be done.  While that
+flexibility can be useful in general, within the narrow scope of plotting
+XAFS data, being able to easily create consistent plots with reasonable
+defaults produces results that are easier to digest and understand.</p>
+<p>The macros described here attempt to provide that functionality of
+easy-to-use standard plotting macros. In particular, they automatically
+handle typesetting the labels for the plot axes in a consistent manner, and
+assign consistent labels to the different curves shown.  The results are also
+easily extended, so that you can add curves, annotations, etc.  Many of the
+examples in the following sections in this chapter make use of these macros.</p>
+<div class="section" id="plot-mu">
+<h3>9.1.2.1. <a class="reference internal" href="#_xafs.plot_mu" title="_xafs.plot_mu"><code class="xref py py-func docutils literal"><span class="pre">plot_mu()</span></code></a><a class="headerlink" href="#plot-mu" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_mu">
+<code class="descclassname">_xafs.</code><code class="descname">plot_mu</code><span class="sig-paren">(</span><em>dgroup</em>, <em>norm=False</em>, <em>deriv=False</em>, <em>show_pre=False</em>, <em>show_post=False</em>, <em>show_e0=False</em>, <em>emin=None</em>, <em>emax=None</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_mu" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Plot <span class="math">\(\mu(E)\)</span> for an XAFS data group in various forms</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dgroup</strong> – group of XAFS data after <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> results (see note below)</li>
+<li><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>deriv</strong> – bool whether to show derivative of XAFS data [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_pre</strong> – bool whether to show pre-edge curve [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_post</strong> – bool whether to show post-edge curve [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_deriv</strong> – bool whether to show deriv together with mu [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>emin</strong> – min energy to show, relative to E0 [<code class="docutils literal"><span class="pre">None</span></code>, start of data]</li>
+<li><strong>emax</strong> – max energy to show, relative to E0 [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>label</strong> – string for label [<code class="docutils literal"><span class="pre">None</span></code>:  ‘mu’, ‘dmu/dE’, or ‘mu norm’]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The input data group must have the following attributes: <cite>energy</cite>, <cite>mu</cite>,
+<cite>norm</cite>, <cite>e0</cite>, <cite>pre_edge</cite>, <cite>edge_step</cite>, <cite>filename</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-bkg">
+<h3>9.1.2.2. <a class="reference internal" href="#_xafs.plot_bkg" title="_xafs.plot_bkg"><code class="xref py py-func docutils literal"><span class="pre">plot_bkg()</span></code></a><a class="headerlink" href="#plot-bkg" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_bkg">
+<code class="descclassname">_xafs.</code><code class="descname">plot_bkg</code><span class="sig-paren">(</span><em>dgroup</em>, <em>norm=True</em>, <em>emin=None</em>, <em>emax=None</em>, <em>show_e0=False</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_bkg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot <span class="math">\(\mu(E)\)</span> and background <span class="math">\(\mu_0(E)\)</span> for XAFS data group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</li>
+<li><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>emin</strong> – min energy to show, relative to <span class="math">\(E_0\)</span> [<code class="docutils literal"><span class="pre">None</span></code>, start of data]</li>
+<li><strong>emax</strong> – max energy to show, relative to <span class="math">\(E_0\)</span> [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>label</strong> – string for label [<code class="docutils literal"><span class="pre">None</span></code>:  ‘mu’]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The input data group must have the following attributes: <cite>energy</cite>, <cite>mu</cite>,
+<cite>bkg</cite>, <cite>norm</cite>, <cite>e0</cite>, <cite>pre_edge</cite>, <cite>edge_step</cite>, <cite>filename</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-chik">
+<h3>9.1.2.3. <a class="reference internal" href="#_xafs.plot_chik" title="_xafs.plot_chik"><code class="xref py py-func docutils literal"><span class="pre">plot_chik()</span></code></a><a class="headerlink" href="#plot-chik" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_chik">
+<code class="descclassname">_xafs.</code><code class="descname">plot_chik</code><span class="sig-paren">(</span><em>dgroup</em>, <em>kweight=None</em>, <em>kmax=None</em>, <em>show_window=True</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot k-weighted <span class="math">\(\chi(k)\)</span> for XAFS data group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</li>
+<li><strong>kweight</strong> – k-weighting for plot [read from last <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, or 0]</li>
+<li><strong>kmax</strong> – max k to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>show_window</strong> – bool whether to also plot k-window [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>label</strong> – string for label [<code class="docutils literal"><span class="pre">None</span></code>:  ‘chi’]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The input data group must have the following attributes: <cite>k</cite>, <cite>chi</cite>,
+<cite>kwin</cite>, <cite>filename</cite>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-chir">
+<h3>9.1.2.4. <a class="reference internal" href="#_xafs.plot_chir" title="_xafs.plot_chir"><code class="xref py py-func docutils literal"><span class="pre">plot_chir()</span></code></a><a class="headerlink" href="#plot-chir" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_chir">
+<code class="descclassname">_xafs.</code><code class="descname">plot_chir</code><span class="sig-paren">(</span><em>dgroup</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=False</em>, <em>rmax=None</em>, <em>label=True</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot <span class="math">\(\chi(R)\)</span> for XAFS data group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dgroup</strong> – group of XAFS data after xftf() results (see note below)</li>
+<li><strong>show_mag</strong> – bool whether to plot <span class="math">\(|\chi(R)|\)</span> [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>show_real</strong> – bool whether to plot <span class="math">\(Re[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_imag</strong> – bool whether to plot <span class="math">\(Im[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>rmax</strong> – max R to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>label</strong> – string for label [<code class="docutils literal"><span class="pre">None</span></code>:  ‘chir’]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The input data group must have the following attributes: <cite>r</cite>,
+<cite>chir_mag</cite>, <cite>chir_im</cite>, <cite>chir_re</cite>, <cite>kweight</cite>, <cite>filename</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-chifit">
+<h3>9.1.2.5. <a class="reference internal" href="#_xafs.plot_chifit" title="_xafs.plot_chifit"><code class="xref py py-func docutils literal"><span class="pre">plot_chifit()</span></code></a><a class="headerlink" href="#plot-chifit" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_chifit">
+<code class="descclassname">_xafs.</code><code class="descname">plot_chifit</code><span class="sig-paren">(</span><em>dataset</em>, <em>kmin=0</em>, <em>kmax=None</em>, <em>rmax=None</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=False</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chifit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot k-weighted <span class="math">\(\chi(k)\)</span> and <span class="math">\(\chi(R)\)</span> for fit to feffit dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>.</li>
+<li><strong>kmin</strong> – min k to show [0]</li>
+<li><strong>kmax</strong> – max k to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>rmax</strong> – max R to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>show_mag</strong> – bool whether to plot <span class="math">\(|chi(R)|\)</span> [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>show_real</strong> – bool whether to plot <span class="math">\(Re[`chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_imag</strong> – bool whether to plot <span class="math">\(Im[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-path-k">
+<h3>9.1.2.6. <a class="reference internal" href="#_xafs.plot_path_k" title="_xafs.plot_path_k"><code class="xref py py-func docutils literal"><span class="pre">plot_path_k()</span></code></a><a class="headerlink" href="#plot-path-k" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_path_k">
+<code class="descclassname">_xafs.</code><code class="descname">plot_path_k</code><span class="sig-paren">(</span><em>dataset</em>, <em>ipath</em>, <em>kmin=0</em>, <em>kmax=None</em>, <em>offset=0</em>, <em>label=None</em>, <em>new=False</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_path_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot k-weighted <span class="math">\(\chi(k)\)</span> for a single Path of a feffit dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li><strong>ipath</strong> – index of path, starting count at 0 [0]</li>
+<li><strong>kmin</strong> – min k to show [0]</li>
+<li><strong>kmax</strong> – max k to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>offset</strong> – vertical offset to use for plot [0]</li>
+<li><strong>label</strong> – path label [‘path I’]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-path-r">
+<h3>9.1.2.7. <a class="reference internal" href="#_xafs.plot_path_r" title="_xafs.plot_path_r"><code class="xref py py-func docutils literal"><span class="pre">plot_path_r()</span></code></a><a class="headerlink" href="#plot-path-r" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="_xafs.plot_path_r">
+<code class="descclassname">_xafs.</code><code class="descname">plot_path_r</code><span class="sig-paren">(</span><em>dataset</em>, <em>ipath</em>, <em>rmax=None</em>, <em>offset=0</em>, <em>label=None</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=True</em>, <em>new=False</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_path_r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot <span class="math">\(\chi(R)\)</span> for a single Path of a feffit dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li><strong>ipath</strong> – index of path, starting count at 0 [0]</li>
+<li><strong>kmax</strong> – max k to show [None, end of data]</li>
+<li><strong>offset</strong> – vertical offset to use for plot [0]</li>
+<li><strong>label</strong> – path label [‘path I’]</li>
+<li><strong>show_mag</strong> – bool whether to plot <span class="math">\(|\chi(R)|\)</span> [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>show_real</strong> – bool whether to plot <span class="math">\(Re[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_imag</strong> – bool whether to plot <span class="math">\(Im[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-paths-k">
+<h3>9.1.2.8. <code class="xref py py-func docutils literal"><span class="pre">plot_paths_k()</span></code><a class="headerlink" href="#plot-paths-k" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt>
+<code class="descname">plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):</code></dt>
+<dd><p>Plot k-weighted <cite>chi(k)</cite> for model and all paths of a feffit dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a></li>
+<li><strong>kmin</strong> – min k to show [0]</li>
+<li><strong>kmax</strong> – max k to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>offset</strong> – vertical offset to use for paths for plot [-1]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-paths-r">
+<h3>9.1.2.9. <code class="xref py py-func docutils literal"><span class="pre">plot_paths_r()</span></code><a class="headerlink" href="#plot-paths-r" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt>
+<code class="descname">plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False, show_imag=False, new=True, win=1, **kws):</code></dt>
+<dd><p>Plot <span class="math">\(\chi(R)\)</span> for model and all paths of a feffit dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – feffit dataset, after running func:<cite>feffit</cite></li>
+<li><strong>offset</strong> – vertical offset to use for paths for plot [-0.5]</li>
+<li><strong>rmax</strong> – max R to show [<code class="docutils literal"><span class="pre">None</span></code>, end of data]</li>
+<li><strong>show_mag</strong> – bool whether to plot <span class="math">\(|\chi(R)|\)</span> [T``rue``]</li>
+<li><strong>show_real</strong> – bool whether to plot <span class="math">\(Re[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>show_imag</strong> – bool whether to plot <span class="math">\(Im[\chi(R)]\)</span> [<code class="docutils literal"><span class="pre">False</span></code>]</li>
+<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="utility-functions-for-xafs">
-<h2>8.1.2. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
-<p>Listed below are some general purpose functions for XAFS.</p>
-<div class="section" id="the-ktoe-and-etok-functions">
-<h3>8.1.2.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><code class="xref py py-func docutils literal"><span class="pre">ktoe()</span></code></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><code class="xref py py-func docutils literal"><span class="pre">etok()</span></code></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h3>
+<h2>9.1.3. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
+<p>Listed here are some general purpose functions for XAFS.</p>
+<div class="section" id="ktoe-and-etok">
+<h3>9.1.3.1. <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><code class="xref py py-func docutils literal"><span class="pre">ktoe()</span></code></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><code class="xref py py-func docutils literal"><span class="pre">etok()</span></code></a><a class="headerlink" href="#ktoe-and-etok" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.etok">
 <code class="descclassname">_xafs.</code><code class="descname">etok</code><span class="sig-paren">(</span><em>energies</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
@@ -392,11 +675,11 @@ wavenumber can be a single number or array of numbers.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="the-estimate-noise-function">
-<h3>8.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><code class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></code></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="estimate-noise">
+<h3>9.1.3.2. <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><code class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></code></a><a class="headerlink" href="#estimate-noise" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.estimate_noise">
-<code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>….</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically estimate the noise level in a <span class="math">\(\chi(k)\)</span> spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -470,54 +753,6 @@ data quality. It is particularly pessimistic for extremely good data.  Then
 again, considering that the estimate for <span class="math">\(\epsilon\)</span> is probably too
 small, the estimate may not be that bad.</p>
 </div>
-<div class="section" id="the-xas-deconvolve-function">
-<h3>8.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="_xafs.xas_deconvolve">
-<code class="descclassname">_xafs.</code><code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=Noned group=None</em>, <em>form=’gaussian’</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
-<dd><p>de-convolves a normalized mu(E) spectra with a peak shape, enhancing separation
-of XANES features.  This procedure can be unstable – Use results with caution!</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
-<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
-<li><strong>group</strong> – output group</li>
-<li><strong>form</strong> – form of deconvolution function. One of
-‘gaussian’ (default) or ‘lorentzian’</li>
-<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
-<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [default=1.0]</li>
-<li><strong>eshift</strong> – energy shift (in eV) to apply to result. [default=0]</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.
-The following data is put into the output group:</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="21%" />
-<col width="79%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute</th>
-<th class="head">meaning</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>deconv</td>
-<td>array of deconvolved, normalized <span class="math">\(\mu(E)\)</span></td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</dd></dl>
-
-</div>
 </div>
 </div>
 
@@ -534,10 +769,10 @@ The following data is put into the output group:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="8. XAFS Analysis"
+          <a href="index.html" title="9. XAFS Analysis"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -547,12 +782,12 @@ The following data is put into the output group:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

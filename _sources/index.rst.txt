@@ -10,20 +10,17 @@ Larch
 .. _h5py: http://code.google.com/p/h5py/
 
 Larch is an open-source library and toolkit for processing and analyzing
-scientific data.  Initially designed for X-ray spectroscopic and scattering
-data collected at modern synchrotron sources, Larch provides a wide selection
-of algorithms for processing such X-ray data.  It also provides many tools for
-organizing complex data sets and processing and analyzing arrays of scientific
-data.
+X-ray spectroscopic and scattering data collected at modern synchrotron
+sources.  It also provides a wide selection of tools for organizing complex
+data sets and processing and analyzing arrays of scientific data.
 
-Larch is written in Python and relies heavily on the wonderful `numpy`_,
-`scipy`_, `h5py`_, and `matplotlib`_ libraries. It can be used directly as a
-Python library, and it can be extended using Python.  Larch also provides a
-Python-like language (a *macro language*, or *domain specific language*) that
-is intended to be very easy to use for novices while also being complete
-enough for advanced data processing and analysis. In addition, several GUIs
-are included with Larch for visualization and analysis of scientific data
-sets.
+Larch is written in Python and relies heavily on the many scientific python
+libraries including `numpy`_, `scipy`_, `h5py`_, and `matplotlib`_.  The
+Larch package provides several GUI applications for visualization and
+analysis of scientific data sets.  For programming and scripting, Larch can
+also be used as a Python library or from its own Python-like macro language
+that aims to be very easy to use for novices while also being complete
+enough for advanced data processing and analysis.
 
 
 Larch has several related target application areas:
@@ -44,8 +41,53 @@ upon which new analysis tools can be built.
 Currently, Larch provides a complete set of XAFS Analysis tools (replacing all
 of the Ifeffit package), has some support for visualizing and analyzing XRF
 and XRD maps, and has many extra tools for X-ray spectral analysis, data
-handling, and general-purpose data modeling.  Larch is under active and open
+handling, and general-purpose data modeling.
+
+
+Larch includes a Python several applications.
+
+The following table lists the main Larch applications.  New and
+in-development features and application will be explicitly described as
+"beta".
+
+.. _larch_app_table:
+
+**Table of Larch Applications and Programs**
+	The applications installed with Larch. Here, GUI = Graphical User
+	Interface, CLI = Command Line Interface, and `beta` indicates a
+	work in progress.
+
+
+  +----------------------+-----------+---------------------------------------+
+  | Application Name     | GUI / CLI | Description                           |
+  +======================+===========+=======================================+
+  | larch                | CLI       | simple command-lne interface          |
+  +----------------------+-----------+---------------------------------------+
+  | larch_gui            | GUI       | enhanced command-lne interface        |
+  |                      |           | with data browser                     |
+  +----------------------+-----------+---------------------------------------+
+  | gse_mapviewer        | GUI       | XRF Map Viewer for data from the      |
+  |                      |           | GSECARS X-ray microprobe              |
+  +----------------------+-----------+---------------------------------------+
+  | xyfit                | GUI       | Display and Peak Fitting of XANES and |
+  |                      |           | other 1D spectra (beta).              |
+  +----------------------+-----------+---------------------------------------+
+  | xrfdisplay           | GUI       | Display XRF Spectra                   |
+  +----------------------+-----------+---------------------------------------+
+  | 1D XRD Viewer        | GUI       | Display and work with XRD diffraction |
+  |                      |           | patterns (beta).                      |
+  +----------------------+-----------+---------------------------------------+
+  | 2D XRD Viewer        | GUI       | Display and work with XRD diffraction |
+  |                      |           | images (beta).                        |
+  +----------------------+-----------+---------------------------------------+
+  | feff6l               | CLI       | Feff 6 EXAFS calculations             |
+  +----------------------+-----------+---------------------------------------+
+  | feff8l               | CLI       | Feff 8 EXAFS calculations - no XANES  |
+  +----------------------+-----------+---------------------------------------+
+
+Larch is under active and open
 development, and has support from the U. S. National Science Foundation.
+
 
 .. toctree::
    :maxdepth: 1
@@ -53,6 +95,7 @@ development, and has support from the U. S. National Science Foundation.
    installation.rst
    community.rst
    overview.rst
+   guis/index.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst

@@ -1,0 +1,166 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4. Larch GUIs &#8212; larch 0.9.35 documentation</title>
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.35',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.1. Basic Larch GUI" href="larch_gui.html" />
+    <link rel="prev" title="3. Larch: Motivation and Overview" href="../overview.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+			 "HTML-CSS": {scale: 90}});
+  </script>
+
+  </head>
+  <body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="larch_gui.html" title="4.1. Basic Larch GUI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../overview.html" title="3. Larch: Motivation and Overview"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../overview.html"
+                        title="previous chapter">3. Larch: Motivation and Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="larch_gui.html"
+                        title="next chapter">4.1. Basic Larch GUI</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/guis/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="larch-guis">
+<span id="guis-chapter"></span><h1>4. Larch GUIs<a class="headerlink" href="#larch-guis" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-guis"></span><p>Larch provides several Graphical User Interfaces for easier manipulating,
+viewing, and processing of data.  Many of the GUI displays are
+inter-related, so that they can bring up the other windows for displaying,
+interacting, and processing data.  The main window views are</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>larch_gui</cite>: simple command-line + data browser for Larch.</li>
+<li><cite>GSE_Mapviewer</cite>: viewing XRF maps from  X-ray microprobes.</li>
+<li><cite>XYFit</cite>: read and view data from generic 1D datasets, with special support for XAFS spectra, and including peak fitting with <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a>.</li>
+</ul>
+</div></blockquote>
+<p>More details and screenshots are shown in the following pages.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="larch_gui.html">4.1. Basic Larch GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapviewer.html">4.2. GSECARS Mapviewr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xyfit.html">4.3. XYFit</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="larch_gui.html" title="4.1. Basic Larch GUI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../overview.html" title="3. Larch: Motivation and Overview"
+             >previous</a> |</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
+ 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

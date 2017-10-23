@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>4.7. Tutorial: Running Larch Scripts, and Modules &#8212; larch 0.9.34 documentation</title>
-    
+    <title>5.7. Tutorial: Running Larch Scripts, and Modules &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="4.8. Tutorial: Builtin Functions" href="builtins.html" />
-    <link rel="prev" title="4.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
+    <link rel="next" title="5.8. Tutorial: Builtin Functions" href="builtins.html" />
+    <link rel="prev" title="5.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="builtins.html" title="4.8. Tutorial: Builtin Functions"
+          <a href="builtins.html" title="5.8. Tutorial: Builtin Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="5.6. Tutorial: Writing Functions or Procedures"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,19 +79,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
-<li><a class="reference internal" href="#running-a-larch-script-with-run">4.7.1. Running a larch script with <code class="docutils literal"><span class="pre">run()</span></code></a></li>
-<li><a class="reference internal" href="#importing-a-larch-script-as-a-module">4.7.2. Importing a Larch Script as a Module</a></li>
+<li><a class="reference internal" href="#">5.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
+<li><a class="reference internal" href="#running-a-larch-script-with-run">5.7.1. Running a larch script with <code class="docutils literal"><span class="pre">run()</span></code></a></li>
+<li><a class="reference internal" href="#importing-a-larch-script-as-a-module">5.7.2. Importing a Larch Script as a Module</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="procedures.html"
-                        title="previous chapter">4.6. Tutorial: Writing Functions or Procedures</a></p>
+                        title="previous chapter">5.6. Tutorial: Writing Functions or Procedures</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="builtins.html"
-                        title="next chapter">4.8. Tutorial: Builtin Functions</a></p>
+                        title="next chapter">5.8. Tutorial: Builtin Functions</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -121,7 +118,7 @@
           <div class="body" role="main">
             
   <div class="section" id="tutorial-running-larch-scripts-and-modules">
-<span id="tutorial-modules-section"></span><h1>4.7. Tutorial: Running Larch Scripts, and Modules<a class="headerlink" href="#tutorial-running-larch-scripts-and-modules" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-modules-section"></span><h1>5.7. Tutorial: Running Larch Scripts, and Modules<a class="headerlink" href="#tutorial-running-larch-scripts-and-modules" title="Permalink to this headline">¶</a></h1>
 <p>Once you’ve done any significant amount of work with Larch, you’ll want to
 save what you’ve done to a file of Larch code or a <em>script</em> and run it over
 again, perhaps changing some input.  You may even want to write some
@@ -133,7 +130,7 @@ it into Larch.  The distinction can be subtle, and has to with where the
 variables “live” within your larch session.  We’ll discuss both
 possibilities and their differences here.</p>
 <div class="section" id="running-a-larch-script-with-run">
-<h2>4.7.1. Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
+<h2>5.7.1. Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
 <p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a>
 function:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># file myscript.lar</span>
@@ -171,7 +168,7 @@ will hold the value 4), and you can access these:</p>
 we’ll see more below.</p>
 </div>
 <div class="section" id="importing-a-larch-script-as-a-module">
-<h2>4.7.2. Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
+<h2>5.7.2. Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it,
 using the <code class="docutils literal"><span class="pre">import</span></code> statement:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="kn">import</span> <span class="nn">myscript</span>
@@ -238,10 +235,10 @@ used.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="builtins.html" title="4.8. Tutorial: Builtin Functions"
+          <a href="builtins.html" title="5.8. Tutorial: Builtin Functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="5.6. Tutorial: Writing Functions or Procedures"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -251,12 +248,12 @@ used.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

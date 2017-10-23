@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>7.3. minimize() and objective Functions &#8212; larch 0.9.34 documentation</title>
-    
+    <title>8.3. minimize() and objective Functions &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.4. Fit Results and Outputs" href="results.html" />
-    <link rel="prev" title="7.2. Parameters" href="parameters.html" />
+    <link rel="next" title="8.4. Fit Results and Outputs" href="results.html" />
+    <link rel="prev" title="8.2. Parameters" href="parameters.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="results.html" title="7.4. Fit Results and Outputs"
+          <a href="results.html" title="8.4. Fit Results and Outputs"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="7.2. Parameters"
+          <a href="parameters.html" title="8.2. Parameters"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,10 +79,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="parameters.html"
-                        title="previous chapter">7.2. Parameters</a></p>
+                        title="previous chapter">8.2. Parameters</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="results.html"
-                        title="next chapter">7.4. Fit Results and Outputs</a></p>
+                        title="next chapter">8.4. Fit Results and Outputs</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -112,7 +109,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_math">
-<span id="minimize-and-objective-functions"></span><span id="fitting-minimize-sec"></span><h1>7.3. <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> and objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<span id="minimize-and-objective-functions"></span><span id="fitting-minimize-sec"></span><h1>8.3. <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> and objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the
 least-squares sense in the fitting process.  For most fits, the objective
@@ -160,7 +157,7 @@ procedure decides it has found the best solution that it can.</p>
 </div>
 <dl class="function">
 <dt id="_math.minimize">
-<code class="descclassname">_math.</code><code class="descname">minimize</code><span class="sig-paren">(</span><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>method=’leastsq’</em>, <em>**extra_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.minimize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_math.</code><code class="descname">minimize</code><span class="sig-paren">(</span><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>method='leastsq'</em>, <em>**extra_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the best-fit values for the Parameters in <code class="docutils literal"><span class="pre">paramgroup</span></code> such that the
 output array from the objective function <code class="xref py py-func docutils literal"><span class="pre">fcn()</span></code> has minimal sum-of-squares.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -313,10 +310,10 @@ used.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="results.html" title="7.4. Fit Results and Outputs"
+          <a href="results.html" title="8.4. Fit Results and Outputs"
              >next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="7.2. Parameters"
+          <a href="parameters.html" title="8.2. Parameters"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -326,12 +323,12 @@ used.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

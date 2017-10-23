@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Larch &#8212; larch 0.9.34 documentation</title>
-    
+    <title>Larch &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="1. Downloading and Installation" href="installation.html" />
@@ -75,7 +72,7 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3> Get Larch</h3>
-<p>Current version: <b>0.9.34</b></p>
+<p>Current version: <b>0.9.35</b></p>
 
 &nbsp; &nbsp;
 <a href="installation.html"> Install Latest Version</a>  <br>
@@ -83,7 +80,7 @@
 &nbsp; &nbsp;
 <a href="http://github.com/xraypy/xraylarch"> Development Version</a> <br>
 
-<h3>Learn About Larch</h3>
+<h3>About Larch</h3>
 
 &nbsp; &nbsp;
 <a href="overview.html"> Overview</a><br>
@@ -92,7 +89,21 @@
 <a href="tutorial/index.html"> Tutorial</a><br>
 
 &nbsp; &nbsp;
-<a href="community.html"> Community</a><br>
+<a href="http://cars9.uchicago.edu/mailman/listinfo/ifeffit/">
+Mailing List</a><br>
+
+&nbsp; &nbsp; <a href="community.html"> Community</a><br>
+
+<h3>Contents</h3>
+
+&nbsp; &nbsp; <a href="data/index.html"> Reading Data </a><br>
+&nbsp; &nbsp; <a href="plotting/index.html"> Plotting </a><br>
+&nbsp; &nbsp; <a href="fitting/index.html"> Fitting Data</a><br>
+&nbsp; &nbsp; <a href="xafs/index.html"> XAFS Analysis </a><br>
+&nbsp; &nbsp; <a href="xray/index.html"> X-ray Databases </a><br>
+&nbsp; &nbsp; <a href="xrf/index.html"> X-ray Fluoresence Analysis</a><br>
+&nbsp; &nbsp; <a href="devel/index.html"> Scripting </a><br>
+&nbsp; &nbsp; <a href="guis/index.html"> GUIs </a><br>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -114,19 +125,16 @@
   <div class="section" id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch is an open-source library and toolkit for processing and analyzing
-scientific data.  Initially designed for X-ray spectroscopic and scattering
-data collected at modern synchrotron sources, Larch provides a wide selection
-of algorithms for processing such X-ray data.  It also provides many tools for
-organizing complex data sets and processing and analyzing arrays of scientific
-data.</p>
-<p>Larch is written in Python and relies heavily on the wonderful <a class="reference external" href="http://numpy.scipy.org/">numpy</a>,
-<a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a> libraries. It can be used directly as a
-Python library, and it can be extended using Python.  Larch also provides a
-Python-like language (a <em>macro language</em>, or <em>domain specific language</em>) that
-is intended to be very easy to use for novices while also being complete
-enough for advanced data processing and analysis. In addition, several GUIs
-are included with Larch for visualization and analysis of scientific data
-sets.</p>
+X-ray spectroscopic and scattering data collected at modern synchrotron
+sources.  It also provides a wide selection of tools for organizing complex
+data sets and processing and analyzing arrays of scientific data.</p>
+<p>Larch is written in Python and relies heavily on the many scientific python
+libraries including <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>.  The
+Larch package provides several GUI applications for visualization and
+analysis of scientific data sets.  For programming and scripting, Larch can
+also be used as a Python library or from its own Python-like macro language
+that aims to be very easy to use for novices while also being complete
+enough for advanced data processing and analysis.</p>
 <p>Larch has several related target application areas:</p>
 <blockquote>
 <div><ul class="simple">
@@ -146,21 +154,91 @@ upon which new analysis tools can be built.</p>
 <p>Currently, Larch provides a complete set of XAFS Analysis tools (replacing all
 of the Ifeffit package), has some support for visualizing and analyzing XRF
 and XRD maps, and has many extra tools for X-ray spectral analysis, data
-handling, and general-purpose data modeling.  Larch is under active and open
+handling, and general-purpose data modeling.</p>
+<p>Larch includes a Python several applications.</p>
+<p>The following table lists the main Larch applications.  New and
+in-development features and application will be explicitly described as
+“beta”.</p>
+<dl class="docutils" id="larch-app-table">
+<dt><strong>Table of Larch Applications and Programs</strong></dt>
+<dd><blockquote class="first">
+<div>The applications installed with Larch. Here, GUI = Graphical User
+Interface, CLI = Command Line Interface, and <cite>beta</cite> indicates a
+work in progress.</div></blockquote>
+<table border="1" class="last docutils">
+<colgroup>
+<col width="31%" />
+<col width="15%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Application Name</th>
+<th class="head">GUI / CLI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>larch</td>
+<td>CLI</td>
+<td>simple command-lne interface</td>
+</tr>
+<tr class="row-odd"><td>larch_gui</td>
+<td>GUI</td>
+<td>enhanced command-lne interface
+with data browser</td>
+</tr>
+<tr class="row-even"><td>gse_mapviewer</td>
+<td>GUI</td>
+<td>XRF Map Viewer for data from the
+GSECARS X-ray microprobe</td>
+</tr>
+<tr class="row-odd"><td>xyfit</td>
+<td>GUI</td>
+<td>Display and Peak Fitting of XANES and
+other 1D spectra (beta).</td>
+</tr>
+<tr class="row-even"><td>xrfdisplay</td>
+<td>GUI</td>
+<td>Display XRF Spectra</td>
+</tr>
+<tr class="row-odd"><td>1D XRD Viewer</td>
+<td>GUI</td>
+<td>Display and work with XRD diffraction
+patterns (beta).</td>
+</tr>
+<tr class="row-even"><td>2D XRD Viewer</td>
+<td>GUI</td>
+<td>Display and work with XRD diffraction
+images (beta).</td>
+</tr>
+<tr class="row-odd"><td>feff6l</td>
+<td>CLI</td>
+<td>Feff 6 EXAFS calculations</td>
+</tr>
+<tr class="row-even"><td>feff8l</td>
+<td>CLI</td>
+<td>Feff 8 EXAFS calculations - no XANES</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>Larch is under active and open
 development, and has support from the U. S. National Science Foundation.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Downloading and Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="community.html">2. Larch Community and Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">3. Larch: Motivation and Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">4. Larch Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">5. Reading and Writing Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">6. Plotting and Displaying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">7. Fitting and Modeling Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">8. XAFS Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xray/index.html">9. X-ray Databases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">10. X-ray Fluorescence Analysis with Larch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="devel/index.html">11. Programming with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guis/index.html">4. Larch GUIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">5. Larch Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">6. Reading and Writing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">7. Plotting and Displaying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">8. Fitting and Modeling Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">9. XAFS Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xray/index.html">10. X-ray Databases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">11. X-ray Fluorescence Analysis with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel/index.html">12. Programming with Larch</a></li>
 </ul>
 </div>
 </div>
@@ -192,7 +270,7 @@ development, and has support from the U. S. National Science Foundation.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

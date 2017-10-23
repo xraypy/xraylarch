@@ -6,16 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>4.8. Tutorial: Builtin Functions &#8212; larch 0.9.34 documentation</title>
-    
+    <title>5.8. Tutorial: Builtin Functions &#8212; larch 0.9.35 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.34',
+        VERSION:     '0.9.35',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +22,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="5. Reading and Writing Data" href="../data/index.html" />
-    <link rel="prev" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
+    <link rel="next" title="6. Reading and Writing Data" href="../data/index.html" />
+    <link rel="prev" title="5.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -61,10 +58,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="5. Reading and Writing Data"
+          <a href="../data/index.html" title="6. Reading and Writing Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="4.7. Tutorial: Running Larch Scripts, and Modules"
+          <a href="modules.html" title="5.7. Tutorial: Running Larch Scripts, and Modules"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -74,7 +71,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -82,20 +79,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4.8. Tutorial: Builtin Functions</a><ul>
-<li><a class="reference internal" href="#builtin-data-values">4.8.1. Builtin data values</a></li>
-<li><a class="reference internal" href="#larch-specific-builtin-functions">4.8.2. Larch-Specific Builtin functions</a></li>
-<li><a class="reference internal" href="#builtin-functions-inherited-from-python">4.8.3. Builtin functions inherited from Python</a></li>
+<li><a class="reference internal" href="#">5.8. Tutorial: Builtin Functions</a><ul>
+<li><a class="reference internal" href="#builtin-data-values">5.8.1. Builtin data values</a></li>
+<li><a class="reference internal" href="#larch-specific-builtin-functions">5.8.2. Larch-Specific Builtin functions</a></li>
+<li><a class="reference internal" href="#builtin-functions-inherited-from-python">5.8.3. Builtin functions inherited from Python</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="previous chapter">4.7. Tutorial: Running Larch Scripts, and Modules</a></p>
+                        title="previous chapter">5.7. Tutorial: Running Larch Scripts, and Modules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../data/index.html"
-                        title="next chapter">5. Reading and Writing Data</a></p>
+                        title="next chapter">6. Reading and Writing Data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -122,18 +119,18 @@
           <div class="body" role="main">
             
   <div class="section" id="tutorial-builtin-functions">
-<h1>4.8. Tutorial: Builtin Functions<a class="headerlink" href="#tutorial-builtin-functions" title="Permalink to this headline">¶</a></h1>
+<h1>5.8. Tutorial: Builtin Functions<a class="headerlink" href="#tutorial-builtin-functions" title="Permalink to this headline">¶</a></h1>
 <p>Larch has several general built-in functions for basic manipulation of data and
 programming needs.  Many of these are copied directly from Python, but
 several are Larch-specifc.   Note that the advanced math and scientific
 functions are not listed here, but elsewhere in the documentation.</p>
 <div class="section" id="builtin-data-values">
-<h2>4.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
+<h2>5.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
 <p>The values <code class="docutils literal"><span class="pre">True</span></code>, <code class="docutils literal"><span class="pre">False</span></code>  represent the boolean values
 for true and false.  <code class="docutils literal"><span class="pre">None</span></code> is the null value.</p>
 </div>
 <div class="section" id="larch-specific-builtin-functions">
-<h2>4.8.2. Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
+<h2>5.8.2. Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
 <p>These built-in functions are specific to Larch (that is, not inherited from
 Python).  Many help you work with Larch groups or otherwise simplify common tasks.</p>
 <dl class="function">
@@ -181,7 +178,7 @@ to <code class="docutils literal"><span class="pre">group(**dict)</span></code>.
 
 <dl class="function">
 <dt id="group">
-<code class="descname">group</code><span class="sig-paren">(</span><em>key=val</em>, <em>key2=val2</em>, <em>….</em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
+<code class="descname">group</code><span class="sig-paren">(</span><em>key=val</em>, <em>key2=val2</em>, <em>....</em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a group, with optional keyword/value pairs.</p>
 </dd></dl>
 
@@ -311,7 +308,7 @@ members.</p>
 
 </div>
 <div class="section" id="builtin-functions-inherited-from-python">
-<h2>4.8.3. Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
+<h2>5.8.3. Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="abs">
 <code class="descname">abs</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#abs" title="Permalink to this definition">¶</a></dt>
@@ -571,7 +568,7 @@ list(iterable) -&gt; new list initialized from iterable’s items</p>
 
 <dl class="function">
 <dt id="map">
-<code class="descname">map</code><span class="sig-paren">(</span><em>function</em>, <em>sequence</em><span class="optional">[</span>, <em>sequence</em>, <em>…</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
+<code class="descname">map</code><span class="sig-paren">(</span><em>function</em>, <em>sequence</em><span class="optional">[</span>, <em>sequence</em>, <em>...</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the results of applying the function to the items of
 the argument sequence(s).  If more than one sequence is given, the
 function is called with an argument list consisting of the corresponding
@@ -764,7 +761,7 @@ errors can be ‘strict’, ‘replace’ or ‘ignore’ and defaults to ‘str
 
 <dl class="function">
 <dt id="zip">
-<code class="descname">zip</code><span class="sig-paren">(</span><em>seq1 [, seq2 […]]</em><span class="sig-paren">)</span><a class="headerlink" href="#zip" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zip</code><span class="sig-paren">(</span><em>seq1 [, seq2 [...]]</em><span class="sig-paren">)</span><a class="headerlink" href="#zip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of tuples, where each tuple contains the i-th element
 from each of the argument sequences.  The returned list is truncated
 in length to the length of the shortest argument sequence.</p>
@@ -786,10 +783,10 @@ in length to the length of the shortest argument sequence.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="5. Reading and Writing Data"
+          <a href="../data/index.html" title="6. Reading and Writing Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="4.7. Tutorial: Running Larch Scripts, and Modules"
+          <a href="modules.html" title="5.7. Tutorial: Running Larch Scripts, and Modules"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -799,12 +796,12 @@ in length to the length of the shortest argument sequence.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
