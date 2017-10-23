@@ -1,31 +1,39 @@
 ## examples/feffit/doc_feffit5.lar
 from copy import copy
+
+def save_result(out, fname):
+    f = open(fname, 'w')
+    f.write(feffit_report(out, with_paths=False, min_correl=0.5))
+    f.write('\n')
+    f.close()
+#enddef
+
+# fit in R space
 run('doc_feffit4.lar')
+save_result(out, 'doc_feffit5_r.out')
 
-f = open('doc_feffit5_qr.out', 'w')
-f.write('*** R Space***\n')
-f.write(feffit_report(out, with_paths=False, min_correl=0.5))
 
+# fit in Q space (back-transformed or filtered K-space)
 pars2 = copy(pars)   # copy parameters
 dset.transform.fitspace = 'q'
 
 out2 = feffit(pars2, dset)
+save_result(out2, 'doc_feffit5_q.out')
 
-f.write('\n*** Q Space***\n')
-f.write(feffit_report(out2, with_paths=False, min_correl=0.5))
-f.write('\n')
-f.close()
-
+# fit in K space (unfiltered)
+pars3 = copy(pars)   # copy parameters
 dset.transform.kweight = 2
 dset.transform.fitspace = 'k'
 
-pars3 = copy(pars)   # copy parameters
 out3 = feffit(pars3, dset)
+save_result(out3, 'doc_feffit5_k.out')
 
-f = open('doc_feffit5_k.out', 'w')
-f.write('*** K Space***\n')
-f.write(feffit_report(out3, with_paths=False, min_correl=0.5))
-f.write('\n')
-f.close()
+
+# fit in W space (using Wavelet transform)
+pars4 = copy(pars)   # copy parameters
+dset.transform.fitspace = 'w'
+
+out4 = feffit(pars4, dset)
+save_result(out4, 'doc_feffit5_w.out')
 
 ## end examples/feffit/doc_feffit5.lar
