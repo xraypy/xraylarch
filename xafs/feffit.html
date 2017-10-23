@@ -316,7 +316,7 @@ or list of datasets groups.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fitspace</strong> – name of FT type for fit  (‘r’).</li>
+<li><strong>fitspace</strong> – name of FT type for fit: one of (‘k’, ‘r’, ‘q’, ‘w’), default ‘r’.</li>
 <li><strong>kmin</strong> – starting <em>k</em> for FT Window (0).</li>
 <li><strong>kmax</strong> – ending <em>k</em> for FT Window (20).</li>
 <li><strong>dk</strong> – tapering parameter for FT Window (4).</li>
@@ -352,8 +352,8 @@ follow the conventions for <a class="reference internal" href="xafsft.html#_xafs
 Transforms for XAFS</span></a>.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="82%" />
+<col width="17%" />
+<col width="83%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">member name</th>
@@ -362,7 +362,7 @@ Transforms for XAFS</span></a>.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>fitspace</td>
-<td>space used for fitting – one of <code class="docutils literal"><span class="pre">'k'</span></code>, <code class="docutils literal"><span class="pre">'r'</span></code>, or <code class="docutils literal"><span class="pre">'q'</span></code> (<code class="docutils literal"><span class="pre">'r'</span></code>)</td>
+<td>space used for fitting – one of <code class="docutils literal"><span class="pre">'k'</span></code>, <code class="docutils literal"><span class="pre">'r'</span></code>, <code class="docutils literal"><span class="pre">'q'</span></code>, or <code class="docutils literal"><span class="pre">'w'</span></code> (<code class="docutils literal"><span class="pre">'r'</span></code>)</td>
 </tr>
 <tr class="row-odd"><td>kmin</td>
 <td>starting <span class="math">\(k\)</span> for FT Window (0).</td>
@@ -1432,7 +1432,7 @@ fits.  For example, we can change the fitting space with (see
 examples/feffit/doc_feffit5.lar):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c1"># copy parameters</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>   <span class="c1"># copy dataset</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s1">&#39;q&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s1">&#39;q&#39;</span>  <span class="c1"># fit in backtransformed k-space</span>
 </pre></div>
 </div>
 <p>Now we can run <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a> with the new parameter group and Dataset
@@ -1447,16 +1447,15 @@ with:</p>
 </pre></div>
 </div>
 <p>which gives</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">***</span> <span class="n">R</span> <span class="n">Space</span><span class="o">***</span>
-<span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
-   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">288</span>
+   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">144</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">34.5827</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">3.42184</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.01525</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">26.0412</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">31.9174</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">19.6759</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">1.94686</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00895</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">16.3938</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">22.27</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
@@ -1464,37 +1463,38 @@ with:</p>
    <span class="n">k</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">2.000</span><span class="p">,</span> <span class="mf">13.500</span>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">3.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff_feo01.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff_feo02.dat&#39;</span><span class="p">]</span>
-   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">),</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.027109</span><span class="p">,</span> <span class="mf">0.309310</span>
+   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">3</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.000962</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.002704</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.207307</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span> <span class="o">+/-</span> <span class="mf">0.888785</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.031455</span> <span class="o">+/-</span> <span class="mf">0.010076</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.046370</span> <span class="o">+/-</span> <span class="mf">0.007766</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.622117</span> <span class="o">+/-</span> <span class="mf">0.961869</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">6.000000</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">12.238350</span> <span class="o">+/-</span> <span class="mf">1.545809</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.000000</span><span class="p">)</span>
-   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.012780</span> <span class="o">+/-</span> <span class="mf">0.002610</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
-   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013445</span> <span class="o">+/-</span> <span class="mf">0.001259</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span> <span class="o">+/-</span> <span class="mf">0.808632</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.100000</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span> <span class="o">+/-</span> <span class="mf">0.007522</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.049909</span> <span class="o">+/-</span> <span class="mf">0.005972</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">4.550833</span> <span class="o">+/-</span> <span class="mf">0.738706</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">6.000000</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">10.986155</span> <span class="o">+/-</span> <span class="mf">1.043360</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.000000</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.010405</span> <span class="o">+/-</span> <span class="mf">0.001825</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.012472</span> <span class="o">+/-</span> <span class="mf">0.000828</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.002000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.500</span><span class="p">)</span>
-   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.935</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.895</span>
-   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.890</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.635</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.575</span>
+   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.939</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.920</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.892</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.566</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.524</span>
 <span class="o">=======================================================</span>
-<span class="o">***</span> <span class="n">Q</span> <span class="n">Space</span><span class="o">***</span>
-<span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
-   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">460</span>
+   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">230</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">70.6529</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">6.99085</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.01022</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">38.2625</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">44.1387</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">49.3013</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">4.87819</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00732</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">32.1071</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">37.9833</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;q&#39;</span>
@@ -1502,26 +1502,26 @@ with:</p>
    <span class="n">k</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">2.000</span><span class="p">,</span> <span class="mf">13.500</span>
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">3.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff_feo01.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff_feo02.dat&#39;</span><span class="p">]</span>
-   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">),</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001435</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003614</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.027109</span><span class="p">,</span> <span class="mf">0.309310</span>
+   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">3</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.000962</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.002704</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.207307</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.667272</span> <span class="o">+/-</span> <span class="mf">0.728011</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.030820</span> <span class="o">+/-</span> <span class="mf">0.008308</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.031455</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.047114</span> <span class="o">+/-</span> <span class="mf">0.006367</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.046370</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.875212</span> <span class="o">+/-</span> <span class="mf">0.853439</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.622117</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">12.248517</span> <span class="o">+/-</span> <span class="mf">1.266884</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.238350</span><span class="p">)</span>
-   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.013412</span> <span class="o">+/-</span> <span class="mf">0.002237</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.012780</span><span class="p">)</span>
-   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013458</span> <span class="o">+/-</span> <span class="mf">0.001031</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.013445</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.162732</span> <span class="o">+/-</span> <span class="mf">0.733414</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.028141</span> <span class="o">+/-</span> <span class="mf">0.006824</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.050134</span> <span class="o">+/-</span> <span class="mf">0.005426</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.049909</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">4.627901</span> <span class="o">+/-</span> <span class="mf">0.685285</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">4.550833</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.026974</span> <span class="o">+/-</span> <span class="mf">0.950967</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">10.986155</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.010592</span> <span class="o">+/-</span> <span class="mf">0.001674</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.010405</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.012508</span> <span class="o">+/-</span> <span class="mf">0.000753</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.012472</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.500</span><span class="p">)</span>
-   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.936</span>
-   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.897</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.896</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.639</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.579</span>
+   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.939</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.920</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.894</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.569</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.527</span>
 <span class="o">=======================================================</span>
 </pre></div>
 </div>
@@ -1538,16 +1538,15 @@ and uncertainties for the varied parameters are quite close for the fit in
 </pre></div>
 </div>
 <p>(we need to specify only one k-weight for a k-space fit) which gives:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">***</span> <span class="n">K</span> <span class="n">Space</span><span class="o">***</span>
-<span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
 <span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
    <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">230</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
-   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">4.70772e+06</span>
-   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mi">465812</span>
-   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.14494</span>
-   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">228.263</span>
-   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">234.139</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">6.47037e+06</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mi">640220</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.13907</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">233.703</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">239.58</span>
  
 <span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
    <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
@@ -1556,25 +1555,25 @@ and uncertainties for the varied parameters are quite close for the fit in
    <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">3.000</span>
    <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff_feo01.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff_feo02.dat&#39;</span><span class="p">]</span>
    <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
-   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.001450</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.003609</span><span class="p">)</span>
-   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.027393</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.000995</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.002695</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.018803</span>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">2.178558</span> <span class="o">+/-</span> <span class="mf">2.990883</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.748273</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.032391</span> <span class="o">+/-</span> <span class="mf">0.032969</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.031455</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.043779</span> <span class="o">+/-</span> <span class="mf">0.025378</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.046370</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">6.076095</span> <span class="o">+/-</span> <span class="mf">3.640452</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.622117</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.930058</span> <span class="o">+/-</span> <span class="mf">4.744492</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">12.238350</span><span class="p">)</span>
-   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.013599</span> <span class="o">+/-</span> <span class="mf">0.008980</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.012780</span><span class="p">)</span>
-   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013108</span> <span class="o">+/-</span> <span class="mf">0.003860</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.013445</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.452034</span> <span class="o">+/-</span> <span class="mf">2.585669</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.029206</span> <span class="o">+/-</span> <span class="mf">0.031253</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.048631</span> <span class="o">+/-</span> <span class="mf">0.024348</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.049909</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">4.408334</span> <span class="o">+/-</span> <span class="mf">2.209217</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">4.550833</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.857401</span> <span class="o">+/-</span> <span class="mf">4.531096</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">10.986155</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.009934</span> <span class="o">+/-</span> <span class="mf">0.007632</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.010405</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.013189</span> <span class="o">+/-</span> <span class="mf">0.003994</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.012472</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.500</span><span class="p">)</span>
-   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.929</span>
-   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.899</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.899</span>
-   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.607</span>
-   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.557</span>
+   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.924</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.879</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.873</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_1</span>          <span class="o">=</span>  <span class="mf">0.633</span>
+   <span class="n">delr_1</span><span class="p">,</span> <span class="n">delr_2</span>       <span class="o">=</span>  <span class="mf">0.566</span>
 <span class="o">=======================================================</span>
 </pre></div>
 </div>
@@ -1588,11 +1587,53 @@ the model spectra in unfiltered k-space fit, the uncertainties reflect the
 fact that the full experimental spectrum is not well model.  This is why it
 is recommended to not fit in unfiltered k space: the uncertainties in the
 parameters is too large.</p>
-<p>Of course, here we’ve changed only one thing between these three fits –
-the fitting ‘space’.  The process of copying the parameter group and
-dataset, making modifications and re-doing fits can also include changing
-what parametres are varied, and what constraints are placed between
-parameters.</p>
+<p>Finally, we can also fit simultaneously in ‘k’ and ‘r’ space by making use
+of wavelet transforms (see Section <a class="reference internal" href="wavelets.html#xafs-wavelet-sec"><span class="std std-ref">9.5</span></a>).  For this, we
+specify both k and R ranges, and the fit is done on the wavelet
+transform. This gives:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">===================</span> <span class="n">FEFFIT</span> <span class="n">RESULTS</span> <span class="o">====================</span>
+<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>
+   <span class="n">nvarys</span><span class="p">,</span> <span class="n">npts</span>       <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">33120</span>
+   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
+   <span class="n">chi_square</span>         <span class="o">=</span> <span class="mf">514.771</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span> <span class="o">=</span> <span class="mf">50.9348</span>
+   <span class="n">r</span><span class="o">-</span><span class="n">factor</span>           <span class="o">=</span> <span class="mf">0.00659</span>
+   <span class="n">Akaike</span> <span class="n">info</span> <span class="n">crit</span>   <span class="o">=</span> <span class="mf">72.235</span>
+   <span class="n">Bayesian</span> <span class="n">info</span> <span class="n">crit</span> <span class="o">=</span> <span class="mf">78.1112</span>
+ 
+<span class="p">[[</span><span class="n">Data</span><span class="p">]]</span>
+   <span class="n">fit</span> <span class="n">space</span>          <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
+   <span class="n">r</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">1.000</span><span class="p">,</span> <span class="mf">3.200</span>
+   <span class="n">k</span><span class="o">-</span><span class="nb">range</span>            <span class="o">=</span> <span class="mf">2.000</span><span class="p">,</span> <span class="mf">13.500</span>
+   <span class="n">k</span> <span class="n">window</span><span class="p">,</span> <span class="n">dk</span>       <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mf">3.000</span>
+   <span class="n">paths</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">fit</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feff_feo01.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;feff_feo02.dat&#39;</span><span class="p">]</span>
+   <span class="n">k</span><span class="o">-</span><span class="n">weight</span>           <span class="o">=</span> <span class="mi">2</span>
+   <span class="n">epsilon_k</span>          <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.000995</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.002695</span><span class="p">)</span>
+   <span class="n">epsilon_r</span>          <span class="o">=</span> <span class="mf">0.018803</span>
+   <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
+ 
+<span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.585631</span> <span class="o">+/-</span> <span class="mf">0.703238</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.186615</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.030202</span> <span class="o">+/-</span> <span class="mf">0.007218</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.028279</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.047365</span> <span class="o">+/-</span> <span class="mf">0.005778</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.049909</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">4.776567</span> <span class="o">+/-</span> <span class="mf">0.859693</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">4.550833</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.505340</span> <span class="o">+/-</span> <span class="mf">0.958908</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">10.986155</span><span class="p">)</span>
+   <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.011025</span> <span class="o">+/-</span> <span class="mf">0.002265</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.010405</span><span class="p">)</span>
+   <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.012943</span> <span class="o">+/-</span> <span class="mf">0.000820</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.012472</span><span class="p">)</span>
+ 
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.500</span><span class="p">)</span>
+   <span class="n">n2</span><span class="p">,</span> <span class="n">sig2_2</span>           <span class="o">=</span>  <span class="mf">0.945</span>
+   <span class="n">de0</span><span class="p">,</span> <span class="n">delr_2</span>          <span class="o">=</span>  <span class="mf">0.933</span>
+   <span class="n">n1</span><span class="p">,</span> <span class="n">sig2_1</span>           <span class="o">=</span>  <span class="mf">0.913</span>
+<span class="o">=======================================================</span>
+</pre></div>
+</div>
+<p>As you can see, the results are all pretty similar.</p>
+<p>Of course, for all these examples, we’ve changed only one thing between
+these fits – the fitting ‘space’.  The process of copying the parameter
+group and dataset, making modifications and re-doing fits can also include
+changing what parametres are varied, and what constraints are placed
+between parameters.</p>
 </div>
 <div class="section" id="example-6-testing-exafs-sensitivity-to">
 <h2>9.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
