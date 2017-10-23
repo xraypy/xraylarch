@@ -78,9 +78,13 @@ def return_methods():
 
     return alg0,alg1,alg2
 
-def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B,sinogram_order):
+def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B, sinogram_order):
 
     method = check_method(method)
+    
+    if len(np.shape(sino)) == 2:
+        sino.resize((1, sino.shape[0], sino.shape[1]))
+        sinogram_order = True
     
     if center is None: center = sino.shape[1]/2.
     if omega is None:
@@ -105,7 +109,7 @@ def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B,sinog
         if algorithm_B not in TOMOPY_FILT or algorithm_B == 'None':
             algorithm_B = None
         
-    return method, center, omega, algorithm_A, algorithm_B
+    return sino, method, center, omega, algorithm_A, algorithm_B, sinogram_order
 
 def reshape_sinogram(A,x=[],omega=[]):
 
@@ -119,8 +123,14 @@ def reshape_sinogram(A,x=[],omega=[]):
     ## sinogram_order :  flag/argument for tomopy reconstruction (shape dependent)  
     
     A = np.array(A)
+    if len(x) == len(omega):
+        print('''Cannot reorder sinogram based on length of positional 
+                 arrays when same length. Acceptable orders: 
+                 sinogram_order = False : sino = [ 2th   x slice x X ]
+                 sinogram_order = True  : sino = [ slice x 2th   x X ]''')
+        return A,False
     if len(x) < 1 or len(omega) < 1:
-        return
+        return A,False
     if len(A.shape) != 3:
        if len(A.shape) == 2:
            A = A.reshape(1,A.shape[0],A.shape[1])
@@ -147,7 +157,6 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
     
     return sino,x,omega
             
-
 def tomo_reconstruction(sino, refine_center=False, center_range=None, center=None,
                         method=None, algorithm_A=None, algorithm_B=None, omega=None,
                         sinogram_order=False):
@@ -157,12 +166,12 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
     '''
     
 
-    method,center,omega,algorithm_A,algorithm_B = check_parameters(sino,method,center,
-                                                        omega,algorithm_A,algorithm_B,
-                                                        sinogram_order)
+    check = check_parameters(sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order)
+    sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order = check
+    
     if method is None:
         print('No tomographic reconstruction packages available')
-        return
+        return center, np.zeros((1,sino.shape[-1],sino.shape[-1]))
     
     if method.lower().startswith('scikit') and HAS_scikit:
 
@@ -170,7 +179,7 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
         npts = sino.shape[2]
         cntr = int(npts - center) # flip axis for compatibility with tomopy convention
 
-        args = {'theta':omega,
+        args = {'theta':omega, 
                 'filter':algorithm_A,
                 'interpolation':algorithm_B,
                 'circle':True}
@@ -196,13 +205,10 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
             print('   Best center: %i' % center)
 
         xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
+        if not sinogram_order: sino = np.einsum('jik->ijk',sino)
 
         for sino0 in sino:
-            if sinogram_order:
-                tomo += [iradon(sino0[:,xslice].T, **args)]
-            else:
-                tomo += [iradon(sino0[xslice], **args)]
-
+            tomo += [iradon(sino0[:,xslice].T, **args)]
         tomo = np.array(tomo)
 
     elif method.lower().startswith('tomopy') and HAS_tomopy:
@@ -215,9 +221,6 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
                 'sinogram_order':sinogram_order}
 
         tomo = tomopy.recon(sino, np.radians(omega),**args)
-
-#     else:
-#         tomo = np.zeros((1,np.shape(sino)[0],np.shape(sino)[0]))
 
     return center,tomo
 
