@@ -20,8 +20,8 @@ D. Eppstein, October 2003.
 from __future__ import generators
 import codecs
 import re
-from backports import Set
-
+# from backports import Set
+Set = set
 def register():
     """Enable encodings of the form 'latex+x' where x describes another encoding.
     Unicode characters are translated to or from x when possible, otherwise
