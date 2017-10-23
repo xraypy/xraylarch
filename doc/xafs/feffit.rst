@@ -219,7 +219,7 @@ There are then 3 principle functions for setting up and executing
 
     create and return Feffit Transform group to be used in a Feffit dataset.
 
-    :param fitspace: name of FT type for fit  ('r').
+    :param fitspace: name of FT type for fit: one of ('k', 'r', 'q', 'w'), default 'r'.
     :param kmin:     starting *k* for FT Window (0).
     :param kmax:     ending *k* for FT Window (20).
     :param dk:       tapering parameter for FT Window (4).
@@ -253,7 +253,7 @@ The returned Feffit Transform Group will have members listed in
     ================= =====================================================================
      member name        description
     ================= =====================================================================
-      fitspace          space used for fitting -- one of ``'k'``, ``'r'``, or ``'q'`` (``'r'``)
+      fitspace          space used for fitting -- one of ``'k'``, ``'r'``, ``'q'``, or ``'w'`` (``'r'``)
       kmin              starting :math:`k` for FT Window (0).
       kmax              ending :math:`k` for FT Window  (20).
       kweight           exponent(s) for weighting spectra by :math:`k^{\rm kweight}` (2).
@@ -827,7 +827,7 @@ examples/feffit/doc_feffit5.lar)::
 
     larch> pars2 = copy(pars)   # copy parameters
     larch> dset2 = copy(dset)   # copy dataset
-    larch> dset2.transform.fitspace = 'q'
+    larch> dset2.transform.fitspace = 'q'  # fit in backtransformed k-space
 
 Now we can run :func:`feffit` with the new parameter group and Dataset
 group, and compare the results either by plotting models from the different
@@ -842,7 +842,9 @@ with::
 
 which gives
 
-.. literalinclude:: ../../examples/feffit/doc_feffit5_qr.out
+.. literalinclude:: ../../examples/feffit/doc_feffit5_r.out
+
+.. literalinclude:: ../../examples/feffit/doc_feffit5_q.out
 
 We can see that the results are not very different -- the best fit values
 and uncertainties for the varied parameters are quite close for the fit in
@@ -872,11 +874,20 @@ fact that the full experimental spectrum is not well model.  This is why it
 is recommended to not fit in unfiltered k space: the uncertainties in the
 parameters is too large.
 
-Of course, here we've changed only one thing between these three fits --
-the fitting 'space'.  The process of copying the parameter group and
-dataset, making modifications and re-doing fits can also include changing
-what parametres are varied, and what constraints are placed between
-parameters.
+Finally, we can also fit simultaneously in 'k' and 'r' space by making use
+of wavelet transforms (see Section :ref:`xafs-wavelet_sec`).  For this, we
+specify both k and R ranges, and the fit is done on the wavelet
+transform. This gives:
+
+.. literalinclude:: ../../examples/feffit/doc_feffit5_w.out
+
+As you can see, the results are all pretty similar.
+
+Of course, for all these examples, we've changed only one thing between
+these fits -- the fitting 'space'.  The process of copying the parameter
+group and dataset, making modifications and re-doing fits can also include
+changing what parametres are varied, and what constraints are placed
+between parameters.
 
 
 Example 6: Testing EXAFS sensitivity to :math:`Z`
