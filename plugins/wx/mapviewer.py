@@ -1524,11 +1524,14 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['User group'].SetLabel('')
 
         FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
-        for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
-            if   key == 'xrf':           FLAGXRF = val
-            elif key == 'xrd':           FLAGXRD2D = val
-            elif key.lower() == 'xrd2d': FLAGXRD2D = val
-            elif key.lower() == 'xrd1d': FLAGXRD1D = val
+        try:
+            for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
+                if   key == 'xrf':           FLAGXRF = val
+                elif key == 'xrd':           FLAGXRD2D = val
+                elif key.lower() == 'xrd2d': FLAGXRD2D = val
+                elif key.lower() == 'xrd1d': FLAGXRD1D = val
+        except:
+            pass
 
         if FLAGXRF:
             if FLAGXRD2D and FLAGXRD1D:

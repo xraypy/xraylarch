@@ -1878,27 +1878,39 @@ class GSEXRM_MapFile(object):
 
 
     def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
-        '''
-        returns sino,sinogram_order
+        '''extract roi map for a pre-defined roi by name
+
+        Parameters
+        ---------
+        roiname    :  str                       ROI name
+        det        :  str                       detector name
+        dtcorrect  :  optional, bool [True]     dead-time correct data
+        no_hotcols :  optional, bool [False]    suprress hot columns
+
+        Returns
+        -------
+        sinogram for ROI data
+        sinogram_order (needed for knowing shape of sinogram)
         '''
 
         sino = self.get_roimap(roi_name, det=det, **kws)
         x,omega = self.get_translation_axis(),self.get_rotation_axis()
 
         if omega is None:
-            print('Cannot compute tomography: no rotation motor specified in map.')
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
 
         if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
 
         return reshape_sinogram(sino,x,omega)
 
-    def get_tomograph(self, sino, **kws):
+    def get_tomograph(self, sino, omega=None, center=None, **kws):
         '''
         returns tomo_center, tomo
         '''
-        return tomo_reconstruction(sino, **kws)
-        return 
+        if omega is None: omega = self.get_rotation_axis()
+        if center is None: center = self.get_tomography_center()
+        return tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
     def claim_hostid(self):
         "claim ownershipf of file"
@@ -2883,13 +2895,14 @@ class GSEXRM_MapFile(object):
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
     def check_roi(self, roiname, det=None):
-    
+
         if (type(det) is str and det.isdigit()) or type(det) is int:
             det = int(det)
             detname = 'mca%i' % det
         else:
             detname = det
-        roiname = roiname.lower()
+            
+        if roiname is not None: roiname = roiname.lower()
     
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
             if detname is not None: detname = string.replace(detname,'det','mca')
@@ -2898,7 +2911,6 @@ class GSEXRM_MapFile(object):
             if roiname in sclr_list:
                 detname = 'scalars'
                 roiname = roiname.strip('_raw')
-                
             else:
                 if detname is None:
                     detname = 'roimap/mcasum'
@@ -2907,6 +2919,8 @@ class GSEXRM_MapFile(object):
             
                 try:
                     roi_list = [r for r in self.xrmmap[detname]]
+                    if roiname is None:
+                        return roi_list,detname
                     if roiname not in roi_list:
                         for roi in roi_list:
                             if roi.lower().startswith(roiname):
@@ -2923,10 +2937,13 @@ class GSEXRM_MapFile(object):
             det_roi = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
             
             if roiname not in sum_roi:
-                for roi in sum_roi:
-                    if roi.startswith(roiname):
-                        roiname = roi
-
+                if roiname is None:
+                    return np.arange(len(sum_roi)),'roimap/sum_'
+                else:
+                    for roi in sum_roi:
+                        if roi.startswith(roiname):
+                            roiname = roi
+            
             if detname in ['det1','det2','det3','det4']:
                 idet = int(''.join([i for i in detname if i.isdigit()]))
                 detname = 'roimap/det_'
@@ -2935,14 +2952,12 @@ class GSEXRM_MapFile(object):
                     roiname = '%s (mca%i)' % (roiname,idet)
                 roiname = det_roi.index(roiname)
 
-            elif detname is None or detname is 'detsum':
-                detname = 'roimap/sum_'
-                roiname = sum_roi.index(roiname)
-
             else:
-                ## provide summed output counts if fail
                 detname = 'roimap/sum_'
-                roiname = 8
+                try:
+                    roiname = sum_roi.index(roiname)
+                except:
+                    roiname = sum_roi.index('outputcounts')
 
         return roiname, detname
     
@@ -2952,10 +2967,10 @@ class GSEXRM_MapFile(object):
 
         Parameters
         ---------
-        det :    str    ROI name
-        roiname :    str    ROI name
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [False]        suprress hot columns
+        roiname    :  str                       ROI name
+        det        :  str                       detector name
+        dtcorrect  :  optional, bool [True]     dead-time correct data
+        no_hotcols :  optional, bool [False]    suprress hot columns
 
         Returns
         -------
@@ -2971,19 +2986,29 @@ class GSEXRM_MapFile(object):
                 return map[:, 1:-1]
             else:
                 return map
-        if roiname.endswith('raw'): dtcorrect = False
-        ext = 'cor' if dtcorrect else 'raw'
 
         roi,det = self.check_roi(roiname,det)
+        
+        if type(roi) is not list and type(roi) is not np.ndarray:
+            if roiname.endswith('raw'): dtcorrect = False
+        ext = 'cor' if dtcorrect else 'raw'
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-            detname = '%s/%s/%s' % (det,roi,ext)
+
+            if type(roi) is list:
+                all_roi = []
+                for iroi in roi:
+                    if no_hotcols:
+                        all_roi += [self.xrmmap[det][iroi][ext][:, 1:-1]]
+                    else:
+                        all_roi += [self.xrmmap[det][iroi][ext][:, :]]
+                return np.array(all_roi)
 
             try:
                 if no_hotcols:
-                    return self.xrmmap[detname][:, 1:-1]
+                    return self.xrmmap[det][roi][ext][:, 1:-1]
                 else:
-                    return self.xrmmap[detname][:, :]
+                    return self.xrmmap[det][roi][ext][:, :]
             except:
                 return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
