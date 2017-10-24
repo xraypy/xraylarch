@@ -159,12 +159,11 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
             
 def tomo_reconstruction(sino, refine_center=False, center_range=None, center=None,
                         method=None, algorithm_A=None, algorithm_B=None, omega=None,
-                        sinogram_order=False):
+                        sinogram_order=False, **args):
     '''
     INPUT ->  sino : slice, 2th, x OR 2th, slice, x (with flag sinogram_order=True)
     OUTPUT -> tomo : slice, x, y
     '''
-    
 
     check = check_parameters(sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order)
     sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order = check
@@ -175,14 +174,14 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
     
     if method.lower().startswith('scikit') and HAS_scikit:
 
-        tomo = []
         npts = sino.shape[2]
         cntr = int(npts - center) # flip axis for compatibility with tomopy convention
+        if not sinogram_order: sino = np.einsum('jik->ijk',sino)
 
-        args = {'theta':omega, 
-                'filter':algorithm_A,
-                'interpolation':algorithm_B,
-                'circle':True}
+        args.update({'theta':omega, 
+                    'filter':algorithm_A,
+                    'interpolation':algorithm_B,
+                    'circle':True})
 
         if refine_center:
             print(' Refining center; start value: %i' % center)
@@ -204,9 +203,8 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
             center = float(npts-cntr) # flip axis for compatibility with tomopy convention
             print('   Best center: %i' % center)
 
+        tomo = []
         xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
-        if not sinogram_order: sino = np.einsum('jik->ijk',sino)
-
         for sino0 in sino:
             tomo += [iradon(sino0[:,xslice].T, **args)]
         tomo = np.array(tomo)
@@ -216,9 +214,9 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
         if refine_center: 
             center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
 
-        args = {'center':center,
-                'algorithm':algorithm_A,
-                'sinogram_order':sinogram_order}
+        args.update({'center':center,
+                     'algorithm':algorithm_A,
+                     'sinogram_order':sinogram_order})
 
         tomo = tomopy.recon(sino, np.radians(omega),**args)
 
