@@ -2907,28 +2907,27 @@ class GSEXRM_MapFile(object):
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
             if detname is not None: detname = string.replace(detname,'det','mca')
         
-            sclr_list = [h5str(r).lower() for r in self.xrmmap['scalars'].keys()]
-            if roiname in sclr_list:
-                detname = 'scalars'
-                roiname = roiname.strip('_raw')
-            else:
-                if detname is None:
-                    detname = 'roimap/mcasum'
-                elif not detname.startswith('roimap'):
-                    detname = 'roimap/%s' % detname
-            
-                try:
-                    roi_list = [r for r in self.xrmmap[detname]]
-                    if roiname is None:
-                        return roi_list,detname
-                    if roiname not in roi_list:
-                        for roi in roi_list:
-                            if roi.lower().startswith(roiname):
-                                roiname = roi
-                except:
-                    ## provide summed output counts if fail
-                    detname = 'roimap/mcasum'
-                    roiname = 'outputcounts'
+            for sclr in self.xrmmap['scalars']:
+                if roiname == sclr.lower():
+                    return sclr.strip('_raw'),'scalars'
+                    
+            if detname is None:
+                detname = 'roimap/mcasum'
+            elif not detname.startswith('roimap'):
+                detname = 'roimap/%s' % detname
+        
+            try:
+                roi_list = [r for r in self.xrmmap[detname]]
+                if roiname is None:
+                    return roi_list,detname
+                if roiname not in roi_list:
+                    for roi in roi_list:
+                        if roi.lower().startswith(roiname):
+                            roiname = roi
+            except:
+                ## provide summed output counts if fail
+                detname = 'roimap/mcasum'
+                roiname = 'outputcounts'
 
         else:
             if detname is not None: detname = string.replace(detname,'mca','det')
@@ -2989,27 +2988,33 @@ class GSEXRM_MapFile(object):
 
         roi,det = self.check_roi(roiname,det)
         
-        if type(roi) is not list and type(roi) is not np.ndarray:
+        if type(roiname) is str:
             if roiname.endswith('raw'): dtcorrect = False
         ext = 'cor' if dtcorrect else 'raw'
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+            if det.startswith('roimap'):
+                roi_ext = '%s/' + ext
+            else:
+                roi_ext = '%s_' + ext if ext is 'raw' else '%s'
 
             if type(roi) is list:
                 all_roi = []
                 for iroi in roi:
+                    iroi = '%s/%s'
                     if no_hotcols:
-                        all_roi += [self.xrmmap[det][iroi][ext][:, 1:-1]]
+                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, 1:-1]]
                     else:
-                        all_roi += [self.xrmmap[det][iroi][ext][:, :]]
+                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, :]]
                 return np.array(all_roi)
 
             try:
                 if no_hotcols:
-                    return self.xrmmap[det][roi][ext][:, 1:-1]
+                    return self.xrmmap[det][roi_ext % roi][:, 1:-1]
                 else:
-                    return self.xrmmap[det][roi][ext][:, :]
+                    return self.xrmmap[det][roi_ext % roi][:, :]
             except:
+                print('specified ROI not found. returning array of ones.')
                 return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
         else:
