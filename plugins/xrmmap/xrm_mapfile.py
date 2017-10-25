@@ -935,7 +935,7 @@ class GSEXRM_MapFile(object):
 ## mkak 2016.09.07
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
-        print('--- process ---')
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -949,19 +949,14 @@ class GSEXRM_MapFile(object):
         self.reset_flags()
         if maxrow is not None:
             nrows = min(nrows, maxrow)
+        
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                # self.dt.add('=>PROCESS %i' % irow)
                 if hasattr(callback, '__call__'):
                     callback(row=irow, maxrow=nrows,
                              filename=self.filename, status='reading')
                 row = self.read_rowdata(irow)
-                # print("process row ", irow, row, row.read_ok)
-                # self.dt.add('  == read row data')
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='complete')
 
                 if row.read_ok:
                     self.add_rowdata(row, verbose=verbose)
@@ -969,11 +964,14 @@ class GSEXRM_MapFile(object):
                 else:
                     print("==Warning: Read failed at row %i" % irow)
                     break
-            # self.dt.show()
+
         self.resize_arrays(self.last_row+1)
         self.h5root.flush()
         if self.pixeltime is None:
             self.calc_pixeltime()
+        if hasattr(callback, '__call__'):
+            callback(row=(irow+1), maxrow=nrows,
+                     filename=self.filename, status='complete')
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
