@@ -2772,7 +2772,7 @@ class MapViewerFrame(wx.Frame):
                 self.files_in_progress.remove(filename)
             self.message('MapViewerTimer Processing %s: complete!' % filename)
             self.ShowFile(filename=self.h5convert_fname)
-#             self.h5_thread.join()
+        self.h5_thread.join()
 
 
     def message(self, msg, win=0):
