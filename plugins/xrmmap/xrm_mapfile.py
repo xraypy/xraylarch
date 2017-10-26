@@ -931,8 +931,6 @@ class GSEXRM_MapFile(object):
 
         self.status = GSEXRM_FileStatus.hasdata
 
-## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
-## mkak 2016.09.07
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
 

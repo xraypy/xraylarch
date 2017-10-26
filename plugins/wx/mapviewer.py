@@ -2757,10 +2757,10 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_fname = filename
 
             xrm_map = self.filemap[filename]
-#             xrm_map.process(callback=self.processMessage)
-            self.h5_thread = Thread(target=xrm_map.process,
-                                    kwargs={'callback':self.processMessage})
-            self.h5_thread.start()
+            xrm_map.process(callback=self.processMessage)
+#             self.h5_thread = Thread(target=xrm_map.process,
+#                                     kwargs={'callback':self.processMessage})
+#             self.h5_thread.start()
 
     def processMessage(self,row=0,maxrow=0,status='reading',filename=None):
         
@@ -2772,7 +2772,7 @@ class MapViewerFrame(wx.Frame):
                 self.files_in_progress.remove(filename)
             self.message('MapViewerTimer Processing %s: complete!' % filename)
             self.ShowFile(filename=self.h5convert_fname)
-        self.h5_thread.join()
+#             self.h5_thread.join()
 
 
     def message(self, msg, win=0):
