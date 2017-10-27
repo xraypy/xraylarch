@@ -2710,7 +2710,8 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
         if read and os.path.exists(path):
-            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
+            time.sleep(1) ## will hopefully allow time for dialog window to close
+            self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
 
