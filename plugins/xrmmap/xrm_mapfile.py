@@ -952,7 +952,7 @@ class GSEXRM_MapFile(object):
             irow = self.last_row + 1
             while irow < nrows:
                 if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
+                    callback(row=(irow+1), maxrow=nrows,
                              filename=self.filename, status='reading')
                 row = self.read_rowdata(irow)
 
@@ -2736,7 +2736,7 @@ class GSEXRM_MapFile(object):
         for iroi, label, xunit, xrange in roidat:
             if verbose:
                 t0 = time.time()
-                print('Adding ROI: %s' % label)
+            print('Adding ROI: %s' % label)
             self.add_xrd1Droi(xrange,label,unit=xunit)
             if verbose:
                 print('    %0.2f s' % (time.time()-t0))
