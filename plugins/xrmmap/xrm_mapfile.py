@@ -2740,7 +2740,7 @@ class GSEXRM_MapFile(object):
         for iroi, label, xunit, xrange in roidat:
             if verbose:
                 t0 = time.time()
-                print('Adding ROI: %s' % label)
+            print('Adding ROI: %s' % label)
             self.add_xrd1Droi(xrange,label,unit=xunit)
             if verbose:
                 print('    %0.2f s' % (time.time()-t0))
