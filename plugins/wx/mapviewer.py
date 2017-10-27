@@ -2080,6 +2080,8 @@ class MapViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        self.htimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.htimer)
         self.h5convert_done = True
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
@@ -2708,7 +2710,8 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
         if read and os.path.exists(path):
-            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
+            time.sleep(1) ## will hopefully allow time for dialog window to close
+            self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
 
@@ -2816,48 +2819,6 @@ class MapViewerFrame(wx.Frame):
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
-
-
-
-
-# #     def process_file(self, filename):
-# #         """Request processing of map file.
-# #         This can take awhile, so is done in a separate thread,
-# #         with updates displayed in message bar
-# #         """
-# #         xrm_map = self.filemap[filename]
-# #         if xrm_map.status == GSEXRM_FileStatus.created:
-# #             xrm_map.initialize_xrmmap()
-# # 
-# #         if xrm_map.dimension is None and isGSEXRM_MapFolder(self.folder):
-# #             xrm_map.read_master()
-# # 
-# #         if self.filemap[filename].folder_has_newdata():
-# #             self.files_in_progress.append(filename)
-# #             self.h5convert_fname = filename
-# # 
-# #             xrm_map = self.filemap[filename]
-# #             xrm_map.process(callback=self.processMessage)
-# # #             self.h5_thread = Thread(target=xrm_map.process,
-# # #                                     kwargs={'callback':self.processMessage})
-# # #             self.h5_thread.start()
-# # 
-# #     def processMessage(self,row=0,maxrow=0,status='reading',filename=None):
-# #         
-# #         if status == 'reading':
-# #             msgstr = 'MapViewer Timer Processing %s:  row %i of %i'
-# #             self.message(msgstr % (filename, row, maxrow))
-# #         elif status == 'complete':
-# #             if filename in self.files_in_progress:
-# #                 self.files_in_progress.remove(filename)
-# #             self.message('MapViewerTimer Processing %s: complete!' % filename)
-# #             self.ShowFile(filename=self.h5convert_fname)
-# # #             self.h5_thread.join()
-# # 
-# # 
-# #     def message(self, msg, win=0):
-# # 
-# #         self.statusbar.SetStatusText(msg, win)
 
     def check_ownership(self, fname):
         """
