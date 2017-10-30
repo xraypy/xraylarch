@@ -931,8 +931,6 @@ class GSEXRM_MapFile(object):
 
         self.status = GSEXRM_FileStatus.hasdata
 
-## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
-## mkak 2016.09.07
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
 
@@ -954,7 +952,7 @@ class GSEXRM_MapFile(object):
             irow = self.last_row + 1
             while irow < nrows:
                 if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
+                    callback(row=(irow+1), maxrow=nrows,
                              filename=self.filename, status='reading')
                 row = self.read_rowdata(irow)
 

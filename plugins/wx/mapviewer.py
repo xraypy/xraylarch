@@ -2080,6 +2080,8 @@ class MapViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        self.htimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.htimer)
         self.h5convert_done = True
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
@@ -2756,28 +2758,45 @@ class MapViewerFrame(wx.Frame):
         if self.filemap[filename].folder_has_newdata():
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
+            self.h5convert_done = False
+            self.h5convert_irow, self.h5convert_nrow = 0, 0
+            self.h5convert_t0 = time.time()
+            self.htimer.Start(150)
+            
+            self.h5convert_thread = Thread(target=self.filemap[filename].process,
+                                             kwargs={'callback':self.onTimer})
+            self.h5convert_thread.start()
 
-            xrm_map = self.filemap[filename]
-#             xrm_map.process(callback=self.processMessage)
-            self.h5_thread = Thread(target=xrm_map.process,
-                                    kwargs={'callback':self.processMessage})
-            self.h5_thread.start()
+    def onTimer(self,event=None,row=0,maxrow=0,status=None,filename=None):
 
-    def processMessage(self,row=0,maxrow=0,status='reading',filename=None):
-        
+        fname = self.h5convert_fname if filename is None else filename
+
         if status == 'reading':
-            msgstr = 'MapViewer Timer Processing %s:  row %i of %i'
-            self.message(msgstr % (filename, row, maxrow))
+            irow = self.h5convert_irow if row==0 else row
+            nrow = self.h5convert_nrow if maxrow==0 else maxrow
+            self.h5convert_irow,self.h5convert_nrow = irow,nrow
+
+            self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
         elif status == 'complete':
             if filename in self.files_in_progress:
                 self.files_in_progress.remove(filename)
             self.message('MapViewerTimer Processing %s: complete!' % filename)
             self.ShowFile(filename=self.h5convert_fname)
-#             self.h5_thread.join()
 
+            self.h5convert_thread.join()
+
+#     def onTimer(self,event=None):
+#         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
+#         self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
+#         if self.h5convert_done:
+#             self.htimer.Stop()
+#             self.h5convert_thread.join()
+#             if fname in self.files_in_progress:
+#                 self.files_in_progress.remove(fname)
+#             self.message('MapViewerTimer Processing %s: complete!' % fname)
+#             self.ShowFile(filename=self.h5convert_fname)
 
     def message(self, msg, win=0):
-
         self.statusbar.SetStatusText(msg, win)
 
     def check_ownership(self, fname):
