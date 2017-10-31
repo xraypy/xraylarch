@@ -630,7 +630,6 @@ class GSEXRM_MapFile(object):
         self.npts             = None
         self.roi_slices       = None
         self.pixeltime        = None
-        self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
 
@@ -901,7 +900,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def initialize_xrmmap(self):
+    def initialize_xrmmap(self, callback=None):
         ''' initialize '/xrmmap' group in HDF5 file, generally
         possible once at least 1 row of raw data is available
         in the scan folder.
@@ -924,56 +923,50 @@ class GSEXRM_MapFile(object):
 
         self.last_row = -1
         self.add_map_config(self.mapconf)
-
-        row = self.read_rowdata(0)
-        self.build_schema(row,verbose=True)
-        self.add_rowdata(row)
+        
+        self.process_row(0, flush=True, callback=callback)
 
         self.status = GSEXRM_FileStatus.hasdata
 
-## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
-## mkak 2016.09.07
-    def process(self, maxrow=None, force=False, callback=None, verbose=True):
+    def process_row(self, irow, flush=False, callback=None):
+    
+        row = self.read_rowdata(irow)
+        if irow == 0:
+            self.build_schema(row,verbose=True)
+        
+        if row.read_ok:
+            self.add_rowdata(row, callback=callback)
+
+        if flush:
+            self.resize_arrays(self.last_row+1)
+            self.h5root.flush()
+            if self.pixeltime is None: self.calc_pixeltime()
+
+            if hasattr(callback, '__call__'):
+                callback(filename=self.filename, status='complete')
+
+    def process(self, maxrow=None, force=False, callback=None):
         "look for more data from raw folder, process if needed"
-        print('--- process ---')
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-
+        self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
-            self.initialize_xrmmap()
+            self.initialize_xrmmap(callback=callback)
         if (force or len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
 
         nrows = len(self.rowdata)
-        self.reset_flags()
         if maxrow is not None:
             nrows = min(nrows, maxrow)
+        
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                # self.dt.add('=>PROCESS %i' % irow)
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='reading')
-                row = self.read_rowdata(irow)
-                # print("process row ", irow, row, row.read_ok)
-                # self.dt.add('  == read row data')
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='complete')
+                self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
+                irow  = irow + 1
 
-                if row.read_ok:
-                    self.add_rowdata(row, verbose=verbose)
-                    irow  = irow + 1
-                else:
-                    print("==Warning: Read failed at row %i" % irow)
-                    break
-            # self.dt.show()
-        self.resize_arrays(self.last_row+1)
-        self.h5root.flush()
-        if self.pixeltime is None:
-            self.calc_pixeltime()
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
@@ -1042,16 +1035,17 @@ class GSEXRM_MapFile(object):
                              FLAGxrd1D=self.flag_xrd1d)
 
 
-    def add_rowdata(self, row, verbose=False):
+    def add_rowdata(self, row, callback=None):
         '''adds a row worth of real data'''
 
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        # if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
-        #   return
-
         thisrow = self.last_row + 1
+
+        if hasattr(callback, '__call__'):
+            callback(row=(thisrow+1), maxrow=len(self.rowdata), filename=self.filename)
+
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.flag_xrf:
             pform = '%s, xrffile=%s' % (pform,row.xrffile)
