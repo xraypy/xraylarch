@@ -1,1 +1,1 @@
-from .tomography import tomo_reconstruction,reshape_sinogram,trim_sinogram,return_methods,check_parameters
+from .tomography import tomo_reconstruction,reshape_sinogram,trim_sinogram,return_methods
