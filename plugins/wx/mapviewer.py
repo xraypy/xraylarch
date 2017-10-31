@@ -2790,13 +2790,10 @@ class MapViewerFrame(wx.Frame):
             irow = xrm_map.last_row + 1
             self.h5convert_irow = irow
             while irow < nrows:
-                t0 = time.time()
                 self.h5convert_irow = irow
                 rowdat = xrm_map.read_rowdata(irow)
                 if rowdat.read_ok:
-                    t1 = time.time()
                     xrm_map.add_rowdata(rowdat)
-                    t2 = time.time()
                     irow  = irow + 1
                 else:
                     break
@@ -2811,11 +2808,6 @@ class MapViewerFrame(wx.Frame):
         time.sleep(0.025)
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
-
-#        ## Create 'full area' mask with edges trimmed
-#        mask = np.ones((201,201))
-#        mask[0:3,] = mask[-4:-1,] = mask[:,0:3] = mask[:,-4:-1] = 0
-#        xrm_map.add_area(mask, name='full-area', desc='full-area')
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
