@@ -5,6 +5,7 @@ import time
 import datetime
 import h5py
 import numpy as np
+import string
 import scipy.stats as stats
 import json
 from distutils.version import StrictVersion
@@ -19,7 +20,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
                                q_from_d,lambda_from_E)
-from larch_plugins.tomo import tomo_reconstruction
+from larch_plugins.tomo import tomo_reconstruction,reshape_sinogram,trim_sinogram
 
 
 NINIT = 32
@@ -29,7 +30,7 @@ COMPRESSION = 'gzip'
 DEFAULT_ROOTNAME = 'xrmmap'
 
 STEPS = 5001
-PIXEL_TRIM = 10
+
 
 def h5str(obj):
     '''strings stored in an HDF5 from Python2 may look like
@@ -629,7 +630,6 @@ class GSEXRM_MapFile(object):
         self.npts             = None
         self.roi_slices       = None
         self.pixeltime        = None
-        self.dt               = debugtime()
         self.masterfile       = None
         self.masterfile_mtime = -1
 
@@ -900,7 +900,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def initialize_xrmmap(self):
+    def initialize_xrmmap(self, callback=None):
         ''' initialize '/xrmmap' group in HDF5 file, generally
         possible once at least 1 row of raw data is available
         in the scan folder.
@@ -923,56 +923,50 @@ class GSEXRM_MapFile(object):
 
         self.last_row = -1
         self.add_map_config(self.mapconf)
-
-        row = self.read_rowdata(0)
-        self.build_schema(row,verbose=True)
-        self.add_rowdata(row)
+        
+        self.process_row(0, flush=True, callback=callback)
 
         self.status = GSEXRM_FileStatus.hasdata
 
-## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
-## mkak 2016.09.07
-    def process(self, maxrow=None, force=False, callback=None, verbose=True):
+    def process_row(self, irow, flush=False, callback=None):
+    
+        row = self.read_rowdata(irow)
+        if irow == 0:
+            self.build_schema(row,verbose=True)
+        
+        if row.read_ok:
+            self.add_rowdata(row, callback=callback)
+
+        if flush:
+            self.resize_arrays(self.last_row+1)
+            self.h5root.flush()
+            if self.pixeltime is None: self.calc_pixeltime()
+
+            if hasattr(callback, '__call__'):
+                callback(filename=self.filename, status='complete')
+
+    def process(self, maxrow=None, force=False, callback=None):
         "look for more data from raw folder, process if needed"
-        print('--- process ---')
+
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-
+        self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
-            self.initialize_xrmmap()
+            self.initialize_xrmmap(callback=callback)
         if (force or len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
 
         nrows = len(self.rowdata)
-        self.reset_flags()
         if maxrow is not None:
             nrows = min(nrows, maxrow)
+        
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                # self.dt.add('=>PROCESS %i' % irow)
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='reading')
-                row = self.read_rowdata(irow)
-                # print("process row ", irow, row, row.read_ok)
-                # self.dt.add('  == read row data')
-                if hasattr(callback, '__call__'):
-                    callback(row=irow, maxrow=nrows,
-                             filename=self.filename, status='complete')
+                self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
+                irow  = irow + 1
 
-                if row.read_ok:
-                    self.add_rowdata(row, verbose=verbose)
-                    irow  = irow + 1
-                else:
-                    print("==Warning: Read failed at row %i" % irow)
-                    break
-            # self.dt.show()
-        self.resize_arrays(self.last_row+1)
-        self.h5root.flush()
-        if self.pixeltime is None:
-            self.calc_pixeltime()
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
@@ -1041,16 +1035,17 @@ class GSEXRM_MapFile(object):
                              FLAGxrd1D=self.flag_xrd1d)
 
 
-    def add_rowdata(self, row, verbose=False):
+    def add_rowdata(self, row, callback=None):
         '''adds a row worth of real data'''
 
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        # if not self.flag_xrf and not self.flag_xrd2d and not self.flag_xrd1d:
-        #   return
-
         thisrow = self.last_row + 1
+
+        if hasattr(callback, '__call__'):
+            callback(row=(thisrow+1), maxrow=len(self.rowdata), filename=self.filename)
+
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.flag_xrf:
             pform = '%s, xrffile=%s' % (pform,row.xrffile)
@@ -1501,7 +1496,11 @@ class GSEXRM_MapFile(object):
                         wdg_lmts = np.array([azi*wdg_sz, (azi+1)*wdg_sz]) - 180
                         wdggrp.create_dataset('limits', data=wdg_lmts)
 
-        print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+        try:
+            timestr = '\nStart: %Y-%m-%d %H:%M:%S'
+            print(datetime.datetime.fromtimestamp(self.starttime).strftime(timestr))
+        except:
+            pass
 
         self.h5root.flush()
 
@@ -1554,8 +1553,6 @@ class GSEXRM_MapFile(object):
                 print('1DXRD data already in file.')
                 return
 
-
-
     def get_slice_y(self):
 
         for name, val in zip(list(self.xrmmap['config/environ/name']),
@@ -1565,37 +1562,6 @@ class GSEXRM_MapFile(object):
                 name = name.replace('samplestage.', '')
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
-
-    def get_tomo_center(self):
-
-        try:
-            return self.xrmmap['tomo/center'][...]
-        except:
-             self.update_tomo_center(None)
-
-        return self.xrmmap['tomo/center'][...]
-
-    def update_tomo_center(self,center):
-
-        if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
-
-        if center is None:
-            try:
-                center = len(self.get_pos('fine x', mean=True))/2
-            except:
-                center = len(self.get_pos('x', mean=True))/2
-
-
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        try:
-            del tomogrp['center']
-        except:
-            pass
-        tomogrp.create_dataset('center', data=center)
-
-
-        self.h5root.flush()
 
     def reset_flags(self):
         '''
@@ -1871,78 +1837,78 @@ class GSEXRM_MapFile(object):
 
         return roidata
 
-    def set_sinogram_axes(self):
-
+    def get_translation_axis(self):
+    
         try:
-            self.ome = self.get_pos('theta', mean=True)
+            return self.get_pos('fine x', mean=True)
+        except:
+            return self.get_pos('x', mean=True)
+        
+    def get_rotation_axis(self):
+    
+        try:
+            return self.get_pos('theta', mean=True)
         except:
             return
 
+
+    def get_tomography_center(self):
+
         try:
-            self.x   = self.get_pos('fine x', mean=True)
+            return self.xrmmap['tomo/center'][...]
         except:
-            self.x   = self.get_pos('x', mean=True)
+             self.set_tomography_center()
 
-        if self.ome[0] > self.ome[-1]: self.ome = self.ome[::-1]
-        if self.x[0]   > self.x[-1]:   self.x   = self.x[::-1]
+        return self.xrmmap['tomo/center'][...]
 
-    def set_sinogram_orientation(self, sino, verbose=False):
+    def set_tomography_center(self,center=None):
 
-        if self.reshape is None:
-            if (len(self.ome),len(self.x)) == np.shape(sino):
-                fast,slow = 'x','theta'
-                self.reshape = True
-            elif (len(self.x),len(self.ome)) == np.shape(sino):
-                fast,slow = 'theta','x'
-                self.reshape = False
-        if verbose:
-            prnt_str = "  Fast motor identified as '%s';slow motor identified as '%s'."
-            print(prnt_str % (fast,slow))
-        if self.reshape: return np.einsum('ji->ij', sino)
+        if center is None: center = len(self.get_translation_axis())/2.
 
-        ## is this needed? moved from "onShowTomograph"
-        #if len(self.ome) > sino.shape[2]:
-        #    self.ome = self.ome[:sino.shape[2]]
-        #elif len(self.ome) < sino.shape[2]:
-        #    sino = sino[:,:,:len(self.ome)]
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        try:
+            del tomogrp['center']
+        except:
+            pass
+        tomogrp.create_dataset('center', data=center)
 
-        return sino
+        self.h5root.flush()
 
-    def trim_sinogram(self, sino):
 
-        sino = sino[:,PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+    def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
+        '''extract roi map for a pre-defined roi by name
 
-        if xrmfile.reshape:
-            self.ome = self.ome[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
-        else:
-            self.x = self.x[PIXEL_TRIM:-1*(PIXEL_TRIM+1)]
+        Parameters
+        ---------
+        roiname    :  str                       ROI name
+        det        :  str                       detector name
+        dtcorrect  :  optional, bool [True]     dead-time correct data
+        no_hotcols :  optional, bool [False]    suprress hot columns
 
-    def get_sinogram(self, det_name, roi_name, trim_sino=False, **kws):
+        Returns
+        -------
+        sinogram for ROI data
+        sinogram_order (needed for knowing shape of sinogram)
+        '''
 
-        if self.x is None or self.ome is None: self.set_sinogram_axes()
+        sino = self.get_roimap(roi_name, det=det, **kws)
+        x,omega = self.get_translation_axis(),self.get_rotation_axis()
 
-        if self.ome is None:
-            print('Cannot compute tomography: no rotation motor specified in map.')
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
 
-        sino = self.get_roimap(roi_name, det=det_name, **kws)
+        if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
 
-        sino = self.set_sinogram_orientation(sino)
+        return reshape_sinogram(sino,x,omega)
 
-        if trim_sino: sino = self.trim_sinogram()
-
-        return sino
-
-    def get_tomograph(self, sino, **kws):
-
-        ## returns tomo in order: slice, x, y
-        tomo_center, tomo = tomo_reconstruction(sino, **kws)
-
-        ## reorder to: x,y,slice for viewing
-        tomo = np.einsum('kij->ijk', tomo)
-        if tomo.shape[2] == 1: tomo = np.reshape(tomo,(tomo.shape[0],tomo.shape[1]))
-
-        return tomo_center, tomo
+    def get_tomograph(self, sino, omega=None, center=None, **kws):
+        '''
+        returns tomo_center, tomo
+        '''
+        if omega is None: omega = self.get_rotation_axis()
+        if center is None: center = self.get_tomography_center()
+        return tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
     def claim_hostid(self):
         "claim ownershipf of file"
@@ -2772,7 +2738,7 @@ class GSEXRM_MapFile(object):
         for iroi, label, xunit, xrange in roidat:
             if verbose:
                 t0 = time.time()
-                print('Adding ROI: %s' % label)
+            print('Adding ROI: %s' % label)
             self.add_xrd1Droi(xrange,label,unit=xunit)
             if verbose:
                 print('    %0.2f s' % (time.time()-t0))
@@ -2926,15 +2892,82 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
+    def check_roi(self, roiname, det=None):
+
+        if (type(det) is str and det.isdigit()) or type(det) is int:
+            det = int(det)
+            detname = 'mca%i' % det
+        else:
+            detname = det
+            
+        if roiname is not None: roiname = roiname.lower()
+    
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+            if detname is not None: detname = string.replace(detname,'det','mca')
+        
+            for sclr in self.xrmmap['scalars']:
+                if roiname == sclr.lower():
+                    return sclr.strip('_raw'),'scalars'
+                    
+            if detname is None:
+                detname = 'roimap/mcasum'
+            elif not detname.startswith('roimap'):
+                detname = 'roimap/%s' % detname
+        
+            try:
+                roi_list = [r for r in self.xrmmap[detname]]
+                if roiname is None:
+                    return roi_list,detname
+                if roiname not in roi_list:
+                    for roi in roi_list:
+                        if roi.lower().startswith(roiname):
+                            roiname = roi
+            except:
+                ## provide summed output counts if fail
+                detname = 'roimap/mcasum'
+                roiname = 'outputcounts'
+
+        else:
+            if detname is not None: detname = string.replace(detname,'mca','det')
+           
+            sum_roi = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
+            det_roi = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
+            
+            if roiname not in sum_roi:
+                if roiname is None:
+                    return np.arange(len(sum_roi)),'roimap/sum_'
+                else:
+                    for roi in sum_roi:
+                        if roi.startswith(roiname):
+                            roiname = roi
+            
+            if detname in ['det1','det2','det3','det4']:
+                idet = int(''.join([i for i in detname if i.isdigit()]))
+                detname = 'roimap/det_'
+                        
+                if roiname not in det_roi:
+                    roiname = '%s (mca%i)' % (roiname,idet)
+                roiname = det_roi.index(roiname)
+
+            else:
+                detname = 'roimap/sum_'
+                try:
+                    roiname = sum_roi.index(roiname)
+                except:
+                    roiname = sum_roi.index('outputcounts')
+
+        return roiname, detname
+    
+    
     def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
         ---------
-        det :    str    ROI name
-        roiname :    str    ROI name
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [False]        suprress hot columns
+        roiname    :  str                       ROI name
+        det        :  str                       detector name
+        dtcorrect  :  optional, bool [True]     dead-time correct data
+        no_hotcols :  optional, bool [False]    suprress hot columns
 
         Returns
         -------
@@ -2944,63 +2977,52 @@ class GSEXRM_MapFile(object):
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
         
-        if det is None:
-           det = 'mcasum' if StrictVersion(self.version) >= StrictVersion('2.0.0') else 'detsum'
-        
-        if roiname == '1':
+        if roiname == '1' or roiname == 1:
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
             if no_hotcols:
                 return map[:, 1:-1]
             else:
                 return map
 
-        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+        roi,det = self.check_roi(roiname,det)
+        
+        if type(roiname) is str:
+            if roiname.endswith('raw'): dtcorrect = False
+        ext = 'cor' if dtcorrect else 'raw'
 
-            if det == 'scalars':
-                dat = '%s/%s' % (det,roiname)
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+            if det.startswith('roimap'):
+                roi_ext = '%s/' + ext
             else:
-                if not det.startswith('roimap'): det = 'roimap/%s' % det 
-                roi_list = [r for r in self.xrmmap[det]]
-                if roiname not in roi_list:
-                    for roi in roi_list:
-                        if roi.lower().startswith(roiname.lower()): roiname = roi
-           
-                dat = '%s/%s' % (det,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+                roi_ext = '%s_' + ext if ext is 'raw' else '%s'
+
+            if type(roi) is list:
+                all_roi = []
+                for iroi in roi:
+                    iroi = '%s/%s'
+                    if no_hotcols:
+                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, 1:-1]]
+                    else:
+                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, :]]
+                return np.array(all_roi)
 
             try:
                 if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1]
+                    return self.xrmmap[det][roi_ext % roi][:, 1:-1]
                 else:
-                    return self.xrmmap[dat][:, :]
+                    return self.xrmmap[det][roi_ext % roi][:, :]
             except:
+                print('specified ROI not found. returning array of ones.')
                 return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
         else:
-            roi_list = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
-            det_list = ['det1','det2','det3','det4']
+            detname = '%s%s' % (det,ext)
 
-            if roiname.lower() in roi_list:
-                imap = roi_list.index(roiname.lower())
-
-                if det in det_list:
-                    dat = 'roimap/det_cor' if dtcorrect else 'roimap/det_raw'
-                elif det == 'detsum':
-                    dat = 'roimap/sum_cor' if dtcorrect else 'roimap/sum_raw'
-
-                if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1, imap]
-                else:
-                    return self.xrmmap[dat][:, :, imap]
-
+            if no_hotcols:
+                return self.xrmmap[detname][:, 1:-1, roi]
             else:
-                dat = 'roimap/%s/%s' % (det,roiname)
-                dat = '%s/cor' % dat if dtcorrect else '%s/raw' % dat
+                return self.xrmmap[detname][:, :, roi]
 
-                if no_hotcols:
-                    return self.xrmmap[dat][:, 1:-1]
-                else:
-                    return self.xrmmap[dat][:, :]
 
     def get_mca_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):

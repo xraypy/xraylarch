@@ -92,7 +92,8 @@ from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch_plugins.tomo import return_methods
+from larch_plugins.tomo import (tomo_reconstruction, reshape_sinogram, trim_sinogram,
+                                return_methods)
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -634,7 +635,7 @@ class TomographyPanel(GridPanel):
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
         if self.tomo_pkg[0] != '':
-            center = self.cfile.get_tomo_center()
+            center = self.cfile.get_tomography_center()
             self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
             self.center_value.SetValue(center)
 
@@ -732,8 +733,6 @@ class TomographyPanel(GridPanel):
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
 
-        if xrmfile is None: xrmfile = self.owner.current_file
-
         det_name,roi_name = [],[]
         plt_name = []
         for det,roi in zip(self.det_choice,self.roi_choice):
@@ -755,13 +754,16 @@ class TomographyPanel(GridPanel):
               'no_hotcols' : self.chk_hotcols.GetValue(),
               'dtcorrect'  : self.chk_dftcor.GetValue()}
 
-        r_map = xrmfile.get_sinogram(det_name[0],roi_name[0],**args)
+        if xrmfile is None: xrmfile = self.owner.current_file
+        x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
+
+        r_map,sino_order = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:
-            g_map = xrmfile.get_sinogram(det_name[1],roi_name[1],**args)
-            b_map = xrmfile.get_sinogram(det_name[2],roi_name[2],**args)
+            g_map,sino_order = xrmfile.get_sinogram(roi_name[1],det=det_name[1],**args)
+            b_map,sino_order = xrmfile.get_sinogram(roi_name[2],det=det_name[2],**args)
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.get_sinogram(det_name[-1],roi_name[-1],**args)
+            mapx,sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
 
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
@@ -774,6 +776,7 @@ class TomographyPanel(GridPanel):
             elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
             elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
             elif oprtr == '/': sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            sino.resize(tuple(i for i in sino.shape if i!=1))
             title = fname
             info = ''
             if roi_name[-1] == '1' and oprtr == '/':
@@ -799,25 +802,18 @@ class TomographyPanel(GridPanel):
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
 
-        ### axes order: slices, x, 2theta
-        if len(sino.shape) < 3: sino = np.reshape(sino,(1,sino.shape[0],sino.shape[1]))
-        sino = np.flip(sino,1)
-
-        return title,subtitles,info,xrmfile.x,xrmfile.ome,sino
+        return title,subtitles,info,x,omega,sino_order,sino
 
     def onShowSinogram(self, event=None, new=True):
 
-        title,subtitles,info,x,ome,sino = self.calculateSinogram()
+        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
         
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
-        ## reorder to: 2th, x, slice for viewing
-        sino = np.einsum('kji->ijk', sino)
-
-        ## for one color plot
-        if sino.shape[2] == 1: sino = np.reshape(sino,(sino.shape[0],sino.shape[1]))
+       
+        if sino.shape[0] == 1: sino = sino[0] ## for one color plot
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
@@ -828,15 +824,16 @@ class TomographyPanel(GridPanel):
         xrmfile = self.owner.current_file
 
         ## returns sino in order: slice, x, 2theta
-        title,subtitles,info,x,ome,sino = self.calculateSinogram()
+        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
 
-        args = {'refine_cen'  : self.refine_center.GetValue(),
-                'cen_range'   : self.center_range.GetValue(),
-                'center'      : self.center_value.GetValue(),
-                'method'      : self.alg_choice[0].GetStringSelection(),
-                'algorithm_A' : self.alg_choice[1].GetStringSelection(),
-                'algorithm_B' : self.alg_choice[2].GetStringSelection(),
-                'omega'       : ome}
+        args = {'refine_center'  : self.refine_center.GetValue(),
+                'center_range'   : self.center_range.GetValue(),
+                'center'         : self.center_value.GetValue(),
+                'method'         : self.alg_choice[0].GetStringSelection(),
+                'algorithm_A'    : self.alg_choice[1].GetStringSelection(),
+                'algorithm_B'    : self.alg_choice[2].GetStringSelection(),
+                'sinogram_order' : sino_order,
+                'omega'          : ome}
 
 
         tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
@@ -854,14 +851,15 @@ class TomographyPanel(GridPanel):
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
+        if tomo.shape[0] == 1: tomo = tomo[0] ## for one color plot
         self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
                                xoff=xoff, yoff=xoff, subtitles=subtitles,
                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
 
-    def set_center(self,center):
+    def set_center(self,cen):
 
-        self.center_value.SetValue(center)
-        self.cfile.update_tomo_center(center)
+        self.center_value.SetValue(cen)
+        self.cfile.set_tomography_center(center=cen)
 
     def set_det_choices(self, xrmmap):
 
@@ -1526,11 +1524,14 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['User group'].SetLabel('')
 
         FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
-        for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
-            if   key == 'xrf':           FLAGXRF = val
-            elif key == 'xrd':           FLAGXRD2D = val
-            elif key.lower() == 'xrd2d': FLAGXRD2D = val
-            elif key.lower() == 'xrd1d': FLAGXRD1D = val
+        try:
+            for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
+                if   key == 'xrf':           FLAGXRF = val
+                elif key == 'xrd':           FLAGXRD2D = val
+                elif key.lower() == 'xrd2d': FLAGXRD2D = val
+                elif key.lower() == 'xrd1d': FLAGXRD1D = val
+        except:
+            pass
 
         if FLAGXRF:
             if FLAGXRD2D and FLAGXRD1D:
@@ -2709,7 +2710,8 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
         if read and os.path.exists(path):
-            self.current_file.read_xrd1D_ROIFile(path,verbose=True)
+            time.sleep(1) ## will hopefully allow time for dialog window to close
+            self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
 
@@ -2748,7 +2750,7 @@ class MapViewerFrame(wx.Frame):
         """
         xrm_map = self.filemap[filename]
         if xrm_map.status == GSEXRM_FileStatus.created:
-            xrm_map.initialize_xrmmap()
+            xrm_map.initialize_xrmmap(callback=self.updateTimer)
 
         if xrm_map.dimension is None and isGSEXRM_MapFolder(self.folder):
             xrm_map.read_master()
@@ -2757,63 +2759,32 @@ class MapViewerFrame(wx.Frame):
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
-            self.h5convert_irow, self.h5convert_nrow = 0, 0
-            self.h5convert_t0 = time.time()
             self.htimer.Start(150)
-            ##self.h5convert_thread = Thread(target=self.filemap[filename].process)
-            self.h5convert_thread = Thread(target=self.new_mapdata,
-                                           args=(filename,))
+
+            ## this calls process function of xrm_mapfile class
+            self.h5convert_thread = Thread(target=self.filemap[filename].process,
+                                           kwargs={'callback':self.updateTimer})
             self.h5convert_thread.start()
 
-    def onTimer(self,event=None):
+    def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
+    
+        if row      is not None: self.h5convert_irow  = row
+        if maxrow   is not None: self.h5convert_nrow  = maxrow
+        if filename is not None: self.h5convert_fname = filename
+
+        self.h5convert_done = True if status is 'complete' else False
+
+    def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
+        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))        
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
             if fname in self.files_in_progress:
                 self.files_in_progress.remove(fname)
-            self.message('MapViewerTimer Processing %s: complete!' % fname)
+            self.message('MapViewer processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
-## This routine processes the data identically to 'process()' in xrmmap/xrm_mapfile.py .
-## mkak 2016.09.07
-    def new_mapdata(self, filename):
-        xrm_map = self.filemap[filename]
-        nrows = len(xrm_map.rowdata)
-        xrm_map.reset_flags()
-        self.h5convert_nrow = nrows
-        self.h5convert_done = False
-        if xrm_map.folder_has_newdata():
-            irow = xrm_map.last_row + 1
-            self.h5convert_irow = irow
-            while irow < nrows:
-                t0 = time.time()
-                self.h5convert_irow = irow
-                rowdat = xrm_map.read_rowdata(irow)
-                if rowdat.read_ok:
-                    t1 = time.time()
-                    xrm_map.add_rowdata(rowdat)
-                    t2 = time.time()
-                    irow  = irow + 1
-                else:
-                    break
-                try:
-                    wx.Yield()
-                except:
-                    pass
-
-        xrm_map.resize_arrays(xrm_map.last_row+1)
-        xrm_map.h5root.flush()
-        self.h5convert_done = True
-        time.sleep(0.025)
-
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
-
-#        ## Create 'full area' mask with edges trimmed
-#        mask = np.ones((201,201))
-#        mask[0:3,] = mask[-4:-1,] = mask[:,0:3] = mask[:,-4:-1] = 0
-#        xrm_map.add_area(mask, name='full-area', desc='full-area')
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
