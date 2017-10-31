@@ -1228,7 +1228,7 @@ class XRFDisplayFrame(wx.Frame):
         fnew= None
         if dlg.ShowModal() == wx.ID_OK:
             fnew = os.path.abspath(dlg.GetPath())
-        dlg.Destro()
+        dlg.Destroy()
 
         if fnew is None:
             return
