@@ -1496,7 +1496,11 @@ class GSEXRM_MapFile(object):
                         wdg_lmts = np.array([azi*wdg_sz, (azi+1)*wdg_sz]) - 180
                         wdggrp.create_dataset('limits', data=wdg_lmts)
 
-        print(datetime.datetime.fromtimestamp(self.starttime).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+        try:
+            timestr = '\nStart: %Y-%m-%d %H:%M:%S'
+            print(datetime.datetime.fromtimestamp(self.starttime).strftime(timestr))
+        except:
+            pass
 
         self.h5root.flush()
 
