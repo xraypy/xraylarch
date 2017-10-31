@@ -2762,69 +2762,60 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_irow, self.h5convert_nrow = 0, 0
             self.h5convert_t0 = time.time()
             self.htimer.Start(150)
+            ##self.h5convert_thread = Thread(target=self.filemap[filename].process)
+            self.h5convert_thread = Thread(target=self.new_mapdata,
+                                           args=(filename,))
+            self.h5convert_thread.start()
 
-            self.row_by_row(filename)
-            
-#             self.h5convert_thread = Thread(target=self.filemap[filename].process)#,
-#                                              #kwargs={'callback':self.onTimer})
-#             self.h5convert_thread.start()
-#             self.h5convert_thread = Thread(target=self.process_rows,
-#                                              kwargs={'filename':self.filemap[filename]})
-# 
-#     
-#         fname = self.h5convert_fname if filename is None else filename
-            
-    
-    def row_by_row(self,filename):
-    
-        fname = self.filemap[self.h5convert_fname] if filename is None else self.filemap[filename]
-        
-        fname.reset_flags()
-        if fname.status == GSEXRM_FileStatus.created:
-            fname.initialize_xrmmap()
-        if len(fname.rowdata) < 1 or (fname.dimension is None and isGSEXRM_MapFolder(fname.folder)):
-            fname.read_master()
-
-        nrows = len(fname.rowdata)
-
-        irow = fname.last_row + 1
-        while irow < nrows:
-            self.onTimer(row=(irow+1),maxrow=nrows,status='reading',filename=filename)
-            fname.process_row(irow, flush=(nrows-irow<=1))
-            irow  = irow + 1
-
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
-        self.onTimer(status='complete',filename=filename)
-    
-    
-    def onTimer(self,event=None,row=0,maxrow=0,status=None,filename=None):
-
-        fname = self.h5convert_fname if filename is None else filename
-
-        if status == 'reading':
-            irow = self.h5convert_irow if row==0 else row
-            nrow = self.h5convert_nrow if maxrow==0 else maxrow
-            self.h5convert_irow,self.h5convert_nrow = irow,nrow
-
-            self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
-        elif status == 'complete':
-            if filename in self.files_in_progress:
-                self.files_in_progress.remove(filename)
-            self.message('MapViewerTimer Processing %s: complete!' % filename)
+    def onTimer(self,event=None):
+        fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
+        self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
+        if self.h5convert_done:
+            self.htimer.Stop()
+            self.h5convert_thread.join()
+            if fname in self.files_in_progress:
+                self.files_in_progress.remove(fname)
+            self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
-#             self.h5convert_thread.join()
+## This routine processes the data identically to 'process()' in xrmmap/xrm_mapfile.py .
+## mkak 2016.09.07
+    def new_mapdata(self, filename):
+        xrm_map = self.filemap[filename]
+        nrows = len(xrm_map.rowdata)
+        xrm_map.reset_flags()
+        self.h5convert_nrow = nrows
+        self.h5convert_done = False
+        if xrm_map.folder_has_newdata():
+            irow = xrm_map.last_row + 1
+            self.h5convert_irow = irow
+            while irow < nrows:
+                t0 = time.time()
+                self.h5convert_irow = irow
+                rowdat = xrm_map.read_rowdata(irow)
+                if rowdat.read_ok:
+                    t1 = time.time()
+                    xrm_map.add_rowdata(rowdat)
+                    t2 = time.time()
+                    irow  = irow + 1
+                else:
+                    break
+                try:
+                    wx.Yield()
+                except:
+                    pass
 
-#     def onTimer(self,event=None):
-#         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-#         self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
-#         if self.h5convert_done:
-#             self.htimer.Stop()
-#             self.h5convert_thread.join()
-#             if fname in self.files_in_progress:
-#                 self.files_in_progress.remove(fname)
-#             self.message('MapViewerTimer Processing %s: complete!' % fname)
-#             self.ShowFile(filename=self.h5convert_fname)
+        xrm_map.resize_arrays(xrm_map.last_row+1)
+        xrm_map.h5root.flush()
+        self.h5convert_done = True
+        time.sleep(0.025)
+
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+
+#        ## Create 'full area' mask with edges trimmed
+#        mask = np.ones((201,201))
+#        mask[0:3,] = mask[-4:-1,] = mask[:,0:3] = mask[:,-4:-1] = 0
+#        xrm_map.add_area(mask, name='full-area', desc='full-area')
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)

@@ -924,36 +924,21 @@ class GSEXRM_MapFile(object):
 
         self.last_row = -1
         self.add_map_config(self.mapconf)
-        
-        ## processes first row
-        self.process_row(0,verbose=True,flush=True)
+
+        row = self.read_rowdata(0)
+        self.build_schema(row,verbose=True)
+        self.add_rowdata(row)
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process_row(self, irow, verbose=True, flush=False):
-    
-
-        row = self.read_rowdata(irow)
-
-        if irow == 0:
-            self.build_schema(row,verbose=True)
-        
-        if row.read_ok:
-            self.add_rowdata(row, verbose=verbose)
-
-        print 'flush:',flush
-        if flush:
-            print '   flushing...'
-            self.resize_arrays(self.last_row+1)
-            self.h5root.flush()
-            if self.pixeltime is None: self.calc_pixeltime()
-
-    def process(self, maxrow=None, force=False, verbose=True):
+## This routine processes the data identically to 'new_mapdata()' in wx/mapviewer.py .
+## mkak 2016.09.07
+    def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
-
+        print('--- process ---')
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
-        self.reset_flags()
+
         if self.status == GSEXRM_FileStatus.created:
             self.initialize_xrmmap()
         if (force or len(self.rowdata) < 1 or
@@ -961,15 +946,34 @@ class GSEXRM_MapFile(object):
             self.read_master()
 
         nrows = len(self.rowdata)
+        self.reset_flags()
         if maxrow is not None:
             nrows = min(nrows, maxrow)
-        
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                self.process_row(irow, flush=(nrows-irow<=1))
-                irow  = irow + 1
+                # self.dt.add('=>PROCESS %i' % irow)
+                if hasattr(callback, '__call__'):
+                    callback(row=irow, maxrow=nrows,
+                             filename=self.filename, status='reading')
+                row = self.read_rowdata(irow)
+                # print("process row ", irow, row, row.read_ok)
+                # self.dt.add('  == read row data')
+                if hasattr(callback, '__call__'):
+                    callback(row=irow, maxrow=nrows,
+                             filename=self.filename, status='complete')
 
+                if row.read_ok:
+                    self.add_rowdata(row, verbose=verbose)
+                    irow  = irow + 1
+                else:
+                    print("==Warning: Read failed at row %i" % irow)
+                    break
+            # self.dt.show()
+        self.resize_arrays(self.last_row+1)
+        self.h5root.flush()
+        if self.pixeltime is None:
+            self.calc_pixeltime()
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
