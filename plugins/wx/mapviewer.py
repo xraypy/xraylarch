@@ -2762,11 +2762,41 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_irow, self.h5convert_nrow = 0, 0
             self.h5convert_t0 = time.time()
             self.htimer.Start(150)
-            
-            self.h5convert_thread = Thread(target=self.filemap[filename].process,
-                                             kwargs={'callback':self.onTimer})
-            self.h5convert_thread.start()
 
+            self.row_by_row(filename)
+            
+#             self.h5convert_thread = Thread(target=self.filemap[filename].process)#,
+#                                              #kwargs={'callback':self.onTimer})
+#             self.h5convert_thread.start()
+#             self.h5convert_thread = Thread(target=self.process_rows,
+#                                              kwargs={'filename':self.filemap[filename]})
+# 
+#     
+#         fname = self.h5convert_fname if filename is None else filename
+            
+    
+    def row_by_row(self,filename):
+    
+        fname = self.filemap[self.h5convert_fname] if filename is None else self.filemap[filename]
+        
+        fname.reset_flags()
+        if fname.status == GSEXRM_FileStatus.created:
+            fname.initialize_xrmmap()
+        if len(fname.rowdata) < 1 or (fname.dimension is None and isGSEXRM_MapFolder(fname.folder)):
+            fname.read_master()
+
+        nrows = len(fname.rowdata)
+
+        irow = fname.last_row + 1
+        while irow < nrows:
+            self.onTimer(row=(irow+1),maxrow=nrows,status='reading',filename=filename)
+            fname.process_row(irow, flush=(nrows-irow<=1))
+            irow  = irow + 1
+
+        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+        self.onTimer(status='complete',filename=filename)
+    
+    
     def onTimer(self,event=None,row=0,maxrow=0,status=None,filename=None):
 
         fname = self.h5convert_fname if filename is None else filename
@@ -2783,7 +2813,7 @@ class MapViewerFrame(wx.Frame):
             self.message('MapViewerTimer Processing %s: complete!' % filename)
             self.ShowFile(filename=self.h5convert_fname)
 
-            self.h5convert_thread.join()
+#             self.h5convert_thread.join()
 
 #     def onTimer(self,event=None):
 #         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
