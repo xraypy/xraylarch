@@ -43,7 +43,7 @@ def _wxupdate(_larch=None, **kws):
     """force an update of wxPython windows"""
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
-    input_handler = symtable.get_symbol('_sys.wx.inputhook').input_handler
+    input_handler = symtable.get_symbol('_sys.wx.inputhook') ##.input_handler
     wxping = symtable.get_symbol('_sys.wx.ping')
     if input_handler is not None:
         symtable.set_symbol("_sys.wx.force_wxupdate", True)
