@@ -6,7 +6,7 @@ from larch import ValidateLarchPlugin
 from larch_plugins.xray import XrayBackground
 
 # @ValidateLarchPlugin
-def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None): #,_larch=None):
+def xrd_background(xdata, ydata, width=4, compress=5, exponent=2, slope=None): #,_larch=None):
     """fit background for XRF spectra.  Arguments:
 
     xrd_background(xdata, ydata, group=None, width=4,
@@ -15,16 +15,18 @@ def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None): #
     Arguments
     ---------
     xdata     array of q values (or 2th, d?)
+    
     ydata     associated array of I values
     
     group     group for outputs
 
     width      full width of the concave down polynomials
-               for when its full width is 100 counts. default = 4
+               for when its full width is 100 counts.
 
-    compress   compression factor to apply to spectra. Default is 2.
+    compress   compression factor to apply to spectra.
 
-    exponent   power of polynomial used.  Default is 2, should be even.
+    exponent   power of polynomial used.  Should be even.
+    
     slope      channel to energy conversion, from energy calibration
                (default == None --> found from input energy array)
     -------

@@ -49,7 +49,7 @@ def spline_rep(x, y, group=None, name='spl1', _larch=None):
 
     for i, val in enumerate(coefs[2:-2]):
         pname = "{:s}_c{:d}".format(name, i)
-        p = Parameter(value=val, name=pname, vary=True, _larch=_larch)
+        p = Parameter(value=val, name=pname, vary=True) #, _larch=_larch)
         setattr(group, pname, p)
     return group
 
