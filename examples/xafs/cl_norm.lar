@@ -9,7 +9,7 @@ cu.f1, cu.f2 = f1f2_cl(29, cu.energy, width=3)
 
 pre_edge(cu.energy, cu.f2, e0=cu.e0, group=cu)
 cu.en = (cu.energy-cu.e0)/1000.
-cu.f2 = cu.f2 / cu.step
+cu.f2 = cu.f2 / cu.edge_step
 
 # create a group of fit parameters
 params = group(offset = guess(-.0),
