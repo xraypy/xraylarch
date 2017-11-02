@@ -608,9 +608,9 @@ class Fitting1DXRD(BasePanel):
         self.min_dist  = 10
 
         # Background fitting defaults
-        self.bkgd_kwargs = {'exponent': 2,
-                            'compress': 5,
-                            'width':    4  }
+        ## old defaults: [20, 2, 4]
+        self.bkgd_kwargs = {'exponent': 2,'compress': 5, 'width': 4}
+        
 
 ##############################################
 #### PANEL DEFINITIONS
