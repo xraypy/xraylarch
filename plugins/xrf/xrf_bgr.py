@@ -2,6 +2,8 @@
 Methods for fitting background in energy dispersive xray spectra
 
 """
+from larch import ValidateLarchPlugin
+from larch_plugins.xrf import isLarchMCAGroup
 from larch_plugins.xray import XrayBackground
 
 @ValidateLarchPlugin

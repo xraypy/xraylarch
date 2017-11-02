@@ -2,11 +2,11 @@
 Methods for fitting background x-ray diffraction data
 
 """
+from larch import ValidateLarchPlugin
 from larch_plugins.xray import XrayBackground
 
-@ValidateLarchPlugin
-def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None,
-                   _larch=None):
+# @ValidateLarchPlugin
+def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None): #,_larch=None):
     """fit background for XRF spectra.  Arguments:
 
     xrd_background(xdata, ydata, group=None, width=4,
@@ -36,9 +36,10 @@ def xrd_background(xdata, ydata, width=4, compress=2, exponent=2, slope=None,
         slope = (xdata[-1] - xdata[0])/len(xdata)
 
     xbgr = XrayBackground(ydata, width=width, compress=compress,
-                         exponent=exponent, slope=slope, tangent=True)
+                         exponent=exponent, slope=slope, tangent=True,
+                         type_int=False, data_type='xrd')
 
     return xbgr.bgr
 
-def registerLarchPlugin():
-    return ('_xrd', {'xrd_background': xrd_background})
+# def registerLarchPlugin():
+#     return ('_xrd', {'xrd_background': xrd_background})

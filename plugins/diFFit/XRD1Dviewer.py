@@ -608,9 +608,9 @@ class Fitting1DXRD(BasePanel):
         self.min_dist  = 10
 
         # Background fitting defaults
-        self.exponent  = 20
-        self.compress  = 2
-        self.width     = 4
+        self.bkgd_kwargs = {'exponent': 2,
+                            'compress': 5,
+                            'width':    4  }
 
 ##############################################
 #### PANEL DEFINITIONS
@@ -932,13 +932,10 @@ class Fitting1DXRD(BasePanel):
 
     def onFitBkgd(self,event=None):
 
-#         pyFAIbkgd = self.xrd1dgrp.fit_background()
-        self.xrd1dgrp.fit_background()
+        self.xrd1dgrp.fit_background(**self.bkgd_kwargs)
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
         
         self.plot_background()
-#         xi = self.rngpl.ch_xaxis.GetSelection()
-#         self.plot1D.update_line(4,self.plt_data[xi],pyFAIbkgd,draw=True,update_limits=False)
 
         self.bkgdpl.btn_rbkgd.Enable()
         self.bkgdpl.ck_bkgd.Enable()
@@ -969,9 +966,9 @@ class Fitting1DXRD(BasePanel):
 
         fit = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.exponent = int(myDlg.val_exp.GetValue())
-            self.compress = int(myDlg.val_comp.GetValue())
-            self.width    = int(myDlg.val_wid.GetValue())
+            self.bkgd_kwargs.update({'exponent': int(myDlg.val_exp.GetValue()),
+                                     'compress': int(myDlg.val_comp.GetValue()),
+                                     'width':    int(myDlg.val_wid.GetValue())  })
             fit = True
         myDlg.Destroy()
 
@@ -1181,8 +1178,7 @@ class Fitting1DXRD(BasePanel):
         argplt = [['Data',       'blue',  None, '', 0, True, self.xlabel, self.ylabel],
                   ['Background', 'red',   None, '', 0, True, self.xlabel, self.ylabel],
                   ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
-                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel],
-                  ['pyFAI Bayes','purple',None, '', 0, True, self.xlabel, self.ylabel]]
+                  ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel]]
 
         for i,argi in enumerate(argplt):
             args = dict(zip(keys, argi))
@@ -1439,9 +1435,9 @@ class BackgroundOptions(wx.Dialog):
         self.createPanel()
 
         ## Set defaults
-        self.val_exp.SetValue(str(self.parent.exponent))
-        self.val_comp.SetValue(str(self.parent.compress))
-        self.val_wid.SetValue(str(self.parent.width))
+        self.val_exp.SetValue(  str( self.parent.bkgd_kwargs['exponent'] ) )
+        self.val_comp.SetValue( str( self.parent.bkgd_kwargs['compress'] ) )
+        self.val_wid.SetValue(  str( self.parent.bkgd_kwargs['width']    ) )
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))

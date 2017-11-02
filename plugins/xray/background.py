@@ -1,4 +1,4 @@
-"""
+'''
 Methods for fitting background in xray spectra (energy dispersive or diffraction)
 
 Authors/Modifications:
@@ -91,7 +91,7 @@ Input Parameter Fields:
         big peaks because the polynomials are very tilted up inside the
         peaks. Default is False
 
-Inputs to calc
+Inputs to calc()
     data:
        The raw data to fit the background
 
@@ -99,17 +99,11 @@ Inputs to calc
         Slope for the conversion from channel number to energy.
         i.e. the slope from calibration
 
-Todo:
------
-* fix compress so works for arbitrary factor
-  (see ana.background)
-* get rid of bottom width and top width flags
-  no reason to optimize these...
-"""
+
+'''
 
 import numpy as np
-from larch import ValidateLarchPlugin
-from larch_plugins.xrf import isLarchMCAGroup
+
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -117,23 +111,29 @@ HUGE = 1.E20
 MAX_TANGENT=2
 
 def compress_array(array, compress):
-   """Compresses an 1-D array by the integer factor "compress".
+   '''
+   Compresses an 1-D array by the integer factor "compress".
    near equivalent of IDL's 'rebin'....
-   """
+   '''
+
    if len(array) % compress != 0:
-      print( 'Warning compress must be integer divisor of array length')
-      return None
+      ## Trims array to be divisible by compress factor
+      rng_min = int( (len(array) % compress ) / 2)
+      rng_max = int( len(array) / compress ) * compress + 1
+      array = array[rng_min:rng_max]
 
    temp = np.resize(array, (len(array)/compress, compress))
    return np.sum(temp, 1)/compress
 
+
 def expand_array(array, expand, sample=0):
-   """Expands an 1-D array by the integer factor "expand".
+   '''
+   Expands an 1-D array by the integer factor "expand".
 
    if 'sample' is 1 the new array is created with sampling,
    if 0 then the new array is created via interpolation (default)
    Temporary fix until the equivalent of IDL's 'rebin' is found.
-   """
+   '''
    if expand == 1:
        return array
    if sample == 1:
@@ -150,7 +150,7 @@ def expand_array(array, expand, sample=0):
    return temp
 
 class XrayBackground:
-    """
+    '''
     Class defining a spectrum background
 
     Attributes:
@@ -158,15 +158,15 @@ class XrayBackground:
     These may be set by kw argument upon initialization.
     
     
-    * width      = 4.0   # Bottom width
+    * width      = 4.0   # Width
     * exponent   = 2     # Exponent
     * compress   = 2     # Compress
     * tangent    = False # Tangent flag
-    """
+    '''
 
     def __init__(self, data=None, width=4, slope=1.0, exponent=2, compress=2,
                  tangent=False, type_int=False, data_type='xrf'):
-
+        
         if data_type == 'xrf': type_int = True
 
         self.bgr          = []
@@ -183,13 +183,13 @@ class XrayBackground:
             self.calc(data, slope=slope, type_int=type_int)
 
     def calc(self, data=None, slope=1.0, type_int=False):
-        """compute background
+        '''compute background
 
         Parameters:
         -----------
         * data is the spectrum
         * slope is the slope of conversion channels to energy
-        """
+        '''
 
         if data is None:
             data = self.data
@@ -202,7 +202,7 @@ class XrayBackground:
         nchans   = len(data)
         self.bgr = np.zeros(nchans, dtype=np.int)
         scratch  = data[:]
-
+        
         # Compress scratch spectrum
         if compress > 1:
             tmp = compress_array(scratch, compress)
@@ -212,19 +212,7 @@ class XrayBackground:
                 scratch = tmp
                 slope = slope * compress
                 nchans = nchans / compress
-# ----> XRD version
-#         # Compress scratch spectrum
-#         if compress > 1:
-#             scratch = scratch[0:(nchans-(nchans % compress))] ## prepares for compression
-#             tmp = compress_array(scratch, compress)
-#             if tmp is None:
-#                 compress = 1
-#             else:
-#                 scratch = tmp
-#                 slope = slope * compress
-#                 nchans = nchans / compress
-
-
+                
         # Copy scratch spectrum to background spectrum
         bckgnd = scratch[:]
 
