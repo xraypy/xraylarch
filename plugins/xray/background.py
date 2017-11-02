@@ -1,14 +1,15 @@
 """
-Methods for fitting background in energy dispersive xray spectra
+Methods for fitting background in xray spectra (energy dispersive or diffraction)
 
 Authors/Modifications:
 ----------------------
 * Mark Rivers, GSECARS
 * modified for Larch, M Newville
+* modified to work for XRD data, M. Koker
 
 Notes:
 ------
-This function fits a background to an MCA spectrum. The background is
+This function fits a background to MCA spectrum or XRD data. The background is
 fitted using an enhanced version of the algorithm published by
 Kajfosz, J. and Kwiatek, W .M. (1987)  'Non-polynomial approximation of
 background in x-ray spectra.' Nucl. Instrum. Methods B22, 78-81.
@@ -96,7 +97,7 @@ Inputs to calc
 
     slope:
         Slope for the conversion from channel number to energy.
-        Ie the slope from calibration
+        i.e. the slope from calibration
 
 Todo:
 -----
@@ -148,21 +149,26 @@ def expand_array(array, expand, sample=0):
        temp[-i]=array[-1]
    return temp
 
-class XRFBackground:
+class XrayBackground:
     """
     Class defining a spectrum background
 
     Attributes:
     -----------
     These may be set by kw argument upon initialization.
+    
+    
     * width      = 4.0   # Bottom width
     * exponent   = 2     # Exponent
     * compress   = 2     # Compress
     * tangent    = False # Tangent flag
     """
 
-    def __init__(self, data=None, width=4, slope=1.0,
-                 exponent=2, compress=2, tangent=False):
+    def __init__(self, data=None, width=4, slope=1.0, exponent=2, compress=2,
+                 tangent=False, type_int=False, data_type='xrf'):
+
+        if data_type == 'xrf': type_int = True
+
         self.bgr          = []
         self.width = width
         self.compress     = compress
@@ -174,9 +180,9 @@ class XRFBackground:
 
         self.data = data
         if data is not None:
-            self.calc(data, slope=slope)
+            self.calc(data, slope=slope, type_int=type_int)
 
-    def calc(self, data=None, slope=1.0):
+    def calc(self, data=None, slope=1.0, type_int=False):
         """compute background
 
         Parameters:
@@ -206,6 +212,18 @@ class XRFBackground:
                 scratch = tmp
                 slope = slope * compress
                 nchans = nchans / compress
+# ----> XRD version
+#         # Compress scratch spectrum
+#         if compress > 1:
+#             scratch = scratch[0:(nchans-(nchans % compress))] ## prepares for compression
+#             tmp = compress_array(scratch, compress)
+#             if tmp is None:
+#                 compress = 1
+#             else:
+#                 scratch = tmp
+#                 slope = slope * compress
+#                 nchans = nchans / compress
+
 
         # Copy scratch spectrum to background spectrum
         bckgnd = scratch[:]
@@ -260,55 +278,12 @@ class XRFBackground:
         if compress > 1:
             bckgnd = expand_array(bckgnd, compress)
 
-        # Bgr should be positive integers??
-        bgr = bckgnd.astype(int)
-        idx = np.where(bgr <= 0)
-        bgr[idx] = 0
-        self.bgr = bgr
+        ## Set background to be of type integer
+        if type_int:
+            bckgnd = bckgnd.astype(int)
 
-@ValidateLarchPlugin
-def xrf_background(energy, counts=None, group=None, width=4,
-                   compress=2, exponent=2, slope=None,
-                   _larch=None):
-    """fit background for XRF spectra.  Arguments:
+        ## No negative values in background
+        bckgnd[np.where(bckgnd <= 0)] = 0
 
-    xrf_background(energy, counts=None, group=None, width=4,
-                   compress=2, exponent=2, slope=None)
+        self.bgr = bckgnd
 
-    Arguments
-    ---------
-    energy     array of energies OR an MCA group.  If an MCA group,
-               it will be used to give ``counts`` and ``mca`` arguments
-    counts     array of XRF counts (or MCA.counts)
-    group      group for outputs
-
-    width      full width (in keV) of the concave down polynomials
-               for when its full width is 100 counts. default = 4
-
-    compress   compression factor to apply to spectra. Default is 2.
-
-    exponent   power of polynomial used.  Default is 2, should be even.
-    slope      channel to energy conversion, from energy calibration
-               (default == None --> found from input energy array)
-
-    outputs (written to group)
-    -------
-    bgr       background array
-    bgr_info  dictionary of parameters used to calculate background
-    """
-    if isLarchMCAGroup(energy):
-        group  = energy
-        counts = group.counts
-        energy = group.energy
-    if slope is None:
-        slope = (energy[-1] - energy[0])/len(energy)
-
-    xbgr = XRFBackground(counts, width=width, compress=compress,
-                         exponent=exponent, slope=slope)
-
-    if group is not None:
-        group.bgr = xbgr.bgr
-        group.bgr_info = xbgr.parinfo
-
-def registerLarchPlugin():
-    return ('_xrf', {'xrf_background': xrf_background})
