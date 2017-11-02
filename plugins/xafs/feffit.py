@@ -522,6 +522,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         chir_im      imaginary part of chi(R).
     """
 
+
     def _resid(params, datasets=None, paramgroup=None,
                _larch=None, **kwargs):
         """ this is the residual function"""
@@ -534,7 +535,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     params = group2params(paramgroup, _larch=_larch)
 
     for ds in datasets:
-
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
             return
@@ -544,6 +544,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                     fcn_kws=dict(datasets=datasets,
                                  paramgroup=paramgroup),
                     scale_covar=True, **kws)
+
     result = fit.leastsq()
 
     params2group(result.params, paramgroup)
