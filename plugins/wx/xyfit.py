@@ -1198,17 +1198,17 @@ class XYFitFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel = array_sel
 
-        self.install_group(groupname, filename)
+        self.install_group(groupname, filename, overwrite=overwrite)
 
         if len(self.paths2read) > 0 :
             path = self.paths2read.pop(0)
             path = path.replace('\\', '/')
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
-            self.onRead_OK(script, path, groupname=gname)
+            self.onRead_OK(script, path, groupname=gname, overwrite=False)
 
 
-    def install_group(self, groupname, filename):
+    def install_group(self, groupname, filename, overwrite=False):
         """add groupname / filename to list of available data groups"""
 
         thisgroup = getattr(self.larch.symtable, groupname)
