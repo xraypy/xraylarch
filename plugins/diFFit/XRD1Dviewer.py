@@ -87,20 +87,29 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
                         defaultDir=os.getcwd(),
-                        wildcard=wildcards, style=wx.FD_OPEN)
+                        wildcard=wildcards,
+                        style=wx.FD_OPEN|wx.FD_MULTIPLE)
+                        #style=wx.FD_OPEN)
 
     path, read = None, False
     if dlg.ShowModal() == wx.ID_OK:
         read = True
-        path = dlg.GetPath().replace('\\', '/')
+        #path = dlg.GetPath().replace('\\', '/')
+        paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
     dlg.Destroy()
     
     if read:
-        data1dxrd = xrd1d(file=path)
-        if xrdviewer is None:
-            return data1dxrd
-        else:
-            xrdviewer.add1Ddata(data1dxrd)
+        for path in paths:
+            data1dxrd = xrd1d(file=path)
+            if xrdviewer is None:
+                return data1dxrd
+            else:
+                xrdviewer.add1Ddata(data1dxrd)
+        #data1dxrd = xrd1d(file=path)
+        #if xrdviewer is None:
+        #    return data1dxrd
+        #else:
+        #    xrdviewer.add1Ddata(data1dxrd)
 
 def plot_sticks(x,y):
 
