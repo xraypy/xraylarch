@@ -942,9 +942,10 @@ class Fitting1DXRD(BasePanel):
 
     def onSbtrctBkgd(self,event=None):
 
-        self.plt_data = self.xrd1dgrp.plot(bkgd=self.bkgdpl.ck_bkgd.GetValue())
-        
-        self.plot_all(showbkg=False)
+        check_bkgd = self.bkgdpl.ck_bkgd.GetValue()
+        self.plt_data = self.xrd1dgrp.plot(bkgd=check_bkgd)
+
+        self.plot_all(showbkg=(check_bkgd==False))
 
     def onRmvBkgd(self,event=None):
 
@@ -959,6 +960,8 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
         self.bkgdpl.btn_rbkgd.Disable()
+        
+        self.plot_all(showbkg=False)
 
     def background_options(self,event=None):
 
