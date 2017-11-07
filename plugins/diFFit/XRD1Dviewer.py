@@ -37,8 +37,8 @@ from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,ma
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
                                lambda_from_E, E_from_lambda,calc_broadening,
-                               instrumental_fit_uvw,peaklocater,peakfitter,xrd1d,
-                               SPACEGROUPS,create_cif,save1D)
+                               instrumental_fit_uvw,peaklocater,peakfitter,
+                               xrd1d,peakfinder_methods,SPACEGROUPS,create_cif,save1D)
 from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
@@ -53,7 +53,7 @@ MT00 = np.zeros(2)
 
 ENERGY = 19.0
 
-SRCH_MTHDS = ['peakutils.indexes','scipy.signal.find_peaks_cwt']
+SRCH_MTHDS = peakfinder_methods()
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
@@ -2866,6 +2866,7 @@ class PeakToolsPanel(wx.Panel):
         vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
 
         self.val_intthr.SetValue(str(self.owner.intthrsh))
+        self.ch_pkfit.Set
 
         ## until data is loaded:
         self.btn_fdpks.Disable()

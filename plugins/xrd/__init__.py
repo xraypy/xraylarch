@@ -1,6 +1,6 @@
 from .xrd import XRD,xrd1d
 from .xrd_bgr import xrd_background
-from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,
+from .xrd_fitting import (peakfinder,peaklocater,peakfitter,peakfilter,peakfinder_methods,
                           data_gaussian_fit,instrumental_fit_uvw,calc_broadening)
 from .xrd_pyFAI import (integrate_xrd,integrate_xrd_row,read_lambda,calc_cake,save1D,
                         return_ai,twth_from_xy,q_from_xy,eta_from_xy)

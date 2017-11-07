@@ -2437,11 +2437,11 @@ class CIFcls(object):
             for k0 in cf[key].keys():
                 k = k0.lower()
                 ## name/label
-                if k == '_chemical_name_mineral' or k == '_chemical_name_systematic':
+                if k in ('_chemical_name_mineral','_chemical_name_systematic','_amcsd_formula_title'):
                     self.label = cf[key][k]
-                elif k == '_chemical_formula_structural' or k == '_chemical_formula_sum':
+                elif k in ('_chemical_formula_structural','_chemical_formula_sum'):
                     self.formula = cf[key][k]
-                elif k == '_database_code_amcsd' or k == '_database_code_icsd':
+                elif k in ('_database_code_amcsd','_database_code_icsd'):
                     self.id_no = int(cf[key][k])
 
                 ## unit cell information

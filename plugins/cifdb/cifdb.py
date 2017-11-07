@@ -603,7 +603,7 @@ class cifDB(object):
             iindex = np.arange(minval,99999) ## starts at given min and counts up
         else:
             iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
-        
+
         for i in iindex:
             if i not in exceptions and i < maxi:
                 url_to_scrape = url % i
@@ -757,11 +757,6 @@ class cifDB(object):
             if all:
                 return row.mineral_id,row.iuc_id,row.cif
             else:
-                print
-                print '---------'
-                print row.cif
-                print '---------'
-                print
                 return row.cif
 
     def mineral_by_amcsd(self,amcsd_id):
