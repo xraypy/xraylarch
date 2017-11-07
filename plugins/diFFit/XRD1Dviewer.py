@@ -2921,7 +2921,7 @@ class SearchPanel(wx.Panel):
 
         self.amcsdlistbox = EditableListBox(self, self.owner.plot_CIFpeaks, size=(200,150))
         
-        self.btn_shw = wx.Button(self,label='Open CIF viewer')
+        self.btn_shw = wx.Button(self,label='View CIF text')
         self.btn_shw.Bind(wx.EVT_BUTTON, self.displayCIF)
 
         self.btn_clr = wx.Button(self,label='Clear list')
@@ -2954,7 +2954,7 @@ class CIFPanel(wx.Panel):
     def __init__(self, parent,cifdatabase=None,amcsd=None):
         wx.Panel.__init__(self, parent)
 
-        cif_text_box = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+        cif_text_box = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.HSCROLL)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(cif_text_box, 1, wx.ALL|wx.EXPAND)
@@ -2963,8 +2963,11 @@ class CIFPanel(wx.Panel):
         
         if cifdatabase is None:
             cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
-        if amcsd is None: amcsd = 100        
-        cif_text_box.WriteText(cifdatabase.cif_by_amcsd(amcsd))
+        if amcsd is None: amcsd = 100
+#         for line in cifdatabase.cif_by_amcsd(amcsd):
+#             cif_text_box.AppendText(line)
+#         cif_text_box.WriteText(cifdatabase.cif_by_amcsd(amcsd))
+        cif_text_box.SetValue(cifdatabase.cif_by_amcsd(amcsd))
 
 class CIFFrame(wx.Frame):
 
