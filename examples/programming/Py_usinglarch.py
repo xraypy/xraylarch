@@ -4,7 +4,6 @@ from larch import Interpreter, Group
 
 # now import larch-specific Python code
 from larch_plugins.xafs import autobk, xftf
-from larch_plugins.math import index_nearest # (uses numpy's argmin())
 
 # create a larch interpreter, passed to most functions
 my_larch = Interpreter(with_plugins=False)
@@ -40,8 +39,9 @@ pylab.xlabel('Energy (eV)')
 
 # normalized XANES
 # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
-j0 = index_nearest(xafsdat.energy, xafsdat.e0 - 25.0)
-j1 = index_nearest(xafsdat.energy, xafsdat.e0 + 75.0)
+j0 = np.abs(xafsdat.energy-(xafsdat.e0 - 25.0)).argmin()
+j1 = np.abs(xafsdat.energy-(xafsdat.e0 + 75.0)).argmin()
+
 pylab.subplot(2, 2, 2)
 pylab.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1])
 pylab.xlabel('Energy (eV)')

@@ -2,7 +2,7 @@
 ## fit peaks in an XRF spectra (work in progress)
 
 mca = read_gsemca('../xrf/srm1832.mca')
-mca = read_gsemca('../xrf/test.mca')
+#mca = read_gsemca('../xrf/test.mca')
 
 xrf_plot(mca)
 
@@ -25,9 +25,11 @@ for i, roi in enumerate(mca.rois):
     label = name.replace(' ', '').lower()
     name = 'p%i' % i
     peaks.append(name)
-    sig = mca.slope*pars.sigma.value
+    sig = mca.slope*pars['sigma'].value
+#     sig = mca.slope*pars.sigma.value
     cen = mca.offset  + mca.slope*mca.rois[i].center
-    amp = scale * 0.02 * pars.amplitude.value
+    amp = scale * 0.02 * pars['amplitude'].value
+#     amp = scale * 0.02 * pars.amplitude.value
     if amp> 1e8: amp = 10
     setattr(params, '%s_cen' % name, param(cen,   vary=True)) # , min=cen-1, max=cen+1))
     setattr(params, '%s_sig' % name, param(expr='sig_offset + sig_slope*%s_cen' % name))
@@ -60,7 +62,7 @@ def get_compton(x, p):
     skew = p.compton_skew.value
     gam  = p.compton_gamma.value
     amp  = p.compton_scale.value
-    return skewed_voigt(x, amplitude=amp, center=cen, sigma=sig, gamma=gamma, skew=skew)
+    return skewed_voigt(x, amplitude=amp, center=cen, sigma=sig, gamma=gam, skew=skew)
 #enddef
 
 def get_scatter(x, p):

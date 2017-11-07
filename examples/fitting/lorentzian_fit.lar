@@ -4,10 +4,7 @@ doc =  """
 
 
 def resid(pars, data, verbose=False):
-    # model = pars.offset + pars.amp*lorentzian(data.x, pars.cen.value, pars.wid.value)
-    model = pars.offset + pars.amp*lorentzian(data.x,
-                                              cen=pars.cen,
-                                              sigma=pars.wid)
+    model = pars.offset + pars.amp*lorentzian(data.x, pars.cen, pars.wid)
     if verbose:
         newplot(data.x, data.y)
         plot(data.x, model, force_draw=True)
@@ -18,7 +15,7 @@ enddef
 mdat = group()
 mdat.x = arange(201)/20.0
 
-mdat.y = -2.0 + 5.0*lorentzian(mdat.x, cen=3.0, sigma=0.5)
+mdat.y = -2.0 + 5.0*lorentzian(mdat.x, 3.0, 0.5)
 mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=0.1)
 
 params = param_group()

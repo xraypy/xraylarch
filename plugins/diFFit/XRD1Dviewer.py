@@ -87,20 +87,29 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
                         defaultDir=os.getcwd(),
-                        wildcard=wildcards, style=wx.FD_OPEN)
+                        wildcard=wildcards,
+                        style=wx.FD_OPEN|wx.FD_MULTIPLE)
+                        #style=wx.FD_OPEN)
 
     path, read = None, False
     if dlg.ShowModal() == wx.ID_OK:
         read = True
-        path = dlg.GetPath().replace('\\', '/')
+        #path = dlg.GetPath().replace('\\', '/')
+        paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
     dlg.Destroy()
     
     if read:
-        data1dxrd = xrd1d(file=path)
-        if xrdviewer is None:
-            return data1dxrd
-        else:
-            xrdviewer.add1Ddata(data1dxrd)
+        for path in paths:
+            data1dxrd = xrd1d(file=path)
+            if xrdviewer is None:
+                return data1dxrd
+            else:
+                xrdviewer.add1Ddata(data1dxrd)
+        #data1dxrd = xrd1d(file=path)
+        #if xrdviewer is None:
+        #    return data1dxrd
+        #else:
+        #    xrdviewer.add1Ddata(data1dxrd)
 
 def plot_sticks(x,y):
 
@@ -608,9 +617,9 @@ class Fitting1DXRD(BasePanel):
         self.min_dist  = 10
 
         # Background fitting defaults
-        self.exponent  = 20
-        self.compress  = 2
-        self.width     = 4
+        ## old defaults: [20, 2, 4]
+        self.bkgd_kwargs = {'exponent': 2,'compress': 5, 'width': 4}
+        
 
 ##############################################
 #### PANEL DEFINITIONS
@@ -932,7 +941,7 @@ class Fitting1DXRD(BasePanel):
 
     def onFitBkgd(self,event=None):
 
-        self.xrd1dgrp.fit_background()
+        self.xrd1dgrp.fit_background(**self.bkgd_kwargs)
         self.plt_data = self.xrd1dgrp.plot(bkgd=False)
         
         self.plot_background()
@@ -942,9 +951,10 @@ class Fitting1DXRD(BasePanel):
 
     def onSbtrctBkgd(self,event=None):
 
-        self.plt_data = self.xrd1dgrp.plot(bkgd=self.bkgdpl.ck_bkgd.GetValue())
-        
-        self.plot_all(showbkg=False)
+        check_bkgd = self.bkgdpl.ck_bkgd.GetValue()
+        self.plt_data = self.xrd1dgrp.plot(bkgd=check_bkgd)
+
+        self.plot_all(showbkg=(check_bkgd==False))
 
     def onRmvBkgd(self,event=None):
 
@@ -959,6 +969,8 @@ class Fitting1DXRD(BasePanel):
         self.bkgdpl.ck_bkgd.SetValue(False)
         self.bkgdpl.ck_bkgd.Disable()
         self.bkgdpl.btn_rbkgd.Disable()
+        
+        self.plot_all(showbkg=False)
 
     def background_options(self,event=None):
 
@@ -966,9 +978,9 @@ class Fitting1DXRD(BasePanel):
 
         fit = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.exponent = int(myDlg.val_exp.GetValue())
-            self.compress = int(myDlg.val_comp.GetValue())
-            self.width    = int(myDlg.val_wid.GetValue())
+            self.bkgd_kwargs.update({'exponent': int(myDlg.val_exp.GetValue()),
+                                     'compress': int(myDlg.val_comp.GetValue()),
+                                     'width':    int(myDlg.val_wid.GetValue())  })
             fit = True
         myDlg.Destroy()
 
@@ -1015,7 +1027,9 @@ class Fitting1DXRD(BasePanel):
             ## clears previous searches
             self.remove_all_peaks()
 
-            self.intthrsh = int(self.pkpl.val_intthr.GetValue())
+            self.intthrsh = float(self.pkpl.val_intthr.GetValue())
+            if self.intthrsh > 1: self.intthrsh = int(self.intthrsh)
+
             self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
                                      threshold=self.intthrsh,
                                      thres=self.thrsh,min_dist=self.min_dist,
@@ -1033,10 +1047,19 @@ class Fitting1DXRD(BasePanel):
         self.peaklist = []
         self.peaklistbox.Clear()
 
-        str = 'Peak (%6d cts @ %2.3f %s )'
+        ##str = 'Peak (%6d cts @ %2.3f %s )'
         xi = self.rngpl.ch_xaxis.GetSelection()
         for i,ii in enumerate(self.xrd1dgrp.pki):
-            peakname = str % (self.plt_peaks[3,i],self.plt_peaks[xi,i],self.xunit)
+            
+            x = self.plt_peaks[3,i]
+            if x > 10:
+                pstr = 'Peak ({:6d}'.format(int(x))
+            elif x > 1:
+                pstr = 'Peak ({:6.2f}'.format(x)            
+            else:
+                pstr = 'Peak ({:6.3f}'.format(x)
+            peakname = pstr + ' cts @ %2.3f %s )' % (self.plt_peaks[xi,i],self.xunit)
+            
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
         self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
@@ -1179,6 +1202,7 @@ class Fitting1DXRD(BasePanel):
                   ['Background', 'red',   None, '', 0, True, self.xlabel, self.ylabel],
                   ['Peaks',      'red',   0,    'o',8, True, self.xlabel, self.ylabel],
                   ['CIF data',   'green', None, '', 0, True, self.xlabel, self.ylabel]]
+
         for i,argi in enumerate(argplt):
             args = dict(zip(keys, argi))
             if i == 0:
@@ -1434,9 +1458,9 @@ class BackgroundOptions(wx.Dialog):
         self.createPanel()
 
         ## Set defaults
-        self.val_exp.SetValue(str(self.parent.exponent))
-        self.val_comp.SetValue(str(self.parent.compress))
-        self.val_wid.SetValue(str(self.parent.width))
+        self.val_exp.SetValue(  str( self.parent.bkgd_kwargs['exponent'] ) )
+        self.val_comp.SetValue( str( self.parent.bkgd_kwargs['compress'] ) )
+        self.val_wid.SetValue(  str( self.parent.bkgd_kwargs['width']    ) )
 
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+20, iy+20))

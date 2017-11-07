@@ -16,3 +16,4 @@ from .xraydb_plugin import (atomic_mass, atomic_number,
 
 from .materials import material_mu, material_get
 from .cromer_liberman import f1f2
+from .background import XrayBackground
