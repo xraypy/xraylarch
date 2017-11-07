@@ -525,7 +525,7 @@ class SelectFittingData(wx.Dialog):
         self.createPanel()
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+50))
 
     def createPanel(self):
 
