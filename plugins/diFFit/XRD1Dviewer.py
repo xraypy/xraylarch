@@ -202,6 +202,14 @@ class diFFit1DFrame(wx.Frame):
                 self.exit_callback()
         except:
             pass
+        
+        for frame in self.xrd1Dfitting.cifframe:
+            try:
+                frame.closeFrame()
+            except:
+                pass
+                
+        
         try:
             self.closeDB()
         except:
@@ -602,6 +610,9 @@ class Fitting1DXRD(BasePanel):
         self.amcsd        = []
         self.auth_include = []
         self.mnrl_include = []
+        
+        ## List of opened CIF frame windows (will close upon exit)
+        self.cifframe = []
         
         self.SetFittingDefaults()
         self.Panel1DFitting()
@@ -2944,9 +2955,8 @@ class SearchPanel(wx.Panel):
         title = self.amcsdlistbox.GetStringSelection()
         amcsd = self.amcsdlistbox.GetStringSelection().split()[0]
         
-        cifframe = CIFFrame(amcsd=int(amcsd), title=title, 
-                            cifdatabase=self.owner.owner.cifdatabase)
-
+        self.owner.cifframe += [CIFFrame(amcsd=int(amcsd), title=title, 
+                                         cifdatabase=self.owner.owner.cifdatabase)]
 
 
 class CIFPanel(wx.Panel):
@@ -2978,6 +2988,13 @@ class CIFFrame(wx.Frame):
         panel = CIFPanel(self, cifdatabase=cifdatabase, amcsd=amcsd)
 
         self.Show()
+    
+    def closeFrame(self, event=None):
+
+        try:
+            self.Destroy()
+        except:
+            pass
         
         
 
