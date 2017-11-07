@@ -95,14 +95,17 @@ def iscifDB(dbname):
     _tables = ('ciftbl',
                'elemtbl',
                'nametbl',
+               'formtbl',
                'spgptbl',
                'symtbl',
                'authtbl',
                'qtbl',
+               'geotbl',
                'cattbl',
                'symref',
-               ##'compref',
+               'compref',
                'authref',
+               'qref',
                'catref')
     result = False
     try:
@@ -126,8 +129,8 @@ class ElementTable(_BaseTable):
 class MineralNameTable(_BaseTable):
     (id,name) = [None]*2
 
-# class ChemicalFormulaTable(_BaseTable):
-#     (id,name) = [None]*2
+class ChemicalFormulaTable(_BaseTable):
+    (id,name) = [None]*2
 
 class SpaceGroupTable(_BaseTable):
     (iuc_id, hm_notation) = [None]*2
@@ -144,12 +147,11 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-# class CIFTable(_BaseTable):
-#     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
 class CIFTable(_BaseTable):
-    (amcsd_id, mineral_id, iuc_id, cif, qstr, url) = [None]*6
-# class CIFTable(_BaseTable):
-#     (amcsd_id, mineral_id, chemical_id, iuc_id, cif, qstr, url) = [None]*7
+    (amcsd_id, mineral_id, chemical_id, iuc_id, cif, qstr, url) = [None]*7
+
+class GeoTable(_BaseTable):
+    (amcsd_id, a, b, c, alpha, beta, gamma) = [None]*7
 
 class cifDB(object):
     '''
@@ -192,29 +194,29 @@ class cifDB(object):
         ciftbl  = tables['ciftbl']
         elemtbl = tables['elemtbl']
         nametbl = tables['nametbl']
-#         formtbl = tables['formtbl']
+        formtbl = tables['formtbl']
         spgptbl = tables['spgptbl']
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
         cattbl  = tables['cattbl']
         qtbl    = tables['qtbl']
         symref  = tables['symref']
-#         compref = tables['compref']
+        compref = tables['compref']
         authref = tables['authref']
         catref  = tables['catref']
 
         ## Define mappers
         clear_mappers()
-#         mapper(ElementTable, elemtbl, properties=dict(
-#                  a=relationship(ElementTable, secondary=compref,
-#                  primaryjoin=(compref.c.z == elemtbl.c.z),
-#                  secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
+        mapper(ElementTable, elemtbl, properties=dict(
+                 a=relationship(ElementTable, secondary=compref,
+                 primaryjoin=(compref.c.z == elemtbl.c.z),
+                 secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
         mapper(MineralNameTable, nametbl, properties=dict(
                  a=relationship(MineralNameTable, secondary=ciftbl,
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-#         mapper(ChemicalFormulaTable, nametbl, properties=dict(
-#                  a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-#                  primaryjoin=(ciftbl.c.chemical_id == formtbl.c.chemical_id))))
+        mapper(ChemicalFormulaTable, nametbl, properties=dict(
+                 a=relationship(ChemicalFormulaTable, secondary=ciftbl,
+                 primaryjoin=(ciftbl.c.chemical_id == formtbl.c.chemical_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
@@ -277,6 +279,10 @@ class cifDB(object):
                   Column('mineral_id', Integer, primary_key=True),
                   Column('mineral_name', String(30), unique=True, nullable=True)
                   )
+        formtbl = Table('formtbl', self.metadata,
+                  Column('formula_id', Integer, primary_key=True),
+                  Column('formula_name', String(30), unique=True, nullable=True)
+                  )
         spgptbl = Table('spgptbl', self.metadata,
                   Column('iuc_id', Integer),
                   Column('hm_notation', String(16), unique=True, nullable=True),
@@ -306,11 +312,16 @@ class cifDB(object):
                  Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
                  PrimaryKeyConstraint('iuc_id', 'symmetry_id')
                  )
-#         compref = Table('compref', self.metadata,
-#                   Column('z', None, ForeignKey('elemtbl.z')),
-#                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-#                   PrimaryKeyConstraint('z', 'amcsd_id')
-#                   )
+        compref = Table('compref', self.metadata,
+                  Column('z', None, ForeignKey('elemtbl.z')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('z', 'amcsd_id')
+                  )
+        qref = Table('qref', self.metadata,
+                  Column('z', None, ForeignKey('elemtbl.z')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('z', 'amcsd_id')
+                  )
         authref = Table('authref', self.metadata,
                   Column('author_id', None, ForeignKey('authtbl.author_id')),
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
@@ -326,6 +337,7 @@ class cifDB(object):
         ciftbl = Table('ciftbl', self.metadata,
                  Column('amcsd_id', Integer, primary_key=True),
                  Column('mineral_id', Integer),
+                 Column('formula_id', Integer),
                  Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
                  Column('cif', String(25)), ## , nullable=True
                  Column('zstr',String(25)),
