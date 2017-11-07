@@ -470,7 +470,7 @@ class SelectSavingData(wx.Dialog):
         panel.SetSizer(mainsizer)
 
         ix,iy = panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+50))
 
     def saveXY(self,event=None):
         wildcards = '1DXRD datafile (*.xy)|*.xy|All files (*.*)|*.*'
@@ -1462,7 +1462,7 @@ class BackgroundOptions(wx.Dialog):
         self.val_wid.SetValue(  str( self.parent.bkgd_kwargs['width']    ) )
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+40))
 
     def createPanel(self):
 
@@ -1553,7 +1553,7 @@ class PeakOptions(wx.Dialog):
             return 
 
         ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+50))
 
     def createPanel_index(self):
 
@@ -2458,7 +2458,7 @@ class SelectCIFData(wx.Dialog):
         panel.SetSizer(mainsizer)
 
         ix,iy = panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+50))
         
         self.val_cifE.SetValue('%0.4f' % energy)
         self.ch_xaxis.SetSelection(self.xaxis)
@@ -3641,7 +3641,7 @@ class PeriodicTableSearch(wx.Dialog):
         pack(panel, main_sizer)
         
         ix,iy = panel.GetBestSize()
-        self.SetSize((ix+20, iy+20))
+        self.SetSize((ix+20, iy+50))
         
         self.element_include = include
         self.element_exclude = exclude
