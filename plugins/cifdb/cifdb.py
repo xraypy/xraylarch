@@ -126,9 +126,6 @@ class ElementTable(_BaseTable):
 class MineralNameTable(_BaseTable):
     (id,name) = [None]*2
 
-# class ChemicalFormulaTable(_BaseTable):
-#     (id,name) = [None]*2
-
 class SpaceGroupTable(_BaseTable):
     (iuc_id, hm_notation) = [None]*2
 
@@ -148,8 +145,6 @@ class CategoryTable(_BaseTable):
 #     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
 class CIFTable(_BaseTable):
     (amcsd_id, mineral_id, iuc_id, cif, qstr, url) = [None]*6
-# class CIFTable(_BaseTable):
-#     (amcsd_id, mineral_id, chemical_id, iuc_id, cif, qstr, url) = [None]*7
 
 class cifDB(object):
     '''
@@ -192,7 +187,6 @@ class cifDB(object):
         ciftbl  = tables['ciftbl']
         elemtbl = tables['elemtbl']
         nametbl = tables['nametbl']
-#         formtbl = tables['formtbl']
         spgptbl = tables['spgptbl']
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
@@ -212,9 +206,6 @@ class cifDB(object):
         mapper(MineralNameTable, nametbl, properties=dict(
                  a=relationship(MineralNameTable, secondary=ciftbl,
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-#         mapper(ChemicalFormulaTable, nametbl, properties=dict(
-#                  a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-#                  primaryjoin=(ciftbl.c.chemical_id == formtbl.c.chemical_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
@@ -603,7 +594,7 @@ class cifDB(object):
             iindex = np.arange(minval,99999) ## starts at given min and counts up
         else:
             iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
-
+        
         for i in iindex:
             if i not in exceptions and i < maxi:
                 url_to_scrape = url % i
@@ -754,10 +745,8 @@ class cifDB(object):
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
-            if all:
-                return row.mineral_id,row.iuc_id,row.cif
-            else:
-                return row.cif
+            if all: return row.mineral_id,row.iuc_id,row.cif
+            else: return row.cif
 
     def mineral_by_amcsd(self,amcsd_id):
 
@@ -770,8 +759,6 @@ class cifDB(object):
         search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
         for row in search_mineralname.execute():
             mineral_name = row.mineral_name
-#         if mineral_name == 'None' or mineral_by_amcsd is None:
-#             mineral_name = 
         return mineral_name
 
 ##################################################################################
@@ -1372,11 +1359,3 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
                     print(str)
 
     return MATCHES
-                
-                          
-                
-
-
-
-
-
