@@ -2865,7 +2865,7 @@ class PeakToolsPanel(wx.Panel):
         vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
 
         self.val_intthr.SetValue(str(self.owner.intthrsh))
-        self.ch_pkfit.SetSection(0)
+        self.ch_pkfit.SetSelection(0)
 
         ## until data is loaded:
         self.btn_fdpks.Disable()
