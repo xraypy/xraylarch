@@ -1021,20 +1021,19 @@ class Fitting1DXRD(BasePanel):
             newpeaks = YesNo(self,question,caption='Replace peaks warning')
 
         if newpeaks:
-            xi = self.rngpl.ch_xaxis.GetSelection()
-            method = SRCH_MTHDS[self.pkpl.ch_pkfit.GetSelection()]
-
             ## clears previous searches
             self.remove_all_peaks()
 
             self.intthrsh = float(self.pkpl.val_intthr.GetValue())
             if self.intthrsh > 1: self.intthrsh = int(self.intthrsh)
 
-            self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
-                                     threshold=self.intthrsh,
-                                     thres=self.thrsh,min_dist=self.min_dist,
-                                     widths=self.widths,gapthrsh=self.gapthrsh,
-                                     method=method)
+            self.xrd1dgrp.find_peaks(bkgd      = self.bkgdpl.ck_bkgd.GetValue(),
+                                     threshold = self.intthrsh,
+                                     thres     = self.thrsh,
+                                     min_dist  = self.min_dist,
+                                     widths    = self.widths,
+                                     gapthrsh  = self.gapthrsh,
+                                     method    = self.pkpl.ch_pkfit.GetStringSelection() )
             self.peak_display()
             self.plot_peaks()
 
@@ -2866,7 +2865,7 @@ class PeakToolsPanel(wx.Panel):
         vbox_pks.Add(hbox4_pks, flag=wx.BOTTOM, border=8)
 
         self.val_intthr.SetValue(str(self.owner.intthrsh))
-        self.ch_pkfit.Set
+        self.ch_pkfit.SetSection(0)
 
         ## until data is loaded:
         self.btn_fdpks.Disable()
