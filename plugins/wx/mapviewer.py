@@ -1523,15 +1523,15 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['Proposal Number'].SetLabel('')
             self.wids['User group'].SetLabel('')
 
+        
         FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
-        try:
-            for key,val in zip(xrmmap['flags'].attrs.keys(),xrmmap['flags'].attrs.values()):
+        if 'flags' in xrmmap.keys():
+            flags = xrmmap['flags'].attrs
+            for key,val in zip(flags.keys(),flags.values()):
                 if   key == 'xrf':           FLAGXRF = val
                 elif key == 'xrd':           FLAGXRD2D = val
                 elif key.lower() == 'xrd2d': FLAGXRD2D = val
                 elif key.lower() == 'xrd1d': FLAGXRD1D = val
-        except:
-            pass
 
         if FLAGXRF:
             if FLAGXRD2D and FLAGXRD1D:
@@ -1603,10 +1603,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
-        self.xrd_save  = Button(pane, 'Save XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,save=True))
-        self.xrd_plot  = Button(pane, 'Show XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,show=True))
+        self.xrd2d_save  = Button(pane, 'Save 2D XRD Data', size=(135, -1),
+                                                action=partial(self.onXRD,save=True,xrd2d=True))
+        self.xrd2d_plot  = Button(pane, 'Show 2D XRD Data', size=(135, -1),
+                                                action=partial(self.onXRD,show=True,xrd2d=True))
+        self.xrd1d_save  = Button(pane, 'Save 1D XRD Data', size=(135, -1),
+                                                action=partial(self.onXRD,save=True,xrd1d=True))
+        self.xrd1d_plot  = Button(pane, 'Show 1D XRD Data', size=(135, -1),
+                                                action=partial(self.onXRD,show=True,xrd1d=True))
+
         ######################################
 
         def txt(s):
@@ -1633,11 +1638,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         sizer.Add(self.onreport,            ( 7, 0), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.xrd_save,            ( 8, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd_plot,            ( 8, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd1d_plot,          ( 8, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd2d_plot,          ( 8, 2), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(legend,                   (10, 1), (1, 2), ALL_LEFT, 2)
+
+        sizer.Add(self.xrd1d_save,          ( 9, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd2d_save,          ( 9, 2), (1, 2), ALL_LEFT, 2)
+
+        sizer.Add(legend,                   (11, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
+        
+        for btn in (self.xrd1d_save,self.xrd1d_plot,self.xrd2d_save,self.xrd2d_plot):
+            btn.Disable()
 
         # main sizer
         msizer = wx.BoxSizer(wx.VERTICAL)
@@ -1747,7 +1759,45 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def update_xrmmap(self, xrmmap):
         self.set_area_choices(xrmmap, show_last=True)
+        
+        self.set_enabled_btns(xrmmap)
 
+    def set_enabled_btns(self,xrmmap):
+    
+        flag2dxrd,flag1dxrd = False,False
+        
+        ## checks if 1D and/or 2D XRD data stored in file
+        if 'flags' in xrmmap.keys():
+            flags = xrmmap['flags'].attrs
+            for key,val in zip(flags.keys(),flags.values()):
+                if key.lower() == 'xrd' or key.lower() == 'xrd2d':
+                    flag2dxrd = val
+                if key.lower() == 'xrd1d':
+                    flag1dxrd = val
+
+        ## checks for calibration file if calibration file provided
+        if not flag1dxrd and flag2dxrd:
+            try:
+                if os.path.exists(xrmmap['xrd1D'].attrs['calfile']):
+                    flag1dxrd = True
+            except:
+                pass
+        
+        ## sets saving/plotting buttons in accordance with available data
+        if flag2dxrd:
+            for btn in (self.xrd2d_save,self.xrd2d_plot):
+                btn.Enable()
+        else:
+            for btn in (self.xrd2d_save,self.xrd2d_plot):
+                btn.Disable()
+        if flag1dxrd:
+            for btn in (self.xrd1d_save,self.xrd1d_plot):
+                btn.Enable()
+        else:
+            for btn in (self.xrd1d_save,self.xrd1d_plot):
+                btn.Disable()
+                
+    
     def set_area_choices(self, xrmmap, show_last=False):
         areas = xrmmap['areas']
         c = self.choice
@@ -1929,7 +1979,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
-    def onXRD(self, event=None, save=False, show=False):
+    def onXRD(self, event=None, save=False, show=False, xrd1d=False, xrd2d=False):
 
         try:
             aname = self._getarea()
@@ -1965,7 +2015,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             path,stem = os.path.split(self.owner.current_file.filename)
             stem = '%s_%s' % (stem,title)
 
-        if xrmfile.flag_xrd1d:
+        if xrd1d and xrmfile.flag_xrd1d:
             self._xrd  = None
             self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
@@ -1990,11 +2040,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                 print('Saving 1D XRD in file: %s' % (filename))
                 save1D(filename, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile)
+            xrd1d = False  ## turns off flag since it has already been displayed/saved
 
-#             if not xrmfile.flag_xrd2d:
-#                 datapath = xrmfile.xrmmap.attrs['Map_Folder']
 
-        if xrmfile.flag_xrd2d:
+        if xrmfile.flag_xrd2d and (xrd2d or xrd1d):
             self._xrd  = None
             self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
@@ -2003,34 +2052,33 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.energy = self.owner.current_energy
             self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
 
-            if save:
-                wildcards = '2D XRD file (*.tiff)|*.tiff|All files (*.*)|*.*'
-                dlg = wx.FileDialog(self, 'Save file as...',
-                                   defaultDir=os.getcwd(),
-                                   defaultFile='%s.tiff' % stem,
-                                   wildcard=wildcards,
-                                   style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-                if dlg.ShowModal() == wx.ID_OK:
-                    filename = dlg.GetPath().replace('\\', '/')
-                dlg.Destroy()
-                print('Saving 2D XRD in file: %s' % (filename))
-                self._xrd.save_2D(file=filename,verbose=True)
+            if xrd2d:
+                if save:
+                    wildcards = '2D XRD file (*.tiff)|*.tiff|All files (*.*)|*.*'
+                    dlg = wx.FileDialog(self, 'Save file as...',
+                                       defaultDir=os.getcwd(),
+                                       defaultFile='%s.tiff' % stem,
+                                       wildcard=wildcards,
+                                       style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+                    if dlg.ShowModal() == wx.ID_OK:
+                        filename = dlg.GetPath().replace('\\', '/')
+                    dlg.Destroy()
+                    print('Saving 2D XRD in file: %s' % (filename))
+                    self._xrd.save_2D(file=filename,verbose=True)
 
-            if show:
-                label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
-                                         flip=True)
+                if show:
+                    label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
+                    self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
+                                             flip=True)
+                                             
+            if xrd1d and ponifile is not None:
+                self._xrd.calfile = ponifile
+                self._xrd.steps = 5001
+                self._xrd.calc_1D(save=save,verbose=True)
 
-            if not xrmfile.flag_xrd1d:
-                if ponifile is not None:
-                    self._xrd.calfile = ponifile
-                    self._xrd.steps = 5001
-                    self._xrd.calc_1D(save=save,verbose=True)
+                if show:
+                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
 
-                    if show:
-                        self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
-                        
-        self.owner.message('ready')
 
 
 

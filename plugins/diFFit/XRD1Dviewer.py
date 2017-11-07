@@ -1027,7 +1027,9 @@ class Fitting1DXRD(BasePanel):
             ## clears previous searches
             self.remove_all_peaks()
 
-            self.intthrsh = int(self.pkpl.val_intthr.GetValue())
+            self.intthrsh = float(self.pkpl.val_intthr.GetValue())
+            if self.intthrsh > 1: self.intthrsh = int(self.intthrsh)
+
             self.xrd1dgrp.find_peaks(bkgd=self.bkgdpl.ck_bkgd.GetValue(),
                                      threshold=self.intthrsh,
                                      thres=self.thrsh,min_dist=self.min_dist,
@@ -1045,10 +1047,19 @@ class Fitting1DXRD(BasePanel):
         self.peaklist = []
         self.peaklistbox.Clear()
 
-        str = 'Peak (%6d cts @ %2.3f %s )'
+        ##str = 'Peak (%6d cts @ %2.3f %s )'
         xi = self.rngpl.ch_xaxis.GetSelection()
         for i,ii in enumerate(self.xrd1dgrp.pki):
-            peakname = str % (self.plt_peaks[3,i],self.plt_peaks[xi,i],self.xunit)
+            
+            x = self.plt_peaks[3,i]
+            if x > 10:
+                pstr = 'Peak ({:6d}'.format(int(x))
+            elif x > 1:
+                pstr = 'Peak ({:6.2f}'.format(x)            
+            else:
+                pstr = 'Peak ({:6.3f}'.format(x)
+            peakname = pstr + ' cts @ %2.3f %s )' % (self.plt_peaks[xi,i],self.xunit)
+            
             self.peaklist += [peakname]
             self.peaklistbox.Append(peakname)
         self.pkpl.ttl_cntpks.SetLabel('Total: %i peaks' % (len(self.xrd1dgrp.pki)))
