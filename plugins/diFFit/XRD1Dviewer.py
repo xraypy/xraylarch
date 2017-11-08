@@ -1081,6 +1081,8 @@ class Fitting1DXRD(BasePanel):
         xi = self.rngpl.ch_xaxis.GetSelection()
         for i,ii in enumerate(self.xrd1dgrp.pki):
             
+            ## this will only work for python 2.7 and later
+            ## mkak 2017.11.08
             x = self.plt_peaks[3,i]
             if x > 10:
                 pstr = 'Peak ({:6d}'.format(int(x))
@@ -3343,11 +3345,13 @@ class DatabaseInfoGUI(wx.Dialog):
             filename = self.parent.owner.cifdatabase.dbname
         except:
             return
-        #filename = os.path.split(filename)[-1]
         nocif = self.parent.owner.cifdatabase.return_no_of_cif()
 
         self.txt_dbname.SetLabel('Current file : %s' % filename)
-        self.txt_nocif.SetLabel('Number of cif entries : %i' % nocif)
+        try:
+            self.txt_nocif.SetLabel('Number of cif entries : %s' % '{:,}'.format(nocif))
+        except:
+            self.txt_nocif.SetLabel('Number of cif entries : %i' % nocif)
         
         ix,iy = self.panel.GetBestSize()
         self.SetSize((ix+40, iy+40))
