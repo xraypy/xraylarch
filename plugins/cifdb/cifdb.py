@@ -682,10 +682,10 @@ class cifDB(object):
                         if verbose:
                             print('Saved %s' % file)
                     if addDB:
-                        if 1==1: #try:
+                        try:
                             self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-#                         except:
-#                             pass
+                        except:
+                            pass
 
 
 
@@ -716,20 +716,20 @@ class cifDB(object):
 
     def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
 
-        ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
+        mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
+        
+        mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
+        authors      = self.author_by_amcsd(amcsd_id)
+
+        ## ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
         
         if cifile:
             print(' ==== File : %s ====' % os.path.split(cifile)[-1])
         else:
             print(' ===================== ')
         print(' AMCSD: %i' % amcsd_id)
-
-        elementstr = ' Elements: '
-        for element in ALLelements:
-            elementstr = '%s %s' % (elementstr,element)
-        print(elementstr)
         print(' Name: %s' % mineral_name)
-
+        print(' %s' % self.composition_by_amcsd(amcsd_id,string=True))
         try:
             print(' Space Group No.: %s (%s)' % (iuc_id,self.symm_id(iuc_id)))
         except:
@@ -772,7 +772,7 @@ class cifDB(object):
 
     def all_by_amcsd(self,amcsd_id,verbose=False):
 
-        mineral_id,iuc_id,cifstr = self.cif_by_amcsd(amcsd_id,all=True)
+        mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
         
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         ALLelements  = self.composition_by_amcsd(amcsd_id)
@@ -795,8 +795,7 @@ class cifDB(object):
             authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
         return authors
 
-    def composition_by_amcsd(self,amcsd_id):
-    
+    def composition_by_amcsd(self,amcsd_id,string=False):
     
         z_results = self.query(self.ciftbl.c.zstr).filter(self.ciftbl.c.amcsd_id == amcsd_id).all()
         z_list = [z for z,i in enumerate([json.loads(zrow[0]) for zrow in z_results][0]) if i==1]
@@ -807,15 +806,24 @@ class cifDB(object):
             for block in search_periodic.execute():
                 ALLelements.append(block.element_symbol)
                 
-        return ALLelements
+        if string:
+            elementstr = 'Elements: '
+            for i,element in enumerate(ALLelements):
+                if i == 0:
+                    elementstr = '%s %s' % (elementstr,element)
+                else:
+                    elementstr = '%s, %s' % (elementstr,element)
+            return elementstr
+        else:
+            return ALLelements
         
 
-    def cif_by_amcsd(self,amcsd_id,all=False):
+    def cif_by_amcsd(self,amcsd_id,only_ids=False):
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
-            if all:
-                return row.mineral_id,row.iuc_id,row.cif
+            if only_ids:
+                return row.mineral_id,row.iuc_id
             else:
                 return row.cif
 
@@ -1428,5 +1436,6 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
                              cifdatabase.mineral_by_amcsd(id_no),scores[i],
                              match_peaks[i],total_peaks[i])
                     print(str)
+        print('')
 
     return MATCHES
