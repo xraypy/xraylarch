@@ -1100,7 +1100,7 @@ class diFFit2DFrame(wx.Frame):
 
         hbox_ct1 = wx.BoxSizer(wx.HORIZONTAL)
         self.txt_ct1 = wx.StaticText(self.panel, label='CONTRAST')
-        self.txt_ct2 = wx.StaticText(self.panel, label='', size(150,-1))
+        self.txt_ct2 = wx.StaticText(self.panel, label='',   size=(175,-1))
 
         hbox_ct1.Add(self.txt_ct1, flag=wx.RIGHT,         border=6)
         hbox_ct1.Add(self.txt_ct2, flag=wx.RIGHT,         border=6)
