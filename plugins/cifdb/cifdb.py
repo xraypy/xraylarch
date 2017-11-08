@@ -1183,9 +1183,7 @@ class cifDB(object):
 
     def return_q(self):
         
-        qqry = self.query(self.qtbl)
-        q = [float(row.q) for row in qqry.all()]
-
+        q = [float(row.q) for row in self.query(self.qtbl).all()]
         return np.array(q)
 
     def return_mineral_names(self):
