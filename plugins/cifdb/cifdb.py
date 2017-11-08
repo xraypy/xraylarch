@@ -21,7 +21,6 @@ from sqlalchemy import (create_engine,MetaData,
                         PrimaryKeyConstraint,ForeignKeyConstraint,ForeignKey,
                         Numeric,func,
                         and_,or_,not_,tuple_)
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,mapper,clear_mappers,relationship
 from sqlalchemy.pool import SingletonThreadPool
@@ -1178,8 +1177,9 @@ class cifDB(object):
      
     def return_no_of_cif(self):
         
-        lines = len(self.query(self.ciftbl).all())
-        return lines
+        ##return len(self.query(self.ciftbl).all())
+        ##return self.query(func.count(self.ciftbl.c.amcsd_id)).scalar()
+        return self.query(self.ciftbl).count()
 
     def return_q(self):
         
