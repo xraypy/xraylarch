@@ -1201,6 +1201,7 @@ class diFFit2DFrame(wx.Frame):
         ## Set defaults
         self.ch_clr.SetStringSelection(self.color)
         self.ch_flp.SetStringSelection(self.flip)
+        self.ch_scl.SetSelection(0)
         self.ch_msk.Disable()
         self.ch_clr.Disable()
         self.sldr_cntrst.Disable()
