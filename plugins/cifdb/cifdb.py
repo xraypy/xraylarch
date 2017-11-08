@@ -83,6 +83,8 @@ QMAX = 10.0
 QSTEP = 0.01
 QAXIS = np.arange(QMIN,QMAX+QSTEP,QSTEP)
 
+ENERGY = 19000 ## units eV
+
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
                          poolclass=SingletonThreadPool)
@@ -100,7 +102,6 @@ def iscifDB(dbname):
                'symtbl',
                'authtbl',
                'qtbl',
-               'georef',
                'cattbl',
                'symref',
                'compref',
@@ -147,11 +148,9 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-class GeoTable(_BaseTable):
-    (amcsd_id, a, b, c, alpha, beta, gamma) = [None]*7
-
-# class CIFTable(_BaseTable):
-#     (amcsd_id, mineral_id, formula_id, iuc_id, cif, zstr, qstr, url) = [None]*8
+# # class CIFTable(_BaseTable):
+# #     (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma, 
+# #      cif, zstr, qstr, url) = [None]*14
 
 
 class cifDB(object):
@@ -200,7 +199,6 @@ class cifDB(object):
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
         qtbl    = tables['qtbl']
-        georef  = tables['georef']        
         cattbl  = tables['cattbl']
         symref  = tables['symref']
         compref = tables['compref']
@@ -237,9 +235,6 @@ class cifDB(object):
         mapper(CategoryTable, cattbl, properties=dict(
                  a=relationship(CategoryTable, secondary=catref,
                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
-        mapper(GeoTable, georef, properties=dict(
-                 a=relationship(GeoTable, secondary=ciftbl,
-                 primaryjoin=(ciftbl.c.amcsd_id == georef.c.amcsd_id))))
 #         mapper(CIFTable, ciftbl, properties=dict(
 #                  a=relationship(CIFTable, secondary=compref,
 #                  primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
@@ -327,9 +322,9 @@ class cifDB(object):
                   PrimaryKeyConstraint('z', 'amcsd_id')
                   )
         qref    = Table('qref', self.metadata,
-                  Column('z', None, ForeignKey('elemtbl.z')),
+                  Column('q_id', None, ForeignKey('qtbl.q_id')),
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                  PrimaryKeyConstraint('z', 'amcsd_id')
+                  PrimaryKeyConstraint('q_id', 'amcsd_id')
                   )
         authref = Table('authref', self.metadata,
                   Column('author_id', None, ForeignKey('authtbl.author_id')),
@@ -341,16 +336,6 @@ class cifDB(object):
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
                   PrimaryKeyConstraint('category_id', 'amcsd_id')
                   )
-        georef  = Table('georef', self.metadata,
-                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                  Column('a', String()),
-                  Column('b', String()),
-                  Column('c', String()),
-                  Column('alpha', String()),
-                  Column('beta', String()),
-                  Column('gamma', String()),
-                  PrimaryKeyConstraint('amcsd_id')
-                  )
         ###################################################
         ## Main table
         ciftbl  = Table('ciftbl', self.metadata,
@@ -358,6 +343,12 @@ class cifDB(object):
                   Column('mineral_id', Integer),
                   Column('formula_id', Integer),
                   Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
+                  Column('a', String(5)),
+                  Column('b', String(5)),
+                  Column('c', String(5)),
+                  Column('alpha', String(5)),
+                  Column('beta', String(5)),
+                  Column('gamma', String(5)),
                   Column('cif', String(25)), ## , nullable=True
                   Column('zstr',String(25)),
                   Column('qstr',String(25)),
@@ -383,7 +374,6 @@ class cifDB(object):
         add_q    = qref.insert()
         add_auth = authref.insert()
         add_cat  = catref.insert()
-        add_geo  = georef.insert()
 
         new_cif  = ciftbl.insert()
 
@@ -426,7 +416,7 @@ class cifDB(object):
 
         ## Adds qrange
         for q in QAXIS:
-            def_q.execute(q=float('%0.2f' % q))
+            def_q.execute(q='%0.2f' % q)
 
         ## Adds all space groups
         for spgrp_no in SPACEGROUPS.keys():
@@ -457,7 +447,6 @@ class cifDB(object):
         self.qref    = Table('qref',    self.metadata)
         self.authref = Table('authref', self.metadata)
         self.catref  = Table('catref',  self.metadata)
-        self.georef  = Table('georef',  self.metadata)
         ###################################################
         ## Main table
         self.ciftbl  = Table('ciftbl', self.metadata)
@@ -528,9 +517,7 @@ class cifDB(object):
             return
         
         ## Define q-array for each entry at given energy
-        energy = 19000 ## units eV
-        #cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
-        qhkl = cif.q_calculator(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
+        qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY),q_min=QMIN,q_max=QMAX)
         qarr = self.create_q_array(qhkl)
         
         ###################################################
@@ -547,7 +534,6 @@ class cifDB(object):
         add_q    = self.qref.insert()
         add_auth = self.authref.insert()
         add_cat  = self.catref.insert()
-        add_geo  = self.georef.insert()
         new_cif  = self.ciftbl.insert()
 
         ## Find mineral_name
@@ -582,14 +568,35 @@ class cifDB(object):
                 z_list += [row.z]
         zarr = self.create_z_array(z_list)
 
+
+
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=cif.id_no,
-                             mineral_id=int(mineral_id),
-                             iuc_id=cif.symmetry.no,
-                             cif=cifstr,
-                             zstr=json.dumps(zarr.tolist(),default=str),
-                             qstr=json.dumps(qarr.tolist(),default=str),
-                             url=str(cifile))
+                        mineral_id=int(mineral_id),
+                        formula_id=int(formula_id),
+                        iuc_id=cif.symmetry.no,
+                        a=str(cif.unitcell[0]),
+                        b=str(cif.unitcell[1]),
+                        c=str(cif.unitcell[2]),
+                        alpha=str(cif.unitcell[3]),
+                        beta=str(cif.unitcell[4]),
+                        gamma=str(cif.unitcell[5]),
+                        cif=cifstr,
+                        zstr=json.dumps(zarr.tolist(),default=str),
+                        qstr=json.dumps(qarr.tolist(),default=str),
+                        url=str(cifile))
+
+        ## Build q cross-reference table
+        for q in qhkl:
+            search_q = self.qtbl.select(self.qtbl.c.q == '%0.2f' % (int(q * 100) / 100.))
+            for row in search_q.execute():
+                q_id = row.q_id
+            
+            try:
+                add_q.execute(q_id=q_id,amcsd_id=cif.id_no)
+            except:
+                pass
+
 
         ## Build composition cross-reference table
         for element in set(cif.atom.label):
@@ -675,10 +682,10 @@ class cifDB(object):
                         if verbose:
                             print('Saved %s' % file)
                     if addDB:
-                        try:
+                        if 1==1: #try:
                             self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
-                        except:
-                            pass
+#                         except:
+#                             pass
 
 
 
