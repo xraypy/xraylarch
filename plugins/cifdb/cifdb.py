@@ -100,12 +100,12 @@ def iscifDB(dbname):
                'symtbl',
                'authtbl',
                'qtbl',
-               'geotbl',
+               'georef',
                'cattbl',
                'symref',
                'compref',
-               'authref',
                'qref',
+               'authref',
                'catref')
     result = False
     try:
@@ -147,11 +147,12 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-class CIFTable(_BaseTable):
-    (amcsd_id, mineral_id, chemical_id, iuc_id, cif, qstr, url) = [None]*7
-
 class GeoTable(_BaseTable):
     (amcsd_id, a, b, c, alpha, beta, gamma) = [None]*7
+
+# class CIFTable(_BaseTable):
+#     (amcsd_id, mineral_id, formula_id, iuc_id, cif, zstr, qstr, url) = [None]*8
+
 
 class cifDB(object):
     '''
@@ -198,10 +199,12 @@ class cifDB(object):
         spgptbl = tables['spgptbl']
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
-        cattbl  = tables['cattbl']
         qtbl    = tables['qtbl']
+        georef  = tables['georef']        
+        cattbl  = tables['cattbl']
         symref  = tables['symref']
         compref = tables['compref']
+        qref    = tables['qref']
         authref = tables['authref']
         catref  = tables['catref']
 
@@ -216,7 +219,7 @@ class cifDB(object):
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
         mapper(ChemicalFormulaTable, nametbl, properties=dict(
                  a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-                 primaryjoin=(ciftbl.c.chemical_id == formtbl.c.chemical_id))))
+                 primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
@@ -228,9 +231,15 @@ class cifDB(object):
         mapper(AuthorTable, authtbl, properties=dict(
                  a=relationship(AuthorTable, secondary=authref,
                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
+        mapper(QTable, qtbl, properties=dict(
+                 a=relationship(QTable, secondary=qref,
+                 primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
         mapper(CategoryTable, cattbl, properties=dict(
                  a=relationship(CategoryTable, secondary=catref,
                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
+        mapper(GeoTable, georef, properties=dict(
+                 a=relationship(GeoTable, secondary=ciftbl,
+                 primaryjoin=(ciftbl.c.amcsd_id == georef.c.amcsd_id))))
 #         mapper(CIFTable, ciftbl, properties=dict(
 #                  a=relationship(CIFTable, secondary=compref,
 #                  primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
@@ -288,36 +297,36 @@ class cifDB(object):
                   Column('hm_notation', String(16), unique=True, nullable=True),
                   PrimaryKeyConstraint('iuc_id', 'hm_notation')
                   )
-        symtbl = Table('symtbl', self.metadata,
-                 Column('symmetry_id', Integer, primary_key=True),
-                 Column('symmetry_name', String(16), unique=True, nullable=True)
-                 )
+        symtbl  = Table('symtbl', self.metadata,
+                  Column('symmetry_id', Integer, primary_key=True),
+                  Column('symmetry_name', String(16), unique=True, nullable=True)
+                  )
         authtbl = Table('authtbl', self.metadata,
                   Column('author_id', Integer, primary_key=True),
                   Column('author_name', String(40), unique=True, nullable=True)
                   )
-        qtbl = Table('qtbl', self.metadata,
-               Column('q_id', Integer, primary_key=True),
-               #Column('q', Float()) ## how to make this work? mkak 2017.02.14
-               Column('q', String())
-               )
-        cattbl = Table('cattbl', self.metadata,
-                 Column('category_id', Integer, primary_key=True),
-                 Column('category_name', String(16), unique=True, nullable=True)
-                 )
+        qtbl    = Table('qtbl', self.metadata,
+                  Column('q_id', Integer, primary_key=True),
+                  #Column('q', Float()) ## how to make this work? mkak 2017.02.14
+                  Column('q', String())
+                  )
+        cattbl  = Table('cattbl', self.metadata,
+                  Column('category_id', Integer, primary_key=True),
+                  Column('category_name', String(16), unique=True, nullable=True)
+                  )
         ###################################################
         ## Cross-reference tables
-        symref = Table('symref', self.metadata,
-                 Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
-                 Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
-                 PrimaryKeyConstraint('iuc_id', 'symmetry_id')
-                 )
+        symref  = Table('symref', self.metadata,
+                  Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
+                  Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
+                  PrimaryKeyConstraint('iuc_id', 'symmetry_id')
+                  )
         compref = Table('compref', self.metadata,
                   Column('z', None, ForeignKey('elemtbl.z')),
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
                   PrimaryKeyConstraint('z', 'amcsd_id')
                   )
-        qref = Table('qref', self.metadata,
+        qref    = Table('qref', self.metadata,
                   Column('z', None, ForeignKey('elemtbl.z')),
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
                   PrimaryKeyConstraint('z', 'amcsd_id')
@@ -327,23 +336,33 @@ class cifDB(object):
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
                   PrimaryKeyConstraint('author_id', 'amcsd_id')
                   )
-        catref = Table('catref', self.metadata,
-                 Column('category_id', None, ForeignKey('cattbl.category_id')),
-                 Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                 PrimaryKeyConstraint('category_id', 'amcsd_id')
-                 )
+        catref  = Table('catref', self.metadata,
+                  Column('category_id', None, ForeignKey('cattbl.category_id')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('category_id', 'amcsd_id')
+                  )
+        georef  = Table('georef', self.metadata,
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  Column('a', String()),
+                  Column('b', String()),
+                  Column('c', String()),
+                  Column('alpha', String()),
+                  Column('beta', String()),
+                  Column('gamma', String()),
+                  PrimaryKeyConstraint('amcsd_id')
+                  )
         ###################################################
         ## Main table
-        ciftbl = Table('ciftbl', self.metadata,
-                 Column('amcsd_id', Integer, primary_key=True),
-                 Column('mineral_id', Integer),
-                 Column('formula_id', Integer),
-                 Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
-                 Column('cif', String(25)), ## , nullable=True
-                 Column('zstr',String(25)),
-                 Column('qstr',String(25)),
-                 Column('url',String(25))
-                 )
+        ciftbl  = Table('ciftbl', self.metadata,
+                  Column('amcsd_id', Integer, primary_key=True),
+                  Column('mineral_id', Integer),
+                  Column('formula_id', Integer),
+                  Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
+                  Column('cif', String(25)), ## , nullable=True
+                  Column('zstr',String(25)),
+                  Column('qstr',String(25)),
+                  Column('url',String(25))
+                  )
         ###################################################
         ## Add all to file
         self.metadata.create_all() ## if not exists function (callable when exists)
@@ -352,6 +371,7 @@ class cifDB(object):
         ## Define 'add/insert' functions for each table
         def_elem = elemtbl.insert()
         def_name = nametbl.insert()
+        def_form = formtbl.insert()
         def_spgp = spgptbl.insert()
         def_sym  = symtbl.insert()
         def_auth = authtbl.insert()
@@ -359,9 +379,11 @@ class cifDB(object):
         def_cat  = cattbl.insert()
         
         add_sym  = symref.insert()
-#         add_comp = compref.insert()
+        add_comp = compref.insert()
+        add_q    = qref.insert()
         add_auth = authref.insert()
         add_cat  = catref.insert()
+        add_geo  = georef.insert()
 
         new_cif  = ciftbl.insert()
 
@@ -422,6 +444,7 @@ class cifDB(object):
         ## Look up tables
         self.elemtbl = Table('elemtbl', self.metadata)
         self.nametbl = Table('nametbl', self.metadata)
+        self.formtbl = Table('formtbl', self.metadata)
         self.spgptbl = Table('spgptbl', self.metadata)
         self.symtbl  = Table('symtbl',  self.metadata)
         self.authtbl = Table('authtbl', self.metadata)
@@ -429,10 +452,12 @@ class cifDB(object):
         self.cattbl  = Table('cattbl',  self.metadata)
         ###################################################
         ## Cross-reference tables
-        self.symref  = Table('symref', self.metadata)
-#         self.compref = Table('compref', self.metadata)
+        self.symref  = Table('symref',  self.metadata)
+        self.compref = Table('compref', self.metadata)
+        self.qref    = Table('qref',    self.metadata)
         self.authref = Table('authref', self.metadata)
-        self.catref  = Table('catref', self.metadata)
+        self.catref  = Table('catref',  self.metadata)
+        self.georef  = Table('georef',  self.metadata)
         ###################################################
         ## Main table
         self.ciftbl  = Table('ciftbl', self.metadata)
@@ -511,15 +536,18 @@ class cifDB(object):
         ###################################################
         def_elem = self.elemtbl.insert()
         def_name = self.nametbl.insert()
+        def_form = self.formtbl.insert()
         def_spgp = self.spgptbl.insert()
         def_sym  = self.symtbl.insert()
         def_auth = self.authtbl.insert()
         def_q    = self.qtbl.insert()
         def_cat  = self.cattbl.insert()
         add_sym  = self.symref.insert()
-#         add_comp = self.compref.insert()
+        add_comp = self.compref.insert()
+        add_q    = self.qref.insert()
         add_auth = self.authref.insert()
         add_cat  = self.catref.insert()
+        add_geo  = self.georef.insert()
         new_cif  = self.ciftbl.insert()
 
         ## Find mineral_name
@@ -533,6 +561,18 @@ class cifDB(object):
             search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
+                
+        ## Find formula_name
+        match = False
+        search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
+        for row in search_formula.execute():
+            formula_id = row.formula_id
+            match = True
+        if match is False:
+            def_form.execute(formula_name=cif.formula)
+            search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
+            for row in search_formula.execute():
+                formula_id = row.formula_id
                 
         ## Find composition (loop over all elements)
         z_list = []
@@ -551,16 +591,17 @@ class cifDB(object):
                              qstr=json.dumps(qarr.tolist(),default=str),
                              url=str(cifile))
 
-#         for element in set(cif.atom.label):
-#             search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
-#             for row in search_elements.execute():
-#                 z = row.z
-#             
-#             try:
-#                 add_comp.execute(z=z,amcsd_id=cif.id_no)
-#             except:
-#                 print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
-#                 pass
+        ## Build composition cross-reference table
+        for element in set(cif.atom.label):
+            search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
+            for row in search_elements.execute():
+                z = row.z
+            
+            try:
+                add_comp.execute(z=z,amcsd_id=cif.id_no)
+            except:
+                print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
+                pass
 
         ## Find author_name
         for author_name in cif.publication.author:

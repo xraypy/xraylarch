@@ -2398,16 +2398,17 @@ class CIFcls(object):
 
     def __init__(self):
 
-        self.label = None
-        self.cifile = None
-        self.id_no = None
+        self.label   = None
+        self.formula = None
+        self.cifile  = None
+        self.id_no   = None
 
         self.unitcell = np.array([0,0,0,0,0,0], dtype=np.float32)
-        self.density = None
-        self.volume = None        
+        self.density  = None
+        self.volume   = None        
 
-        self.symmetry = Symmetry()        
-        self.atom = Atom()
+        self.symmetry    = Symmetry()        
+        self.atom        = Atom()
         self.publication = Citation()
         
         self.formula = None
