@@ -591,7 +591,7 @@ class Fitting1DXRD(BasePanel):
         ## Default information
         self.xrd1dgrp  = None
         self.plt_data  = None
-        self.plt_cif    = None
+        self.plt_cif   = None
 
         self.plt_peaks = None
         self.peaklist  = []
