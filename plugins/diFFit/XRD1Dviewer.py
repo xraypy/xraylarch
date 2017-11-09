@@ -3251,8 +3251,7 @@ class Calc1DPopup(wx.Dialog):
         mainsizer.Add(minisizer,  flag=wx.ALL, border=8)
         mainsizer.AddSpacer(15)
         mainsizer.Add(oksizer,    flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
-
-
+        
         self.panel.SetSizer(mainsizer)
 
 
@@ -3265,9 +3264,9 @@ class Calc1DPopup(wx.Dialog):
     def setDefaults(self):
 
         self.xstep.SetValue(str(5001))
-        
         self.wedges.SetValue(1)
         self.wedges.SetRange(1,36)
+        self.save_choice.SetSelection(1)
 
         self.okBtn.Disable()
 
