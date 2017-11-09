@@ -21,7 +21,6 @@ from sqlalchemy import (create_engine,MetaData,
                         PrimaryKeyConstraint,ForeignKeyConstraint,ForeignKey,
                         Numeric,func,
                         and_,or_,not_,tuple_)
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,mapper,clear_mappers,relationship
 from sqlalchemy.pool import SingletonThreadPool
@@ -83,6 +82,8 @@ QMAX = 10.0
 QSTEP = 0.01
 QAXIS = np.arange(QMIN,QMAX+QSTEP,QSTEP)
 
+ENERGY = 19000 ## units eV
+
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
                          poolclass=SingletonThreadPool)
@@ -95,13 +96,15 @@ def iscifDB(dbname):
     _tables = ('ciftbl',
                'elemtbl',
                'nametbl',
+               'formtbl',
                'spgptbl',
                'symtbl',
                'authtbl',
                'qtbl',
                'cattbl',
                'symref',
-               ##'compref',
+               'compref',
+               'qref',
                'authref',
                'catref')
     result = False
@@ -126,6 +129,9 @@ class ElementTable(_BaseTable):
 class MineralNameTable(_BaseTable):
     (id,name) = [None]*2
 
+class ChemicalFormulaTable(_BaseTable):
+    (id,name) = [None]*2
+
 class SpaceGroupTable(_BaseTable):
     (iuc_id, hm_notation) = [None]*2
 
@@ -141,10 +147,10 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-# class CIFTable(_BaseTable):
-#     (amcsd_id, mineral_id, iuc_id, cif) = [None]*4
-class CIFTable(_BaseTable):
-    (amcsd_id, mineral_id, iuc_id, cif, qstr, url) = [None]*6
+# # class CIFTable(_BaseTable):
+# #     (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma, 
+# #      cif, zstr, qstr, url) = [None]*14
+
 
 class cifDB(object):
     '''
@@ -187,25 +193,30 @@ class cifDB(object):
         ciftbl  = tables['ciftbl']
         elemtbl = tables['elemtbl']
         nametbl = tables['nametbl']
+        formtbl = tables['formtbl']
         spgptbl = tables['spgptbl']
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
-        cattbl  = tables['cattbl']
         qtbl    = tables['qtbl']
+        cattbl  = tables['cattbl']
         symref  = tables['symref']
-#         compref = tables['compref']
+        compref = tables['compref']
+        qref    = tables['qref']
         authref = tables['authref']
         catref  = tables['catref']
 
         ## Define mappers
         clear_mappers()
-#         mapper(ElementTable, elemtbl, properties=dict(
-#                  a=relationship(ElementTable, secondary=compref,
-#                  primaryjoin=(compref.c.z == elemtbl.c.z),
-#                  secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
+        mapper(ElementTable, elemtbl, properties=dict(
+                 a=relationship(ElementTable, secondary=compref,
+                 primaryjoin=(compref.c.z == elemtbl.c.z),
+                 secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
         mapper(MineralNameTable, nametbl, properties=dict(
                  a=relationship(MineralNameTable, secondary=ciftbl,
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
+        mapper(ChemicalFormulaTable, nametbl, properties=dict(
+                 a=relationship(ChemicalFormulaTable, secondary=ciftbl,
+                 primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
@@ -217,6 +228,9 @@ class cifDB(object):
         mapper(AuthorTable, authtbl, properties=dict(
                  a=relationship(AuthorTable, secondary=authref,
                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
+        mapper(QTable, qtbl, properties=dict(
+                 a=relationship(QTable, secondary=qref,
+                 primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
         mapper(CategoryTable, cattbl, properties=dict(
                  a=relationship(CategoryTable, secondary=catref,
                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
@@ -268,61 +282,77 @@ class cifDB(object):
                   Column('mineral_id', Integer, primary_key=True),
                   Column('mineral_name', String(30), unique=True, nullable=True)
                   )
+        formtbl = Table('formtbl', self.metadata,
+                  Column('formula_id', Integer, primary_key=True),
+                  Column('formula_name', String(30), unique=True, nullable=True)
+                  )
         spgptbl = Table('spgptbl', self.metadata,
                   Column('iuc_id', Integer),
                   Column('hm_notation', String(16), unique=True, nullable=True),
                   PrimaryKeyConstraint('iuc_id', 'hm_notation')
                   )
-        symtbl = Table('symtbl', self.metadata,
-                 Column('symmetry_id', Integer, primary_key=True),
-                 Column('symmetry_name', String(16), unique=True, nullable=True)
-                 )
+        symtbl  = Table('symtbl', self.metadata,
+                  Column('symmetry_id', Integer, primary_key=True),
+                  Column('symmetry_name', String(16), unique=True, nullable=True)
+                  )
         authtbl = Table('authtbl', self.metadata,
                   Column('author_id', Integer, primary_key=True),
                   Column('author_name', String(40), unique=True, nullable=True)
                   )
-        qtbl = Table('qtbl', self.metadata,
-               Column('q_id', Integer, primary_key=True),
-               #Column('q', Float()) ## how to make this work? mkak 2017.02.14
-               Column('q', String())
-               )
-        cattbl = Table('cattbl', self.metadata,
-                 Column('category_id', Integer, primary_key=True),
-                 Column('category_name', String(16), unique=True, nullable=True)
-                 )
+        qtbl    = Table('qtbl', self.metadata,
+                  Column('q_id', Integer, primary_key=True),
+                  #Column('q', Float()) ## how to make this work? mkak 2017.02.14
+                  Column('q', String())
+                  )
+        cattbl  = Table('cattbl', self.metadata,
+                  Column('category_id', Integer, primary_key=True),
+                  Column('category_name', String(16), unique=True, nullable=True)
+                  )
         ###################################################
         ## Cross-reference tables
-        symref = Table('symref', self.metadata,
-                 Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
-                 Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
-                 PrimaryKeyConstraint('iuc_id', 'symmetry_id')
-                 )
-#         compref = Table('compref', self.metadata,
-#                   Column('z', None, ForeignKey('elemtbl.z')),
-#                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-#                   PrimaryKeyConstraint('z', 'amcsd_id')
-#                   )
+        symref  = Table('symref', self.metadata,
+                  Column('iuc_id', None, ForeignKey('spgptbl.iuc_id')),
+                  Column('symmetry_id', None, ForeignKey('symtbl.symmetry_id')),
+                  PrimaryKeyConstraint('iuc_id', 'symmetry_id')
+                  )
+        compref = Table('compref', self.metadata,
+                  Column('z', None, ForeignKey('elemtbl.z')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('z', 'amcsd_id')
+                  )
+        qref    = Table('qref', self.metadata,
+                  Column('q_id', None, ForeignKey('qtbl.q_id')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('q_id', 'amcsd_id')
+                  )
         authref = Table('authref', self.metadata,
                   Column('author_id', None, ForeignKey('authtbl.author_id')),
                   Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
                   PrimaryKeyConstraint('author_id', 'amcsd_id')
                   )
-        catref = Table('catref', self.metadata,
-                 Column('category_id', None, ForeignKey('cattbl.category_id')),
-                 Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
-                 PrimaryKeyConstraint('category_id', 'amcsd_id')
-                 )
+        catref  = Table('catref', self.metadata,
+                  Column('category_id', None, ForeignKey('cattbl.category_id')),
+                  Column('amcsd_id', None, ForeignKey('ciftbl.amcsd_id')),
+                  PrimaryKeyConstraint('category_id', 'amcsd_id')
+                  )
         ###################################################
         ## Main table
-        ciftbl = Table('ciftbl', self.metadata,
-                 Column('amcsd_id', Integer, primary_key=True),
-                 Column('mineral_id', Integer),
-                 Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
-                 Column('cif', String(25)), ## , nullable=True
-                 Column('zstr',String(25)),
-                 Column('qstr',String(25)),
-                 Column('url',String(25))
-                 )
+        ciftbl  = Table('ciftbl', self.metadata,
+                  Column('amcsd_id', Integer, primary_key=True),
+                  Column('mineral_id', Integer),
+                  Column('formula_id', Integer),
+                  Column('iuc_id', ForeignKey('spgptbl.iuc_id')),
+                  Column('a', String(5)),
+                  Column('b', String(5)),
+                  Column('c', String(5)),
+                  Column('alpha', String(5)),
+                  Column('beta', String(5)),
+                  Column('gamma', String(5)),
+                  Column('cif', String(25)), ## , nullable=True
+                  Column('zstr',String(25)),
+                  Column('qstr',String(25)),
+                  Column('url',String(25))
+                  )
         ###################################################
         ## Add all to file
         self.metadata.create_all() ## if not exists function (callable when exists)
@@ -331,6 +361,7 @@ class cifDB(object):
         ## Define 'add/insert' functions for each table
         def_elem = elemtbl.insert()
         def_name = nametbl.insert()
+        def_form = formtbl.insert()
         def_spgp = spgptbl.insert()
         def_sym  = symtbl.insert()
         def_auth = authtbl.insert()
@@ -338,7 +369,8 @@ class cifDB(object):
         def_cat  = cattbl.insert()
         
         add_sym  = symref.insert()
-#         add_comp = compref.insert()
+        add_comp = compref.insert()
+        add_q    = qref.insert()
         add_auth = authref.insert()
         add_cat  = catref.insert()
 
@@ -383,7 +415,7 @@ class cifDB(object):
 
         ## Adds qrange
         for q in QAXIS:
-            def_q.execute(q=float('%0.2f' % q))
+            def_q.execute(q='%0.2f' % q)
 
         ## Adds all space groups
         for spgrp_no in SPACEGROUPS.keys():
@@ -401,6 +433,7 @@ class cifDB(object):
         ## Look up tables
         self.elemtbl = Table('elemtbl', self.metadata)
         self.nametbl = Table('nametbl', self.metadata)
+        self.formtbl = Table('formtbl', self.metadata)
         self.spgptbl = Table('spgptbl', self.metadata)
         self.symtbl  = Table('symtbl',  self.metadata)
         self.authtbl = Table('authtbl', self.metadata)
@@ -408,10 +441,11 @@ class cifDB(object):
         self.cattbl  = Table('cattbl',  self.metadata)
         ###################################################
         ## Cross-reference tables
-        self.symref  = Table('symref', self.metadata)
-#         self.compref = Table('compref', self.metadata)
+        self.symref  = Table('symref',  self.metadata)
+        self.compref = Table('compref', self.metadata)
+        self.qref    = Table('qref',    self.metadata)
         self.authref = Table('authref', self.metadata)
-        self.catref  = Table('catref', self.metadata)
+        self.catref  = Table('catref',  self.metadata)
         ###################################################
         ## Main table
         self.ciftbl  = Table('ciftbl', self.metadata)
@@ -482,21 +516,21 @@ class cifDB(object):
             return
         
         ## Define q-array for each entry at given energy
-        energy = 19000 ## units eV
-        #cif.structure_factors(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
-        qhkl = cif.q_calculator(wvlgth=lambda_from_E(energy),q_min=QMIN,q_max=QMAX)
+        qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY),q_min=QMIN,q_max=QMAX)
         qarr = self.create_q_array(qhkl)
         
         ###################################################
         def_elem = self.elemtbl.insert()
         def_name = self.nametbl.insert()
+        def_form = self.formtbl.insert()
         def_spgp = self.spgptbl.insert()
         def_sym  = self.symtbl.insert()
         def_auth = self.authtbl.insert()
         def_q    = self.qtbl.insert()
         def_cat  = self.cattbl.insert()
         add_sym  = self.symref.insert()
-#         add_comp = self.compref.insert()
+        add_comp = self.compref.insert()
+        add_q    = self.qref.insert()
         add_auth = self.authref.insert()
         add_cat  = self.catref.insert()
         new_cif  = self.ciftbl.insert()
@@ -513,6 +547,18 @@ class cifDB(object):
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
                 
+        ## Find formula_name
+        match = False
+        search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
+        for row in search_formula.execute():
+            formula_id = row.formula_id
+            match = True
+        if match is False:
+            def_form.execute(formula_name=cif.formula)
+            search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
+            for row in search_formula.execute():
+                formula_id = row.formula_id
+                
         ## Find composition (loop over all elements)
         z_list = []
         for element in set(cif.atom.label):
@@ -521,25 +567,47 @@ class cifDB(object):
                 z_list += [row.z]
         zarr = self.create_z_array(z_list)
 
+
+
         ## Save CIF entry into database
         new_cif.execute(amcsd_id=cif.id_no,
-                             mineral_id=int(mineral_id),
-                             iuc_id=cif.symmetry.no,
-                             cif=cifstr,
-                             zstr=json.dumps(zarr.tolist(),default=str),
-                             qstr=json.dumps(qarr.tolist(),default=str),
-                             url=str(cifile))
+                        mineral_id=int(mineral_id),
+                        formula_id=int(formula_id),
+                        iuc_id=cif.symmetry.no,
+                        a=str(cif.unitcell[0]),
+                        b=str(cif.unitcell[1]),
+                        c=str(cif.unitcell[2]),
+                        alpha=str(cif.unitcell[3]),
+                        beta=str(cif.unitcell[4]),
+                        gamma=str(cif.unitcell[5]),
+                        cif=cifstr,
+                        zstr=json.dumps(zarr.tolist(),default=str),
+                        qstr=json.dumps(qarr.tolist(),default=str),
+                        url=str(cifile))
 
-#         for element in set(cif.atom.label):
-#             search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
-#             for row in search_elements.execute():
-#                 z = row.z
-#             
-#             try:
-#                 add_comp.execute(z=z,amcsd_id=cif.id_no)
-#             except:
-#                 print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
-#                 pass
+        ## Build q cross-reference table
+        for q in qhkl:
+            search_q = self.qtbl.select(self.qtbl.c.q == '%0.2f' % (int(q * 100) / 100.))
+            for row in search_q.execute():
+                q_id = row.q_id
+            
+            try:
+                add_q.execute(q_id=q_id,amcsd_id=cif.id_no)
+            except:
+                pass
+
+
+        ## Build composition cross-reference table
+        for element in set(cif.atom.label):
+            search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
+            for row in search_elements.execute():
+                z = row.z
+            
+            try:
+                add_comp.execute(z=z,amcsd_id=cif.id_no)
+            except:
+                print('could not find element: %s (amcsd: %i)' % (element,cif.id_no))
+                pass
 
         ## Find author_name
         for author_name in cif.publication.author:
@@ -594,7 +662,7 @@ class cifDB(object):
             iindex = np.arange(minval,99999) ## starts at given min and counts up
         else:
             iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
-        
+
         for i in iindex:
             if i not in exceptions and i < maxi:
                 url_to_scrape = url % i
@@ -647,30 +715,33 @@ class cifDB(object):
 
     def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
 
-        ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
+        mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
+        
+        mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
+        authors      = self.author_by_amcsd(amcsd_id)
+
+        ## ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
         
         if cifile:
             print(' ==== File : %s ====' % os.path.split(cifile)[-1])
         else:
             print(' ===================== ')
         print(' AMCSD: %i' % amcsd_id)
-
-        elementstr = ' Elements: '
-        for element in ALLelements:
-            elementstr = '%s %s' % (elementstr,element)
-        print(elementstr)
         print(' Name: %s' % mineral_name)
-
+        print(' %s' % self.composition_by_amcsd(amcsd_id,string=True))
         try:
             print(' Space Group No.: %s (%s)' % (iuc_id,self.symm_id(iuc_id)))
         except:
             print(' Space Group No.: %s' % iuc_id)
         if no_qpeaks:
             print(' No. q-peaks in range : %s' % no_qpeaks)
-        authorstr = ' Author: '
-        for author in authors:
+
+        for i,author in enumerate(authors):
             try:
-                authorstr = '%s %s' % (authorstr,author.split()[0])
+                if i == 0:
+                    authorstr = ' Author(s): ' % (author.split()[0])
+                else:
+                    authorstr = '%s, %s' % (authorstr,author.split()[0])
             except:
                 pass
         print(authorstr)
@@ -703,7 +774,7 @@ class cifDB(object):
 
     def all_by_amcsd(self,amcsd_id,verbose=False):
 
-        mineral_id,iuc_id,cifstr = self.cif_by_amcsd(amcsd_id,all=True)
+        mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
         
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         ALLelements  = self.composition_by_amcsd(amcsd_id)
@@ -726,8 +797,7 @@ class cifDB(object):
             authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
         return authors
 
-    def composition_by_amcsd(self,amcsd_id):
-    
+    def composition_by_amcsd(self,amcsd_id,string=False):
     
         z_results = self.query(self.ciftbl.c.zstr).filter(self.ciftbl.c.amcsd_id == amcsd_id).all()
         z_list = [z for z,i in enumerate([json.loads(zrow[0]) for zrow in z_results][0]) if i==1]
@@ -738,15 +808,26 @@ class cifDB(object):
             for block in search_periodic.execute():
                 ALLelements.append(block.element_symbol)
                 
-        return ALLelements
+        if string:
+            elementstr = 'Elements: '
+            for i,element in enumerate(ALLelements):
+                if i == 0:
+                    elementstr = '%s %s' % (elementstr,element)
+                else:
+                    elementstr = '%s, %s' % (elementstr,element)
+            return elementstr
+        else:
+            return ALLelements
         
 
-    def cif_by_amcsd(self,amcsd_id,all=False):
+    def cif_by_amcsd(self,amcsd_id,only_ids=False):
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
         for row in search_cif.execute():
-            if all: return row.mineral_id,row.iuc_id,row.cif
-            else: return row.cif
+            if only_ids:
+                return row.mineral_id,row.iuc_id
+            else:
+                return row.cif
 
     def mineral_by_amcsd(self,amcsd_id):
 
@@ -1099,14 +1180,13 @@ class cifDB(object):
      
     def return_no_of_cif(self):
         
-        lines = len(self.query(self.ciftbl).all())
-        return lines
+        ##return len(self.query(self.ciftbl).all())
+        ##return self.query(func.count(self.ciftbl.c.amcsd_id)).scalar()
+        return self.query(self.ciftbl).count()
 
     def return_q(self):
         
-        qqry = self.query(self.qtbl)
-        q = [float(row.q) for row in qqry.all()]
-
+        q = [float(row.q) for row in self.query(self.qtbl).all()]
         return np.array(q)
 
     def return_mineral_names(self):
@@ -1357,13 +1437,6 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
                              cifdatabase.mineral_by_amcsd(id_no),scores[i],
                              match_peaks[i],total_peaks[i])
                     print(str)
+        print('')
 
     return MATCHES
-                
-                          
-                
-
-
-
-
-
