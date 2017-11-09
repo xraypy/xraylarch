@@ -735,10 +735,13 @@ class cifDB(object):
             print(' Space Group No.: %s' % iuc_id)
         if no_qpeaks:
             print(' No. q-peaks in range : %s' % no_qpeaks)
-        authorstr = ' Author(s): '
-        for author in authors:
+
+        for i,author in enumerate(authors):
             try:
-                authorstr = '%s %s' % (authorstr,author.split()[0])
+                if i == 0:
+                    authorstr = ' Author(s): ' % (author.split()[0])
+                else:
+                    authorstr = '%s, %s' % (authorstr,author.split()[0])
             except:
                 pass
         print(authorstr)
