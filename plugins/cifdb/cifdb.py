@@ -736,14 +736,9 @@ class cifDB(object):
         if no_qpeaks:
             print(' No. q-peaks in range : %s' % no_qpeaks)
 
-        for i,author in enumerate(authors):
-            try:
-                if i == 0:
-                    authorstr = ' Author(s): ' % (author.split()[0])
-                else:
-                    authorstr = '%s, %s' % (authorstr,author.split()[0])
-            except:
-                pass
+        authorstr = ' Author(s): '
+        for author in authors:
+             authorstr = '%s %s' % (authorstr,author.split()[0])
         print(authorstr)
         print(' ===================== ')
         print('')

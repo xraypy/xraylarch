@@ -3260,7 +3260,7 @@ class OpenMapFolder(wx.Dialog):
 
         self.info[0].SetValue(FACILITY)
         self.info[1].SetValue(BEAMLINE)
-        self.info[2].SetValue(datetime.date.today().isoformat())
+        self.info[2].SetValue(datetime.datetime.today().isoformat())
 
     def checkOK(self,event=None):
 
@@ -3328,10 +3328,16 @@ class OpenMapFolder(wx.Dialog):
 
             for line in open(os.path.join(path, 'Scan.ini'), 'r'):
                 if line.split()[0] == 'basedir':
-                    path = line.split()[-1].split('/')
-                    cycle,usr = path[-2],path[-1]
+                    npath = line.split()[-1].split('/')
+                    cycle,usr = npath[-2],npath[-1]
                     self.info[3].SetValue(cycle)
                     self.info[5].SetValue(usr)
+#             try:
+#                 masterfile = os.path.join(path, 'Master.dat')
+#                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(os.stat(masterfile).st_ctime))
+#                 self.info[2].SetValue(timestamp)
+#             except:
+#                 pass
 
         self.checkOK()
 
