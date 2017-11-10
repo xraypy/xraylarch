@@ -1032,6 +1032,7 @@ class GSEXRM_MapFile(object):
         if '_unused_' in xrdf:
             self.flag_xrd1d = False
             self.flag_xrd2d = False
+
         if '_unused_' in xrff:            
             self.flag_xrf = False
 
@@ -1930,15 +1931,11 @@ class GSEXRM_MapFile(object):
         return tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
     def claim_hostid(self):
-        "claim ownershipf of file"
-        if self.xrmmap is None:
-            return
-        self.xrmmap.attrs['Process_Machine'] = socket.gethostname()
-        self.xrmmap.attrs['Process_ID'] = os.getpid()
-        self.h5root.flush()
+        "claim ownership of file"
+        self.take_ownership()
 
     def take_ownership(self):
-        "claim ownershipf of file"
+        "claim ownership of file"
         if self.xrmmap is None:
             return
         self.xrmmap.attrs['Process_Machine'] = socket.gethostname()
@@ -1965,7 +1962,7 @@ class GSEXRM_MapFile(object):
         file_mach = attrs['Process_Machine']
         file_pid  = attrs['Process_ID']
         if len(file_mach) < 1 or file_pid < 1:
-            self.claim_hostid()
+            self.take_ownership()
             return True
         return (file_mach == socket.gethostname() and
                 file_pid == os.getpid())
@@ -3154,7 +3151,7 @@ def read_xrfmap(filename, root=None):
 
 read_xrmmap = read_xrfmap
 
-def process_mapfolder(path, **kws):
+def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
     """
@@ -3167,8 +3164,12 @@ def process_mapfolder(path, **kws):
             print sys.exc_info()
             return
         try:
-            g.take_ownership()
-            g.process()
+            if take_ownership:
+                g.take_ownership()
+            if g.check_ownership():
+                g.process()
+            else:
+                print( 'Skipping file %s: not owner' % path)
         except KeyboardInterrupt:
             sys.exit()
         except:
@@ -3178,19 +3179,7 @@ def process_mapfolder(path, **kws):
         finally:
             g.close()
 
-def list_mapfolder(path, **kws):
-    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
-        print( '\n build map for: %s' % path)
-        print( '\n with ', kws)
-        try:
-            g = GSEXRM_MapFile(folder=path, **kws)
-        except:
-            print( 'Could not create MapFile')
-            print sys.exc_info()
-            return
-        g.close()
-
-def process_mapfolders(folders, ncpus=None, **kws):
+def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
     """process a list of map folders
     with optional keywords passed to GSEXRM_MapFile
     """
@@ -3201,6 +3190,7 @@ def process_mapfolders(folders, ncpus=None, **kws):
             process_mapfolder(path, **kws)
     else:
         pool = mp.Pool(ncpus)
+        kws['take_ownership'] = take_ownership
         myfunc = partial(process_mapfolder, **kws)
         pool.map(myfunc, folders)
 
