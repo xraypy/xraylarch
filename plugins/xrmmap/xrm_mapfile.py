@@ -44,6 +44,10 @@ def h5str(obj):
         out = out[2:-1]
     return out
 
+def isotime(xtime):
+    return time.strftime("%Y-%m-%d %H:%M:%S" , time.localtime(xtime))
+
+
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
     no_xrdmap    = 'hdf5 does not have top-level XRD map'
@@ -57,8 +61,10 @@ class GSEXRM_FileStatus:
 def getFileStatus(filename, root=None, folder=None):
     '''return status, top-level group, and version'''
     # set defaults for file does not exist
-    folder = os.path.abspath(folder)
-    parent, foldername = os.path.split(folder)
+    # print(" Get Status ", filename, folder)
+    if folder is not None:
+        folder = os.path.abspath(folder)
+        parent, folder = os.path.split(folder)
     status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
     if root not in ('', None):
         top = root
@@ -79,7 +85,7 @@ def getFileStatus(filename, root=None, folder=None):
 
     status =  GSEXRM_FileStatus.no_xrfmap
     ##
-    def test_h5group(group, foldername=None):
+    def test_h5group(group, folder=None):
         valid = ('config' in group and 'roimap' in group)
         for attr in  ('Version', 'Map_Folder',
                       'Dimension', 'Start_Time'):
@@ -89,19 +95,20 @@ def getFileStatus(filename, root=None, folder=None):
         status = GSEXRM_FileStatus.hasdata
         vers = group.attrs['Version']
         fullpath = group.attrs['Map_Folder']
-        _parent, _foldername = os.path.split(fullpath)
-        if foldername is not None and foldername != _foldername:
+        _parent, _folder = os.path.split(fullpath)
+
+        if folder is not None and folder != _folder:
             status = GSEXRM_FileStatus.wrongfolder
         return status, vers
 
     if root is not None and root in fh:
-        s, v = test_h5group(fh[root], foldername=foldername)
+        s, v = test_h5group(fh[root], folder=folder)
         if s is not None:
             status, top, vers = s, root, v
     else:
         # print( 'Root was None ', fh.items())
         for name, group in fh.items():
-            s, v = test_h5group(group, foldername=foldername)
+            s, v = test_h5group(group, folder=folder)
             if s is not None:
                 status, top, vers = s, name, v
                 break
@@ -639,7 +646,6 @@ class GSEXRM_MapFile(object):
         self.pixeltime        = None
         self.masterfile       = None
         self.masterfile_mtime = -1
-
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
@@ -664,7 +670,6 @@ class GSEXRM_MapFile(object):
         self.notes = {'facility' : facility,
                       'beamline' : beamline,
                       'run'      : run,
-                      'date'     : date,
                       'proposal' : proposal,
                       'user'     : user}
 
@@ -711,7 +716,6 @@ class GSEXRM_MapFile(object):
                 self.status =  GSEXRM_FileStatus.err_notfound
             except (IOError, ValueError):
                 pass
-
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
@@ -730,6 +734,8 @@ class GSEXRM_MapFile(object):
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
+            self.notes['h5_create_time'] = isotime(time.time())
+
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
@@ -745,7 +751,6 @@ class GSEXRM_MapFile(object):
         fname = ''
         if self.filename is not None:
             fpath, fname = os.path.split(self.filename)
-
         return "GSEXRM_MapFile('%s')" % fname
 
     def get_det(self, index):
@@ -1010,6 +1015,8 @@ class GSEXRM_MapFile(object):
 
         if scan_version > 1.35 or self.flag_xrd2d or self.flag_xrd1d:
             yval, xrff, sisf, xpsf, xrdf, etime = self.rowdata[irow]
+
+
             if xrff.startswith('None'):
                 xrff = xrff.replace('None', 'xsp3')
             if sisf.startswith('None'):
@@ -1020,7 +1027,14 @@ class GSEXRM_MapFile(object):
                 xrdf = xrdf.replace('None', 'pexrd')
         else:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
-            xrdf = ''
+            xrdf = '_unused_'
+            
+        if '_unused_' in xrdf:
+            self.flag_xrd1d = False
+            self.flag_xrd2d = False
+
+        if '_unused_' in xrff:            
+            self.flag_xrf = False
 
         reverse = None # (irow % 2 != 0)
 
@@ -1917,15 +1931,11 @@ class GSEXRM_MapFile(object):
         return tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
     def claim_hostid(self):
-        "claim ownershipf of file"
-        if self.xrmmap is None:
-            return
-        self.xrmmap.attrs['Process_Machine'] = socket.gethostname()
-        self.xrmmap.attrs['Process_ID'] = os.getpid()
-        self.h5root.flush()
+        "claim ownership of file"
+        self.take_ownership()
 
     def take_ownership(self):
-        "claim ownershipf of file"
+        "claim ownership of file"
         if self.xrmmap is None:
             return
         self.xrmmap.attrs['Process_Machine'] = socket.gethostname()
@@ -1952,7 +1962,7 @@ class GSEXRM_MapFile(object):
         file_mach = attrs['Process_Machine']
         file_pid  = attrs['Process_ID']
         if len(file_mach) < 1 or file_pid < 1:
-            self.claim_hostid()
+            self.take_ownership()
             return True
         return (file_mach == socket.gethostname() and
                 file_pid == os.getpid())
@@ -1977,8 +1987,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
 
-        self.notes['date'] = time.strftime("%Y-%m-%d %H:%M:%S" , 
-                                           time.localtime(os.stat(self.masterfile).st_ctime))
+        self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)            
 
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
@@ -2003,6 +2012,7 @@ class GSEXRM_MapFile(object):
             words = line.split('=')
             if 'scan.starttime' in words[0].lower():
                 self.start_time = words[1].strip()
+                self.notes['start_time'] = self.start_time
             elif 'scan.version' in words[0].lower():
                 self.scan_version = words[1].strip()
             elif 'scan.nrows_expected' in words[0].lower():
@@ -3141,7 +3151,7 @@ def read_xrfmap(filename, root=None):
 
 read_xrmmap = read_xrfmap
 
-def process_mapfolder(path, **kws):
+def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
     """
@@ -3154,8 +3164,12 @@ def process_mapfolder(path, **kws):
             print sys.exc_info()
             return
         try:
-            g.take_ownership()
-            g.process()
+            if take_ownership:
+                g.take_ownership()
+            if g.check_ownership():
+                g.process()
+            else:
+                print( 'Skipping file %s: not owner' % path)
         except KeyboardInterrupt:
             sys.exit()
         except:
@@ -3165,19 +3179,7 @@ def process_mapfolder(path, **kws):
         finally:
             g.close()
 
-def list_mapfolder(path, **kws):
-    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
-        print( '\n build map for: %s' % path)
-        print( '\n with ', kws)
-        try:
-            g = GSEXRM_MapFile(folder=path, **kws)
-        except:
-            print( 'Could not create MapFile')
-            print sys.exc_info()
-            return
-        g.close()
-
-def process_mapfolders(folders, ncpus=None, **kws):
+def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
     """process a list of map folders
     with optional keywords passed to GSEXRM_MapFile
     """
@@ -3188,6 +3190,7 @@ def process_mapfolders(folders, ncpus=None, **kws):
             process_mapfolder(path, **kws)
     else:
         pool = mp.Pool(ncpus)
+        kws['take_ownership'] = take_ownership
         myfunc = partial(process_mapfolder, **kws)
         pool.map(myfunc, folders)
 
