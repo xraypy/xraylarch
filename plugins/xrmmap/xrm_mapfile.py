@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import socket
 import time
 import datetime
@@ -8,6 +9,8 @@ import numpy as np
 import string
 import scipy.stats as stats
 import json
+import multiprocessing as mp
+from functools import partial
 from distutils.version import StrictVersion
 import larch
 from larch.utils.debugtime import debugtime
@@ -1974,6 +1977,9 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
 
+        self.notes['date'] = time.strftime("%Y-%m-%d %H:%M:%S" , 
+                                           time.localtime(os.stat(self.masterfile).st_ctime))
+
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
@@ -3133,5 +3139,61 @@ def read_xrfmap(filename, root=None):
     kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)
 
+read_xrmmap = read_xrfmap
+
+def process_mapfolder(path, **kws):
+    """process a single map folder
+    with optional keywords passed to GSEXRM_MapFile
+    """
+    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
+        print( '\n build map for: %s' % path)
+        try:
+            g = GSEXRM_MapFile(folder=path, **kws)
+        except:
+            print( 'Could not create MapFile')
+            print sys.exc_info()
+            return
+        try:
+            g.take_ownership()
+            g.process()
+        except KeyboardInterrupt:
+            sys.exit()
+        except:
+            print( 'Could not convert ', path)
+            print sys.exc_info()
+            return 
+        finally:
+            g.close()
+
+def list_mapfolder(path, **kws):
+    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
+        print( '\n build map for: %s' % path)
+        print( '\n with ', kws)
+        try:
+            g = GSEXRM_MapFile(folder=path, **kws)
+        except:
+            print( 'Could not create MapFile')
+            print sys.exc_info()
+            return
+        g.close()
+
+def process_mapfolders(folders, ncpus=None, **kws):
+    """process a list of map folders
+    with optional keywords passed to GSEXRM_MapFile
+    """
+    if ncpus is None:
+        ncpus = max(1, mp.cpu_count()-1)
+    if ncpus == 0:
+        for path in folders:
+            process_mapfolder(path, **kws)
+    else:
+        pool = mp.Pool(ncpus)
+        myfunc = partial(process_mapfolder, **kws)
+        pool.map(myfunc, folders)
+
+
 def registerLarchPlugin():
-    return ('_xrf', {'read_xrfmap': read_xrfmap})
+    return ('_io', {'read_xrfmap': read_xrfmap,
+                    'read_xrmmap': read_xrmmap,
+                    'process_mapfolder': process_mapfolder,
+                    'process_mapfolders': process_mapfolders})
