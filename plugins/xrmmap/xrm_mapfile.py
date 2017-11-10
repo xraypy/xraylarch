@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import socket
 import time
 import datetime
@@ -8,6 +9,8 @@ import numpy as np
 import string
 import scipy.stats as stats
 import json
+import multiprocessing as mp
+from functools import partial
 from distutils.version import StrictVersion
 import larch
 from larch.utils.debugtime import debugtime
@@ -54,6 +57,8 @@ class GSEXRM_FileStatus:
 def getFileStatus(filename, root=None, folder=None):
     '''return status, top-level group, and version'''
     # set defaults for file does not exist
+    folder = os.path.abspath(folder)
+    parent, foldername = os.path.split(folder)
     status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
     if root not in ('', None):
         top = root
@@ -74,7 +79,7 @@ def getFileStatus(filename, root=None, folder=None):
 
     status =  GSEXRM_FileStatus.no_xrfmap
     ##
-    def test_h5group(group, folder=None):
+    def test_h5group(group, foldername=None):
         valid = ('config' in group and 'roimap' in group)
         for attr in  ('Version', 'Map_Folder',
                       'Dimension', 'Start_Time'):
@@ -83,18 +88,20 @@ def getFileStatus(filename, root=None, folder=None):
             return None, None
         status = GSEXRM_FileStatus.hasdata
         vers = group.attrs['Version']
-        if folder is not None and folder != group.attrs['Map_Folder']:
+        fullpath = group.attrs['Map_Folder']
+        _parent, _foldername = os.path.split(fullpath)
+        if foldername is not None and foldername != _foldername:
             status = GSEXRM_FileStatus.wrongfolder
         return status, vers
 
     if root is not None and root in fh:
-        s, v = test_h5group(fh[root], folder=folder)
+        s, v = test_h5group(fh[root], foldername=foldername)
         if s is not None:
             status, top, vers = s, root, v
     else:
         # print( 'Root was None ', fh.items())
         for name, group in fh.items():
-            s, v = test_h5group(group, folder=folder)
+            s, v = test_h5group(group, foldername=foldername)
             if s is not None:
                 status, top, vers = s, name, v
                 break
@@ -681,14 +688,13 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.status, self.root, self.version = \
-                         getFileStatus(self.filename, root=root,
-                                       folder=self.folder)
-
+                getFileStatus(self.filename, root=root,
+                              folder=self.folder)
+                
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
             self.open(self.filename, root=self.root, check_status=False)
-
             return
 
         # file exists but is not hdf5
@@ -709,6 +715,7 @@ class GSEXRM_MapFile(object):
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
+
             self.read_master()
             if self.status == GSEXRM_FileStatus.wrongfolder:
                 self.filename = new_filename(self.filename)
@@ -720,7 +727,6 @@ class GSEXRM_MapFile(object):
 
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
-
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
@@ -1971,6 +1977,9 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
 
+        self.notes['date'] = time.strftime("%Y-%m-%d %H:%M:%S" , 
+                                           time.localtime(os.stat(self.masterfile).st_ctime))
+
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
@@ -3130,5 +3139,61 @@ def read_xrfmap(filename, root=None):
     kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)
 
+read_xrmmap = read_xrfmap
+
+def process_mapfolder(path, **kws):
+    """process a single map folder
+    with optional keywords passed to GSEXRM_MapFile
+    """
+    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
+        print( '\n build map for: %s' % path)
+        try:
+            g = GSEXRM_MapFile(folder=path, **kws)
+        except:
+            print( 'Could not create MapFile')
+            print sys.exc_info()
+            return
+        try:
+            g.take_ownership()
+            g.process()
+        except KeyboardInterrupt:
+            sys.exit()
+        except:
+            print( 'Could not convert ', path)
+            print sys.exc_info()
+            return 
+        finally:
+            g.close()
+
+def list_mapfolder(path, **kws):
+    if os.path.isdir(path) and isGSEXRM_MapFolder(path):
+        print( '\n build map for: %s' % path)
+        print( '\n with ', kws)
+        try:
+            g = GSEXRM_MapFile(folder=path, **kws)
+        except:
+            print( 'Could not create MapFile')
+            print sys.exc_info()
+            return
+        g.close()
+
+def process_mapfolders(folders, ncpus=None, **kws):
+    """process a list of map folders
+    with optional keywords passed to GSEXRM_MapFile
+    """
+    if ncpus is None:
+        ncpus = max(1, mp.cpu_count()-1)
+    if ncpus == 0:
+        for path in folders:
+            process_mapfolder(path, **kws)
+    else:
+        pool = mp.Pool(ncpus)
+        myfunc = partial(process_mapfolder, **kws)
+        pool.map(myfunc, folders)
+
+
 def registerLarchPlugin():
-    return ('_xrf', {'read_xrfmap': read_xrfmap})
+    return ('_io', {'read_xrfmap': read_xrfmap,
+                    'read_xrmmap': read_xrmmap,
+                    'process_mapfolder': process_mapfolder,
+                    'process_mapfolders': process_mapfolders})
