@@ -54,6 +54,8 @@ class GSEXRM_FileStatus:
 def getFileStatus(filename, root=None, folder=None):
     '''return status, top-level group, and version'''
     # set defaults for file does not exist
+    folder = os.path.abspath(folder)
+    parent, foldername = os.path.split(folder)
     status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
     if root not in ('', None):
         top = root
@@ -74,7 +76,7 @@ def getFileStatus(filename, root=None, folder=None):
 
     status =  GSEXRM_FileStatus.no_xrfmap
     ##
-    def test_h5group(group, folder=None):
+    def test_h5group(group, foldername=None):
         valid = ('config' in group and 'roimap' in group)
         for attr in  ('Version', 'Map_Folder',
                       'Dimension', 'Start_Time'):
@@ -83,18 +85,20 @@ def getFileStatus(filename, root=None, folder=None):
             return None, None
         status = GSEXRM_FileStatus.hasdata
         vers = group.attrs['Version']
-        if folder is not None and folder != group.attrs['Map_Folder']:
+        fullpath = group.attrs['Map_Folder']
+        _parent, _foldername = os.path.split(fullpath)
+        if foldername is not None and foldername != _foldername:
             status = GSEXRM_FileStatus.wrongfolder
         return status, vers
 
     if root is not None and root in fh:
-        s, v = test_h5group(fh[root], folder=folder)
+        s, v = test_h5group(fh[root], foldername=foldername)
         if s is not None:
             status, top, vers = s, root, v
     else:
         # print( 'Root was None ', fh.items())
         for name, group in fh.items():
-            s, v = test_h5group(group, folder=folder)
+            s, v = test_h5group(group, foldername=foldername)
             if s is not None:
                 status, top, vers = s, name, v
                 break
@@ -681,14 +685,13 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.status, self.root, self.version = \
-                         getFileStatus(self.filename, root=root,
-                                       folder=self.folder)
-
+                getFileStatus(self.filename, root=root,
+                              folder=self.folder)
+                
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
             self.open(self.filename, root=self.root, check_status=False)
-
             return
 
         # file exists but is not hdf5
@@ -709,6 +712,7 @@ class GSEXRM_MapFile(object):
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
+
             self.read_master()
             if self.status == GSEXRM_FileStatus.wrongfolder:
                 self.filename = new_filename(self.filename)
@@ -720,7 +724,6 @@ class GSEXRM_MapFile(object):
 
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
-
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
