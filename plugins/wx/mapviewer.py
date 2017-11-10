@@ -3260,7 +3260,7 @@ class OpenMapFolder(wx.Dialog):
 
         self.info[0].SetValue(FACILITY)
         self.info[1].SetValue(BEAMLINE)
-        self.info[2].SetValue(datetime.datetime.today().isoformat())
+        self.info[2].SetValue(datetime.date.today().isoformat())
 
     def checkOK(self,event=None):
 
