@@ -45,8 +45,10 @@ def h5str(obj):
     return out
 
 def isotime(xtime):
-    return time.strftime("%Y-%m-%d %H:%M:%S" , time.localtime(xtime))
 
+    if type(xtime) is not float:
+        xtime = time.mktime(time.strptime(xtime))
+    return time.strftime("%Y-%m-%d %H:%M:%S" , time.localtime(xtime))
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
@@ -627,7 +629,7 @@ class GSEXRM_MapFile(object):
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
-                 facility='APS', beamline='13-ID-E',run='',date='',proposal='',user=''):
+                 facility='APS', beamline='13-ID-E',run='',proposal='',user=''):
 
         self.filename         = filename
         self.folder           = folder
@@ -667,11 +669,11 @@ class GSEXRM_MapFile(object):
         self.ome         = None
         self.reshape     = None
 
-        self.notes = {'facility' : facility,
-                      'beamline' : beamline,
-                      'run'      : run,
-                      'proposal' : proposal,
-                      'user'     : user}
+        self.notes = {'facility'   : facility,
+                      'beamline'   : beamline,
+                      'run'        : run,
+                      'proposal'   : proposal,
+                      'user'       : user}
 
         # initialize from filename or folder
         if self.filename is not None:
@@ -977,7 +979,7 @@ class GSEXRM_MapFile(object):
             while irow < nrows:
                 self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
                 irow  = irow + 1
-
+        
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
@@ -1987,8 +1989,6 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
 
-        self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)            
-
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
@@ -2012,14 +2012,23 @@ class GSEXRM_MapFile(object):
             words = line.split('=')
             if 'scan.starttime' in words[0].lower():
                 self.start_time = words[1].strip()
-                self.notes['start_time'] = self.start_time
+                self.notes['scan_start_time'] = isotime(self.start_time)
             elif 'scan.version' in words[0].lower():
                 self.scan_version = words[1].strip()
             elif 'scan.nrows_expected' in words[0].lower():
                 self.nrows_expected = int(words[1].strip())
         self.scan_version = float(self.scan_version)
+        
+        
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
+        try:
+            last_file = os.path.join(self.folder,rows[-1][2])
+            self.stop_time = time.ctime(os.stat(last_file).st_ctime)
+        except:
+            pass
+        
+        self.notes['scan_end_time'] = isotime(self.stop_time)
 
         if self.scan_version < 1.35 and (self.flag_xrd2d or self.flag_xrd1d):
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
@@ -2058,17 +2067,6 @@ class GSEXRM_MapFile(object):
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
-
-#         try:
-#             self.calibration = self.xrmmap['xrd1D'].attrs['calfile']
-#         except:
-#             pass
-#
-#         flaggp = xrmmap['flags']
-#         flaggp.attrs['xrf']   = self.flag_xrf
-#         flaggp.attrs['xrd2D'] = self.flag_xrd2d
-#         flaggp.attrs['xrd1D'] = self.flag_xrd1d
-
 
     def _det_name(self, det=None):
         "return  XRMMAP group for a detector"
@@ -3161,7 +3159,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
             g = GSEXRM_MapFile(folder=path, **kws)
         except:
             print( 'Could not create MapFile')
-            print sys.exc_info()
+            print( sys.exc_info() )
             return
         try:
             if take_ownership:
@@ -3174,7 +3172,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
             sys.exit()
         except:
             print( 'Could not convert ', path)
-            print sys.exc_info()
+            print( sys.exc_info() )
             return 
         finally:
             g.close()
