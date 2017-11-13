@@ -1381,7 +1381,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         ir = 0
 
         for label in ('Facility','Run Cycle','Proposal Number','User group',
-                      'Scan Started','File Compression','Map Data',
+                      'H5 Map Created',
+                      'Scan Time','File Compression','Map Data',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)',
                       'Original data path', 'User Comments 1', 'User Comments 2',
                       'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
@@ -1402,7 +1403,27 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmmap):
-        self.wids['Scan Started'].SetLabel( bytes2str(xrmmap.attrs['Start_Time']))
+        
+        def time_between(d1, d2):
+            d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
+            d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
+            diff =  d2 - d1 if d2 > d1 else d1 - d2
+            return diff.days,diff.seconds
+        
+        try:
+            time_str = xrmmap['config/notes'].attrs['h5_create_time']
+        except:
+            time_str = ''
+        
+        self.wids['H5 Map Created'].SetLabel(time_str)
+        
+        try:
+            d,s = time_between(xrmmap['config/notes'].attrs['scan_start_time'],
+                               xrmmap['config/notes'].attrs['scan_end_time'])
+            time_str =  str(datetime.timedelta(days=d,seconds=s))
+        except:
+            time_str = bytes2str(xrmmap.attrs['Start_Time'])
+        self.wids['Scan Time'].SetLabel( time_str )
 
         try:
             self.wids['File Compression'].SetLabel( bytes2str(xrmmap.attrs['Compression']))
@@ -2668,10 +2689,9 @@ class MapViewerFrame(wx.Frame):
                     'flip':             flipchoice,
                     'facility':         myDlg.info[0].GetValue(),
                     'beamline':         myDlg.info[1].GetValue(),
-                    'date':             myDlg.info[2].GetValue(),
-                    'run':              myDlg.info[3].GetValue(),
-                    'proposal':         myDlg.info[4].GetValue(),
-                    'user':             myDlg.info[5].GetValue(),
+                    'run':              myDlg.info[2].GetValue(),
+                    'proposal':         myDlg.info[3].GetValue(),
+                    'user':             myDlg.info[4].GetValue(),
                     'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
                     'compression_opts': myDlg.H5cmprInfo[1].GetSelection()}
         myDlg.Destroy()
@@ -3139,15 +3159,15 @@ class OpenMapFolder(wx.Dialog):
         ################################################################################
         infoTtl =  [ SimpleText(panel,  label='Facility'),
                      SimpleText(panel,  label='Beamline'),
-                     SimpleText(panel,  label='Date'),
+#                      SimpleText(panel,  label='Date'),
                      SimpleText(panel,  label='Run cycle'),
-                     SimpleText(panel,  label='Proposal number'),
+                     SimpleText(panel,  label='Proposal'),
                      SimpleText(panel,  label='User group')]
         self.info = [ wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(100, 25) ),
-                      wx.TextCtrl(panel, size=(250, 25) ),
+#                       wx.TextCtrl(panel, size=(250, 25) ),
                       wx.TextCtrl(panel, size=(320, 25) )]
 
         infosizer0 = wx.BoxSizer(wx.HORIZONTAL)
@@ -3166,15 +3186,10 @@ class OpenMapFolder(wx.Dialog):
         infosizer2.Add(infoTtl[4],   flag=wx.RIGHT, border=5)
         infosizer2.Add(self.info[4], flag=wx.RIGHT, border=15)
 
-        infosizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        infosizer3.Add(infoTtl[5],   flag=wx.RIGHT, border=5)
-        infosizer3.Add(self.info[5], flag=wx.RIGHT, border=15)
-
         infosizer = wx.BoxSizer(wx.VERTICAL)
-        infosizer.Add(infosizer0, flag=wx.TOP,            border=15)
-        infosizer.Add(infosizer1, flag=wx.TOP,            border=5)
-        infosizer.Add(infosizer2, flag=wx.TOP|wx.BOTTOM,  border=5)
-        infosizer.Add(infosizer3, flag=wx.BOTTOM,         border=15)
+        infosizer.Add(infosizer0, flag=wx.TOP,           border=15)
+        infosizer.Add(infosizer1, flag=wx.TOP|wx.BOTTOM, border=5)
+        infosizer.Add(infosizer2, flag=wx.BOTTOM,        border=15)
         ################################################################################
         poni_chc = ['Dioptas calibration file:','pyFAI calibration file:']
         poni_spn = wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP
@@ -3260,7 +3275,6 @@ class OpenMapFolder(wx.Dialog):
 
         self.info[0].SetValue(FACILITY)
         self.info[1].SetValue(BEAMLINE)
-        self.info[2].SetValue(datetime.date.today().isoformat())
 
     def checkOK(self,event=None):
 
@@ -3330,14 +3344,8 @@ class OpenMapFolder(wx.Dialog):
                 if line.split()[0] == 'basedir':
                     npath = line.split()[-1].split('/')
                     cycle,usr = npath[-2],npath[-1]
-                    self.info[3].SetValue(cycle)
-                    self.info[5].SetValue(usr)
-#             try:
-#                 masterfile = os.path.join(path, 'Master.dat')
-#                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(os.stat(masterfile).st_ctime))
-#                 self.info[2].SetValue(timestamp)
-#             except:
-#                 pass
+                    self.info[2].SetValue(cycle)
+                    self.info[4].SetValue(usr)
 
         self.checkOK()
 
