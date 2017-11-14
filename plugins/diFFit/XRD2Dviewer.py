@@ -97,6 +97,8 @@ class diFFit2DPanel(wx.Panel):
 
             self.owner.xrd2Dcake.plot_line(x=x)
             self.owner.xrd2Dviewer.plot_ring()
+        else:
+            return
 
         self.owner.xrd1Dviewer.plot_line()
 
