@@ -161,7 +161,7 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
                         method=None, algorithm_A=None, algorithm_B=None, omega=None,
                         sinogram_order=False, **args):
     '''
-    INPUT ->  sino : slice, 2th, x OR 2th, slice, x (with flag sinogram_order=True)
+    INPUT ->  sino : slice, 2th, x OR 2th, slice, x (with flag sinogram_order=True/False)
     OUTPUT -> tomo : slice, x, y
     '''
 
