@@ -23,11 +23,11 @@ or by chemical formula.
 
 Much of the X-ray spectroscopic data comes from the compilation of
 :cite:ts:`elamtables`.  The core-hole widths for excited electronic levels
-comes from :cite:ts:`Keski_Krause`, while elastic X-ray scattering data,
-:math:`f_0(q)`,is derived from :cite:ts:`Waasmaier_Kirfel`.  Anomalous
-cross-sections are available as based on the work of
-:cite:ts:`Cromer_Liberman`, using the implementation of
-:cite:ts:`Brennan_Cowan`.  In addition, values for absorption
+comes from :cite:ts:`Keski_Krause` and :cite:ts:`Krause_Oliver`, while
+elastic X-ray scattering data, :math:`f_0(q)`,is derived from
+:cite:ts:`Waasmaier_Kirfel`.  Anomalous cross-sections are available as
+based on the work of :cite:ts:`Cromer_Liberman`, using the implementation
+of :cite:ts:`Brennan_Cowan`.  In addition, values for absorption
 cross-sections and anomalous X-ray scattering factors from
 :cite:ts:`Chantler` (as from http://www.nist.gov/pml/data/ffast/index.cfm)
 are available.  Except for the anomalous cross-section data from Cromer and
@@ -67,7 +67,7 @@ then given.
       :func:`xray_edges`         dictionary of all X-ray edges data for an element
       :func:`xray_lines`         dictionary of all X-ray emission line data for an element
       :func:`fluo_yield`         fluorescence yield and weighted line energy
-      :func:`core_width`         core level width for an element and edge (Keski-Rahkonen and Krause)
+      :func:`core_width`         core level width for an element and edge (Keski-Rahkonen and Krause, Krause and Oliver)
       :func:`mu_elam`            absorption cross-section
       :func:`coherent_xsec`      coherent cross-section
       :func:`incoherent_xsec`    incoherent cross-section
