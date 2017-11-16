@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 import os
 import sys
@@ -695,7 +696,7 @@ class GSEXRM_MapFile(object):
             self.status, self.root, self.version = \
                 getFileStatus(self.filename, root=root,
                               folder=self.folder)
-                
+
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
@@ -934,17 +935,17 @@ class GSEXRM_MapFile(object):
 
         self.last_row = -1
         self.add_map_config(self.mapconf)
-        
+
         self.process_row(0, flush=True, callback=callback)
 
         self.status = GSEXRM_FileStatus.hasdata
 
     def process_row(self, irow, flush=False, callback=None):
-    
+
         row = self.read_rowdata(irow)
         if irow == 0:
             self.build_schema(row,verbose=True)
-        
+
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
 
@@ -971,7 +972,7 @@ class GSEXRM_MapFile(object):
         nrows = len(self.rowdata)
         if maxrow is not None:
             nrows = min(nrows, maxrow)
-        
+
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
@@ -1028,12 +1029,12 @@ class GSEXRM_MapFile(object):
         else:
             yval, xrff, sisf, xpsf, etime = self.rowdata[irow]
             xrdf = '_unused_'
-            
+
         if '_unused_' in xrdf:
             self.flag_xrd1d = False
             self.flag_xrd2d = False
 
-        if '_unused_' in xrff:            
+        if '_unused_' in xrff:
             self.flag_xrf = False
 
         reverse = None # (irow % 2 != 0)
@@ -1858,14 +1859,14 @@ class GSEXRM_MapFile(object):
         return roidata
 
     def get_translation_axis(self):
-    
+
         try:
             return self.get_pos('fine x', mean=True)
         except:
             return self.get_pos('x', mean=True)
-        
+
     def get_rotation_axis(self):
-    
+
         try:
             return self.get_pos('theta', mean=True)
         except:
@@ -1987,7 +1988,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "cannot read Master file from '%s'" % self.masterfile)
 
-        self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)            
+        self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)
 
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
@@ -2918,21 +2919,21 @@ class GSEXRM_MapFile(object):
             detname = 'mca%i' % det
         else:
             detname = det
-            
+
         if roiname is not None: roiname = roiname.lower()
-    
+
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
             if detname is not None: detname = string.replace(detname,'det','mca')
-        
+
             for sclr in self.xrmmap['scalars']:
                 if roiname == sclr.lower():
                     return sclr.strip('_raw'),'scalars'
-                    
+
             if detname is None:
                 detname = 'roimap/mcasum'
             elif not detname.startswith('roimap'):
                 detname = 'roimap/%s' % detname
-        
+
             try:
                 roi_list = [r for r in self.xrmmap[detname]]
                 if roiname is None:
@@ -2948,10 +2949,10 @@ class GSEXRM_MapFile(object):
 
         else:
             if detname is not None: detname = string.replace(detname,'mca','det')
-           
+
             sum_roi = [h5str(r).lower() for r in self.xrmmap['roimap/sum_name']]
             det_roi = [h5str(r).lower() for r in self.xrmmap['roimap/det_name']]
-            
+
             if roiname not in sum_roi:
                 if roiname is None:
                     return np.arange(len(sum_roi)),'roimap/sum_'
@@ -2959,11 +2960,11 @@ class GSEXRM_MapFile(object):
                     for roi in sum_roi:
                         if roi.startswith(roiname):
                             roiname = roi
-            
+
             if detname in ['det1','det2','det3','det4']:
                 idet = int(''.join([i for i in detname if i.isdigit()]))
                 detname = 'roimap/det_'
-                        
+
                 if roiname not in det_roi:
                     roiname = '%s (mca%i)' % (roiname,idet)
                 roiname = det_roi.index(roiname)
@@ -2976,8 +2977,8 @@ class GSEXRM_MapFile(object):
                     roiname = sum_roi.index('outputcounts')
 
         return roiname, detname
-    
-    
+
+
     def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
@@ -2995,7 +2996,7 @@ class GSEXRM_MapFile(object):
 
         scan_version = getattr(self, 'scan_version', 1.00)
         no_hotcols = no_hotcols and scan_version < 1.36
-        
+
         if roiname == '1' or roiname == 1:
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
             if no_hotcols:
@@ -3004,7 +3005,7 @@ class GSEXRM_MapFile(object):
                 return map
 
         roi,det = self.check_roi(roiname,det)
-        
+
         if type(roiname) is str:
             if roiname.endswith('raw'): dtcorrect = False
         ext = 'cor' if dtcorrect else 'raw'
@@ -3051,7 +3052,7 @@ class GSEXRM_MapFile(object):
         '''
         pass
 
-    def get_rgbmap(self, rroi, groi, broi, det=None, rdet=None, gdet=None, bdet=None, 
+    def get_rgbmap(self, rroi, groi, broi, det=None, rdet=None, gdet=None, bdet=None,
                    no_hotcols=True, dtcorrect=True, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
@@ -3077,7 +3078,7 @@ class GSEXRM_MapFile(object):
 
         '''
         if det is not None: rdet = gdet = bdet = det
-        
+
         rmap = self.get_roimap(rroi, det=rdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
         gmap = self.get_roimap(groi, det=gdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
         bmap = self.get_roimap(broi, det=bdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
@@ -3161,7 +3162,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
             g = GSEXRM_MapFile(folder=path, **kws)
         except:
             print( 'Could not create MapFile')
-            print sys.exc_info()
+            print( sys.exc_info())
             return
         try:
             if take_ownership:
@@ -3174,8 +3175,8 @@ def process_mapfolder(path, take_ownership=False, **kws):
             sys.exit()
         except:
             print( 'Could not convert ', path)
-            print sys.exc_info()
-            return 
+            print( sys.exc_info())
+            return
         finally:
             g.close()
 
