@@ -6,7 +6,7 @@ from larch import Group, ValidateLarchPlugin
 from larch.utils.mathutils import index_nearest
 
 from larch_plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
-                                xrayDB, chemparse)
+                                XrayDB, chemparse)
 
 MODNAME = '_xray'
 
@@ -34,7 +34,7 @@ def get_xraydb(_larch):
     symname = '%s._xraydb' % MODNAME
     if _larch.symtable.has_symbol(symname):
         return _larch.symtable.get_symbol(symname)
-    xraydb = xrayDB()
+    xraydb = XrayDB(dbname='xrayref.db')
     _larch.symtable.set_symbol(symname, xraydb)
     return xraydb
 
@@ -216,13 +216,13 @@ def incoherent_cross_section_elam(element, energy, _larch=None):
 def atomic_number(element, _larch=None):
     "return z for element name"
     xdb = get_xraydb(_larch)
-    return int(xdb._getElementData(element).atomic_number)
+    return int(xdb._elem_data(element).atomic_number)
 
 @ValidateLarchPlugin
 def atomic_symbol(z, _larch=None):
     "return element symbol from z"
     xdb = get_xraydb(_larch)
-    return xdb._getElementData(z).element
+    return xdb._elem_data(z).symbol
 
 @ValidateLarchPlugin
 def atomic_mass(element, _larch=None):
@@ -230,7 +230,7 @@ def atomic_mass(element, _larch=None):
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
-    return xdb._getElementData(element).molar_mass
+    return xdb._elem_data(element).mass
 
 @ValidateLarchPlugin
 def atomic_density(element, _larch=None):
@@ -238,7 +238,7 @@ def atomic_density(element, _larch=None):
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
-    return xdb._getElementData(element).density
+    return xdb._elem_data(element).density
 
 @ValidateLarchPlugin
 def xray_edges(element, _larch=None):
@@ -377,7 +377,7 @@ def fluo_yield(symbol, edge, emission, energy,
     return fyield, net_ener, net_prob
 
 @ValidateLarchPlugin
-def CK_probability(element, initial, final, total=True, _larch=None):
+def ck_probability(element, initial, final, total=True, _larch=None):
     """return transition probability for an element, initial, and final levels.
 
     arguments
@@ -391,22 +391,23 @@ def CK_probability(element, initial, final, total=True, _larch=None):
     Data from Elam, Ravel, and Sieber.
     """
     xdb = get_xraydb(_larch)
-    return xdb.CK_probability(element, initial, final, total=total)
+    return xdb.ck_probability(element, initial, final, total=total)
+
+CK_probability = ck_probability
 
 @ValidateLarchPlugin
-def core_width(element=None, edge=None, _larch=None):
+def core_width(element, edge=None, _larch=None):
     """returns core hole width for an element and edge
 
     arguments
     ---------
-    if element is None, values are returned for all elements
     if edge is None, values are return for all edges
 
 
     Data from Keski-Rahkonen and Krause
     """
     xdb = get_xraydb(_larch)
-    return xdb.corehole_width(element=element, edge=edge)
+    return xdb.corehole_width(element, edge=edge)
 
 @ValidateLarchPlugin
 def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
@@ -544,6 +545,6 @@ def registerLarchPlugin():
                       'fluo_yield': fluo_yield,
                       'core_width':  core_width,
                       'guess_edge':  guess_edge,
-                      'ck_probability': CK_probability,
+                      'ck_probability': ck_probability,
                       'xray_delta_beta': xray_delta_beta,
                       })
