@@ -24,7 +24,7 @@ import sqlalchemy.dialects.sqlite
 XrayEdge = namedtuple('XrayEdge', ('edge', 'fyield', 'jump_ratio'))
 XrayLine = namedtuple('XrayLine', ('energy', 'intensity', 'initial_level',
                            'final_level'))
-ElementData = namedtuple('ElementData', ('Z', 'symbol', 'mass', 'density'))
+ElementData = namedtuple('ElementData', ('atomic_number', 'symbol', 'mass', 'density'))
 
 
 __version__ = '1.3'
@@ -494,10 +494,14 @@ class XrayDB(object):
 
     def _elem_data(self, element):
         "return data from elements table: internal use"
-        elem = ElementsTable.element
-        if not element in self.atomic_symbols:
-            element = int(element)
+        if isinstance(element, int):
             elem = ElementsTable.atomic_number
+        else:
+            elem = ElementsTable.element
+            element = element.title()
+            if not element in self.atomic_symbols:
+                raise ValueError("unknown element '%s'" % repr(element))
+
         row = self.query(ElementsTable).filter(elem==element).all()
         if len(row) > 0:
             row = row[0]
@@ -515,7 +519,7 @@ class XrayDB(object):
         Returns:
             integer: atomic number
         """
-        return self._elem_data(element).Z
+        return self._elem_data(element).atomic_number
 
     def symbol(self, element):
         """

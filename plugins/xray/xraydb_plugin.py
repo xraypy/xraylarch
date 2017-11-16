@@ -216,13 +216,13 @@ def incoherent_cross_section_elam(element, energy, _larch=None):
 def atomic_number(element, _larch=None):
     "return z for element name"
     xdb = get_xraydb(_larch)
-    return int(xdb._getElementData(element).atomic_number)
+    return int(xdb._elem_data(element).atomic_number)
 
 @ValidateLarchPlugin
 def atomic_symbol(z, _larch=None):
     "return element symbol from z"
     xdb = get_xraydb(_larch)
-    return xdb._getElementData(z).element
+    return xdb._elem_data(z).symbol
 
 @ValidateLarchPlugin
 def atomic_mass(element, _larch=None):
@@ -230,7 +230,7 @@ def atomic_mass(element, _larch=None):
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
-    return xdb._getElementData(element).molar_mass
+    return xdb._elem_data(element).mass
 
 @ValidateLarchPlugin
 def atomic_density(element, _larch=None):
@@ -238,7 +238,7 @@ def atomic_density(element, _larch=None):
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
-    return xdb._getElementData(element).density
+    return xdb._elem_data(element).density
 
 @ValidateLarchPlugin
 def xray_edges(element, _larch=None):
