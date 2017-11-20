@@ -3141,6 +3141,27 @@ class GSEXRM_MapFile(object):
         roi_names = [i in self.xrmmap['config/rois/name']]
         roi_names.pop(iroi)
 
+
+def update_xrmmap(xrmmap):
+    '''update dataset names, version, etc. in xrmmap file'''
+    
+    if xrmmap.attrs['Version'] < StrictVersion('2.0.0'):
+
+        xrmmap['mca1'] = xrmmap['det1']
+        del xrmmap['det1']
+        xrmmap['mca2'] = xrmmap['det2']
+        del xrmmap['det2']
+        xrmmap['mca3'] = xrmmap['det3']
+        del xrmmap['det3']
+        xrmmap['mca4'] = xrmmap['det4']
+        del xrmmap['det4']
+    
+        xrmmap['mcasum'] = xrmmap['detsum']
+        del xrmmap['detsum']
+        
+        xrmmap.attrs['Version'] = '2.0.0'
+
+
 def read_xrfmap(filename, root=None):
     '''read GSE XRF FastMap data from HDF5 file or raw map folder'''
     key = 'filename'
