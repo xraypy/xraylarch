@@ -3145,6 +3145,11 @@ class GSEXRM_MapFile(object):
 def update_xrmmap(xrmmap):
     '''update dataset names, version, etc. in xrmmap file'''
     
+    try:
+        xrmmap.attrs['Version']
+    except:
+        xrmmap.attrs['Version'] = '0.0.0'
+    
     if xrmmap.attrs['Version'] < StrictVersion('2.0.0'):
 
         xrmmap['mca1'] = xrmmap['det1']
