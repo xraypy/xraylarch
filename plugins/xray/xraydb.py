@@ -54,11 +54,11 @@ def isxrayDB(dbname):
 
     Notes:
         must be a sqlite db file, with tables named 'elements',
-        'photoabsorption', 'scattering', 'Coster_Kronig',
-        'Chantler', 'Waasmaier', 'Version', and 'KeskiRahkonen_Krause'
+        'photoabsorption', 'scattering', 'xray_levels', 'Coster_Kronig',
+        'Chantler', 'Waasmaier', and 'KeskiRahkonen_Krause'
     """
     _tables = ('Chantler', 'Waasmaier', 'Coster_Kronig',
-               'KeskiRahkonen_Krause', 'Version',
+               'KeskiRahkonen_Krause', 'xray_levels',
                'elements', 'photoabsorption', 'scattering')
     result = False
     try:
