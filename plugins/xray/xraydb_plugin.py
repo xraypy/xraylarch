@@ -404,7 +404,8 @@ def core_width(element, edge=None, _larch=None):
     if edge is None, values are return for all edges
 
 
-    Data from Keski-Rahkonen and Krause
+    Data from Krause and Oliver (1979) and
+    Keski-Rahkonen and Krause (1974)
     """
     xdb = get_xraydb(_larch)
     return xdb.corehole_width(element, edge=edge)
