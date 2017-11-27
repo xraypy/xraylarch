@@ -136,6 +136,9 @@ DBCONN = None
 BEAMLINE = '13-ID-E'
 FACILITY = 'APS'
 
+PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
+PLOT_OPERS = ('/', '*', '-', '+')
+
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
@@ -201,12 +204,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e', 'f'):
-            self.varfile[varname]  = vfile  = Choice(self, choices=[], size=(180, -1),
-                                                          action=partial(self.onFILE, varname=varname))
-            self.varroi[varname]   = vroi   = Choice(self, choices=[], size=(100, -1),
-                                                          action=partial(self.onROI, varname=varname))
-            self.vardet[varname]   = vdet   = Choice(self, choices=[], size=(80, -1),
-                                                          action=partial(self.onDET, varname=varname))
+            self.varfile[varname]  = vfile  = Choice(self, size=(180, -1),
+                                                     action=partial(self.onFILE, varname=varname))
+            self.varroi[varname]   = vroi   = Choice(self, size=(100, -1),
+                                                     action=partial(self.onROI, varname=varname))
+            self.vardet[varname]   = vdet   = Choice(self, size=(80, -1),
+                                                     action=partial(self.onDET, varname=varname))
             self.varcor[varname]   = vcor   = wx.CheckBox(self, -1, ' ')
             self.varshape[varname] = vshape = SimpleText(self, 'Array Shape = (, )',
                                                           size=(200, -1))
@@ -231,7 +234,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         ir += 1
         sizer.Add(SimpleText(self, 'Work Arrays: '), (ir, 0), (1, 1), ALL_LEFT, 2)
 
-        self.workarray_choice = Choice(self, choices=[], size=(200, -1),
+        self.workarray_choice = Choice(self, size=(200, -1),
                                        action=self.onSelectArray)
         btn_delete  = Button(self, 'Delete Array',  size=(90, -1),
                               action=self.onDeleteArray)
@@ -482,19 +485,22 @@ class TomographyPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
+        self.plot_choice = Choice(self, choices=['One color plot',
+                                                 'Three color plot'],
+                                  size=(125, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1))]
-        self.roi_choice = [Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1))]
+        self.det_choice = [Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1))]
+        self.roi_choice = [Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
+
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
@@ -510,7 +516,7 @@ class TomographyPanel(GridPanel):
         self.chk_hotcols = wx.CheckBox(self, label='Ignore First/Last Columns?')
         self.chk_hotcols.SetValue(False)
 
-        self.oper = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+        self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowSinogram, new=True)),
@@ -807,12 +813,12 @@ class TomographyPanel(GridPanel):
     def onShowSinogram(self, event=None, new=True):
 
         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
-        
+
         omeoff, xoff = 0, 0
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
 
-       
+
         if sino.shape[0] == 1: sino = sino[0] ## for one color plot
         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
@@ -943,17 +949,17 @@ class MapPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=['One color plot','Three color plot'], size=(125, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(125, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1))]
-        self.roi_choice = [Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1)),
-                           Choice(self, choices=[], size=(125, -1))]
+        self.det_choice = [Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1))]
+        self.roi_choice = [Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1)),
+                           Choice(self, size=(125, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
         for i,roi_chc in enumerate(self.roi_choice):
@@ -971,7 +977,7 @@ class MapPanel(GridPanel):
         self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
         self.chk_hotcols.SetValue(False)
 
-        self.oper = Choice(self, choices=['/', '*', '-', '+', 'vs'], size=(80, -1))
+        self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
         fopts = dict(minval=-20000, precision=0, size=(70, -1))
         self.lims = [FloatCtrl(self, value= 0, **fopts),
@@ -1109,31 +1115,30 @@ class MapPanel(GridPanel):
         self.roi_label[iroi].SetLabel(roistr)
 
     def plotSELECT(self,event=None):
-
         if len(self.owner.filemap) > 0:
-            oper_ch = self.oper.GetSelection()
-            if self.plot_choice.GetSelection() == 0:
+            plot_type = self.plot_choice.GetStringSelection().lower()
+            if 'single' in plot_type:
                 for i in (1,2):
                     self.det_choice[i].Disable()
                     self.roi_choice[i].Disable()
                     self.roi_label[i].SetLabel('')
-                for lbl in self.det_label:
-                    lbl.SetLabel('')
-                oper_chs = ['/', '*', '-', '+', 'vs']
-            else:
+                for i,label in enumerate([' Map ', ' ', ' ']):
+                    self.det_label[i].SetLabel(label)
+            elif 'three' in plot_type:
                 for i in (1,2):
                     self.det_choice[i].Enable()
                     self.roi_choice[i].Enable()
-                for i,label in enumerate(['Red','Green','Blue']):
+                for i,label in enumerate(['Red', 'Green', 'Blue']):
                     self.det_label[i].SetLabel(label)
                 self.set_roi_choices(self.cfile.xrmmap)
-                oper_chs = ['/', '*', '-', '+']
-
-            self.oper.SetChoices(oper_chs)
-            if oper_ch >= len(oper_chs):
-                self.oper.SetSelection(0)
-            else:
-                self.oper.SetSelection(oper_ch)
+            elif 'correl' in plot_type:
+                self.det_choice[1].Enable()
+                self.roi_choice[1].Enable()
+                self.det_choice[2].Disable()
+                self.roi_choice[2].Disable()
+                for i,label in enumerate([' X ',' Y ', '']):
+                    self.det_label[i].SetLabel(label)
+                self.set_roi_choices(self.cfile.xrmmap)
 
     def onClose(self):
         for p in self.plotframes:
@@ -1155,7 +1160,7 @@ class MapPanel(GridPanel):
 
         det_name,roi_name = [],[]
         plt_name = []
-        for det,roi in zip(self.det_choice,self.roi_choice):
+        for det,roi in zip(self.det_choice, self.roi_choice):
             det_name += [det.GetStringSelection()]
             roi_name += [roi.GetStringSelection()]
             if det_name[-1] == 'scalars':
@@ -1239,7 +1244,7 @@ class MapPanel(GridPanel):
             indices.append((ix, iy))
 
 
-    def ShowCorrel(self,xrmfile=None):
+    def ShowCorrel(self, xrmfile=None, new=True):
 
         args={'no_hotcols': self.chk_hotcols.GetValue(),
               'dtcorrect' : self.chk_dftcor.GetValue()}
@@ -1248,49 +1253,41 @@ class MapPanel(GridPanel):
 
         det_name,roi_name = [],[]
         plt_name = []
-        for det,roi in zip(self.det_choice,self.roi_choice):
-            det_name += [det.GetStringSelection()]
-            roi_name += [roi.GetStringSelection()]
-            if det_name[-1] == 'scalars':
-                plt_name += ['%s' % roi_name[-1]]
-            else:
-                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
-        if roi_name[-1] == '1' or roi_name[0] == '1':
-            print("WARNING: cannot make correlation plot with matrix of '1'")
-            return
 
-        map1 = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
-        map2 = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
+        xdet = self.det_choice[0].GetStringSelection()
+        xroi = self.roi_choice[0].GetStringSelection()
+        xlab = "%s(%s)" % (xroi, xdet)
+        if 'scalar' in xdet.lower():
+            xlab = xroi
+        ydet = self.det_choice[1].GetStringSelection()
+        yroi = self.roi_choice[1].GetStringSelection()
+
+        ylab = "%s(%s)" % (yroi, ydet)
+        if 'scalar' in ydet.lower():
+            ylab = yroi
+
+        map1 = xrmfile.get_roimap(xroi, det=xdet, **args)
+        map2 = xrmfile.get_roimap(yroi, det=ydet, **args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
 
         pref, fname = os.path.split(xrmfile.filename)
-        title ='%s: %s vs. %s' %(fname, plt_name[-1], plt_name[0])
+        title ='%s: %s vs. %s' %(fname, ylab, xlab)
 
-        # try to use correlation plot from wxmplot 0.9.23 and later
-        if CorrelatedMapFrame is not None:
-            correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=xrmfile)
-            correl_plot.display(map1, map2, name1=plt_name[0], name2=plt_name[-1],
-                                x=x, y=y, title=title)
-        else:
-            correl_plot = PlotFrame(title=title, output_title=title)
-            correl_plot.plot(map2.flatten(), map1.flatten(),
-                             xlabel=plt_name[-1], ylabel=plt_name[0],
-                             marker='o', markersize=4, linewidth=0)
-            correl_plot.panel.cursor_mode = 'lasso'
-            coreel_plot.panel.lasso_callback = partial(self.onLasso, xrmfile=xrmfile)
-
+        correl_plot = CorrelatedMapFrame(parent=self.owner, xrmfile=xrmfile)
+        correl_plot.display(map1, map2, name1=xlab, name2=ylab,
+                            x=x, y=y, title=title)
         correl_plot.Show()
         correl_plot.Raise()
         self.owner.plot_displays.append(correl_plot)
 
 
     def onROIMap(self, event=None, new=True):
-
-        if self.oper.GetStringSelection() == 'vs':
-            self.ShowCorrel()
+        plot_type = self.plot_choice.GetStringSelection().lower()
+        if 'correlation' in plot_type:
+            self.ShowCorrel(new=new)
         else:
             self.ShowMap(new=new)
 
@@ -1544,7 +1541,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['Proposal Number'].SetLabel('')
             self.wids['User group'].SetLabel('')
 
-        
+
         FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
         if 'flags' in xrmmap.keys():
             flags = xrmmap['flags'].attrs
@@ -1597,7 +1594,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pane = wx.Panel(self)
         sizer = wx.GridBagSizer(3, 3)
         self.choices = {}
-        self.choice = Choice(pane, choices=[], size=(200, -1), action=self.onSelect)
+        self.choice = Choice(pane, size=(200, -1), action=self.onSelect)
         self.desc    = wx.TextCtrl(pane,   -1, '',  size=(200, -1))
         self.info1   = wx.StaticText(pane, -1, '',  size=(250, -1))
         self.info2   = wx.StaticText(pane, -1, '',  size=(250, -1))
@@ -1668,7 +1665,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         sizer.Add(legend,                   (11, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
-        
+
         for btn in (self.xrd1d_save,self.xrd1d_plot,self.xrd2d_save,self.xrd2d_plot):
             btn.Disable()
 
@@ -1780,13 +1777,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def update_xrmmap(self, xrmmap):
         self.set_area_choices(xrmmap, show_last=True)
-        
+
         self.set_enabled_btns(xrmmap)
 
     def set_enabled_btns(self,xrmmap):
-    
+
         flag2dxrd,flag1dxrd = False,False
-        
+
         ## checks if 1D and/or 2D XRD data stored in file
         if 'flags' in xrmmap.keys():
             flags = xrmmap['flags'].attrs
@@ -1803,7 +1800,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     flag1dxrd = True
             except:
                 pass
-        
+
         ## sets saving/plotting buttons in accordance with available data
         if flag2dxrd:
             for btn in (self.xrd2d_save,self.xrd2d_plot):
@@ -1817,8 +1814,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         else:
             for btn in (self.xrd1d_save,self.xrd1d_plot):
                 btn.Disable()
-                
-    
+
+
     def set_area_choices(self, xrmmap, show_last=False):
         areas = xrmmap['areas']
         c = self.choice
@@ -2091,7 +2088,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
                     self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
                                              flip=True)
-                                             
+
             if xrd1d and ponifile is not None:
                 self._xrd.calfile = ponifile
                 self._xrd.steps = 5001
@@ -2746,7 +2743,7 @@ class MapViewerFrame(wx.Frame):
                     p.update_xrmmap(self.current_file.xrmmap)
 
     def defineROI(self, event=None):
-    
+
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
             return
@@ -2835,7 +2832,7 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_thread.start()
 
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
-    
+
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
@@ -2844,7 +2841,7 @@ class MapViewerFrame(wx.Frame):
 
     def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))        
+        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
@@ -2961,15 +2958,15 @@ class ROIPopUp(wx.Dialog):
         ################################################################################
 
         self.owner = owner
-        
+
         self.cfile   = self.owner.current_file
         self.xrmmap = self.cfile.xrmmap
 
         self.gp = GridPanel(panel, nrows=8, ncols=4, **kws)
 
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
-        self.roi_chc  = [Choice(self, choices=[''],        size=(120, -1)),
-                         Choice(self, choices=[''],        size=(120, -1))]
+        self.roi_chc  = [Choice(self, size=(120, -1)),
+                         Choice(self, size=(120, -1))]
         fopts = dict(minval=-1, precision=3, size=(100, -1))
         self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
                          FloatCtrl(self, value=-1, **fopts),
@@ -2989,8 +2986,8 @@ class ROIPopUp(wx.Dialog):
 
         ###############################################################################
 
-        self.rm_roi_ch = [Choice(self, choices=[''],        size=(120, -1)),
-                          Choice(self, choices=[''],        size=(120, -1))]
+        self.rm_roi_ch = [Choice(self, size=(120, -1)),
+                          Choice(self, size=(120, -1))]
         fopts = dict(minval=-1, precision=3, size=(100, -1))
         self.rm_roi_lims = SimpleText(self, '')
 
@@ -3013,7 +3010,7 @@ class ROIPopUp(wx.Dialog):
         self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
 
         self.gp.pack()
-        
+
         self.cfile.reset_flags()
         self.roiTYPE()
 
