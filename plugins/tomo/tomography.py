@@ -175,7 +175,8 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
     if method.lower().startswith('scikit') and HAS_scikit:
 
         npts = sino.shape[2]
-        cntr = int(npts - center) # flip axis for compatibility with tomopy convention
+        center = int(center)
+        cntr = npts - center   ## switch reference direction for compatibility with tomopy convention
         if not sinogram_order: sino = np.einsum('jik->ijk',sino)
 
         args.update({'theta':omega, 

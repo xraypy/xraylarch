@@ -1929,8 +1929,10 @@ class GSEXRM_MapFile(object):
         '''
         returns tomo_center, tomo
         '''
+
         if omega is None: omega = self.get_rotation_axis()
         if center is None: center = self.get_tomography_center()
+
         return tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
     def claim_hostid(self):

@@ -85,6 +85,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import LarchPanel, LarchFrame
 from larch.utils.strutils import bytes2str
 
+from larch_plugins.wx.tomoimageframe import TomographyFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
@@ -485,9 +486,7 @@ class TomographyPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=['One color plot',
-                                                 'Three color plot'],
-                                  size=(125, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES[:-1], size=(125, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
         self.det_choice = [Choice(self, size=(125, -1)),
@@ -500,7 +499,6 @@ class TomographyPanel(GridPanel):
                            Choice(self, size=(125, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
-
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
@@ -518,10 +516,10 @@ class TomographyPanel(GridPanel):
 
         self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
-        self.sino_show = [Button(self, 'Show New',     size=(100, -1),
-                               action=partial(self.onShowSinogram, new=True)),
-                          Button(self, 'Replace Last', size=(100, -1),
-                               action=partial(self.onShowSinogram, new=False))]
+#         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
+#                                action=partial(self.onShowSinogram, new=True)),
+#                           Button(self, 'Replace Last', size=(100, -1),
+#                                action=partial(self.onShowSinogram, new=False))]
         self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowTomograph, new=True)),
                           Button(self, 'Replace Last', size=(100, -1),
@@ -536,16 +534,17 @@ class TomographyPanel(GridPanel):
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
-        self.refine_center = wx.CheckBox(self, label='Refine?')
+        self.refine_center = wx.CheckBox(self, label='Refine center')
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
 
         self.refine_center.SetValue(False)
-
-        #self.center_value.Bind(wx.EVT_SPINCTRLDOUBLE, self.set_center)
-
-
+        
+        self.lock_center = wx.CheckBox(self, label='Lock center')
+        self.lock_center.Bind(wx.EVT_CHECKBOX, self.lockCENTER)
+        self.lock_center.SetValue(False)
+        
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
                                                                style=LEFT,  newrow=True)
@@ -568,20 +567,23 @@ class TomographyPanel(GridPanel):
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
         #################################################################################
-        self.Add(SimpleText(self,'Sinogram:'),         dcol=1, style=RIGHT, newrow=True)
-        self.Add(self.sino_show[0],                    dcol=1, style=LEFT)
-        self.Add(self.sino_show[1],                    dcol=1, style=LEFT)
-        #################################################################################
-        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
-        self.Add(SimpleText(self,'Reconstruction: '),  dcol=1, style=RIGHT, newrow=True)
+        self.Add(SimpleText(self,'Algorithm: '),  dcol=1, style=RIGHT, newrow=True)
         self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
-        self.AddMany((self.center_value,self.refine_center,self.center_range),
+        self.AddMany((self.center_value,self.lock_center),
                                                        dcol=1, style=LEFT)
-        self.AddMany((SimpleText(self,''),self.tomo_show[0],self.tomo_show[1]),
+        self.AddMany((SimpleText(self,''),SimpleText(self,''),self.refine_center,self.center_range),
                                                        dcol=1, style=LEFT,  newrow=True)
+        #################################################################################
+        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
+        #################################################################################
+#         self.Add(SimpleText(self,'Sinogram:'),         dcol=1, style=RIGHT, newrow=True)
+#         self.Add(self.sino_show[0],                    dcol=1, style=LEFT)
+#         self.Add(self.sino_show[1],                    dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Display:'),          dcol=1, style=RIGHT, newrow=True)
+        self.Add(self.tomo_show[0],                    dcol=1, style=LEFT)
+        self.Add(self.tomo_show[1],                    dcol=1, style=LEFT)
         #################################################################################
         self.pack()
 
@@ -592,9 +594,9 @@ class TomographyPanel(GridPanel):
 
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]
         for chc in all_choices: chc.Disable()
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center):
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center,self.lock_center):
             chk.Disable()
-        for btn in (self.sino_show+self.tomo_show):
+        for btn in self.tomo_show: #(self.sino_show+self.tomo_show):
             btn.Disable()
         self.center_value.Disable()
         self.center_range.Disable()
@@ -613,10 +615,11 @@ class TomographyPanel(GridPanel):
         for chc in self.alg_choice: chc.Enable()
 
         for chk in (self.chk_dftcor,self.chk_hotcols): chk.Enable()
-        for btn in (self.sino_show): btn.Enable()
+#         for btn in (self.sino_show): btn.Enable()
 
         if self.tomo_pkg[0] != '':
             for btn in (self.tomo_show): btn.Enable()
+            self.lock_center.Enable()
             self.refine_center.Enable()
             self.center_value.Enable()
             self.center_range.SetValue(10)
@@ -646,23 +649,34 @@ class TomographyPanel(GridPanel):
             self.center_value.SetValue(center)
 
         self.plotSELECT()
-        self.refineCHOICE()
+
+    def lockCENTER(self,event=None):
+
+        if self.lock_center.GetValue():
+            self.center_value.Disable()
+            self.refine_center.SetValue(False)
+            self.refine_center.Disable()
+            self.center_range.Disable()
+        else:
+            self.center_value.Enable()
+            self.refine_center.Enable()
 
     def refineCHOICE(self,event=None):
 
-        self.center_range.Disable()
-        if self.alg_choice[0].GetStringSelection().startswith('sci'):
-            if self.refine_center.GetValue():
-                self.center_range.Enable()
-            self.center_value.SetIncrement(1)
+        if self.refine_center.GetValue():
+            self.center_range.Enable()
         else:
-            self.center_value.SetIncrement(0.1)
+            self.center_range.Disable()
 
     def onALGchoice(self,event=None):
+
         self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
         self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
 
-        self.refineCHOICE()
+        if self.alg_choice[0].GetStringSelection().startswith('sci'):
+            self.center_value.SetIncrement(1)
+        else:
+            self.center_value.SetIncrement(0.1)
 
     def detSELECT(self,idet,event=None):
         self.set_roi_choices(self.cfile.xrmmap,idet=idet)
@@ -696,20 +710,20 @@ class TomographyPanel(GridPanel):
         self.roi_label[iroi].SetLabel(roistr)
 
     def plotSELECT(self,event=None):
-
         if len(self.owner.filemap) > 0:
-            if self.plot_choice.GetSelection() == 0:
+            plot_type = self.plot_choice.GetStringSelection().lower()
+            if 'single' in plot_type:
                 for i in (1,2):
                     self.det_choice[i].Disable()
                     self.roi_choice[i].Disable()
                     self.roi_label[i].SetLabel('')
-                for lbl in self.det_label:
-                    lbl.SetLabel('')
-            else:
+                for i,label in enumerate([' Map ', ' ', ' ']):
+                    self.det_label[i].SetLabel(label)
+            elif 'three' in plot_type:
                 for i in (1,2):
                     self.det_choice[i].Enable()
                     self.roi_choice[i].Enable()
-                for i,label in enumerate(['Red','Green','Blue']):
+                for i,label in enumerate(['Red', 'Green', 'Blue']):
                     self.det_label[i].SetLabel(label)
                 self.set_roi_choices(self.cfile.xrmmap)
 
@@ -736,7 +750,7 @@ class TomographyPanel(GridPanel):
         '''
 
         subtitles = None
-        plt3 = (self.plot_choice.GetSelection() == 1)
+        plt3 = ('three' in self.plot_choice.GetStringSelection().lower())
         oprtr = self.oper.GetStringSelection()
 
         det_name,roi_name = [],[]
@@ -810,20 +824,20 @@ class TomographyPanel(GridPanel):
 
         return title,subtitles,info,x,omega,sino_order,sino
 
-    def onShowSinogram(self, event=None, new=True):
-
-        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
-
-        omeoff, xoff = 0, 0
-        if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
-
-
-        if sino.shape[0] == 1: sino = sino[0] ## for one color plot
-        self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
-                               xoff=xoff, yoff=omeoff, subtitles=subtitles,
-                               xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
-
+#     def onShowSinogram(self, event=None, new=True):
+# 
+#         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
+# 
+#         omeoff, xoff = 0, 0
+#         if len(self.owner.im_displays) == 0 or new:
+#             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
+# 
+# 
+#         if sino.shape[0] == 1: sino = sino[0] ## for one color plot
+#         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
+#                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
+#                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
+# 
 
     def onShowTomograph(self, event=None, new=True):
 
@@ -841,7 +855,6 @@ class TomographyPanel(GridPanel):
                 'sinogram_order' : sino_order,
                 'omega'          : ome}
 
-
         tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
 
         self.set_center(tomo_center)
@@ -854,13 +867,14 @@ class TomographyPanel(GridPanel):
         else:
             title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
 
-        if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
+        if len(self.owner.tomo_displays) == 0 or new:
+            iframe = self.owner.add_tomodisplay(title, _cursorlabels=False, _savecallback=False)
 
-        if tomo.shape[0] == 1: tomo = tomo[0] ## for one color plot
-        self.owner.display_map(tomo, title=title, info=info, x=x, y=x,
-                               xoff=xoff, yoff=xoff, subtitles=subtitles,
-                               xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
+        ## for one color plot
+        if sino.shape[0] == 1: sino = sino[0]
+        if tomo.shape[0] == 1: tomo = tomo[0]
+
+        self.owner.display_tomo(sino,tomo)                               
 
     def set_center(self,cen):
 
@@ -2114,6 +2128,7 @@ class MapViewerFrame(wx.Frame):
         self.use_scandb = use_scandb
         self.filemap = {}
         self.im_displays = []
+        self.tomo_displays = []
         self.plot_displays = []
 
         self.larch_buffer = parent
@@ -2345,6 +2360,52 @@ class MapViewerFrame(wx.Frame):
 
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
+
+
+    def add_tomodisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
+
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+
+        imframe = TomographyFrame(title          = title,
+                                  lasso_callback = lasso_cb,
+                                  cursor_labels  = cursor_labels,
+                                  save_callback  = save_callback)
+
+        self.tomo_displays.append(imframe)
+
+    def display_tomo(self, sino, tomo, title='', info='', x=None, y=None, xoff=0, yoff=0,
+                    det=None, subtitles=None, xrmfile=None,
+                    _cursorlabels=True, _savecallback=True):
+        
+        displayed = False
+        
+        cursor_labels = self.cursor_menulabels if _cursorlabels else None
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
+        save_callback = self.onSavePixel if _savecallback else None
+
+        while not displayed:
+            try:
+                tmd = self.tomo_displays.pop()
+                tmd.display(sino, tomo, title=title) #, x=x, y=y)
+                tmd.lasso_callback = lasso_cb
+                displayed = True
+            except IndexError:
+                tmd = TomographyFrame(title          = title,
+                                      lasso_callback = lasso_cb,
+                                      cursor_labels  = cursor_labels,
+                                      save_callback  = save_callback)
+
+                tmd.display(sino, tomo) #title=title
+                displayed = True
+            except PyDeadObjectError:
+                displayed = False
+        self.tomo_displays.append(tmd)
+        tmd.SetStatusText(info, 1)
+        tmd.Show()
+        tmd.Raise()
+
 
 
     def add_imdisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
