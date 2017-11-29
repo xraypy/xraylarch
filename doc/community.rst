@@ -11,8 +11,9 @@ Larch Community and Support
 
 For questions and support about Larch, please use the `Ifeffit Mailing List`_.
 
-The most popular way to use `ifeffit`_ for XAFS Analysis is through the
-GUIs in `Demeter`_.
+The most popular way to use `ifeffit`_ for XAFS Analysis has been through the
+GUIs in `Demeter`_ -- the programs Athena, Artemis, and Hephaestus.  If you
+are using these programs,
 
 Larch is an open-source project, with active development happening at the
 `Larch Github Pages`_.   There, you will find the latest source code and
