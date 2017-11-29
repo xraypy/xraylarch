@@ -192,6 +192,17 @@ several examples (including all those shown in this documentation) in the
 `examples` folder.
 
 
+
+Citing Larch
+========================
+
+Currently, the best citation for Larch is :cite:ts:`larch2013`::
+
+    M. Newville, *Larch: An Analysis Package For XAFS And Related
+    Spectroscopies*. Journal of Physics: Conference Series, 430:012007 (2013).
+
+
+
 Funding and Support
 =======================
 
