@@ -74,12 +74,16 @@ if len(args) >  0:
 elif options.next:
     command = 'show_next'
 
-server_state = test_server(port=port)
+if command == 'show_next':
+    port = get_next_port(port=port)
+    print("%i" % port)
+    sys.exit(0)
 
 def smsg(port, txt):
     if not options.quiet:
         print('larch_server port=%i: %s' % (port, txt))
 
+server_state = test_server(port=port)
 if command == 'start':
     if server_state == CONNECTED:
         smsg(port, 'already running')
@@ -99,17 +103,11 @@ elif command == 'next':
     start_server(port=port)
     smsg(port, 'started')
 
-elif command == 'show_next':
-    port = get_next_port(port=port)
-    print("%i" % port)
-
 elif command == 'restart':
     if server_state == CONNECTED:
         stop_server(port=port)
-
     time.sleep(0.5)
     start_server(port=port)
-
 
 elif command == 'status':
     if server_state == CONNECTED:
