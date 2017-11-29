@@ -1,3 +1,5 @@
+.. _install-chapter:
+
 ====================================
 Downloading and Installation
 ====================================
@@ -19,11 +21,6 @@ three to six months.  Of course, there may be bugs and unintended features, and
 some missing or incomplete desired features as we add new functionality.  Still,
 most of what is in Larch for XAFS data analysis and working with XRF maps from
 X-ray microprobes is working and ready for use.
-
-
-
-
-
 
 Single-File Installers
 =========================
