@@ -92,6 +92,7 @@ development, and has support from the U. S. National Science Foundation.
 .. toctree::
    :maxdepth: 1
 
+   getting_started.rst
    installation.rst
    community.rst
    overview.rst
