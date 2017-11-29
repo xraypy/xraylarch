@@ -6,12 +6,8 @@ import sys
 from time import time, sleep
 import signal
 import socket
-from threading import Thread, Timer
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
-
-from larch import Interpreter
-from larch.utils.jsonutils import encode4js
 
 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER = range(3)
 POLL_TIME = 2.0
@@ -79,6 +75,11 @@ class LarchServer(SimpleXMLRPCServer):
                  logRequests=False, allow_none=True,
                  keepalive_time=3*24*3600):
         self.out_buffer = []
+
+        from larch import Interpreter
+        from larch.utils.jsonutils import encode4js
+        from threading import Thread
+
 
         self.larch = Interpreter(writer=self)
         self.larch.input.prompt = ''
