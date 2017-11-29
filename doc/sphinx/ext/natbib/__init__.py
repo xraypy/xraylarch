@@ -410,6 +410,9 @@ class CitationConfDirective(Directive):
 
     return []
 
+def fromlatex(x):
+  return x.decode('latex').replace('{', '').replace('}', '')
+
 class CitationReferencesDirective(Directive):
   """
   Generates the actual reference list.
@@ -433,9 +436,7 @@ class CitationReferencesDirective(Directive):
     authors = ref.persons.get('author', [])
     for i, author in enumerate(authors):
       authortext = namestyler.format(author, abbr=True).format().render(plaintext)
-      authortext = authortext.replace('{', '')
-      authortext = authortext.replace('}', '')
-      authortext = authortext.decode('latex')
+      authortext = fromlatex(authortext)
       text = authortext
 
       text = text.strip()
@@ -454,9 +455,7 @@ class CitationReferencesDirective(Directive):
     if title is None:
         title = ref.fields.get('key')
     if title:
-      title = title.decode('latex')
-      title = title.replace('{', '')
-      title = title.replace('}', '')
+      title = fromlatex(title)
       node += nodes.inline(title, title, classes=['title'])
       node += nodes.inline('.  ', '.  ')
 
@@ -472,15 +471,15 @@ class CitationReferencesDirective(Directive):
     if not pub:
         pub = ref.fields.get('booktitle')
     if pub:
-      pub = pub.decode('latex')
-      pub = pub.replace('{', '')
-      pub = pub.replace('}', '')
+      pub = fromlatex(pub)
       node += nodes.emphasis(pub, pub, classes=['publication'])
       node += nodes.inline(', ', ', ')
 
     vol = ref.fields.get('volume')
     pages = ref.fields.get('pages')
     year = ref.fields.get('year')
+    url = ref.fields.get('url')
+    doi = ref.fields.get('doi')
 
     if pub is None:
       howpub = ref.fields.get('howpublished')
@@ -493,19 +492,34 @@ class CitationReferencesDirective(Directive):
           node += nodes.inline(', ', ', ')
 
     if vol:
-      vol = vol.decode('latex')
+      vol = fromlatex(vol)
       node += nodes.inline(vol, vol, classes=['volume'])
       node += nodes.inline(':', ':')
 
     if pages:
-      pages = pages.decode('latex')
+      pages = fromlatex(pages)
       node += nodes.inline(pages, pages, classes=['pages'])
       node += nodes.inline(', ', ', ')
 
     if year:
-      year = year.decode('latex')
+      year = fromlatex(year)
+      node += nodes.inline('(', '(')
       node += nodes.inline(year, year, classes=['year'])
-      node += nodes.inline('.', '.')
+      node += nodes.inline(')', ')')
+
+    if url:
+      url = fromlatex(url)
+      refnode = nodes.reference('', '', internal=False, refuri=url)
+      refnode += nodes.Text(url, url)
+      node += nodes.inline(', ', ', ')
+      node += refnode
+    elif doi:
+      url = fromlatex("{http://dx.doi.org/%s" % doi)
+      refnode = nodes.reference('', '', internal=False, refuri=url)
+      refnode += nodes.Text(url, url)
+      node += nodes.inline(', ', ', ')
+      node += refnode
+
 
     return node
 
