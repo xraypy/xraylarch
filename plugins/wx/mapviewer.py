@@ -2368,10 +2368,7 @@ class MapViewerFrame(wx.Frame):
         lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
         save_callback = self.onSavePixel if _savecallback else None
 
-        imframe = TomographyFrame(title          = title,
-                                  lasso_callback = lasso_cb,
-                                  cursor_labels  = cursor_labels,
-                                  save_callback  = save_callback)
+        imframe = TomographyFrame()
 
         self.tomo_displays.append(imframe)
 
@@ -2392,10 +2389,7 @@ class MapViewerFrame(wx.Frame):
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
-                tmd = TomographyFrame(title          = title,
-                                      lasso_callback = lasso_cb,
-                                      cursor_labels  = cursor_labels,
-                                      save_callback  = save_callback)
+                tmd = TomographyFrame()
 
                 tmd.display(sino, tomo) #title=title
                 displayed = True
@@ -2648,7 +2642,7 @@ class MapViewerFrame(wx.Frame):
             xrmfile.close()
 
         ## Closes maps, 2D XRD image
-        for disp in self.im_displays + self.plot_displays:
+        for disp in self.im_displays + self.plot_displays + self.tomo_displays:
             try:
                 disp.Destroy()
             except:
