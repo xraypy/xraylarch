@@ -125,6 +125,7 @@ elif command == 'report':
         last_event = info.get('last_event', 0)
         last_used = time.ctime(last_event)
         serverid  = int(info.get('pid_server', 0))
+        serverport= int(info.get('port', 0))
         procid    = int(info.get('pid', 0))
         appname   = info.get('app',     'unknown')
         machname  = info.get('machine', 'unknown')
@@ -146,6 +147,7 @@ elif command == 'report':
         print(' Client User Name    = %s' % username)
         print(' Client Last Used    = %s' % last_used)
         print(' Server Process ID   = %s' % serverid)
+        print(' Server Port Number  = %s' % serverport)
         print(' Server will expire in  %i %s if not used.' % (keepalive_time, keepalive_units))
 
     elif server_state == NOT_IN_USE:
