@@ -78,13 +78,18 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     # use psutil to find next unused port
     if host.lower() == 'localhost' and HAS_PSUTIL:
         available = [True]*nmax
-        for conn in psutil.net_connections():
-            ptest = conn.laddr[1] - port
-            if ptest >= 0 and ptest < nmax:
-                available[ptest] = False
-        for index, status in enumerate(available):
-            if status:
-                return port+index
+        try:
+            conns = psutil.net_connections()
+        except:
+            conns = []
+        if len(conns) > 0:
+            for conn in conns:
+                ptest = conn.laddr[1] - port
+                if ptest >= 0 and ptest < nmax:
+                    available[ptest] = False
+            for index, status in enumerate(available):
+                if status:
+                    return port+index
     # for remote servers, need to test ports
     else:
         for index in range(nmax):
