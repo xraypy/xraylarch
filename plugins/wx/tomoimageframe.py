@@ -170,19 +170,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         mainsizer.Add(self.config_panel, 0,
                       wx.LEFT|wx.ALIGN_LEFT|wx.TOP|wx.ALIGN_TOP|wx.EXPAND)
 
-#         gridsizer = wx.GridSizer(1, 2, 2, 2) ## wx.GridSizer(2, 1, 2, 2)
-#         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-#         lsty |= wx.GROW|wx.ALL|wx.EXPAND|wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-# 
-#         for ipanel in self.img_panel:
-#             gridsizer.Add(ipanel,    1, lsty, 2)
-#         mainsizer.Add(gridsizer, 1, wx.ALL|wx.GROW)
-
-
-        lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-        lsty |= wx.GROW|wx.ALL|wx.EXPAND|wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
         for ipanel in self.img_panel:
-            mainsizer.Add(ipanel,    1, lsty, 2)
+            mainsizer.Add(ipanel, 1, wx.GROW|wx.ALL)
 
 
 
