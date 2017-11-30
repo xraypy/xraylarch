@@ -9,6 +9,16 @@ import socket
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
 
+import larch
+from larch.utils.jsonutils import encode4js
+from threading import Thread
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER = range(3)
 POLL_TIME = 2.0
 
@@ -64,10 +74,23 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     Returns
       integer: next unused port number or None in nmax exceeded.
     """
-    for i in range(nmax):
-        ptest = port + i
-        if NOT_IN_USE == test_server(host=host, port=ptest):
-            return ptest
+    # special case for localhost:
+    # use psutil to find next unused port
+    if host.lower() == 'localhost' and HAS_PSUTIL:
+        available = [True]*nmax
+        for conn in psutil.net_connections():
+            ptest = conn.laddr[1] - port
+            if ptest >= 0 and ptest < nmax:
+                available[ptest] = False
+        for index, status in enumerate(available):
+            if status:
+                return port+index
+    # for remote servers, need to test ports
+    else:
+        for index in range(nmax):
+            ptest = port + index
+            if NOT_IN_USE == test_server(host=host, port=ptest):
+                return ptest
     return None
 
 class LarchServer(SimpleXMLRPCServer):
@@ -76,12 +99,7 @@ class LarchServer(SimpleXMLRPCServer):
                  keepalive_time=3*24*3600):
         self.out_buffer = []
 
-        from larch import Interpreter
-        from larch.utils.jsonutils import encode4js
-        from threading import Thread
-
-
-        self.larch = Interpreter(writer=self)
+        self.larch = larch.Interpreter(writer=self)
         self.larch.input.prompt = ''
         self.larch.input.prompt2 = ''
         self.larch.run_init_scripts()
