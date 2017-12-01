@@ -1,3 +1,5 @@
+.. _install-chapter:
+
 ====================================
 Downloading and Installation
 ====================================
@@ -19,11 +21,6 @@ three to six months.  Of course, there may be bugs and unintended features, and
 some missing or incomplete desired features as we add new functionality.  Still,
 most of what is in Larch for XAFS data analysis and working with XRF maps from
 X-ray microprobes is working and ready for use.
-
-
-
-
-
 
 Single-File Installers
 =========================
@@ -190,6 +187,17 @@ Documentation and Examples
 The source kit includes sources for documentation in the `docs` folder and
 several examples (including all those shown in this documentation) in the
 `examples` folder.
+
+
+
+Citing Larch
+========================
+
+Currently, the best citation for Larch is :cite:ts:`larch2013`::
+
+    M. Newville, *Larch: An Analysis Package For XAFS And Related
+    Spectroscopies*. Journal of Physics: Conference Series, 430:012007 (2013).
+
 
 
 Funding and Support

@@ -74,12 +74,16 @@ if len(args) >  0:
 elif options.next:
     command = 'show_next'
 
-server_state = test_server(port=port)
+if command == 'show_next':
+    port = get_next_port(port=port)
+    print("%i" % port)
+    sys.exit(0)
 
 def smsg(port, txt):
     if not options.quiet:
         print('larch_server port=%i: %s' % (port, txt))
 
+server_state = test_server(port=port)
 if command == 'start':
     if server_state == CONNECTED:
         smsg(port, 'already running')
@@ -99,17 +103,11 @@ elif command == 'next':
     start_server(port=port)
     smsg(port, 'started')
 
-elif command == 'show_next':
-    port = get_next_port(port=port)
-    print("%i" % port)
-
 elif command == 'restart':
     if server_state == CONNECTED:
         stop_server(port=port)
-
     time.sleep(0.5)
     start_server(port=port)
-
 
 elif command == 'status':
     if server_state == CONNECTED:
@@ -127,6 +125,7 @@ elif command == 'report':
         last_event = info.get('last_event', 0)
         last_used = time.ctime(last_event)
         serverid  = int(info.get('pid_server', 0))
+        serverport= int(info.get('port', 0))
         procid    = int(info.get('pid', 0))
         appname   = info.get('app',     'unknown')
         machname  = info.get('machine', 'unknown')
@@ -148,6 +147,7 @@ elif command == 'report':
         print(' Client User Name    = %s' % username)
         print(' Client Last Used    = %s' % last_used)
         print(' Server Process ID   = %s' % serverid)
+        print(' Server Port Number  = %s' % serverport)
         print(' Server will expire in  %i %s if not used.' % (keepalive_time, keepalive_units))
 
     elif server_state == NOT_IN_USE:
