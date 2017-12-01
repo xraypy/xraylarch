@@ -128,11 +128,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.bgcol = rgb2hex(self.GetBackgroundColour()[:3])
 
-#         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-#         splitter.SetMinimumPaneSize(225)
+        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(225)
 
-        self.config_panel = wx.Panel(self) #(splitter)
-        self.main_panel = wx.Panel(self) #(splitter)
+        self.config_panel = wx.Panel(splitter) ## wx.Panel(self) 
+        self.main_panel   = wx.Panel(splitter) ## wx.Panel(self) 
         
         img_opts = dict(data_callback=self.onDataChange,
                         size=(700, 525), dpi=100,
@@ -159,24 +159,24 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.Build_ConfigPanel()
 
-
         for name, ipanel in (('Sinogram',  self.img_panel[0]),
-                            ('Tomograph', self.img_panel[1])):
+                             ('Tomograph', self.img_panel[1])):
 #             ipanel.report_leftdown = partial(self.report_leftdown, name=name)
             ipanel.messenger = self.write_message
 
-        mainsizer = wx.BoxSizer(wx.HORIZONTAL)
+        lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+        gsizer = wx.GridSizer(1, 2, 2, 2)
+        lsty |= wx.GROW|wx.ALL|wx.EXPAND|wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
+        gsizer.Add(self.img_panel[0], 1, lsty, 2)
+        gsizer.Add(self.img_panel[1], 1, lsty, 2)
 
-        mainsizer.Add(self.config_panel, 0,
-                      wx.LEFT|wx.ALIGN_LEFT|wx.TOP|wx.ALIGN_TOP|wx.EXPAND)
+        pack(self.main_panel, gsizer)
+        splitter.SplitVertically(self.config_panel, self.main_panel, 1)
 
-        for ipanel in self.img_panel:
-            mainsizer.Add(ipanel, 1, wx.GROW|wx.ALL)
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
+        pack(self, mainsizer)
 
-
-
-        self.SetSizer(mainsizer)
-        self.Fit()
 
     def display(self, img1, img2, title=None, colormap=None, style='image',
                 subtitles=None, **kws):
@@ -260,6 +260,29 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.config_panel.Refresh()
         self.SendSizeEvent()
         wx.CallAfter(self.EnableMenus)
+
+    def report_leftdown(self,event=None, name=''):
+        if event is None:
+            return
+        if event.xdata is None or event.ydata is None:
+            return
+        ix, iy = int(round(event.xdata)), int(round(event.ydata))
+        if (ix >= 0 and ix < self.map1.shape[1] and
+            iy >= 0 and iy < self.map1.shape[0]):
+            pos = ''
+            if self.xdata is not None:
+                pos = ' %s=%.4g,' % (self.xlabel, self.xdata[ix])
+            if self.ydata is not None:
+                pos = '%s %s=%.4g,' % (pos, self.ylabel, self.ydata[iy])
+
+            d1, d2 = (self.map1[iy, ix], self.map2[iy, ix])
+            msg = "Pixel [%i, %i],%s %s=%.4g, %s=%.4g" % (ix, iy, pos,
+                                                          self.name1, d1,
+                                                          self.name2, d2)
+            self.write_message(msg, panel=0)
+
+            if callable(self.cursor_callback):
+                self.cursor_callback(x=event.xdata, y=event.ydata)
 
     def set_subtitles(self, red=None, green=None, blue=None, **kws):
         if self.config_mode.startswith('int') and red is not None:
@@ -432,7 +455,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
     def Build_ConfigPanel(self):
         """config panel for left-hand-side of frame: RGB Maps"""
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        csizer = wx.BoxSizer(wx.VERTICAL)
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
 
         icol = 0
@@ -447,8 +470,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                                                             default=col,
                                                             colormap_list=None)
 
-                    sizer.Add(self.cmap_panels[icol], 0, lsty, 2)
-                    sizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
+                    csizer.Add(self.cmap_panels[icol], 0, lsty, 2)
+                    csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
                                             style=wx.LI_HORIZONTAL), 0, lsty, 2)
                     icol += 1
 
@@ -462,15 +485,15 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                                                         default='gray',
                                                         colormap_list=ColorMap_List)
 
-                sizer.Add(self.cmap_panels[icol],  0, lsty, 1)
-                sizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
+                csizer.Add(self.cmap_panels[icol],  0, lsty, 1)
+                csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
                                         style=wx.LI_HORIZONTAL), 0, lsty, 2)
                 icol += 1
 
         cust = self.CustomConfig(self.config_panel, None, 0)
         if cust is not None:
-            sizer.Add(cust, 0, lsty, 1)
-        pack(self.config_panel, sizer)
+            csizer.Add(cust, 0, lsty, 1)
+        pack(self.config_panel, csizer)
 
 
     def CustomConfig(self, lpanel, lsizer, irow):
