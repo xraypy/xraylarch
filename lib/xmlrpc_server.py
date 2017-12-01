@@ -6,12 +6,18 @@ import sys
 from time import time, sleep
 import signal
 import socket
-from threading import Thread, Timer
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
 
-from larch import Interpreter
+import larch
 from larch.utils.jsonutils import encode4js
+from threading import Thread
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 NOT_IN_USE, CONNECTED, NOT_LARCHSERVER = range(3)
 POLL_TIME = 2.0
@@ -68,8 +74,41 @@ def get_next_port(host='localhost', port=4966, nmax=100):
     Returns
       integer: next unused port number or None in nmax exceeded.
     """
-    for i in range(nmax):
-        ptest = port + i
+    # special case for localhost:
+    # use psutil to find next unused port
+    if host.lower() == 'localhost':
+        if HAS_PSUTIL and os.name == 'nt':
+            available = [True]*nmax
+            try:
+                conns = psutil.net_connections()
+            except:
+                conns = []
+            if len(conns) > 0:
+                for conn in conns:
+                    ptest = conn.laddr[1] - port
+                    if ptest >= 0 and ptest < nmax:
+                        available[ptest] = False
+            for index, status in enumerate(available):
+                if status:
+                    return port+index
+        # now test with brute attempt to open the socket:
+        for index in range(nmax):
+            ptest = port + index
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+            success = False
+            try:
+                sock.bind(('', ptest))
+                success = True
+            except socket.error:
+                pass
+            finally:
+                sock.close()
+            if success:
+                return ptest
+
+    # for remote servers or if the above did not work, need to test ports
+    for index in range(nmax):
+        ptest = port + index
         if NOT_IN_USE == test_server(host=host, port=ptest):
             return ptest
     return None
@@ -80,7 +119,7 @@ class LarchServer(SimpleXMLRPCServer):
                  keepalive_time=3*24*3600):
         self.out_buffer = []
 
-        self.larch = Interpreter(writer=self)
+        self.larch = larch.Interpreter(writer=self)
         self.larch.input.prompt = ''
         self.larch.input.prompt2 = ''
         self.larch.run_init_scripts()
@@ -97,7 +136,7 @@ class LarchServer(SimpleXMLRPCServer):
         _sys.client.machine = 'unknown'
 
         self.client = self.larch.symtable._sys.client
-
+        self.port = port
         SimpleXMLRPCServer.__init__(self, (host, port),
                                     logRequests=logRequests,
                                     allow_none=allow_none)
@@ -154,7 +193,7 @@ class LarchServer(SimpleXMLRPCServer):
         """get client info:
         returns json dictionary of client information
         """
-        out = {}
+        out = {'port': self.port}
         client = self.larch.symtable._sys.client
         for attr in dir(client):
             out[attr] = getattr(client, attr)
