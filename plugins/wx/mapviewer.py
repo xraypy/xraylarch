@@ -516,10 +516,6 @@ class TomographyPanel(GridPanel):
 
         self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
-#         self.sino_show = [Button(self, 'Show New',     size=(100, -1),
-#                                action=partial(self.onShowSinogram, new=True)),
-#                           Button(self, 'Replace Last', size=(100, -1),
-#                                action=partial(self.onShowSinogram, new=False))]
         self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowTomograph, new=True)),
                           Button(self, 'Replace Last', size=(100, -1),
@@ -823,21 +819,6 @@ class TomographyPanel(GridPanel):
             subtitle = None
 
         return title,subtitles,info,x,omega,sino_order,sino
-
-#     def onShowSinogram(self, event=None, new=True):
-# 
-#         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
-# 
-#         omeoff, xoff = 0, 0
-#         if len(self.owner.im_displays) == 0 or new:
-#             iframe = self.owner.add_imdisplay(title, _cursorlabels=False, _savecallback=False)
-# 
-# 
-#         if sino.shape[0] == 1: sino = sino[0] ## for one color plot
-#         self.owner.display_map(sino, title=title, info=info, x=x, y=ome,
-#                                xoff=xoff, yoff=omeoff, subtitles=subtitles,
-#                                xrmfile=self.cfile, _cursorlabels=False, _savecallback=False)
-# 
 
     def onShowTomograph(self, event=None, new=True):
 
@@ -2385,12 +2366,11 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
-                tmd.display(sino, tomo, title=title) #, x=x, y=y)
+                tmd.display(sino, tomo) #, title=title, x=x, y=y)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
                 tmd = TomographyFrame()
-
                 tmd.display(sino, tomo) #title=title
                 displayed = True
             except PyDeadObjectError:

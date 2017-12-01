@@ -1,7 +1,7 @@
 #!/usr/bin/python
-"""
+'''
 subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
-"""
+'''
 
 import os
 import time
@@ -14,6 +14,7 @@ try:
     from wx._core import PyDeadObjectError
 except:
     PyDeadObjectError = Exception
+import wx.lib.agw.flatnotebook as flat_nb
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -32,6 +33,9 @@ from wxmplot.colors import rgb2hex, register_custom_colormaps
 from wxmplot.utils import LabelEntry, MenuItem, pack
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
+
+import larch
+from larch_plugins.wx.mapimageframe import get_wxmplot_version
 
 from functools import partial
 
@@ -54,11 +58,11 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
 
 class TomographyFrame(BaseFrame):
 ### COPY OF ImageFrame(BaseFrame) with portions of ImageMatrixFrame(BaseFrame)
-    """
+    '''
     MatPlotlib Image Display ons a wx.Frame, using ImagePanel
-    """
+    '''
 
-    help_msg =  """Quick help:
+    help_msg =  '''Quick help:
 
 Left-Click:   to display X,Y coordinates and Intensity
 Left-Drag:    to zoom in on region
@@ -88,11 +92,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
      Ctrl-E:     Enhance Contrast
 
 
-"""
+'''
 
 
-    def __init__(self, parent=None, size=None,
-                 lasso_callback=None, mode='intensity',
+    def __init__(self, parent=None, size=None, mode='intensity',
+                 lasso_callback=True, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image', subtitles=None,
                  user_menus=None, **kws):
@@ -104,6 +108,16 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.cursor_menulabels.update(CURSOR_MENULABELS)
         if cursor_labels is not None:
             self.cursor_menulabels.update(cursor_labels)
+            
+        self.img_label = ['Sinogram', 'Tomograph']
+
+
+        self.det = None
+        self.xrmfile = None
+        self.map = None
+        self.move_callback = move_callback
+        self.save_callback = save_callback
+        self.wxmplot_version = get_wxmplot_version()
 
         BaseFrame.__init__(self, parent=parent,
                            title  = 'Image Display Frame',
@@ -159,9 +173,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.Build_ConfigPanel()
 
-        for name, ipanel in (('Sinogram',  self.img_panel[0]),
-                             ('Tomograph', self.img_panel[1])):
-#             ipanel.report_leftdown = partial(self.report_leftdown, name=name)
+        for ilabel, ipanel in zip(self.img_label,self.img_panel):
+            ipanel.report_leftdown = partial(self.report_leftdown, name=ilabel)
             ipanel.messenger = self.write_message
 
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
@@ -178,10 +191,25 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         pack(self, mainsizer)
 
 
-    def display(self, img1, img2, title=None, colormap=None, style='image',
-                subtitles=None, **kws):
-        """plot after clearing current plot
-        """
+    def display(self, map1, map2, title=None, colormap=None, style='image',
+                subtitles=None, name1='Sinogram', name2='Tomograph',
+                xlabel='x', ylabel='y', rotlabel='theta',
+                x=None, y=None, rot=None,
+                **kws):
+
+        '''plot after clearing current plot
+        '''
+        
+        map1 = np.array(map1)
+        map2 = np.array(map2)
+        
+        if len(map1.shape) != len(map2.shape):
+            return
+
+        self.name1, self.name2 = name1, name2
+        self.xdata,  self.ydata,  self.rotdata  = x,      y,      rot
+        self.xlabel, self.ylabel, self.rotlabel = xlabel, ylabel, rotlabel
+
         if title is not None:
             self.SetTitle(title)
         if subtitles is not None:
@@ -189,59 +217,50 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         cmode = self.config_mode.lower()[:3]
 
 
-        img1 = np.array(img1)
 
-        if len(img1.shape) == 3:
-            ishape = img1.shape
-            # make sure 3d image is shaped (NY, NX, 3)
+        # make sure 3d image is shaped (NY, NX, 3)
+        if len(map1.shape) == 3:
+            ishape = map1.shape
             if ishape[2] != 3:
                 if ishape[0] == 3:
-                    img1 = img1.swapaxes(0, 1).swapaxes(1, 2)
+                    map1 = map1.swapaxes(0, 1).swapaxes(1, 2)
                 elif ishape[1] == 3:
-                    img1 = img1.swapaxes(1, 2)
+                    map1 = map1.swapaxes(1, 2)
+        if len(map2.shape) == 3:
+            ishape = map2.shape
+            if ishape[2] != 3:
+                if ishape[0] == 3:
+                    map2 = map2.swapaxes(0, 1).swapaxes(1, 2)
+                elif ishape[1] == 3:
+                    map2 = map2.swapaxes(1, 2)
 
+        self.xzoom = self.yzoom = slice(0, map1.shape[1]+1)
+        self.rotzoom  = slice(0, map1.shape[0]+1)
+
+        ## sets config_mode to single or tri color and builds panel accordingly
+        if len(map1.shape) == 3 and len(map2.shape) == 3:
             if cmode != 'rgb':
                 for comp in self.config_panel.Children:
                     comp.Destroy()
                 self.config_mode = 'rgb'
                 self.img_panel[0].conf.tricolor_mode = 'rgb'
                 self.Build_ConfigPanel()
-        else:
+        else: ##if len(map1.shape) == 2 and len(map2.shape) == 2:
             if cmode != 'int':
                 for comp in self.config_panel.Children:
                     comp.Destroy()
                 self.config_mode = 'int'
                 self.Build_ConfigPanel()
-        
-        img2 = np.array(img2)
 
-        if len(img2.shape) == 3:
-            ishape = img2.shape
-            # make sure 3d image is shaped (NY, NX, 3)
-            if ishape[2] != 3:
-                if ishape[0] == 3:
-                    img2 = img2.swapaxes(0, 1).swapaxes(1, 2)
-                elif ishape[1] == 3:
-                    img2 = img2.swapaxes(1, 2)
+               
+        self.map1,self.map2 = map1,map2
 
-            if cmode != 'rgb':
-                for comp in self.config_panel.Children:
-                    comp.Destroy()
-                self.config_mode = 'rgb'
-                self.img_panel[1].conf.tricolor_mode = 'rgb'
-                self.Build_ConfigPanel()
-        else:
-            if cmode != 'int':
-                for comp in self.config_panel.Children:
-                    comp.Destroy()
-                self.config_mode = 'int'
-                self.Build_ConfigPanel()
-                
-        self.img_panel[0].display(img1, style=style, **kws)
-        self.img_panel[1].display(img2, style=style, **kws)
+        self.img_panel[0].display(map1, style=style, **kws)
+        self.img_panel[1].display(map2, style=style, **kws)
 
-        self.img_panel[0].conf.title = title
-        self.img_panel[1].conf.title = title
+        self.img_panel[0].conf.title = name1
+        self.img_panel[1].conf.title = name2
+
         if colormap is not None and self.config_mode == 'int':
             self.cmap_panels[0].set_colormap(name=colormap)
 
@@ -255,8 +274,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if style == 'contour':
             contour_value = 1
         self.set_contrast_levels()
+
         self.img_panel[0].redraw()
         self.img_panel[1].redraw()
+
         self.config_panel.Refresh()
         self.SendSizeEvent()
         wx.CallAfter(self.EnableMenus)
@@ -276,7 +297,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 pos = '%s %s=%.4g,' % (pos, self.ylabel, self.ydata[iy])
 
             d1, d2 = (self.map1[iy, ix], self.map2[iy, ix])
-            msg = "Pixel [%i, %i],%s %s=%.4g, %s=%.4g" % (ix, iy, pos,
+            msg = 'Pixel [%i, %i],%s %s=%.4g, %s=%.4g' % (ix, iy, pos,
                                                           self.name1, d1,
                                                           self.name2, d2)
             self.write_message(msg, panel=0)
@@ -315,8 +336,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         # options menu
         mview = self.view_menu = wx.Menu()
-        MenuItem(self, mview, "Zoom Out\tCtrl+Z",
-                 "Zoom out to full data range",
+        MenuItem(self, mview, 'Zoom Out\tCtrl+Z',
+                 'Zoom out to full data range',
                  self.unzoom_all)
 
         m = MenuItem(self, mview, 'Toggle Background Color (Black/White)\tCtrl+W',
@@ -394,18 +415,26 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.Bind(wx.EVT_CLOSE,self.onExit)
 
     def onInterp(self, evt=None, name=None):
+
         if name not in Interp_List:
             name = Interp_List[0]
-        self.img_panel[0].conf.interp = name
-        self.img_panel[0].redraw()
-        self.img_panel[1].conf.interp = name
-        self.img_panel[1].redraw()
+        for ipanel in self.img_panel:
+            ipanel.conf.interp = name
+            ipanel.redraw()
 
     def onCursorMode(self, event=None, mode='zoom'):
-        self.img_panel[0].cursor_mode = mode
-        self.img_panel[1].cursor_mode = mode
+
+        choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
+        for ipanel in self.img_panel:
+            ipanel.cursor_mode = mode
+            if event is not None:
+                if choice.startswith('Pick Area'):
+                    ipanel.cursor_mode = 'lasso'
+                elif choice.startswith('Show Line'):
+                    ipanel.cursor_mode = 'prof'
 
     def onProject(self, event=None, mode='y'):
+
         wid = event.GetId()
         if mode=='x':
             x = self.img_panel[0].ydata
@@ -453,19 +482,65 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             ipanel.unzoom_all()
 
     def Build_ConfigPanel(self):
-        """config panel for left-hand-side of frame: RGB Maps"""
+        '''config panel for left-hand-side of frame: RGB Maps'''
 
+# #         FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+# # 
+# #         bsizer = wx.BoxSizer(wx.VERTICAL)
+# #         nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
+# #         
+# #         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+# # 
+# #         icol = 0
+# #         if self.config_mode == 'rgb':
+# #             for ilabel, ipanel in zip(self.img_label,self.img_panel):
+# #                 csizer = wx.BoxSizer(wx.VERTICAL)
+# #                 for i,col in enumerate(RGB_COLORS):
+# #                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
+# #                                                             ipanel,
+# #                                                             title='%s - %s: ' % (ilabel,col.title()),
+# #                                                             color=i,
+# #                                                             default=col,
+# #                                                             colormap_list=None)
+# # 
+# #                     csizer.Add(self.cmap_panels[icol], 0, lsty, 2)
+# #                     csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
+# #                                             style=wx.LI_HORIZONTAL), 0, lsty, 2)
+# #                     icol += 1
+# # #                 nb.AddPage(csizer, ilabel)
+# # 
+# # 
+# #         else:
+# #             for ilabel, ipanel in zip(self.img_label,self.img_panel):
+# #                 csizer = wx.BoxSizer(wx.VERTICAL)
+# #                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
+# #                                                         ipanel,
+# #                                                         title='%s: ' % ilabel,
+# #                                                         default='gray',
+# #                                                         colormap_list=ColorMap_List)
+# # 
+# #                 csizer.Add(self.cmap_panels[icol],  0, lsty, 1)
+# #                 csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
+# #                                         style=wx.LI_HORIZONTAL), 0, lsty, 2)
+# #                 icol += 1
+# # #                 nb.AddPage(csizer, ilabel)
+# # 
+# #         bsizer.Add(nb, 0, lsty, 1)
+# #         cust = self.CustomConfig(self.config_panel, None, 0)
+# #         if cust is not None:
+# #             bsizer.Add(cust, 0, lsty, 1)
+# #         pack(self.config_panel, bsizer)
+        
         csizer = wx.BoxSizer(wx.VERTICAL)
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
 
         icol = 0
         if self.config_mode == 'rgb':
-            for plt_title,ipanel in (('Sinogram', self.img_panel[0]),
-                                    ('Tomograph', self.img_panel[1])):
+            for ilabel, ipanel in zip(self.img_label,self.img_panel):
                 for i,col in enumerate(RGB_COLORS):
                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
                                                             ipanel,
-                                                            title='%s - %s: ' % (plt_title,col.title()),
+                                                            title='%s - %s: ' % (ilabel,col.title()),
                                                             color=i,
                                                             default=col,
                                                             colormap_list=None)
@@ -477,11 +552,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
         else:
-            for plt_title,ipanel in (('Sinogram', self.img_panel[0]),
-                                    ('Tomograph', self.img_panel[1])):
+            for ilabel, ipanel in zip(self.img_label,self.img_panel):
                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
                                                         ipanel,
-                                                        title='%s: ' % plt_title,
+                                                        title='%s: ' % ilabel,
                                                         default='gray',
                                                         colormap_list=ColorMap_List)
 
@@ -496,11 +570,67 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         pack(self.config_panel, csizer)
 
 
-    def CustomConfig(self, lpanel, lsizer, irow):
-        """ override to add custom config panel items
+    def CustomConfig(self, panel, sizer=None, irow=0):
+        '''
+        override to add custom config panel items
         to bottom of config panel
-        """
-        pass
+        '''
+
+        labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+        
+        if self.lasso_callback is None:
+            zoom_opts = ('Zoom to Rectangle',
+                         'Show Line Profile')
+        else:
+            zoom_opts = ('Zoom to Rectangle',
+                         'Pick Area for XRF/XRD Spectra',
+                         'Show Line Profile')
+                         
+        if self.wxmplot_version > 0.921:
+            cpanel = wx.Panel(panel)
+            if sizer is None:
+                sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle), 0, labstyle, 3)
+            self.zoom_mode = wx.RadioBox(cpanel, -1, '',
+                                         wx.DefaultPosition, wx.DefaultSize,
+                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
+            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+
+            sizer.Add(self.zoom_mode, 1, labstyle, 4)
+
+            if self.save_callback is not None:
+                sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle), 0, labstyle, 3)
+                self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
+                                            style=wx.TE_PROCESS_ENTER)
+                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+                sizer.Add(self.pos_name, 0, labstyle, 3)
+
+            pack(cpanel, sizer)
+            return cpanel
+        else:  # support older versions of wxmplot, will be able to deprecate
+            conf = self.panel.conf
+            lpanel = panel
+            lsizer = sizer
+            self.zoom_mode = wx.RadioBox(panel, -1, 'Cursor Mode:',
+                                         wx.DefaultPosition, wx.DefaultSize,
+                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
+            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+            sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+            if self.save_callback is not None:
+                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
+                                            style=wx.TE_PROCESS_ENTER)
+                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+                label   = SimpleText(panel, label='Save Position:',
+                                     size=(-1, -1))
+                sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
+                sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
+
+            # if self.move_callback is not None:
+            #    mbutton = Button(panel, 'Move to Position', size=(100, -1),
+            #                     action=self.onMoveToPixel)
+            #    irow  = irow + 2
+            #    sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
+
 
 
     def onContrastConfig(self, event=None):
@@ -610,15 +740,15 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     icol += 1
 
     def onEnhanceContrast(self, event=None):
-        """change image contrast, using scikit-image exposure routines"""
+        '''change image contrast, using scikit-image exposure routines'''
         for ipanel in self.img_panel: self.ipanel.conf.auto_contrast = event.IsChecked()
         self.set_contrast_levels()
         for ipanel in self.img_panel: ipanel.redraw()
 
     def set_contrast_levels(self):
-        """enhance contrast levels, or use full data range
+        '''enhance contrast levels, or use full data range
         according to value of panel.conf.auto_contrast
-        """
+        '''
 
         icol = 0
         for ipanel in self.img_panel:
@@ -638,7 +768,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 conf.cmap_lo[icol] = xlo = (jmin-imin)*conf.cmap_range/(imax-imin)
                 conf.cmap_hi[icol] = xhi = (jmax-imin)*conf.cmap_range/(imax-imin)
 
-                # print("Set contrast level =", conf.cmap_hi, conf.cmap_range)
+                # print('Set contrast level =', conf.cmap_hi, conf.cmap_range)
 
                 self.cmap_panels[icol].cmap_hi.SetValue(xhi)
                 self.cmap_panels[icol].cmap_lo.SetValue(xlo)
@@ -672,7 +802,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             ipanel.redraw()
 
     def onCMapSave(self, event=None, col='int'):
-        """save color table image"""
+        '''save color table image'''
         file_choices = 'PNG (*.png)|*.png'
         ofile = 'Colormap.png'
 
@@ -686,7 +816,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             self.cmap_panels[0].cmap_canvas.print_figure(dlg.GetPath(), dpi=600)
 
     def save_figure(self,event=None, transparent=True, dpi=600):
-        """ save figure image to file"""
+        ''' save figure image to file'''
         for ipanel in self.img_panel:
             if ipanel is not None:
                 ipanel.save_figure(event=event, transparent=transparent, dpi=dpi)
