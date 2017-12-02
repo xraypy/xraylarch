@@ -1,0 +1,107 @@
+## examples/feffit/doc_feffit1.lar
+
+
+# read data
+cu_data  = read_ascii('../xafsdata/cu_metal_rt.xdi', labels='energy i0 i1 mu')
+
+
+autobk(cu_data, rbkg=0.8, kw=2, e0=8983)
+
+
+# define fitting parameter group
+pars = group(amp      = param(1,     vary=True),
+             del_e0   = guess(0.1),
+             c3       = param(0.00,  vary=True),
+             sig2     = param(0.002, vary=True),
+             sig2_p2  = param(0.005, vary=True),
+             sig2_p3  = param(0.005, vary=True),
+             alpha    = guess(0.) )
+
+# define a Feff Path, give expressions for Path Parameters
+path1 = feffpath('feff0001.dat',
+                 s02    = 'amp',
+                 e0     = 'del_e0',
+                 sigma2 = 'sig2',
+                 third  = 'c3',
+                 deltar = 'alpha*reff')
+
+path2 = feffpath('feff0002.dat',
+                 s02 = 'amp',
+                 e0 = 'del_e0',
+                 sigma2 = 'sig2_p2',
+                 deltar  = 'alpha*reff')
+
+path3 = feffpath('feff0003.dat', label='Cu_triangles',
+                 s02 = 'amp',
+                 e0 = 'del_e0',
+                 sigma2 = 'sig2_p3',
+                 deltar  = 'alpha*reff')
+
+# set tranform / fit range0
+ftopts = dict(kmin=3, kmax=16, kweight=2, dk=4, window='kaiser')
+trans = feffit_transform(fitspace='w', rmin=1.4, rmax=3.2, **ftopts)
+
+cu_err = group(k=cu_data.k, chi=cu_data.delta_chi)
+xftf(cu_err, **ftopts)
+xftf(cu_data, **ftopts)
+
+# define dataset to include data, pathlist, transform
+dset = feffit_dataset(data=cu_data, pathlist=[path1, path2, path3], transform=trans)
+
+# perform fit!
+out = feffit(pars, dset)
+
+print(feffit_report(out))
+
+xftf(dset.model, **ftopts)
+plot(cu_data.r, dset.model.chir_re, new=True, label='model')
+plot(cu_data.r, dset.data.chir_re-dset.model.chir_re, label='data-model')
+
+cauchy_wavelet(dset.data, kweight=2, rmax_out=10)
+cauchy_wavelet(dset.model, kweight=2, rmax_out=10)
+
+sr, sk = trans._cauchyslice
+_r = arange(sr.start, sr.stop) * pi/(2048*0.05)
+_k = arange(sk.start, sk.stop) * 0.05
+imshow(dset.data.wcauchy_re[sr, sk], y=_r, x=_k, win=1)
+
+data_uncert = group(k=dset.data.k, chi=dset.data.delta_chi)
+cauchy_wavelet(data_uncert, kweight=2, rmax_out=10)
+imshow(data_uncert.wcauchy_re[sr, sk], win=3)
+
+
+rgb = [(dset.data.wcauchy_re-dset.model.wcauchy_re)[sr, sk],
+       (dset.data.wcauchy_re)[sr, sk],
+       (dset.data.wcauchy_re)[sr, sk],
+       ]
+
+#
+imshow(rgb[0], win=2, y=_r, x=_k)
+
+#subtitles={'red':'data=model', 'green': 'data',  'blue':'data'})
+
+
+#
+# print(feffit_report(out))
+#
+# try:
+#     fout = open('doc_feffit1.out', 'w')
+#     fout.write("%s\n" % feffit_report(out))
+#     fout.close()
+# except:
+#     print('could not write doc_feffit1.out')
+# #endtry
+#
+# plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True,
+#      xlabel=r'$k \rm\,(\AA^{-1})$', label='data',
+#      ylabel=r'$k^2\chi(k) \rm\,(\AA^{-2})$',
+#      title='First shell fit to Cu', show_legend=True)
+# plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
+#
+# plot(dset.data.r,  dset.data.chir_mag, new=True, xmax=8, win=2,
+#      xlabel=r'$R \rm\,(\AA)$', label='data',
+#      ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
+#      title='First shell fit to Cu', show_legend=True)
+# plot(dset.model.r, dset.model.chir_mag, label='fit', win=2)
+#
+# ## end examples/feffit/doc_feffit1.lar
