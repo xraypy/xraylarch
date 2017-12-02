@@ -40,7 +40,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                 'general': ('<Generalr Models>', 'Constant', 'Linear',
                             'Quadratic', 'Exponential', 'PowerLaw'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
-                          'Voigt', 'PseudoVoigt', 'DampedOscillator',
+                          'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
@@ -209,7 +209,8 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        curmodels = ["c%i_" % (i+1) for i in range(1+len(self.fit_components))]
+        p = model[0].lower()
+        curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
         for comp in self.fit_components:
             if comp in curmodels:
                 curmodels.remove(comp)
