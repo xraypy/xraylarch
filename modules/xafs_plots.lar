@@ -318,7 +318,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
 
     """
     if kweight is None:
-        kweight = dset.transform.kweight
+        kweight = dataset.transform.kweight
     #endif
     if isinstance(kweight, (list, tuple, ndarray)): kweight=kweight[0]
 
@@ -385,7 +385,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
     """
-    kweight = dset.transform.kweight
+    kweight = dataset.transform.kweight
     path = dataset.pathlist[ipath]
     if label is None: label = 'path %i' % (ipath)
 
@@ -466,7 +466,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
 
     model_chi_kw = model.chi * model.k**kweight
 
-    plot(model.k, model_chi_kw, title=dataset.dset.filename,
+    plot(model.k, model_chi_kw, title=dataset.dataset.filename,
          xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
          label='sum', new=new, xmin=xmin, xmax=kmax, win=win, **kws)
 

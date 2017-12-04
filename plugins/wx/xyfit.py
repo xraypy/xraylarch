@@ -23,7 +23,6 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
                      Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
-
 from larch import Interpreter, Group
 from larch.utils import index_of
 from larch.utils.strutils import file2groupname
@@ -634,7 +633,7 @@ class XYFitController():
     def set_workdir(self):
         self.larch.symtable._sys.xyfit.workdir = os.getcwd()
 
-    def show_report(self, text, evt=None):
+    def show_report(self, fitresult, evt=None):
         shown = False
         try:
             self.report_frame.Raise()
@@ -644,8 +643,13 @@ class XYFitController():
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
 
+
+        model_repr = fitresult.model._reprstring(long=True)
+        report = fit_report(fitresult, show_correl=True,
+                            min_correl=0.25, sort_pars=True)
+
         self.report_frame.SetFont(Font(8))
-        self.report_frame.set_text(text)
+        self.report_frame.set_text(report)
         self.report_frame.SetFont(Font(8))
         self.report_frame.Raise()
 
@@ -884,8 +888,8 @@ class XYFitFrame(wx.Frame):
         tsizer = wx.GridBagSizer(1, 1)
         tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
         tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
-        tsizer.Add(sel_all,  (1, 0), (1, 1), LCEN, 2)
-        tsizer.Add(sel_none, (1, 1), (1, 1), LCEN, 2)
+        tsizer.Add(sel_none, (1, 0), (1, 1), LCEN, 2)
+        tsizer.Add(sel_all,  (1, 1), (1, 1), LCEN, 2)
 
         pack(ltop, tsizer)
 
