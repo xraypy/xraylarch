@@ -846,6 +846,7 @@ class XYFitFrame(wx.Frame):
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
         self.controller = XYFitController(wxparent=self, _larch=self.larch)
+        self.result_frame = None
 
         self.subframes = {}
         self.plotframe = None
@@ -917,7 +918,7 @@ class XYFitFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        panel_opts = dict(parent=self.nb, controller=self.controller)
+        panel_opts = dict(parent=self, controller=self.controller)
 
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
@@ -1072,6 +1073,8 @@ class XYFitFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
+        if self.result_frame is not None:
+            self.result_frame.Destroy()
         u = """
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
