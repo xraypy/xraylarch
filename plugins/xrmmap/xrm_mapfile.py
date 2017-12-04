@@ -563,6 +563,38 @@ class GSEMCA_Detector(object):
         return self.__getval('outputcounts')
 
 
+## not sure if this is needed or if it will work properly... ?
+## mkaka 2017.12.04
+class GSEXRM_TomoArea(object):
+    '''Area class, representing a area in x,y coordinates for tomo data
+    '''
+    def __init__(self, xrmmap, index):
+
+        self.xrmmap = xrmmap
+
+        if isinstance(index, int):
+            index = 'area_%3.3i' % index
+        self._area = self.xrmmap['areas/%s' % index]
+        self.npts = self._area.value.sum()
+
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(self._area)]
+        self.yslice, self.xslice = sy, sx
+
+    def roicounts(self, roiname, det=None):
+
+        iroi = -1
+        self.det = GSEMCA_Detector(xrmmap, index=det)
+
+        for ir, roi in enumerate(self.det.rois):
+            if roiname.lower() == roi.name.lower():
+                iroi = ir
+                break
+        if iroi < 0:
+            raise ValueError('ROI name %s not found' % roiname)
+        elo, ehi = self.det.rois[iroi].left, self.det.rois[iroi].right
+        counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
+
+
 class GSEXRM_Area(object):
     '''Map Area class, representing a map area for a detector
     '''
@@ -1791,11 +1823,12 @@ class GSEXRM_MapFile(object):
             outname = '%s_%s' % (aname, othername)
             self.add_area(mask, name=outname, desc=outname)
 
-    def get_area(self, name=None, desc=None):
+    def get_area(self, name=None, desc=None, tomo=False):
         '''
         get area group by name or description
         '''
-        group = self.xrmmap['areas']
+        group = self.xrmmap['tomo/areas'] if tomo else self.xrmmap['areas']
+
         if name is not None and name in group:
             return group[name]
         if desc is not None:
@@ -2098,6 +2131,100 @@ class GSEXRM_MapFile(object):
         '''returns NY, NX shape of array data'''
         ny, nx, npos = self.xrmmap['positions/pos'].shape
         return ny, nx
+
+    def get_tomo_area(self, areaname, det=None, dtcorrect=True, callback = None):
+        '''return XRF or XRD spectra summed over a pre-defined area of tomography x-y space
+
+        Parameters
+        ---------
+        areaname  :  str                           name of area
+        det       :  mcasum/detsum or XRD1D        detector  
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        callback  :  
+
+        Returns
+        -------
+        MCA object for XRF counts in area
+
+        '''
+
+        ## check for area of given name
+        try:
+            area = self.get_area(areaname, tomo=True).value
+        except:
+            raise GSEXRM_Exception("Could not find tomo area 'tomo/areas/%s'" % areaname)
+
+        
+        ## checks detector names
+        if det is not None:
+            if (type(det) is str and det.isdigit()) or type(det) is int:
+                det = int(det)
+                detname = 'det%i' % det
+            else:
+                detname = det
+        else:
+            detname = 'detsum'
+        if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+            if detname is not None: detname = string.replace(detname,'det','mca')
+
+        ## builds detector list
+        detlist = []
+        for key in self.xrmmap['tomo'].keys():
+            if 'type' in self.xrmmap['tomo'][key].attrs.keys():
+                if 'detector' in self.xrmmap[key].attrs['type'] and key not in detlist:
+                    detlist += [key]
+        
+        dgroup = 'tomo/%s' % detname if detname in detlist else 'tomo/mcasum'
+        mapdat = self.xrmmap[dgroup]
+        ix, iy, nmca = mapdat['counts'].shape
+
+        npix = len(np.where(area)[0])
+        if npix < 1:
+            return None
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+        nx, ny = (xmax-xmin), (ymax-ymin)
+        NCHUNKSIZE = 16384 # 8192
+        use_chunks = nx*ny > NCHUNKSIZE
+        step = int((nx*ny)/NCHUNKSIZE)
+
+        if not use_chunks:
+            try:
+                if hasattr(callback , '__call__'):
+                    callback(1, 1, nx*ny)
+                counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
+                                           mapdat=mapdat, area=area,
+                                           dtcorrect=dtcorrect)
+            except MemoryError:
+                use_chunks = True
+        if use_chunks:
+            counts = np.zeros(nmca)
+            if nx > ny:
+                for i in range(step+1):
+                    x1 = xmin + int(i*nx/step)
+                    x2 = min(xmax, xmin + int((i+1)*nx/step))
+                    if x1 >= x2: break
+                    if hasattr(callback , '__call__'):
+                        callback(i, step, (x2-x1)*ny)
+                    counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect)
+            else:
+                for i in range(step+1):
+                    y1 = ymin + int(i*ny/step)
+                    y2 = min(ymax, ymin + int((i+1)*ny/step))
+                    if y1 >= y2: break
+                    if hasattr(callback , '__call__'):
+                        callback(i, step, nx*(y2-y1))
+                    counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect)
+
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
+                                              dtcorrect=dtcorrect, area=area)
+        return self._getmca(dgroup, counts, areaname, npixels=npix,
+                            real_time=rtime, live_time=ltime)
+
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True, callback = None):
         '''return XRF spectra as MCA() instance for
@@ -2407,10 +2534,11 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        qdat   = self.xrmmap['xrd1D']['q']
-        mapdat = self.xrmmap['xrd1D']['counts']
-        mapname = self.xrmmap['xrd1D'].name
-        ix, iy, stps = mapdat.shape
+        mapdat       = self.xrmmap['xrd1D']
+
+        ix, iy, stps = mapdat['counts'].shape
+        qdat         = mapdat['q']
+        mapname      = mapdat.name
 
         if len(np.where(area)[0]) < 1: return None
 
@@ -2425,8 +2553,8 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                patterns = self.get_1Dxrd_rect(ymin, ymax, xmin, xmax,
-                                               area, mapdat=mapdat)
+                patterns = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
+                                                mapdat=mapdat, dtcorrect=False)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
@@ -2438,8 +2566,8 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    patterns += self.get_1Dxrd_rect(ymin, ymax, x1, x2,
-                                                    area, mapdat=mapdat)
+                    patterns += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
+                                                     mapdat=mapdat, dtcorrect=False)
             else:
                 for i in range(step+1):
                     y1 = ymin + int(i*ny/step)
@@ -2447,55 +2575,11 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    patterns += self.get_1Dxrd_rect(y1, y2, xmin, xmax,
-                                                    area, mapdat=mapdat)
+                    patterns += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
+                                                     mapdat=mapdat, dtcorrect=False)
         patterns = np.array([qdat,patterns])
 
         return self._get1DXRD(mapname, patterns, areaname, nwedge=nwdg, steps=stps)
-
-    def get_1Dxrd_rect(self, ymin, ymax, xmin, xmax, area, mapdat=None):
-        '''return summed patterns for a map rectangle, optionally
-        applying area mask and deadtime correction
-
-        Parameters
-        ---------
-        ymin :       int       low y index
-        ymax :       int       high y index
-        xmin :       int       low x index
-        xmax :       int       high x index
-        mapdat :     optional, None or map data
-        area :       optional, None or area object  area for mask
-
-        Returns
-        -------
-        summed 1D XRD patterns for rectangle
-
-        Does *not* check for errors!
-
-        Note:  if mapdat is None, the map data is taken from the 'xrd1D/counts' parameter
-        '''
-        if mapdat is None:
-            try:
-                mapdat = self.xrmmap['xrd1D/counts']
-            except:
-                mapdat = self.xrmmap['xrd/data1D']
-
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-
-        cell     = mapdat.regionref[sy, sx, :]
-        patterns = mapdat[cell]
-
-        ix, iy, stps = mapdat.shape
-        patterns = patterns.reshape(ny, nx, stps)
-
-        patterns = (patterns[area[sy, sx]]).sum(axis=0)
-        area_pix = (area.sum(axis=0)).sum(axis=0)
-
-        patterns = patterns/area_pix
-
-        return patterns
 
     def get_2Dxrd_area(self, areaname, callback = None):
         '''return 2D XRD pattern for a pre-defined area
@@ -2516,14 +2600,10 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
 
-        try:
-            mapdat = self.xrmmap['xrd2D/counts']
-            mapname = self.xrmmap['xrd2D'].name
-        except:
-            mapdat = self.xrmmap['xrd/data2D']
-            mapname = '2D XRD data'
-
-        ix, iy, xpix, ypix = mapdat.shape
+        mapdat             = self.xrmmap['xrd2D']
+        
+        ix, iy, xpix, ypix = mapdat['counts'].shape
+        mapname            = mapdat.name
 
         npix = len(np.where(area)[0])
         if npix < 1:
@@ -2539,8 +2619,8 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                frames = self.get_2Dxrd_rect(ymin, ymax, xmin, xmax,
-                                           mapdat=mapdat, area=area)
+                frames = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
+                                                     mapdat=mapdat, dtcorrect=False)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
@@ -2552,8 +2632,8 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    frames += self.get_2Dxrd_rect(ymin, ymax, x1, x2,
-                                                mapdat=mapdat, area=area)
+                    frames += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
+                                                     mapdat=mapdat, dtcorrect=False)
             else:
                 for i in range(step+1):
                     y1 = ymin + int(i*ny/step)
@@ -2561,59 +2641,10 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    frames += self.get_2Dxrd_rect(y1, y2, xmin, xmax,
-                                                mapdat=mapdat, area=area)
+                    frames += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
+                                                     mapdat=mapdat, dtcorrect=False)
 
         return self._get2DXRD(mapname, frames, areaname, xpixels=xpix, ypixels=ypix)
-
-    def get_2Dxrd_rect(self, ymin, ymax, xmin, xmax, mapdat=None, area=None):
-        '''return summed frames for a map rectangle, optionally
-        applying area mask and deadtime correction
-
-        Parameters
-        ---------
-        ymin :       int       low y index
-        ymax :       int       high y index
-        xmin :       int       low x index
-        xmax :       int       high x index
-        mapdat :     optional, None or map data
-        area :       optional, None or area object  area for mask
-
-        Returns
-        -------
-        summed 2D XRD frames for rectangle
-
-        Does *not* check for errors!
-
-        Note:  if mapdat is None, the map data is taken from the 'xrd2D/counts' parameter
-        '''
-        if mapdat is None:
-            if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-                mapdat = self.xrmmap['xrd2D']['counts']
-            else:
-                mapdat = self.xrmmap['xrd2D']
-
-        try:
-            mapdat = self.xrmmap['xrd2D/counts']
-        except:
-            mapdat = self.xrmmap['xrd/data2D']
-
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-
-        ix, iy, xpix, ypix = mapdat.shape
-
-        cell   = mapdat.regionref[sy, sx, :]
-        frames = mapdat[cell]
-        frames = frames.reshape(ny, nx, xpix, ypix)
-
-        if area is not None:
-            frames = frames[area[sy, sx]]
-        else:
-            frames = frames.sum(axis=0)
-
-        return frames.sum(axis=0)
 
     def _get1DXRD(self, mapname, pattern, areaname, nwedge=0, steps=STEPS):
 
@@ -2642,44 +2673,6 @@ class GSEXRM_MapFile(object):
         _2Dxrd.info  =  fmt % (self.filename, mapname, name)
 
         return _2Dxrd
-
-    def get_pattern_rect(self, ymin, ymax, xmin, xmax, area=None):
-        '''return summed 1D XRD pattern for a map rectangle, optionally
-        applying area mask and deadtime correction
-
-        Parameters
-        ---------
-        ymin :       int       low y index
-        ymax :       int       high y index
-        xmin :       int       low x index
-        xmax :       int       high x index
-        mapdat :     optional, None or map data
-        area :       optional, None or area object  area for mask
-
-        Returns
-        -------
-        summed 1D XRD pattern for rectangle
-
-        Does *not* check for errors!
-
-        Note:  if mapdat is None, the map data is taken from the 'xrd1D' parameter
-        '''
-
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-
-        ix, iy, nwedge, nchan = self.xrmmap['xrd1D'].shape
-
-        cell    = self.xrmmap['xrd1D'].regionref[sy, sx, :]
-        pattern = self.xrmmap['xrd1D'][cell]
-        pattern = pattern.reshape(ny, nx, nwedge, nchan)
-
-        if area is not None:
-            pattern = pattern[area[sy, sx]]
-        else:
-            pattern = pattern.sum(axis=0)
-        return pattern.sum(axis=0)
 
     def get_pos(self, name, mean=True):
         '''return  position by name (matching 'roimap/pos_name' if
