@@ -1016,7 +1016,10 @@ class XYFitFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
+        MenuItem(self, fmenu, "&Read Fit Result File\tCtrl+R",
+                 "Open Fit Result File",  self.onReadFitResult)
         fmenu.AppendSeparator()
+
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
@@ -1069,11 +1072,12 @@ class XYFitFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
-
+        u = """
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             time.sleep(0.05)
             del obj
+        """
 
         if self.larch_buffer is not None:
             try:
@@ -1082,7 +1086,7 @@ class XYFitFrame(wx.Frame):
                 pass
         self.Destroy()
 
-    def onCloseNicely(self, evt):
+    def onCloseNicely(self, event):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
 
@@ -1092,7 +1096,7 @@ class XYFitFrame(wx.Frame):
         self.controller.save_config()
         self.proc_panel.proc_timer.Stop()
         time.sleep(0.05)
-        self.onExit(evt)
+        self.onExit(event)
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -1105,7 +1109,7 @@ class XYFitFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
-    def onSelectColumns(self, evt=None):
+    def onSelectColumns(self, event=None):
         dgroup = self.controller.get_group(self.controller.groupname)
         self.show_subframe('readfile', ColumnDataFileFrame,
                            group=dgroup.raw,
@@ -1114,7 +1118,10 @@ class XYFitFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-    def onReadDialog(self, evt=None):
+    def onReadFitResult(self, event=None):
+        self.fit_panel.onLoadFitResult(event=event)
+
+    def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
