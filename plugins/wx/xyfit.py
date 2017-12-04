@@ -648,10 +648,8 @@ class XYFitController():
         report = fit_report(fitresult, show_correl=True,
                             min_correl=0.25, sort_pars=True)
 
-        text = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
-
         self.report_frame.SetFont(Font(8))
-        self.report_frame.set_text(text)
+        self.report_frame.set_text(report)
         self.report_frame.SetFont(Font(8))
         self.report_frame.Raise()
 

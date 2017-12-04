@@ -607,8 +607,8 @@ class XYFitPanel(wx.Panel):
 
         self.plot_fitmodel(dgroup, show_resid=True, with_components=with_components)
 
-        print(" == fit model == ", self.fit_model)
-        print(" == fit result == ", result)
+        # print(" == fit model == ", self.fit_model)
+        # print(" == fit result == ", result)
 
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
