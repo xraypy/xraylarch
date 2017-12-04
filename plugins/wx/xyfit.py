@@ -23,7 +23,6 @@ from wxutils import (SimpleText, pack, Button, HLine, FileSave,
                      Choice,  Check, MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
-
 from larch import Interpreter, Group
 from larch.utils import index_of
 from larch.utils.strutils import file2groupname
@@ -634,7 +633,7 @@ class XYFitController():
     def set_workdir(self):
         self.larch.symtable._sys.xyfit.workdir = os.getcwd()
 
-    def show_report(self, text, evt=None):
+    def show_report(self, fitresult, evt=None):
         shown = False
         try:
             self.report_frame.Raise()
@@ -643,6 +642,13 @@ class XYFitController():
             del self.report_frame
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
+
+
+        model_repr = fitresult.model._reprstring(long=True)
+        report = fit_report(fitresult, show_correl=True,
+                            min_correl=0.25, sort_pars=True)
+
+        text = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
 
         self.report_frame.SetFont(Font(8))
         self.report_frame.set_text(text)
