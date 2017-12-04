@@ -9,6 +9,8 @@ except ImportError:
     pass
 
 import numpy as np
+from scipy.stats import f
+
 import matplotlib
 
 if HAS_WXPYTHON:
@@ -300,7 +302,7 @@ def confidence_intervals(fit_result, sigmas=(1, 2, 3), _larch=None,  **kws):
     result = getattr(fit_result, 'fit_details', None)
     return conf_interval(fitter, result, sigmas=sigmas, **kws)
 
-def chi2_map(fit_result, xname, yname, nx=11, ny=11, _larch=None, **kws):
+def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, _larch=None, **kws):
     """generate a confidence map for any two parameters for a fit
 
     Arguments
@@ -310,12 +312,35 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, _larch=None, **kws):
        yname    name of variable parameter for y-axis
        nx       number of steps in x [11]
        ny       number of steps in y [11]
+       sigma    scale for uncertainty range [3]
 
     Returns
     =======
         xpts, ypts, map
+
+    Notes
+    =====
+     1.  sigma sets the extent of values to explore:
+              param.value +/- sigma * param.stderr
     """
+    #
     fitter = getattr(fit_result, 'fitter', None)
     result = getattr(fit_result, 'fit_details', None)
+    if fitter is None or result is None:
+        raise ValueError("chi2_map needs valid fit result as first argument")
+
+    c2_scale = fit_result.chi_square / result.chisqr
+
+    def scaled_chisqr(ndata, nparas, new_chi, best_chi, nfix=1.):
+        """return scaled chi-sqaure, instead of probability"""
+        return new_chi * c2_scale
+
+    x = result.params[xname]
+    y = result.params[yname]
+    xrange = (x.value + sigma * x.stderr, x.value - sigma * x.stderr)
+    yrange = (y.value + sigma * y.stderr, y.value - sigma * y.stderr)
+
     return conf_interval2d(fitter, result, xname, yname,
+                           limits=(xrange, yrange),
+                           prob_func=scaled_chisqr,
                            nx=nx, ny=ny, **kws)
