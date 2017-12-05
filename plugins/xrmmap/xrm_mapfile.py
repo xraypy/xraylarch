@@ -792,7 +792,7 @@ class GSEXRM_MapFile(object):
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
-            if 'Version' self.xrmmap.attrs.keys():
+            if 'Version' in self.xrmmap.attrs.keys():
                  self.version = self.xrmmap.attrs['Version']
 
             print ('s')
