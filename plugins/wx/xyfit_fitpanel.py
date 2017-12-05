@@ -106,9 +106,8 @@ class XYFitResultFrame(wx.Frame):
         sizer.SetVGap(2)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((625, 750))
+        self.SetMinSize((600, 450))
         self.colors = GUIColors()
-        # panel.SetBackgroundColour(self.colors.bg)
 
         # title row
         self.wids = wids = {}
@@ -117,7 +116,7 @@ class XYFitResultFrame(wx.Frame):
 
         wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
                                              colour=self.colors.title, style=LCEN)
-        
+
         wids['hist_tag'] = SimpleText(panel, 'Fit #1',  font=Font(12),
                                       colour=self.colors.title, style=LCEN)
 
@@ -134,32 +133,37 @@ class XYFitResultFrame(wx.Frame):
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(300, 3)), (irow, 1), (1, 3), LCEN)
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
-        for label, attr in (('# Data Points', 'npts'),
-                            ('# Fit Variables', 'nvarys'),
+        for label, attr in (('Fit method', 'method'),
                             ('# Fit Evaluations', 'nfev'),
-                            ('Chi-square', 'chi_square'),
-                            ('Reduced Chi-square', 'chi_reduced'),
-                            ('Akaike Info Crieria', 'aic'),
-                            ('Bayesian Info Crieria', 'bic')):
+                            ('# Data Points', 'ndata'),
+                            ('# Fit Variables', 'nvarys'),
+                            ('# Free Points', 'nfree'),
+                            ('Chi-square', 'chisqr'),
+                            ('Reduced Chi-square', 'redchi'),
+                            ('Akaike Info Criteria', 'aic'),
+                            ('Bayesian Info Criteria', 'bic')):
             irow += 1
-            wids[attr] = SimpleText(panel, '')
-            sizer.Add(SimpleText(panel, " %s: " % label),  (irow, 0), (1, 1), LCEN)
+            wids[attr] = SimpleText(panel, '?')
+            sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
             sizer.Add(wids[attr],                          (irow, 1), (1, 1), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(300, 3)), (irow, 1), (1, 3), LCEN)
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -177,6 +181,18 @@ class XYFitResultFrame(wx.Frame):
         fit_history = getattr(self.datagroup, 'fit_history', [])
         if len(fit_history) < 1:
             print("No fit reults to show for datagroup ", self.datagroup)
+        result = fit_history[-1]
+        print(" Result ", dir(result))
+        wids = self.wids
+        wids['method'].SetLabel(result.method)
+        wids['ndata'].SetLabel("%d" % result.ndata)
+        wids['nvarys'].SetLabel("%d" % result.nvarys)
+        wids['nfree'].SetLabel("%d" % result.nfree)
+        wids['nfev'].SetLabel("%d" % result.nfev)
+        wids['redchi'].SetLabel("%f" % result.redchi)
+        wids['chisqr'].SetLabel("%f" % result.chisqr)
+        wids['aic'].SetLabel("%f" % result.aic)
+        wids['bic'].SetLabel("%f" % result.bic)
 
 
 class XYFitPanel(wx.Panel):
@@ -532,7 +548,7 @@ class XYFitPanel(wx.Panel):
 
         if outfile is not None:
             try:
-                save_modelresult(result, outfile)
+                save_modelresult(dgroup.fit_history[-1], outfile)
             except IOError:
                 print('could not write %s' % outfile)
 
@@ -736,7 +752,7 @@ class XYFitPanel(wx.Panel):
                                                         datagroup=dgroup)
         else:
             self.parent.result_frame.show(dgroup)
-        
+
         self.update_start_values(result)
         self.savebtn.Enable()
 
