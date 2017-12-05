@@ -1642,22 +1642,21 @@ class GSEXRM_MapFile(object):
         detlist = get_detectors(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
+            
+            if det == 'xrd':
+            
+            
             if 'mca' in detgrp.attrs['type'].lower():
-                self.flag_xrf   = check_flag(detgrp)
-            elif 'xrd2D' in detgrp.attrs['type'].lower():
-                self.flag_xrd2d = check_flag(detgrp)
-            elif 'xrd1D' in detgrp.attrs['type'].lower():
-                self.flag_xrd1d = check_flag(detgrp)
-                
-        print ('executed reset_flags')
-        print ('xrf',self.flag_xrf)
-        print ('xrd',self.flag_xrd2d,self.flag_xrd1d)
-        print ()
+                self.flag_xrf   = self.check_flag(detgrp)
+            elif 'xrd2d' in detgrp.attrs['type'].lower():
+                self.flag_xrd2d = self.check_flag(detgrp)
+            elif 'xrd1d' in detgrp.attrs['type'].lower():
+                self.flag_xrd1d = self.check_flag(detgrp)
 
-    def check_flag(detgrp):
+    def check_flag(self,detgrp):
 
         try:
-            data = detgrp['counts'].value
+            detgrp['counts']
             return True
         except:
             return False

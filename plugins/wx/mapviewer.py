@@ -2520,7 +2520,7 @@ class MapViewerFrame(wx.Frame):
 
 
         self.current_file = self.filemap[filename]
-        ny, nx, npos = self.filemap[filename].get_shape()
+        ny, nx = self.filemap[filename].get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
         fnames = self.filelist.GetItems()
