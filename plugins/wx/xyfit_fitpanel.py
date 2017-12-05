@@ -11,6 +11,8 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
 
+import wx.dataview as dv
+
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font, FileSave, FileOpen)
@@ -18,6 +20,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 from lmfit import Parameter, Parameters, fit_report
 from lmfit.model import save_modelresult, load_modelresult
 import lmfit.models as lm_models
+from lmfit.printfuncs import gformat, CORREL_HEAD
 
 from larch import Group, site_config
 from larch.utils import index_of
@@ -49,6 +52,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
+MIN_CORREL = 0.10
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -98,10 +102,9 @@ class XYFitResultFrame(wx.Frame):
         self.show()
 
     def build(self):
-        print(" Build fit result panel " , self.datagroup)
-        sizer = wx.GridBagSizer(20, 5)
-        sizer.SetHGap(2)
+        sizer = wx.GridBagSizer(10, 5)
         sizer.SetVGap(2)
+        sizer.SetHGap(2)
 
         panel = scrolled.ScrolledPanel(self)
         self.SetMinSize((600, 450))
@@ -160,6 +163,56 @@ class XYFitResultFrame(wx.Frame):
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
+        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
+        self.wids['paramsdata'] = []
+        pview.AppendTextColumn('Parameter',         width=150)
+        pview.AppendTextColumn('Best-Fit Value',    width=100)
+        pview.AppendTextColumn('Standard Error',    width=100)
+        pview.AppendTextColumn('Info ',             width=275)
+
+        for col in (0, 1, 2, 3):
+            this = pview.Columns[col]
+            isort, align = True, wx.ALIGN_LEFT
+            if col in (1, 2):
+                isort, align = False, wx.ALIGN_RIGHT
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+
+        pview.SetMinSize((650, 200))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, CORREL_HEAD % MIN_CORREL,  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+
+        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=dvstyle)
+
+        cview.AppendTextColumn('Parameter 1',    width=150)
+        cview.AppendTextColumn('Parameter 2',    width=150)
+        cview.AppendTextColumn('Correlation',    width=100)
+
+        for col in (0, 1, 2):
+            this = cview.Columns[col]
+            isort, align = True, wx.ALIGN_LEFT
+            if col == 1:
+                isort = False
+            if col == 2:
+                align = wx.ALIGN_RIGHT
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+        cview.SetMinSize((450, 200))
+
+        irow += 1
+        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
         irow += 1
         sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
@@ -173,6 +226,24 @@ class XYFitResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def onSelectParameter(self, evt=None):
+        if self.wids['params'] is None:
+            return
+        if not self.wids['params'].HasSelection():
+            return
+        item = self.wids['params'].GetSelectedRow()
+        pname = self.wids['paramsdata'][item]
+        self.wids['correl'].DeleteAllItems()
+
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        result = fit_history[-1]
+        this = result.params[pname]
+        if this.correl is not None:
+            sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
+            for name, corval in reversed(sort_correl):
+                if abs(corval) > MIN_CORREL:
+                    self.wids['correl'].AppendItem((pname, name, "% .3f" % corval))
+
     def show(self, datagroup=None):
         if datagroup is not None:
             self.datagroup = datagroup
@@ -180,7 +251,6 @@ class XYFitResultFrame(wx.Frame):
         if len(fit_history) < 1:
             print("No fit reults to show for datagroup ", self.datagroup)
         result = fit_history[-1]
-        print(" Result ", dir(result))
         wids = self.wids
         wids['method'].SetLabel(result.method)
         wids['ndata'].SetLabel("%d" % result.ndata)
@@ -193,11 +263,35 @@ class XYFitResultFrame(wx.Frame):
         wids['bic'].SetLabel("%f" % result.bic)
         wids['hist_info'].SetLabel("%d" % len(fit_history))
 
-
         model_repr = self.parent.fit_model._reprstring(long=True)
         wids['model_desc'].SetLabel(model_repr)
 
-        print("Parameters" , result.params)
+        wids['params'].DeleteAllItems()
+        wids['paramsdata'] = []
+        for i, param in enumerate(result.params.values()):
+            pname = param.name
+            try:
+                val = gformat(param.value)
+            except (TypeError, ValueError):
+                val = ' ??? '
+
+            serr = ' N/A '
+            if param.stderr is not None:
+                serr = gformat(param.stderr, length=9)
+
+            extra = ' '
+            if param.expr is not None:
+                extra = ' = %s ' % param.expr
+            elif param.init_value is not None:
+                extra = ' (init=% .7g)' % param.init_value
+            elif not param.vary:
+                extra = ' (fixed)'
+
+            wids['params'].AppendItem((pname, val, serr, extra))
+            wids['paramsdata'].append(pname)
+
+        self.Refresh()
+
 
 
 class XYFitPanel(wx.Panel):
