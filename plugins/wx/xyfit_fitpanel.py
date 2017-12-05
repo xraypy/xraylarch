@@ -1,5 +1,4 @@
 import time
-import os
 import numpy as np
 np.seterr(all='ignore')
 
@@ -15,11 +14,10 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font, FileSave)
 
-from lmfit import Parameter, Parameters, fit_report
-from lmfit.model import save_modelresult
 import lmfit.models as lm_models
+from lmfit import Parameter, Parameters, fit_report
 
-from larch import Group, site_config
+from larch import Group
 from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
@@ -42,7 +40,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                 'general': ('<Generalr Models>', 'Constant', 'Linear',
                             'Quadratic', 'Exponential', 'PowerLaw'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
-                          'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
+                          'Voigt', 'PseudoVoigt', 'DampedOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
@@ -211,8 +209,7 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        p = model[0].lower()
-        curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
+        curmodels = ["c%i_" % (i+1) for i in range(1+len(self.fit_components))]
         for comp in self.fit_components:
             if comp in curmodels:
                 curmodels.remove(comp)
@@ -345,6 +342,7 @@ class XYFitPanel(wx.Panel):
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
+
 
     def onPick2EraseTimer(self, evt=None):
         """erases line trace showing automated 'Pick 2' guess """
@@ -597,6 +595,8 @@ class XYFitPanel(wx.Panel):
             self.summary[attr] = getattr(result, attr)
         self.summary['params'] = result.params
 
+        dgroup.fit_history = []
+        dgroup.fit_history.append(self.summary)
 
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
@@ -610,12 +610,6 @@ class XYFitPanel(wx.Panel):
         # print(" == fit model == ", self.fit_model)
         # print(" == fit result == ", result)
 
-        self.autosave_modelresult(result)
-        if not hasattr(dgroup, 'fit_history'):
-            dgroup.fit_history = []
-        dgroup.fit_history.append(result.dumps())
-
-
         model_repr = self.fit_model._reprstring(long=True)
         report = fit_report(result, show_correl=True,
                             min_correl=0.25, sort_pars=True)
@@ -623,7 +617,7 @@ class XYFitPanel(wx.Panel):
         report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
         self.summary['report'] = report
 
-        self.controller.show_report(result)
+        self.controller.show_report(report)
 
         # fill parameters with best fit values
         allparwids = {}
@@ -635,18 +629,3 @@ class XYFitPanel(wx.Panel):
         for pname, par in result.params.items():
             if pname in allparwids:
                 allparwids[pname].value.SetValue(par.value)
-
-    def autosave_modelresult(self, result, fname=None):
-        """autosave model result to user larch folder"""
-        xyfitdir = os.path.join(site_config.usr_larchdir, 'xyfit')
-        if not os.path.exists(xyfitdir):
-            try:
-                os.makedirs(xyfitdir)
-            except OSError:
-                print("Warning: cannot create XYFit user folder")
-                return
-
-        if fname is None:
-            fname = 'autosave_modelresult.json'
-        fname = os.path.join(xyfitdir, fname)
-        save_modelresult(result, fname)
