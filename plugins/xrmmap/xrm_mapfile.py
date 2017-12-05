@@ -137,7 +137,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.0',
+           'Version': '2.0.1',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
@@ -168,8 +168,6 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrmmap = h5root.create_group(root)
-
-    xrmmap.create_group('flags')
 
     for key, val in attrs.items():
         xrmmap.attrs[key] = str(val)
@@ -781,27 +779,28 @@ class GSEXRM_MapFile(object):
             print ('o')
             self.h5root = h5py.File(self.filename)
 
-            print ('n')
+            print ('p')
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
-                print ('O')
+                print ('q')
                 self.read_master()
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
-            print ('p')
+            print ('r')
 
             self.notes['h5_create_time'] = isotime(time.time())
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
-            for xkey,xval in zip(self.xrmmap.attrs.keys(),self.xrmmap.attrs.values()):
-                if xkey == 'Version': self.version = xval
-            print ('q')
+            if 'Version' self.xrmmap.attrs.keys():
+                 self.version = self.xrmmap.attrs['Version']
+
+            print ('s')
             if poni is not None: self.add_calibration(poni,flip)
         else:
-            print ('r')
+            print ('t')
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-        print ('s')
+        print ('u')
 
     def __repr__(self):
         fname = ''
@@ -1272,7 +1271,7 @@ class GSEXRM_MapFile(object):
         if self.flag_xrd1d:
             if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
             self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
-            if row.xrd1d_wdg is not None:
+            if self.azwdgs > 1 and row.xrd1d_wdg is not None:
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
                     try:
                         wdggrp['q'] = row.xrdq_wdg[0,:,iwdg]
@@ -1293,11 +1292,6 @@ class GSEXRM_MapFile(object):
 
         print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
-
-        flaggp = xrmmap['flags']
-        flaggp.attrs['xrf']   = self.flag_xrf
-        flaggp.attrs['xrd2D'] = self.flag_xrd2d
-        flaggp.attrs['xrd1D'] = self.flag_xrd1d
 
         conf = xrmmap['config']
         for key in self.notes:
@@ -1531,7 +1525,7 @@ class GSEXRM_MapFile(object):
 
             if self.flag_xrd2d:
                 
-                xrdgrp = xrmmap.create_group('xrd2D')
+                xrdgrp = ensure_subgroup('xrd2D',xrmmap)
 
                 xrdgrp.attrs['type'] = 'xrd2D detector'
                 xrdgrp.attrs['desc'] = '' #'add detector name eventually'
@@ -1546,7 +1540,7 @@ class GSEXRM_MapFile(object):
 
             if self.flag_xrd1d:
 
-                xrdgrp = xrmmap.create_group('xrd1D')
+                xrdgrp = ensure_subgroup('xrd1D',xrmmap)
 
                 xrdgrp.attrs['type'] = 'xrd1D detector'
                 xrdgrp.attrs['desc'] = 'pyFAI calculation from xrd2D data'
@@ -1629,7 +1623,6 @@ class GSEXRM_MapFile(object):
                     self.xrmmap['xrd1D/counts'][i,] = row1D
 
                 self.flag_xrd1d = True
-                self.xrmmap['flags'].attrs['xrd1D'] = self.flag_xrd1d
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
             except:
                 print('1DXRD data already in file.')
@@ -1647,18 +1640,10 @@ class GSEXRM_MapFile(object):
 
     def reset_flags(self):
         '''
-        Resets the flags according to hdf5; add in flags to hdf5 files missing them.
-        mkak 2016.08.30 // rewritten mkak 2017.08.03
+        Reads hdf5 file for data and sets the flags.
+        mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
-#         flggrp = ensure_subgroup('flags',self.xrmmap)
-#         for key,val in zip(flggrp.attrs.keys(),flggrp.attrs.values()):
-#             if   key         == 'xrf':   self.flag_xrf   = val
-#             elif key         == 'xrd':   self.flag_xrd2d = val
-#             elif key.lower() == 'xrd2d': self.flag_xrd2d = val
-#             elif key.lower() == 'xrd1d': self.flag_xrd1d = val
-#         
-#     def new_flag_reset(self):
-    
+
         detlist = get_detectors(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
@@ -1729,8 +1714,9 @@ class GSEXRM_MapFile(object):
                     oldnrow, npts, qstps = g['counts'].shape
                     g['counts'].resize((nrow, npts, qstps))
 
-            for g in self.xrmmap['work']['xrdwedge'].values():
-                g['counts'].resize((nrow, npts, qstps))
+            if self.azwdgs > 1:
+                for g in self.xrmmap['work/xrdwedge'].values():
+                    g['counts'].resize((nrow, npts, qstps))
 
             for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
                 for h in g.values():  # loop through rois in roimap
@@ -1755,8 +1741,9 @@ class GSEXRM_MapFile(object):
                     oldnrow, npts, qstps = g['counts'].shape
                     g['counts'].resize((nrow, npts, qstps))
 
-            for g in self.xrmmap['work']['xrdwedge'].values():
-                g['counts'].resize((nrow, npts, qstps))
+            if self.azwdgs > 1:
+                for g in self.xrmmap['work/xrdwedge'].values():
+                    g['counts'].resize((nrow, npts, qstps))
 
             oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
             for g in realmca_groups:
@@ -2824,7 +2811,7 @@ class GSEXRM_MapFile(object):
     def add_xrd1Droi(self, xrange, roiname, unit='q'):
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-            if not self.xrmmap['flags'].attrs.get('xrd1D', False):
+            if not self.flag_xrd1d:
                 print('No 1D-XRD data in file')
                 return
 

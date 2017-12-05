@@ -307,7 +307,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         for p in self.owner.nbpanels:
             if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmfile.xrmmap)
+                p.update_xrmmap(xrmfile=xrmfile)
 
     def onFILE(self, evt, varname='a'):
 
@@ -335,13 +335,15 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
 
-    def update_xrmmap(self, xrmmap):
+    def update_xrmmap(self, xrmfile=None):
+        
+        if xrmfile is None: xrmfile = self.owner.current_file
 
-        self.cfile = self.owner.current_file
-        self.xrmmap = xrmmap
+        self.cfile = xrmfile
+        self.xrmmap = xrmfile.xrmmap
 
-        self.set_det_choices(xrmmap)
-        self.set_workarray_choices(xrmmap)
+        self.set_det_choices(self.xrmmap)
+        self.set_workarray_choices(self.xrmmap)
 
         for vfile in self.varfile.values(): vfile.SetSelection(-1)
 
@@ -621,9 +623,11 @@ class TomographyPanel(GridPanel):
             self.center_range.SetValue(10)
             self.center_range.SetRange(1,20)
 
-    def update_xrmmap(self, xrmmap):
+    def update_xrmmap(self, xrmfile=None):
+        
+        if xrmfile is None: xrmfile = self.owner.current_file
 
-        self.cfile  = self.owner.current_file
+        self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
         scan_version = getattr(self.cfile, 'scan_version', 2.00)
         hotcol = True if scan_version < 1.36 else False
@@ -632,7 +636,7 @@ class TomographyPanel(GridPanel):
         self.chk_dftcor.SetValue(True)
 
         self.enable_options()
-        self.set_det_choices(xrmmap)
+        self.set_det_choices(self.xrmmap)
 
         try:
             self.npts = len(self.cfile.get_pos('fine x', mean=True))
@@ -1058,9 +1062,11 @@ class MapPanel(GridPanel):
         for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Enable()
         for btn in self.map_show: btn.Enable()
 
-    def update_xrmmap(self, xrmmap):
+    def update_xrmmap(self, xrmfile=None):
+        
+        if xrmfile is None: xrmfile = self.owner.current_file
 
-        self.cfile  = self.owner.current_file
+        self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
         scan_version = getattr(self.cfile, 'scan_version', 2.00)
         hotcol = True if scan_version < 1.36 else False
@@ -1069,7 +1075,7 @@ class MapPanel(GridPanel):
         self.chk_dftcor.SetValue(True)
 
         self.enable_options()
-        self.set_det_choices(xrmmap)
+        self.set_det_choices(self.xrmmap)
         self.plotSELECT()
 
     def onLimitRange(self, event=None):
@@ -1394,7 +1400,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
 
 
-    def update_xrmmap(self, xrmmap):
+    def update_xrmmap(self, xrmfile=None):
+        
+        if xrmfile is None: xrmfile = self.owner.current_file
+        xrmmap = xrmfile.xrmmap
         
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
@@ -1453,9 +1462,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         self.wids['Scan Fast Motor'].SetLabel(scan1)
         self.wids['Scan Slow Motor'].SetLabel(scan2)
-        pixtime = self.owner.current_file.pixeltime
+        pixtime = xrmfile.pixeltime
         if pixtime is None:
-            pixtime = self.owner.current_file.calc_pixeltime()
+            pixtime = xrmfile.calc_pixeltime()
         pixtime =int(round(1000.0*pixtime))
         self.wids['Dwell Time'].SetLabel('%.1f ms per pixel' % pixtime)
 
@@ -1474,7 +1483,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
             elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
                 self.owner.current_energy = float(val)/1000.
-                self.owner.current_file.mono_energy = float(val)/1000.
+                xrmfile.mono_energy = float(val)/1000.
                 wvlgth = lambda_from_E(self.owner.current_energy)
                 self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
                                                    (self.owner.current_energy,wvlgth))
@@ -1513,9 +1522,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         self.wids['XRD Calibration'].SetLabel('')
         try:
-            xrdgp = xrmmap['xrd1D']
-            if os.path.exists(xrdgp.attrs['calfile']):
-                self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrdgp.attrs['calfile'])[-1])
+            xrd_calibration = xrmmap['xrd1D'].attrs['calfile']
+            if os.path.exists(xrd_calibration):
+                self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrd_calibration)[-1])
         except:
             pass
 
@@ -1536,34 +1545,26 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['Proposal Number'].SetLabel('')
             self.wids['User group'].SetLabel('')
 
-
-        FLAGXRD2D,FLAGXRD1D,FLAGXRF = False,False,True
-        if 'flags' in xrmmap.keys():
-            flags = xrmmap['flags'].attrs
-            for key,val in zip(flags.keys(),flags.values()):
-                if   key == 'xrf':           FLAGXRF = val
-                elif key == 'xrd':           FLAGXRD2D = val
-                elif key.lower() == 'xrd2d': FLAGXRD2D = val
-                elif key.lower() == 'xrd1d': FLAGXRD1D = val
-
-        if FLAGXRF:
-            if FLAGXRD2D and FLAGXRD1D:
+        xrmfile.reset_flags()
+        if xrmfile.flag_xrf:
+            if xrmfile.flag_xrd2d and xrmfile.flag_xrd1d:
                 datastr = 'XRF, 2D- and 1D-XRD data'
-            elif FLAGXRD2D:
+            elif xrmfile.flag_xrd2d:
                 datastr = 'XRF, 2D-XRD data'
-            elif FLAGXRD1D:
+            elif xrmfile.flag_xrd1d:
                 datastr = 'XRF, 1D-XRD data'
             else:
                 datastr = 'XRF data'
         else:
-            if FLAGXRD2D and FLAGXRD1D:
+            if xrmfile.flag_xrd2d and xrmfile.flag_xrd1d:
                 datastr = '2D- and 1D-XRD data'
-            elif FLAGXRD2D:
+            elif xrmfile.flag_xrd2d:
                 datastr = '2D-XRD data'
-            elif FLAGXRD1D:
+            elif xrmfile.flag_xrd1d:
                 datastr = '1D-XRD data'
             else:
                 datastr = ''
+
         self.wids['Map Data'].SetLabel(datastr)
 
     def onClose(self):
@@ -1770,26 +1771,22 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.choice.Enable()
 
-    def update_xrmmap(self, xrmmap):
+    def update_xrmmap(self, xrmfile=None):
+        
+        if xrmfile is None: xrmfile = self.owner.current_file        
+        xrmmap = xrmfile.xrmmap
+        
         self.set_area_choices(xrmmap, show_last=True)
 
-        self.set_enabled_btns(xrmmap)
+        self.set_enabled_btns(xrmfile)
 
-    def set_enabled_btns(self,xrmmap):
+    def set_enabled_btns(self,xrmfile):
 
-        flag2dxrd,flag1dxrd = False,False
-
-        ## checks if 1D and/or 2D XRD data stored in file
-        if 'flags' in xrmmap.keys():
-            flags = xrmmap['flags'].attrs
-            for key,val in zip(flags.keys(),flags.values()):
-                if key.lower() == 'xrd' or key.lower() == 'xrd2d':
-                    flag2dxrd = val
-                if key.lower() == 'xrd1d':
-                    flag1dxrd = val
+        xrmfile.reset_flags()
+        flag1dxrd = xrmfile.flag_xrd1d
 
         ## checks for calibration file if calibration file provided
-        if not flag1dxrd and flag2dxrd:
+        if xrmfile.flag_xrd2d and not flag1dxrd:
             try:
                 if os.path.exists(xrmmap['xrd1D'].attrs['calfile']):
                     flag1dxrd = True
@@ -1797,7 +1794,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 pass
 
         ## sets saving/plotting buttons in accordance with available data
-        if flag2dxrd:
+        if xrmfile.flag_xrd2d:
             for btn in (self.xrd2d_save,self.xrd2d_plot):
                 btn.Enable()
         else:
@@ -2251,7 +2248,7 @@ class MapViewerFrame(wx.Frame):
 
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(self.current_file.xrmmap)
+                    p.update_xrmmap(xrmfile=self.current_file)
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
@@ -2299,7 +2296,6 @@ class MapViewerFrame(wx.Frame):
             return
         if xrmfile is None:
             xrmfile = self.current_file
-        xrmmap  = xrmfile.xrmmap
 
         # first, create 1-pixel mask for area, and save that
         ny, nx = xrmfile.get_shape()
@@ -2308,12 +2304,12 @@ class MapViewerFrame(wx.Frame):
         xrmfile.add_area(tmask, name=name)
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmmap)
+                p.update_xrmmap(xrmfile=xrmfile)
 
         # next, save file into database
         if self.use_scandb and self.instdb is not None:
             pvn  = pv_fullname
-            conf = xrmmap['config']
+            conf = xrmfile.xrmmap['config']
             pos_addrs = [pvn(tval) for tval in conf['positioners']]
             env_addrs = [pvn(tval) for tval in conf['environ/address']]
             env_vals  = [str(tval) for tval in conf['environ/value']]
@@ -2527,7 +2523,7 @@ class MapViewerFrame(wx.Frame):
 
         for p in self.nbpanels:
             if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(self.current_file.xrmmap)
+                p.update_xrmmap(xrmfile=self.current_file)
             if hasattr(p, 'set_file_choices'):
                 p.set_file_choices(fnames)
 
@@ -2775,7 +2771,7 @@ class MapViewerFrame(wx.Frame):
             self.current_file.add_calibration(path,flip)
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(self.current_file.xrmmap)
+                    p.update_xrmmap(xrmfile=self.current_file)
 
     def defineROI(self, event=None):
 
@@ -2793,7 +2789,7 @@ class MapViewerFrame(wx.Frame):
         if read:
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(self.current_file.xrmmap)
+                    p.update_xrmmap(xrmfile=self.current_file)
 
     def add1DXRDFile(self, event=None):
 
@@ -2848,21 +2844,21 @@ class MapViewerFrame(wx.Frame):
         This can take awhile, so is done in a separate thread,
         with updates displayed in message bar
         """
-        xrm_map = self.filemap[filename]
-        if xrm_map.status == GSEXRM_FileStatus.created:
-            xrm_map.initialize_xrmmap(callback=self.updateTimer)
+        xrmfile = self.filemap[filename]
+        if xrmfile.status == GSEXRM_FileStatus.created:
+            xrmfile.initialize_xrmmap(callback=self.updateTimer)
 
-        if xrm_map.dimension is None and isGSEXRM_MapFolder(self.folder):
-            xrm_map.read_master()
+        if xrmfile.dimension is None and isGSEXRM_MapFolder(self.folder):
+            xrmfile.read_master()
 
-        if self.filemap[filename].folder_has_newdata():
+        if xrmfile.folder_has_newdata():
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
             self.htimer.Start(150)
 
             ## this calls process function of xrm_mapfile class
-            self.h5convert_thread = Thread(target=self.filemap[filename].process,
+            self.h5convert_thread = Thread(target=xrmfile.process,
                                            kwargs={'callback':self.updateTimer})
             self.h5convert_thread.start()
 
