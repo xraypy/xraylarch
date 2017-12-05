@@ -194,14 +194,6 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
 
-    for name in ['xrd1D','xrd2D']:
-        g = xrmmap.create_group(name)
-    xrmmap['work'].create_group('xrdwedge')
-
-#     g = xrmmap['work'].create_group('tomo')
-# #     for name in ('xrf','xrd1D','xrd2D'):
-# #         g.create_group(name)
-
     h5root.flush()
 
 def ensure_subgroup(subgroup,group):
@@ -210,6 +202,15 @@ def ensure_subgroup(subgroup,group):
     except:
         return group.create_group(subgroup)
 
+def get_detectors(group):
+
+    detlist = []
+    for key in group.keys():
+        if 'type' in group[key].attrs.keys():
+            if 'detector' in group[key].attrs['type'] and key not in detlist:
+                detlist += [key]
+            
+    return detlist
 
 class GSEXRM_Exception(Exception):
     '''GSEXRM Exception: General Errors'''
@@ -1391,6 +1392,7 @@ class GSEXRM_MapFile(object):
                     lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
+
         else:
             if self.flag_xrf:
                 if verbose:
@@ -1502,39 +1504,45 @@ class GSEXRM_MapFile(object):
                                    maxshape=(None, npts, npos), **self.compress_args)
 
         if self.flag_xrd2d or self.flag_xrd1d:
-
             xrdpts, xpixx, xpixy = row.xrd2d.shape
             if verbose:
                 prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
                 print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
 
             if self.flag_xrd2d:
-                xrmmap['xrd2D'].attrs['type'] = 'xrd2D detector'
-                xrmmap['xrd2D'].attrs['desc'] = '' #'add detector name eventually'
+                
+                xrdgrp = xrmmap.create_group('xrd2D')
 
-                xrmmap['xrd2D'].create_dataset('mask', (xpixx, xpixy), np.uint16, **self.compress_args)
-                xrmmap['xrd2D'].create_dataset('background', (xpixx, xpixy), np.uint16, **self.compress_args)
+                xrdgrp.attrs['type'] = 'xrd2D detector'
+                xrdgrp.attrs['desc'] = '' #'add detector name eventually'
+
+                xrdgrp.create_dataset('mask', (xpixx, xpixy), np.uint16, **self.compress_args)
+                xrdgrp.create_dataset('background', (xpixx, xpixy), np.uint16, **self.compress_args)
 
                 chunksize_2DXRD = (1, npts, xpixx, xpixy)
-                xrmmap['xrd2D'].create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint16,
-                                       chunks = chunksize_2DXRD,
-                                       maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
+                xrdgrp.create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint16,
+                                      chunks = chunksize_2DXRD,
+                                      maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
 
             if self.flag_xrd1d:
-                xrmmap['xrd1D'].attrs['type'] = 'xrd1D detector'
-                xrmmap['xrd1D'].attrs['desc'] = 'pyFAI calculation from xrd2D data'
 
-                xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32, **self.compress_args)
-                xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32, **self.compress_args)
+                xrdgrp = xrmmap.create_group('xrd1D')
+
+                xrdgrp.attrs['type'] = 'xrd1D detector'
+                xrdgrp.attrs['desc'] = 'pyFAI calculation from xrd2D data'
+
+                xrdgrp.create_dataset('q',          (self.qstps,), np.float32, **self.compress_args)
+                xrdgrp.create_dataset('background', (self.qstps,), np.float32, **self.compress_args)
 
                 chunksize_1DXRD  = (1, npts, self.qstps)
-                xrmmap['xrd1D'].create_dataset('counts',
-                                       (NINIT, npts, self.qstps),
-                                       np.float32,
-                                       chunks = chunksize_1DXRD,
-                                       maxshape=(None, npts, self.qstps), **self.compress_args)
+                xrdgrp.create_dataset('counts',
+                                      (NINIT, npts, self.qstps),
+                                      np.float32,
+                                      chunks = chunksize_1DXRD,
+                                      maxshape=(None, npts, self.qstps), **self.compress_args)
 
                 if self.azwdgs > 1:
+                    xrmmap['work'].create_group('xrdwedge')
                     for azi in range(self.azwdgs):
                         wdggrp = xrmmap['work/xrdwedge'].create_group('wedge_%02d' % azi)
 
@@ -1560,13 +1568,14 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
 
     def add_1DXRD(self, qstps=None):
+        
+        xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
+        if os.path.exists(xrd1Dgrp.attrs['calfile']):
 
-        if os.path.exists(self.xrmmap['xrd1D'].attrs['calfile']):
-
-            poni = self.xrmmap['xrd1D'].attrs['calfile']
+            poni = xrd1Dgrp.attrs['calfile']
             print('Using calibration file : %s' % poni)
             try:
-                shape2D = self.xrmmap['xrd2D/counts'].shape
+                nrows, npts , xpixx, xpixy = self.xrmmap['xrd2D/counts'].shape
             except:
                 if StrictVersion(self.version) >= StrictVersion('2.0.0'):
                     print('Only compatible with newest hdf5 mapfile version.')
@@ -1575,27 +1584,25 @@ class GSEXRM_MapFile(object):
             if qstps is not None: self.qstps = qstps
 
             pform ='\n--- Build 1D XRD Schema (%i, %i, %i) from 2D XRD (%i, %i, %i, %i) ---'
-            print(pform % (shape2D[0],shape2D[1],self.qstps,
-                           shape2D[0],shape2D[1],shape2D[2],shape2D[3]))
+            print(pform % (nrows, npts, self.qstps, nrows, npts, xpixx, xpixy))
 
-            xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
             try:
                 xrd1Dgrp.attrs['type'] = 'xrd1D detector'
                 xrd1Dgrp.attrs['desc'] = 'pyFAI calculation from xrd2D data'
 
-                self.xrmmap['xrd1D'].create_dataset('q',          (self.qstps,), np.float32)
-                self.xrmmap['xrd1D'].create_dataset('background', (self.qstps,), np.float32)
+                xrd1Dgrp.create_dataset('q',          (self.qstps,), np.float32)
+                xrd1Dgrp.create_dataset('background', (self.qstps,), np.float32)
 
-                chunksize_1DXRD  = (1, shape2D[1], self.qstps)
-                self.xrmmap['xrd1D'].create_dataset('counts',
-                                       (shape2D[0], shape2D[1], self.qstps),
+                chunksize_1DXRD  = (1, npts, self.qstps)
+                xrd1Dgrp.create_dataset('counts',
+                                       (nrows, npts, self.qstps),
                                        np.float32,
                                        chunks = chunksize_1DXRD)
 
                 attrs = {'steps':self.qstps,'mask':self.maskfile,'flip':self.flip}
 
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
-                for i in np.arange(shape2D[0]):
+                for i in np.arange(nrows):
                     print(' Add row %4i' % (i+1))
                     rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2D/counts'][i],poni,**attrs)
                     if i == 0: self.xrmmap['xrd1D/q'][:] = rowq[0]
@@ -1623,12 +1630,37 @@ class GSEXRM_MapFile(object):
         Resets the flags according to hdf5; add in flags to hdf5 files missing them.
         mkak 2016.08.30 // rewritten mkak 2017.08.03
         '''
-        flggrp = ensure_subgroup('flags',self.xrmmap)
-        for key,val in zip(flggrp.attrs.keys(),flggrp.attrs.values()):
-            if   key         == 'xrf':   self.flag_xrf   = val
-            elif key         == 'xrd':   self.flag_xrd2d = val
-            elif key.lower() == 'xrd2d': self.flag_xrd2d = val
-            elif key.lower() == 'xrd1d': self.flag_xrd1d = val
+#         flggrp = ensure_subgroup('flags',self.xrmmap)
+#         for key,val in zip(flggrp.attrs.keys(),flggrp.attrs.values()):
+#             if   key         == 'xrf':   self.flag_xrf   = val
+#             elif key         == 'xrd':   self.flag_xrd2d = val
+#             elif key.lower() == 'xrd2d': self.flag_xrd2d = val
+#             elif key.lower() == 'xrd1d': self.flag_xrd1d = val
+#         
+#     def new_flag_reset(self):
+    
+        detlist = get_detectors(self.xrmmap)
+        for det in detlist:
+            detgrp = self.xrmmap[det]
+            if 'mca' in detgrp.attrs['type'].lower():
+                self.flag_xrf   = check_flag(detgrp)
+            elif 'xrd2D' in detgrp.attrs['type'].lower():
+                self.flag_xrd2d = check_flag(detgrp)
+            elif 'xrd1D' in detgrp.attrs['type'].lower():
+                self.flag_xrd1d = check_flag(detgrp)
+                
+        print ('executed reset_flags')
+        print ('xrf',self.flag_xrf)
+        print ('xrd',self.flag_xrd2d,self.flag_xrd1d)
+        print ()
+
+    def check_flag(detgrp):
+
+        try:
+            data = detgrp['counts'].value
+            return True
+        except:
+            return False
 
 
     def resize_arrays(self, nrow):
@@ -2124,7 +2156,10 @@ class GSEXRM_MapFile(object):
 
     def get_energy(self, det=None):
         '''return energy array for a detector'''
-        group = self._det_group(det)
+        try:
+            group = self.xrmmap[det]
+        except:
+            group = self._det_group(det)
         return group['energy'].value
 
     def get_shape(self):
@@ -2168,15 +2203,11 @@ class GSEXRM_MapFile(object):
             if detname is not None: detname = string.replace(detname,'det','mca')
 
         ## builds detector list
-        detlist = []
-        for key in self.xrmmap['tomo'].keys():
-            if 'type' in self.xrmmap['tomo'][key].attrs.keys():
-                if 'detector' in self.xrmmap[key].attrs['type'] and key not in detlist:
-                    detlist += [key]
+        detlist = get_detectors(self.xrmmap['tomo'])
         
         dgroup = 'tomo/%s' % detname if detname in detlist else 'tomo/mcasum'
         mapdat = self.xrmmap[dgroup]
-        ix, iy, nmca = mapdat['counts'].shape
+        ix, iy, nchan = mapdat['counts'].shape
 
         npix = len(np.where(area)[0])
         if npix < 1:
@@ -2198,7 +2229,7 @@ class GSEXRM_MapFile(object):
             except MemoryError:
                 use_chunks = True
         if use_chunks:
-            counts = np.zeros(nmca)
+            counts = np.zeros(nchan)
             if nx > ny:
                 for i in range(step+1):
                     x1 = xmin + int(i*nx/step)
@@ -2224,7 +2255,6 @@ class GSEXRM_MapFile(object):
                                               dtcorrect=dtcorrect, area=area)
         return self._getmca(dgroup, counts, areaname, npixels=npix,
                             real_time=rtime, live_time=ltime)
-
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True, callback = None):
         '''return XRF spectra as MCA() instance for
@@ -2360,10 +2390,10 @@ class GSEXRM_MapFile(object):
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
-        ix, iy, nmca = mapdat['counts'].shape
+        ix, iy, nchan = mapdat['counts'].shape
         cell   = mapdat['counts'].regionref[sy, sx, :]
         counts = mapdat['counts'][cell]
-        counts = counts.reshape(ny, nx, nmca)
+        counts = counts.reshape(ny, nx, nchan)
         if dtcorrect:
             if det in range(1, self.ndet+1):
                 cell   = mapdat['dtfactor'].regionref[sy, sx]
@@ -2373,7 +2403,7 @@ class GSEXRM_MapFile(object):
             elif det is None: # indicating sum of deadtime-corrected spectra
                 _md    = self._det_group(self.ndet)
                 cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                 cell   = _md['dtfactor'].regionref[sy, sx]
                 dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                 dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
@@ -2381,7 +2411,7 @@ class GSEXRM_MapFile(object):
                 for _idet in range(1, self.ndet):
                     _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
-                    _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     cell   = _md['dtfactor'].regionref[sy, sx]
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
@@ -2390,11 +2420,11 @@ class GSEXRM_MapFile(object):
         elif det is None: # indicating sum un-deadtime-corrected spectra
             _md    = self._det_group(self.ndet)
             cell   = _md['counts'].regionref[sy, sx, :]
-            counts = _md['counts'][cell].reshape(ny, nx, nmca)
+            counts = _md['counts'][cell].reshape(ny, nx, nchan)
             for _idet in range(1, self.ndet):
                 _md    = self._det_group(_idet)
                 cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nmca)
+                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                 counts += _cts
 
         if area is not None:

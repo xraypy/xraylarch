@@ -725,7 +725,7 @@ class TomographyPanel(GridPanel):
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None: xrmfile = self.owner.current_file
-        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        ny, nx = xrmfile.get_shape()
         indices = []
         for idx in selected:
             iy, ix = divmod(idx, ny)
@@ -1232,7 +1232,7 @@ class MapPanel(GridPanel):
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None:
             xrmfile = self.owner.current_file
-        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        ny, nx = xrmfile.get_shape()
         indices = []
         for idx in selected:
             iy, ix = divmod(idx, ny)
@@ -2223,7 +2223,7 @@ class MapViewerFrame(wx.Frame):
         self.sel_mca = xrmfile.get_mca_area(aname,det=det)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
-        ny, nx, npos = xrmfile.xrmmap['positions/pos'].shape
+        ny, nx = xrmfile.get_shape()
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             ym, xm = mask.shape
             tmask = np.zeros((ny, nx)).astype(bool)
@@ -2302,7 +2302,7 @@ class MapViewerFrame(wx.Frame):
         xrmmap  = xrmfile.xrmmap
 
         # first, create 1-pixel mask for area, and save that
-        ny, nx, npos = xrmmap['positions/pos'].shape
+        ny, nx = xrmfile.get_shape()
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
         xrmfile.add_area(tmask, name=name)
@@ -2520,7 +2520,7 @@ class MapViewerFrame(wx.Frame):
 
 
         self.current_file = self.filemap[filename]
-        ny, nx, npos = self.filemap[filename].xrmmap['positions/pos'].shape
+        ny, nx, npos = self.filemap[filename].get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
         fnames = self.filelist.GetItems()
