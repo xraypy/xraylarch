@@ -1073,8 +1073,11 @@ class XYFitFrame(wx.Frame):
                 obj.Destroy()
             except:
                 pass
-        if self.result_frame is not None:
+        try:
             self.result_frame.Destroy()
+        except:
+            pass
+
         u = """
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
