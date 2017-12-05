@@ -13,10 +13,10 @@ import wx.lib.agw.flatnotebook as flat_nb
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font, FileSave)
+                     FRAMESTYLE, Font, FileSave, FileOpen)
 
 from lmfit import Parameter, Parameters, fit_report
-from lmfit.model import save_modelresult
+from lmfit.model import save_modelresult, load_modelresult
 import lmfit.models as lm_models
 
 from larch import Group, site_config
@@ -49,7 +49,6 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
-FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -85,6 +84,121 @@ class AllParamsPanel(wx.Panel):
 class FitController(object):
     def __init__(self, **kws):
         self.components = OrderedDict()
+
+class XYFitResultFrame(wx.Frame):
+    def __init__(self, parent=None, controller=None, datagroup=None, **kws):
+
+        wx.Frame.__init__(self, None, -1, title='Fit Results',
+                          style=FRAMESTYLE, size=(550, 650), **kws)
+        self.parent = parent
+        self.controller = controller
+        self.larch = controller.larch
+        self.datagroup = datagroup
+        self.build()
+        self.show()
+
+    def build(self):
+        print(" Build fit result panel " , self.datagroup)
+        sizer = wx.GridBagSizer(20, 5)
+        sizer.SetHGap(2)
+        sizer.SetVGap(2)
+
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((600, 450))
+        self.colors = GUIColors()
+
+        # title row
+        self.wids = wids = {}
+        title = SimpleText(panel, 'Fit Results',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
+                                             colour=self.colors.title, style=LCEN)
+
+        wids['hist_tag'] = SimpleText(panel, 'Fit #1',  font=Font(12),
+                                      colour=self.colors.title, style=LCEN)
+
+        wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
+                                       colour=self.colors.title, style=LCEN)
+
+        sizer.Add(title,              (0, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (0, 2), (1, 2), LCEN)
+        sizer.Add(wids['hist_tag'],   (0, 4), (1, 1), LCEN)
+        sizer.Add(wids['hist_info'],  (0, 5), (1, 1), LCEN)
+
+        irow = 1
+        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12))
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        for label, attr in (('Fit method', 'method'),
+                            ('# Fit Evaluations', 'nfev'),
+                            ('# Data Points', 'ndata'),
+                            ('# Fit Variables', 'nvarys'),
+                            ('# Free Points', 'nfree'),
+                            ('Chi-square', 'chisqr'),
+                            ('Reduced Chi-square', 'redchi'),
+                            ('Akaike Info Criteria', 'aic'),
+                            ('Bayesian Info Criteria', 'bic')):
+            irow += 1
+            wids[attr] = SimpleText(panel, '?')
+            sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
+            sizer.Add(wids[attr],                          (irow, 1), (1, 1), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Variables]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def show(self, datagroup=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        if len(fit_history) < 1:
+            print("No fit reults to show for datagroup ", self.datagroup)
+        result = fit_history[-1]
+        print(" Result ", dir(result))
+        wids = self.wids
+        wids['method'].SetLabel(result.method)
+        wids['ndata'].SetLabel("%d" % result.ndata)
+        wids['nvarys'].SetLabel("%d" % result.nvarys)
+        wids['nfree'].SetLabel("%d" % result.nfree)
+        wids['nfev'].SetLabel("%d" % result.nfev)
+        wids['redchi'].SetLabel("%f" % result.redchi)
+        wids['chisqr'].SetLabel("%f" % result.chisqr)
+        wids['aic'].SetLabel("%f" % result.aic)
+        wids['bic'].SetLabel("%f" % result.bic)
+        wids['hist_info'].SetLabel("%d" % len(fit_history))
+
+
+        model_repr = self.parent.fit_model._reprstring(long=True)
+        wids['model_desc'].SetLabel(model_repr)
+
+        print("Parameters" , result.params)
+
 
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -157,10 +271,10 @@ class XYFitPanel(wx.Panel):
 
         rsizer.Add(Button(action_row, 'Run Fit',
                           size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
-        savebtn = Button(action_row, 'Save Fit',
-                         size=(100, -1), action=self.onSaveFit)
-        savebtn.Disable()
-        rsizer.Add(savebtn, 0, LCEN, 3)
+        self.savebtn = Button(action_row, 'Save Fit',
+                              size=(100, -1), action=self.onSaveFitResult)
+        self.savebtn.Disable()
+        rsizer.Add(self.savebtn, 0, LCEN, 3)
 
         rsizer.Add(Button(action_row, 'Plot Current Model',
                           size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
@@ -428,26 +542,40 @@ class XYFitPanel(wx.Panel):
         self.pick2_t0 = time.time()
         self.pick2_timer.Start(250)
 
-    def onSaveFit(self, event=None):
+    def onSaveFitResult(self, event=None):
         dgroup = self.get_datagroup()
-        deffile = dgroup.filename.replace('.', '_') + '.fitconf'
-        outfile = FileSave(self, 'Save Fit Configuration and Results',
-                           default_file=deffile,
-                           wildcard=FITCONF_WILDCARDS)
+        deffile = dgroup.filename.replace('.', '_') + '.fitresult'
+        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
 
-        if outfile is None:
+        outfile = FileSave(self, 'Save Fit Result',
+                           default_file=deffile,
+                           wildcard=wcards)
+
+        if outfile is not None:
+            try:
+                save_modelresult(dgroup.fit_history[-1], outfile)
+            except IOError:
+                print('could not write %s' % outfile)
+
+    def onLoadFitResult(self, event=None):
+
+        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
+
+        mfile = FileOpen(self, 'Load Fit Result',
+                         default_file='', wildcard=wcards)
+        model = None
+
+        if mfile is not None:
+            try:
+                model = load_modelresult(mfile)
+            except IOError:
+                print('could not read model result %s' % mfile)
+                return
+        if model is None:
             return
 
-        buff = ['#XYFit Config version 1']
-        buff.append(json.dumps(encode4js(self.summary),
-                               encoding='UTF-8',default=str))
-        buff.append('')
-        try:
-            fout = open(outfile, 'w')
-            fout.write('\n'.join(buff))
-            fout.close()
-        except IOError:
-            print('could not write %s' % outfile)
+        print(" Loading Model ", model)
+
 
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
@@ -539,7 +667,7 @@ class XYFitPanel(wx.Panel):
         plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
                        xmin=xv1, xmax=xv2, label='data',
                        xlabel=dgroup.plot_xlabel, ylabel=dgroup.plot_ylabel,
-                       title='Larch XYFit: %s' % dgroup.filename )
+                       title='Fit: %s' % dgroup.filename )
 
         plotframe.oplot(dgroup.xfit, dgroup.yfit, label='fit')
 
@@ -613,8 +741,7 @@ class XYFitPanel(wx.Panel):
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
-        dgroup.fit_history.append(result.dumps())
-
+        dgroup.fit_history.append(result)
 
         model_repr = self.fit_model._reprstring(long=True)
         report = fit_report(result, show_correl=True,
@@ -625,7 +752,18 @@ class XYFitPanel(wx.Panel):
 
         self.controller.show_report(result)
 
-        # fill parameters with best fit values
+        if self.parent.result_frame is None:
+            self.parent.result_frame = XYFitResultFrame(parent=self,
+                                                        controller=self.controller,
+                                                        datagroup=dgroup)
+        else:
+            self.parent.result_frame.show(dgroup)
+
+        self.update_start_values(result)
+        self.savebtn.Enable()
+
+    def update_start_values(self, result):
+        """fill parameters with best fit values"""
         allparwids = {}
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -647,6 +785,6 @@ class XYFitPanel(wx.Panel):
                 return
 
         if fname is None:
-            fname = 'autosave_modelresult.json'
+            fname = 'autosave.fitresult'
         fname = os.path.join(xyfitdir, fname)
         save_modelresult(result, fname)
