@@ -16,7 +16,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      FRAMESTYLE, Font, FileSave, FileOpen)
 
 from lmfit import Parameter, Parameters, fit_report
-from lmfit.model import save_modelresult
+from lmfit.model import save_modelresult, load_modelresult
 import lmfit.models as lm_models
 
 from larch import Group, site_config
@@ -94,8 +94,6 @@ class XYFitResultFrame(wx.Frame):
         self.controller = controller
         self.larch = controller.larch
         self.datagroup = datagroup
-        print("Create Panel for Fit Result")
-
         self.build()
         self.show()
 
@@ -193,6 +191,13 @@ class XYFitResultFrame(wx.Frame):
         wids['chisqr'].SetLabel("%f" % result.chisqr)
         wids['aic'].SetLabel("%f" % result.aic)
         wids['bic'].SetLabel("%f" % result.bic)
+        wids['hist_info'].SetLabel("%d" % len(fit_history))
+
+
+        model_repr = self.parent.fit_model._reprstring(long=True)
+        wids['model_desc'].SetLabel(model_repr)
+
+        print("Parameters" , result.params)
 
 
 class XYFitPanel(wx.Panel):
@@ -748,7 +753,8 @@ class XYFitPanel(wx.Panel):
         self.controller.show_report(result)
 
         if self.parent.result_frame is None:
-            self.parent.result_frame = XYFitResultFrame(controller=self.controller,
+            self.parent.result_frame = XYFitResultFrame(parent=self,
+                                                        controller=self.controller,
                                                         datagroup=dgroup)
         else:
             self.parent.result_frame.show(dgroup)
