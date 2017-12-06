@@ -10,12 +10,21 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
 
+import wx.dataview as dv
+
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font, FileSave)
 
-import lmfit.models as lm_models
 from lmfit import Parameter, Parameters, fit_report
+try:
+    from lmfit.model import save_modelresult, load_modelresult
+    HAS_MODELSAVE = True
+except ImportError:
+    HAS_MODELSAVE = False
+    
+import lmfit.models as lm_models
+from lmfit.printfuncs import gformat, CORREL_HEAD
 
 from larch import Group
 from larch.utils import index_of
@@ -47,7 +56,9 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
+
 FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
+MIN_CORREL = 0.10
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -83,6 +94,209 @@ class AllParamsPanel(wx.Panel):
 class FitController(object):
     def __init__(self, **kws):
         self.components = OrderedDict()
+
+class XYFitResultFrame(wx.Frame):
+    def __init__(self, parent=None, controller=None, datagroup=None, **kws):
+
+        wx.Frame.__init__(self, None, -1, title='Fit Results',
+                          style=FRAMESTYLE, size=(550, 650), **kws)
+        self.parent = parent
+        self.controller = controller
+        self.larch = controller.larch
+        self.datagroup = datagroup
+        self.build()
+        self.show()
+
+    def build(self):
+        sizer = wx.GridBagSizer(10, 5)
+        sizer.SetVGap(2)
+        sizer.SetHGap(2)
+
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((600, 450))
+        self.colors = GUIColors()
+
+        # title row
+        self.wids = wids = {}
+        title = SimpleText(panel, 'Fit Results',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
+                                             colour=self.colors.title, style=LCEN)
+
+        wids['hist_tag'] = SimpleText(panel, 'Fit #1',  font=Font(12),
+                                      colour=self.colors.title, style=LCEN)
+
+        wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
+                                       colour=self.colors.title, style=LCEN)
+
+        sizer.Add(title,              (0, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (0, 2), (1, 2), LCEN)
+        sizer.Add(wids['hist_tag'],   (0, 4), (1, 1), LCEN)
+        sizer.Add(wids['hist_info'],  (0, 5), (1, 1), LCEN)
+
+        irow = 1
+        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12))
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        for label, attr in (('Fit method', 'method'),
+                            ('# Fit Evaluations', 'nfev'),
+                            ('# Data Points', 'ndata'),
+                            ('# Fit Variables', 'nvarys'),
+                            ('# Free Points', 'nfree'),
+                            ('Chi-square', 'chisqr'),
+                            ('Reduced Chi-square', 'redchi'),
+                            ('Akaike Info Criteria', 'aic'),
+                            ('Bayesian Info Criteria', 'bic')):
+            irow += 1
+            wids[attr] = SimpleText(panel, '?')
+            sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
+            sizer.Add(wids[attr],                          (irow, 1), (1, 1), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Variables]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
+        self.wids['paramsdata'] = []
+        pview.AppendTextColumn('Parameter',         width=150)
+        pview.AppendTextColumn('Best-Fit Value',    width=100)
+        pview.AppendTextColumn('Standard Error',    width=100)
+        pview.AppendTextColumn('Info ',             width=275)
+
+        for col in (0, 1, 2, 3):
+            this = pview.Columns[col]
+            isort, align = True, wx.ALIGN_LEFT
+            if col in (1, 2):
+                isort, align = False, wx.ALIGN_RIGHT
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+
+        pview.SetMinSize((650, 200))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, CORREL_HEAD % MIN_CORREL,  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+
+        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=dvstyle)
+
+        cview.AppendTextColumn('Parameter 1',    width=150)
+        cview.AppendTextColumn('Parameter 2',    width=150)
+        cview.AppendTextColumn('Correlation',    width=100)
+
+        for col in (0, 1, 2):
+            this = cview.Columns[col]
+            isort, align = True, wx.ALIGN_LEFT
+            if col == 1:
+                isort = False
+            if col == 2:
+                align = wx.ALIGN_RIGHT
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+        cview.SetMinSize((450, 200))
+
+        irow += 1
+        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def onSelectParameter(self, evt=None):
+        if self.wids['params'] is None:
+            return
+        if not self.wids['params'].HasSelection():
+            return
+        item = self.wids['params'].GetSelectedRow()
+        pname = self.wids['paramsdata'][item]
+        self.wids['correl'].DeleteAllItems()
+
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        result = fit_history[-1]
+        this = result.params[pname]
+        if this.correl is not None:
+            sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
+            for name, corval in reversed(sort_correl):
+                if abs(corval) > MIN_CORREL:
+                    self.wids['correl'].AppendItem((pname, name, "% .3f" % corval))
+
+    def show(self, datagroup=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        if len(fit_history) < 1:
+            print("No fit reults to show for datagroup ", self.datagroup)
+        result = fit_history[-1]
+        wids = self.wids
+        wids['method'].SetLabel(result.method)
+        wids['ndata'].SetLabel("%d" % result.ndata)
+        wids['nvarys'].SetLabel("%d" % result.nvarys)
+        wids['nfree'].SetLabel("%d" % result.nfree)
+        wids['nfev'].SetLabel("%d" % result.nfev)
+        wids['redchi'].SetLabel("%f" % result.redchi)
+        wids['chisqr'].SetLabel("%f" % result.chisqr)
+        wids['aic'].SetLabel("%f" % result.aic)
+        wids['bic'].SetLabel("%f" % result.bic)
+        wids['hist_info'].SetLabel("%d" % len(fit_history))
+
+        model_repr = self.parent.fit_model._reprstring(long=True)
+        wids['model_desc'].SetLabel(model_repr)
+
+        wids['params'].DeleteAllItems()
+        wids['paramsdata'] = []
+        for i, param in enumerate(result.params.values()):
+            pname = param.name
+            try:
+                val = gformat(param.value)
+            except (TypeError, ValueError):
+                val = ' ??? '
+
+            serr = ' N/A '
+            if param.stderr is not None:
+                serr = gformat(param.stderr, length=9)
+
+            extra = ' '
+            if param.expr is not None:
+                extra = ' = %s ' % param.expr
+            elif param.init_value is not None:
+                extra = ' (init=% .7g)' % param.init_value
+            elif not param.vary:
+                extra = ' (fixed)'
+
+            wids['params'].AppendItem((pname, val, serr, extra))
+            wids['paramsdata'].append(pname)
+
+        self.Refresh()
 
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -629,3 +843,21 @@ class XYFitPanel(wx.Panel):
         for pname, par in result.params.items():
             if pname in allparwids:
                 allparwids[pname].value.SetValue(par.value)
+
+    def autosave_modelresult(self, result, fname=None):
+        """autosave model result to user larch folder"""
+        xyfitdir = os.path.join(site_config.usr_larchdir, 'xyfit')
+        if not os.path.exists(xyfitdir):
+            try:
+                os.makedirs(xyfitdir)
+            except OSError:
+                print("Warning: cannot create XYFit user folder")
+                return
+        if not HAS_MODELSAVE:
+            print("Warning: cannot save model results: upgrade lmfit")
+            return
+        if fname is None:
+            fname = 'autosave.fitresult'
+        fname = os.path.join(xyfitdir, fname) 
+        save_modelresult(result, fname)
+
