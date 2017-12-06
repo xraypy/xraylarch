@@ -840,10 +840,11 @@ class TomographyPanel(GridPanel):
                 'sinogram_order' : sino_order,
                 'omega'          : ome}
 
-        tomo_center, tomo = xrmfile.get_tomograph(sino, **args)
+        tomo = xrmfile.get_tomograph(sino, **args)
 
-        self.set_center(tomo_center)
-        self.refine_center.SetValue(False)
+        if args['refine_center']: 
+            self.set_center(xrmfile.xrmmap['tomo/center'].value)
+            self.refine_center.SetValue(False)
 
         omeoff, xoff = 0, 0
         alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]

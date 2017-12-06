@@ -1963,11 +1963,11 @@ class GSEXRM_MapFile(object):
     def get_tomography_center(self):
 
         try:
-            return self.xrmmap['tomo/center'][...]
+            return self.xrmmap['tomo/center'].value
         except:
              self.set_tomography_center()
 
-        return self.xrmmap['tomo/center'][...]
+        return self.xrmmap['tomo/center'].value
 
     def set_tomography_center(self,center=None):
 
@@ -1981,7 +1981,6 @@ class GSEXRM_MapFile(object):
         tomogrp.create_dataset('center', data=center)
 
         self.h5root.flush()
-
 
     def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
         '''extract roi map for a pre-defined roi by name
@@ -2018,7 +2017,22 @@ class GSEXRM_MapFile(object):
         if omega is None: omega = self.get_rotation_axis()
         if center is None: center = self.get_tomography_center()
 
-        return tomo_reconstruction(sino, omega=omega, center=center, **kws)
+        center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
+        self.set_tomography_center(center=center)
+        
+        return tomo
+
+    def save_tomograph(self, sino, omega=None, center=None, **kws):
+        '''
+        returns tomo_center, tomo
+        '''
+        print 'working on this here...'
+
+        if omega is None: omega = self.get_rotation_axis()
+        if center is None: center = self.get_tomography_center()
+
+        center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
+
 
     def claim_hostid(self):
         "claim ownership of file"
