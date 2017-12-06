@@ -1,4 +1,5 @@
 import time
+import os
 import numpy as np
 np.seterr(all='ignore')
 
@@ -14,7 +15,7 @@ import wx.dataview as dv
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font, FileSave)
+                     FRAMESTYLE, Font, FileSave, FileOpen)
 
 from lmfit import Parameter, Parameters, fit_report
 try:
@@ -26,7 +27,7 @@ except ImportError:
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
-from larch import Group
+from larch import Group, site_config
 from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
@@ -49,15 +50,13 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                 'general': ('<Generalr Models>', 'Constant', 'Linear',
                             'Quadratic', 'Exponential', 'PowerLaw'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
-                          'Voigt', 'PseudoVoigt', 'DampedOscillator',
+                          'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
-
-FITCONF_WILDCARDS = 'Fit Configs (*.fitconf)|*.fitconf|All files (*.*)|*.*'
 MIN_CORREL = 0.10
 
 class AllParamsPanel(wx.Panel):
@@ -298,6 +297,8 @@ class XYFitResultFrame(wx.Frame):
 
         self.Refresh()
 
+
+
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
@@ -369,10 +370,10 @@ class XYFitPanel(wx.Panel):
 
         rsizer.Add(Button(action_row, 'Run Fit',
                           size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
-        savebtn = Button(action_row, 'Save Fit',
-                         size=(100, -1), action=self.onSaveFit)
-        savebtn.Disable()
-        rsizer.Add(savebtn, 0, LCEN, 3)
+        self.savebtn = Button(action_row, 'Save Fit',
+                              size=(100, -1), action=self.onSaveFitResult)
+        self.savebtn.Disable()
+        rsizer.Add(self.savebtn, 0, LCEN, 3)
 
         rsizer.Add(Button(action_row, 'Plot Current Model',
                           size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
@@ -423,7 +424,8 @@ class XYFitPanel(wx.Panel):
         if model is None or model.startswith('<'):
             return
 
-        curmodels = ["c%i_" % (i+1) for i in range(1+len(self.fit_components))]
+        p = model[0].lower()
+        curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
         for comp in self.fit_components:
             if comp in curmodels:
                 curmodels.remove(comp)
@@ -557,7 +559,6 @@ class XYFitPanel(wx.Panel):
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
 
-
     def onPick2EraseTimer(self, evt=None):
         """erases line trace showing automated 'Pick 2' guess """
         self.pick2erase_timer.Stop()
@@ -640,26 +641,40 @@ class XYFitPanel(wx.Panel):
         self.pick2_t0 = time.time()
         self.pick2_timer.Start(250)
 
-    def onSaveFit(self, event=None):
+    def onSaveFitResult(self, event=None):
         dgroup = self.get_datagroup()
-        deffile = dgroup.filename.replace('.', '_') + '.fitconf'
-        outfile = FileSave(self, 'Save Fit Configuration and Results',
-                           default_file=deffile,
-                           wildcard=FITCONF_WILDCARDS)
+        deffile = dgroup.filename.replace('.', '_') + '.fitresult'
+        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
 
-        if outfile is None:
+        outfile = FileSave(self, 'Save Fit Result',
+                           default_file=deffile,
+                           wildcard=wcards)
+
+        if outfile is not None:
+            try:
+                save_modelresult(dgroup.fit_history[-1], outfile)
+            except IOError:
+                print('could not write %s' % outfile)
+
+    def onLoadFitResult(self, event=None):
+
+        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
+
+        mfile = FileOpen(self, 'Load Fit Result',
+                         default_file='', wildcard=wcards)
+        model = None
+
+        if mfile is not None:
+            try:
+                model = load_modelresult(mfile)
+            except IOError:
+                print('could not read model result %s' % mfile)
+                return
+        if model is None:
             return
 
-        buff = ['#XYFit Config version 1']
-        buff.append(json.dumps(encode4js(self.summary),
-                               encoding='UTF-8',default=str))
-        buff.append('')
-        try:
-            fout = open(outfile, 'w')
-            fout.write('\n'.join(buff))
-            fout.close()
-        except IOError:
-            print('could not write %s' % outfile)
+        print(" Loading Model ", model)
+
 
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
@@ -751,7 +766,7 @@ class XYFitPanel(wx.Panel):
         plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
                        xmin=xv1, xmax=xv2, label='data',
                        xlabel=dgroup.plot_xlabel, ylabel=dgroup.plot_ylabel,
-                       title='Larch XYFit: %s' % dgroup.filename )
+                       title='Fit: %s' % dgroup.filename )
 
         plotframe.oplot(dgroup.xfit, dgroup.yfit, label='fit')
 
@@ -809,8 +824,6 @@ class XYFitPanel(wx.Panel):
             self.summary[attr] = getattr(result, attr)
         self.summary['params'] = result.params
 
-        dgroup.fit_history = []
-        dgroup.fit_history.append(self.summary)
 
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
@@ -824,6 +837,11 @@ class XYFitPanel(wx.Panel):
         # print(" == fit model == ", self.fit_model)
         # print(" == fit result == ", result)
 
+        self.autosave_modelresult(result)
+        if not hasattr(dgroup, 'fit_history'):
+            dgroup.fit_history = []
+        dgroup.fit_history.append(result)
+
         model_repr = self.fit_model._reprstring(long=True)
         report = fit_report(result, show_correl=True,
                             min_correl=0.25, sort_pars=True)
@@ -831,9 +849,20 @@ class XYFitPanel(wx.Panel):
         report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
         self.summary['report'] = report
 
-        self.controller.show_report(report)
+        self.controller.show_report(result)
 
-        # fill parameters with best fit values
+        if self.parent.result_frame is None:
+            self.parent.result_frame = XYFitResultFrame(parent=self,
+                                                        controller=self.controller,
+                                                        datagroup=dgroup)
+        else:
+            self.parent.result_frame.show(dgroup)
+
+        self.update_start_values(result)
+        self.savebtn.Enable()
+
+    def update_start_values(self, result):
+        """fill parameters with best fit values"""
         allparwids = {}
         for comp in self.fit_components.values():
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -860,4 +889,3 @@ class XYFitPanel(wx.Panel):
             fname = 'autosave.fitresult'
         fname = os.path.join(xyfitdir, fname) 
         save_modelresult(result, fname)
-
