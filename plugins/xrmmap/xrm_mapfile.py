@@ -2022,17 +2022,29 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, sino, omega=None, center=None, **kws):
+    def save_tomograph(self, detname, **kws):
         '''
         returns tomo_center, tomo
         '''
-        print 'working on this here...'
+        print 'trying to save data here'
+        
+        detlist = get_detectors(self.xrmmap)
+        if detname is not in detlist:
+            print('\n** Cannot find detector %s , **' % detname)
+            detname = 'detsum'
+            if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+                detname = string.replace(detname,'det','mca')
+            print('** using %s instead. **\n' % detname)
+            return 
 
-        if omega is None: omega = self.get_rotation_axis()
-        if center is None: center = self.get_tomography_center()
+        omega = self.get_rotation_axis()
+        center = self.get_tomography_center()
 
-        center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
-
+        center,tomo = tomo_reconstruction(self.xrmamp[detname]['counts'].value, 
+                                          omega=omega, center=center, **kws)
+        
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        tomogrp.create_dataset(detname, data=tomo )
 
     def claim_hostid(self):
         "claim ownership of file"
