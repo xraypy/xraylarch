@@ -18,7 +18,12 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      FRAMESTYLE, Font, FileSave, FileOpen)
 
 from lmfit import Parameter, Parameters, fit_report
-from lmfit.model import save_modelresult, load_modelresult
+try:
+    from lmfit.model import save_modelresult, load_modelresult
+    HAS_MODELSAVE = True
+except ImportError:
+    HAS_MODELSAVE = False
+    
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
@@ -877,8 +882,10 @@ class XYFitPanel(wx.Panel):
             except OSError:
                 print("Warning: cannot create XYFit user folder")
                 return
-
+        if not HAS_MODELSAVE:
+            print("Warning: cannot save model results: upgrade lmfit")
+            return
         if fname is None:
             fname = 'autosave.fitresult'
-        fname = os.path.join(xyfitdir, fname)
+        fname = os.path.join(xyfitdir, fname) 
         save_modelresult(result, fname)
