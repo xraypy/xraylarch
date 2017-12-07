@@ -626,7 +626,7 @@ class XYFitController():
         """save configuration"""
         conf = group2dict(self.larch.symtable._sys.xyfit)
         conf.pop('__name__')
-        print("Saving configureation: ", self.config_file, conf)
+        # print("Saving configureation: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
@@ -641,7 +641,6 @@ class XYFitController():
             del self.report_frame
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
-
 
         model_repr = fitresult.model._reprstring(long=True)
         report = fit_report(fitresult, show_correl=True,
@@ -743,12 +742,11 @@ class XYFitController():
 
             self.larch.eval("pre_edge(%s)" % (','.join(copts)))
 
-            opts['e0'] = dgroup.e0
-            opts['edge_step'] = dgroup.edge_step
+            opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
+            opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
             for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-                opts[attr] = getattr(dgroup.pre_edge_details, attr)
+                opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
             dgroup.proc_opts.update(opts)
-
 
     def get_cursor(self):
         try:
@@ -1101,8 +1099,6 @@ class XYFitFrame(wx.Frame):
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
 
-        # print("onClose End, children = ")
-        # print( self.GetChildren())
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
@@ -1215,16 +1211,14 @@ class XYFitFrame(wx.Frame):
         self.larch.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
             self.last_array_sel = array_sel
-
         self.install_group(groupname, filename, overwrite=overwrite)
 
-        if len(self.paths2read) > 0 :
-            path = self.paths2read.pop(0)
+        for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
-            self.onRead_OK(script, path, groupname=gname, overwrite=False)
-
+            self.larch.eval(script.format(group=gname, path=path))
+            self.install_group(gname, filename, overwrite=True)
 
     def install_group(self, groupname, filename, overwrite=False):
         """add groupname / filename to list of available data groups"""
