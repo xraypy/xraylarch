@@ -66,7 +66,6 @@ ICON_FILE = 'larch.ico'
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
-
 def assign_gsescan_groups(group):
     labels = group.array_labels
     labels = []
@@ -87,12 +86,12 @@ def assign_gsescan_groups(group):
 
     group.array_labels = labels
 
-
-XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
+XASOPChoices=('Raw Data',
+              'Normalized',
+              'Derivative',
               'Normalized + Derivative',
               'Pre-edge subtracted',
               'Raw Data + Pre-edge/Post-edge')
-
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -584,8 +583,8 @@ class XYFitController():
         self.groupname = None
         self.report_frame = None
         self.symtable = self.larch.symtable
-        self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
-        self.symtable.set_symbol('_sys.wx.parent', self)
+        # self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        # self.symtable.set_symbol('_sys.wx.parent', self)
 
     def init_larch(self):
         fico = self.get_iconfile()
@@ -623,11 +622,11 @@ class XYFitController():
         confgroup = self.larch.symtable._sys.xyfit
         return getattr(confgroup, key, default)
 
-
     def save_config(self):
         """save configuration"""
         conf = group2dict(self.larch.symtable._sys.xyfit)
         conf.pop('__name__')
+        print("Saving configureation: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
@@ -841,12 +840,10 @@ class XYFitFrame(wx.Frame):
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
-
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
         self.controller = XYFitController(wxparent=self, _larch=self.larch)
-        self.result_frame = None
 
         self.subframes = {}
         self.plotframe = None
@@ -1025,8 +1022,7 @@ class XYFitFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, "debug wx\tCtrl+I", "", self.showInspectionTool)
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onCloseNicely)
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
 
@@ -1039,7 +1035,7 @@ class XYFitFrame(wx.Frame):
                   "Configure Data Fitting", self.onConfigDataFitting)
 
         self.SetMenuBar(self.menubar)
-        self.Bind(wx.EVT_CLOSE,  self.onExit)
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
@@ -1054,9 +1050,9 @@ class XYFitFrame(wx.Frame):
     def onConfigDataFitting(self, event=None):
         pass
 
-    def showInspectionTool(self, event=None):
-        app = wx.GetApp()
-        app.ShowInspectionTool()
+    # def showInspectionTool(self, event=None):
+    #    app = wx.GetApp()
+    #    app.ShowInspectionTool()
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
@@ -1065,34 +1061,7 @@ class XYFitFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onExit(self, evt):
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
-            time.sleep(0.05)
-            try:
-                obj.Destroy()
-            except:
-                pass
-        try:
-            self.result_frame.Destroy()
-        except:
-            pass
-
-        u = """
-        for nam in dir(self.larch.symtable._sys.wx):
-            obj = getattr(self.larch.symtable._sys.wx, nam)
-            time.sleep(0.05)
-            del obj
-        """
-
-        if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.Destroy()
-            except:
-                pass
-        self.Destroy()
-
-    def onCloseNicely(self, event):
+    def onClose(self, event):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
 
@@ -1102,7 +1071,39 @@ class XYFitFrame(wx.Frame):
         self.controller.save_config()
         self.proc_panel.proc_timer.Stop()
         time.sleep(0.05)
-        self.onExit(event)
+
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.Destroy()
+
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.Destroy()
+            except:
+                pass
+            time.sleep(0.05)
+
+        for nam in dir(self.larch.symtable._plotter):
+            obj = getattr(self.larch.symtable._plotter, nam)
+            time.sleep(0.05)
+            try:
+                obj.Destroy()
+            except:
+                pass
+
+        for name, wid in self.subframes.items():
+            print (" Sub ", name,  wid)
+            if wid is not None:
+                try:
+                    wid.Destroy()
+                except:
+                    pass
+
+        for nam in dir(self.larch.symtable._sys.wx):
+            obj = getattr(self.larch.symtable._sys.wx, nam)
+
+        # print("onClose End, children = ")
+        # print( self.GetChildren())
+        self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -1248,7 +1249,7 @@ class XYFitFrame(wx.Frame):
         self.ShowFile(groupname=groupname)
 
 
-class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class XYFitViewer(wx.App):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
@@ -1261,7 +1262,6 @@ class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
 
     def OnInit(self):
-        self.Init()
         self.createApp()
         return True
 
