@@ -69,7 +69,7 @@ class AllParamsPanel(wx.Panel):
 
     def add_parameter(self, param):
         """add a parameter"""
-        print( "add parameter ", param)
+        # print( "add parameter ", param)
 
     def del_parameter(self, param):
         """delete a parameter"""
@@ -174,14 +174,11 @@ class XYFitResultFrame(wx.Frame):
 
         for col in (0, 1, 2, 3):
             this = pview.Columns[col]
-            print(" Column ", this)
             isort, align = True, wx.ALIGN_LEFT
             if col in (1, 2):
                 isort, align = False, wx.ALIGN_RIGHT
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-
-        print(dir(this))
 
         pview.SetMinSize((650, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
@@ -477,7 +474,7 @@ class XYFitPanel(wx.Panel):
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
                        SLabel("  Min", size=(60, -1)),
-                       SLabel("  Max", size=(60, -1)), 
+                       SLabel("  Max", size=(60, -1)),
                        SLabel("  Expression")))
 
         parwids = OrderedDict()
@@ -511,7 +508,7 @@ class XYFitPanel(wx.Panel):
             parwids[par.name] = pwids
             panel.Add(pwids.name, newrow=True)
 
-            panel.AddMany((pwids.value, pwids.vary, pwids.bounds, 
+            panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
                            pwids.minval, pwids.maxval, pwids.expr))
 
         for sname, hint in minst.param_hints.items():
