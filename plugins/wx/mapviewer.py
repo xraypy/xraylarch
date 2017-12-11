@@ -838,7 +838,8 @@ class TomographyPanel(GridPanel):
                                     self.alg_choice[1].GetStringSelection(),
                                     self.alg_choice[2].GetStringSelection()],
                 'sinogram_order' : sino_order,
-                'omega'          : ome}
+                'omega'          : ome
+               }
 
         tomo = xrmfile.get_tomograph(sino, **args)
 
