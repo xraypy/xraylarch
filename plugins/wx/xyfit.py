@@ -66,7 +66,6 @@ ICON_FILE = 'larch.ico'
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
-
 def assign_gsescan_groups(group):
     labels = group.array_labels
     labels = []
@@ -87,12 +86,12 @@ def assign_gsescan_groups(group):
 
     group.array_labels = labels
 
-
-XASOPChoices=('Raw Data', 'Normalized', 'Derivative',
+XASOPChoices=('Raw Data',
+              'Normalized',
+              'Derivative',
               'Normalized + Derivative',
               'Pre-edge subtracted',
               'Raw Data + Pre-edge/Post-edge')
-
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -584,8 +583,8 @@ class XYFitController():
         self.groupname = None
         self.report_frame = None
         self.symtable = self.larch.symtable
-        self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
-        self.symtable.set_symbol('_sys.wx.parent', self)
+        # self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        # self.symtable.set_symbol('_sys.wx.parent', self)
 
     def init_larch(self):
         fico = self.get_iconfile()
@@ -623,11 +622,11 @@ class XYFitController():
         confgroup = self.larch.symtable._sys.xyfit
         return getattr(confgroup, key, default)
 
-
     def save_config(self):
         """save configuration"""
         conf = group2dict(self.larch.symtable._sys.xyfit)
         conf.pop('__name__')
+        # print("Saving configureation: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
@@ -642,7 +641,6 @@ class XYFitController():
             del self.report_frame
         if not shown:
             self.report_frame = ReportFrame(self.wxparent)
-
 
         model_repr = fitresult.model._reprstring(long=True)
         report = fit_report(fitresult, show_correl=True,
@@ -744,12 +742,11 @@ class XYFitController():
 
             self.larch.eval("pre_edge(%s)" % (','.join(copts)))
 
-            opts['e0'] = dgroup.e0
-            opts['edge_step'] = dgroup.edge_step
+            opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
+            opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
             for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-                opts[attr] = getattr(dgroup.pre_edge_details, attr)
+                opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
             dgroup.proc_opts.update(opts)
-
 
     def get_cursor(self):
         try:
@@ -841,12 +838,10 @@ class XYFitFrame(wx.Frame):
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
-
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
         self.controller = XYFitController(wxparent=self, _larch=self.larch)
-        self.result_frame = None
 
         self.subframes = {}
         self.plotframe = None
@@ -1025,8 +1020,7 @@ class XYFitFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, "debug wx\tCtrl+I", "", self.showInspectionTool)
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onCloseNicely)
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
 
@@ -1039,7 +1033,7 @@ class XYFitFrame(wx.Frame):
                   "Configure Data Fitting", self.onConfigDataFitting)
 
         self.SetMenuBar(self.menubar)
-        self.Bind(wx.EVT_CLOSE,  self.onExit)
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
@@ -1054,9 +1048,9 @@ class XYFitFrame(wx.Frame):
     def onConfigDataFitting(self, event=None):
         pass
 
-    def showInspectionTool(self, event=None):
-        app = wx.GetApp()
-        app.ShowInspectionTool()
+    # def showInspectionTool(self, event=None):
+    #    app = wx.GetApp()
+    #    app.ShowInspectionTool()
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
@@ -1065,34 +1059,7 @@ class XYFitFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onExit(self, evt):
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
-            time.sleep(0.05)
-            try:
-                obj.Destroy()
-            except:
-                pass
-        try:
-            self.result_frame.Destroy()
-        except:
-            pass
-
-        u = """
-        for nam in dir(self.larch.symtable._sys.wx):
-            obj = getattr(self.larch.symtable._sys.wx, nam)
-            time.sleep(0.05)
-            del obj
-        """
-
-        if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.Destroy()
-            except:
-                pass
-        self.Destroy()
-
-    def onCloseNicely(self, event):
+    def onClose(self, event):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
 
@@ -1102,7 +1069,37 @@ class XYFitFrame(wx.Frame):
         self.controller.save_config()
         self.proc_panel.proc_timer.Stop()
         time.sleep(0.05)
-        self.onExit(event)
+
+        plotframe = self.controller.get_display(stacked=False)
+        plotframe.Destroy()
+
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.Destroy()
+            except:
+                pass
+            time.sleep(0.05)
+
+        for nam in dir(self.larch.symtable._plotter):
+            obj = getattr(self.larch.symtable._plotter, nam)
+            time.sleep(0.05)
+            try:
+                obj.Destroy()
+            except:
+                pass
+
+        for name, wid in self.subframes.items():
+            print (" Sub ", name,  wid)
+            if wid is not None:
+                try:
+                    wid.Destroy()
+                except:
+                    pass
+
+        for nam in dir(self.larch.symtable._sys.wx):
+            obj = getattr(self.larch.symtable._sys.wx, nam)
+
+        self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -1214,16 +1211,14 @@ class XYFitFrame(wx.Frame):
         self.larch.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
             self.last_array_sel = array_sel
-
         self.install_group(groupname, filename, overwrite=overwrite)
 
-        if len(self.paths2read) > 0 :
-            path = self.paths2read.pop(0)
+        for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
-            self.onRead_OK(script, path, groupname=gname, overwrite=False)
-
+            self.larch.eval(script.format(group=gname, path=path))
+            self.install_group(gname, filename, overwrite=True)
 
     def install_group(self, groupname, filename, overwrite=False):
         """add groupname / filename to list of available data groups"""
@@ -1248,7 +1243,7 @@ class XYFitFrame(wx.Frame):
         self.ShowFile(groupname=groupname)
 
 
-class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class XYFitViewer(wx.App):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
@@ -1261,7 +1256,6 @@ class XYFitViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
 
     def OnInit(self):
-        self.Init()
         self.createApp()
         return True
 
