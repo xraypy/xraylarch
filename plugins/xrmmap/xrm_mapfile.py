@@ -2022,26 +2022,42 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, detname, omega=None, center=None, force=True, **kws):
+
+    def save_tomograph(self, detname, force=True, **kws):
         '''
         returns tomo_center, tomo
         '''
-        print 'working on this here...'
-
-        if omega is None: omega = self.get_rotation_axis()
-        if center is None: center = self.get_tomography_center()
+        print 'trying to save data here'
         
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        detgrp = ensure_subgroup(detname,tomogrp)
+        detlist = get_detectors(self.xrmmap)
+        if detname is not in detlist:
+            print('\n** Cannot find detector %s , **' % detname)
+            detname = 'detsum'
+            if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+                detname = string.replace(detname,'det','mca')
+            print('** using %s instead. **\n' % detname)
+            return 
 
         ## need to ensure detector group... also: should this delete current datasets to be replaced?
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        detgrp = ensure_subgroup(detname,tomogrp)
+        
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+
         if force:
             print 'this should delete subgroup/datasets that already exist'
+        else:
+            if False: ## check if exists
+                print ' exiting'
+                return
 
-        self.get_sinogram(roi_name, det=None, trim_sino=False, **kws)
+        omega = self.get_rotation_axis()
+        center = self.get_tomography_center()
 
-        center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
+        center,tomo = tomo_reconstruction(self.xrmamp[detname]['counts'].value, 
+                                          omega=omega, center=center, **kws)
 
+        tomogrp.create_dataset(detname, data=tomo )
 
     def claim_hostid(self):
         "claim ownership of file"
