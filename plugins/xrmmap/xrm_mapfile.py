@@ -2030,11 +2030,13 @@ class GSEXRM_MapFile(object):
         
         detlist = get_detectors(self.xrmmap)
         if detname not in detlist:
-            print("\n** Cannot find detector '%s', **" % detname)
-            detname = 'detsum'
-            if StrictVersion(self.version) >= StrictVersion('2.0.0'):
-                detname = string.replace(detname,'det','mca')
-            print("** using '%s' instead. **\n" % detname)
+            print("Detector '%s' not found in data." % detname)
+            print('Known detectors: %s' % detlist)
+            #detname = 'detsum'
+            #if StrictVersion(self.version) >= StrictVersion('2.0.0'):
+            #    detname = string.replace(detname,'det','mca')
+            #print("** using '%s' instead. **\n" % detname)
+            return
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
@@ -2058,11 +2060,19 @@ class GSEXRM_MapFile(object):
                                           sinogram_order=order, **kws)
                                           
         detgrp.create_dataset('counts', data=tomo)
-        for datatag in ('energy','q'):
+        for data_tag in ('energy','q'):
             try:
-                detgrp.create_dataset(datatag, data=self.xrmmap[detname][datatag])
+                detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
             except:
                 pass
+        for attr_tag in self.xrmmap[detname].attrs.keys():
+            try:
+                detgrp.attrs[attr_tag] = self.xrmmap[detname].attrs[attr_tag]
+            except:
+                pass
+
+                
+        print("Tomography data saved for '%s' successfully." % detname)
 
         
 
