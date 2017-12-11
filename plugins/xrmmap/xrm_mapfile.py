@@ -1,4 +1,4 @@
-from __future__ import print_function
+##from __future__ import print_function
 import re
 import os
 import sys
@@ -2030,7 +2030,7 @@ class GSEXRM_MapFile(object):
         print 'trying to save data here'
         
         detlist = get_detectors(self.xrmmap)
-        if detname is not in detlist:
+        if detname not in detlist:
             print('\n** Cannot find detector %s , **' % detname)
             detname = 'detsum'
             if StrictVersion(self.version) >= StrictVersion('2.0.0'):
@@ -2054,10 +2054,12 @@ class GSEXRM_MapFile(object):
         omega = self.get_rotation_axis()
         center = self.get_tomography_center()
 
-        center,tomo = tomo_reconstruction(self.xrmamp[detname]['counts'].value, 
-                                          omega=omega, center=center, **kws)
+        print 'calculating... - need to run reshape on data..., right?'
+        print self.xrmamp[detname]['counts'].shape
+#         center,tomo = tomo_reconstruction(self.xrmamp[detname]['counts'].value, 
+#                                           omega=omega, center=center, **kws)
 
-        tomogrp.create_dataset(detname, data=tomo )
+#         tomogrp.create_dataset(detname, data=tomo )
 
     def claim_hostid(self):
         "claim ownership of file"
