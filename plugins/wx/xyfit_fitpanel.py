@@ -299,7 +299,7 @@ class XYFitResultFrame(wx.Frame):
 class XYFitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
-        wx.Panel.__init__(self, parent, -1, size=(550, 500), **kws)
+        wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
@@ -450,30 +450,38 @@ class XYFitPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use?', size=(75, -1))
-        delbtn = Button(panel, 'Delete Model', size=(120, -1),
+        usebox = Check(panel, default=True, label='Use?', size=(60, -1))
+        bkgbox = Check(panel, default=False, label='Background?', size=(120, -1))
+
+        delbtn = Button(panel, 'Delete', size=(120, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
+
         pick2msg = SimpleText(panel, "    ", size=(75, -1))
         pick2btn = Button(panel, 'Pick Data Range', size=(135, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
         SetTip(usebox, 'Use this component in fit?')
+        SetTip(usebox, 'Label thi component as "background" when plotting?')
         SetTip(delbtn, 'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
-        panel.Add(HLine(panel, size=(520, 3)), style=wx.ALIGN_CENTER, dcol=6)
 
-        panel.Add(SLabel(label, size=(200, -1), colour='#0000AA'),
-                  dcol=3,  newrow=True)
-        panel.AddMany((usebox, pick2msg, pick2btn))
+        panel.Add(SLabel(label, colour='#0000AA'),
+                  dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(usebox)
+        panel.Add(bkgbox, dcol=2)
+        panel.Add(delbtn)
 
-        panel.Add(SLabel("Parameter"),   newrow=True)
-        panel.AddMany((SLabel("Value"), SLabel("Type"), SLabel("Min"),
-                       SLabel("Max"), SLabel("Expression")))
+        panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
+        panel.AddMany((SLabel("Value"), SLabel("Type"), 
+                       SLabel("Min", size=(60, -1)),
+                       SLabel("Max", size=(60, -1)), 
+                       SLabel('Bounds'),
+                       SLabel("Expression"),
+                       ))
 
         parwids = OrderedDict()
-
         parnames = sorted(minst.param_names)
 
         for a in minst._func_allargs:
@@ -497,33 +505,38 @@ class XYFitPanel(wx.Panel):
             if 'expr' in hints:
                 par.expr = hints['expr']
 
-            pwids = ParameterWidgets(panel, par, name_size=80, expr_size=175,
+            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=175,
                                      float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
             parwids[par.name] = pwids
             panel.Add(pwids.name, newrow=True)
             panel.AddMany((pwids.value, pwids.vary, pwids.minval,
-                           pwids.maxval, pwids.expr))
+                           pwids.maxval, pwids.bounds, pwids.expr))
 
         for sname, hint in minst.param_hints.items():
             pname = "%s%s" % (prefix, sname)
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
 
-                pwids = ParameterWidgets(panel, par, name_size=80, expr_size=275,
+                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=375,
                                          float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'vary', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
                 panel.AddMany((pwids.value, pwids.vary))
-                panel.Add(pwids.expr, dcol=3, style=wx.ALIGN_RIGHT)
+                panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
                 pwids.vary.Disable()
 
+
         panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
-        panel.Add(delbtn, dcol=2)
-        panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
+
+        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_RIGHT)
+        panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
+
+        # panel.Add(delbtn, dcol=2)
+        # panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
 
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
                        mclass_kws=mclass_kws, usebox=usebox, panel=panel,
