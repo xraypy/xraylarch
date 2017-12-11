@@ -105,6 +105,8 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     sums = OrderedDict()
     for i, arrname in enumerate(xdi.array_labels):
         dat = getattr(xdi, arrname)
+        if arrname.lower() == 'data':
+            arrname = '_data'
         aname = sumname = rawname = arrname.lower()
         if ('_mca' in aname and 
             'outputcounts' not in aname and
@@ -200,7 +202,6 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     if hasattr(xdi, 'energy_readback'):
         out.energy = xdi.energy_readback
 
-
     arrname = None
     channelname = channelname.lower().replace(' ', '_')
 
@@ -230,7 +231,15 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
             i1[np.where(i1<TINY)] = TINY
             out.mutrans = -np.log(i1)
 
-    npts   = len(out.energy)
+
+    npts   = len(out.i0)
+    col0_name = xdi.array_labels[0].lower()
+    col0_units = None
+    col0_data  = xdi.data[0, :]
+    if col0_name == 'energy':
+        col0_data  = out.energy
+        col0_units = 'eV'
+
     buff =  ['# XDI/1.0  GSE/1.0']
 
     header = OrderedDict()
@@ -261,7 +270,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     header['monochromator']['name'] = "%s, LN2 cooled"  % mono_cut
 
     out_arrays = OrderedDict()
-    out_arrays['energy']  = ('energy', 'eV')
+    out_arrays[col0_name]  = (col0_name, col0_units)
     out_arrays['mufluor'] = ('mufluor', None)
     if hasattr(out, 'i1'):
         out_arrays['mutrans'] = ('mutrans', None)
@@ -308,7 +317,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     ffmt = "%13.7f"
     gfmt = "%13.7g"
     for i in range(npts):
-        dline = ["", efmt % out.energy[i], ffmt % out.mufluor[i]]
+        dline = ["", efmt % col0_data[i], ffmt % out.mufluor[i]]
 
         if hasattr(out, 'i1'):
             dline.append(ffmt % out.mutrans[i])
