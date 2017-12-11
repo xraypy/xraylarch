@@ -825,7 +825,7 @@ class XYFitFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, size=(925, 600), _larch=None, **kws):
+    def __init__(self, parent=None, size=(950, 600), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}

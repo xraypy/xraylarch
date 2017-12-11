@@ -467,19 +467,18 @@ class XYFitPanel(wx.Panel):
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
 
-        panel.Add(SLabel(label, colour='#0000AA'),
+        panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(usebox)
         panel.Add(bkgbox, dcol=2)
         panel.Add(delbtn)
 
+
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
-        panel.AddMany((SLabel("Value"), SLabel("Type"), 
-                       SLabel("Min", size=(60, -1)),
-                       SLabel("Max", size=(60, -1)), 
-                       SLabel('Bounds'),
-                       SLabel("Expression"),
-                       ))
+        panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
+                       SLabel("  Min", size=(60, -1)),
+                       SLabel("  Max", size=(60, -1)), 
+                       SLabel("  Expression")))
 
         parwids = OrderedDict()
         parnames = sorted(minst.param_names)
@@ -511,8 +510,9 @@ class XYFitPanel(wx.Panel):
                                               'maxval', 'vary', 'expr'))
             parwids[par.name] = pwids
             panel.Add(pwids.name, newrow=True)
-            panel.AddMany((pwids.value, pwids.vary, pwids.minval,
-                           pwids.maxval, pwids.bounds, pwids.expr))
+
+            panel.AddMany((pwids.value, pwids.vary, pwids.bounds, 
+                           pwids.minval, pwids.maxval, pwids.expr))
 
         for sname, hint in minst.param_hints.items():
             pname = "%s%s" % (prefix, sname)

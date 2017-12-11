@@ -149,7 +149,7 @@ class ParameterWidgets(object):
             elif maxval == 0:
                 bounds_choice = BOUNDS_neg
 
-            self.bounds = Choice(parent, size=(100, -1),
+            self.bounds = Choice(parent, size=(90, -1),
                                  choices=BOUNDS_CHOICES,
                                  action=self.onBOUNDSChoice)
             self.bounds.SetStringSelection(bounds_choice)
