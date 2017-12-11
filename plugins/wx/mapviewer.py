@@ -834,9 +834,9 @@ class TomographyPanel(GridPanel):
         args = {'refine_center'  : self.refine_center.GetValue(),
                 'center_range'   : self.center_range.GetValue(),
                 'center'         : self.center_value.GetValue(),
-                'method'         : self.alg_choice[0].GetStringSelection(),
-                'algorithm_A'    : self.alg_choice[1].GetStringSelection(),
-                'algorithm_B'    : self.alg_choice[2].GetStringSelection(),
+                'tomo_alg'       : [self.alg_choice[0].GetStringSelection(),
+                                    self.alg_choice[1].GetStringSelection(),
+                                    self.alg_choice[2].GetStringSelection()],
                 'sinogram_order' : sino_order,
                 'omega'          : ome}
 

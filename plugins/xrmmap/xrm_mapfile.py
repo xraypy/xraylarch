@@ -2025,41 +2025,46 @@ class GSEXRM_MapFile(object):
 
     def save_tomograph(self, detname, force=True, **kws):
         '''
-        returns tomo_center, tomo
+        saves group for tomograph for selected detector
         '''
-        print 'trying to save data here'
         
         detlist = get_detectors(self.xrmmap)
         if detname not in detlist:
-            print('\n** Cannot find detector %s , **' % detname)
+            print("\n** Cannot find detector '%s', **" % detname)
             detname = 'detsum'
             if StrictVersion(self.version) >= StrictVersion('2.0.0'):
                 detname = string.replace(detname,'det','mca')
-            print('** using %s instead. **\n' % detname)
-            return 
+            print("** using '%s' instead. **\n" % detname)
 
-        ## need to ensure detector group... also: should this delete current datasets to be replaced?
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        detgrp = ensure_subgroup(detname,tomogrp)
-        
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-
-        if force:
-            print 'this should delete subgroup/datasets that already exist'
-        else:
-            if False: ## check if exists
-                print ' exiting'
+        try:
+            detgrp = tomogrp[detname]
+            if force:
+                del tomogrp[detname]
+                self.h5root.flush()
+            else:
+                print('%s already exists in xrmmap/tomo. Need to force overwrite.' % detname)
                 return
+        except:
+            pass
+        detgrp = ensure_subgroup(detname,tomogrp)
 
         omega = self.get_rotation_axis()
+        x = self.get_translation_axis()
         center = self.get_tomography_center()
+        sino,order = reshape_sinogram(self.xrmmap[detname]['counts'],x,omega)
 
-        print 'calculating... - need to run reshape on data..., right?'
-        print self.xrmamp[detname]['counts'].shape
-#         center,tomo = tomo_reconstruction(self.xrmamp[detname]['counts'].value, 
-#                                           omega=omega, center=center, **kws)
+        center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
+                                          sinogram_order=order, **kws)
+                                          
+        detgrp.create_dataset('counts', data=tomo)
+        for datatag in ('energy','q'):
+            try:
+                detgrp.create_dataset(datatag, data=self.xrmmap[detname][datatag])
+            except:
+                pass
 
-#         tomogrp.create_dataset(detname, data=tomo )
+        
 
     def claim_hostid(self):
         "claim ownership of file"
