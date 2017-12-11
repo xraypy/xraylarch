@@ -245,11 +245,11 @@ class ProcessPanel(wx.Panel):
         self.xas_step = FloatCtrl(xas, value=0, action=self.onSet_XASStep, **opts)
 
         opts['precision'] = 1
-        opts['action'] =  self.UpdatePlot
-        self.xas_pre1 = FloatCtrl(xas, value=-200, **opts)
+        opts['action']    = self.UpdatePlot
+        self.xas_pre1 = FloatCtrl(xas, value=None, **opts)
         self.xas_pre2 = FloatCtrl(xas, value= -30, **opts)
         self.xas_nor1 = FloatCtrl(xas, value=  50, **opts)
-        self.xas_nor2 = FloatCtrl(xas, value= -50, **opts)
+        self.xas_nor2 = FloatCtrl(xas, value=None, **opts)
 
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
@@ -262,7 +262,6 @@ class ProcessPanel(wx.Panel):
         def CopyBtn(name):
             return Button(xas, 'Copy', size=(50, 30),
                           action=partial(self.onCopyParam, name))
-
 
         xas.Add(SimpleText(xas, ' XAS Data Processing', **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
@@ -826,7 +825,7 @@ class XYFitFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, size=(875, 550), _larch=None, **kws):
+    def __init__(self, parent=None, size=(925, 600), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
