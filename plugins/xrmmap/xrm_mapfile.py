@@ -2022,7 +2022,7 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, sino, omega=None, center=None, **kws):
+    def save_tomograph(self, detname, omega=None, center=None, force=True, **kws):
         '''
         returns tomo_center, tomo
         '''
@@ -2030,6 +2030,15 @@ class GSEXRM_MapFile(object):
 
         if omega is None: omega = self.get_rotation_axis()
         if center is None: center = self.get_tomography_center()
+        
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        detgrp = ensure_subgroup(detname,tomogrp)
+
+        ## need to ensure detector group... also: should this delete current datasets to be replaced?
+        if force:
+            print 'this should delete subgroup/datasets that already exist'
+
+        self.get_sinogram(roi_name, det=None, trim_sino=False, **kws)
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
 
