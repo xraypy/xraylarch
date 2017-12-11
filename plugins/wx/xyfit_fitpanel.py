@@ -23,7 +23,7 @@ try:
     HAS_MODELSAVE = True
 except ImportError:
     HAS_MODELSAVE = False
-    
+
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
@@ -89,10 +89,6 @@ class AllParamsPanel(wx.Panel):
         #print("User Params: ")
         #for p in self.user_params.values(): print(p)
 
-
-class FitController(object):
-    def __init__(self, **kws):
-        self.components = OrderedDict()
 
 class XYFitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
@@ -178,11 +174,14 @@ class XYFitResultFrame(wx.Frame):
 
         for col in (0, 1, 2, 3):
             this = pview.Columns[col]
+            print(" Column ", this)
             isort, align = True, wx.ALIGN_LEFT
             if col in (1, 2):
                 isort, align = False, wx.ALIGN_RIGHT
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
+
+        print(dir(this))
 
         pview.SetMinSize((650, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
@@ -268,9 +267,7 @@ class XYFitResultFrame(wx.Frame):
         wids['bic'].SetLabel("%f" % result.bic)
         wids['hist_info'].SetLabel("%d" % len(fit_history))
 
-        model_repr = self.parent.fit_model._reprstring(long=True)
-        wids['model_desc'].SetLabel(model_repr)
-
+        wids['model_desc'].SetLabel(result.model_repr)
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for i, param in enumerate(result.params.values()):
@@ -837,26 +834,24 @@ class XYFitPanel(wx.Panel):
         # print(" == fit model == ", self.fit_model)
         # print(" == fit result == ", result)
 
+        result.model_repr = self.fit_model._reprstring(long=True)
+
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
         dgroup.fit_history.append(result)
 
-        model_repr = self.fit_model._reprstring(long=True)
-        report = fit_report(result, show_correl=True,
-                            min_correl=0.25, sort_pars=True)
+        # dgroup.model_repr = self.fit_model._reprstring(long=True)
+        # report = fit_report(result, show_correl=True,
+        #                     min_correl=0.25, sort_pars=True)
 
-        report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
-        self.summary['report'] = report
+        # report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
+        # self.summary['report'] = report
 
-        self.controller.show_report(result)
+        # self.controller.show_report(result)
 
-        if self.parent.result_frame is None:
-            self.parent.result_frame = XYFitResultFrame(parent=self,
-                                                        controller=self.controller,
-                                                        datagroup=dgroup)
-        else:
-            self.parent.result_frame.show(dgroup)
+        self.parent.show_subframe('result_frame', XYFitResultFrame,
+                                  datagroup=dgroup, controller=self.controller)
 
         self.update_start_values(result)
         self.savebtn.Enable()
@@ -887,5 +882,5 @@ class XYFitPanel(wx.Panel):
             return
         if fname is None:
             fname = 'autosave.fitresult'
-        fname = os.path.join(xyfitdir, fname) 
+        fname = os.path.join(xyfitdir, fname)
         save_modelresult(result, fname)
