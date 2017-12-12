@@ -133,6 +133,9 @@ def preedge(energy, mu, e0=None, step=None,
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
+    pre1_input = pre1
+    norm2_input = norm2
+
     if pre1 is None:  pre1  = min(energy) - e0
     if norm2 is None: norm2 = max(energy) - e0
     if norm2 < 0:     norm2 = max(energy) - e0 - norm2
@@ -174,13 +177,12 @@ def preedge(energy, mu, e0=None, step=None,
         edge_step = post_edge[ie0] - pre_edge[ie0]
 
     norm = (mu - pre_edge)/edge_step
-    out = {'e0': e0, 'edge_step': edge_step, 'norm': norm,
-           'pre_edge': pre_edge, 'post_edge': post_edge,
-           'norm_coefs': norm_coefs, 'nvict': nvict,
-           'nnorm': nnorm, 'norm1': norm1, 'norm2': norm2,
-           'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs}
-
-    return out
+    return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
+            'pre_edge': pre_edge, 'post_edge': post_edge,
+            'norm_coefs': norm_coefs, 'nvict': nvict,
+            'nnorm': nnorm, 'norm1': norm1, 'norm2': norm2,
+            'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs,
+            'norm2_input': norm2_input,  'pre1_input': pre1_input}
 
 @ValidateLarchPlugin
 @Make_CallArgs(["energy","mu"])
@@ -303,6 +305,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.pre_edge_details.nnorm  = pre_dat['nnorm']
     group.pre_edge_details.norm1  = pre_dat['norm1']
     group.pre_edge_details.norm2  = pre_dat['norm2']
+    group.pre_edge_details.pre1_input  = pre_dat['pre1_input']
+    group.pre_edge_details.norm2_input  = pre_dat['norm2_input']
     group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
 
