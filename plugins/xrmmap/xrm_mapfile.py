@@ -1790,18 +1790,6 @@ class GSEXRM_MapFile(object):
             del workgroup[name]
             self.h5root.flush()
 
-#     def get_roi_array(self, name):
-#         '''
-#         get an array from the work/roimap group of processed arrays by index or name
-#         '''
-#         workgroup = ensure_subgroup('work',self.xrmmap)
-#         roigroup  = ensure_subgroup('roimap',self.xrmmap)
-#         dat = None
-#         name = h5str(name)
-#         if name in roigroup:
-#             dat = roigroup[name]
-#         return dat
-
     def get_work_array(self, name):
         '''
         get an array from the work group of processed arrays by index or name
@@ -1820,15 +1808,7 @@ class GSEXRM_MapFile(object):
         workgroup = ensure_subgroup('work',self.xrmmap)
         return [h5str(g) for g in workgroup.keys()]
 
-#     def add_recon(self,recon,reconname,tag='xrf'):
-#
-#         recongrp = ensure_subgroup('recon',self.xrmmap)
-#         taggrp = ensure_subgroup(tag,recongrp)
-#
-#         return taggrp.create_dataset(reconname, data=recon)
-
-
-    def add_area(self, mask, name=None, desc=None):
+    def add_area(self, mask, name=None, desc=None, tomo=False):
         '''add a selected area, with optional name
         the area is encoded as a boolean array the same size as the map
 
@@ -1836,57 +1816,64 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        group = self.xrmmap['areas']
+        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        area_grp = ensure_subgroup('areas',base_grp)
         if name is None:
             name = 'area_001'
-        if len(group) > 0:
-            count = len(group)
-            while name in group and count < 9999:
+        if len(area_grp) > 0:
+            count = len(area_grp)
+            while name in area_grp and count < 9999:
                 name = 'area_%3.3i' % (count)
                 count += 1
-        ds = group.create_dataset(name, data=mask)
+        ds = area_grp.create_dataset(name, data=mask)
         if desc is None:
             desc = name
         ds.attrs['description'] = desc
         self.h5root.flush()
         return name
 
-    def export_areas(self, filename=None):
+    def export_areas(self, filename=None, tomo=False):
         '''export areas to datafile '''
         if filename is None:
-            filename = "%s_Areas.npz" % self.filename
-        group = self.xrmmap['areas']
+            file_str = '%s_TomoAreas.npz' if tomo else '%s_Areas.npz'
+            filename = file_str % self.filename
+        
+        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        area_grp = ensure_subgroup('areas',base_grp)
+
         kwargs = {}
-        for aname in group:
-            kwargs[aname] = group[aname][:]
+        for aname in area_grp:
+            kwargs[aname] = area_grp[aname][:]
         np.savez(filename, **kwargs)
         return filename
 
-    def import_areas(self, filename, overwrite=False):
+    def import_areas(self, filename, overwrite=False, tomo=False):
         '''import areas from datafile exported by export_areas()'''
         npzdat = np.load(filename)
-        current_areas = self.xrmmap['areas']
-        othername = os.path.split(filename)[1]
 
-        if othername.endswith('.h5_Areas.npz'):
-            othername = othername.replace('.h5_Areas.npz', '')
+        othername = os.path.split(filename)[1]
+        for npz_str in ('.h5_Areas.npz','.h5_TomoAreas.npz'):
+            if othername.endswith(npz_str):
+                othername = othername.replace(npz_str, '')
+
         for aname in npzdat.files:
             mask = npzdat[aname]
             outname = '%s_%s' % (aname, othername)
-            self.add_area(mask, name=outname, desc=outname)
+            self.add_area(mask, name=outname, desc=outname, tomo=tomo)
 
     def get_area(self, name=None, desc=None, tomo=False):
         '''
         get area group by name or description
         '''
-        group = self.xrmmap['tomo/areas'] if tomo else self.xrmmap['areas']
+        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        area_grp = ensure_subgroup('areas',base_grp)
 
-        if name is not None and name in group:
-            return group[name]
+        if name is not None and name in area_grp:
+            return area_grp[name]
         if desc is not None:
-            for name in group:
-                if desc == group[name].attrs['description']:
-                    return group[name]
+            for name in area_grp:
+                if desc == area_grp[name].attrs['description']:
+                    return area_grp[name]
         return None
 
     def get_area_stats(self, name=None, desc=None):
@@ -2023,7 +2010,7 @@ class GSEXRM_MapFile(object):
         return tomo
 
 
-    def save_tomograph(self, detname, force=True, **kws):
+    def save_tomograph(self, detname, overwrite=True, **kws):
         '''
         saves group for tomograph for selected detector
         '''
@@ -2041,7 +2028,7 @@ class GSEXRM_MapFile(object):
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
             detgrp = tomogrp[detname]
-            if force:
+            if overwrite:
                 del tomogrp[detname]
                 self.h5root.flush()
             else:
