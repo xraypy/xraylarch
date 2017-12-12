@@ -37,7 +37,15 @@ PAR_FIX = 'fix'
 PAR_VAR = 'vary'
 PAR_CON = 'constrain'
 VARY_CHOICES = (PAR_VAR, PAR_FIX, PAR_CON)
-PAR_WIDS = ('name', 'value',  'minval', 'maxval', 'vary', 'expr', 'stderr')
+
+
+BOUNDS_custom = 'custom'
+BOUNDS_none   = 'unbound'
+BOUNDS_pos    = 'positive'
+BOUNDS_neg    = 'negative'
+BOUNDS_CHOICES = (BOUNDS_none, BOUNDS_pos, BOUNDS_neg, BOUNDS_custom)
+
+PAR_WIDS = ('name', 'value',  'minval', 'maxval', 'vary', 'expr', 'stderr', 'bounds')
 class ParameterWidgets(object):
     """a set of related widgets for a lmfit Parameter
 
@@ -46,7 +54,7 @@ class ParameterWidgets(object):
     """
     def __init__(self, parent, param,  name_size=None, prefix=None,
                  expr_size=120, stderr_size=120, float_size=80,
-                 widgets=PAR_WIDS):
+                 minmax_size=60, widgets=PAR_WIDS):
 
         self.parent = parent
         self.param = param
@@ -89,7 +97,7 @@ class ParameterWidgets(object):
                 minval = -np.inf
             self.minval = FloatCtrl(parent, value=minval,
                                     gformat=True,
-                                    size=(float_size, -1),
+                                    size=(minmax_size, -1),
                                     act_on_losefocus=True,
                                     action=self.onMinval)
             self.minval.Enable(vary_choice==PAR_VAR)
@@ -100,7 +108,7 @@ class ParameterWidgets(object):
                 maxval = np.inf
             self.maxval = FloatCtrl(parent, value=maxval,
                                     gformat=True,
-                                    size=(float_size, -1),
+                                    size=(minmax_size, -1),
                                     act_on_losefocus=True,
                                     action=self.onMaxval)
             self.maxval.Enable(vary_choice==PAR_VAR)
@@ -129,6 +137,39 @@ class ParameterWidgets(object):
                 stderr = ''
             self.stderr = wx.StaticText(parent, label=stderr,
                                         size=(stderr_size, -1))
+
+        if 'minval' in widgets or 'maxval' in widgets:
+            minval = param.min
+            maxval = param.max
+            bounds_choice = BOUNDS_custom
+            if minval in (None, 'None', -np.inf) and maxval in (None, 'None', np.inf):
+                bounds_choice = BOUNDS_none
+            elif minval == 0:
+                bounds_choice = BOUNDS_pos
+            elif maxval == 0:
+                bounds_choice = BOUNDS_neg
+
+            self.bounds = Choice(parent, size=(90, -1),
+                                 choices=BOUNDS_CHOICES,
+                                 action=self.onBOUNDSChoice)
+            self.bounds.SetStringSelection(bounds_choice)
+
+    def onBOUNDSChoice(self, evt=None):
+        bounds = str(evt.GetString().lower())
+        if bounds == BOUNDS_custom:
+            pass
+        elif bounds == BOUNDS_none:
+            self.minval.SetValue(-np.inf)
+            self.maxval.SetValue(np.inf)
+            
+        elif bounds == BOUNDS_pos:
+            self.minval.SetValue(0)
+            if float(self.maxval.GetValue()) == 0:
+                self.maxval.SetValue(np.inf)
+        elif bounds == BOUNDS_neg:
+            self.maxval.SetValue(0)
+            if float(self.minval.GetValue()) == 0:
+                self.minval.SetValue(-np.inf)
 
     def onValue(self, evt=None, value=None):
         if value is not None:
@@ -166,6 +207,14 @@ class ParameterWidgets(object):
             self.value.SetMin(value)
             self.value.SetValue(v)
             self.param.min = value
+        if self.bounds is not None:
+            if value == 0:
+                self.bounds.SetStringSelection(BOUNDS_pos)
+            elif value == -np.inf:
+                if self.maxval.GetValue() == np.inf:
+                    self.bounds.SetStringSelection(BOUNDS_none)
+            else:
+                self.bounds.SetStringSelection(BOUNDS_custom)
 
     def onMaxval(self, evt=None, value=None):
         # print "onMaxval " , value, self.value, self.value
@@ -176,6 +225,16 @@ class ParameterWidgets(object):
             self.value.SetMax( value)
             self.value.SetValue(v)
             self.param.max = value
+
+        if self.bounds is not None:
+            if value == 0:
+                self.bounds.SetStringSelection(BOUNDS_neg)
+            elif value == np.inf:
+                if self.minval.GetValue() == -np.inf:
+                    self.bounds.SetStringSelection(BOUNDS_none)
+            else:
+                self.bounds.SetStringSelection(BOUNDS_custom)
+
 
     def onVaryChoice(self, evt=None):
         if self.vary is None:
@@ -197,3 +256,5 @@ class ParameterWidgets(object):
             self.minval.Enable(vary==PAR_VAR)
         if self.maxval is not None:
             self.maxval.Enable(vary==PAR_VAR)
+        if self.bounds is not None:
+            self.bounds.Enable(vary==PAR_VAR)

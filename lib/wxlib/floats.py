@@ -151,8 +151,9 @@ class FloatCtrl(wx.TextCtrl):
             value = wx.TextCtrl.GetValue(self).strip()
         self.__CheckValid(value)
         self.__GetMark()
+        value = set_float(value)
         if value is not None:
-            wx.TextCtrl.SetValue(self, self.format % set_float(value))
+            wx.TextCtrl.SetValue(self, self.format % value)
 
         if self.is_valid and hasattr(self.__action, '__call__') and act:
             self.__action(value=self.__val)
