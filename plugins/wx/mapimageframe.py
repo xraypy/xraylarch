@@ -34,15 +34,6 @@ def get_wxmplot_version():
     wmv = [int(w) for w in wxmplot.__version__ .split('.')]
     return  wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
 
-# 
-# CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
-#                                'Left-Drag to zoom to rectangular box'),
-#                      'lasso': ('Select Points for XRF Spectra\tCtrl+N',
-#                                'Left-Drag to select points freehand'),
-#                      'prof':  ('Select Line Profile\tCtrl+K',
-#                                'Left-Drag to select like for profile')}
-
-
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
