@@ -710,22 +710,18 @@ class GSEXRM_MapFile(object):
         # initialize from filename or folder
         if self.filename is not None:
 
-            print ('a')
             self.status,self.root,self.version = getFileStatus(self.filename, root=root)
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
-                print ('b')
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
                 if '/' in self.folder:
                     self.folder = self.folder.split('/')[-1]
                 ftmp.close()
                 os.unlink(self.filename)
-                print ('c')
 
         if isGSEXRM_MapFolder(self.folder):
-            print ('d')
             self.read_master()
             if self.filename is None:
                 raise GSEXRM_Exception(
@@ -733,59 +729,45 @@ class GSEXRM_MapFile(object):
             self.status, self.root, self.version = \
                 getFileStatus(self.filename, root=root,
                               folder=self.folder)
-            print ('e')
 
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
-            print ('f')
             self.open(self.filename, root=self.root, check_status=False)
             self.reset_flags()
-            print ('g')
             return
 
         # file exists but is not hdf5
         if self.status ==  GSEXRM_FileStatus.err_nothdf5:
-            print ('h')
             raise GSEXRM_Exception(
                 "'%s' is not a readable HDF5 file" % self.filename)
 
         # create empty HDF5 if needed
         if self.status == GSEXRM_FileStatus.empty and os.path.exists(self.filename):
-            print ('i')
             try:
-                print ('j')
                 flines = open(self.filename, 'r').readlines()
                 if len(flines) < 3:
                     os.unlink(self.filename)
-                print ('k')
                 self.status =  GSEXRM_FileStatus.err_notfound
             except (IOError, ValueError):
-                print ('L')
                 pass
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
 
-            print ('m')
             self.read_master()
             if self.status == GSEXRM_FileStatus.wrongfolder:
-                print ('n')
                 self.filename = new_filename(self.filename)
                 cfile = FastMapConfig()
                 cfile.Read(os.path.join(self.folder, self.ScanFile))
                 cfile.config['scan']['filename'] = self.filename
                 # cfile.Save(os.path.join(self.folder, self.ScanFile))
-            print ('o')
             self.h5root = h5py.File(self.filename)
 
-            print ('p')
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
-                print ('q')
                 self.read_master()
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
-            print ('r')
 
             self.notes['h5_create_time'] = isotime(time.time())
 
@@ -795,12 +777,9 @@ class GSEXRM_MapFile(object):
             if 'Version' in self.xrmmap.attrs.keys():
                  self.version = self.xrmmap.attrs['Version']
 
-            print ('s')
             if poni is not None: self.add_calibration(poni,flip)
         else:
-            print ('t')
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-        print ('u')
 
     def __repr__(self):
         fname = ''
@@ -2268,7 +2247,10 @@ class GSEXRM_MapFile(object):
         ## builds detector list
         detlist = get_detectors(self.xrmmap['tomo'])
         
-        dgroup = 'tomo/%s' % detname if detname in detlist else 'tomo/mcasum'
+        if detname in detlist:
+            dgroup = 'tomo/%s' % detname  else 'tomo/mcasum'
+        else:
+            return
         mapdat = self.xrmmap[dgroup]
         ix, iy, nchan = mapdat['counts'].shape
 
