@@ -2675,7 +2675,7 @@ class MapViewerFrame(wx.Frame):
         for i in range(1000):
             gname = 'map%3.3i' % (i+1)
             xgroup = getattr(self.datagroups, gname, None)
-            if xgroup is not None:
+            if xgroup is None:
                 break
             gpar, gfname  = os.path.split(xgroup.filename)
             if gfname == fname:
