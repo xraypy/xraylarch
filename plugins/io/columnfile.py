@@ -4,6 +4,7 @@
 """
 import os
 import time
+import string
 from  dateutil.parser import parse as dateparse
 import numpy as np
 from larch import ValidateLarchPlugin, Group
@@ -174,56 +175,143 @@ def read_ascii(filename, labels=None, simple_labels=False,
             if len(words) > 1:
                 header_attrs[key] = words[1].strip()
 
-    ncols, nrow = data.shape
-
-    # set column labels from label line
-    _labels = None
-    _clabels = ['col%i' % (i+1) for i in range(ncols)]
-    if labels is not None:
-        labels = labels.replace(',', ' ').replace('\t', ' ')
-        _labels = [colname(l) for l in labels.split()]
-    elif simple_labels or _labelline is None:
-        _labels = _clabels
-    else:
-        _labelline = _labelline.lower()
-        for delim in ('\t', ','):
-            if delim in _labelline:
-                _labs = [colname(l) for l in _labelline.split(delim)]
-                if len(_labs) > int(1 + ncols/2.0):
-                    _labels = _labs
-                    break
-        if _labels is None:
-            _labelline = _labelline.replace(', ', '  ').replace('\t', ' ')
-            _labels = [colname(l) for l in _labelline.split()]
-
-    if _labels is None:
-        _labels = _clabels
-    if len(_labels) < ncols:
-        for i in range(len(_labels), ncols):
-            _labels.append("col%i" % (i+1))
-    elif len(_labels) > ncols:
-        _labels = _labels[:ncols]
-
-
-    attrs = {'filename': filename}
-    attrs['column_labels'] = attrs['array_labels'] = _labels
     if sort and sort_column >= 0 and sort_column < ncol:
          data = data[:, np.argsort(data[sort_column])]
 
+    attrs = {'filename': filename}
     group = Group(name='ascii_file %s' % filename,
-                  filename=filename, header=headers, data=data,
-                  array_labels=_labels, column_labels=_labels)
+                  filename=filename,
+                  header=headers,
+                  data=data)
+
     if len(footers) > 0:
         group.footer = footers
-    for i in range(ncols):
-        nam = _labels[i].lower()
-        if nam in ('data', 'array_labels', 'filename',
-                   'attrs', 'header', 'footer'):
-            nam = "%s_" % nam
-        setattr(group, nam, data[i])
+
     group.attrs = Group(name='header attributes from %s' % filename)
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
+
+    set_array_labels(group, labels=labels, simple_labels=simple_labels,
+                     labelline=_labelline)
+
+    return group
+
+def set_array_labels(group, labels=None, labelline=None, delimeter=None,
+                     simple_labels=False, save_oldarrays=False, _larch=None):
+    """set array names for a group from its 2D `data` array.
+
+    Arguments
+    ----------
+      labels (list of strings or None)  array of labels to use
+      labelline (string or None): text to parse for labels
+      delimeter (string or None): delimeter to split labelline (None)
+      simple_labels (bool):   flag to use ('col1', 'col2', ...) [False]
+      save_oldarrays (bool):  flag to save old array names [False]
+
+
+    Returns
+    -------
+       group with newly named attributes of 1D array data, and
+       an updated `array_labels` giving the mapping of `data`
+       columns to attribute names.
+
+    Notes
+    ------
+      1. The order for resolution is: `simple_labels=True`, followed
+         by `labels`, then `labelline`.
+
+      2. When using `labelline`, the `delimeter` will be used to split
+         the line of text. If left as `None`, any whitespace will be used.
+         Also, when using `labelline` and `delimeter`, more than half of
+         the columns must have an explicit label.
+
+      3. Array labels must be valid python names. If not enough labels
+         are specified, or if name clashes arise, the array names may be
+         modified, often by appending an underscore and letter or by using
+         ('col1', 'col2', ...) etc.
+
+      4. When `save_oldarrays` is `False` (the default), arrays named in the
+         current `group.array_labels` will be erased.  Other arrays and
+         attributes will not be changed.
+
+    """
+    if not hasattr(group, 'data'):
+        _larch.writer.write("cannot set array labels for group '%s': no `data`" % repr(group))
+        return
+
+    # clear old arrays, if desired
+    oldlabels = getattr(group, 'array_labels', None)
+    if oldlabels is not None and not save_oldarrays:
+        for attr in oldlabels:
+            if hasattr(group, attr):
+                delattr(group, attr)
+
+    ncols, nrow = group.data.shape
+
+    ####
+    # step 1: determine user-defined labels from input options
+    # generating array `tlabels` for test labelsaZA
+    #
+    # generate simple column labels, used as backup
+    clabels = ['col%i' % (i+1) for i in range(ncols)]
+
+    # convert user input into candidate labels
+    tlabels = None
+    # simple column numbers
+    if simple_labels:
+        tlabels = clabels
+
+    # user specified `labels`:
+    elif labels is not None:
+        labels = labels.replace(',', ' ').replace('\t', ' ')
+        tlabels = [colname(l) for l in labels.split()]
+
+    # try to parse labelline
+    elif labelline is not None:
+        _test = [colname(l) for l in labelline.split(delimeter)]
+        if len(_test) > int(1 + ncols/2.0):
+            tlabels = _test
+        else:
+            tlabels = [colname(l) for l in labelline.split()]
+
+    # if nothing found, use simple column names
+    if tlabels is None:
+        tlabels = clabels
+
+    ####
+    # step 2: check input and correct problems
+
+    # check for not enough and too many labels
+    if len(tlabels) < ncols:
+        for i in range(len(tlabels), ncols):
+            tlabels.append("col%i" % (i+1))
+    elif len(tlabels) > ncols:
+        tlabels = tlabels[:ncols]
+
+    # check for names that clash with group attributes
+    # or that are repeated, append letter.
+    reserved_names = ('data', 'array_labels', 'filename',
+                      'attrs', 'header', 'footer')
+    extras = string.ascii_lowercase
+    labels = []
+    for i in range(ncols):
+        lname = tlabels[i]
+        if lname in reserved_names or lname in labels:
+            lname = lname + '_a'
+            j = 0
+            while lname in labels:
+                j += 1
+                if j == len(extras):
+                    break
+                lname = "%s_%s" % (tlabels[i], extras[j])
+        if lname in labels:
+            lname = cnames[i]
+        labels.append(lname)
+
+    for i, name in enumerate(labels):
+        setattr(group, name, group.data[i])
+
+    group.array_labels = labels
     return group
 
 @ValidateLarchPlugin
@@ -368,6 +456,7 @@ def guess_filereader(filename, _larch=None):
 
 def registerLarchPlugin():
     return (MODNAME, {'read_ascii': read_ascii,
+                      'set_array_labels': set_array_labels,
                       'guess_filereader': guess_filereader,
                       'write_ascii': write_ascii,
                       'write_group': write_group,
