@@ -5,6 +5,7 @@
 import os
 import time
 import string
+import six
 from  dateutil.parser import parse as dateparse
 import numpy as np
 from larch import ValidateLarchPlugin, Group
@@ -54,14 +55,13 @@ def getfloats(txt, allow_times=True):
 def colname(txt):
     return fixName(txt.strip().lower()).replace('.', '_')
 
-
 def iso8601_time(ts):
     tzone = '-%2.2i:00' % (time.timezone/3600)
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
 def read_ascii(filename, labels=None, simple_labels=False,
-               sort=False, sort_column=0, _larch=None):
+               sort=False, sort_column=0, delimeter=None, _larch=None):
     """read a column ascii column file, returning a group containing the data
     extracted from the file.
 
@@ -69,9 +69,10 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     Arguments
     ---------
-     filename (str)           name of file to read
+     filename (str)        name of file to read
      labels (list or None) list of labels to use for column labels [None]
      simple_labels (bool)  whether to force simple column labels (note 1) [False]
+     delimeter (str)       string to use to split label line
      sort (bool)           whether to sort row data (note 2) [False]
      sort_column (int)     column to use for sorting (note 2) [0]
 
@@ -83,16 +84,16 @@ def read_ascii(filename, labels=None, simple_labels=False,
     -----
       1. column labels.  If `labels` is left the default value of `None`,
          column labels will be tried to be created from the line
-         immediately preceeding the data, or using 'col1', 'col2', etc if
-         column labels cannot be figured out.  The labels will be used as
-         names for the 1-d arrays for each column.  If `simple_labels` is
-         `True`, the names 'col1', 'col2' etc will be used regardless of
-         the column labels found in the file.
+         immediately preceeding the data and the provided delimeter, and may
+         use 'col1', 'col2', etc if suitable column labels cannot be figured out.
+         The labels will be used as names for the 1-d arrays for each column.
+         If `simple_labels` is  `True`, the names 'col1', 'col2' etc will be used
+         regardless of the column labels found in the file.
 
       2. sorting.  Data can be sorted to be in increasing order of any column,
          by giving the column index (starting from 0).
 
-      3. header parsing. If header lineas are of the forms of
+      3. header parsing. If header lines are of the forms of
             KEY : VAL
             KEY = VAL
          these will be parsed into a 'attrs' dictionary in the returned group.
@@ -145,8 +146,13 @@ def read_ascii(filename, labels=None, simple_labels=False,
             rowdat  = getfloats(line)
             if ncol is None:
                 ncol = len(rowdat)
-            if ncol == len(rowdat):
-                data.append(rowdat)
+            elif ncol > len(rowdat):
+                rowdat.extend([np.nan]*(ncol-len(rowdat)))
+            elif ncol < len(rowdat):
+                for i in data:
+                    i.extend([np.nan]*(len(rowdat)-ncol))
+                ncol = len(rowdat)
+            data.append(rowdat)
 
     # reverse header, footer, data, convert to arrays
     footers.reverse()
@@ -192,7 +198,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
         setattr(group.attrs, key, val)
 
     set_array_labels(group, labels=labels, simple_labels=simple_labels,
-                     labelline=_labelline)
+                     labelline=_labelline, delimeter=delimeter)
 
     return group
 
@@ -255,40 +261,40 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # generate simple column labels, used as backup
     clabels = ['col%i' % (i+1) for i in range(ncols)]
 
+    # allow labels to really be 'labelline'
+    if isinstance(labels, six.string_types) and labelline is None:
+        labelline = labels
+        labels = None
+
     # convert user input into candidate labels
     tlabels = None
-    # simple column numbers
-    if simple_labels:
-        tlabels = clabels
 
-    # user specified `labels`:
+    # if labelline provided, split with provided delimeter
+    # or the best delimeter of '\t', ',', '|', or whitespace
+    delim = delimeter
+    if labelline is not None:
+        if delim is None:
+            for dtest in ('\t', ',', '|', '&'):
+                if  labelline.count(dtest) > int(ncols/2.0):
+                    delim = dtest
+                    break
+        tlabels = [colname(l) for l in labelline.split(delim)]
     elif labels is not None:
-        labels = labels.replace(',', ' ').replace('\t', ' ')
-        tlabels = [colname(l) for l in labels.split()]
-
-    # try to parse labelline
-    elif labelline is not None:
-        _test = [colname(l) for l in labelline.split(delimeter)]
-        if len(_test) > int(1 + ncols/2.0):
-            tlabels = _test
-        else:
-            tlabels = [colname(l) for l in labelline.split()]
-
-    # if nothing found, use simple column names
-    if tlabels is None:
+        tlabels = labels
+    # if simple column names requested or above failed, use simple column names
+    if simple_labels or tlabels is None:
         tlabels = clabels
 
     ####
     # step 2: check input and correct problems
-
-    # check for not enough and too many labels
+    # 2.a: check for not enough and too many labels
     if len(tlabels) < ncols:
         for i in range(len(tlabels), ncols):
             tlabels.append("col%i" % (i+1))
     elif len(tlabels) > ncols:
         tlabels = tlabels[:ncols]
 
-    # check for names that clash with group attributes
+    # 2.b: check for names that clash with group attributes
     # or that are repeated, append letter.
     reserved_names = ('data', 'array_labels', 'filename',
                       'attrs', 'header', 'footer')
@@ -308,9 +314,10 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
             lname = cnames[i]
         labels.append(lname)
 
+    ####
+    # step 3: assign attribue names, set 'array_labels'
     for i, name in enumerate(labels):
         setattr(group, name, group.data[i])
-
     group.array_labels = labels
     return group
 
