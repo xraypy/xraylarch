@@ -118,7 +118,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     text = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
 
-    _labelline = None
+    labelline = None
     ncol = None
     data, footers, headers = [], [], []
 
@@ -134,9 +134,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
             section = 'DATA'
         elif section == 'DATA' and None in getfloats(line):
             section = 'HEADER'
-            _labelline = line
-            if _labelline[0] in COMMENTCHARS:
-                _labelline = _labelline[1:].strip()
+            labelline = line
+            if labelline[0] in COMMENTCHARS:
+                labelline = labelline[1:].strip()
         # act of current section:
         if section == 'FOOTER':
             footers.append(line)
@@ -197,8 +197,11 @@ def read_ascii(filename, labels=None, simple_labels=False,
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
 
+    if isinstance(labels, six.string_types):
+        labelline = labels
+        labels = None
     set_array_labels(group, labels=labels, simple_labels=simple_labels,
-                     labelline=_labelline, delimeter=delimeter)
+                     labelline=labelline, delimeter=delimeter)
 
     return group
 
@@ -261,7 +264,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # generate simple column labels, used as backup
     clabels = ['col%i' % (i+1) for i in range(ncols)]
 
-    # allow labels to really be 'labelline'
+    # allow labels to really be 'labelline
     if isinstance(labels, six.string_types) and labelline is None:
         labelline = labels
         labels = None
