@@ -345,7 +345,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.set_det_choices(self.xrmmap)
         self.set_workarray_choices(self.xrmmap)
 
-        for vfile in self.varfile.values(): vfile.SetSelection(-1)
+        for vfile in self.varfile.values(): 
+            vfile.SetSelection(-1)
 
     def set_det_choices(self, xrmmap, varname=None):
 
@@ -2668,34 +2669,24 @@ class MapViewerFrame(wx.Frame):
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_MULTIPLE)
-                            #style=wx.FD_OPEN)
         path, read = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
             paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
         dlg.Destroy()
 
-        if read:
-            for path in paths:
-                read2 = read
-                if path in self.filemap:
-                    read2 = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
-                                                   'Re-read file?', style=wx.YES_NO))
-                if read2:
-                    xrmfile = GSEXRM_MapFile(filename=str(path))
-                    self.add_xrmfile(xrmfile)
+        if not read: 
+            return 
 
-
-#             path = dlg.GetPath().replace('\\', '/')
-#             if path in self.filemap:
-#                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
-#                                            'Re-read file?', style=wx.YES_NO))
-#
-#         dlg.Destroy()
-#
-#         if read:
-#             xrmfile = GSEXRM_MapFile(filename=str(path))
-#             self.add_xrmfile(xrmfile)
+        for path in paths:
+            parent, fname = os.path.split(path)
+            read = True
+            if fname in self.filemap:
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
+                                           'Re-read file?', style=wx.YES_NO))
+            if read:
+                xrmfile = GSEXRM_MapFile(filename=str(path))
+                self.add_xrmfile(xrmfile)
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
@@ -2731,15 +2722,20 @@ class MapViewerFrame(wx.Frame):
             self.add_xrmfile(xrmfile)
 
     def add_xrmfile(self, xrmfile):
-        gname = 'map001'
-        count, maxcount = 1, 999
-        while hasattr(self.datagroups, gname) and count < maxcount:
-            count += 1
-            gname = 'map%3.3i' % count
-        setattr(self.datagroups, gname, xrmfile)
-
         parent, fname = os.path.split(xrmfile.filename)
 
+        # look for group with this name or for next available group
+        for i in range(1000):
+            gname = 'map%3.3i' % (i+1)
+            xgroup = getattr(self.datagroups, gname, None)
+            if xgroup is None:
+                break
+            gpar, gfname  = os.path.split(xgroup.filename)
+            if gfname == fname:
+                break
+                    
+        setattr(self.datagroups, gname, xrmfile)
+        
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():
