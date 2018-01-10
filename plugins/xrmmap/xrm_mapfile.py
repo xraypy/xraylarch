@@ -2248,8 +2248,9 @@ class GSEXRM_MapFile(object):
         detlist = get_detectors(self.xrmmap['tomo'])
         
         if detname in detlist:
-            dgroup = 'tomo/%s' % detname  else 'tomo/mcasum'
+            dgroup = 'tomo/%s' % detname
         else:
+            #dgroup = 'tomo/mcasum'
             return
         mapdat = self.xrmmap[dgroup]
         ix, iy, nchan = mapdat['counts'].shape
