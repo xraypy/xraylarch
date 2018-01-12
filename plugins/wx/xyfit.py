@@ -765,7 +765,7 @@ class XYFitController():
 
         dgroup = self.get_group(groupname)
         if not hasattr(dgroup, 'xdat'):
-            # print("Cannot plot group ", groupname)
+            print("Cannot plot group ", groupname)
 
         if dgroup.datatype == 'xas':
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
