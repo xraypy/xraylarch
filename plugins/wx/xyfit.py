@@ -625,7 +625,7 @@ class XYFitController():
         """save configuration"""
         conf = group2dict(self.larch.symtable._sys.xyfit)
         conf.pop('__name__')
-        # print("Saving configureation: ", self.config_file, conf)
+        # print("Saving configuration: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
@@ -1088,7 +1088,7 @@ class XYFitFrame(wx.Frame):
                 pass
 
         for name, wid in self.subframes.items():
-            print (" Sub ", name,  wid)
+            # print (" Sub ", name,  wid)
             if wid is not None:
                 try:
                     wid.Destroy()
