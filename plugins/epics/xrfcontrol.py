@@ -152,6 +152,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.onConnectEpics(event=None, prefix=prefix)
 
+        self.icon_file = os.path.join(larch.site_config.larchdir,
+                                      'icons', 'ptable.ico')
+
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
 
@@ -359,6 +362,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         sizer.Add(hline,      0, style, 1)
         sizer.Add(bsizer,     1, style, 1)
         pack(self, sizer)
+
+        try:
+            self.SetIcon(wx.Icon(self.icon_file, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
 
         self.set_roilist(mca=None)
 
