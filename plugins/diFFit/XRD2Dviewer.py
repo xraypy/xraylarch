@@ -358,6 +358,11 @@ class diFFit2DFrame(wx.Frame):
             elif flag=='down':     j = j - 1
             elif flag=='vslider':  j = self.vrt_frm_sldr.GetValue()
 
+            if i < 0: i = self.open_image[img_no].iframes + i
+            if j < 0: j = self.open_image[img_no].jframes + j
+            if i > self.open_image[img_no].iframes: i = i - self.open_image[img_no].iframes
+            if j > self.open_image[img_no].jframes: j = j - self.open_image[img_no].jframes            
+
             self.raw_img =  self.open_image[img_no].get_image(i=i,j=j)
 
             self.hrz_frm_sldr.SetValue(i)
