@@ -318,11 +318,36 @@ class diFFit2DFrame(wx.Frame):
             iname = os.path.split(path)[-1]
             self.plot2Dxrd(iname, image, path=path, h5file=xrmfile)
 
+    def close2Dxrd(self,event=None):
+
+        img_no = self.ch_img.GetSelection()
+        try:
+            print('Closing XRD image file:\n\t%s' % self.open_image[img_no].path)
+            try:
+                self.open_image[img_no].h5file.close()
+            except:
+                pass
+            del self.open_image[img_no]
+        except:
+            pass
+        
+        self.ch_img.Set([image.label for image in self.open_image])
+        if len(self.open_image) > 0:
+            self.ch_img.SetSelection(0)
+            self.selectIMAGE()
+        else:
+            self.clearIMAGE()
+            
+
     def plot2Dxrd(self,iname,image,path='',h5file=None):
 
         self.write_message('Displaying image: %s' % iname, panel=0)
 
-        self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
+        try:
+            self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
+        except:
+            self.write_message('Image failed to load.', panel=0)
+            return
 
         self.ch_img.Set([image.label for image in self.open_image])
         self.ch_img.SetStringSelection(iname)
@@ -369,6 +394,14 @@ class diFFit2DFrame(wx.Frame):
             self.vrt_frm_sldr.SetValue(j)
             self.displayIMAGE(auto_contrast=False,unzoom=False)#unzoom=True)
 
+    def clearIMAGE(self):
+    
+        try:
+            self.xrd2Dviewer.plot2D.clear()
+            self.xrd2Dviewer.plot2D.redraw()
+        except:
+            pass
+    
     def displayIMAGE(self,auto_contrast=True,unzoom=False):
 
         self.flipIMAGE()
@@ -406,9 +439,11 @@ class diFFit2DFrame(wx.Frame):
         self.raw_img = self.open_image[img_no].get_image()
 
         self.write_message('Displaying image: %s' % self.open_image[img_no].label, panel=0)
-
-        self.displayIMAGE(auto_contrast=False,unzoom=True)
-        self.setContrast()
+        try:
+            self.displayIMAGE(auto_contrast=False,unzoom=True)
+            self.setContrast()
+        except:
+            self.write_message('Image failed to load.', panel=0)
 
     def onChangeXscale(self,event=None):
 
@@ -940,7 +975,9 @@ class diFFit2DFrame(wx.Frame):
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Load &background image', '', self.openBkgd)
         MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', self.clearBkgd)
-
+        ProcessMenu.AppendSeparator()
+        MenuItem(self, ProcessMenu, 'Close current image', '', self.close2Dxrd)
+        
         menubar.Append(ProcessMenu, '&Process')
 
         ###########################
