@@ -828,13 +828,14 @@ class TomographyPanel(GridPanel):
     def onShowTomograph(self, event=None, new=True):
 
         xrmfile = self.owner.current_file
+        tomo_center = self.center_value.GetValue()
 
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
 
         args = {'refine_center'  : self.refine_center.GetValue(),
                 'center_range'   : self.center_range.GetValue(),
-                'center'         : self.center_value.GetValue(),
+                'center'         : tomo_center,
                 'tomo_alg'       : [self.alg_choice[0].GetStringSelection(),
                                     self.alg_choice[1].GetStringSelection(),
                                     self.alg_choice[2].GetStringSelection()],
