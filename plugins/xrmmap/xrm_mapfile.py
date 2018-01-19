@@ -3142,7 +3142,7 @@ class GSEXRM_MapFile(object):
         roi_names.pop(iroi)
 
 
-def update_xrmmap(xrmmap):
+def update_xrmmap_file(xrmmap):
     '''update dataset names, version, etc. in xrmmap file'''
     
     try:
