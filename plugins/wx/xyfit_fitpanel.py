@@ -57,7 +57,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
-MIN_CORREL = 0.10
+MIN_CORREL = 0.0010
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -91,7 +91,7 @@ class XYFitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
-                          style=FRAMESTYLE, size=(575, 650), **kws)
+                          style=FRAMESTYLE, size=(600, 675), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
@@ -159,13 +159,12 @@ class XYFitResultFrame(wx.Frame):
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 2), LCEN)
+        sizer.Add(title, (irow, 0), (1, 1), LCEN)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with Best Fit Values',
-                                          size=(300, -1), action=self.onCopyParams)
+                                          size=(250, -1), action=self.onCopyParams)
 
-        irow += 1
-        sizer.Add(self.wids['copy_params'], (irow, 0), (1, 2), LCEN)
+        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LCEN)
 
         dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
@@ -193,10 +192,22 @@ class XYFitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, CORREL_HEAD % MIN_CORREL,  font=Font(12),
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
+        self.wids['all_correl'] = Button(panel, 'Show All',
+                                          size=(100, -1), action=self.onAllCorrel)
+
+        self.wids['min_correl'] = FloatCtrl(panel, value=MIN_CORREL,
+                                            minval=0, size=(60, -1), gformat=True)
+
+        ctitle = SimpleText(panel, 'minimum correlation: ')
+        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
 
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=dvstyle)
 
@@ -237,6 +248,8 @@ class XYFitResultFrame(wx.Frame):
             return
         item = self.wids['params'].GetSelectedRow()
         pname = self.wids['paramsdata'][item]
+
+        cormin= self.wids['min_correl'].GetValue()
         self.wids['correl'].DeleteAllItems()
 
         fit_history = getattr(self.datagroup, 'fit_history', [])
@@ -245,8 +258,35 @@ class XYFitResultFrame(wx.Frame):
         if this.correl is not None:
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
-                if abs(corval) > MIN_CORREL:
+                if abs(corval) > cormin:
                     self.wids['correl'].AppendItem((pname, name, "% .3f" % corval))
+
+    def onAllCorrel(self, evt=None):
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        params = fit_history[-1].params
+        parnames = list(params.keys())
+
+        cormin= self.wids['min_correl'].GetValue()
+        correls = {}
+        for i, name in enumerate(parnames):
+            par = params[name]
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                # print(par, par.correl)
+                for name2 in parnames[i+1:]:
+                    if (name != name2 and name2 in par.correl and
+                            abs(par.correl[name2]) > cormin):
+                        correls["%s$$%s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+
+        self.wids['correl'].DeleteAllItems()
+
+        for namepair, corval in sort_correl:
+            name1, name = namepair.split('$$')
+            self.wids['correl'].AppendItem((name1, name2, "% .3f" % corval))
 
     def onCopyParams(self, evt=None):
         fit_history = getattr(self.datagroup, 'fit_history', [])
