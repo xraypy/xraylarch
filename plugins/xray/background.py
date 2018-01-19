@@ -211,7 +211,7 @@ class XrayBackground:
             else:
                 scratch = tmp
                 slope = slope * compress
-                nchans = nchans / compress
+                nchans = len(scratch) #nchans / compress
                 
         # Copy scratch spectrum to background spectrum
         bckgnd = scratch[:]

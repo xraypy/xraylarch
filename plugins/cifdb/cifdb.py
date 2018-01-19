@@ -9,6 +9,7 @@ import requests
 import numpy as np
 
 from itertools import groupby
+from distutils.version import StrictVersion
 
 import larch
 from larch_plugins.xrd import peaklocater,create_cif,SPACEGROUPS,lambda_from_E
@@ -96,15 +97,15 @@ def iscifDB(dbname):
     _tables = ('ciftbl',
                'elemtbl',
                'nametbl',
-               'formtbl',
+               #'formtbl',
                'spgptbl',
                'symtbl',
                'authtbl',
                'qtbl',
                'cattbl',
                'symref',
-               'compref',
-               'qref',
+               #'compref',
+               #'qref',
                'authref',
                'catref')
     result = False
@@ -159,6 +160,7 @@ class cifDB(object):
     def __init__(self, dbname=None, read_only=True,verbose=False):
 
         ## This needs to be modified for creating new if does not exist.
+        self.version='0.0.0'
         self.dbname=dbname
         if verbose:
             print('\n\n================ %s ================\n' % self.dbname)
@@ -193,30 +195,31 @@ class cifDB(object):
         ciftbl  = tables['ciftbl']
         elemtbl = tables['elemtbl']
         nametbl = tables['nametbl']
-        formtbl = tables['formtbl']
         spgptbl = tables['spgptbl']
         symtbl  = tables['symtbl']
         authtbl = tables['authtbl']
         qtbl    = tables['qtbl']
         cattbl  = tables['cattbl']
         symref  = tables['symref']
-        compref = tables['compref']
-        qref    = tables['qref']
         authref = tables['authref']
-        catref  = tables['catref']
+        catref  = tables['catref']        
+        
+        try:
+            formtbl = tables['formtbl']
+            compref = tables['compref']
+            qref    = tables['qref']
+            self.version = '0.0.2'
+        except:
+            self.version = '0.0.1'
+            formtbl, compref, qref = None, None, None
+
+
 
         ## Define mappers
         clear_mappers()
-        mapper(ElementTable, elemtbl, properties=dict(
-                 a=relationship(ElementTable, secondary=compref,
-                 primaryjoin=(compref.c.z == elemtbl.c.z),
-                 secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
         mapper(MineralNameTable, nametbl, properties=dict(
                  a=relationship(MineralNameTable, secondary=ciftbl,
                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-        mapper(ChemicalFormulaTable, nametbl, properties=dict(
-                 a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-                 primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
         mapper(SpaceGroupTable, spgptbl, properties=dict(
                  a=relationship(SpaceGroupTable, secondary=symref,
                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
@@ -228,16 +231,21 @@ class cifDB(object):
         mapper(AuthorTable, authtbl, properties=dict(
                  a=relationship(AuthorTable, secondary=authref,
                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
-        mapper(QTable, qtbl, properties=dict(
-                 a=relationship(QTable, secondary=qref,
-                 primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
         mapper(CategoryTable, cattbl, properties=dict(
                  a=relationship(CategoryTable, secondary=catref,
                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
-#         mapper(CIFTable, ciftbl, properties=dict(
-#                  a=relationship(CIFTable, secondary=compref,
-#                  primaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id),
-#                  secondaryjoin=(compref.c.z == elemtbl.c.z))))
+
+        if StrictVersion(self.version) >= StrictVersion('0.0.2'):
+            mapper(ElementTable, elemtbl, properties=dict(
+                     a=relationship(ElementTable, secondary=compref,
+                     primaryjoin=(compref.c.z == elemtbl.c.z),
+                     secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
+            mapper(QTable, qtbl, properties=dict(
+                     a=relationship(QTable, secondary=qref,
+                     primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
+            mapper(ChemicalFormulaTable, nametbl, properties=dict(
+                     a=relationship(ChemicalFormulaTable, secondary=ciftbl,
+                     primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
 
         self.load_database()
         self.axis = np.array([float(q[0]) for q in self.query(self.qtbl.c.q).all()])
@@ -736,14 +744,9 @@ class cifDB(object):
         if no_qpeaks:
             print(' No. q-peaks in range : %s' % no_qpeaks)
 
-        for i,author in enumerate(authors):
-            try:
-                if i == 0:
-                    authorstr = ' Author(s): ' % (author.split()[0])
-                else:
-                    authorstr = '%s, %s' % (authorstr,author.split()[0])
-            except:
-                pass
+        authorstr = ' Author(s): '
+        for author in authors:
+             authorstr = '%s %s' % (authorstr,author.split()[0])
         print(authorstr)
         print(' ===================== ')
         print('')
