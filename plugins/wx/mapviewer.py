@@ -857,7 +857,7 @@ class TomographyPanel(GridPanel):
             title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
 
         if len(self.owner.tomo_displays) == 0 or new:
-            iframe = self.owner.add_tomodisplay(title, _cursorlabels=False, _savecallback=False)
+            iframe = self.owner.add_tomodisplay(title)
 
         ## for one color plot
         if sino.shape[0] == 1: sino = sino[0]
@@ -2224,6 +2224,10 @@ class MapViewerFrame(wx.Frame):
         self.sel_mca = xrmfile.get_mca_area(aname,det=det)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
+
+        if xrmfile is None:
+            xrmfile = self.current_file
+
         ny, nx = xrmfile.get_shape()
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             ym, xm = mask.shape
@@ -2343,40 +2347,21 @@ class MapViewerFrame(wx.Frame):
                                       notes=json.dumps(notes))
 
 
-    def add_tomodisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
+    def add_tomodisplay(self, title, det=None, _lassocallback=True):
 
-        cursor_labels = self.cursor_menulabels if _cursorlabels else None
-        lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
-        save_callback = self.onSavePixel if _savecallback else None
+        lasso_cb = partial(self.lassoHandler, det=det) if _lassocallback else None
 
         imframe = TomographyFrame(output_title   = title,
-                                  lasso_callback = lasso_cb,
-                                  cursor_labels  = cursor_labels,
-                                  #move_callback  = self.move_callback,
-                                  save_callback  = save_callback)
-
+                                  lasso_callback = lasso_cb)
 
         self.tomo_displays.append(imframe)
 
     def display_tomo(self, sino, tomo, title='', info='', x=None, y=None, xoff=0, yoff=0,
                     det=None, subtitles=None, xrmfile=None,
-                    _cursorlabels=True, _savecallback=True):
-        
-        print 'in mapviewer'
-        print '_cursorlabels',_cursorlabels
-        print 'self.lassoHandler',self.lassoHandler
+                    _lassocallback=True):
         
         displayed = False
-        
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
-        save_callback = self.onSavePixel if _savecallback else None
-
-        print
-        print 'lasso_cb',lasso_cb
-        print 'save_callback',save_callback
-        print 'title',title
-        print
-        print
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _lassocallback else None
 
         while not displayed:
             try:
@@ -2386,9 +2371,7 @@ class MapViewerFrame(wx.Frame):
                 displayed = True
             except IndexError:
                 tmd = TomographyFrame(output_title   = title,
-                                      lasso_callback = lasso_cb,
-                                      #move_callback  = self.move_callback,
-                                      save_callback  = save_callback)
+                                      lasso_callback = lasso_cb)
                 tmd.display(sino, tomo) #title=title
                 displayed = True
             except PyDeadObjectError:

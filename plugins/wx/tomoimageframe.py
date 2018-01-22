@@ -96,8 +96,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=True, move_callback=None, save_callback=None,
-                 show_xsections=False, cursor_labels=None,
+                 lasso_callback=True, 
                  output_title='Image', subtitles=None,
                  user_menus=None, **kws):
 
@@ -106,8 +105,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.user_menus = user_menus
         self.cursor_menulabels =  {}
         self.cursor_menulabels.update(CURSOR_MENULABELS)
-        if cursor_labels is not None:
-            self.cursor_menulabels.update(cursor_labels)
             
         self.img_label = ['Sinogram', 'Tomograph']
 
@@ -115,8 +112,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.det = None
         self.xrmfile = None
         self.map = None
-        self.move_callback = move_callback
-        self.save_callback = save_callback
         self.wxmplot_version = get_wxmplot_version()
 
         BaseFrame.__init__(self, parent=parent,
@@ -424,10 +419,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onCursorMode(self, event=None, mode='zoom'):
 
-        print 'MODE:',mode
-       
         choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
-        print 'CHOICE:',choice
         for ipanel in self.img_panel:
             ipanel.cursor_mode = mode
             if event is not None:
@@ -435,7 +427,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     ipanel.cursor_mode = 'lasso'
                 elif choice.startswith('Show Line'):
                     ipanel.cursor_mode = 'prof'
-        print 'AND...',ipanel.cursor_mode
+
+        print 'MODE:',mode
+        print 'CHOICE:',choice
+        print 'ipanel.cursor_mode',ipanel.cursor_mode
         print
 
     def onProject(self, event=None, mode='y'):
@@ -591,16 +586,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                          'Pick Area for XRF/XRD Spectra',
                          'Show Line Profile')
                          
-        print
-        print 'lasso_callback',self.lasso_callback
-        print 'zoom_opts',zoom_opts
-        print 
-        print 'version'
-        print self.wxmplot_version
-        print self.wxmplot_version > 0.921
-        print
-        print
-        
         if self.wxmplot_version > 0.921:
             cpanel = wx.Panel(panel)
             if sizer is None:
@@ -613,13 +598,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
             sizer.Add(self.zoom_mode, 1, labstyle, 4)
 
-            if self.save_callback is not None:
-                sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle), 0, labstyle, 3)
-                self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
-                                            style=wx.TE_PROCESS_ENTER)
-                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-                sizer.Add(self.pos_name, 0, labstyle, 3)
-
             pack(cpanel, sizer)
             return cpanel
         else:  # support older versions of wxmplot, will be able to deprecate
@@ -631,22 +609,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                                          zoom_opts, 1, wx.RA_SPECIFY_COLS)
             self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
             sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-            if self.save_callback is not None:
-                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
-                                            style=wx.TE_PROCESS_ENTER)
-                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-                label   = SimpleText(panel, label='Save Position:',
-                                     size=(-1, -1))
-                sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
-                sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
-
-            # if self.move_callback is not None:
-            #    mbutton = Button(panel, 'Move to Position', size=(100, -1),
-            #                     action=self.onMoveToPixel)
-            #    irow  = irow + 2
-            #    sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
-
-
 
     def onContrastConfig(self, event=None):
         
@@ -722,8 +684,24 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             ipanel.redraw()
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
+
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
+
+        print 'HERE IS WHERE I NEED TO WORK.'
+## will need something like:
+#         for ipanel in self.img_panel:
+
+## FROM mapimageframe
+#         if hasattr(self.lasso_callback , '__call__'):
+# 
+#             self.lasso_callback(data=data, selected=selected, mask=mask,
+#                                 xoff=self.xoff, yoff=self.yoff, det=self.det,
+#                                 xrmfile=self.xrmfile, **kws)
+# 
+#         self.zoom_mode.SetSelection(0)
+#         self.panel.cursor_mode = 'zoom'
+
 
     def onDataChange(self, data, x=None, y=None, col='int', **kw):
 
