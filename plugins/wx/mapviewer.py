@@ -2349,7 +2349,12 @@ class MapViewerFrame(wx.Frame):
         lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
         save_callback = self.onSavePixel if _savecallback else None
 
-        imframe = TomographyFrame()
+        imframe = TomographyFrame(output_title   = title,
+                                  lasso_callback = lasso_cb,
+                                  cursor_labels  = cursor_labels,
+                                  #move_callback  = self.move_callback,
+                                  save_callback  = save_callback)
+
 
         self.tomo_displays.append(imframe)
 
@@ -2357,11 +2362,21 @@ class MapViewerFrame(wx.Frame):
                     det=None, subtitles=None, xrmfile=None,
                     _cursorlabels=True, _savecallback=True):
         
+        print 'in mapviewer'
+        print '_cursorlabels',_cursorlabels
+        print 'self.lassoHandler',self.lassoHandler
+        
         displayed = False
         
-        cursor_labels = self.cursor_menulabels if _cursorlabels else None
         lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
         save_callback = self.onSavePixel if _savecallback else None
+
+        print
+        print 'lasso_cb',lasso_cb
+        print 'save_callback',save_callback
+        print 'title',title
+        print
+        print
 
         while not displayed:
             try:
@@ -2370,7 +2385,10 @@ class MapViewerFrame(wx.Frame):
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
-                tmd = TomographyFrame()
+                tmd = TomographyFrame(output_title   = title,
+                                      lasso_callback = lasso_cb,
+                                      #move_callback  = self.move_callback,
+                                      save_callback  = save_callback)
                 tmd.display(sino, tomo) #title=title
                 displayed = True
             except PyDeadObjectError:

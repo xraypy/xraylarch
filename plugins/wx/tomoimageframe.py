@@ -302,8 +302,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                                                           self.name2, d2)
             self.write_message(msg, panel=0)
 
-            if callable(self.cursor_callback):
-                self.cursor_callback(x=event.xdata, y=event.ydata)
+            #if callable(self.cursor_callback):
+            #    self.cursor_callback(x=event.xdata, y=event.ydata)
 
     def set_subtitles(self, red=None, green=None, blue=None, **kws):
         if self.config_mode.startswith('int') and red is not None:
@@ -591,10 +591,14 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                          'Pick Area for XRF/XRD Spectra',
                          'Show Line Profile')
                          
+        print
+        print 'lasso_callback',self.lasso_callback
+        print 'zoom_opts',zoom_opts
         print 
         print 'version'
         print self.wxmplot_version
         print self.wxmplot_version > 0.921
+        print
         print
         
         if self.wxmplot_version > 0.921:
