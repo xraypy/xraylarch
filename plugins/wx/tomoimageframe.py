@@ -424,7 +424,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onCursorMode(self, event=None, mode='zoom'):
 
+        print 'MODE:',mode
+       
         choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
+        print 'CHOICE:',choice
         for ipanel in self.img_panel:
             ipanel.cursor_mode = mode
             if event is not None:
@@ -432,6 +435,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     ipanel.cursor_mode = 'lasso'
                 elif choice.startswith('Show Line'):
                     ipanel.cursor_mode = 'prof'
+        print 'AND...',ipanel.cursor_mode
+        print
 
     def onProject(self, event=None, mode='y'):
 
@@ -586,6 +591,12 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                          'Pick Area for XRF/XRD Spectra',
                          'Show Line Profile')
                          
+        print 
+        print 'version'
+        print self.wxmplot_version
+        print self.wxmplot_version > 0.921
+        print
+        
         if self.wxmplot_version > 0.921:
             cpanel = wx.Panel(panel)
             if sizer is None:
