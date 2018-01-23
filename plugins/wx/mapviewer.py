@@ -2258,6 +2258,31 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
 
+        ######
+#         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
+#         mca_thread = Thread(target=self.get_mca_area,
+#                             args=(mask,), kwargs=kwargs)
+#         mca_thread.start()
+#         self.show_XRFDisplay()
+#         mca_thread.join()
+# 
+#         ## this is new
+        print 'adding xrd?'
+#         if hasattr(self, 'sel_xrd'):
+#             path, fname = os.path.split(xrmfile.filename)
+#             aname = self.sel_mca.areaname
+#             area  = xrmfile.xrmmap['areas/%s' % aname]
+#             npix  = len(area.value[np.where(area.value)])
+#             self.sel_mca.filename = fname
+#             self.sel_mca.title = aname
+#             self.sel_mca.npixels = npix
+#             self.xrfdisplay.plotmca(self.sel_mca)
+# 
+#             for p in self.nbpanels:
+#                 if hasattr(p, 'update_xrmmap'):
+#                     p.update_xrmmap(xrmfile=self.current_file)
+
+
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
         if xrmfile is None:
