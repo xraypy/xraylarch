@@ -97,7 +97,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def __init__(self, parent=None, size=None, mode='intensity',
                  lasso_callback=True, 
-                 output_title='Image', subtitles=None,
+                 output_title='Tomography Display Frame', subtitles=None,
                  user_menus=None, **kws):
 
         if size is None: size = (1500, 600)
@@ -107,7 +107,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.cursor_menulabels.update(CURSOR_MENULABELS)
             
         self.img_label = ['Sinogram', 'Tomograph']
-
+        self.title = output_title
 
         self.det = None
         self.xrmfile = None
@@ -115,7 +115,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.wxmplot_version = get_wxmplot_version()
 
         BaseFrame.__init__(self, parent=parent,
-                           title  = 'Image Display Frame',
+                           title  = output_title,
                            output_title=output_title,
                            size=size, **kws)
 
@@ -169,8 +169,23 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.Build_ConfigPanel()
 
         for ilabel, ipanel in zip(self.img_label,self.img_panel):
-            ipanel.report_leftdown = partial(self.report_leftdown, name=ilabel)
+        #for ipanel in self.img_panel:
+            kwargs = {'name':ilabel,'panel':ipanel}
+            
+            ipanel.add_cursor_mode('prof', 
+                                   motion   = partial(self.prof_motion,   **kwargs),
+                                   leftdown = partial(self.prof_leftdown, **kwargs),
+                                   leftup   = partial(self.prof_leftup,   **kwargs))
+            ipanel.report_leftdown = partial(self.report_leftdown, **kwargs)
             ipanel.messenger = self.write_message
+
+
+        self.prof_plotter = None
+        self.zoom_ini =  None
+        self.lastpoint = [None, None]
+        self.this_point = None
+        self.rbbox = None
+
 
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
         gsizer = wx.GridSizer(1, 2, 2, 2)
@@ -277,11 +292,210 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.SendSizeEvent()
         wx.CallAfter(self.EnableMenus)
 
-    def report_leftdown(self,event=None, name=''):
+    def prof_motion(self, event=None, panel=None, name=None):
+        if not event.inaxes or self.zoom_ini is None:
+            return
+        try:
+            xmax, ymax  = event.x, event.y
+        except:
+            return
+        if panel is None:
+            panel = self.img_panel[0]
+        if name is None:
+            name = self.img_label[0]
+        xmin, ymin, xd, yd = self.zoom_ini
+        if event.xdata is not None:
+            self.lastpoint[0] = event.xdata
+        if event.ydata is not None:
+            self.lastpoint[1] = event.ydata
+
+        yoff = panel.canvas.figure.bbox.height
+        ymin, ymax = yoff - ymin, yoff - ymax
+
+        zdc = wx.ClientDC(panel.canvas)
+        zdc.SetLogicalFunction(wx.XOR)
+        zdc.SetBrush(wx.TRANSPARENT_BRUSH)
+        zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
+        zdc.ResetBoundingBox()
+        if not is_wxPhoenix:
+            zdc.BeginDrawing()
+
+        # erase previous box
+        if self.rbbox is not None:
+            zdc.DrawLine(*self.rbbox)
+        self.rbbox = (xmin, ymin, xmax, ymax)
+        zdc.DrawLine(*self.rbbox)
+        if not is_wxPhoenix:
+            zdc.EndDrawing()
+
+    def prof_leftdown(self, event=None, panel=None, name=None):
+        if panel is None:
+            panel = self.img_panel[0]
+        if name is None:
+            name = self.img_label[0]
+        self.report_leftdown(event=event,panel=panel)
+        if event.inaxes: #  and len(self.map.shape) == 2:
+            self.lastpoint = [None, None]
+            self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
+
+    def prof_leftup(self, event=None, panel=None, name=None):
+        # print("Profile Left up ", self.map.shape, self.rbbox)
+        if panel is None:
+            panel = self.img_panel[0]
+        if name is None:
+            name = self.img_label[0]
+        if self.rbbox is not None:
+            zdc = wx.ClientDC(panel.canvas)
+            zdc.SetLogicalFunction(wx.XOR)
+            zdc.SetBrush(wx.TRANSPARENT_BRUSH)
+            zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
+            zdc.ResetBoundingBox()
+            if not is_wxPhoenix:
+                zdc.BeginDrawing()
+            zdc.DrawLine(*self.rbbox)
+            if not is_wxPhoenix:
+                zdc.EndDrawing()
+            self.rbbox = None
+
+        if self.zoom_ini is None or self.lastpoint[0] is None:
+            return
+
+        x0 = int(self.zoom_ini[2])
+        x1 = int(self.lastpoint[0])
+        y0 = int(self.zoom_ini[3])
+        y1 = int(self.lastpoint[1])
+        dx, dy = abs(x1-x0), abs(y1-y0)
+
+        self.lastpoint, self.zoom_ini = [None, None], None
+        if dx < 2 and dy < 2:
+            self.zoom_ini = None
+            return
+
+        outdat = []
+        if dy > dx:
+            _y0 = min(int(y0), int(y1+0.5))
+            _y1 = max(int(y0), int(y1+0.5))
+
+            for iy in range(_y0, _y1):
+                ix = int(x0 + (iy-int(y0))*(x1-x0)/(y1-y0))
+                outdat.append((ix, iy))
+        else:
+            _x0 = min(int(x0), int(x1+0.5))
+            _x1 = max(int(x0), int(x1+0.5))
+            for ix in range(_x0, _x1):
+                iy = int(y0 + (ix-int(x0))*(y1-y0)/(x1-x0))
+                outdat.append((ix, iy))
+        x, y, z = [], [], []
+        for ix, iy in outdat:
+            x.append(ix)
+            y.append(iy)
+            z.append(panel.conf.data[iy, ix])
+        self.prof_dat = dy>dx, outdat
+
+        if self.prof_plotter is not None:
+            try:
+                self.prof_plotter.Raise()
+                self.prof_plotter.clear()
+
+            except (AttributeError, PyDeadObjectError):
+                self.prof_plotter = None
+
+        if self.prof_plotter is None:
+            self.prof_plotter = PlotFrame(self, title='Profile')
+            self.prof_plotter.panel.report_leftdown = self.prof_report_coords
+
+        xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
+
+        x = np.array(x)
+        y = np.array(y)
+        z = np.array(z)
+        if dy > dx:
+            x, y = y, x
+            xlabel, y2label = y2label, xlabel
+        self.prof_plotter.panel.clear()
+
+        if len(self.title) < 1:
+            self.title = os.path.split(self.xrmfile.filename)[1]
+
+        opts = dict(linewidth=2, marker='+', markersize=3,
+                    show_legend=True, xlabel=xlabel)
+
+        if isinstance(z[0], np.ndarray) and len(z[0]) == 3: # color plot
+            rlab = self.subtitles['red']
+            glab = self.subtitles['green']
+            blab = self.subtitles['blue']
+            self.prof_plotter.plot(x, z[:, 0], title=self.title, color='red',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=rlab, **opts)
+            self.prof_plotter.oplot(x, z[:, 1], title=self.title, color='darkgreen',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=glab, **opts)
+            self.prof_plotter.oplot(x, z[:, 2], title=self.title, color='blue',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label=blab, **opts)
+
+        else:
+
+            self.prof_plotter.plot(x, z, title=self.title, color='blue',
+                                   zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                                   ylabel='counts', label='counts', **opts)
+
+        print 'x',x
+        print 'y',y
+        print 'lengths',len(x),len(y)
+        print
+        self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
+                              zorder=3, side='right', color='black', **opts)
+
+        self.prof_plotter.panel.unzoom_all()
+        self.prof_plotter.Show()
+        self.zoom_ini = None
+
+        self.zoom_mode.SetSelection(0)
+        panel.cursor_mode = 'zoom'
+
+    def prof_report_coords(self, event=None, panel=None, name=None):
+        """override report leftdown for profile plotter"""
+        if event is None:
+            return
+        ex, ey = event.x, event.y
+        msg = ''
+        if panel is None:
+            panel = self.img_panel[0]
+        if name is None:
+            name = self.img_label[0]
+        plotpanel = self.prof_plotter.panel
+        axes  = plotpanel.fig.properties()['axes'][0]
+        write = plotpanel.write_message
+        try:
+            x, y = axes.transData.inverted().transform((ex, ey))
+        except:
+            x, y = event.xdata, event.ydata
+
+        if x is None or y is None:
+            return
+
+        _point = 0, 0, 0, 0, 0
+        for ix, iy in self.prof_dat[1]:
+            if (int(x) == ix and not self.prof_dat[0] or
+                int(x) == iy and self.prof_dat[0]):
+                _point = (ix, iy,
+                              panel.xdata[ix],
+                              panel.ydata[iy],
+                              panel.conf.data[iy, ix])
+
+        msg = "Pixel [%i, %i], X, OME = [%.4f mm, %.4f deg], Intensity= %g" % _point
+        write(msg,  panel=0)
+
+    def report_leftdown(self,event=None, panel=None, name=None):
         if event is None:
             return
         if event.xdata is None or event.ydata is None:
             return
+        if panel is None:
+            panel = self.img_panel[0]
+        if name is None:
+            name = self.img_label[0]
         ix, iy = int(round(event.xdata)), int(round(event.ydata))
         if (ix >= 0 and ix < self.map1.shape[1] and
             iy >= 0 and iy < self.map1.shape[0]):
@@ -601,7 +815,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             pack(cpanel, sizer)
             return cpanel
         else:  # support older versions of wxmplot, will be able to deprecate
-            conf = self.panel.conf
+            conf = self.img_panel[0].conf # self.panel.conf
             lpanel = panel
             lsizer = sizer
             self.zoom_mode = wx.RadioBox(panel, -1, 'Cursor Mode:',
@@ -685,30 +899,15 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
 
-        if data is not None:
-            print 'data',data.shape
-        if selected is not None:
-            print 'selected',selected
-        if mask is not None:
-            print 'mask',np.shape(mask)
-        print
+        ## orients mask correctly to match with raw data shape
+        ## this will only work for sideways data
+        ## mkak 2018.01.24
+        print 'need to make this adaptable to shape data properly'
+        if mask.shape[0] != mask.shape[1]:
+            mask = np.swapaxes(mask,0,1)
+        
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
-
-        print 'HERE IS WHERE I NEED TO WORK.'
-## will need something like:
-#         for ipanel in self.img_panel:
-
-## FROM mapimageframe
-#         if hasattr(self.lasso_callback , '__call__'):
-# 
-#             self.lasso_callback(data=data, selected=selected, mask=mask,
-#                                 xoff=self.xoff, yoff=self.yoff, det=self.det,
-#                                 xrmfile=self.xrmfile, **kws)
-# 
-#         self.zoom_mode.SetSelection(0)
-#         self.panel.cursor_mode = 'zoom'
-
 
     def onDataChange(self, data, x=None, y=None, col='int', **kw):
 

@@ -2235,6 +2235,7 @@ class MapViewerFrame(wx.Frame):
             if mask.shape == (nx, ny): ## sinogram
                 mask = np.swapaxes(mask,0,1)
             elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
+                print 'need better way to trigger/flag that this is a tomograph mask'
                 tomograph = True
             else:
                 ym, xm = mask.shape
@@ -2265,6 +2266,8 @@ class MapViewerFrame(wx.Frame):
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
 
+
+        print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
         ######
 #         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
 #         mca_thread = Thread(target=self.get_mca_area,
@@ -2274,7 +2277,6 @@ class MapViewerFrame(wx.Frame):
 #         mca_thread.join()
 # 
 #         ## this is new
-        print 'adding xrd?'
 #         if hasattr(self, 'sel_xrd'):
 #             path, fname = os.path.split(xrmfile.filename)
 #             aname = self.sel_mca.areaname
