@@ -2224,17 +2224,24 @@ class MapViewerFrame(wx.Frame):
         self.sel_mca = xrmfile.get_mca_area(aname,det=det)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
-
+        
         if xrmfile is None:
             xrmfile = self.current_file
+        tomograph = False
 
         ny, nx = xrmfile.get_shape()
+        
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
-            ym, xm = mask.shape
-            tmask = np.zeros((ny, nx)).astype(bool)
-            for iy in range(ym):
-                tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
-            mask = tmask
+            if mask.shape == (nx, ny): ## sinogram
+                mask = np.swapaxes(mask,0,1)
+            elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
+                tomograph = True
+            else:
+                ym, xm = mask.shape
+                tmask = np.zeros((ny, nx)).astype(bool)
+                for iy in range(ym):
+                    tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
+                mask = tmask
 
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)

@@ -685,6 +685,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
 
+        if data is not None:
+            print 'data',data.shape
+        if selected is not None:
+            print 'selected',selected
+        if mask is not None:
+            print 'mask',np.shape(mask)
+        print
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
 
