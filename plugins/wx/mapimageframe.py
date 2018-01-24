@@ -241,12 +241,10 @@ class MapImageFrame(ImageFrame):
             self.prof_plotter.plot(x, z, title=self.title, color='blue',
                                    zorder=20, xmin=min(x)-3, xmax=max(x)+3,
                                    ylabel='counts', label='counts', **opts)
-        print 'x',x
-        print 'y',y
-        print 'z',z
-        print 'mins',np.min(x),np.min(y),np.min(z)
-        print 'maxes',np.max(x),np.max(y),np.max(z)
-        print 'lengths',len(x),len(y),len(z)
+        print
+        print 'x : ',x[0],'...',x[-1],'---',np.min(x),np.max(x),'---',len(x)
+        print 'y : ',y[0],'...',y[-1],'---',np.min(y),np.max(y),'---',len(y)
+        print 'z : ',z[0],'...',z[-1],'---',np.min(z),np.max(z),'---',len(z)
         print
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
                               zorder=3, side='right', color='black', **opts)
