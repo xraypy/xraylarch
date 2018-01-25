@@ -2217,11 +2217,76 @@ class MapViewerFrame(wx.Frame):
         # if self.nb.GetPage(idx) is self.larch_panel:
         #     self.larch_panel.update()
 
-    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
+    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
         if xrmfile is None:
             xrmfile = self.current_file
-        aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname,det=det)
+        aname = xrmfile.add_area(mask, tomo=tomo)
+        self.sel_mca = xrmfile.get_mca_area(aname, det=det, tomo=tomo)
+
+
+    def lassoTomography(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
+        
+        if xrmfile is None:
+            xrmfile = self.current_file
+
+        #ny, nx = xrmfile.get_shape()
+        #x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
+        x = xrmfile.get_translation_axis()
+        ny, nx = len(x),len(x)
+        
+        if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
+            ym, xm = mask.shape
+            tmask = np.zeros((ny, nx)).astype(bool)
+            for iy in range(ym):
+                tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
+            mask = tmask
+
+
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
+        mca_thread = Thread(target=self.get_mca_area,
+                            args=(mask,), kwargs=kwargs)
+        mca_thread.start()
+        self.show_XRFDisplay()
+        mca_thread.join()
+
+        if hasattr(self, 'sel_mca'):
+            path, fname = os.path.split(xrmfile.filename)
+            aname = self.sel_mca.areaname
+            area  = xrmfile.xrmmap['areas/%s' % aname]
+            npix  = len(area.value[np.where(area.value)])
+            self.sel_mca.filename = fname
+            self.sel_mca.title = aname
+            self.sel_mca.npixels = npix
+            self.xrfdisplay.plotmca(self.sel_mca)
+
+            for p in self.nbpanels:
+                if hasattr(p, 'update_xrmmap'):
+                    p.update_xrmmap(xrmfile=self.current_file)
+
+
+        print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
+        ######
+#         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
+#         mca_thread = Thread(target=self.get_mca_area,
+#                             args=(mask,), kwargs=kwargs)
+#         mca_thread.start()
+#         self.show_XRFDisplay()
+#         mca_thread.join()
+# 
+#         ## this is new
+#         if hasattr(self, 'sel_xrd'):
+#             path, fname = os.path.split(xrmfile.filename)
+#             aname = self.sel_mca.areaname
+#             area  = xrmfile.xrmmap['areas/%s' % aname]
+#             npix  = len(area.value[np.where(area.value)])
+#             self.sel_mca.filename = fname
+#             self.sel_mca.title = aname
+#             self.sel_mca.npixels = npix
+#             self.xrfdisplay.plotmca(self.sel_mca)
+# 
+#             for p in self.nbpanels:
+#                 if hasattr(p, 'update_xrmmap'):
+#                     p.update_xrmmap(xrmfile=self.current_file)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
         

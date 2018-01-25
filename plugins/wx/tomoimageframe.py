@@ -440,13 +440,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                                    zorder=20, xmin=min(x)-3, xmax=max(x)+3,
                                    ylabel='counts', label='counts', **opts)
 
-        print
-        print 'x : ',x[0],'...',x[-1],'---',np.min(x),np.max(x),'---',len(x)
-        print 'y : ',y[0],'...',y[-1],'---',np.min(y),np.max(y),'---',len(y)
-        print 'z : ',z[0],'...',z[-1],'---',np.min(z),np.max(z),'---',len(z)
-        print
-#         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
-#                               zorder=3, side='right', color='black', **opts)
+        try:
+            self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
+                                  zorder=3, side='right', color='black', **opts)
+        except:
+            pass
 
         self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
