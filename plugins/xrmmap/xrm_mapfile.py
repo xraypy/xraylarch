@@ -207,7 +207,7 @@ def get_detectors(group):
         if 'type' in group[key].attrs.keys():
             if 'detector' in group[key].attrs['type'] and key not in detlist:
                 detlist += [key]
-            
+
     return detlist
 
 class GSEXRM_Exception(Exception):
@@ -563,7 +563,7 @@ class GSEMCA_Detector(object):
 
 
 ## not sure if this is needed or if it will work properly... ?
-## mkaka 2017.12.04
+## mkak 2017.12.04
 class GSEXRM_TomoArea(object):
     '''Area class, representing a area in x,y coordinates for tomo data
     '''
@@ -1795,7 +1795,8 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
         if name is None:
             name = 'area_001'
@@ -1808,6 +1809,7 @@ class GSEXRM_MapFile(object):
         if desc is None:
             desc = name
         ds.attrs['description'] = desc
+        ds.attrs['tomograph']   = tomo
         self.h5root.flush()
         return name
 
@@ -1817,7 +1819,8 @@ class GSEXRM_MapFile(object):
             file_str = '%s_TomoAreas.npz' if tomo else '%s_Areas.npz'
             filename = file_str % self.filename
         
-        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
 
         kwargs = {}
@@ -1844,7 +1847,8 @@ class GSEXRM_MapFile(object):
         '''
         get area group by name or description
         '''
-        base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
+        base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
 
         if name is not None and name in area_grp:
@@ -2030,7 +2034,7 @@ class GSEXRM_MapFile(object):
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
                                           sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
                                           
-        detgrp.create_dataset('counts', data=tomo)
+        detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
         for data_tag in ('energy','q'):
             try:
                 detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
@@ -2228,20 +2232,12 @@ class GSEXRM_MapFile(object):
 
         '''
 
-        print 'HERE: ',tomo
+        try:
+            area = self.get_area(areaname, tomo=tomo).value
+        except:
+            raise GSEXRM_Exception("Could not find area '%s'" % areaname)
+
         if tomo:
-            ## check for area of given name
-            try:
-                area = self.get_area(areaname, tomo=True).value
-            except:
-                raise GSEXRM_Exception("Could not find tomo area 'tomo/areas/%s'" % areaname)
-              
-            print 'How to tomo orient mask?'
-#             area = np.swapaxes(area,0,1)
-#             area = np.swapaxes(area,1,0)
-            area = np.swapaxes(area,1,1)
-
-
             ## checks detector names
             if det is not None:
                 if (type(det) is str and det.isdigit()) or type(det) is int:
@@ -2256,120 +2252,64 @@ class GSEXRM_MapFile(object):
 
             ## builds detector list
             detlist = get_detectors(self.xrmmap['tomo'])
-        
+    
             if detname in detlist:
                 dgroup = 'tomo/%s' % detname
             else:
-                #dgroup = 'tomo/mcasum'
                 return
             mapdat = self.xrmmap[dgroup]
-            ix, iy, nchan = mapdat['counts'].shape
-
-            npix = len(np.where(area)[0])
-            if npix < 1:
-                return None
-            sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-            xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
-            nx, ny = (xmax-xmin), (ymax-ymin)
-            NCHUNKSIZE = 16384 # 8192
-            use_chunks = nx*ny > NCHUNKSIZE
-            step = int((nx*ny)/NCHUNKSIZE)
-
-            if not use_chunks:
-                try:
-                    if hasattr(callback , '__call__'):
-                        callback(1, 1, nx*ny)
-                    counts = self.get_mca_tomo_rect(ymin, ymax, xmin, xmax,
-                                               mapdat=mapdat, area=area,
-                                               dtcorrect=dtcorrect)
-                except MemoryError:
-                    use_chunks = True
-            if use_chunks:
-                counts = np.zeros(nchan)
-                if nx > ny:
-                    for i in range(step+1):
-                        x1 = xmin + int(i*nx/step)
-                        x2 = min(xmax, xmin + int((i+1)*nx/step))
-                        if x1 >= x2: break
-                        if hasattr(callback , '__call__'):
-                            callback(i, step, (x2-x1)*ny)
-                        counts += self.get_mca_tomo_rect(ymin, ymax, x1, x2, mapdat=mapdat,
-                                                    det=det, area=area,
-                                                    dtcorrect=dtcorrect)
-                else:
-                    for i in range(step+1):
-                        y1 = ymin + int(i*ny/step)
-                        y2 = min(ymax, ymin + int((i+1)*ny/step))
-                        if y1 >= y2: break
-                        if hasattr(callback , '__call__'):
-                            callback(i, step, nx*(y2-y1))
-                        counts += self.get_mca_tomo_rect(y1, y2, xmin, xmax, mapdat=mapdat,
-                                                    det=det, area=area,
-                                                    dtcorrect=dtcorrect)
-
-            ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
-                                                  dtcorrect=dtcorrect, area=area)
-            return self._getmca(dgroup, counts, areaname, npixels=npix,
-                                real_time=rtime, live_time=ltime)
-
         else:
-
-            try:
-                area = self.get_area(areaname).value
-            except:
-                raise GSEXRM_Exception("Could not find area '%s'" % areaname)
-
             dgroup = self._det_name(det)
             mapdat = self._det_group(det)
 
-            ix, iy, nmca = mapdat['counts'].shape
+        ix, iy, nmca = mapdat['counts'].shape
 
-            npix = len(np.where(area)[0])
-            if npix < 1:
-                return None
-            sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-            xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
-            nx, ny = (xmax-xmin), (ymax-ymin)
-            NCHUNKSIZE = 16384 # 8192
-            use_chunks = nx*ny > NCHUNKSIZE
-            step = int((nx*ny)/NCHUNKSIZE)
+        npix = len(np.where(area)[0])
+        if npix < 1:
+            return None
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+        nx, ny = (xmax-xmin), (ymax-ymin)
+        NCHUNKSIZE = 16384 # 8192
+        use_chunks = nx*ny > NCHUNKSIZE
+        step = int((nx*ny)/NCHUNKSIZE)
 
-            if not use_chunks:
-                try:
+        if not use_chunks:
+            try:
+                if hasattr(callback , '__call__'):
+                    callback(1, 1, nx*ny)
+                counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
+                                           mapdat=mapdat, area=area,
+                                           dtcorrect=dtcorrect, tomo=tomo)
+            except MemoryError:
+                use_chunks = True
+        if use_chunks:
+            counts = np.zeros(nmca)
+            if nx > ny:
+                for i in range(step+1):
+                    x1 = xmin + int(i*nx/step)
+                    x2 = min(xmax, xmin + int((i+1)*nx/step))
+                    if x1 >= x2: break
                     if hasattr(callback , '__call__'):
-                        callback(1, 1, nx*ny)
-                    counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
-                                               mapdat=mapdat, area=area,
-                                               dtcorrect=dtcorrect)
-                except MemoryError:
-                    use_chunks = True
-            if use_chunks:
-                counts = np.zeros(nmca)
-                if nx > ny:
-                    for i in range(step+1):
-                        x1 = xmin + int(i*nx/step)
-                        x2 = min(xmax, xmin + int((i+1)*nx/step))
-                        if x1 >= x2: break
-                        if hasattr(callback , '__call__'):
-                            callback(i, step, (x2-x1)*ny)
-                        counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
-                                                    det=det, area=area,
-                                                    dtcorrect=dtcorrect)
-                else:
-                    for i in range(step+1):
-                        y1 = ymin + int(i*ny/step)
-                        y2 = min(ymax, ymin + int((i+1)*ny/step))
-                        if y1 >= y2: break
-                        if hasattr(callback , '__call__'):
-                            callback(i, step, nx*(y2-y1))
-                        counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
-                                                    det=det, area=area,
-                                                    dtcorrect=dtcorrect)
+                        callback(i, step, (x2-x1)*ny)
+                    counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect, tomo=tomo)
+            else:
+                for i in range(step+1):
+                    y1 = ymin + int(i*ny/step)
+                    y2 = min(ymax, ymin + int((i+1)*ny/step))
+                    if y1 >= y2: break
+                    if hasattr(callback , '__call__'):
+                        callback(i, step, nx*(y2-y1))
+                    counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect, tomo=tomo)
 
-            ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
-                                                  dtcorrect=dtcorrect, area=area)
-            return self._getmca(dgroup, counts, areaname, npixels=npix,
-                                real_time=rtime, live_time=ltime)
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
+                                              dtcorrect=dtcorrect, area=area)
+        return self._getmca(dgroup, counts, areaname, npixels=npix,
+                            real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
         '''return mca counts for a map rectangle, optionally
@@ -2401,23 +2341,8 @@ class GSEXRM_MapFile(object):
         return self._getmca(dgroup, counts, name, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
-    def get_mca_tomo_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                          area=None, dtcorrect=True):
-    
-        if mapdat is None:
-            if det in get_detectors(self.xrmmap['tomo']):
-                dgroup = 'tomo/%s' % detname
-            else:
-                #dgroup = 'tomo/mcasum'
-                return
-            mapdat = self.xrmmap[dgroup]
-
-        ix, iy, nchan = mapdat['counts'].shape
-
-        print 'testing tomography',ix, iy, nchan
-    
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                     area=None, dtcorrect=True):
+                     area=None, dtcorrect=True, tomo=False):
         '''return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2451,38 +2376,40 @@ class GSEXRM_MapFile(object):
         cell   = mapdat['counts'].regionref[sy, sx, :]
         counts = mapdat['counts'][cell]
         counts = counts.reshape(ny, nx, nchan)
-        if dtcorrect:
-            if det in range(1, self.ndet+1):
-                cell   = mapdat['dtfactor'].regionref[sy, sx]
-                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = counts * dtfact
-            elif det is None: # indicating sum of deadtime-corrected spectra
-                _md    = self._det_group(self.ndet)
-                cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                cell   = _md['dtfactor'].regionref[sy, sx]
-                dtfact = _md['dtfactor'][cell].reshape(ny, nx)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = _cts * dtfact
-                for _idet in range(1, self.ndet):
-                    _md    = self._det_group(_idet)
+        
+        if not tomo:
+            if dtcorrect:
+                if det in range(1, self.ndet+1):
+                    cell   = mapdat['dtfactor'].regionref[sy, sx]
+                    dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
+                    dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                    counts = counts * dtfact
+                elif det is None: # indicating sum of deadtime-corrected spectra
+                    _md    = self._det_group(self.ndet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     cell   = _md['dtfactor'].regionref[sy, sx]
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts += _cts * dtfact
+                    counts = _cts * dtfact
+                    for _idet in range(1, self.ndet):
+                        _md    = self._det_group(_idet)
+                        cell   = _md['counts'].regionref[sy, sx, :]
+                        _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
+                        cell   = _md['dtfactor'].regionref[sy, sx]
+                        dtfact = _md['dtfactor'][cell].reshape(ny, nx)
+                        dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                        counts += _cts * dtfact
 
-        elif det is None: # indicating sum un-deadtime-corrected spectra
-            _md    = self._det_group(self.ndet)
-            cell   = _md['counts'].regionref[sy, sx, :]
-            counts = _md['counts'][cell].reshape(ny, nx, nchan)
-            for _idet in range(1, self.ndet):
-                _md    = self._det_group(_idet)
+            elif det is None: # indicating sum un-deadtime-corrected spectra
+                _md    = self._det_group(self.ndet)
                 cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                counts += _cts
+                counts = _md['counts'][cell].reshape(ny, nx, nchan)
+                for _idet in range(1, self.ndet):
+                    _md    = self._det_group(_idet)
+                    cell   = _md['counts'].regionref[sy, sx, :]
+                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
+                    counts += _cts
 
         if area is not None:
             counts = counts[area[sy, sx]]
@@ -2540,7 +2467,7 @@ class GSEXRM_MapFile(object):
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
 
-    def _getmca(self, dgroup, counts, name, npixels=None, **kws):
+    def _getmca(self, dgroup, counts, name, npixels=None, tomo=False, **kws):
         '''return an MCA object for a detector group
         (map is one of the  'det1', ... 'detsum')
         with specified counts array and a name
@@ -2557,6 +2484,10 @@ class GSEXRM_MapFile(object):
         MCA object
 
         '''
+        if dgroup.startswith('tomo/'):
+            tomo = True
+            dgroup = dgroup[5:]
+            
         map  = self.xrmmap[dgroup]
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],

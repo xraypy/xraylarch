@@ -1615,6 +1615,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.desc    = wx.TextCtrl(pane,   -1, '',  size=(200, -1))
         self.info1   = wx.StaticText(pane, -1, '',  size=(250, -1))
         self.info2   = wx.StaticText(pane, -1, '',  size=(250, -1))
+        self.info3   = wx.StaticText(pane, -1, '',  size=(250, -1))
         self.onmap   = Button(pane, 'Show on Map',  size=(135, -1), action=self.onShow)
         self.clear   = Button(pane, 'Clear Map',    size=(135, -1), action=self.onClear)
         self.delete  = Button(pane, 'Delete Area',  size=(135, -1), action=self.onDelete)
@@ -1654,33 +1655,34 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         sizer.Add(txt('Map Areas'),         ( 0, 0), (1, 1), ALL_CEN,  2)
         sizer.Add(self.info1,               ( 0, 1), (1, 4), ALL_LEFT, 2)
         sizer.Add(self.info2,               ( 1, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(txt('Area: '),            ( 2, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              ( 2, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.delete,              ( 2, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(txt('New Label: '),       ( 3, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                ( 3, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.update,              ( 3, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onmap,               ( 4, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.clear,               ( 4, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onstats,             ( 4, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.info3,               ( 2, 1), (1, 4), ALL_LEFT, 2)
+        sizer.Add(txt('Area: '),            ( 3, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              ( 3, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.delete,              ( 3, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('New Label: '),       ( 4, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                ( 4, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.update,              ( 4, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               ( 5, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.clear,               ( 5, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onstats,             ( 5, 4), (1, 1), ALL_LEFT, 2)
 
-        sizer.Add(self.bexport,             ( 5, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.bimport,             ( 5, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.bexport,             ( 6, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.bimport,             ( 6, 2), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.xrf,                 ( 6, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                ( 6, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.cor,                 ( 6, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf,                 ( 7, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                ( 7, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.cor,                 ( 7, 4), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.onreport,            ( 7, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            ( 8, 0), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(self.xrd1d_plot,          ( 8, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd2d_plot,          ( 8, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd1d_plot,          ( 9, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd2d_plot,          ( 9, 2), (1, 2), ALL_LEFT, 2)
 
 
-        sizer.Add(self.xrd1d_save,          ( 9, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd2d_save,          ( 9, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd1d_save,          (10, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrd2d_save,          (10, 2), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(legend,                   (11, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(legend,                   (12, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
         for btn in (self.xrd1d_save,self.xrd1d_plot,self.xrd2d_save,self.xrd2d_plot):
@@ -1866,10 +1868,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if outfile is None:
             return
 
-        mca   = self.owner.current_file.get_mca_area(aname)
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
+        tomo_area = area.attrs.get('tomograph',False)
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
+
+        mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
         dtime = mca.real_time
         info_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
         buff = ['# Map %s, Area %s' % (self.owner.current_file.filename, aname),
@@ -1913,22 +1917,25 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onSelect(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
+        tomo_area = area.attrs.get('tomograph',False)
         npix = len(area.value[np.where(area.value)])
         yvals, xvals = np.where(area.value)
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
-            mca   = self.owner.current_file.get_mca_area(aname)
+            mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
             dtime = mca.real_time
         except:
             pass
 
         info1_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
         info2_fmt = ' Range (pixels)   X : [%i:%i],  Y : [%i:%i] '
+        info3_fmt = '                  (tomography area) ' if tomo_area else ' '
 
         self.info1.SetLabel(info1_fmt%(npix, int(round(1000.0*pixtime)), dtime))
         self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(),
                                        yvals.min(), yvals.max()))
+        self.info3.SetLabel(info3_fmt)
 
         self.desc.SetValue(area.attrs.get('description', aname))
         self.report.DeleteAllItems()
@@ -1953,11 +1960,17 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onShow(self, event=None):
         aname = self._getarea()
-        area  = self.owner.current_file.xrmmap['areas/%s' % aname]
+        area  = self.owner.current_file.xrmmap['areas'][aname]
         label = bytes2str(area.attrs.get('description', aname))
-        if len(self.owner.im_displays) > 0:
-            imd = self.owner.im_displays[-1]
-            imd.panel.add_highlight_area(area.value, label=label)
+        tomo_area = area.attrs.get('tomograph',False)
+        #if tomo_area:
+        if len(self.owner.tomo_displays) > 0:
+            imd = self.owner.tomo_displays[-1]
+            imd.add_highlight_area(area.value, label=label)
+        if not tomo_area:
+            if len(self.owner.im_displays) > 0:
+                imd = self.owner.im_displays[-1]
+                imd.panel.add_highlight_area(area.value, label=label)
 
     def onDelete(self, event=None):
         aname = self._getarea()
@@ -1978,6 +1991,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             imd.panel.conf.highlight_areas = []
             imd.panel.redraw()
 
+        if len(self.owner.tomo_displays) > 0:
+            imd = self.owner.tomo_displays[-1]
+            imd.clear_highlight_area()
+
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
@@ -1991,13 +2008,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
+        tomo_area = area.attrs.get('tomograph',False)
         label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
         dtcorrect = self.cor.IsChecked()
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         mca_thread = Thread(target=self._getmca_area, args=(aname,),
-                            kwargs={'dtcorrect': dtcorrect})
+                            kwargs={'dtcorrect': dtcorrect, 'tomo': tomo_area})
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
@@ -2235,75 +2253,11 @@ class MapViewerFrame(wx.Frame):
         #     self.larch_panel.update()
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
+        
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask, tomo=tomo)
         self.sel_mca = xrmfile.get_mca_area(aname, det=det, tomo=tomo)
-
-
-    def lassoTomography(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
-        
-        if xrmfile is None:
-            xrmfile = self.current_file
-
-        #ny, nx = xrmfile.get_shape()
-        #x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
-        x = xrmfile.get_translation_axis()
-        ny, nx = len(x),len(x)
-        
-        if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
-            ym, xm = mask.shape
-            tmask = np.zeros((ny, nx)).astype(bool)
-            for iy in range(ym):
-                tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
-            mask = tmask
-
-
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=True)
-        mca_thread = Thread(target=self.get_mca_area,
-                            args=(mask,), kwargs=kwargs)
-        mca_thread.start()
-        self.show_XRFDisplay()
-        mca_thread.join()
-
-        if hasattr(self, 'sel_mca'):
-            path, fname = os.path.split(xrmfile.filename)
-            aname = self.sel_mca.areaname
-            area  = xrmfile.xrmmap['areas/%s' % aname]
-            npix  = len(area.value[np.where(area.value)])
-            self.sel_mca.filename = fname
-            self.sel_mca.title = aname
-            self.sel_mca.npixels = npix
-            self.xrfdisplay.plotmca(self.sel_mca)
-
-            for p in self.nbpanels:
-                if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(xrmfile=self.current_file)
-
-
-        print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
-        ######
-#         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
-#         mca_thread = Thread(target=self.get_mca_area,
-#                             args=(mask,), kwargs=kwargs)
-#         mca_thread.start()
-#         self.show_XRFDisplay()
-#         mca_thread.join()
-# 
-#         ## this is new
-#         if hasattr(self, 'sel_xrd'):
-#             path, fname = os.path.split(xrmfile.filename)
-#             aname = self.sel_mca.areaname
-#             area  = xrmfile.xrmmap['areas/%s' % aname]
-#             npix  = len(area.value[np.where(area.value)])
-#             self.sel_mca.filename = fname
-#             self.sel_mca.title = aname
-#             self.sel_mca.npixels = npix
-#             self.xrfdisplay.plotmca(self.sel_mca)
-# 
-#             for p in self.nbpanels:
-#                 if hasattr(p, 'update_xrmmap'):
-#                     p.update_xrmmap(xrmfile=self.current_file)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
         
@@ -2317,7 +2271,6 @@ class MapViewerFrame(wx.Frame):
             if mask.shape == (nx, ny): ## sinogram
                 mask = np.swapaxes(mask,0,1)
             elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
-                print 'need better way to trigger/flag that this is a tomograph mask'
                 tomograph = True
             else:
                 ym, xm = mask.shape
@@ -2325,7 +2278,6 @@ class MapViewerFrame(wx.Frame):
                 for iy in range(ym):
                     tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
                 mask = tmask
-
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomograph)
         mca_thread = Thread(target=self.get_mca_area,
@@ -2336,7 +2288,12 @@ class MapViewerFrame(wx.Frame):
 
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
-            aname = self.sel_mca.areaname
+            try:
+                aname = self.sel_mca.areaname
+            except:
+                if tomograph:
+                    print('Need to lock center value to display reconstruction-area spectra.')
+                pass
             area  = xrmfile.xrmmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
             self.sel_mca.filename = fname
@@ -2349,7 +2306,7 @@ class MapViewerFrame(wx.Frame):
                     p.update_xrmmap(xrmfile=self.current_file)
 
 
-        print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
+#         print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
         ######
 #         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
 #         mca_thread = Thread(target=self.get_mca_area,

@@ -51,10 +51,18 @@ RGB_COLORS = ('red', 'green', 'blue')
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
-                     'lasso': ('Select Points for XRF/XRD Spectra\tCtrl+N',
+                     'lasso': ('Select Points for XRM Spectra\tCtrl+N',
                                'Left-Drag to select points freehand'),
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
+
+class TomoFrameClass(object):
+
+    def __init__(self,label=None,map=None,panel=None):
+
+        self.label  = label
+        self.map    = map
+        self.panel  = panel
 
 class TomographyFrame(BaseFrame):
 ### COPY OF ImageFrame(BaseFrame) with portions of ImageMatrixFrame(BaseFrame)
@@ -105,13 +113,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.user_menus = user_menus
         self.cursor_menulabels =  {}
         self.cursor_menulabels.update(CURSOR_MENULABELS)
-            
-        self.img_label = ['Sinogram', 'Tomograph']
+
         self.title = output_title
 
         self.det = None
         self.xrmfile = None
-        self.map = None
         self.wxmplot_version = get_wxmplot_version()
 
         BaseFrame.__init__(self, parent=parent,
@@ -140,19 +146,22 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(225)
 
-        self.config_panel = wx.Panel(splitter) ## wx.Panel(self) 
-        self.main_panel   = wx.Panel(splitter) ## wx.Panel(self) 
+        self.config_panel = wx.Panel(splitter)
+        self.main_panel   = wx.Panel(splitter)
         
-        img_opts = dict(data_callback=self.onDataChange,
-                        size=(700, 525), dpi=100,
-                        lasso_callback=self.onLasso,
-                        output_title=self.output_title)
-        self.img_panel = [ImagePanel(self.main_panel, **img_opts),
-                          ImagePanel(self.main_panel, **img_opts)]
+        img_opts = dict(size = (700, 525),
+                        dpi  = 100,
+                        data_callback  = self.onDataChange,
+                        lasso_callback = self.onLasso,
+                        output_title   = self.output_title)
         
+        self.tomo_frame = [TomoFrameClass(panel=ImagePanel(self.main_panel, **img_opts),
+                                          label='Sinogram'),
+                           TomoFrameClass(panel=ImagePanel(self.main_panel, **img_opts),
+                                          label='Tomograph')]
 
-        for ipanel in self.img_panel:
-            ipanel.nstatusbar = sbar.GetFieldsCount()
+        for iframe in self.tomo_frame:
+            iframe.panel.nstatusbar = sbar.GetFieldsCount()
 
         self.BuildMenu()
 
@@ -168,16 +177,14 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.Build_ConfigPanel()
 
-        for ilabel, ipanel in zip(self.img_label,self.img_panel):
-        #for ipanel in self.img_panel:
-            kwargs = {'name':ilabel,'panel':ipanel}
-            
-            ipanel.add_cursor_mode('prof', 
-                                   motion   = partial(self.prof_motion,   **kwargs),
-                                   leftdown = partial(self.prof_leftdown, **kwargs),
-                                   leftup   = partial(self.prof_leftup,   **kwargs))
-            ipanel.report_leftdown = partial(self.report_leftdown, **kwargs)
-            ipanel.messenger = self.write_message
+        for iframe in self.tomo_frame:
+            kwargs = {'frame':iframe}
+            iframe.panel.add_cursor_mode('prof', 
+                                         motion   = partial(self.prof_motion,   **kwargs),
+                                         leftdown = partial(self.prof_leftdown, **kwargs),
+                                         leftup   = partial(self.prof_leftup,   **kwargs))
+            iframe.panel.report_leftdown = partial(self.report_leftdown, **kwargs)
+            iframe.panel.messenger = self.write_message
 
 
         self.prof_plotter = None
@@ -190,8 +197,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
         gsizer = wx.GridSizer(1, 2, 2, 2)
         lsty |= wx.GROW|wx.ALL|wx.EXPAND|wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-        gsizer.Add(self.img_panel[0], 1, lsty, 2)
-        gsizer.Add(self.img_panel[1], 1, lsty, 2)
+        gsizer.Add(self.tomo_frame[0].panel, 1, lsty, 2)
+        gsizer.Add(self.tomo_frame[1].panel, 1, lsty, 2)
 
         pack(self.main_panel, gsizer)
         splitter.SplitVertically(self.config_panel, self.main_panel, 1)
@@ -216,7 +223,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if len(map1.shape) != len(map2.shape):
             return
 
-        self.name1, self.name2 = name1, name2
+        self.tomo_frame[0].label, self.tomo_frame[1].label = name1, name2
         self.xdata,  self.ydata,  self.rotdata  = x,      y,      rot
         self.xlabel, self.ylabel, self.rotlabel = xlabel, ylabel, rotlabel
 
@@ -253,7 +260,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 for comp in self.config_panel.Children:
                     comp.Destroy()
                 self.config_mode = 'rgb'
-                self.img_panel[0].conf.tricolor_mode = 'rgb'
+                self.tomo_frame[0].panel.conf.tricolor_mode = 'rgb'
                 self.Build_ConfigPanel()
         else: ##if len(map1.shape) == 2 and len(map2.shape) == 2:
             if cmode != 'int':
@@ -262,14 +269,19 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 self.config_mode = 'int'
                 self.Build_ConfigPanel()
 
-               
-        self.map1,self.map2 = map1,map2
-
-        self.img_panel[0].display(map1, style=style, **kws)
-        self.img_panel[1].display(map2, style=style, **kws)
-
-        self.img_panel[0].conf.title = name1
-        self.img_panel[1].conf.title = name2
+        for map,iframe in zip([map1,map2],self.tomo_frame):
+            iframe.map = map
+            iframe.panel.display(iframe.map, style=style, **kws)
+            iframe.panel.conf.title = iframe.label
+        
+#         self.tomo_frame[0].map = map1
+#         self.tomo_frame[1].map = map2
+#         
+#         self.tomo_frame[0].panel.display(self.tomo_frame[0].map, style=style, **kws)
+#         self.tomo_frame[1].panel.display(self.tomo_frame[1].map, style=style, **kws)
+# 
+#         self.tomo_frame[0].panel.conf.title = self.tomo_frame[0].label
+#         self.tomo_frame[1].panel.conf.title = self.tomo_frame[1].label
 
         if colormap is not None and self.config_mode == 'int':
             self.cmap_panels[0].set_colormap(name=colormap)
@@ -285,24 +297,23 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             contour_value = 1
         self.set_contrast_levels()
 
-        self.img_panel[0].redraw()
-        self.img_panel[1].redraw()
+        self.tomo_frame[0].panel.redraw()
+        self.tomo_frame[1].panel.redraw()
 
         self.config_panel.Refresh()
         self.SendSizeEvent()
         wx.CallAfter(self.EnableMenus)
 
-    def prof_motion(self, event=None, panel=None, name=None):
+    def prof_motion(self, event=None, frame=None):
         if not event.inaxes or self.zoom_ini is None:
             return
         try:
             xmax, ymax  = event.x, event.y
         except:
             return
-        if panel is None:
-            panel = self.img_panel[0]
-        if name is None:
-            name = self.img_label[0]
+        if frame is None:
+            frame = self.tomo_frame[0]
+
         xmin, ymin, xd, yd = self.zoom_ini
         if event.xdata is not None:
             self.lastpoint[0] = event.xdata
@@ -328,24 +339,21 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if not is_wxPhoenix:
             zdc.EndDrawing()
 
-    def prof_leftdown(self, event=None, panel=None, name=None):
-        if panel is None:
-            panel = self.img_panel[0]
-        if name is None:
-            name = self.img_label[0]
-        self.report_leftdown(event=event,panel=panel)
+    def prof_leftdown(self, event=None, frame=None):
+        if frame is None:
+            frame = self.tomo_frame[0]
+        self.report_leftdown(event=event,frame=frame)
         if event.inaxes: #  and len(self.map.shape) == 2:
             self.lastpoint = [None, None]
             self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
 
-    def prof_leftup(self, event=None, panel=None, name=None):
+    def prof_leftup(self, event=None, frame=None):
         # print("Profile Left up ", self.map.shape, self.rbbox)
-        if panel is None:
-            panel = self.img_panel[0]
-        if name is None:
-            name = self.img_label[0]
+        if frame is None:
+            frame = self.tomo_frame[0]
+
         if self.rbbox is not None:
-            zdc = wx.ClientDC(panel.canvas)
+            zdc = wx.ClientDC(frame.panel.canvas)
             zdc.SetLogicalFunction(wx.XOR)
             zdc.SetBrush(wx.TRANSPARENT_BRUSH)
             zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
@@ -389,7 +397,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         for ix, iy in outdat:
             x.append(ix)
             y.append(iy)
-            z.append(panel.conf.data[iy, ix])
+            z.append(frame.panel.conf.data[iy, ix])
         self.prof_dat = dy>dx, outdat
 
         if self.prof_plotter is not None:
@@ -402,7 +410,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         if self.prof_plotter is None:
             self.prof_plotter = PlotFrame(self, title='Profile')
-            self.prof_plotter.panel.report_leftdown = self.prof_report_coords
+            self.prof_plotter.frame.panel.report_leftdown = self.prof_report_coords
 
         xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
 
@@ -412,7 +420,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if dy > dx:
             x, y = y, x
             xlabel, y2label = y2label, xlabel
-        self.prof_plotter.panel.clear()
+        self.prof_plotter.frame.panel.clear()
 
         if len(self.title) < 1:
             self.title = os.path.split(self.xrmfile.filename)[1]
@@ -446,23 +454,22 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         except:
             pass
 
-        self.prof_plotter.panel.unzoom_all()
+        self.prof_plotter.frame.panel.unzoom_all()
         self.prof_plotter.Show()
         self.zoom_ini = None
 
         self.zoom_mode.SetSelection(0)
-        panel.cursor_mode = 'zoom'
+        frame.panel.cursor_mode = 'zoom'
 
-    def prof_report_coords(self, event=None, panel=None, name=None):
+    def prof_report_coords(self, event=None, frame=None):
         """override report leftdown for profile plotter"""
         if event is None:
             return
         ex, ey = event.x, event.y
         msg = ''
-        if panel is None:
-            panel = self.img_panel[0]
-        if name is None:
-            name = self.img_label[0]
+        if frame is None:
+            frame = self.tomo_frame[0]
+
         plotpanel = self.prof_plotter.panel
         axes  = plotpanel.fig.properties()['axes'][0]
         write = plotpanel.write_message
@@ -479,35 +486,33 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             if (int(x) == ix and not self.prof_dat[0] or
                 int(x) == iy and self.prof_dat[0]):
                 _point = (ix, iy,
-                              panel.xdata[ix],
-                              panel.ydata[iy],
-                              panel.conf.data[iy, ix])
+                              frame.panel.xdata[ix],
+                              frame.panel.ydata[iy],
+                              frame.panel.conf.data[iy, ix])
 
         msg = "Pixel [%i, %i], X, OME = [%.4f mm, %.4f deg], Intensity= %g" % _point
         write(msg,  panel=0)
 
-    def report_leftdown(self,event=None, panel=None, name=None):
+    def report_leftdown(self,event=None, frame=None):
         if event is None:
             return
         if event.xdata is None or event.ydata is None:
             return
-        if panel is None:
-            panel = self.img_panel[0]
-        if name is None:
-            name = self.img_label[0]
+        if frame is None:
+            frame = self.tomo_frame[0]
+        
         ix, iy = int(round(event.xdata)), int(round(event.ydata))
-        if (ix >= 0 and ix < self.map1.shape[1] and
-            iy >= 0 and iy < self.map1.shape[0]):
+
+        if (ix >= 0 and ix < frame.map.shape[1] and
+            iy >= 0 and iy < frame.map.shape[0]):
             pos = ''
             if self.xdata is not None:
                 pos = ' %s=%.4g,' % (self.xlabel, self.xdata[ix])
             if self.ydata is not None:
                 pos = '%s %s=%.4g,' % (pos, self.ylabel, self.ydata[iy])
 
-            d1, d2 = (self.map1[iy, ix], self.map2[iy, ix])
-            msg = 'Pixel [%i, %i],%s %s=%.4g, %s=%.4g' % (ix, iy, pos,
-                                                          self.name1, d1,
-                                                          self.name2, d2)
+            msg = 'Pixel [%i, %i],%s %s=%.4g' % (ix, iy, pos,
+                                                 frame.label, frame.map[iy, ix])
             self.write_message(msg, panel=0)
 
             #if callable(self.cursor_callback):
@@ -528,13 +533,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
     def EnableMenus(self, evt=None):
-        is_3color = len(self.img_panel[0].conf.data.shape) > 2
+        is_3color = len(self.tomo_frame[0].panel.conf.data.shape) > 2
         for menu, on_3color in self.optional_menus:
             menu.Enable(is_3color==on_3color)
 
     def unzoom_all(self):
-        self.img_panel[0].unzoom()
-        self.img_panel[1].unzoom()
+        self.tomo_frame[0].panel.unzoom()
+        self.tomo_frame[1].panel.unzoom()
     
     def BuildMenu(self):
         # file menu
@@ -626,43 +631,38 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         if name not in Interp_List:
             name = Interp_List[0]
-        for ipanel in self.img_panel:
-            ipanel.conf.interp = name
-            ipanel.redraw()
+        for iframe in self.tomo_frame:
+            iframe.panel.conf.interp = name
+            iframe.panel.redraw()
 
     def onCursorMode(self, event=None, mode='zoom'):
 
         choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
-        for ipanel in self.img_panel:
-            ipanel.cursor_mode = mode
+        for iframe in self.tomo_frame:
+            iframe.panel.cursor_mode = mode
             if event is not None:
                 if choice.startswith('Pick Area'):
-                    ipanel.cursor_mode = 'lasso'
+                    iframe.panel.cursor_mode = 'lasso'
                 elif choice.startswith('Show Line'):
-                    ipanel.cursor_mode = 'prof'
-
-        print 'MODE:',mode
-        print 'CHOICE:',choice
-        print 'ipanel.cursor_mode',ipanel.cursor_mode
-        print
+                    iframe.panel.cursor_mode = 'prof'
 
     def onProject(self, event=None, mode='y'):
 
         wid = event.GetId()
         if mode=='x':
-            x = self.img_panel[0].ydata
-            y = self.img_panel[0].conf.data.sum(axis=1)
-            x = self.img_panel[1].ydata
-            y = self.img_panel[1].conf.data.sum(axis=1)
+            x = self.tomo_frame[0].panel.ydata
+            y = self.tomo_frame[0].panel.conf.data.sum(axis=1)
+            x = self.tomo_frame[1].panel.ydata
+            y = self.tomo_frame[1].panel.conf.data.sum(axis=1)
             axname = 'horizontal'
             if x is None:
                 x = np.arange(y.shape[0])
 
         else:
-            x = self.img_panel[0].xdata
-            y = self.img_panel[0].conf.data.sum(axis=0)
-            x = self.img_panel[1].xdata
-            y = self.img_panel[1].conf.data.sum(axis=0)
+            x = self.tomo_frame[0].panel.xdata
+            y = self.tomo_frame[0].panel.conf.data.sum(axis=0)
+            x = self.tomo_frame[1].panel.xdata
+            y = self.tomo_frame[1].panel.conf.data.sum(axis=0)
             if x is None:
                 x = np.arange(y.shape[0])
 
@@ -682,8 +682,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onFlip(self, event=None, mode=None):
 
-        for ipanel in self.img_panel:
-            conf = ipanel.conf
+        for iframe in self.tomo_frame:
+            conf = iframe.panel.conf
             if mode == 'flip_lr':
                 conf.flip_lr = not conf.flip_lr
             elif mode == 'flip_ud':
@@ -692,7 +692,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 conf.flip_lr, conf.flip_ud = False, False
             elif mode == 'rot_cw':
                 conf.rot = True
-            ipanel.unzoom_all()
+            iframe.panel.unzoom_all()
 
     def Build_ConfigPanel(self):
         '''config panel for left-hand-side of frame: RGB Maps'''
@@ -706,12 +706,12 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 # # 
 # #         icol = 0
 # #         if self.config_mode == 'rgb':
-# #             for ilabel, ipanel in zip(self.img_label,self.img_panel):
+# #             for iframe in self.tomo_frame:
 # #                 csizer = wx.BoxSizer(wx.VERTICAL)
 # #                 for i,col in enumerate(RGB_COLORS):
 # #                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                             ipanel,
-# #                                                             title='%s - %s: ' % (ilabel,col.title()),
+# #                                                             iframe.panel,
+# #                                                             title='%s - %s: ' % (iframe.label,col.title()),
 # #                                                             color=i,
 # #                                                             default=col,
 # #                                                             colormap_list=None)
@@ -720,15 +720,15 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 # #                     csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
 # #                                             style=wx.LI_HORIZONTAL), 0, lsty, 2)
 # #                     icol += 1
-# # #                 nb.AddPage(csizer, ilabel)
+# # #                 nb.AddPage(csizer, iframe.label)
 # # 
 # # 
 # #         else:
-# #             for ilabel, ipanel in zip(self.img_label,self.img_panel):
+# #             for iframe in self.tomo_frame:
 # #                 csizer = wx.BoxSizer(wx.VERTICAL)
 # #                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                         ipanel,
-# #                                                         title='%s: ' % ilabel,
+# #                                                         iframe.panel,
+# #                                                         title='%s: ' % iframe.label,
 # #                                                         default='gray',
 # #                                                         colormap_list=ColorMap_List)
 # # 
@@ -736,7 +736,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 # #                 csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
 # #                                         style=wx.LI_HORIZONTAL), 0, lsty, 2)
 # #                 icol += 1
-# # #                 nb.AddPage(csizer, ilabel)
+# # #                 nb.AddPage(csizer, iframe.label)
 # # 
 # #         bsizer.Add(nb, 0, lsty, 1)
 # #         cust = self.CustomConfig(self.config_panel, None, 0)
@@ -749,11 +749,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         icol = 0
         if self.config_mode == 'rgb':
-            for ilabel, ipanel in zip(self.img_label,self.img_panel):
+            for iframe in self.tomo_frame:
                 for i,col in enumerate(RGB_COLORS):
                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-                                                            ipanel,
-                                                            title='%s - %s: ' % (ilabel,col.title()),
+                                                            iframe.panel,
+                                                            title='%s - %s: ' % (iframe.label,col.title()),
                                                             color=i,
                                                             default=col,
                                                             colormap_list=None)
@@ -765,10 +765,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
         else:
-            for ilabel, ipanel in zip(self.img_label,self.img_panel):
+            for iframe in self.tomo_frame:
                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-                                                        ipanel,
-                                                        title='%s: ' % ilabel,
+                                                        iframe.panel,
+                                                        title='%s: ' % iframe.label,
                                                         default='gray',
                                                         colormap_list=ColorMap_List)
 
@@ -781,6 +781,53 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if cust is not None:
             csizer.Add(cust, 0, lsty, 1)
         pack(self.config_panel, csizer)
+
+    def clear_highlight_area(self):
+    
+        for iframe in self.tomo_frame:
+            for area in iframe.panel.conf.highlight_areas:
+                for w in area.collections + area.labelTexts:
+                    w.remove()
+
+            iframe.panel.conf.highlight_areas = []
+            iframe.panel.redraw()
+
+
+    def add_highlight_area(self, mask, label=None, col=0):
+        """add a highlighted area -- outline an arbitrarily shape --
+        as if drawn from a Lasso event.
+
+        This takes a mask, which should be a boolean array of the
+        same shape as the image.
+        """
+        
+        panel = None
+        swmask = np.swapaxes(mask,0,1)
+        for iframe in self.tomo_frame:
+            if iframe.map.shape == mask.shape or iframe.map.shape == swmask.shape:
+                panel = iframe.panel
+
+        if panel is not None:
+            mask = swmask # np.swapaxes(mask,0,1)
+            patch = mask * np.ones(mask.shape) * 0.9
+            cmap = panel.conf.cmap[col]
+            area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])
+            panel.conf.highlight_areas.append(area)
+            col = None
+            if hasattr(cmap, '_lut'):
+                rgb  = [int(i*240)^255 for i in cmap._lut[0][:3]]
+                col  = '#%02x%02x%02x' % (rgb[0], rgb[1], rgb[2])
+
+            if label is not None:
+                def fmt(*args, **kws): return label
+                panel.axes.clabel(area, fontsize=9, fmt=fmt,
+                                 colors=col, rightside_up=True)
+
+            if col is not None:
+                for l in area.collections:
+                    l.set_color(col)
+
+            panel.canvas.draw()
 
 
     def CustomConfig(self, panel, sizer=None, irow=0):
@@ -796,7 +843,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                          'Show Line Profile')
         else:
             zoom_opts = ('Zoom to Rectangle',
-                         'Pick Area for XRF/XRD Spectra',
+                         'Pick Area for XRM Spectra',
                          'Show Line Profile')
                          
         if self.wxmplot_version > 0.921:
@@ -814,7 +861,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             pack(cpanel, sizer)
             return cpanel
         else:  # support older versions of wxmplot, will be able to deprecate
-            conf = self.img_panel[0].conf # self.panel.conf
+            conf = self.tomo_frame[0].panel.conf # self.panel.conf
             lpanel = panel
             lsizer = sizer
             self.zoom_mode = wx.RadioBox(panel, -1, 'Cursor Mode:',
@@ -825,8 +872,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onContrastConfig(self, event=None):
         
-        for ipanel in self.img_panel:
-            dlg = AutoContrastDialog(parent=self, conf=ipanel.conf)
+        for iframe in self.tomo_frame:
+            dlg = AutoContrastDialog(parent=self, conf=iframe.panel.conf)
             dlg.CenterOnScreen()
             val = dlg.ShowModal()
             if val == wx.ID_OK:
@@ -836,8 +883,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onContourConfig(self, event=None):
 
-        for icol,ipanel in enumerate(self.img_panel):
-            conf = ipanel.conf
+        for icol,iframe in enumerate(self.tomo_frame):
+            conf = iframe.panel.conf
             dlg = ContourDialog(parent=self, conf=conf)
             dlg.CenterOnScreen()
             val = dlg.ShowModal()
@@ -850,38 +897,38 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             if self.config_mode == 'int':
                 self.cmap_panels[icol].set_colormap()
 
-            ipanel.axes.cla()
-            ipanel.display(conf.data, x=ipanel.xdata, y = ipanel.ydata,
-                          xlabel=ipanel.xlab, ylabel=ipanel.ylab,
+            iframe.panel.axes.cla()
+            iframe.panel.display(conf.data, x=iframe.panel.xdata, y = iframe.panel.ydata,
+                          xlabel=iframe.panel.xlab, ylabel=iframe.panel.ylab,
                           contour_labels=conf.contour_labels,
                           nlevels=conf.ncontour_levels, style='contour')
-            ipanel.redraw()
+            iframe.panel.redraw()
 
     def onContourToggle(self, event=None):
 
-        for icol,ipanel in enumerate(self.img_panel):
-            if len(ipanel.conf.data.shape) > 2:
+        for icol,iframe in enumerate(self.tomo_frame):
+            if len(iframe.panel.conf.data.shape) > 2:
                 return
-            conf  = ipanel.conf
+            conf  = iframe.panel.conf
             conf.style = 'image'
             if event.IsChecked():
                 conf.style = 'contour'
             nlevels = int(conf.ncontour_levels)
             if self.config_mode == 'int':
                 self.cmap_panels[0].set_colormap()
-            ipanel.axes.cla()
-            ipanel.display(conf.data, x=ipanel.xdata, y = ipanel.ydata,
+            iframe.panel.axes.cla()
+            iframe.panel.display(conf.data, x=iframe.panel.xdata, y = iframe.panel.ydata,
                           nlevels=nlevels, contour_labels=conf.contour_labels,
-                          xlabel=ipanel.xlab, ylabel=ipanel.ylab,
+                          xlabel=iframe.panel.xlab, ylabel=iframe.panel.ylab,
                           style=conf.style)
-            ipanel.redraw()
+            iframe.panel.redraw()
 
     def onTriColorBG(self, event=None):
         bgcol = {True:'white', False:'black'}[event.IsChecked()]
 
         icol = 0
-        for ipanel in self.img_panel:
-            conf = ipanel.conf
+        for iframe in self.tomo_frame:
+            conf = iframe.panel.conf
             if bgcol == conf.tricolor_bg:
                 return
 
@@ -894,16 +941,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                 self.cmap_panels[icol].set_colormap(name=cmaps[i])
                 icol += 1
 
-            ipanel.redraw()
+            iframe.panel.redraw()
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
 
         ## orients mask correctly to match with raw data shape
-        ## this will only work for sideways data
         ## mkak 2018.01.24
-        print 'need to make this adaptable to shape data properly'
-        if mask.shape[0] != mask.shape[1]:
-            mask = np.swapaxes(mask,0,1)
+        mask = np.swapaxes(mask,0,1)
         
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
@@ -911,8 +955,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
     def onDataChange(self, data, x=None, y=None, col='int', **kw):
 
         icol = 0
-        for ipanel in self.img_panel:
-            conf = ipanel.conf
+        for iframe in self.tomo_frame:
+            conf = iframe.panel.conf
             if len(data.shape) == 2: # intensity map
                 imin, imax = data.min(), data.max()
                 conf.int_lo[0] = imin
@@ -939,9 +983,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onEnhanceContrast(self, event=None):
         '''change image contrast, using scikit-image exposure routines'''
-        for ipanel in self.img_panel: self.ipanel.conf.auto_contrast = event.IsChecked()
+        for iframe in self.tomo_frame:
+            self.iframe.panel.conf.auto_contrast = event.IsChecked()
         self.set_contrast_levels()
-        for ipanel in self.img_panel: ipanel.redraw()
+        for iframe in self.tomo_frame:
+            iframe.panel.redraw()
 
     def set_contrast_levels(self):
         '''enhance contrast levels, or use full data range
@@ -949,9 +995,9 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         '''
 
         icol = 0
-        for ipanel in self.img_panel:
-            conf = ipanel.conf
-            img  = ipanel.conf.data
+        for iframe in self.tomo_frame:
+            conf = iframe.panel.conf
+            img  = iframe.panel.conf.data
             enhance = conf.auto_contrast
             clevel = conf.auto_contrast_level
             if len(img.shape) == 2: # intensity map
@@ -995,9 +1041,9 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onLogScale(self, event=None):
         
-        for ipanel in self.img_panel:
-            ipanel.conf.log_scale = not ipanel.conf.log_scale
-            ipanel.redraw()
+        for iframe in self.tomo_frame:
+            iframe.panel.conf.log_scale = not iframe.panel.conf.log_scale
+            iframe.panel.redraw()
 
     def onCMapSave(self, event=None, col='int'):
         '''save color table image'''
@@ -1015,6 +1061,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def save_figure(self,event=None, transparent=True, dpi=600):
         ''' save figure image to file'''
-        for ipanel in self.img_panel:
-            if ipanel is not None:
-                ipanel.save_figure(event=event, transparent=transparent, dpi=dpi)
+        for iframe in self.tomo_frame:
+            if iframe.panel is not None:
+                iframe.panel.save_figure(event=event, transparent=transparent, dpi=dpi)
