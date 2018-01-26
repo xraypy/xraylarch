@@ -1989,11 +1989,11 @@ class GSEXRM_MapFile(object):
         return tomo
 
 
-    def save_tomograph(self, detname, overwrite=True, **kws):
+    def save_tomograph(self, detname, overwrite=True, tomo_alg=[], **kws):
         '''
         saves group for tomograph for selected detector
         '''
-        
+       
         detlist = get_detectors(self.xrmmap)
         if detname not in detlist:
             print("Detector '%s' not found in data." % detname)
@@ -2020,10 +2020,15 @@ class GSEXRM_MapFile(object):
         omega = self.get_rotation_axis()
         x = self.get_translation_axis()
         center = self.get_tomography_center()
-        sino,order = reshape_sinogram(self.xrmmap[detname]['counts'],x,omega)
+        try:
+            raw_sino = self.xrmmap[detname]['counts']
+        except:
+            print('unable to find path self.xrmmap[%s][counts]' % detname)
+            return
+        sino,order = reshape_sinogram(raw_sino,x,omega)
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-                                          sinogram_order=order, **kws)
+                                          sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
                                           
         detgrp.create_dataset('counts', data=tomo)
         for data_tag in ('energy','q'):
@@ -2037,9 +2042,8 @@ class GSEXRM_MapFile(object):
             except:
                 pass
 
-                
         print("Tomography data saved for '%s' successfully." % detname)
-
+        self.h5root.flush()
         
 
     def claim_hostid(self):
@@ -2224,14 +2228,20 @@ class GSEXRM_MapFile(object):
 
         '''
 
+        print 'HERE: ',tomo
         if tomo:
             ## check for area of given name
             try:
                 area = self.get_area(areaname, tomo=True).value
             except:
                 raise GSEXRM_Exception("Could not find tomo area 'tomo/areas/%s'" % areaname)
+              
+            print 'How to tomo orient mask?'
+#             area = np.swapaxes(area,0,1)
+#             area = np.swapaxes(area,1,0)
+            area = np.swapaxes(area,1,1)
 
-        
+
             ## checks detector names
             if det is not None:
                 if (type(det) is str and det.isdigit()) or type(det) is int:
@@ -2269,7 +2279,7 @@ class GSEXRM_MapFile(object):
                 try:
                     if hasattr(callback , '__call__'):
                         callback(1, 1, nx*ny)
-                    counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
+                    counts = self.get_mca_tomo_rect(ymin, ymax, xmin, xmax,
                                                mapdat=mapdat, area=area,
                                                dtcorrect=dtcorrect)
                 except MemoryError:
@@ -2283,7 +2293,7 @@ class GSEXRM_MapFile(object):
                         if x1 >= x2: break
                         if hasattr(callback , '__call__'):
                             callback(i, step, (x2-x1)*ny)
-                        counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
+                        counts += self.get_mca_tomo_rect(ymin, ymax, x1, x2, mapdat=mapdat,
                                                     det=det, area=area,
                                                     dtcorrect=dtcorrect)
                 else:
@@ -2293,7 +2303,7 @@ class GSEXRM_MapFile(object):
                         if y1 >= y2: break
                         if hasattr(callback , '__call__'):
                             callback(i, step, nx*(y2-y1))
-                        counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
+                        counts += self.get_mca_tomo_rect(y1, y2, xmin, xmax, mapdat=mapdat,
                                                     det=det, area=area,
                                                     dtcorrect=dtcorrect)
 
@@ -2392,17 +2402,16 @@ class GSEXRM_MapFile(object):
                             real_time=rtime, live_time=ltime)
 
     def get_mca_tomo_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                     area=None, dtcorrect=True):
+                          area=None, dtcorrect=True):
     
-        ## builds detector list
-        detlist = get_detectors(self.xrmmap['tomo'])
-    
-        if detname in detlist:
-            dgroup = 'tomo/%s' % detname
-        else:
-            #dgroup = 'tomo/mcasum'
-            return
-        mapdat = self.xrmmap[dgroup]
+        if mapdat is None:
+            if det in get_detectors(self.xrmmap['tomo']):
+                dgroup = 'tomo/%s' % detname
+            else:
+                #dgroup = 'tomo/mcasum'
+                return
+            mapdat = self.xrmmap[dgroup]
+
         ix, iy, nchan = mapdat['counts'].shape
 
         print 'testing tomography',ix, iy, nchan

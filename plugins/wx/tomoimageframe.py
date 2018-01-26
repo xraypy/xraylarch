@@ -96,7 +96,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=True, 
+                 lasso_callback=None, 
                  output_title='Tomography Display Frame', subtitles=None,
                  user_menus=None, **kws):
 

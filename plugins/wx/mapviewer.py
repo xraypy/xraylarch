@@ -486,6 +486,7 @@ class TomographyPanel(GridPanel):
         self.owner = owner
         self.cfile,self.xrmmap = None,None
         self.npts = None
+        self.resave = False
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -658,9 +659,11 @@ class TomographyPanel(GridPanel):
             self.refine_center.SetValue(False)
             self.refine_center.Disable()
             self.center_range.Disable()
+            self.resave = True
         else:
             self.center_value.Enable()
             self.refine_center.Enable()
+            self.resave = False
 
     def refineCHOICE(self,event=None):
 
@@ -829,21 +832,29 @@ class TomographyPanel(GridPanel):
 
         xrmfile = self.owner.current_file
         tomo_center = self.center_value.GetValue()
-
+        
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
 
+        tomo_alg = [self.alg_choice[0].GetStringSelection(),
+                    self.alg_choice[1].GetStringSelection(),
+                    self.alg_choice[2].GetStringSelection()]
+        
         args = {'refine_center'  : self.refine_center.GetValue(),
                 'center_range'   : self.center_range.GetValue(),
                 'center'         : tomo_center,
-                'tomo_alg'       : [self.alg_choice[0].GetStringSelection(),
-                                    self.alg_choice[1].GetStringSelection(),
-                                    self.alg_choice[2].GetStringSelection()],
+                'tomo_alg'       : tomo_alg,
                 'sinogram_order' : sino_order,
                 'omega'          : ome
                }
 
         tomo = xrmfile.get_tomograph(sino, **args)
+        
+        if self.resave:
+            for detname in self.return_det_choices(xrmfile.xrmmap):
+                if detname.lower() in ['mcasum','detsum','xrd1d']:
+                     xrmfile.save_tomograph(detname, overwrite=True, tomo_alg=tomo_alg)
+            self.resave = False
 
         if args['refine_center']: 
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
@@ -870,7 +881,7 @@ class TomographyPanel(GridPanel):
         self.center_value.SetValue(cen)
         self.cfile.set_tomography_center(center=cen)
 
-    def set_det_choices(self, xrmmap):
+    def return_det_choices(self, xrmmap):
 
         det_list = []
         if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
@@ -892,6 +903,12 @@ class TomographyPanel(GridPanel):
            if sumname in det_list:
                det_list.remove(sumname)
                det_list.insert(0,sumname)
+               
+        return det_list
+
+    def set_det_choices(self, xrmmap):
+
+        det_list = self.return_det_choices(xrmmap)
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
@@ -2242,7 +2259,7 @@ class MapViewerFrame(wx.Frame):
             mask = tmask
 
 
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=True)
         mca_thread = Thread(target=self.get_mca_area,
                             args=(mask,), kwargs=kwargs)
         mca_thread.start()
@@ -2310,7 +2327,7 @@ class MapViewerFrame(wx.Frame):
                 mask = tmask
 
 
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomograph)
         mca_thread = Thread(target=self.get_mca_area,
                             args=(mask,), kwargs=kwargs)
         mca_thread.start()
