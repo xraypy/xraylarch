@@ -541,9 +541,9 @@ class TomographyPanel(GridPanel):
 
         self.refine_center.SetValue(False)
         
-        self.lock_center = wx.CheckBox(self, label='Lock center')
-        self.lock_center.Bind(wx.EVT_CHECKBOX, self.lockCENTER)
-        self.lock_center.SetValue(False)
+        self.lock_recon = wx.CheckBox(self, label='Lock reconstruction')
+        self.lock_recon.Bind(wx.EVT_CHECKBOX, self.lockRECON)
+        self.lock_recon.SetValue(False)
         
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
@@ -571,9 +571,9 @@ class TomographyPanel(GridPanel):
         self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
-        self.AddMany((self.center_value,self.lock_center),
+        self.AddMany((self.center_value,self.refine_center,self.center_range),
                                                        dcol=1, style=LEFT)
-        self.AddMany((SimpleText(self,''),SimpleText(self,''),self.refine_center,self.center_range),
+        self.AddMany((SimpleText(self,''),SimpleText(self,''),self.lock_recon),
                                                        dcol=1, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
@@ -594,7 +594,7 @@ class TomographyPanel(GridPanel):
 
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]
         for chc in all_choices: chc.Disable()
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center,self.lock_center):
+        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center,self.lock_recon):
             chk.Disable()
         for btn in self.tomo_show: #(self.sino_show+self.tomo_show):
             btn.Disable()
@@ -619,7 +619,7 @@ class TomographyPanel(GridPanel):
 
         if self.tomo_pkg[0] != '':
             for btn in (self.tomo_show): btn.Enable()
-            self.lock_center.Enable()
+            self.lock_recon.Enable()
             self.refine_center.Enable()
             self.center_value.Enable()
             self.center_range.SetValue(10)
@@ -652,15 +652,19 @@ class TomographyPanel(GridPanel):
 
         self.plotSELECT()
 
-    def lockCENTER(self,event=None):
+    def lockRECON(self,event=None):
 
-        if self.lock_center.GetValue():
+        if self.lock_recon.GetValue():
+            for alg_ch in self.alg_choice:
+                alg_ch.Disable()
             self.center_value.Disable()
             self.refine_center.SetValue(False)
             self.refine_center.Disable()
             self.center_range.Disable()
             self.resave = True
         else:
+            for alg_ch in self.alg_choice:
+                alg_ch.Enable()
             self.center_value.Enable()
             self.refine_center.Enable()
             self.resave = False

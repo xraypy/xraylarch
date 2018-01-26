@@ -2033,7 +2033,10 @@ class GSEXRM_MapFile(object):
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
                                           sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
-                                          
+
+        detgrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
+        detgrp.attrs['center'] = '%0.2f pixels' % (center)
+        
         detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
         for data_tag in ('energy','q'):
             try:

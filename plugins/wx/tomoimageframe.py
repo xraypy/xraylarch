@@ -320,10 +320,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if event.ydata is not None:
             self.lastpoint[1] = event.ydata
 
-        yoff = panel.canvas.figure.bbox.height
+        yoff = frame.panel.canvas.figure.bbox.height
         ymin, ymax = yoff - ymin, yoff - ymax
 
-        zdc = wx.ClientDC(panel.canvas)
+        zdc = wx.ClientDC(frame.panel.canvas)
         zdc.SetLogicalFunction(wx.XOR)
         zdc.SetBrush(wx.TRANSPARENT_BRUSH)
         zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
@@ -410,7 +410,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         if self.prof_plotter is None:
             self.prof_plotter = PlotFrame(self, title='Profile')
-            self.prof_plotter.frame.panel.report_leftdown = self.prof_report_coords
+            self.prof_plotter.panel.report_leftdown = self.prof_report_coords
 
         xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
 
@@ -420,7 +420,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         if dy > dx:
             x, y = y, x
             xlabel, y2label = y2label, xlabel
-        self.prof_plotter.frame.panel.clear()
+        self.prof_plotter.panel.clear()
 
         if len(self.title) < 1:
             self.title = os.path.split(self.xrmfile.filename)[1]
@@ -454,7 +454,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         except:
             pass
 
-        self.prof_plotter.frame.panel.unzoom_all()
+        self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
         self.zoom_ini = None
 
@@ -991,7 +991,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def set_contrast_levels(self):
         '''enhance contrast levels, or use full data range
-        according to value of panel.conf.auto_contrast
+        according to value of iframe.panel.conf.auto_contrast
         '''
 
         icol = 0
