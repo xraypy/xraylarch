@@ -649,6 +649,10 @@ class TomographyPanel(GridPanel):
             center = self.cfile.get_tomography_center()
             self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
             self.center_value.SetValue(center)
+            
+            lock_recon = self.cfile.get_tomography_status()
+            self.lock_recon.SetValue(lock_recon)
+            self.lockRECON()
 
         self.plotSELECT()
 

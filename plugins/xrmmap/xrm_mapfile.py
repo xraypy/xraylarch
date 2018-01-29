@@ -1795,7 +1795,6 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
         base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
         if name is None:
@@ -1819,7 +1818,6 @@ class GSEXRM_MapFile(object):
             file_str = '%s_TomoAreas.npz' if tomo else '%s_Areas.npz'
             filename = file_str % self.filename
         
-        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
         base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
 
@@ -1847,7 +1845,6 @@ class GSEXRM_MapFile(object):
         '''
         get area group by name or description
         '''
-        #base_grp = self.xrmmap['tomo'] if tomo else self.xrmmap
         base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
 
@@ -1929,13 +1926,26 @@ class GSEXRM_MapFile(object):
         except:
             return
 
+    def set_tomography_status(self,key=True):
+
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        tomogrp.attrs['status'] = key
+        
+        self.h5root.flush()
+
+    def get_tomography_status(self):
+
+        try:
+            return self.xrmmap['tomo'].attrs['status']
+        except:
+            return False
 
     def get_tomography_center(self):
 
         try:
             return self.xrmmap['tomo/center'].value
         except:
-             self.set_tomography_center()
+            self.set_tomography_center()
 
         return self.xrmmap['tomo/center'].value
 
@@ -2049,6 +2059,7 @@ class GSEXRM_MapFile(object):
             except:
                 pass
 
+        self.set_tomography_status(key=True)
         print("Tomography data saved for '%s' successfully." % detname)
         self.h5root.flush()
         
@@ -2413,6 +2424,8 @@ class GSEXRM_MapFile(object):
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     counts += _cts
+        else:
+            print ('tomography not yet using dtfactor for dead time correction')
 
         if area is not None:
             counts = counts[area[sy, sx]]
