@@ -16,7 +16,7 @@ from distutils.version import StrictVersion
 import larch
 from larch.utils.debugtime import debugtime
 from larch.utils.strutils import fix_filename
-from larch_plugins.io import nativepath, new_filename
+from larch_plugins.io import nativepath, new_filename, tifffile
 from larch_plugins.xrf import MCA, ROI
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
@@ -234,6 +234,7 @@ class GSEXRM_MapRow:
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
+                 xrd2dbkgd=None,
                  mask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
@@ -370,7 +371,11 @@ class GSEXRM_MapRow:
                 self.xrd2d = xrd_dat[0:self.npts]
 
             if poni is not None and FLAGxrd1D:
-                attrs = {'steps':steps,'mask':mask,'flip':flip}
+                try:
+                    dark = np.array(tifffile.imread(xrd2dbkgd))
+                except:
+                    dark = None
+                attrs = {'steps':steps,'mask':mask,'flip':flip,'dark':dark}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
 
                 if wdg > 1:
@@ -661,7 +666,8 @@ class GSEXRM_MapFile(object):
                  poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
-                 facility='APS', beamline='13-ID-E',run='',proposal='',user=''):
+                 facility='APS', beamline='13-ID-E',run='',proposal='',user='',
+                 xrd2dbkgd=None):
 
         self.filename         = filename
         self.folder           = folder
@@ -692,6 +698,7 @@ class GSEXRM_MapFile(object):
         ## used for XRD
         self.calibration = poni
         self.maskfile    = mask
+        self.xrd2dbkgd   = xrd2dbkgd
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
@@ -1083,6 +1090,7 @@ class GSEXRM_MapFile(object):
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
                              masterfile=self.masterfile, poni=self.calibration,
+                             xrd2dbkgd = self.xrd2dbkgd,
                              flip=self.flip, mask=self.maskfile,
                              wdg=self.azwdgs, steps=self.qstps,
                              FLAGxrf=self.flag_xrf, FLAGxrd2D=self.flag_xrd2d,
@@ -3235,7 +3243,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
         except KeyboardInterrupt:
             sys.exit()
         except:
-            print( 'Could not convert ', path)
+            print( 'Could not convert %s' % path)
             print( sys.exc_info() )
             return
         finally:
