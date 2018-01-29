@@ -2379,8 +2379,14 @@ class GSEXRM_MapFile(object):
 
         Note:  if mapdat is None, the map data is taken from the 'det' parameter
         '''
+        
         if mapdat is None:
             mapdat = self._det_group(det)
+
+        ## needs to be improved - but skips dead time correction for xrd data
+        ## mkak 2018.01.29
+        if mapdat.attrs['type'].startswith('xrd'):
+            tomo = True
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2425,7 +2431,8 @@ class GSEXRM_MapFile(object):
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     counts += _cts
         else:
-            print ('tomography not yet using dtfactor for dead time correction')
+            if dtcorrect:
+                print ('not yet using deadtime correction for this type of data')
 
         if area is not None:
             counts = counts[area[sy, sx]]
