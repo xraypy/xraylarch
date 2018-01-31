@@ -18,6 +18,8 @@ try:
 except ImportError:
     pass
 
+from larch_plugins.io import tifffile
+
 ##########################################################################
 # FUNCTIONS
 
@@ -92,6 +94,12 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=Non
         except:
             print('Provided calibration file could not be loaded.')
             return
+
+        if type(dark) is str:
+            try:
+                dark = np.array(tifffile.imread(xrd2dbkgd))
+            except:
+                dark = None
         
         dir = -1 if flip else 1
         attrs = {'mask':mask,'dark':dark}

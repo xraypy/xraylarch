@@ -2006,7 +2006,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
-    def _getxrd_area(self, areaname, xrd, **kwargs):
+    def _getxrd_area(self, areaname, xrd='1D', **kwargs):
         if xrd == '1D':
             self._xrd = self.owner.current_file.get_1Dxrd_area(areaname, **kwargs)
         elif xrd == '2D':
@@ -2074,7 +2074,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if xrd1d and xrmfile.flag_xrd1d:
             self._xrd  = None
-            self._getxrd_area(aname,'1D') ## creates self._xrd group of type XRD
+            self._getxrd_area(aname,xrd='1D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])
@@ -2102,7 +2102,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if xrmfile.flag_xrd2d and (xrd2d or xrd1d):
             self._xrd  = None
-            self._getxrd_area(aname,'2D') ## creates self._xrd group of type XRD
+            self._getxrd_area(aname,xrd='2D') ## creates self._xrd group of type XRD
             self._xrd.filename = self.owner.current_file.filename
             self._xrd.title = title
             self._xrd.npixels = len(area.value[np.where(area.value)])

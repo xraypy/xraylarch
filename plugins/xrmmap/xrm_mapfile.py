@@ -371,11 +371,7 @@ class GSEXRM_MapRow:
                 self.xrd2d = xrd_dat[0:self.npts]
 
             if poni is not None and FLAGxrd1D:
-                try:
-                    dark = np.array(tifffile.imread(xrd2dbkgd))
-                except:
-                    dark = None
-                attrs = {'steps':steps,'mask':mask,'flip':flip,'dark':dark}
+                attrs = {'steps':steps,'mask':mask,'flip':flip,'dark':xrd2dbkgd}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
 
                 if wdg > 1:
@@ -2597,7 +2593,7 @@ class GSEXRM_MapFile(object):
         NCHUNKSIZE = 16384 # 8192
         use_chunks = nx*ny > NCHUNKSIZE
         step = int((nx*ny)/NCHUNKSIZE)
-
+        
         if not use_chunks:
             try:
                 if hasattr(callback , '__call__'):
