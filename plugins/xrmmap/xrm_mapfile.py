@@ -235,7 +235,7 @@ class GSEXRM_MapRow:
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None, poni=None,
                  xrd2dbkgd=None,
-                 mask=None, wdg=0, steps=STEPS, flip=True,
+                 xrd2dmask=None, wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         self.read_ok = False
@@ -371,7 +371,7 @@ class GSEXRM_MapRow:
                 self.xrd2d = xrd_dat[0:self.npts]
 
             if poni is not None and FLAGxrd1D:
-                attrs = {'steps':steps,'mask':mask,'flip':flip,'dark':xrd2dbkgd}
+                attrs = {'steps':steps,'mask':xrd2dmask,'flip':flip,'dark':xrd2dbkgd}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
 
                 if wdg > 1:
@@ -659,11 +659,11 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 poni=None, mask=None, azwdgs=0, qstps=STEPS, flip=True,
+                 xrd2dcal=None, xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None,
+                 azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
-                 facility='APS', beamline='13-ID-E',run='',proposal='',user='',
-                 xrd2dbkgd=None):
+                 facility='APS', beamline='13-ID-E',run='',proposal='',user=''):
 
         self.filename         = filename
         self.folder           = folder
@@ -692,9 +692,10 @@ class GSEXRM_MapFile(object):
         self.flag_xrd2d   = FLAGxrd2D
 
         ## used for XRD
-        self.calibration = poni
-        self.maskfile    = mask
-        self.xrd2dbkgd   = xrd2dbkgd
+        self.calibration    = xrd2dcal
+        self.xrd2dmaskfile  = xrd2dmask
+        self.xrd2dbkgd      = xrd2dbkgd
+        self.xrd1dbkgd      = xrd1dbkgd
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
@@ -1087,7 +1088,7 @@ class GSEXRM_MapFile(object):
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
                              masterfile=self.masterfile, poni=self.calibration,
                              xrd2dbkgd = self.xrd2dbkgd,
-                             flip=self.flip, mask=self.maskfile,
+                             flip=self.flip, xrd2dmask=self.xrd2dmaskfile,
                              wdg=self.azwdgs, steps=self.qstps,
                              FLAGxrf=self.flag_xrf, FLAGxrd2D=self.flag_xrd2d,
                              FLAGxrd1D=self.flag_xrd1d)
@@ -1596,7 +1597,7 @@ class GSEXRM_MapFile(object):
                                        np.float32,
                                        chunks = chunksize_1DXRD)
 
-                attrs = {'steps':self.qstps,'mask':self.maskfile,'flip':self.flip}
+                attrs = {'steps':self.qstps,'mask':self.xrd2dmaskfile,'flip':self.flip}
 
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
                 for i in np.arange(nrows):
@@ -1791,7 +1792,7 @@ class GSEXRM_MapFile(object):
         workgroup = ensure_subgroup('work',self.xrmmap)
         return [h5str(g) for g in workgroup.keys()]
 
-    def add_area(self, mask, name=None, desc=None, tomo=False):
+    def add_area(self, amask, name=None, desc=None, tomo=False):
         '''add a selected area, with optional name
         the area is encoded as a boolean array the same size as the map
 
@@ -1808,7 +1809,7 @@ class GSEXRM_MapFile(object):
             while name in area_grp and count < 9999:
                 name = 'area_%3.3i' % (count)
                 count += 1
-        ds = area_grp.create_dataset(name, data=mask)
+        ds = area_grp.create_dataset(name, data=amask)
         if desc is None:
             desc = name
         ds.attrs['description'] = desc
@@ -1841,9 +1842,9 @@ class GSEXRM_MapFile(object):
                 othername = othername.replace(npz_str, '')
 
         for aname in npzdat.files:
-            mask = npzdat[aname]
+            amask = npzdat[aname]
             outname = '%s_%s' % (aname, othername)
-            self.add_area(mask, name=outname, desc=outname, tomo=tomo)
+            self.add_area(amask, name=outname, desc=outname, tomo=tomo)
 
     def get_area(self, name=None, desc=None, tomo=False):
         '''
@@ -2387,7 +2388,7 @@ class GSEXRM_MapFile(object):
         if mapdat is None:
             mapdat = self._det_group(det)
 
-        ## needs to be improved - but skips dead time correction for xrd data
+        ## needs to be improved - but skips deadtime correction for xrd data
         ## mkak 2018.01.29
         if mapdat.attrs['type'].startswith('xrd'):
             tomo = True
@@ -3221,6 +3222,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
     """
+    kws['xrd2dcal'] = kws.pop('poni')
     if os.path.isdir(path) and isGSEXRM_MapFolder(path):
         print( '\n build map for: %s' % path)
         try:
@@ -3249,6 +3251,7 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
     """process a list of map folders
     with optional keywords passed to GSEXRM_MapFile
     """
+    kws['xrd2dcal'] = kws.pop('poni')
     if ncpus is None:
         ncpus = max(1, mp.cpu_count()-1)
     if ncpus == 0:
