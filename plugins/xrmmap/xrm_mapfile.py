@@ -16,14 +16,14 @@ from distutils.version import StrictVersion
 import larch
 from larch.utils.debugtime import debugtime
 from larch.utils.strutils import fix_filename
-from larch_plugins.io import nativepath, new_filename, tifffile
+from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,
                                   readEnvironFile, parseEnviron, read_xrd_netcdf,
                                   read_xrd_hdf5)
 from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
-                               q_from_d,lambda_from_E)
+                               q_from_d,lambda_from_E,read_xrd_data)
 from larch_plugins.tomo import tomo_reconstruction,reshape_sinogram,trim_sinogram
 
 
@@ -233,9 +233,9 @@ class GSEXRM_MapRow:
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
                  reverse=None, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
-                 masterfile=None, xrftype=None, xrdtype=None, poni=None,
-                 xrd2dbkgd=None,
-                 xrd2dmask=None, wdg=0, steps=STEPS, flip=True,
+                 masterfile=None, xrftype=None, xrdtype=None,
+                 xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
+                 wdg=0, steps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd2D=False, FLAGxrd1D=False):
 
         self.read_ok = False
@@ -370,9 +370,9 @@ class GSEXRM_MapRow:
             else:
                 self.xrd2d = xrd_dat[0:self.npts]
 
-            if poni is not None and FLAGxrd1D:
+            if xrdcal is not None and FLAGxrd1D:
                 attrs = {'steps':steps,'mask':xrd2dmask,'flip':flip,'dark':xrd2dbkgd}
-                self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,poni,**attrs)
+                self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
 
                 if wdg > 1:
                     self.xrdq_wdg,self.xrd1d_wdg = [],[]
@@ -381,7 +381,7 @@ class GSEXRM_MapRow:
                         wdg_lmts = np.array([iwdg*wdg_sz, (iwdg+1)*wdg_sz]) - 180
 
                         attrs.update({'wedge_limits':wdg_lmts})
-                        q,counts = integrate_xrd_row(self.xrd2d,poni,**attrs)
+                        q,counts = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
                         self.xrdq_wdg  += [q]
                         self.xrd1d_wdg += [counts]
 
@@ -455,12 +455,6 @@ class GSEXRM_MapRow:
             self.posvals = [np.array(xvals)]
             if dimension == 2:
                 self.posvals.append(np.array([float(yvalue) for i in points]))
-#             realtime = self.realtime.sum(axis=1).astype('float32')
-#             livetime = self.livetime.sum(axis=1).astype('float32')
-#             while len(realtime) < self.npts: realtime.append(1.)
-#             while len(livetime) < self.npts: livetime.append(1.)
-#             self.posvals.append(realtime / nmca)
-#             self.posvals.append(livetime / nmca)
             self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
             self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
             total = None
@@ -659,7 +653,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 xrd2dcal=None, xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None,
+                 xrdcal=None, xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None,
                  azwdgs=0, qstps=STEPS, flip=True,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
@@ -692,13 +686,25 @@ class GSEXRM_MapFile(object):
         self.flag_xrd2d   = FLAGxrd2D
 
         ## used for XRD
-        self.calibration    = xrd2dcal
+        self.bkgd_xrd2d     = None
+        self.bkgd_xrd1d     = None
+        self.mask_xrd2d     = None
+        self.xrdcalfile     = xrdcal
         self.xrd2dmaskfile  = xrd2dmask
-        self.xrd2dbkgd      = xrd2dbkgd
-        self.xrd1dbkgd      = xrd1dbkgd
+        self.xrd2dbkgdfile  = xrd2dbkgd
+        self.xrd1dbkgdfile  = xrd1dbkgd
+        
+        if self.xrd2dbkgdfile is not None:
+            self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)
+        if self.xrd1dbkgdfile is not None:
+            self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)
+        if self.xrd2dmaskfile is not None:
+            self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
+        
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
+        self.dir         = -1 if flip else 1
 
         ## used for tomography orientation
         self.x           = None
@@ -781,7 +787,7 @@ class GSEXRM_MapFile(object):
             if 'Version' in self.xrmmap.attrs.keys():
                  self.version = self.xrmmap.attrs['Version']
 
-            if poni is not None: self.add_calibration(poni,flip)
+            if xrdcal is not None: self.add_calibration(xrdcal,self.flip)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -859,19 +865,19 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self,ponifile,flip):
+    def add_calibration(self,xrdcalfile,flip):
         '''
         adds calibration to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2016.11.16
         '''
 
         xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
-        self.calibration = ponifile
+        self.xrdcalfile = xrdcalfile
         self.flip = flip
 
-        if os.path.exists(self.calibration):
-            print('Calibration file loaded: %s' % self.calibration)
-            xrd1Dgrp.attrs['calfile'] = '%s' % (self.calibration)
+        if os.path.exists(self.xrdcalfile):
+            print('Calibration file loaded: %s' % self.xrdcalfile)
+            xrd1Dgrp.attrs['calfile'] = '%s' % (self.xrdcalfile)
         self.h5root.flush()
 
     def add_data(self, group, name, data, attrs=None, **kws):
@@ -1033,9 +1039,9 @@ class GSEXRM_MapFile(object):
         returns arrays of data
         '''
 
-        if self.calibration is None:
+        if self.xrdcalfile is None:
             try:
-                self.calibration = self.xrmmap['xrd1D'].attrs['calfile']
+                self.xrdcalfile = self.xrmmap['xrd1D'].attrs['calfile']
             except:
                 pass
 
@@ -1086,9 +1092,9 @@ class GSEXRM_MapFile(object):
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
                              npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile=self.masterfile, poni=self.calibration,
-                             xrd2dbkgd = self.xrd2dbkgd,
-                             flip=self.flip, xrd2dmask=self.xrd2dmaskfile,
+                             masterfile=self.masterfile, flip=self.flip,
+                             xrdcal=self.xrdcalfile, xrd2dmask=self.mask_xrd2d,
+                             xrd2dbkgd = self.bkgd_xrd2d,
                              wdg=self.azwdgs, steps=self.qstps,
                              FLAGxrf=self.flag_xrf, FLAGxrd2D=self.flag_xrd2d,
                              FLAGxrd1D=self.flag_xrd1d)
@@ -1253,8 +1259,15 @@ class GSEXRM_MapFile(object):
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
         if self.flag_xrd1d:
-            if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
-            self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
+            if thisrow == 0:
+                self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
+
+            if self.bkgd_xrd1d is not None:
+                self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
+            else:
+                self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
+#             self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
+
             if self.azwdgs > 1 and row.xrd1d_wdg is not None:
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
                     try:
@@ -1262,8 +1275,19 @@ class GSEXRM_MapFile(object):
                     except:
                         pass
                     wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
+
         if self.flag_xrd2d and row.xrd2d is not None:
-            self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+
+            mask2d = np.ones(row.xrd2d[0].shape)
+            if self.mask_xrd2d is not None:
+                mask2d = mask2d - self.mask_xrd2d[::self.dir]
+                
+            if self.bkgd_xrd2d is not None:
+                self.xrmmap['xrd2D/counts'][thisrow,] = mask2d*(row.xrd2d-self.bkgd_xrd2d)
+            else:
+                self.xrmmap['xrd2D/counts'][thisrow,] = mask2d*(row.xrd2d)
+#             self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
         self.h5root.flush()
@@ -1570,8 +1594,8 @@ class GSEXRM_MapFile(object):
         xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
         if os.path.exists(xrd1Dgrp.attrs['calfile']):
 
-            poni = xrd1Dgrp.attrs['calfile']
-            print('Using calibration file : %s' % poni)
+            xrdcalfile = xrd1Dgrp.attrs['calfile']
+            print('Using calibration file : %s' % xrdcalfile)
             try:
                 nrows, npts , xpixx, xpixy = self.xrmmap['xrd2D/counts'].shape
             except:
@@ -1602,7 +1626,7 @@ class GSEXRM_MapFile(object):
                 print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
                 for i in np.arange(nrows):
                     print(' Add row %4i' % (i+1))
-                    rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2D/counts'][i],poni,**attrs)
+                    rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2D/counts'][i],xrdcalfile,**attrs)
                     if i == 0: self.xrmmap['xrd1D/q'][:] = rowq[0]
                     self.xrmmap['xrd1D/counts'][i,] = row1D
 
@@ -2397,10 +2421,18 @@ class GSEXRM_MapFile(object):
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
 
-        ix, iy, nchan = mapdat['counts'].shape
+        nchan = None
+        try:
+            ix, iy, nchan = mapdat['counts'].shape
+        except:
+            ix, iy, pixx, pixy = mapdat['counts'].shape
         cell   = mapdat['counts'].regionref[sy, sx, :]
         counts = mapdat['counts'][cell]
-        counts = counts.reshape(ny, nx, nchan)
+        
+        if nchan is None:
+            counts = counts.reshape(ny, nx, pixx, pixy)
+        else:
+            counts = counts.reshape(ny, nx, nchan)
         
         if not tomo:
             if dtcorrect:
@@ -3222,7 +3254,7 @@ def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
     """
-    kws['xrd2dcal'] = kws.pop('poni')
+    kws['xrdcal'] = kws.pop('poni')
     if os.path.isdir(path) and isGSEXRM_MapFolder(path):
         print( '\n build map for: %s' % path)
         try:
@@ -3251,7 +3283,7 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
     """process a list of map folders
     with optional keywords passed to GSEXRM_MapFile
     """
-    kws['xrd2dcal'] = kws.pop('poni')
+    kws['xrdcal'] = kws.pop('poni')
     if ncpus is None:
         ncpus = max(1, mp.cpu_count()-1)
     if ncpus == 0:

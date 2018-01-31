@@ -2782,16 +2782,10 @@ class MapViewerFrame(wx.Frame):
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
 
-            flipchoice = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
             args = {'folder':           myDlg.Fldr.GetValue(),
                     'FLAGxrf':          myDlg.ChkBx[0].GetValue(),
                     'FLAGxrd2D':        myDlg.ChkBx[1].GetValue(),
                     'FLAGxrd1D':        myDlg.ChkBx[2].GetValue(),
-                    'xrd2dcal':         myDlg.XRDInfo[1].GetValue(),
-                    'xrd2dmask':        myDlg.XRDInfo[1].GetValue(),
-                    'azwdgs':           myDlg.XRDInfo[6].GetValue(),
-                    'qstps':            myDlg.XRDInfo[4].GetValue(),
-                    'flip':             flipchoice,
                     'facility':         myDlg.info[0].GetValue(),
                     'beamline':         myDlg.info[1].GetValue(),
                     'run':              myDlg.info[2].GetValue(),
@@ -2800,8 +2794,18 @@ class MapViewerFrame(wx.Frame):
                     'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
                     'compression_opts': myDlg.H5cmprInfo[1].GetSelection()}
 
-            bkgd = 'xrd2dbkgd' if myDlg.XRDInfo[0].GetSelection() == 1 else 'xrd1dbkgd'
-            args.update({bkgd:myDlg.XRDInfo[4].GetValue()})
+            if len(myDlg.XRDInfo[1].GetValue()) > 0:
+                flipchoice = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
+                args.update({'xrdcal' : myDlg.XRDInfo[1].GetValue(),
+                             'azwdgs' : myDlg.XRDInfo[6].GetValue(),
+                             'qstps'  : myDlg.XRDInfo[4].GetValue(),
+                              'flip'  : flipchoice                   })
+            if len(myDlg.XRDInfo[8].GetValue()) > 0:
+                bkgd = 2 if myDlg.XRDInfo[7].GetSelection() == 0 else 1
+                args.update({'xrd%idbkgd' % bkgd:myDlg.XRDInfo[8].GetValue()})
+            if len(myDlg.XRDInfo[11].GetValue()) > 0:
+                args.update({'xrd2dmask':myDlg.XRDInfo[11].GetValue()})
+
         myDlg.Destroy()
 
         if read:
@@ -3321,8 +3325,8 @@ class OpenMapFolder(wx.Dialog):
                           wx.TextCtrl(panel, size=(320, 25)),
                           Button(panel,      label='Browse...'),]
 
-        for i in [2,9,12]:
-            self.XRDInfo[i].Bind(wx.EVT_BUTTON,  partial(self.onBROWSEfile,i=i))
+        for i in [1,8,11]:
+            self.XRDInfo[i+1].Bind(wx.EVT_BUTTON,  partial(self.onBROWSEfile,i=i))
 
         ponisizer1 = wx.BoxSizer(wx.HORIZONTAL)
         
@@ -3448,7 +3452,7 @@ class OpenMapFolder(wx.Dialog):
             wldcd = '1D XRD background file (*.xy)|*.xy|All files (*.*)|*.*'
         else: ## elif i == 1:
             wldcd = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
-
+        
         if os.path.exists(self.XRDInfo[i].GetValue()):
            dfltDIR = self.XRDInfo[i].GetValue()
         else:
