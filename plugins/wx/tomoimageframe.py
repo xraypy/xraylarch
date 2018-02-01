@@ -273,15 +273,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             iframe.map = map
             iframe.panel.display(iframe.map, style=style, **kws)
             iframe.panel.conf.title = iframe.label
-        
-#         self.tomo_frame[0].map = map1
-#         self.tomo_frame[1].map = map2
-#         
-#         self.tomo_frame[0].panel.display(self.tomo_frame[0].map, style=style, **kws)
-#         self.tomo_frame[1].panel.display(self.tomo_frame[1].map, style=style, **kws)
-# 
-#         self.tomo_frame[0].panel.conf.title = self.tomo_frame[0].label
-#         self.tomo_frame[1].panel.conf.title = self.tomo_frame[1].label
 
         if colormap is not None and self.config_mode == 'int':
             self.cmap_panels[0].set_colormap(name=colormap)
@@ -297,8 +288,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             contour_value = 1
         self.set_contrast_levels()
 
-        self.tomo_frame[0].panel.redraw()
-        self.tomo_frame[1].panel.redraw()
+        for iframe in self.tomo_frame:
+            iframe.panel.redraw()
 
         self.config_panel.Refresh()
         self.SendSizeEvent()
