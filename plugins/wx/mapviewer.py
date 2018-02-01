@@ -2006,11 +2006,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
-    def _getxrd_area(self, areaname, xrd='1D', **kwargs):
-        if xrd == '1D':
-            self._xrd = self.owner.current_file.get_1Dxrd_area(areaname, **kwargs)
-        elif xrd == '2D':
-            self._xrd = self.owner.current_file.get_2Dxrd_area(areaname, **kwargs)
+    def _getxrd_area(self, areaname, **kwargs):
+
+        self._xrd = self.owner.current_file.get_xrd_area(areaname, **kwargs)
 
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
@@ -2798,15 +2796,16 @@ class MapViewerFrame(wx.Frame):
 
             if len(myDlg.XRDInfo[1].GetValue()) > 0:
                 flipchoice = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
-                args.update({'xrdcal' : myDlg.XRDInfo[1].GetValue(),
-                             'azwdgs' : myDlg.XRDInfo[6].GetValue(),
-                             'qstps'  : myDlg.XRDInfo[4].GetValue(),
-                              'flip'  : flipchoice                   })
+                args.update({'xrdcal'     : myDlg.XRDInfo[1].GetValue(),
+                             'azwdgs'     : myDlg.XRDInfo[6].GetValue(),
+                             'qstps'      : myDlg.XRDInfo[4].GetValue(),
+                              'flip'      : flipchoice,
+                              'bkgdscale' : float(myDlg.XRDInfo[11].GetValue())})
             if len(myDlg.XRDInfo[8].GetValue()) > 0:
                 bkgd = 2 if myDlg.XRDInfo[7].GetSelection() == 0 else 1
                 args.update({'xrd%idbkgd' % bkgd:myDlg.XRDInfo[8].GetValue()})
-            if len(myDlg.XRDInfo[11].GetValue()) > 0:
-                args.update({'xrd2dmask':myDlg.XRDInfo[11].GetValue()})
+            if len(myDlg.XRDInfo[13].GetValue()) > 0:
+                args.update({'xrd2dmask':myDlg.XRDInfo[13].GetValue()})
 
         myDlg.Destroy()
 
@@ -2859,7 +2858,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
-            self.current_file.add_calibration(path,flip)
+            self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
@@ -3278,7 +3277,6 @@ class OpenMapFolder(wx.Dialog):
         ################################################################################
         infoTtl =  [ SimpleText(panel,  label='Facility'),
                      SimpleText(panel,  label='Beamline'),
-#                      SimpleText(panel,  label='Date'),
                      SimpleText(panel,  label='Run cycle'),
                      SimpleText(panel,  label='Proposal'),
                      SimpleText(panel,  label='User group')]
@@ -3286,7 +3284,6 @@ class OpenMapFolder(wx.Dialog):
                       wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(100, 25) ),
                       wx.TextCtrl(panel, size=(100, 25) ),
-#                       wx.TextCtrl(panel, size=(250, 25) ),
                       wx.TextCtrl(panel, size=(320, 25) )]
 
         infosizer0 = wx.BoxSizer(wx.HORIZONTAL)
@@ -3323,31 +3320,40 @@ class OpenMapFolder(wx.Dialog):
                           Choice(panel,      choices=bkgd_chc ),
                           wx.TextCtrl(panel, size=(320, 25)),
                           Button(panel,      label='Browse...'),
+                          SimpleText(panel,  label='Background scale:'),
+                          wx.TextCtrl(panel, size=(80,  25)),
                           SimpleText(panel,  label='2DXRD mask file (optional):'),
                           wx.TextCtrl(panel, size=(320, 25)),
                           Button(panel,      label='Browse...'),]
 
-        for i in [1,8,11]:
+        for i in [1,8,13]:
             self.XRDInfo[i+1].Bind(wx.EVT_BUTTON,  partial(self.onBROWSEfile,i=i))
 
-        ponisizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        xrdsizer1 = wx.BoxSizer(wx.HORIZONTAL)
         
-        ponisizer1.Add(self.XRDInfo[3], flag=wx.RIGHT, border=5)
-        ponisizer1.Add(self.XRDInfo[4], flag=wx.RIGHT, border=5)
-        ponisizer1.Add(self.XRDInfo[5], flag=wx.RIGHT, border=5)
-        ponisizer1.Add(self.XRDInfo[6], flag=wx.RIGHT, border=5)
+        xrdsizer1.Add(self.XRDInfo[3], flag=wx.RIGHT, border=5)
+        xrdsizer1.Add(self.XRDInfo[4], flag=wx.RIGHT, border=5)
+        xrdsizer1.Add(self.XRDInfo[5], flag=wx.RIGHT, border=5)
+        xrdsizer1.Add(self.XRDInfo[6], flag=wx.RIGHT, border=5)
 
-        ponisizer = wx.BoxSizer(wx.VERTICAL)
-        ponisizer.Add(self.XRDInfo[0],  flag=wx.TOP,            border=5)
-        ponisizer.Add(self.XRDInfo[1],  flag=wx.TOP,            border=5)
-        ponisizer.Add(self.XRDInfo[2],  flag=wx.TOP|wx.BOTTOM,  border=5)
-        ponisizer.Add(ponisizer1,       flag=wx.BOTTOM,         border=5)
-        ponisizer.Add(self.XRDInfo[7],  flag=wx.TOP,            border=8)
-        ponisizer.Add(self.XRDInfo[8],  flag=wx.TOP,            border=5)
-        ponisizer.Add(self.XRDInfo[9],  flag=wx.TOP|wx.BOTTOM,  border=5)
-        ponisizer.Add(self.XRDInfo[10], flag=wx.TOP,            border=8)
-        ponisizer.Add(self.XRDInfo[11], flag=wx.TOP,            border=5)
-        ponisizer.Add(self.XRDInfo[12], flag=wx.TOP|wx.BOTTOM,  border=5)
+        xrdsizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        
+        xrdsizer2.Add(self.XRDInfo[9], flag=wx.RIGHT, border=30)
+        xrdsizer2.Add(self.XRDInfo[10], flag=wx.RIGHT, border=5)
+        xrdsizer2.Add(self.XRDInfo[11], flag=wx.RIGHT, border=5)
+
+        xrdsizer = wx.BoxSizer(wx.VERTICAL)
+        xrdsizer.Add(self.XRDInfo[0],  flag=wx.TOP,            border=5)
+        xrdsizer.Add(self.XRDInfo[1],  flag=wx.TOP,            border=5)
+        xrdsizer.Add(self.XRDInfo[2],  flag=wx.TOP|wx.BOTTOM,  border=5)
+        xrdsizer.Add(xrdsizer1,       flag=wx.BOTTOM,         border=5)
+        xrdsizer.Add(self.XRDInfo[7],  flag=wx.TOP,            border=8)
+        xrdsizer.Add(self.XRDInfo[8],  flag=wx.TOP,            border=5)
+#         xrdsizer.Add(self.XRDInfo[9],  flag=wx.TOP|wx.BOTTOM,  border=5)
+        xrdsizer.Add(xrdsizer2,       flag=wx.TOP|wx.BOTTOM,  border=5)
+        xrdsizer.Add(self.XRDInfo[12], flag=wx.TOP,            border=8)
+        xrdsizer.Add(self.XRDInfo[13], flag=wx.TOP,            border=5)
+        xrdsizer.Add(self.XRDInfo[14], flag=wx.TOP|wx.BOTTOM,  border=5)
 
 
         ################################################################################
@@ -3389,7 +3395,7 @@ class OpenMapFolder(wx.Dialog):
         sizer.Add((-1, 4))
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 4))
-        sizer.Add(ponisizer,   flag=wx.TOP|wx.LEFT, border=5)
+        sizer.Add(xrdsizer,   flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 4))
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
         sizer.Add((-1, 4))
@@ -3411,6 +3417,8 @@ class OpenMapFolder(wx.Dialog):
         self.XRDInfo[4].SetValue('5001')
         self.XRDInfo[6].SetValue(1)
         self.XRDInfo[6].SetRange(0,36)
+
+        self.XRDInfo[11].SetValue('1.0')
 
         self.FindWindowById(wx.ID_OK).Disable()
 
@@ -3450,7 +3458,7 @@ class OpenMapFolder(wx.Dialog):
     
         if i == 8:
             wldcd = '2D XRD background file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-        if i == 11:
+        if i == 13:
             wldcd = '1D XRD background file (*.xy)|*.xy|All files (*.*)|*.*'
         else: ## elif i == 1:
             wldcd = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'

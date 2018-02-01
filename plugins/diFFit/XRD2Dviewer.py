@@ -347,6 +347,7 @@ class diFFit2DFrame(wx.Frame):
             self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
             if self.open_image[-1].calfile is not None:
                 self.calfile = self.open_image[-1].calfile
+                self.xrd2Dviewer.on_calibration()
         except:
             self.write_message('Image failed to load.', panel=0)
             return

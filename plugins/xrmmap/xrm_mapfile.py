@@ -382,11 +382,14 @@ class GSEXRM_MapRow:
                 self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
             else:
                 self.xrd2d = mask2d*(self.xrd2d)
+            
+            ## limits all values to positive
+            self.xrd2d[self.xrd2d < 0] = 0
             ############################################################################
 
             if xrdcal is not None and FLAGxrd1D:
-                attrs = {'steps':steps,'mask':None,'flip':flip} ## temp. print still need to test mask!!
-#                 attrs = {'steps':steps,'mask':xrd2dmask,'flip':flip}
+                attrs = {'steps':steps,'flip':flip}
+
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
 
                 if wdg > 1:
@@ -669,7 +672,7 @@ class GSEXRM_MapFile(object):
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
                  xrdcal=None, xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None,
-                 azwdgs=0, qstps=STEPS, flip=True,
+                 azwdgs=0, qstps=STEPS, flip=True, bkgdscale=1.,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E',run='',proposal='',user=''):
@@ -704,22 +707,16 @@ class GSEXRM_MapFile(object):
         self.bkgd_xrd2d     = None
         self.bkgd_xrd1d     = None
         self.mask_xrd2d     = None
-        self.xrdcalfile     = xrdcal
-        self.xrd2dmaskfile  = xrd2dmask
-        self.xrd2dbkgdfile  = xrd2dbkgd
-        self.xrd1dbkgdfile  = xrd1dbkgd
-        
-        if self.xrd2dbkgdfile is not None:
-            self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)
-        if self.xrd1dbkgdfile is not None:
-            self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)
-        if self.xrd2dmaskfile is not None:
-            self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
+        self.xrdcalfile     = None
+        self.xrd2dmaskfile  = None
+        self.xrd2dbkgdfile  = None
+        self.xrd1dbkgdfile  = None
+
+        self.bkgdscale = bkgdscale if bkgdscale > 0 else 1.
         
         self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps       = int(qstps)
         self.flip        = flip
-        self.dir         = -1 if flip else 1
 
         ## used for tomography orientation
         self.x           = None
@@ -802,7 +799,10 @@ class GSEXRM_MapFile(object):
             if 'Version' in self.xrmmap.attrs.keys():
                  self.version = self.xrmmap.attrs['Version']
 
-            if xrdcal is not None: self.add_calibration(xrdcal,self.flip)
+            self.add_XRDfiles(xrdcalfile=xrdcal,
+                              xrd2dmaskfile=xrd2dmask,
+                              xrd2dbkgdfile=xrd2dbkgd,
+                              xrd1dbkgdfile=xrd1dbkgd)
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
 
@@ -880,19 +880,46 @@ class GSEXRM_MapFile(object):
         self.h5root.close()
         self.h5root = None
 
-    def add_calibration(self,xrdcalfile,flip):
+
+    def add_XRDfiles(self, flip=None, xrdcalfile=None, xrd2dmaskfile=None,
+                     xrd2dbkgdfile=None, xrd1dbkgdfile=None):
         '''
-        adds calibration to exisiting '/xrmmap' group in an open HDF5 file
-        mkak 2016.11.16
+        adds mask file to exisiting '/xrmmap' group in an open HDF5 file
+        mkak 2018.02.01
         '''
 
         xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
-        self.xrdcalfile = xrdcalfile
-        self.flip = flip
 
-        if os.path.exists(self.xrdcalfile):
+        if xrdcalfile is not None:
+            self.xrdcalfile = xrdcalfile
+        if os.path.exists(str(self.xrdcalfile)):
             print('Calibration file loaded: %s' % self.xrdcalfile)
             xrd1Dgrp.attrs['calfile'] = '%s' % (self.xrdcalfile)
+            
+
+        self.flip = flip if flip is not None else self.flip
+
+        if xrd1dbkgdfile is not None:
+            self.xrd1dbkgdfile= xrd1dbkgdfile
+        if os.path.exists(str(self.xrd1dbkgdfile)):
+            print('1DXRD background file loaded: %s' % self.xrd1dbkgdfile)
+            xrd1Dgrp.attrs['1Dbkgdfile'] = '%s' % (self.xrd1dbkgdfile)
+            self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
+
+        if xrd2dbkgdfile is not None:
+            self.xrd2dbkgdfile= xrd2dbkgdfile
+        if os.path.exists(str(self.xrd2dbkgdfile)):
+            print('2DXRD background file loaded: %s' % self.xrd2dbkgdfile)
+            xrd1Dgrp.attrs['2Dbkgdfile'] = '%s' % (self.xrd2dbkgdfile)
+            self.bkgd_xrd2d = read_xrd_data(self.xrd2dbkgdfile)*self.bkgdscale
+
+        if xrd2dmaskfile is not None:
+            self.xrd2dmaskfile= xrd2dmaskfile
+        if os.path.exists(str(self.xrd2dmaskfile)):
+            print('Mask file loaded: %s' % self.xrd2dmaskfile)
+            xrd1Dgrp.attrs['maskfile'] = '%s' % (self.xrd2dmaskfile)
+            self.mask_xrd2d = read_xrd_data(self.xrd2dmaskfile)
+
         self.h5root.flush()
 
     def add_data(self, group, name, data, attrs=None, **kws):
@@ -2599,8 +2626,8 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def get_1Dxrd_area(self, areaname, nwdg=0, callback=None):
-        '''return 1D XRD pattern for a pre-defined area
+    def get_xrd_area(self, areaname, xrd='2D', callback=None):
+        '''return 1D or 2D XRD pattern for a pre-defined area
 
         Parameters
         ---------
@@ -2608,7 +2635,7 @@ class GSEXRM_MapFile(object):
 
         Returns
         -------
-        1D diffraction pattern for given area
+        diffraction pattern for given area
 
         '''
 
@@ -2617,14 +2644,21 @@ class GSEXRM_MapFile(object):
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
+        npix = len(np.where(area)[0])
+        if npix < 1:
+            return None
 
-        mapdat       = self.xrmmap['xrd1D']
+        stps, xpix, ypix, qdat = 0,0,0,None
+            
+        xrddir   = 'xrd1D' if '1' in xrd else 'xrd2D'
+        mapdat   = self.xrmmap[xrddir]
+        xrdshape = mapdat['counts'].shape
+        mapname  = mapdat.name        
 
-        ix, iy, stps = mapdat['counts'].shape
-        qdat         = mapdat['q']
-        mapname      = mapdat.name
-
-        if len(np.where(area)[0]) < 1: return None
+        try:
+            qdat = mapdat['q']
+        except:
+            pass
 
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
@@ -2637,12 +2671,12 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                patterns = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
+                counts = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
                                                 mapdat=mapdat, dtcorrect=False)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
-            patterns = np.zeros(stps)
+            counts = np.zeros(xrdshape[2:])
             if nx > ny:
                 for i in range(step+1):
                     x1 = xmin + int(i*nx/step)
@@ -2650,7 +2684,7 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    patterns += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
+                    counts += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
                                                      mapdat=mapdat, dtcorrect=False)
             else:
                 for i in range(step+1):
@@ -2659,104 +2693,30 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    patterns += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
+                    counts += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
                                                      mapdat=mapdat, dtcorrect=False)
-        patterns = np.array([qdat,patterns])
+        if qdat is not None:
+            counts = np.array([qdat,counts])
 
-        return self._get1DXRD(mapname, patterns, areaname, nwedge=nwdg, steps=stps)
+        return self._getXRD(mapname, counts, areaname, xrddir)
 
-    def get_2Dxrd_area(self, areaname, callback = None):
-        '''return 2D XRD pattern for a pre-defined area
+    def _getXRD(self, mapname, data, areaname, xrddir):
 
-        Parameters
-        ---------
-        areaname :   str       name of area
-
-        Returns
-        -------
-        2D diffraction pattern for given area
-
-        '''
-
-        try:
-            area = self.get_area(areaname).value
-        except:
-            raise GSEXRM_Exception("Could not find area '%s'" % areaname)
-            return
-
-        mapdat             = self.xrmmap['xrd2D']
+        name = '%s : %s' % (xrddir,areaname)
         
-        ix, iy, xpix, ypix = mapdat['counts'].shape
-        mapname            = mapdat.name
+        if xrddir == 'xrd1D':
+            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name)
+        else: #elif  xrddir == 'xrd2D':
+            xpix,ypix = data.shape
+            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name)
 
-        npix = len(np.where(area)[0])
-        if npix < 1:
-            return None
-        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
-        nx, ny = (xmax-xmin), (ymax-ymin)
-        NCHUNKSIZE = 16384 # 8192
-        use_chunks = nx*ny > NCHUNKSIZE
-        step = int((nx*ny)/NCHUNKSIZE)
-
-        if not use_chunks:
-            try:
-                if hasattr(callback , '__call__'):
-                    callback(1, 1, nx*ny)
-                frames = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
-                                                     mapdat=mapdat, dtcorrect=False)
-            except MemoryError:
-                use_chunks = True
-        if use_chunks:
-            frames = np.zeros([xpix,ypix])
-            if nx > ny:
-                for i in range(step+1):
-                    x1 = xmin + int(i*nx/step)
-                    x2 = min(xmax, xmin + int((i+1)*nx/step))
-                    if x1 >= x2: break
-                    if hasattr(callback , '__call__'):
-                        callback(i, step, (x2-x1)*ny)
-                    frames += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
-                                                     mapdat=mapdat, dtcorrect=False)
-            else:
-                for i in range(step+1):
-                    y1 = ymin + int(i*ny/step)
-                    y2 = min(ymax, ymin + int((i+1)*ny/step))
-                    if y1 >= y2: break
-                    if hasattr(callback , '__call__'):
-                        callback(i, step, nx*(y2-y1))
-                    frames += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
-                                                     mapdat=mapdat, dtcorrect=False)
-
-        return self._get2DXRD(mapname, frames, areaname, xpixels=xpix, ypixels=ypix)
-
-    def _get1DXRD(self, mapname, pattern, areaname, nwedge=0, steps=STEPS):
-
-        name = ('xrd: %s' % areaname)
-        _1Dxrd = XRD(data1D=pattern, nwedge=nwedge, steps=steps, name=name)
-
-        _1Dxrd.areaname = _1Dxrd.title = name
+        _xrd.areaname = _xrd.title = name
         path, fname = os.path.split(self.filename)
-        _1Dxrd.filename = fname
+        _xrd.filename = fname
         fmt = "Data from File '%s', detector '%s', area '%s'"
-#         mapname = map.name.split('/')[-1]
-        _1Dxrd.info  =  fmt % (self.filename, mapname, name)
+        _xrd.info  =  fmt % (self.filename, mapname, name)
 
-        return _1Dxrd
-
-    def _get2DXRD(self, mapname, frames, areaname, xpixels=2048, ypixels=2048):
-
-        name = ('xrd: %s' % areaname)
-        _2Dxrd = XRD(data2D=frames, xpixels=xpixels, ypixels=ypixels, name=name)
-
-        _2Dxrd.areaname = _2Dxrd.title = name
-        path, fname = os.path.split(self.filename)
-        _2Dxrd.filename = fname
-        fmt = "Data from File '%s', detector '%s', area '%s'"
-        #mapname = map.name.split('/')[-1]
-        _2Dxrd.info  =  fmt % (self.filename, mapname, name)
-
-        return _2Dxrd
+        return _xrd
 
     def get_pos(self, name, mean=True):
         '''return  position by name (matching 'roimap/pos_name' if
