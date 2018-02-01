@@ -2161,8 +2161,8 @@ class Viewer1DXRD(wx.Panel):
 
         if self.xy_data[-1].label is None:
             self.xy_data[-1].label = 'dataset %i' % len(self.xy_data)
-        else:
-            self.xy_data[-1].label = 'data: %s' % self.xy_data[-1].label
+#         else:
+#             self.xy_data[-1].label = 'data: %s' % self.xy_data[-1].label
         datalabel = self.xy_data[-1].label
 
         self.data_name.append(datalabel)

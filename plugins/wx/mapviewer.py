@@ -2066,9 +2066,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             ponifile = None
 
         if show:
-            self.owner.message('Plotting XRD pattern for area \'%s\'...' % title)
+            self.owner.message('Plotting XRD pattern for \'%s\'...' % title)
         if save:
-            self.owner.message('Saving XRD pattern for area \'%s\'...' % title)
+            self.owner.message('Saving XRD pattern for \'%s\'...' % title)
             path,stem = os.path.split(self.owner.current_file.filename)
             stem = '%s_%s' % (stem,title)
 
@@ -2082,8 +2082,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self._xrd.wavelength = lambda_from_E(self._xrd.energy)
 
             if show:
+                label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
                 self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
-                                         label=self._xrd.title)
+                                         label=label)
             if save:
                 wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
                 dlg = wx.FileDialog(self, 'Save file as...',
@@ -2125,7 +2126,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                 if show:
                     label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                    self.owner.display_2Dxrd(self._xrd.data2D, title=label, xrmfile=xrmfile,
+                    self.owner.display_2Dxrd(self._xrd.data2D, label=label, xrmfile=xrmfile,
                                              flip=True)
 
             if xrd1d and ponifile is not None:
@@ -2134,7 +2135,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 self._xrd.calc_1D(save=save,verbose=True)
 
                 if show:
-                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=self._xrd.title)
+                    label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
+                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=label)
 
 
 
@@ -2518,7 +2520,7 @@ class MapViewerFrame(wx.Frame):
         imd.Show()
         imd.Raise()
 
-    def display_2Dxrd(self, map, title='image 0', xrmfile=None, flip=True):
+    def display_2Dxrd(self, map, label='image 0', xrmfile=None, flip=True):
         '''
         displays 2D XRD pattern in diFFit viewer
         '''
@@ -2535,11 +2537,11 @@ class MapViewerFrame(wx.Frame):
                                               xrd1Dviewer=self.xrddisplay1D,
                                               ponifile=poni)
         try:
-            self.xrddisplay2D.plot2Dxrd(title,map)
+            self.xrddisplay2D.plot2Dxrd(label,map)
         except PyDeadObjectError:
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
                                               xrd1Dviewer=self.xrddisplay1D)
-            self.xrddisplay2D.plot2Dxrd(title,map)
+            self.xrddisplay2D.plot2Dxrd(label,map)
         self.xrddisplay2D.Show()
 
     def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
