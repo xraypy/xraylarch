@@ -102,8 +102,7 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=Non
                 dark = None
         
         dir = -1 if flip else 1
-        attrs = {'mask':mask,'dark':dark[::dir,:]}
-        #attrs = {'mask':mask,'dark':dark}
+        attrs = {'mask':mask,'dark':dark}
         if unit.startswith('2th'):
             attrs.update({'unit':'2th_deg'})
         else:

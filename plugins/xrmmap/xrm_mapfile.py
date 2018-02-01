@@ -369,9 +369,24 @@ class GSEXRM_MapRow:
                 self.xrd2d[0:xrd_dat.shape[0]] = xrd_dat
             else:
                 self.xrd2d = xrd_dat[0:self.npts]
+                
+            ############################################################################
+            ## subtracts background and applies mask, row by row
+            ## mkak 2018.02.01
+            mask2d = np.ones(self.xrd2d[0].shape)
+            dir = -1 if flip else 1
+            if xrd2dmask is not None:
+                mask2d = mask2d - xrd2dmask[::dir]
+                
+            if xrd2dbkgd is not None:
+                self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
+            else:
+                self.xrd2d = mask2d*(self.xrd2d)
+            ############################################################################
 
             if xrdcal is not None and FLAGxrd1D:
-                attrs = {'steps':steps,'mask':xrd2dmask,'flip':flip,'dark':xrd2dbkgd}
+                attrs = {'steps':steps,'mask':None,'flip':flip} ## temp. print still need to test mask!!
+#                 attrs = {'steps':steps,'mask':xrd2dmask,'flip':flip}
                 self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
 
                 if wdg > 1:
@@ -1266,7 +1281,6 @@ class GSEXRM_MapFile(object):
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
             else:
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
-#             self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d
 
             if self.azwdgs > 1 and row.xrd1d_wdg is not None:
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
@@ -1278,15 +1292,7 @@ class GSEXRM_MapFile(object):
 
         if self.flag_xrd2d and row.xrd2d is not None:
 
-            mask2d = np.ones(row.xrd2d[0].shape)
-            if self.mask_xrd2d is not None:
-                mask2d = mask2d - self.mask_xrd2d[::self.dir]
-                
-            if self.bkgd_xrd2d is not None:
-                self.xrmmap['xrd2D/counts'][thisrow,] = mask2d*(row.xrd2d-self.bkgd_xrd2d)
-            else:
-                self.xrmmap['xrd2D/counts'][thisrow,] = mask2d*(row.xrd2d)
-#             self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
+            self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
 
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
