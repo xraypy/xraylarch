@@ -35,6 +35,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, SetTip)
 
 from larch_plugins.std import group2dict
+from larch_plugins.io.export_modelresult import export_modelresult
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
 
@@ -57,7 +58,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
-MIN_CORREL = 0.10
+MIN_CORREL = 0.0010
 
 class AllParamsPanel(wx.Panel):
     """Panel containing simple list of all Parameters"""
@@ -84,17 +85,14 @@ class AllParamsPanel(wx.Panel):
             self.user_params = OrderedDict()
             for parname, param in user_params.items():
                 self.user_params[parname] = param
-        #print("Fit Params: ")
-        #for p in self.fit_params.values(): print(p)
-        #print("User Params: ")
-        #for p in self.user_params.values(): print(p)
+
 
 
 class XYFitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
-                          style=FRAMESTYLE, size=(550, 650), **kws)
+                          style=FRAMESTYLE, size=(600, 675), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
@@ -154,7 +152,7 @@ class XYFitResultFrame(wx.Frame):
             irow += 1
             wids[attr] = SimpleText(panel, '?')
             sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
-            sizer.Add(wids[attr],                          (irow, 1), (1, 1), LCEN)
+            sizer.Add(wids[attr],                           (irow, 1), (1, 1), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
@@ -162,7 +160,12 @@ class XYFitResultFrame(wx.Frame):
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+        sizer.Add(title, (irow, 0), (1, 1), LCEN)
+
+        self.wids['copy_params'] = Button(panel, 'Update Model with Best Fit Values',
+                                          size=(250, -1), action=self.onCopyParams)
+
+        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LCEN)
 
         dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
@@ -190,10 +193,22 @@ class XYFitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, CORREL_HEAD % MIN_CORREL,  font=Font(12),
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
+        self.wids['all_correl'] = Button(panel, 'Show All',
+                                          size=(100, -1), action=self.onAllCorrel)
+
+        self.wids['min_correl'] = FloatCtrl(panel, value=MIN_CORREL,
+                                            minval=0, size=(60, -1), gformat=True)
+
+        ctitle = SimpleText(panel, 'minimum correlation: ')
+        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
 
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=dvstyle)
 
@@ -234,6 +249,8 @@ class XYFitResultFrame(wx.Frame):
             return
         item = self.wids['params'].GetSelectedRow()
         pname = self.wids['paramsdata'][item]
+
+        cormin= self.wids['min_correl'].GetValue()
         self.wids['correl'].DeleteAllItems()
 
         fit_history = getattr(self.datagroup, 'fit_history', [])
@@ -242,12 +259,44 @@ class XYFitResultFrame(wx.Frame):
         if this.correl is not None:
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
-                if abs(corval) > MIN_CORREL:
+                if abs(corval) > cormin:
                     self.wids['correl'].AppendItem((pname, name, "% .3f" % corval))
+
+    def onAllCorrel(self, evt=None):
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        params = fit_history[-1].params
+        parnames = list(params.keys())
+
+        cormin= self.wids['min_correl'].GetValue()
+        correls = {}
+        for i, name in enumerate(parnames):
+            par = params[name]
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                # print(par, par.correl)
+                for name2 in parnames[i+1:]:
+                    if (name != name2 and name2 in par.correl and
+                            abs(par.correl[name2]) > cormin):
+                        correls["%s$$%s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+
+        self.wids['correl'].DeleteAllItems()
+
+        for namepair, corval in sort_correl:
+            name1, name = namepair.split('$$')
+            self.wids['correl'].AppendItem((name1, name2, "% .3f" % corval))
+
+    def onCopyParams(self, evt=None):
+        fit_history = getattr(self.datagroup, 'fit_history', [])
+        self.parent.fit_panel.update_start_values(fit_history[-1])
 
     def show(self, datagroup=None):
         if datagroup is not None:
             self.datagroup = datagroup
+
         fit_history = getattr(self.datagroup, 'fit_history', [])
         if len(fit_history) < 1:
             print("No fit reults to show for datagroup ", self.datagroup)
@@ -263,6 +312,9 @@ class XYFitResultFrame(wx.Frame):
         wids['aic'].SetLabel("%f" % result.aic)
         wids['bic'].SetLabel("%f" % result.bic)
         wids['hist_info'].SetLabel("%d" % len(fit_history))
+        wids['hist_tag'].SetLabel("Latest Fit") #
+
+        wids['data_title'].SetLabel(self.datagroup.filename)
 
         wids['model_desc'].SetLabel(result.model_repr)
         wids['params'].DeleteAllItems()
@@ -290,7 +342,6 @@ class XYFitResultFrame(wx.Frame):
             wids['paramsdata'].append(pname)
 
         self.Refresh()
-
 
 
 class XYFitPanel(wx.Panel):
@@ -448,7 +499,7 @@ class XYFitPanel(wx.Panel):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         usebox = Check(panel, default=True, label='Use?', size=(60, -1))
-        bkgbox = Check(panel, default=False, label='Background?', size=(120, -1))
+        bkgbox = Check(panel, default=False, label='Is Background?', size=(120, -1))
 
         delbtn = Button(panel, 'Delete', size=(120, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
@@ -679,8 +730,36 @@ class XYFitPanel(wx.Panel):
                 return
         if model is None:
             return
+        print(" Loading Model (work in progress) ", model)
 
-        print(" Loading Model ", model)
+    def onExportFitResult(self, event=None):
+        dgroup = self.get_datagroup()
+        deffile = dgroup.filename.replace('.', '_') + '_result.xdi'
+        wcards = 'All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Fit Result',
+                           default_file=deffile,
+                           wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        dgroup = self.get_datagroup()
+
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
+        x = dgroup.x[slice(i1, i2)]
+        y = dgroup.y[slice(i1, i2)]
+        yerr = None
+        if hasattr(dgroup, 'yerr'):
+            yerr = dgroup.yerr
+            if not isinstance(yerr, np.ndarray):
+                yerr = yerr * np.ones(len(y))
+            else:
+                yerr = yerr[slice(i1, i2)]
+
+        export_modelresult(dgroup.fit_history[-1], filename=outfile,
+                           datafile=dgroup.filename,
+                           ydata=y, yerr=yerr, x=x)
 
 
     def onResetRange(self, event=None):
@@ -851,20 +930,16 @@ class XYFitPanel(wx.Panel):
             dgroup.fit_history = []
         dgroup.fit_history.append(result)
 
-        # dgroup.model_repr = self.fit_model._reprstring(long=True)
-        # report = fit_report(result, show_correl=True,
-        #                     min_correl=0.25, sort_pars=True)
-
-        # report = '[[Model]]\n    %s\n%s\n' % (model_repr, report)
-        # self.summary['report'] = report
-
-        # self.controller.show_report(result)
 
         self.parent.show_subframe('result_frame', XYFitResultFrame,
-                                  datagroup=dgroup, controller=self.controller)
+                                  datagroup=dgroup,
+                                  controller=self.controller)
 
-        self.update_start_values(result)
+        # self.update_start_values(result)
         self.savebtn.Enable()
+
+        for m in self.parent.afterfit_menus:
+            self.parent.menuitems[m].Enable(True)
 
     def update_start_values(self, result):
         """fill parameters with best fit values"""
