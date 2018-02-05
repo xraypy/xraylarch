@@ -3220,7 +3220,10 @@ def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
     """
-    kws['xrdcal'] = kws.pop('poni')
+    try:
+        kws['xrdcal'] = kws.pop('poni')
+    except:
+        pass
     if os.path.isdir(path) and isGSEXRM_MapFolder(path):
         print( '\n build map for: %s' % path)
         try:
@@ -3249,7 +3252,10 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
     """process a list of map folders
     with optional keywords passed to GSEXRM_MapFile
     """
-    kws['xrdcal'] = kws.pop('poni')
+    try:
+        kws['xrdcal'] = kws.pop('poni')
+    except:
+        pass
     if ncpus is None:
         ncpus = max(1, mp.cpu_count()-1)
     if ncpus == 0:
