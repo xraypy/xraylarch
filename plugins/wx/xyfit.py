@@ -921,12 +921,17 @@ class XYFitFrame(wx.Frame):
         self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
         self.nb.SetSelection(0)
 
         pack(panel, sizer)
 
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
+
+    def onNBChanged(self, event=None):
+        idx = self.nb.GetSelection()
+        #if idx == 0:   # data processing menu
 
     def onSelAll(self, event=None):
         self.controller.filelist.SetCheckedStrings(self.controller.file_groups.keys())
@@ -1008,29 +1013,56 @@ class XYFitFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
-        MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
-                 "Open Data File",  self.onReadDialog)
+        datmenu = wx.Menu()
+        fitmenu = wx.Menu()
+        self.menuitems = items = {}
 
-        MenuItem(self, fmenu, "&Read Fit Result File\tCtrl+R",
-                 "Open Fit Result File",  self.onReadFitResult)
+        items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
+                                  "Open Data File",  self.onReadDialog)
+
         fmenu.AppendSeparator()
 
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
-                 'Show Larch Programming Buffer',
-                 self.onShowLarchBuffer)
+        items['larch_buffer'] = MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+                                         'Show Larch Programming Buffer',
+                                         self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+        items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
+
+
+        items['data_config'] = MenuItem(self, datmenu, "Configure Data Processing",
+                                            "Configure Data Processing",
+                                            self.onConfigDataProcessing)
+
+        items['fit_config'] = MenuItem(self, fitmenu,
+                                       "Configure Data Fitting",
+                                       "Configure Data Fitting",
+                                       self.onConfigDataFitting)
+
+        items['fit_readresult'] = MenuItem(self, fitmenu,
+                                           "&Read Fit Result File\tCtrl+R",
+                                           "Read Fit Result File",
+                                           self.onReadFitResult)
+
+        items['fit_saveresult'] = MenuItem(self, fitmenu,
+                                           "Save Fit Result",
+                                           "Save Fit Result",
+                                           self.onSaveFitResult)
+
+        items['fit_export'] = MenuItem(self, fitmenu,
+                                       "Export Data and Fit",
+                                       "Export Data and Fit",
+                                       self.onExportFitResult)
+
+
+        self.afterfit_menus = ('fit_export', 'fit_saveresult')
+
+        for m in self.afterfit_menus:
+            items[m].Enable(False)
 
         self.menubar.Append(fmenu, "&File")
-
-        omenu = wx.Menu()
-        self.menubar.Append(omenu, "Options")
-        MenuItem(self, omenu, "Configure Data Processing",
-                  "Configure Data Processing", self.onConfigDataProcessing)
-
-        MenuItem(self, omenu, "Configure Data Fitting",
-                  "Configure Data Fitting", self.onConfigDataFitting)
-
+        self.menubar.Append(datmenu, "Data Processing")
+        self.menubar.Append(fitmenu, "Fit")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -1122,6 +1154,12 @@ class XYFitFrame(wx.Frame):
 
     def onReadFitResult(self, event=None):
         self.fit_panel.onLoadFitResult(event=event)
+
+    def onSaveFitResult(self, event=None):
+        self.fit_panel.onSaveFitResult(event=event)
+
+    def onExportFitResult(self, event=None):
+        self.fit_panel.onExportFitResult(event=event)
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
