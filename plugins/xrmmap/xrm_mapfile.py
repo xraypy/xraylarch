@@ -3271,5 +3271,4 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
 def registerLarchPlugin():
     return ('_io', {'read_xrfmap': read_xrfmap,
                     'read_xrmmap': read_xrmmap,
-                    'process_mapfolder': process_mapfolder,
-                    'process_mapfolders': process_mapfolders})
+                    'process_mapfolder': process_mapfolder})

@@ -882,7 +882,7 @@ class TomographyPanel(GridPanel):
         if sino.shape[0] == 1: sino = sino[0]
         if tomo.shape[0] == 1: tomo = tomo[0]
 
-        self.owner.display_tomo(sino,tomo)                               
+        self.owner.display_tomo(sino,tomo,title=title)                               
 
     def set_center(self,cen):
 
@@ -2447,13 +2447,13 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
-                tmd.display(sino, tomo) #, title=title, x=x, y=y)
+                tmd.display(sino, tomo, title=title) #, title=title, x=x, y=y)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
                 tmd = TomographyFrame(output_title   = title,
                                       lasso_callback = lasso_cb)
-                tmd.display(sino, tomo) #title=title
+                tmd.display(sino, tomo, title=title) #title=title
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
