@@ -35,6 +35,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, SetTip)
 
 from larch_plugins.std import group2dict
+from larch_plugins.io.export_modelresult import export_modelresult
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
 
@@ -498,7 +499,7 @@ class XYFitPanel(wx.Panel):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         usebox = Check(panel, default=True, label='Use?', size=(60, -1))
-        bkgbox = Check(panel, default=False, label='Background?', size=(120, -1))
+        bkgbox = Check(panel, default=False, label='Is Background?', size=(120, -1))
 
         delbtn = Button(panel, 'Delete', size=(120, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
@@ -729,8 +730,36 @@ class XYFitPanel(wx.Panel):
                 return
         if model is None:
             return
+        print(" Loading Model (work in progress) ", model)
 
-        print(" Loading Model ", model)
+    def onExportFitResult(self, event=None):
+        dgroup = self.get_datagroup()
+        deffile = dgroup.filename.replace('.', '_') + '_result.xdi'
+        wcards = 'All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Fit Result',
+                           default_file=deffile,
+                           wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        dgroup = self.get_datagroup()
+
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
+        x = dgroup.x[slice(i1, i2)]
+        y = dgroup.y[slice(i1, i2)]
+        yerr = None
+        if hasattr(dgroup, 'yerr'):
+            yerr = dgroup.yerr
+            if not isinstance(yerr, np.ndarray):
+                yerr = yerr * np.ones(len(y))
+            else:
+                yerr = yerr[slice(i1, i2)]
+
+        export_modelresult(dgroup.fit_history[-1], filename=outfile,
+                           datafile=dgroup.filename,
+                           ydata=y, yerr=yerr, x=x)
 
 
     def onResetRange(self, event=None):
@@ -908,6 +937,9 @@ class XYFitPanel(wx.Panel):
 
         # self.update_start_values(result)
         self.savebtn.Enable()
+
+        for m in self.parent.afterfit_menus:
+            self.parent.menuitems[m].Enable(True)
 
     def update_start_values(self, result):
         """fill parameters with best fit values"""
