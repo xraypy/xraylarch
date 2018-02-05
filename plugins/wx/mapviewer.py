@@ -1974,7 +1974,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         #if tomo_area:
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
-            imd.add_highlight_area(area.value, label=label)
+            try:
+                imd.add_highlight_area(area.value, label=label)
+            except:
+                pass
         if not tomo_area:
             if len(self.owner.im_displays) > 0:
                 imd = self.owner.im_displays[-1]
