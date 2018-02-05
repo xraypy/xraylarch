@@ -8,7 +8,8 @@ from lmfit.model import ModelResult
 from lmfit.printfuncs  import gformat, getfloat_attr
 
 def export_modelresult(result, filename='fitresult.xdi',
-                       datafile=None, _larch=None, **kwargs):
+                       datafile=None, ydata=None, yerr=None,
+                       _larch=None, **kwargs):
     """
     export an lmfit ModelResult to an XDI data file
 
@@ -16,7 +17,9 @@ def export_modelresult(result, filename='fitresult.xdi',
     ---------
      result       ModelResult, required
      filename     name of output file ['fitresult.xdi']
-     datafile     name of data file (or `None`) [`None`]
+     datafile     name of data file [`None`]
+     ydata        data array used for fit [`None`]
+     yerr         data error array used for fit [`None`]
 
     Notes
     -----
@@ -30,22 +33,27 @@ def export_modelresult(result, filename='fitresult.xdi',
     """
     if not isinstance(result, ModelResult):
         raise ValueError("export_fit needs a lmfit ModelReult")
-    #endif
+
     header = ["XDI/1.1  Lmfit Result File"]
     hadd = header.append
     if datafile is not None:
         hadd(" Datafile.name:  %s " % datafile)
     else:
         hadd(" Datafile.name: <unknnown>")
-    #endif
+
     ndata = len(result.best_fit)
     columns = OrderedDict()
     for aname in result.model.independent_vars:
         val = kwargs.get(aname, None)
         if val is not None and len(val) == ndata:
             columns[aname] = val
-        #endif
-    #endfor
+
+    if ydata is not None:
+        columns['ydata'] = ydata
+
+    if yerr is not None:
+        columns['yerr'] = yerr
+
     columns['best_fit'] = result.best_fit
     columns['init_fit'] = result.init_fit
 
@@ -56,14 +64,12 @@ def export_modelresult(result, filename='fitresult.xdi',
         comps = result.eval_components(result.params, **kwargs)
         for name, val in comps.items():
             columns[name] = val
-        #endfor
-    #endif
 
     clabel = []
     for i, cname in enumerate(columns):
         hadd(" Column.%i:  %s" % (i+1, cname))
         clabel.append('%15s ' % cname)
-    #endfor
+
     hadd("Fit.Statistics: Start here")
     hadd(" Fit.model_name:          %s" % result.model.name)
     hadd(" Fit.method:              %s" % result.method)
@@ -83,16 +89,15 @@ def export_modelresult(result, filename='fitresult.xdi',
         inval = '(init= ?)'
         if par.init_value is not None:
             inval = '(init=% .7g)' % par.init_value
-        #endif
+
         try:
             sval = gformat(par.value)
         except (TypeError, ValueError):
             sval = 'Non Numeric Value?'
-        #endtry
         if par.stderr is not None:
             serr = gformat(par.stderr, length=9)
             sval = '%s +/-%s' % (sval, serr)
-        #endif
+
         if par.vary:
             bounds = "[%s: %s]" % (gformat(par.min), gformat(par.max))
             hadd(" %s %s %s %s" % (nout, sval, bounds, inval))
@@ -100,36 +105,28 @@ def export_modelresult(result, filename='fitresult.xdi',
             hadd(" %s %s  == '%s'" % (nout, sval, par.expr))
         else:
             hadd(" %s % .7g (fixed)" % (nout, par.value))
-        #endif
-    #endfor
+
     hadd("////////  Fit Report ////////")
     for r in result.fit_report().split('\n'):
         hadd("   %s" % r)
-    #endfor
-
     hadd("-" * 77)
-
     hadd("".join(clabel)[1:])
     header[0] = "XDI/1.1  Lmfit Result File  %i header lines" % (len(header))
     dtable = []
     for dat in columns.values():
         dtable.append(dat)
-    #endfor
 
     dtable = np.array(dtable).transpose()
     datatable = []
     for i in range(ndata):
-        row = ["%15.8g" % col for col in dtable[i, :]]
+        row = [gformat(col, length=15) for col in dtable[i, :]]
         datatable.append(" ".join(row))
-    #endfor
+
     datatable.append('')
     with open(filename, 'w') as fh:
         fh.write("\n".join(['#%s' % s for s in header]))
         fh.write("\n")
         fh.write("\n".join(datatable))
-
-    print("wrote ", filename)
-#enddef
 
 def registerLarchPlugin():
     return ('_io', {'export_modelresult': export_modelresult,})
