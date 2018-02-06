@@ -260,7 +260,7 @@ class XYFitResultFrame(wx.Frame):
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
                 if abs(corval) > cormin:
-                    self.wids['correl'].AppendItem((pname, name, "% .3f" % corval))
+                    self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
 
     def onAllCorrel(self, evt=None):
         fit_history = getattr(self.datagroup, 'fit_history', [])
@@ -286,8 +286,8 @@ class XYFitResultFrame(wx.Frame):
         self.wids['correl'].DeleteAllItems()
 
         for namepair, corval in sort_correl:
-            name1, name = namepair.split('$$')
-            self.wids['correl'].AppendItem((name1, name2, "% .3f" % corval))
+            name1, name2 = namepair.split('$$')
+            self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
     def onCopyParams(self, evt=None):
         fit_history = getattr(self.datagroup, 'fit_history', [])
