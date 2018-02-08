@@ -53,20 +53,22 @@ tomo_modules = {'tomopy': 'tomopy',
                 'skimage': 'scikit-image'}
 
 epics_modules = {'epics': 'pyepics'}
-epicsscan_modules = {'epicscan': 'epicsscan',
+epicsscan_modules = {'epicsscan': 'epicsscan',
                      'psycopg2': 'psycopg2'}
 
 terminal_modules = {'termcolor': 'termcolor'}
 
-recommended_modules = {'basic analysis': required_modules,
-                       'graphics and plotting': graphics_modules,
-                       'xrd modules' : xrd_modules,
-                       'tomography modules' : tomo_modules,
-                       'connecting to the EPICS control system': epics_modules,
-                       'scanning with EpicsScan': epicsscan_modules,
-                       'color-enhanced error messages': terminal_modules,
-                       'testing tools': {'nose': 'nose'},
-                       }
+testing_modules = {'nose': 'nose'}
+
+all_modules = (('basic analysis', required_modules),
+           ('graphics and plotting', graphics_modules),
+           ('xrd modules', xrd_modules),
+           ('tomography modules', tomo_modules),
+           ('connecting to the EPICS control system', epics_modules),
+           ('scanning with EpicsScan', epicsscan_modules),
+           ('color-enhanced error messages', terminal_modules),
+           ('testing tools',  testing_modules))
+
 
 # files that may be left from earlier install(s) and should be removed
 historical_cruft = ['plugins/xrd/xrd_hkl.py',
@@ -75,42 +77,36 @@ historical_cruft = ['plugins/xrd/xrd_hkl.py',
 
 modules_imported = {}
 missing = []
-deps_ok = False
-if os.path.exists('.deps'):
-    try:
-        f = open('.deps', 'r').readlines()
-        deps_ok = int(f[0].strip()) == 1
-    except:
-        pass
 
-if not deps_ok:
-    print( 'Checking dependencies....')
-    for desc, mods in recommended_modules.items():
-        for impname, modname in mods.items():
-            if impname not in modules_imported:
-                modules_imported[modname] = False
-            try:
-                x = __import__(impname)
-                modules_imported[modname] = True
-            except ImportError:
-                s = (modname + ' '*25)[:25]
-                missing.append('     %s %s' % (s, desc))
-    missing_reqs = []
-    for mod in modules_imported:
-        if mod in required_modules and not modules_imported[mod]:
-            missing_reqs.append(mod)
 
-    if len(missing_reqs) > 0:
-        print('== Cannot Install Larch: Required Modules are Missing ==')
-        isword = 'is'
-        if len(missing_reqs) > 1: isword = 'are'
-        print(' %s %s REQUIRED' % (' and '.join(missing_reqs), isword) )
-        print(' ')
-        print(' Please read INSTALL for further information.')
-        print(' ')
+try:
+    import matplotlib
+    matplotlib.use('WXAgg')
+except:
+    pass
+print( 'Checking dependencies....')
+for desc, mods in all_modules:
+    for impname, modname in mods.items():
+        if impname not in modules_imported:
+            modules_imported[modname] = False
+        try:
+            x = __import__(impname)
+            modules_imported[modname] = True
+        except ImportError:
+            s = (modname + ' '*25)[:25]
+            missing.append('     %s %s' % (s, desc))
+missing_reqs = []
+for mod in modules_imported:
+    if mod in required_modules and not modules_imported[mod]:
+        missing_reqs.append(mod)
 
-        sys.exit()
-    deps_ok = len(missing) == 0
+if len(missing_reqs) > 0:
+    print('\n=== Cannot Install Larch, these REQUIRED Modules are missing: ')
+    print(' %s' % (', '.join(missing_reqs)))
+    print(' ')
+    print(' Please read INSTALL for further information.')
+    print(' ')
+    sys.exit()
 
 
 ## For Travis-CI, need to write a local site config file
@@ -299,11 +295,6 @@ def fix_darwin_dylibs():
 
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
-
-if deps_ok and not os.path.exists('.deps'):
-    f = open('.deps', 'w')
-    f.write('1\n')
-    f.close()
 
 # final install:
 #   create desktop icons
