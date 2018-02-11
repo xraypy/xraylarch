@@ -5,7 +5,17 @@
 
 import numpy as np
 from scipy import polyfit
+from scipy.signal import find_peaks_cwt
+
 from lmfit import Parameters, Minimizer
+from lmfit.models import (LorentzianModel, GaussianModel,
+                          VoigtModel, LinearModel)
+
+try:
+    import peakutils
+    HAS_PEAKUTILS = True
+except ImportError:
+    HAS_PEAKUTILS = False
 
 from larch import (Group, ValidateLarchPlugin,
                    Make_CallArgs, isgroup,
@@ -317,6 +327,162 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         setattr(group.pre_edge_details, 'norm_c%i' % i, c)
     return
 
+
+@ValidateLarchPlugin
+@Make_CallArgs(["energy", "norm"])
+def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
+                      emin=None, emax=None, elo=None, ehi=None,
+                      with_line=True, _larch=None):
+    """remove baseline from main edge over pre edge peak region
+
+    This assumes that pre_edge() has been run successfully on the spectra
+    and that the spectra has decent pre-edge subtraction and normalization.
+
+    Arguments
+    ----------
+    energy:    array of x-ray energies, in eV, or group (see note 1)
+    norm:      array of normalized mu(E)
+    group:     output group
+    elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
+    ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
+    emax       max energy (eV) to use for baesline fit [e0-5]
+    emin:      min energy (eV) to use for baesline fit [e0-40]
+    form:      form used for baseline (see note 2)  ['lorentzian']
+    with_line: whether to include linear component in baseline ['True']
+
+
+    Returns
+    -------
+      None
+
+    A group named 'prepeaks' will be created in the output group, with the following
+    attributes:
+        energy        energy array for pre-edge peaks = energy[emin-eneg:emax+epos]
+        baseline      fitted baseline array over pre-edge peak energies
+        mu            baseline-subtraced spectrum over pre-edge peak energies
+        dmu           estimated uncertainty in mu from fit
+        centroid      estimated centroid of pre-edge peaks (see note 3)
+        peak_energies list of predicted peak energies (see note 4)
+        fit_details   details of fit to extract pre-edge peaks.
+
+    (if the output group is None, _sys.xafsGroup will be written to)
+
+    Notes
+    -----
+     1 If the first argument is a Group, it must contain 'energy' and 'norm'.
+       See First Argrument Group in Documentation
+
+     2 A function will be fit to the input mu(E) data over the range between
+       [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
+       region [elo:ehi].  The baseline function is specified with the `form`
+       keyword argument, which can be one of
+           'lorentzian', 'gaussian', or 'voigt',
+       with 'lorentzian' the default.  In addition, the `with_line` keyword
+       argument can be used to add a line to this baseline function.
+
+     3 The value calculated for `prepeaks.centroid`  will be found as
+         (prepeaks.energy*prepeaks.mu).sum() / prepeaks.mu.sum()
+     4 The values in the `peak_energies` list will be predicted energies
+       of the peaks in `prepeaks.mu` as found by peakutils.
+
+    """
+    energy, norm, group = parse_group_args(energy, members=('energy', 'norm'),
+                                           defaults=(norm,), group=group,
+                                           fcn_name='pre_edge_baseline')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(norm.shape) > 1:
+        norm = norm.squeeze()
+
+    if emin is None and group is not None:
+        emin = group.e0 - 40.0
+    if emax is None and group is not None:
+        emax = group.e0 - 5.0
+    if elo is None and group is not None:
+        elo = group.e0 - 20.0
+    if ehi is None and group is not None:
+        ehi = group.e0 - 10.0
+
+    if emax is None or emin is None or elo is None or ehi is None:
+        raise ValueError("must provide emin and emax to pre_edge_baseline")
+
+    # get indices for input energies
+    if emin > emax:
+        emin, emax = emax, emin
+    if emin > elo:
+        elo, emin = emin, elo
+    if ehi > emax:
+        ehi, emax = emax, ehi
+
+    imin = index_of(energy, emin)
+    ilo  = index_of(energy, elo)
+    ihi  = index_of(energy, ehi)
+    imax = index_of(energy, emax)
+
+    # build xdat, ydat: dat to fit (skipping pre-edge peaks)
+    xdat = np.concatenate((energy[imin:ilo+1], energy[ihi:imax+1]))
+    ydat = np.concatenate((norm[imin:ilo+1], norm[ihi:imax+1]))
+
+    # build fitting model: note that we always include
+    # a LinearModel but may fix slope and intercept
+    form = form.lower()
+    if form.startswith('voig'):
+        model = VoigtModel()
+    elif form.startswith('gaus'):
+        model = GaussianModel()
+    else:
+        model = LorentzianModel()
+
+    model += LinearModel()
+    params = model.make_params(amplitude=1.0, sigma=2.0,
+                               center=emax,
+                               intercept=0, slope=0)
+    params['amplitude'].min =  0.0
+    params['sigma'].min     =  0.0
+    params['sigma'].max     = 25.0
+    params['center'].max    = emax + 25.0
+    params['center'].min    = emax - 25.0
+
+    if not with_line:
+        params['slope'].vary = False
+        params['intercept'].vary = False
+
+    # run fit
+    result = model.fit(ydat, params, x=xdat)
+
+    # energy including pre-edge peaks, for output
+    edat = energy[imin: imax+1]
+
+    # get baseline and resulting mu over edat range
+    bline = result.eval(result.params, x=edat)
+    mu  = norm[imin:imax+1]-bline
+
+    # uncertainty in mu includes only uncertainties in baseline fit
+    dmu = result.eval_uncertainty(result.params, x=edat)
+
+    # estimate centroid and its uncertainty
+    cen = (edat*mu).sum() / mu.sum()
+    cen_plus = (edat*(mu+dmu)).sum()/ (mu+dmu).sum()
+    cen_minus = (edat*(mu-dmu)).sum()/ (mu-dmu).sum()
+    dcen = abs(cen_minus - cen_plus) / 2.0
+
+    # locate peak positions
+    peak_energies = []
+    if HAS_PEAKUTILS:
+        peak_ids = peakutils.peak.indexes(mu, thres=0.05, min_dist=2)
+        peak_energies = [edat[pid] for pid in peak_ids]
+
+    group = set_xafsGroup(group, _larch=_larch)
+    group.prepeaks = Group(energy=edat, mu=mu, delta_mu=dmu,
+                           baseline=bline,
+                           centroid=cen, delta_centroid=dcen,
+                           peak_energies=peak_energies,
+                           fit_details=result,
+                           emin=emin, emax=emax, elo=elo, ehi=ehi,
+                           form=form, with_line=with_line)
+    return
+
 def registerLarchPlugin():
     return (MODNAME, {'find_e0': find_e0,
-                      'pre_edge': pre_edge})
+                      'pre_edge': pre_edge,
+                      'pre_edge_baseline': pre_edge_baseline})
