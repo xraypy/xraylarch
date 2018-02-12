@@ -47,7 +47,7 @@ from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group,
                               fix_varname, is_athena_project)
 
-from larch_plugins.xafs import pre_edge
+from larch_plugins.xafs import pre_edge, pre_edge_baseline
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
@@ -86,12 +86,12 @@ def assign_gsescan_groups(group):
 
     group.array_labels = labels
 
-XASOPChoices=('Raw Data',
-              'Normalized',
-              'Derivative',
-              'Normalized + Derivative',
-              'Pre-edge subtracted',
-              'Raw Data + Pre-edge/Post-edge')
+XASOPChoices = ['Raw Data',
+                'Normalized',
+                'Derivative',
+                'Normalized + Derivative',
+                'Pre-edge subtracted',
+                'Raw Data + Pre-edge/Post-edge']
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -100,6 +100,7 @@ class ProcessPanel(wx.Panel):
         self.controller = controller
         self.reporter = reporter
         self.needs_update = False
+        self.unzoom_on_update = True
         self.proc_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
         self.proc_timer.Start(100)
@@ -110,7 +111,6 @@ class ProcessPanel(wx.Panel):
 
     def fill(self, dgroup):
         opts = self.controller.get_proc_opts(dgroup)
-
         self.xshift.SetValue(opts['xshift'])
         self.yshift.SetValue(opts['yshift'])
         self.xscale.SetValue(opts['xscale'])
@@ -135,6 +135,10 @@ class ProcessPanel(wx.Panel):
             self.xas_showe0.SetValue(opts['show_e0'])
             self.xas_autoe0.SetValue(opts['auto_e0'])
             self.xas_autostep.SetValue(opts['auto_step'])
+            self.xas_ppeak_elo.SetValue(opts['ppeak_elo'])
+            self.xas_ppeak_ehi.SetValue(opts['ppeak_ehi'])
+            self.xas_ppeak_emin.SetValue(opts['ppeak_emin'])
+            self.xas_ppeak_emax.SetValue(opts['ppeak_emax'])
 
     def build_display(self):
         self.SetFont(Font(10))
@@ -218,7 +222,7 @@ class ProcessPanel(wx.Panel):
         gen.pack()
 
         #xas
-        opts = {'action': self.UpdatePlot}
+        opts = {'action': partial(self.UpdatePlot, setval=True)}
         e0opts_panel = wx.Panel(xas)
         self.xas_autoe0   = Check(e0opts_panel, default=True, label='auto?', **opts)
         self.xas_showe0   = Check(e0opts_panel, default=True, label='show?', **opts)
@@ -228,12 +232,16 @@ class ProcessPanel(wx.Panel):
         pack(e0opts_panel, sx)
 
         self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
-        opts['size'] = (250, -1)
+        self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
+        self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
+        opts = {'action': partial(self.UpdatePlot, setval=False, unzoom=True),
+                'size': (250, -1)}
         self.xas_op  = Choice(xas, choices=XASOPChoices,  **opts)
 
         self.xas_op.SetStringSelection('Normalized')
 
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2',
+                     'ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
             bb = BitmapButton(xas, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
                               tooltip='use last point selected from plot')
@@ -241,19 +249,27 @@ class ProcessPanel(wx.Panel):
 
         opts = {'size': (65, -1), 'gformat': True}
 
+
         self.xas_e0   = FloatCtrl(xas, value=0, action=self.onSet_XASE0, **opts)
         self.xas_step = FloatCtrl(xas, value=0, action=self.onSet_XASStep, **opts)
 
         opts['precision'] = 1
-        opts['action']    = self.UpdatePlot
+        opts['action']    = partial(self.UpdatePlot, setval=True)
         self.xas_pre1 = FloatCtrl(xas, value=None, **opts)
         self.xas_pre2 = FloatCtrl(xas, value= -30, **opts)
         self.xas_nor1 = FloatCtrl(xas, value=  50, **opts)
         self.xas_nor2 = FloatCtrl(xas, value=None, **opts)
 
+        self.xas_ppeak_emin = FloatCtrl(xas, value=-31, **opts)
+        self.xas_ppeak_elo  = FloatCtrl(xas, value=-15, **opts)
+        self.xas_ppeak_ehi  = FloatCtrl(xas, value=-6, **opts)
+        self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
+        self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(150, 30),
+                                     action=self.onPreedgeBaseline)
+
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
-                'action': self.UpdatePlot}
+                'action': partial(self.UpdatePlot, setval=True)}
         self.xas_vict = Choice(xas, **opts)
         self.xas_nnor = Choice(xas, **opts)
         self.xas_vict.SetSelection(1)
@@ -305,6 +321,31 @@ class ProcessPanel(wx.Panel):
         xas.Add(self.xas_nnor)
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
+        xas.Add((10, 1), newrow=True)
+        xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
+
+        xas.Add(SimpleText(xas, 'Pre-edge Peak Baseline Removal: '),
+                dcol=6,  newrow=True)
+        xas.Add(self.xas_ppeak_fit, dcol=3, style=RCEN)
+        xas.Add(SimpleText(xas, 'Pre-edge Peak range: '), newrow=True)
+
+        xas.Add(self.btns['ppeak_elo'])
+        xas.Add(self.xas_ppeak_elo)
+        xas.Add(SimpleText(xas, ':'))
+        xas.Add(self.btns['ppeak_ehi'])
+        xas.Add(self.xas_ppeak_ehi)
+        xas.Add(self.xas_show_ppdat, dcol=2)
+        xas.Add(CopyBtn('xas_ppeak_dat'), style=RCEN)
+
+        xas.Add(SimpleText(xas, 'Pre-edge Fit range: '), newrow=True)
+        xas.Add(self.btns['ppeak_emin'])
+        xas.Add(self.xas_ppeak_emin)
+        xas.Add(SimpleText(xas, ':'))
+        xas.Add(self.btns['ppeak_emax'])
+        xas.Add(self.xas_ppeak_emax)
+        xas.Add(self.xas_show_ppfit, dcol=2)
+        xas.Add(CopyBtn('xas_ppeak_fit'), style=RCEN)
+
         xas.pack()
 
         saveconf = Button(self, 'Save as Default Settings',
@@ -324,6 +365,18 @@ class ProcessPanel(wx.Panel):
         xas.Disable()
 
         pack(self, sizer)
+
+    def onPreedgeBaseline(self, evt=None):
+        e0 = self.xas_e0.GetValue()
+        opts = {'elo':  self.xas_ppeak_elo.GetValue()  + e0,
+                'ehi':  self.xas_ppeak_ehi.GetValue() + e0,
+                'emin': self.xas_ppeak_emin.GetValue() + e0,
+                'emax': self.xas_ppeak_emax.GetValue() + e0}
+
+        gname = self.controller.groupname
+        dgroup = self.controller.get_group(gname)
+        self.controller.xas_preedge_baseline(dgroup, opts=opts)
+
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.controller.larch.symtable._sys.xyfit
@@ -354,13 +407,16 @@ class ProcessPanel(wx.Panel):
             xas_proc['pre2']  = self.xas_pre2.GetValue()
             xas_proc['norm1'] = self.xas_nor1.GetValue()
             xas_proc['norm2'] = self.xas_nor2.GetValue()
-            xas_proc['nvict'] = self.xas_vict.GetSelection()
-            xas_proc['nnorm'] = self.xas_nnor.GetSelection()
 
             xas_proc['show_e0'] = self.xas_showe0.IsChecked()
             xas_proc['nnorm'] = int(self.xas_nnor.GetSelection())
             xas_proc['nvict'] = int(self.xas_vict.GetSelection())
             xas_proc['xas_op'] = str(self.xas_op.GetStringSelection())
+
+            xas_proc['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
+            xas_proc['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
+            xas_proc['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
+            xas_proc['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
             conf.xas_proc = xas_proc
 
     def onCopyParam(self, name=None, event=None):
@@ -384,6 +440,12 @@ class ProcessPanel(wx.Panel):
             opts['nnorm'] = proc_opts['nnorm']
             opts['norm1'] = proc_opts['norm1']
             opts['norm2'] = proc_opts['norm2']
+        elif name == 'xas_ppeak_dat':
+            opts['ppeak_elo'] = proc_opts['ppeak_elo']
+            opts['ppeak_ehi'] = proc_opts['ppeak_ehi']
+        elif name == 'xas_ppeak_fit':
+            opts['ppeak_emin'] = proc_opts['ppeak_emin']
+            opts['ppeak_emax'] = proc_opts['ppeak_emax']
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -432,18 +494,23 @@ class ProcessPanel(wx.Panel):
     def onSet_XASE0(self, evt=None, **kws):
         self.xas_autoe0.SetValue(0)
         self.needs_update = True
+        self.unzoom_on_update = False
 
     def onSet_XASStep(self, evt=None, **kws):
         self.xas_autostep.SetValue(0)
         self.needs_update = True
+        self.unzoom_on_update = False
 
     def onProcessTimer(self, evt=None):
         if self.needs_update and self.controller.groupname is not None:
             self.process(self.controller.groupname)
-            self.controller.plot_group(groupname=self.controller.groupname, new=True)
+            self.controller.plot_group(groupname=self.controller.groupname,
+                                       new=True, unzoom=self.unzoom_on_update)
             self.needs_update = False
 
-    def UpdatePlot(self, evt=None, **kws):
+    def UpdatePlot(self, evt=None, unzoom=True, setval=True, **kws):
+        if not setval:
+            self.unzoom_on_update = unzoom
         self.needs_update = True
 
     def on_selpoint(self, evt=None, opt='e0'):
@@ -463,10 +530,20 @@ class ProcessPanel(wx.Panel):
             self.xas_nor1.SetValue(xval-e0)
         elif opt == 'nor2':
             self.xas_nor2.SetValue(xval-e0)
+        elif opt == 'ppeak_elo':
+            self.xas_ppeak_elo.SetValue(xval-e0)
+        elif opt == 'ppeak_ehi':
+            self.xas_ppeak_ehi.SetValue(xval-e0)
+        elif opt == 'ppeak_emin':
+            self.xas_ppeak_emin.SetValue(xval-e0)
+        elif opt == 'ppeak_emax':
+            self.xas_ppeak_emax.SetValue(xval-e0)
         elif opt == 'xshift':
             self.xshift.SetValue(xval)
         elif opt == 'yshift':
             self.yshift.SetValue(yval)
+        else:
+            print(" unknown selection point ", opt)
 
     def process(self, gname,  **kws):
         """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
@@ -474,6 +551,7 @@ class ProcessPanel(wx.Panel):
         """
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
+        save_unzoom = self.unzoom_on_update
 
         proc_opts['xshift'] = self.xshift.GetValue()
         proc_opts['yshift'] = self.yshift.GetValue()
@@ -486,6 +564,7 @@ class ProcessPanel(wx.Panel):
         proc_opts['smooth_conv'] = self.smooth_conv.GetStringSelection()
 
         self.xaspanel.Enable(dgroup.datatype.startswith('xas'))
+
         if dgroup.datatype.startswith('xas'):
             proc_opts['datatype'] = 'xas'
             proc_opts['e0'] = self.xas_e0.GetValue()
@@ -494,8 +573,6 @@ class ProcessPanel(wx.Panel):
             proc_opts['pre2']  = self.xas_pre2.GetValue()
             proc_opts['norm1'] = self.xas_nor1.GetValue()
             proc_opts['norm2'] = self.xas_nor2.GetValue()
-            proc_opts['nvict'] = self.xas_vict.GetSelection()
-            proc_opts['nnorm'] = self.xas_nnor.GetSelection()
 
             proc_opts['auto_e0'] = self.xas_autoe0.IsChecked()
             proc_opts['show_e0'] = self.xas_showe0.IsChecked()
@@ -559,7 +636,28 @@ class ProcessPanel(wx.Panel):
             dgroup.plot_ymarkers = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
-                dgroup.plot_ymarkers = [(dgroup.e0, y4e0[ie0], {'label': '_nolegend_'})]
+                dgroup.plot_ymarkers.append((dgroup.e0, y4e0[ie0], {'label': '_nolegend_'}))
+
+            if self.xas_show_ppfit.IsChecked():
+                popts = {'label': '_nolegend_', 'marker': 's'}
+                emin = dgroup.e0 + self.xas_ppeak_emin.GetValue()
+                emax = dgroup.e0 + self.xas_ppeak_emax.GetValue()
+                imin = index_of(dgroup.xdat, emin)
+                imax = index_of(dgroup.xdat, emax)
+
+                dgroup.plot_ymarkers.append((emin, y4e0[imin], popts))
+                dgroup.plot_ymarkers.append((emax, y4e0[imax], popts))
+
+            if self.xas_show_ppdat.IsChecked():
+                popts = {'label': '_nolegend_', 'marker': '+'}
+                elo = dgroup.e0 + self.xas_ppeak_elo.GetValue()
+                ehi = dgroup.e0 + self.xas_ppeak_ehi.GetValue()
+                ilo = index_of(dgroup.xdat, elo)
+                ihi = index_of(dgroup.xdat, ehi)
+
+                dgroup.plot_ymarkers.append((elo, y4e0[ilo], popts))
+                dgroup.plot_ymarkers.append((ehi, y4e0[ihi], popts))
+        self.unzoom_on_update = save_unzoom
 
 class XYFitController():
     """
@@ -591,10 +689,16 @@ class XYFitController():
         _larch = self.larch
         _larch.eval("import xafs_plots")
         _larch.symtable._sys.xyfit = Group()
-        config = read_config(self.config_file)
-        if (config is None or 'workdir' not in config or
-            'data_proc' not in config or 'xas_proc' not in config):
-            config = self.make_default_config()
+        old_config = read_config(self.config_file)
+
+        config = self.make_default_config()
+        for sname in config:
+            if sname in old_config:
+                val = old_config[sname]
+                if isinstance(val, dict):
+                    config[sname].update(val)
+                else:
+                    config[sname] = val
 
         for key, value in config.items():
             setattr(_larch.symtable._sys.xyfit, key, value)
@@ -613,7 +717,10 @@ class XYFitController():
                                   edge_step=0, nnorm=2, norm1=25,
                                   norm2=-10, nvict=1, auto_step=True,
                                   auto_e0=True, show_e0=True,
-                                  xas_op='Normalized')
+                                  xas_op='Normalized',
+                                  ppeak_elo=-10, ppeak_ehi=-5,
+                                  ppeak_emin=-40, ppeak_emax=0)
+
         return config
 
     def get_config(self, key, default=None):
@@ -723,7 +830,6 @@ class XYFitController():
 
         # xas
         if dgroup.datatype.startswith('xas'):
-
             dgroup.energy = dgroup.x*1.0
             dgroup.mu = dgroup.y*1.0
 
@@ -747,6 +853,26 @@ class XYFitController():
                 opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
             dgroup.proc_opts.update(opts)
 
+    def xas_preedge_baseline(self, dgroup, opts=None):
+        if not dgroup.datatype.startswith('xas'):
+            return
+
+        dgroup.energy = dgroup.x*1.0
+        dgroup.norm = dgroup.y*1.0
+
+        popts = {'group': dgroup.groupname}
+        popts.update(opts)
+
+        copts = [dgroup.groupname]
+        copts.append("form='lorentzian'")
+        for attr in ('elo', 'ehi', 'emin', 'emax'):
+            copts.append("%s=%.4f" % (attr, opts[attr]))
+
+        cmd = "pre_edge_baseline(%s)" % (','.join(copts))
+        self.larch.eval(cmd)
+        # print(dir(dgroup.prepeaks))
+
+
     def get_cursor(self):
         try:
             xval = self.symtable._plotter.plot1_x
@@ -755,11 +881,13 @@ class XYFitController():
             xval, yval = None, None
         return xval, yval
 
-    def plot_group(self, groupname=None, title=None, new=True, **kws):
+    def plot_group(self, groupname=None, title=None,
+                   new=True, unzoom=True, **kws):
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
         plotcmd = oplot
+        viewlims = ppanel.get_viewlimits()
         if new:
             plotcmd = newplot
 
@@ -788,6 +916,18 @@ class XYFitController():
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
+
+        unzoom = (unzoom or
+                  min(dgroup.x) >= viewlims[1] or
+                  max(dgroup.x) <= viewlims[0] or
+                  min(dgroup.y) >= viewlims[3] or
+                  max(dgroup.y) <= viewlims[2])
+
+        if not unzoom:
+            popts['xmin'] = viewlims[0]
+            popts['xmax'] = viewlims[1]
+            popts['ymin'] = viewlims[2]
+            popts['ymax'] = viewlims[3]
 
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
