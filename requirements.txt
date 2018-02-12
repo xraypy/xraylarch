@@ -5,6 +5,7 @@ matplotlib>=1.5.1
 sqlalchemy>=0.9
 h5py>=2.2
 pillow>=3.4
+peakutils>=1.0.0
 requests>=2.1
 lmfit>=0.9.7
 psutil

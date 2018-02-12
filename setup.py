@@ -38,6 +38,7 @@ required_modules = {'numpy': 'numpy',
                     'requests': 'requests',
                     'six' : 'six',
                     'psutil': 'psutil',
+                    'peakutils': 'peakutils',
                     'PIL' : 'pillow',
                     'lmfit': 'lmfit'}
 
