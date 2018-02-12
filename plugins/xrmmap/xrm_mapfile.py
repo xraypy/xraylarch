@@ -131,9 +131,12 @@ def isGSEXRM_MapFolder(fname):
     has_xrmdata = False
 
     header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
-    for f in rows[0]:
-        if f in flist: has_xrmdata = True
-
+    try:
+        for f in rows[0]:
+            if f in flist: 
+                has_xrmdata = True
+    except:
+        pass
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
