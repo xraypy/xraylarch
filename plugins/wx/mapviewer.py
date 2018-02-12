@@ -309,13 +309,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 p.update_xrmmap(xrmfile.xrmmap)
 
     def onFILE(self, evt, varname='a'):
-
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        print('\tNot doing anything yet...')
-        print('\tShould switch from previous file to: %s' %
-                  self.varfile[varname].GetStringSelection())
-        print("\tNeeds to ignore 'currrent file' somehow.")
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+        pass
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        # print('\tNot doing anything yet...')
+        # print('\tShould switch from previous file to: %s' %
+        #          self.varfile[varname].GetStringSelection())
+        # print("\tNeeds to ignore 'currrent file' somehow.")
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
 
     def onDET(self, evt, varname='a'):
 
