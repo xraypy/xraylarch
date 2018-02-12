@@ -1865,10 +1865,11 @@ class GSEXRM_MapFile(object):
 
     def get_translation_axis(self):
         posnames = [n.lower() for n in self.xrmmap['positions/name']]
+        # print(" Get Translation axes ", posnames, 'x' in posnames)
         if 'x' in posnames:
             return self.get_pos('x', mean=True)
         elif 'fine x' in posnames:
-            return self.get_pos('x', mean=True)
+            return self.get_pos('fine x', mean=True)
 
         return self.get_pos(0, mean=True)
 
@@ -1892,8 +1893,8 @@ class GSEXRM_MapFile(object):
         return self.xrmmap['tomo/center'][...]
 
     def set_tomography_center(self,center=None):
-
-        if center is None: center = len(self.get_translation_axis())/2.
+        if center is None: 
+            center = len(self.get_translation_axis())/2.
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
