@@ -394,17 +394,31 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     if len(norm.shape) > 1:
         norm = norm.squeeze()
 
-    if emin is None and group is not None:
-        emin = group.e0 - 40.0
-    if emax is None and group is not None:
-        emax = group.e0 - 5.0
-    if elo is None and group is not None:
-        elo = group.e0 - 20.0
-    if ehi is None and group is not None:
-        ehi = group.e0 - 10.0
+    dat_emin, dat_emax = min(energy), max(energy)
+
+    dat_e0 = getattr(group, 'e0', -1)
+
+    if dat_e0 > 0:
+        if emin is None:
+            emin = dat_e0 - 30.0
+        if emax is None:
+            emax = dat_e0 - 1.0
+        if elo is None:
+            elo = dat_e0 - 15.0
+        if ehi is None:
+            ehi = dat_e0 - 5.0
+        if emin < 0:
+            emin += dat_e0
+        if elo < 0:
+            elo += dat_e0
+        if emax < dat_emin:
+            emax += dat_e0
+        if ehi < dat_emin:
+            ehi += dat_e0
 
     if emax is None or emin is None or elo is None or ehi is None:
         raise ValueError("must provide emin and emax to pre_edge_baseline")
+
 
     # get indices for input energies
     if emin > emax:
@@ -438,8 +452,8 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
                                center=emax,
                                intercept=0, slope=0)
     params['amplitude'].min =  0.0
-    params['sigma'].min     =  0.0
-    params['sigma'].max     = 25.0
+    params['sigma'].min     =  0.25
+    params['sigma'].max     = 50.0
     params['center'].max    = emax + 25.0
     params['center'].min    = emax - 25.0
 
