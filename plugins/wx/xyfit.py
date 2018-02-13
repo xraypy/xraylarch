@@ -9,7 +9,7 @@ import numpy as np
 np.seterr(all='ignore')
 
 from functools import partial
-
+from collections import OrderedDict
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
@@ -56,9 +56,9 @@ FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NODRAG|flat_nb.FNB_NO_NAV_BUTTON
 
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=-5,
+PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
                   marker='None', markersize=4)
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=-5,
+PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right',  marker='None', markersize=4)
 
 ICON_FILE = 'larch.ico'
@@ -86,12 +86,14 @@ def assign_gsescan_groups(group):
 
     group.array_labels = labels
 
-XASOPChoices = ['Raw Data',
-                'Normalized',
-                'Derivative',
-                'Normalized + Derivative',
-                'Pre-edge subtracted',
-                'Raw Data + Pre-edge/Post-edge']
+XASOPChoices = OrderedDict((('Raw Data', 'raw'),
+                            ('Normalized', 'norm'),
+                            ('Derivative', 'deriv'),
+                            ('Normalized + Derivative', 'norm+deriv'),
+                            ('Pre-edge subtracted', 'preedge'),
+                            ('Raw Data + Pre-edge/Post-edge', 'prelines'),
+                            ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
+                            ('Pre-edge Peaks, isolated', 'prepeaks')))
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -236,7 +238,7 @@ class ProcessPanel(wx.Panel):
         self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
         opts = {'action': partial(self.UpdatePlot, setval=False, unzoom=True),
                 'size': (250, -1)}
-        self.xas_op  = Choice(xas, choices=XASOPChoices,  **opts)
+        self.xas_op  = Choice(xas, choices=list(XASOPChoices.keys()),  **opts)
 
         self.xas_op.SetStringSelection('Normalized')
 
@@ -266,6 +268,7 @@ class ProcessPanel(wx.Panel):
         self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
         self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(150, 30),
                                      action=self.onPreedgeBaseline)
+        self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(250, -1))
 
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
@@ -345,6 +348,9 @@ class ProcessPanel(wx.Panel):
         xas.Add(self.xas_ppeak_emax)
         xas.Add(self.xas_show_ppfit, dcol=2)
         xas.Add(CopyBtn('xas_ppeak_fit'), style=RCEN)
+        xas.Add(SimpleText(xas, 'Pre-edge Centroid: '), newrow=True)
+        xas.Add(self.xas_ppeak_centroid, dcol=6)
+
 
         xas.pack()
 
@@ -373,9 +379,17 @@ class ProcessPanel(wx.Panel):
                 'emin': self.xas_ppeak_emin.GetValue() + e0,
                 'emax': self.xas_ppeak_emax.GetValue() + e0}
 
+        self.xas_op.SetStringSelection('Pre-edge Peaks + Baseline')
+
         gname = self.controller.groupname
         dgroup = self.controller.get_group(gname)
         self.controller.xas_preedge_baseline(dgroup, opts=opts)
+
+        ppeaks = dgroup.prepeaks
+        self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
+        self.process(gname)
+
+        ## dgroup.ppeaks_base, PLOTOPTS_2, 'pre-edge peaks baseline')]
 
 
     def onSaveConfigBtn(self, evt=None):
@@ -552,7 +566,7 @@ class ProcessPanel(wx.Panel):
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
         save_unzoom = self.unzoom_on_update
-
+        dgroup.special_plot_opts = {}
         proc_opts['xshift'] = self.xshift.GetValue()
         proc_opts['yshift'] = self.yshift.GetValue()
         proc_opts['xscale'] = self.xscale.GetValue()
@@ -602,18 +616,27 @@ class ProcessPanel(wx.Panel):
             dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
             y4e0 = dgroup.mu
 
-            out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-            if out.startswith('raw data + pre'):
+            pchoice = XASOPChoices[self.xas_op.GetStringSelection()]
+            # ('Raw Data', 'raw'),
+            # ('Normalized', 'norm'),
+            # ('Derivative', 'deriv'),
+            # ('Normalized + Derivative', 'norm+deriv'),
+            # ('Pre-edge subtracted', 'preedge'),
+            # ('Raw Data + Pre-edge/Post-edge', 'prelines'),
+            # ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
+            # ('Pre-edge Peaks, isolated', 'prepeaks')))
+
+            if pchoice == 'prelines':
                 dgroup.plot_yarrays = [(dgroup.mu,        PLOTOPTS_1, '$\mu$'),
                                        (dgroup.pre_edge,  PLOTOPTS_2, 'pre edge'),
                                        (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
-            elif out.startswith('pre'):
+            elif pchoice == 'preedge':
                 dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
                 dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
                                         'pre-edge subtracted $\mu$')]
                 y4e0 = dgroup.pre_edge_sub
                 dgroup.plot_ylabel = 'pre-edge subtracted $\mu$'
-            elif 'norm' in out and 'deriv' in out:
+            elif pchoice == 'norm+deriv':
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
                                        (dgroup.dmude, PLOTOPTS_D, '$d\mu/dE$')]
                 y4e0 = dgroup.norm
@@ -621,17 +644,51 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_y2label = '$d\mu/dE$'
                 dgroup.y = dgroup.norm
 
-            elif out.startswith('norm'):
+            elif pchoice == 'norm':
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$')]
                 y4e0 = dgroup.norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
                 dgroup.y = dgroup.norm
 
-            elif out.startswith('deriv'):
+            elif pchoice == 'deriv':
                 dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, '$d\mu/dE$')]
                 y4e0 = dgroup.dmude
                 dgroup.plot_ylabel = '$d\mu/dE$'
                 dgroup.y = dgroup.dmude
+
+            elif pchoice == 'prepeaks+base':
+                if hasattr(dgroup, 'prepeaks'):
+                    ppeaks = dgroup.prepeaks
+                    i0 = index_of(dgroup.energy, ppeaks.energy[0])
+                    i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+                    dgroup.prepeaks_baseline = dgroup.norm*1.0
+                    dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+
+
+                    dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
+                                           (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
+
+                    dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                                                'xmax':dgroup.energy[i1+2]}
+                    dgroup.y = y4e0 = dgroup.norm
+                    dgroup.plot_ylabel = 'normalized $\mu$'
+
+
+            elif pchoice == 'prepeaks':
+                if hasattr(dgroup, 'prepeaks'):
+                    ppeaks = dgroup.prepeaks
+                    i0 = index_of(dgroup.energy, ppeaks.energy[0])
+                    i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+                    dgroup.prepeaks_baseline = dgroup.norm*1.0
+                    dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+                    dgroup.prepeaks_norm = dgroup.norm - dgroup.prepeaks_baseline
+
+                    dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
+                    dgroup.y = y4e0 = dgroup.prepeaks_norm
+                    dgroup.plot_ylabel = 'normalized $\mu$'
+                    dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                                                'xmax':dgroup.energy[i1+2]}
+
 
             dgroup.plot_ymarkers = []
             if self.xas_showe0.IsChecked():
@@ -867,11 +924,11 @@ class XYFitController():
         copts.append("form='lorentzian'")
         for attr in ('elo', 'ehi', 'emin', 'emax'):
             copts.append("%s=%.4f" % (attr, opts[attr]))
-
         cmd = "pre_edge_baseline(%s)" % (','.join(copts))
         self.larch.eval(cmd)
-        # print(dir(dgroup.prepeaks))
-
+        ppeaks = dgroup.prepeaks
+        dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
+                                                    ppeaks.delta_centroid)
 
     def get_cursor(self):
         try:
@@ -941,6 +998,7 @@ class XYFitController():
             plot_ymarkers = getattr(dgroup, 'plot_ymarkers', None)
 
         popts['title'] = title
+        popts.update(dgroup.special_plot_opts)
         for yarr in plot_yarrays:
             popts.update(yarr[1])
             if popts['label'] is None and yarr[2] is not None:
