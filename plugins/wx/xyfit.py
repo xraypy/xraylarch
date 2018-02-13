@@ -142,6 +142,10 @@ class ProcessPanel(wx.Panel):
             self.xas_ppeak_emin.SetValue(opts['ppeak_emin'])
             self.xas_ppeak_emax.SetValue(opts['ppeak_emax'])
 
+            if len(getattr(dgroup, 'centroid_msg', '')) > 3:
+                self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
+
+
     def build_display(self):
         self.SetFont(Font(10))
         titleopts = dict(font=Font(11), colour='#AA0000')
@@ -662,38 +666,36 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_ylabel = '$d\mu/dE$'
                 dgroup.y = dgroup.dmude
 
-            elif pchoice == 'prepeaks+base':
-                if hasattr(dgroup, 'prepeaks'):
-                    ppeaks = dgroup.prepeaks
-                    i0 = index_of(dgroup.energy, ppeaks.energy[0])
-                    i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
-                    dgroup.prepeaks_baseline = dgroup.norm*1.0
-                    dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+            elif pchoice == 'prepeaks+base' and hasattr(dgroup, 'prepeaks'):
+                ppeaks = dgroup.prepeaks
+                i0 = index_of(dgroup.energy, ppeaks.energy[0])
+                i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+                dgroup.prepeaks_baseline = dgroup.norm*1.0
+                dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+
+                dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
+                                       (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
+
+                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                                            'ymax':dgroup.norm[i1+2]*1.05}
+
+                dgroup.y = y4e0 = dgroup.norm
+                dgroup.plot_ylabel = 'normalized $\mu$'
 
 
-                    dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
-                                           (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
+            elif pchoice == 'prepeaks' and hasattr(dgroup, 'prepeaks'):
+                ppeaks = dgroup.prepeaks
+                i0 = index_of(dgroup.energy, ppeaks.energy[0])
+                i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+                dgroup.prepeaks_baseline = dgroup.norm*1.0
+                dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+                dgroup.prepeaks_norm = dgroup.norm - dgroup.prepeaks_baseline
 
-                    dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                                'xmax':dgroup.energy[i1+2]}
-                    dgroup.y = y4e0 = dgroup.norm
-                    dgroup.plot_ylabel = 'normalized $\mu$'
-
-
-            elif pchoice == 'prepeaks':
-                if hasattr(dgroup, 'prepeaks'):
-                    ppeaks = dgroup.prepeaks
-                    i0 = index_of(dgroup.energy, ppeaks.energy[0])
-                    i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
-                    dgroup.prepeaks_baseline = dgroup.norm*1.0
-                    dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
-                    dgroup.prepeaks_norm = dgroup.norm - dgroup.prepeaks_baseline
-
-                    dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
-                    dgroup.y = y4e0 = dgroup.prepeaks_norm
-                    dgroup.plot_ylabel = 'normalized $\mu$'
-                    dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                                'xmax':dgroup.energy[i1+2]}
+                dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
+                dgroup.y = y4e0 = dgroup.prepeaks_norm
+                dgroup.plot_ylabel = 'normalized $\mu$'
+                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                                            'xmax':dgroup.energy[i1+2]}
 
 
             dgroup.plot_ymarkers = []
@@ -721,7 +723,7 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_ymarkers.append((elo, y4e0[ilo], popts))
                 dgroup.plot_ymarkers.append((ehi, y4e0[ihi], popts))
 
-            if self.xas_show_ppcen.IsChecked():
+            if self.xas_show_ppcen.IsChecked() and hasattr(dgroup, 'prepeaks'):
                 popts = {'label': '_nolegend_', 'marker': 'd'}
                 ecen = getattr(dgroup.prepeaks, 'centroid', -1)
                 if ecen > min(dgroup.energy):
