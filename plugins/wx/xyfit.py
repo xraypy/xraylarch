@@ -234,6 +234,7 @@ class ProcessPanel(wx.Panel):
         pack(e0opts_panel, sx)
 
         self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
+        self.xas_show_ppcen = Check(xas, default=False, label='show?', **opts)
         self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
         self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
         opts = {'action': partial(self.UpdatePlot, setval=False, unzoom=True),
@@ -268,7 +269,7 @@ class ProcessPanel(wx.Panel):
         self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
         self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(150, 30),
                                      action=self.onPreedgeBaseline)
-        self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(250, -1))
+        self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
 
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
@@ -349,8 +350,8 @@ class ProcessPanel(wx.Panel):
         xas.Add(self.xas_show_ppfit, dcol=2)
         xas.Add(CopyBtn('xas_ppeak_fit'), style=RCEN)
         xas.Add(SimpleText(xas, 'Pre-edge Centroid: '), newrow=True)
-        xas.Add(self.xas_ppeak_centroid, dcol=6)
-
+        xas.Add(self.xas_ppeak_centroid, dcol=5)
+        xas.Add(self.xas_show_ppcen, dcol=2)
 
         xas.pack()
 
@@ -374,18 +375,18 @@ class ProcessPanel(wx.Panel):
 
     def onPreedgeBaseline(self, evt=None):
         e0 = self.xas_e0.GetValue()
-        opts = {'elo':  self.xas_ppeak_elo.GetValue()  + e0,
-                'ehi':  self.xas_ppeak_ehi.GetValue() + e0,
-                'emin': self.xas_ppeak_emin.GetValue() + e0,
-                'emax': self.xas_ppeak_emax.GetValue() + e0}
+        opts = {'elo':  self.xas_ppeak_elo.GetValue(),
+                'ehi':  self.xas_ppeak_ehi.GetValue(),
+                'emin': self.xas_ppeak_emin.GetValue(),
+                'emax': self.xas_ppeak_emax.GetValue()}
 
         self.xas_op.SetStringSelection('Pre-edge Peaks + Baseline')
 
         gname = self.controller.groupname
         dgroup = self.controller.get_group(gname)
         self.controller.xas_preedge_baseline(dgroup, opts=opts)
+        # dgroup.proc_opts.update(opts)
 
-        ppeaks = dgroup.prepeaks
         self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
         self.process(gname)
 
@@ -595,6 +596,11 @@ class ProcessPanel(wx.Panel):
             proc_opts['nvict'] = int(self.xas_vict.GetSelection())
             proc_opts['xas_op'] = self.xas_op.GetStringSelection()
 
+            proc_opts['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
+            proc_opts['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
+            proc_opts['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
+            proc_opts['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
+
         self.controller.process(dgroup, proc_opts=proc_opts)
 
         if dgroup.datatype.startswith('xas'):
@@ -714,6 +720,14 @@ class ProcessPanel(wx.Panel):
 
                 dgroup.plot_ymarkers.append((elo, y4e0[ilo], popts))
                 dgroup.plot_ymarkers.append((ehi, y4e0[ihi], popts))
+
+            if self.xas_show_ppcen.IsChecked():
+                popts = {'label': '_nolegend_', 'marker': 'd'}
+                ecen = getattr(dgroup.prepeaks, 'centroid', -1)
+                if ecen > min(dgroup.energy):
+                    icen = index_of(dgroup.xdat, ecen)
+                    dgroup.plot_ymarkers.append((ecen, y4e0[icen], popts))
+
         self.unzoom_on_update = save_unzoom
 
 class XYFitController():
