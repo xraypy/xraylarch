@@ -29,23 +29,47 @@ with open(os.path.join('lib', 'version.py'), 'r') as version_file:
 
 ##
 ## Dependencies: required and recommended modules
-##
 
-required_modules = ['numpy', 'scipy', 'lmfit', 'h5py', 'sqlalchemy', 'six',
-                    'PIL', 'requests']
-graphics_modules = ['matplotlib', 'wx', 'wxmplot', 'wxutils']
+required_modules = {'numpy': 'numpy',
+                    'scipy': 'scipy',
+                    'matplotlib': 'matplotlib',
+                    'h5py': 'h5py',
+                    'sqlalchemy': 'sqlalchemy',
+                    'requests': 'requests',
+                    'six' : 'six',
+                    'psutil': 'psutil',
+                    'peakutils': 'peakutils',
+                    'PIL' : 'pillow',
+                    'lmfit': 'lmfit'}
 
-xrd_modules  = ['pyFAI', 'CifFile', 'fabio']
-tomo_modules = ['tomopy','scikit-image']
 
-recommended_modules = {'basic analysis': required_modules,
-                       'graphics and plotting': graphics_modules,
-                       'xrd modules' : xrd_modules,
-                       'tomography modules' : tomo_modules,
-                       'color-enhanced error messages': ('termcolor', ),
-                       'using the EPICS control system': ('epics', ),
-                       'testing tools': ('nose', ),
-                       }
+graphics_modules = {'wx': 'wxPython',
+                    'wxmplot': 'wxmplot',
+                    'wxutils': 'wxutils'}
+
+xrd_modules  = {'pyFAI': 'pyFAI', 'CifFile' : 'PyCifRW',
+                'fabio': 'fabio'}
+
+tomo_modules = {'tomopy': 'tomopy',
+                'skimage': 'scikit-image'}
+
+epics_modules = {'epics': 'pyepics'}
+epicsscan_modules = {'epicsscan': 'epicsscan',
+                     'psycopg2': 'psycopg2'}
+
+terminal_modules = {'termcolor': 'termcolor'}
+
+testing_modules = {'nose': 'nose'}
+
+all_modules = (('basic analysis', required_modules),
+           ('graphics and plotting', graphics_modules),
+           ('xrd modules', xrd_modules),
+           ('tomography modules', tomo_modules),
+           ('connecting to the EPICS control system', epics_modules),
+           ('scanning with EpicsScan', epicsscan_modules),
+           ('color-enhanced error messages', terminal_modules),
+           ('testing tools',  testing_modules))
+
 
 # files that may be left from earlier install(s) and should be removed
 historical_cruft = ['plugins/xrd/xrd_hkl.py',
@@ -54,41 +78,36 @@ historical_cruft = ['plugins/xrd/xrd_hkl.py',
 
 modules_imported = {}
 missing = []
-deps_ok = False
-if os.path.exists('.deps'):
-    try:
-        f = open('.deps', 'r').readlines()
-        deps_ok = int(f[0].strip()) == 1
-    except:
-        pass
 
-if not deps_ok:
-    print( 'Checking dependencies....')
-    for desc, mods in recommended_modules.items():
-        for mod in mods:
-            if mod not in modules_imported:
-                modules_imported[mod] = False
-            try:
-                x = __import__(mod)
-                modules_imported[mod] = True
-            except ImportError:
-                missing.append('     %s:  needed for %s' % (mod, desc))
-    missing_reqs = []
-    for mod in modules_imported:
-        if mod in required_modules and not modules_imported[mod]:
-            missing_reqs.append(mod)
 
-    if len(missing_reqs) > 0:
-        print('== Cannot Install Larch: Required Modules are Missing ==')
-        isword = 'is'
-        if len(missing_reqs) > 1: isword = 'are'
-        print(' %s %s REQUIRED' % (' and '.join(missing_reqs), isword) )
-        print(' ')
-        print(' Please read INSTALL for further information.')
-        print(' ')
+try:
+    import matplotlib
+    matplotlib.use('WXAgg')
+except:
+    pass
+print( 'Checking dependencies....')
+for desc, mods in all_modules:
+    for impname, modname in mods.items():
+        if impname not in modules_imported:
+            modules_imported[modname] = False
+        try:
+            x = __import__(impname)
+            modules_imported[modname] = True
+        except ImportError:
+            s = (modname + ' '*25)[:25]
+            missing.append('     %s %s' % (s, desc))
+missing_reqs = []
+for mod in modules_imported:
+    if mod in required_modules and not modules_imported[mod]:
+        missing_reqs.append(mod)
 
-        sys.exit()
-    deps_ok = len(missing) == 0
+if len(missing_reqs) > 0:
+    print('\n=== Cannot Install Larch, these REQUIRED Modules are missing: ')
+    print(' %s' % (', '.join(missing_reqs)))
+    print(' ')
+    print(' Please read INSTALL for further information.')
+    print(' ')
+    sys.exit()
 
 
 ## For Travis-CI, need to write a local site config file
@@ -189,7 +208,7 @@ setup(name = 'xraylarch',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
       download_url = 'http://xraypy.github.io/xraylarch/',
-      requires = required_modules,
+      requires = list(required_modules.keys()),
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
@@ -278,11 +297,6 @@ def fix_darwin_dylibs():
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
 
-if deps_ok and not os.path.exists('.deps'):
-    f = open('.deps', 'w')
-    f.write('1\n')
-    f.close()
-
 # final install:
 #   create desktop icons
 #   fix dynamic libraries
@@ -296,11 +310,19 @@ if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
 
 if len(missing) > 0:
     msg = """
-#==============================================================#
-#=== Warning: Some recommended Python Packages are missing:
-%s
+#=========================================================================#
+ Warning: Some optional Python Packages were not found. Some functionality
+ will not be available without these packages:
 
-Some functionality will not work until these are installed.
-See INSTALL for further information.
-#==============================================================#"""
+     Package Name              Needed for
+     ----------------          -------------------------------
+%s
+     ----------------          -------------------------------
+
+ If you need some of these capabilities, you may be able to use
+ `pip install <Package Name>` or `conda install <Package Name>`
+ to install these packages.
+
+ See the Optional Modules section of INSTALL for more information.
+#=========================================================================#"""
     print(msg %  '\n'.join(missing))
