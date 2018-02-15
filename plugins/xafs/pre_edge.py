@@ -438,7 +438,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
                                center=emax,
                                intercept=0, slope=0)
     params['amplitude'].min =  0.0
-    params['sigma'].min     =  0.0
+    params['sigma'].min     =  0.25
     params['sigma'].max     = 25.0
     params['center'].max    = emax + 25.0
     params['center'].min    = emax - 25.0
