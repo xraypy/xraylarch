@@ -131,9 +131,12 @@ def isGSEXRM_MapFolder(fname):
     has_xrmdata = False
 
     header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
-    for f in rows[0]:
-        if f in flist: has_xrmdata = True
-
+    try:
+        for f in rows[0]:
+            if f in flist: 
+                has_xrmdata = True
+    except:
+        pass
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -980,7 +983,7 @@ class GSEXRM_MapFile(object):
             while irow < nrows:
                 self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
                 irow  = irow + 1
-        
+
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
     def calc_pixeltime(self):
@@ -1084,7 +1087,8 @@ class GSEXRM_MapFile(object):
             for gname in map_items:
                 g = self.xrmmap[gname]
                 if g.attrs.get('type', None) == 'scalar detectors':
-                     nrows, npts =  g['TSCALER'].shape
+                    first_det = g.keys()[0]
+                    nrows, npts =  g[first_det].shape
 
             if thisrow >= nrows:
                 self.resize_arrays(NINIT*(1+nrows/NINIT))
@@ -1142,7 +1146,6 @@ class GSEXRM_MapFile(object):
 
 
         else:
-
             if self.flag_xrf:
                 nmca, xnpts, nchan = row.counts.shape
                 xrm_dets = []
@@ -1861,18 +1864,23 @@ class GSEXRM_MapFile(object):
         return roidata
 
     def get_translation_axis(self):
-
-        try:
-            return self.get_pos('fine x', mean=True)
-        except:
+        posnames = [n.lower() for n in self.xrmmap['positions/name']]
+        # print(" Get Translation axes ", posnames, 'x' in posnames)
+        if 'x' in posnames:
             return self.get_pos('x', mean=True)
+        elif 'fine x' in posnames:
+            return self.get_pos('fine x', mean=True)
+
+        return self.get_pos(0, mean=True)
 
     def get_rotation_axis(self):
-
-        try:
+        posnames = [n.lower() for n in self.xrmmap['positions/name']]
+        if 'theta' in posnames:
             return self.get_pos('theta', mean=True)
-        except:
-            return
+        if 'omega' in posnames:
+            return self.get_pos('omega', mean=True)
+
+        return self.get_pos(0, mean=True)
 
 
     def get_tomography_center(self):
@@ -1885,8 +1893,8 @@ class GSEXRM_MapFile(object):
         return self.xrmmap['tomo/center'][...]
 
     def set_tomography_center(self,center=None):
-
-        if center is None: center = len(self.get_translation_axis())/2.
+        if center is None: 
+            center = len(self.get_translation_axis())/2.
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
@@ -2020,8 +2028,8 @@ class GSEXRM_MapFile(object):
             elif 'scan.nrows_expected' in words[0].lower():
                 self.nrows_expected = int(words[1].strip())
         self.scan_version = float(self.scan_version)
-        
-        
+
+
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
         try:
@@ -2029,7 +2037,7 @@ class GSEXRM_MapFile(object):
             self.stop_time = time.ctime(os.stat(last_file).st_ctime)
         except:
             pass
-        
+
         self.notes['scan_end_time'] = isotime(self.stop_time)
 
         if self.scan_version < 1.35 and (self.flag_xrd2d or self.flag_xrd1d):
@@ -3144,12 +3152,12 @@ class GSEXRM_MapFile(object):
 
 def update_xrmmap_file(xrmmap):
     '''update dataset names, version, etc. in xrmmap file'''
-    
+
     try:
         xrmmap.attrs['Version']
     except:
         xrmmap.attrs['Version'] = '0.0.0'
-    
+
     if xrmmap.attrs['Version'] < StrictVersion('2.0.0'):
 
         xrmmap['mca1'] = xrmmap['det1']
@@ -3160,10 +3168,10 @@ def update_xrmmap_file(xrmmap):
         del xrmmap['det3']
         xrmmap['mca4'] = xrmmap['det4']
         del xrmmap['det4']
-    
+
         xrmmap['mcasum'] = xrmmap['detsum']
         del xrmmap['detsum']
-        
+
         xrmmap.attrs['Version'] = '2.0.0'
 
 
