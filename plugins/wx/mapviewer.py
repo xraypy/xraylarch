@@ -309,13 +309,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 p.update_xrmmap(xrmfile.xrmmap)
 
     def onFILE(self, evt, varname='a'):
-
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        print('\tNot doing anything yet...')
-        print('\tShould switch from previous file to: %s' %
-                  self.varfile[varname].GetStringSelection())
-        print("\tNeeds to ignore 'currrent file' somehow.")
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+        pass
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        # print('\tNot doing anything yet...')
+        # print('\tShould switch from previous file to: %s' %
+        #          self.varfile[varname].GetStringSelection())
+        # print("\tNeeds to ignore 'currrent file' somehow.")
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
 
     def onDET(self, evt, varname='a'):
 
@@ -342,7 +342,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.set_det_choices(xrmmap)
         self.set_workarray_choices(xrmmap)
 
-        for vfile in self.varfile.values(): 
+        for vfile in self.varfile.values():
             vfile.SetSelection(-1)
 
     def set_det_choices(self, xrmmap, varname=None):
@@ -637,7 +637,7 @@ class TomographyPanel(GridPanel):
         self.set_det_choices(xrmmap)
 
         try:
-            self.npts = len(self.cfile.get_pos('fine x', mean=True))
+            self.npts = len(self.cfile.get_pos(0, mean=True))
         except:
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
@@ -1401,20 +1401,20 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmmap):
-        
+
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
             diff =  d2 - d1 if d2 > d1 else d1 - d2
             return diff.days,diff.seconds
-        
+
         try:
             time_str = xrmmap['config/notes'].attrs['h5_create_time']
         except:
             time_str = ''
-        
+
         self.wids['H5 Map Created'].SetLabel(time_str)
-        
+
         try:
             d,s = time_between(xrmmap['config/notes'].attrs['scan_start_time'],
                                xrmmap['config/notes'].attrs['scan_end_time'])
@@ -2642,8 +2642,8 @@ class MapViewerFrame(wx.Frame):
             paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
         dlg.Destroy()
 
-        if not read: 
-            return 
+        if not read:
+            return
 
         for path in paths:
             parent, fname = os.path.split(path)
@@ -2700,9 +2700,9 @@ class MapViewerFrame(wx.Frame):
             gpar, gfname  = os.path.split(xgroup.filename)
             if gfname == fname:
                 break
-                    
+
         setattr(self.datagroups, gname, xrmfile)
-        
+
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():

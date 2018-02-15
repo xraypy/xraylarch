@@ -2,7 +2,7 @@ from .xafsutils import KTOE, ETOK, set_xafsGroup
 
 from .xafsft import xftf, xftr, xftf_fast, xftr_fast, ftwindow
 
-from .pre_edge import pre_edge, preedge, find_e0
+from .pre_edge import pre_edge, preedge, find_e0, pre_edge_baseline
 
 from .feffdat import FeffPathGroup, FeffDatFile, _ff2chi
 
