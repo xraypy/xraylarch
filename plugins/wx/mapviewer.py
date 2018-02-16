@@ -1769,12 +1769,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
            self.choice.Enable()
            return
 
-        try:
-            version = xrmmap.attrs['Version']
-        except:
-            version = '1.0.0'
-
-        if StrictVersion(version) >= StrictVersion('2.0.0'):
+        if StrictVersion(xrmfile.version) >= StrictVersion('2.0.0'):
 
             d_dets = [d for d in xrmmap['roimap']]
             d_dets.remove('mcasum')
@@ -1813,7 +1808,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 rtime = rtime[:,1:-1]
             ctime.append(1.e-6*rtime[amask])
             
-        if StrictVersion(version) >= StrictVersion('2.0.0'):
+        if StrictVersion(xrmfile.version) >= StrictVersion('2.0.0'):
             
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
@@ -1989,7 +1984,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.set_area_choices(self.owner.current_file.xrmmap)
 
     def onSelect(self, event=None):
-        aname = self._getarea()
+        try:
+            aname = self._getarea()
+        except:
+            return
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
         tomo_area = area.attrs.get('tomograph',False)
         npix = len(area.value[np.where(area.value)])
