@@ -1429,16 +1429,11 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
 
 
-<<<<<<< HEAD
     def update_xrmmap(self, xrmfile=None):
         
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
         
-=======
-    def update_xrmmap(self, xrmmap):
-
->>>>>>> master
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
