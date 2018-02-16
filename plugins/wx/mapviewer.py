@@ -1965,7 +1965,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.set_area_choices(self.owner.current_file.xrmmap)
 
     def onSelect(self, event=None):
-        aname = self._getarea()
+        try:
+            aname = self._getarea()
+        except:
+            return
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
         yvals, xvals = np.where(area.value)
