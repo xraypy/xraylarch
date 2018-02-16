@@ -309,13 +309,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 p.update_xrmmap(xrmfile.xrmmap)
 
     def onFILE(self, evt, varname='a'):
-
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        print('\tNot doing anything yet...')
-        print('\tShould switch from previous file to: %s' %
-                  self.varfile[varname].GetStringSelection())
-        print("\tNeeds to ignore 'currrent file' somehow.")
-        print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+        pass
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        # print('\tNot doing anything yet...')
+        # print('\tShould switch from previous file to: %s' %
+        #          self.varfile[varname].GetStringSelection())
+        # print("\tNeeds to ignore 'currrent file' somehow.")
+        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
 
     def onDET(self, evt, varname='a'):
 
@@ -342,9 +342,9 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.set_det_choices(xrmmap)
         self.set_workarray_choices(xrmmap)
 
-        for vfile in self.varfile.values(): 
+        for vfile in self.varfile.values():
             vfile.SetSelection(-1)
-
+            
     def set_det_choices(self, xrmmap, varname=None):
 
         det_list = []
@@ -637,7 +637,7 @@ class TomographyPanel(GridPanel):
         self.set_det_choices(xrmmap)
 
         try:
-            self.npts = len(self.cfile.get_pos('fine x', mean=True))
+            self.npts = len(self.cfile.get_pos(0, mean=True))
         except:
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
@@ -1401,20 +1401,20 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmmap):
-        
+
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
             diff =  d2 - d1 if d2 > d1 else d1 - d2
             return diff.days,diff.seconds
-        
+
         try:
             time_str = xrmmap['config/notes'].attrs['h5_create_time']
         except:
             time_str = ''
-        
+
         self.wids['H5 Map Created'].SetLabel(time_str)
-        
+
         try:
             d,s = time_between(xrmmap['config/notes'].attrs['scan_start_time'],
                                xrmmap['config/notes'].attrs['scan_end_time'])
@@ -1704,55 +1704,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         # self.stats = self.xrmfile.get_area_stats(self.areaname)
         if self.report is None:
             return
-
+            
         self.choice.Disable()
         self.report.DeleteAllItems()
         self.report_data = []
-        areaname  = self._getarea()
-        xrmfile  = self.owner.current_file
-        xrmmap  = xrmfile.xrmmap
-        area = xrmfile.get_area(name=areaname)
-        amask = area.value
-        if 'roistats' in area.attrs:
-           for dat in json.loads(area.attrs['roistats']):
-               dat = tuple(dat)
-               self.report_data.append(dat)
-               self.report.AppendItem(dat)
-           self.choice.Enable()
-           return
-
-        d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
-        d_names = [d for d in xrmmap['roimap/det_name']]
-
-        # count times
-        ctime = xrmmap['roimap/det_raw'][:,:,0]
-        if amask.shape[1] == ctime.shape[1] - 2: # hotcols
-            ctime = ctime[:,1:-1]
-
-        ctime = [1.e-6*ctime[amask]]
-        for i in range(xrmmap.attrs['N_Detectors']):
-            tname = 'det%i/realtime' % (i+1)
-            rtime = xrmmap[tname].value
-            if amask.shape[1] == rtime.shape[1] - 2: # hotcols
-                rtime = rtime[:,1:-1]
-            ctime.append(1.e-6*rtime[amask])
-
-        for idet, dname in enumerate(d_names):
-            daddr = d_addrs[idet]
-            det = 0
-            if 'mca' in daddr:
-                det = 1
-                words = daddr.split('mca')
-                if len(words) > 1:
-                    det = int(words[1].split('.')[0])
-            if idet == 0:
-                d = 1.e3*ctime[0]
-            else:
-                d = xrmmap['roimap/det_raw'][:,:,idet]
-                if amask.shape[1] == d.shape[1] - 2: # hotcols
-                    d = d[:,1:-1]
-                d = d[amask]/ctime[det]
-
+            
+        def report_info(dname,d):
+        
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
@@ -1770,6 +1728,110 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                    fmt(d.std()), fmt(np.median(d)), smode)
             self.report_data.append(dat)
             self.report.AppendItem(dat)
+
+        areaname  = self._getarea()
+        xrmfile  = self.owner.current_file
+        xrmmap  = xrmfile.xrmmap
+        area = xrmfile.get_area(name=areaname)
+        amask = area.value
+
+        if 'roistats' in area.attrs:
+           for dat in json.loads(area.attrs['roistats']):
+               dat = tuple(dat)
+               self.report_data.append(dat)
+               self.report.AppendItem(dat)
+           self.choice.Enable()
+           return
+
+        try:
+            version = xrmmap.attrs['Version']
+        except:
+            version = '1.0.0'
+
+        if StrictVersion(version) >= StrictVersion('2.0.0'):
+
+            d_dets = [d for d in xrmmap['roimap']]
+            d_dets.remove('mcasum')
+            
+            det0 = xrmmap['roimap/%s' % d_dets[0]]
+            
+            d_rois = [d for d in det0]
+            d_lims = [det0[roi]['limits'][0] for roi in d_rois]
+            
+            d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
+
+            d_scas = [d for d in xrmmap['scalars']]
+            d_scas.insert(0, d_scas.pop(3)) ## put TSCALERS first in list
+
+            ndet = 'mca'
+            ctime = xrmmap['scalars/TSCALER'].value
+        
+        else:
+
+            d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
+            d_names = [d for d in xrmmap['roimap/det_name']]
+
+            ndet = 'det'
+            ctime = xrmmap['roimap/det_raw'][:,:,0]
+
+
+        # count times
+        if amask.shape[1] == ctime.shape[1] - 2: # hotcols
+            ctime = ctime[:,1:-1]
+
+        ctime = [1.e-6*ctime[amask]]
+        for i in range(xrmmap.attrs['N_Detectors']):
+            tname = '%s%i/realtime' % (ndet,i+1)
+            rtime = xrmmap[tname].value
+            if amask.shape[1] == rtime.shape[1] - 2: # hotcols
+                rtime = rtime[:,1:-1]
+            ctime.append(1.e-6*rtime[amask])
+            
+        if StrictVersion(version) >= StrictVersion('2.0.0'):
+            
+            for scalar in d_scas:
+                d = xrmmap['scalars'][scalar].value
+                if amask.shape[1] == d.shape[1] - 2: # hotcols
+                    d = d[:,1:-1]
+                
+                if scalar.startswith('TSC'):
+                    d = 1.e3*ctime[0]
+                else:
+                    d = d[amask]/ctime[0]
+                
+                report_info(scalar,d)
+            
+            for roi in d_rois:
+                for i,det in enumerate(d_dets):
+                    dname = '%s (%s)' % (roi,det)
+                    # d = xrmmap['roimap'][det][roi]['cor'].value
+                    d = xrmmap['roimap'][det][roi]['raw'].value ## this matches old version
+                    if amask.shape[1] == d.shape[1] - 2: # hotcols
+                        d = d[:,1:-1]
+                    d = d[amask]/ctime[i]
+
+                    report_info(dname,d)
+     
+        else:
+        
+            for idet, dname in enumerate(d_names):
+                daddr = d_addrs[idet]
+                det = 0
+                if 'mca' in daddr:
+                    det = 1
+                    words = daddr.split('mca')
+                    if len(words) > 1:
+                        det = int(words[1].split('.')[0])
+                if idet == 0:
+                    d = 1.e3*ctime[0]
+                else:
+                    d = xrmmap['roimap/det_raw'][:,:,idet]
+                    if amask.shape[1] == d.shape[1] - 2: # hotcols
+                        d = d[:,1:-1]
+                    d = d[amask]/ctime[det]
+                   
+                report_info(dname,d)
+        
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
@@ -1780,6 +1842,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.set_area_choices(xrmmap, show_last=True)
 
         self.set_enabled_btns(xrmmap)
+        
+        self.report.DeleteAllItems()
+        self.report_data = []
+        self.onSelect()
 
     def set_enabled_btns(self,xrmmap):
 
@@ -2642,8 +2708,8 @@ class MapViewerFrame(wx.Frame):
             paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
         dlg.Destroy()
 
-        if not read: 
-            return 
+        if not read:
+            return
 
         for path in paths:
             parent, fname = os.path.split(path)
@@ -2700,9 +2766,9 @@ class MapViewerFrame(wx.Frame):
             gpar, gfname  = os.path.split(xgroup.filename)
             if gfname == fname:
                 break
-                    
+
         setattr(self.datagroups, gname, xrmfile)
-        
+
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():
