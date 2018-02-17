@@ -571,7 +571,7 @@ class ProcessPanel(wx.Panel):
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
         save_unzoom = self.unzoom_on_update
-        dgroup.special_plot_opts = {}
+        dgroup.custom_plotopts = {}
         proc_opts['xshift'] = self.xshift.GetValue()
         proc_opts['yshift'] = self.yshift.GetValue()
         proc_opts['xscale'] = self.xscale.GetValue()
@@ -676,7 +676,7 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
                                        (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
 
-                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[max(0, i0-2)],
                                             'xmax':dgroup.energy[i1+3],
                                             'ymax':dgroup.norm[i1+3]*1.05}
                 dgroup.y = y4e0 = dgroup.norm
@@ -693,14 +693,14 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
                 dgroup.y = y4e0 = dgroup.prepeaks_norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
-                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[max(0, i0-2)],
                                             'xmax':dgroup.energy[i1+2]}
 
 
-            dgroup.plot_ymarkers = []
+            dgroup.plot_markers = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
-                dgroup.plot_ymarkers.append((dgroup.e0, y4e0[ie0], {'label': '_nolegend_'}))
+                dgroup.plot_markers.append((dgroup.e0, y4e0[ie0], {'label': '_nolegend_'}))
 
             if self.xas_show_ppfit.IsChecked():
                 popts = {'label': '_nolegend_', 'marker': 's'}
@@ -709,8 +709,8 @@ class ProcessPanel(wx.Panel):
                 imin = index_of(dgroup.xdat, emin)
                 imax = index_of(dgroup.xdat, emax)
 
-                dgroup.plot_ymarkers.append((emin, y4e0[imin], popts))
-                dgroup.plot_ymarkers.append((emax, y4e0[imax], popts))
+                dgroup.plot_markers.append((emin, y4e0[imin], popts))
+                dgroup.plot_markers.append((emax, y4e0[imax], popts))
 
             if self.xas_show_ppdat.IsChecked():
                 popts = {'label': '_nolegend_', 'marker': '+'}
@@ -719,15 +719,15 @@ class ProcessPanel(wx.Panel):
                 ilo = index_of(dgroup.xdat, elo)
                 ihi = index_of(dgroup.xdat, ehi)
 
-                dgroup.plot_ymarkers.append((elo, y4e0[ilo], popts))
-                dgroup.plot_ymarkers.append((ehi, y4e0[ihi], popts))
+                dgroup.plot_markers.append((elo, y4e0[ilo], popts))
+                dgroup.plot_markers.append((ehi, y4e0[ihi], popts))
 
             if self.xas_show_ppcen.IsChecked() and hasattr(dgroup, 'prepeaks'):
                 popts = {'label': '_nolegend_', 'marker': 'd'}
                 ecen = getattr(dgroup.prepeaks, 'centroid', -1)
                 if ecen > min(dgroup.energy):
                     icen = index_of(dgroup.xdat, ecen)
-                    dgroup.plot_ymarkers.append((ecen, y4e0[icen], popts))
+                    dgroup.plot_markers.append((ecen, y4e0[icen], popts))
 
         self.unzoom_on_update = save_unzoom
 
@@ -1006,15 +1006,15 @@ class XYFitController():
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
-        plot_ymarkers = None
+        plot_markers = None
         if new:
             if title is None:
                 title = fname
-            plot_ymarkers = getattr(dgroup, 'plot_ymarkers', None)
+            plot_markers = getattr(dgroup, 'plot_markers', None)
 
         popts['title'] = title
-        if hasattr(dgroup, 'special_plot_opts'):
-            popts.update(dgroup.special_plot_opts)
+        if hasattr(dgroup, 'custom_plotopts'):
+            popts.update(dgroup.custom_plotopts)
         for yarr in plot_yarrays:
             popts.update(yarr[1])
             if yarr[2] is not None:
@@ -1022,9 +1022,9 @@ class XYFitController():
             plotcmd(dgroup.x, yarr[0], **popts)
             plotcmd = oplot
 
-        if plot_ymarkers is not None:
+        if plot_markers is not None:
             axes = ppanel.axes
-            for x, y, opts in plot_ymarkers:
+            for x, y, opts in plot_markers:
                 popts = {'marker': 'o', 'markersize': 4,
                          'markerfacecolor': 'red', 'label': '',
                          'markeredgecolor': 'black'}
