@@ -221,7 +221,7 @@ class AthenaProject(object):
         self.groups[hashkey] = Group(args=args, x=x, y=y, i0=i0, signal=signal)
 
 
-    def save(self, filename=None):
+    def save(self, filename=None, use_gzip=True):
         if filename is not None:
             self.filename = filename
         # print(" Writing Athena Project ", self.filename)
@@ -251,11 +251,12 @@ class AthenaProject(object):
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
 
-        fh = GzipFile(self.filename, 'w')
-        # fh = open(self.filename, 'w')
+        fopen =open
+        if use_gzip:
+            fopen = GzipFile
+        fh = fopen(self.filename, 'w')
         fh.write("\n".join(buff))
         fh.close()
-        # print(" wrote text file ", self.filename)
 
 def create_athena(filename=None, _larch=None):
     """create athena project file"""
@@ -280,7 +281,7 @@ def read_athena(filename, match=None, do_preedge=True,
 
     Notes:
         1. To limit the imported groups, use the pattern in `match`,
-           using '*' to match 'all' '?' to match any single character,
+           using '*' to match 'all', '?' to match any single character,
            or [sequence] to match any of a sequence of letters.  The match
            will always be insensitive to case.
         3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
