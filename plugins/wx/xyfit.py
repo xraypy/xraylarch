@@ -1015,7 +1015,8 @@ class XYFitController():
             plot_ymarkers = getattr(dgroup, 'plot_ymarkers', None)
 
         popts['title'] = title
-        popts.update(dgroup.special_plot_opts)
+        if hasattr(dgroup, 'special_plot_opts'):
+            popts.update(dgroup.special_plot_opts)
         for yarr in plot_yarrays:
             popts.update(yarr[1])
             if popts['label'] is None and yarr[2] is not None:
