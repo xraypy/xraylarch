@@ -677,12 +677,10 @@ class ProcessPanel(wx.Panel):
                                        (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
 
                 dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                            'xmax':dgroup.energy[i1+2],
-                                            'ymax':dgroup.norm[i1+2]*1.05}
-
+                                            'xmax':dgroup.energy[i1+3],
+                                            'ymax':dgroup.norm[i1+3]*1.05}
                 dgroup.y = y4e0 = dgroup.norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
-
 
             elif pchoice == 'prepeaks' and hasattr(dgroup, 'prepeaks'):
                 ppeaks = dgroup.prepeaks
@@ -1019,7 +1017,7 @@ class XYFitController():
             popts.update(dgroup.special_plot_opts)
         for yarr in plot_yarrays:
             popts.update(yarr[1])
-            if popts['label'] is None and yarr[2] is not None:
+            if yarr[2] is not None:
                 popts['label'] = yarr[2]
             plotcmd(dgroup.x, yarr[0], **popts)
             plotcmd = oplot
