@@ -262,8 +262,8 @@ def create_athena(filename=None, _larch=None):
     """create athena project file"""
     return AthenaProject(filename=filename, _larch=_larch)
 
-def read_athena(filename, match=None, do_preedge=True,
-                do_bkg=True, do_fft=True, use_hashkey=False, _larch=None):
+def read_athena(filename, match=None, do_preedge=True, do_bkg=True,
+                do_fft=True, use_hashkey=False, with_journal=True, _larch=None):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
 
@@ -275,6 +275,8 @@ def read_athena(filename, match=None, do_preedge=True,
         do_fft (bool): whether to do XAFS Fast Fourier transform [True]
         use_hashkey (bool): whether to use Athena's hash key as the
                        group name instead of the Athena label [False]
+        with_journal (bool): whether to read Athena's journal, and
+                       save it to `_athena_journal` [True]
 
     Returns:
         group of groups each named according the label used by Athena.
@@ -352,7 +354,8 @@ def read_athena(filename, match=None, do_preedge=True,
 
     out = Group()
     out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
-    out.athena_journal = journal
+    if with_journal:
+        out._athena_journal = journal
 
     for dat in athenagroups:
         label = dat.get('name', 'unknown')
