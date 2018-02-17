@@ -80,9 +80,10 @@ class AthenaImporter(wx.Frame) :
 
         self.all = read_athena(self.filename, do_bkg=False,
                                do_fft=False, _larch=_larch)
-        for item in dir(self.all):
-            self.grouplist.Append(item)
 
+        for item in dir(self.all):
+            if not item.startswith('athena_journal'):
+                self.grouplist.Append(item)
         self.Show()
         self.Raise()
 
