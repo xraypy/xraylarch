@@ -20,11 +20,6 @@ from larch import Group
 from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, fix_varname
 
-from larch_plugins.xafs import pre_edge, autobk, xftf
-from larch_plugins.xafs.xafsutils import etok
-from larch_plugins.xray.xraydb_plugin import guess_edge
-
-
 if sys.version[0] == '2':
     from string import maketrans
 else:
@@ -64,6 +59,8 @@ def make_hashkey():
 def make_athena_args(group, hashkey=None):
     """make athena args line from a group"""
     # start with default args:
+    from larch_plugins.xafs.xafsutils import etok
+
     if hashkey is None:
         hashkey = make_hashkey()
     args = {}
@@ -183,6 +180,10 @@ class AthenaProject(object):
 
     def add_group(self, group, tag=None, signal=None, label=None):
         """add Larch group (presumably XAFS data) to Athena project"""
+
+        from larch_plugins.xafs import pre_edge
+        from larch_plugins.xray.xraydb_plugin import guess_edge
+
         x = athena_array(group, 'energy')
 
         yname = None
@@ -296,6 +297,7 @@ def read_athena(filename, match=None, do_preedge=True,
            zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_fft=False)
 
     """
+    from larch_plugins.xafs import pre_edge, autobk, xftf
 
     if not os.path.exists(filename):
         raise IOError("%s '%s': cannot find file" % (ERR_MSG, filename))
