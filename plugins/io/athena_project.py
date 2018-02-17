@@ -224,7 +224,7 @@ class AthenaProject(object):
     def save(self, filename=None):
         if filename is not None:
             self.filename = filename
-        print(" Writing Athena Project ", self.filename)
+        # print(" Writing Athena Project ", self.filename)
         iso_now = time.strftime('%Y-%m-%dT%H:%M:%S')
         pyosversion = "Python %s on %s"  % (platform.python_version(),
                                             platform.platform())
@@ -251,11 +251,11 @@ class AthenaProject(object):
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
 
-        # fh = GzipFile(self.filename, 'w')
-        fh = open(self.filename, 'w')
+        fh = GzipFile(self.filename, 'w')
+        # fh = open(self.filename, 'w')
         fh.write("\n".join(buff))
         fh.close()
-        print(" wrote text file ", self.filename)
+        # print(" wrote text file ", self.filename)
 
 def create_athena(filename=None, _larch=None):
     """create athena project file"""
