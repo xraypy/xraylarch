@@ -1437,6 +1437,7 @@ class XYFitFrame(wx.Frame):
         for gname in namelist:
             self.larch.eval(s.format(group=gname))
             self.install_group(gname, gname)
+            self.proc_panel.process(gname)
         self.larch.eval("del _prj")
 
 
