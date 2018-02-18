@@ -32,7 +32,7 @@ COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
-
+NOT_OWNER = "Not Owner of HDF5 file %s"
 STEPS = 5001
 
 
@@ -201,10 +201,6 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
         g = xrmmap.create_group(name)
     xrmmap['work'].create_group('xrdwedge')
 
-#     g = xrmmap['work'].create_group('tomo')
-# #     for name in ('xrf','xrd1D','xrd2D'):
-# #         g.create_group(name)
-
     h5root.flush()
 
 def ensure_subgroup(subgroup,group):
@@ -216,19 +212,7 @@ def ensure_subgroup(subgroup,group):
 
 class GSEXRM_Exception(Exception):
     '''GSEXRM Exception: General Errors'''
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-
-class GSEXRM_NotOwner(Exception):
-    '''GSEXRM Not Owner Host/Process ID'''
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = 'Not Owner of HDF5 file %s' % msg
-    def __str__(self):
-        return self.msg
+    pass
 
 class GSEXRM_MapRow:
     '''
@@ -845,7 +829,7 @@ class GSEXRM_MapFile(object):
     def add_data(self, group, name, data, attrs=None, **kws):
         ''' creata an hdf5 dataset'''
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
         kws.update(self.compress_args)
         d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
@@ -858,7 +842,7 @@ class GSEXRM_MapFile(object):
         ROI, DXP Settings, and Config data
         '''
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         group = self.xrmmap['config']
         scantext = open(os.path.join(self.folder, self.ScanFile), 'r').read()
@@ -930,7 +914,7 @@ class GSEXRM_MapFile(object):
             return
 
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
@@ -967,7 +951,7 @@ class GSEXRM_MapFile(object):
         "look for more data from raw folder, process if needed"
 
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
             self.initialize_xrmmap(callback=callback)
@@ -1073,7 +1057,7 @@ class GSEXRM_MapFile(object):
         '''adds a row worth of real data'''
 
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         thisrow = self.last_row + 1
 
@@ -1247,7 +1231,7 @@ class GSEXRM_MapFile(object):
         '''build schema for detector and scan data'''
 
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
@@ -1614,7 +1598,7 @@ class GSEXRM_MapFile(object):
         "resize all arrays for new nrow size"
 
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         if StrictVersion(self.version) >= StrictVersion('2.0.0'):
 
@@ -1761,7 +1745,7 @@ class GSEXRM_MapFile(object):
 
         '''
         if not self.check_hostid():
-            raise GSEXRM_NotOwner(self.filename)
+            raise GSEXRM_Excpetion(NOT_OWNER % self.filename)
 
         group = self.xrmmap['areas']
         if name is None:
@@ -3193,6 +3177,16 @@ def read_xrfmap(filename, root=None):
 
 read_xrmmap = read_xrfmap
 
+
+def read_fake1(filename, root=None):
+    raise GSEXRM_Exception("GSEXMAP Error: %s" % filename)
+
+def read_fake2(filename, root=None):
+    raise ValueError("cannot open %s" % filename)
+
+
+read_xrmmap = read_xrfmap
+
 def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
     with optional keywords passed to GSEXRM_MapFile
@@ -3240,5 +3234,7 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
 def registerLarchPlugin():
     return ('_io', {'read_xrfmap': read_xrfmap,
                     'read_xrmmap': read_xrmmap,
+                    'read_fake1': read_fake1,
+                    'read_fake2': read_fake2,
                     'process_mapfolder': process_mapfolder,
                     'process_mapfolders': process_mapfolders})
