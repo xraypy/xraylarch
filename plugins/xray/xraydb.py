@@ -113,11 +113,7 @@ def elam_spline(xin, yin, yspl_in, x):
 
 class DBException(Exception):
     """DB Access Exception: General Errors"""
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-    def __str__(self):
-        return self.msg
+    pass
 
 class _BaseTable(object):
     "generic class to encapsulate SQLAlchemy table"
