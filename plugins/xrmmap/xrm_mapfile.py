@@ -133,7 +133,7 @@ def isGSEXRM_MapFolder(fname):
     header, rows = readMasterFile(os.path.join(fname, 'Master.dat'))
     try:
         for f in rows[0]:
-            if f in flist: 
+            if f in flist:
                 has_xrmdata = True
     except:
         pass
@@ -649,7 +649,7 @@ class GSEXRM_MapFile(object):
         self.rowdata          = []
         self.npts             = None
         self.roi_slices       = None
-        self.pixeltime        = None
+        self._pixeltime       = None
         self.masterfile       = None
         self.masterfile_mtime = -1
         self.compress_args = {'compression': compression}
@@ -957,7 +957,8 @@ class GSEXRM_MapFile(object):
         if flush:
             self.resize_arrays(self.last_row+1)
             self.h5root.flush()
-            if self.pixeltime is None: self.calc_pixeltime()
+            if self._pixeltime is None:
+                self.calc_pixeltime()
 
             if hasattr(callback, '__call__'):
                 callback(filename=self.filename, status='complete')
@@ -992,9 +993,16 @@ class GSEXRM_MapFile(object):
         start = float(scanconf['start1'].value)
         stop = float(scanconf['stop1'].value)
         step = float(scanconf['step1'].value)
-        npts = 1 + int((abs(stop - start) + 1.1*step)/step)
-        self.pixeltime = rowtime/npts
-        return self.pixeltime
+        npts = int((abs(stop - start) + 1.1*step)/step)
+        self._pixeltime = rowtime/(npts-1)
+        return self._pixeltime
+
+    @property
+    def pixeltime(self):
+        """Return the pixel time"""
+        if self._pixeltime is None:
+            self.calc_pixeltime()
+        return self._pixeltime
 
     def read_rowdata(self, irow, offset=None):
         '''read a row worth of raw data from the Map Folder
@@ -1893,7 +1901,7 @@ class GSEXRM_MapFile(object):
         return self.xrmmap['tomo/center'][...]
 
     def set_tomography_center(self,center=None):
-        if center is None: 
+        if center is None:
             center = len(self.get_translation_axis())/2.
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
