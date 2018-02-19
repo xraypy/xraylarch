@@ -956,7 +956,7 @@ class XYFitController():
         return xval, yval
 
     def plot_group(self, groupname=None, title=None,
-                   new=True, unzoom=True, **kws):
+                   new=True, unzoom=True, use_yarrays=True, **kws):
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -981,7 +981,7 @@ class XYFitController():
         if not hasattr(dgroup, 'y'):
             dgroup.y = dgroup.ydat[:]
 
-        if hasattr(dgroup, 'plot_yarrays'):
+        if use_yarrays and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
         else:
             plot_yarrays = [(dgroup.y, {}, None)]
@@ -990,7 +990,6 @@ class XYFitController():
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
-
         unzoom = (unzoom or
                   min(dgroup.x) >= viewlims[1] or
                   max(dgroup.x) <= viewlims[0] or
@@ -1198,7 +1197,8 @@ class XYFitFrame(wx.Frame):
             dgroup = self.controller.get_group(groupname)
             if dgroup is not None:
                 self.controller.plot_group(groupname=groupname, title='',
-                                           new=newplot, label=dgroup.filename)
+                                           new=newplot, use_yarrays=False,
+                                           label=dgroup.filename)
                 newplot=False
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
