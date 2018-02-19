@@ -19,8 +19,9 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, pack, Button, HLine, FileSave,
-                     Choice,  Check, MenuItem, GUIColors, GridPanel,
+from wxutils import (SimpleText, pack, Button, Popup,
+                     HLine, FileSave, Choice, Check, 
+                     MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 from larch import Interpreter, Group
@@ -676,9 +677,10 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
                                        (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
 
-                dgroup.custom_plotopts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                            'xmax':dgroup.energy[i1+3],
-                                            'ymax':dgroup.norm[i1+3]*1.05}
+                jmin, jmax = max(0, i0-2), i1+3
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+                                          'xmax':dgroup.energy[jmax],
+                                          'ymax':max(dgroup.norm[jmin:jmax])*1.05}
                 dgroup.y = y4e0 = dgroup.norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
 
@@ -693,9 +695,10 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
                 dgroup.y = y4e0 = dgroup.prepeaks_norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
-                dgroup.custom_plotopts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                            'xmax':dgroup.energy[i1+2]}
-
+                jmin, jmax = max(0, i0-2), i1+3
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+                                          'xmax':dgroup.energy[jmax],
+                                          'ymax':max(dgroup.y[jmin:jmax])*1.05}
 
             dgroup.plot_extras = []
             if self.xas_showe0.IsChecked():
@@ -1455,7 +1458,7 @@ class XYFitFrame(wx.Frame):
         path = path.replace('\\', '/')
         do_read = True
         if path in self.controller.file_groups:
-            do_read = (wx.ID_YES == popup(self,
+            do_read = (wx.ID_YES == Popup(self,
                                           "Re-read file '%s'?" % path,
                                           'Re-read file?'))
         if do_read:
@@ -1475,7 +1478,6 @@ class XYFitFrame(wx.Frame):
                           read_ok_cb=self.onReadAthenaProject_OK)
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
-
             kwargs = dict(filename=path,
                           _larch=self.larch_buffer.larchshell,
                           last_array_sel = self.last_array_sel,
