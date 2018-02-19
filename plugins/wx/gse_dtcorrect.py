@@ -111,8 +111,9 @@ class DTCorrectFrame(wx.Frame):
                 corr_fcn = gsescan_deadtime_correct
                 if is_GSEXDI(fname):
                     corr_fcn = gsexdi_deadtime_correct
-                out = corr_fcn(fname, roiname, subdir=dirname, bad=bad_channels,
-                               _larch=self.larch)
+                self.write_message("Correcting %s" % (fname))
+                out = corr_fcn(fname, roiname, subdir=dirname,
+                               bad=bad_channels, _larch=self.larch)
                 if out is not None:
                     out.mu = out.mufluor
                     out.filename = fname
@@ -121,14 +122,15 @@ class DTCorrectFrame(wx.Frame):
             athena_name = os.path.join(dirname, self.wid_ath.GetValue().strip())
             if self.wid_autoname.IsChecked():
                 athena_name = new_filename(athena_name)
-                _d, aname = os.path.split(athena_name)
-                self.wid_ath.SetValue(increment_filename(aname))
+
+            _, aname = os.path.split(athena_name)
+            self.wid_ath.SetValue(increment_filename(aname))
 
             aprj = AthenaProject(filename=athena_name, _larch=self.larch)
             for grp, label in groups:
                 aprj.add_group(grp, label=label, signal='mu')
             aprj.save(use_gzip=True)
-            print(" wrote Athena Project ", athena_name)
+            self.write_message("Corrected %i files, wrote %s" % (len(groups), aname))
 
     def createMainPanel(self):
         panel = wx.Panel(self)
@@ -136,7 +138,7 @@ class DTCorrectFrame(wx.Frame):
 
         lab_roi = SimpleText(panel, ' Element / ROI Name:')
         lab_dir = SimpleText(panel, ' Output Folder:')
-        lab_ath = SimpleText(panel, ' Athen Project File:')
+        lab_ath = SimpleText(panel, ' Athena Project File:')
         lab_bad = SimpleText(panel, ' Bad Channels:')
         lab_sel = SimpleText(panel, ' Select Files:')
 
