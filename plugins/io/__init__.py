@@ -15,3 +15,4 @@ from .gse_mcafile import gsemca_group, GSEMCA_File
 from .save_restore import save, restore
 from .tiff_plugin import read_tiff, tiff_object
 from .athena_project import is_athena_project, read_athena, AthenaProject
+from .csvfiles import groups2csv
