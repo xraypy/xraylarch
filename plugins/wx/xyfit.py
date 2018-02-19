@@ -44,7 +44,7 @@ from larch_plugins.wx.athena_importer import AthenaImporter
 from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group,  fix_varname,
+                              gsescan_group,  fix_varname, groups2csv,
                               is_athena_project, AthenaProject)
 
 from larch_plugins.xafs import pre_edge, pre_edge_baseline
@@ -1300,10 +1300,27 @@ class XYFitFrame(wx.Frame):
 
     def onData2CSV(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
+        groups2save = []
+        groupnames = []
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            print "Save Group ", groupname, dgroup
+            groups2save.append(dgroup)
+            groupnames.append(groupname)
+        if len(dgroup) < 1:
+            return
+
+        deffile = "%s_%i.csv" % (groupname, len(groupnames))
+        wcards  = 'CSV Files (*.csv)|*.cvs|All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export to CSV File',
+                           default_file=deffile, wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        groups2csv(groups2save, outfile, x='energy', y='norm', _larch=self.larch)
+
 
 
     def onData2Athena(self, evt=None):
