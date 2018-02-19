@@ -129,7 +129,7 @@ def make_athena_args(group, hashkey=None):
     args['bkg_e0'] = group.e0
     args['bkg_step'] = args['bkg_fitted_step'] = group.edge_step
 
-    args['bkg_nnorm'] = group.pre_edge_details.nnorm
+    args['bkg_nnorm'] = int(group.pre_edge_details.nnorm)
     args['bkg_nor1'] = group.pre_edge_details.norm1
     args['bkg_nor2'] = group.pre_edge_details.norm2
     args['bkg_pre1'] = group.pre_edge_details.pre1
@@ -178,7 +178,7 @@ class AthenaProject(object):
         self.filename = filename
         self._larch = _larch
 
-    def add_group(self, group, tag=None, signal=None, label=None):
+    def add_group(self, group, label=None, signal=None):
         """add Larch group (presumably XAFS data) to Athena project"""
 
         from larch_plugins.xafs import pre_edge
@@ -231,7 +231,7 @@ class AthenaProject(object):
 
         buff = ["# Athena project file -- Demeter version 0.9.24",
                 "# This file created at %s" % iso_now,
-                "# USing Larch version %s, %s" % (larch_version, pyosversion)]
+                "# Using Larch version %s, %s" % (larch_version, pyosversion)]
 
         for key, dat in self.groups.items():
             buff.append("")
