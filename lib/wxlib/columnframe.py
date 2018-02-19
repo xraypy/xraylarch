@@ -12,7 +12,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
-from wxutils import (SimpleText, FloatCtrl, pack, Button,
+from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
@@ -334,7 +334,23 @@ class ColumnDataFileFrame(wx.Frame) :
         tmpname = '_tmp_file_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
-        self._larch.eval(read_cmd, add_history=False)
+        deeplarch = self._larch._larch
+        try:   
+            deeplarch.eval(read_cmd, add_history=False)
+        except:
+            pass
+        if deeplarch.error:
+            # self._larch.input.clear()
+            print("Cannot read ", path)
+            msg = ["Error trying to read '%s':" % path, ""]
+            for err in deeplarch.error:
+                exc_name, errmsg = err.get_error()
+                msg.append(errmsg)
+
+            title = "Cannot read %s" % path
+            r = Popup(self.parent, "\n".join(msg), title)
+            return None
+
         group = self._larch.symtable.get_symbol(tmpname)
         self._larch.symtable.del_symbol(tmpname)
 
