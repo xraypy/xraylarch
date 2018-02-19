@@ -206,7 +206,7 @@ class AthenaProject(object):
                     sname = _name
                     break
             if sname is not None:
-                signal = athena_array(ggoup, sname)
+                signal = athena_array(group, sname)
 
         hashkey = make_hashkey()
         while hashkey in self.groups:
