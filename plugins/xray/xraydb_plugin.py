@@ -472,7 +472,7 @@ def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
             energies = np.array(energies[:maxz])
             _larch.symtable.set_symbol(tname, energies)
 
-        iz = index_nearest(energies, energy)
+        iz = int(index_nearest(energies, energy))
         diff = energy - energies[iz]
         if diff < 0: # prefer positive errors
             diff = -2.0*diff
