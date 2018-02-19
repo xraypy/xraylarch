@@ -44,8 +44,8 @@ from larch_plugins.wx.athena_importer import AthenaImporter
 from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group,
-                              fix_varname, is_athena_project)
+                              gsescan_group,  fix_varname,
+                              is_athena_project, AthenaProject)
 
 from larch_plugins.xafs import pre_edge, pre_edge_baseline
 
@@ -1239,6 +1239,13 @@ class XYFitFrame(wx.Frame):
         items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                                   "Open Data File",  self.onReadDialog)
 
+
+        items['file2csv'] = MenuItem(self, fmenu, "Export to CSV",
+                                     "Export Selected Groups to CSV", self.onData2CSV)
+
+        items['file2athena'] = MenuItem(self, fmenu, "Export to Athena Project",
+                                        "Export Selected Groups to Athena Project", self.onData2Athena)
+
         fmenu.AppendSeparator()
 
         items['larch_buffer'] = MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
@@ -1246,7 +1253,6 @@ class XYFitFrame(wx.Frame):
                                          self.onShowLarchBuffer)
 
         items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
 
 
         items['data_config'] = MenuItem(self, datmenu, "Configure Data Processing",
@@ -1280,7 +1286,7 @@ class XYFitFrame(wx.Frame):
             items[m].Enable(False)
 
         self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(datmenu, "Data Processing")
+        self.menubar.Append(datmenu, "Data")
         self.menubar.Append(fitmenu, "Fit")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
@@ -1290,6 +1296,41 @@ class XYFitFrame(wx.Frame):
             self.larch_buffer = LarchFrame(_larch=self.larch)
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
+
+
+    def onData2CSV(self, evt=None):
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        for checked in group_ids:
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            print "Save Group ", groupname, dgroup
+
+
+    def onData2Athena(self, evt=None):
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        groups2save = []
+        groupnames = []
+        for checked in group_ids:
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            groups2save.append(dgroup)
+            groupnames.append(groupname)
+        if len(dgroup) < 1:
+            return
+
+        deffile = "%s_%i.prj" % (groupname, len(groupnames))
+        wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export to Athena File',
+                           default_file=deffile, wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        aprj = AthenaProject(filename=outfile, _larch=self.larch)
+        for label, grp in zip(groupnames, groups2save):
+            aprj.add_group(grp, label=label)
+        aprj.save(use_gzip=True)
 
 
     def onConfigDataProcessing(self, event=None):
