@@ -56,7 +56,7 @@ def groups2csv(grouplist, filename,
         if ((len(_x) != npts) or (abs(_x -x0)).sum() > 1.0):
             columns.append(interp(_x, _y, x0))
         else:
-            columns.append(_x)
+            columns.append(_y)
 
     buff = ["# %s" % ', '.join(labels)]
     for i in range(npts):
