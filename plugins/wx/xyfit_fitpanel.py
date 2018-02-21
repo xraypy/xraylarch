@@ -498,29 +498,33 @@ class XYFitPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use?', size=(60, -1))
-        bkgbox = Check(panel, default=False, label='Is Background?', size=(120, -1))
+        usebox = Check(panel, default=True, label='Use in Fit?', size=(125, -1))
+        bkgbox = Check(panel, default=False, label='Is Background?', size=(125, -1))
 
-        delbtn = Button(panel, 'Delete', size=(120, -1),
+        delbtn = Button(panel, 'Delete Component', size=(150, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
 
-        pick2msg = SimpleText(panel, "    ", size=(75, -1))
-        pick2btn = Button(panel, 'Pick Data Range', size=(135, -1),
+        pick2msg = SimpleText(panel, "    ", size=(125, -1))
+        pick2btn = Button(panel, 'Pick Values from Data', size=(200, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
-        SetTip(usebox, 'Use this component in fit?')
-        SetTip(usebox, 'Label thi component as "background" when plotting?')
-        SetTip(delbtn, 'Delete this model component')
+        SetTip(usebox,   'Use this component in fit?')
+        SetTip(bkgbox,   'Label this component as "background" when plotting?')
+        SetTip(delbtn,   'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
-
 
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox)
+        panel.Add(usebox, dcol=2)
         panel.Add(bkgbox, dcol=2)
-        panel.Add(delbtn)
 
+        panel.Add(pick2btn, dcol=3, style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
+        panel.Add(delbtn, style=wx.ALIGN_LEFT)
+
+        # panel.Add((10, 10), newrow=True)
+        # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
@@ -567,21 +571,15 @@ class XYFitPanel(wx.Panel):
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
 
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=375,
+                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
                                          float_size=80, prefix=prefix,
-                                         widgets=('name', 'value', 'vary', 'expr'))
+                                         widgets=('name', 'value', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
-                panel.AddMany((pwids.value, pwids.vary))
-                panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
+                panel.Add(pwids.value)
+                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
-                pwids.vary.Disable()
 
-
-        panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
-
-        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_RIGHT)
-        panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
 
         # panel.Add(delbtn, dcol=2)
         # panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
