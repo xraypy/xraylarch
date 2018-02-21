@@ -2844,7 +2844,6 @@ class MapViewerFrame(wx.Frame):
             self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
-
         try:
             xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             path = xrd1Dgrp.attrs['calfile']
@@ -2860,7 +2859,7 @@ class MapViewerFrame(wx.Frame):
             self.file_timer.Stop()
             self.message('Watching Files/Folders for Changes: Off')
         else:
-            self.file_timer.Start(10000)
+            self.file_timer.Start(5000)
             self.message('Watching Files/Folders for Changes: On')
 
 
@@ -2870,8 +2869,7 @@ class MapViewerFrame(wx.Frame):
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
                 thispanel = self.nbpanels[self.nb.GetSelection()]
-                thispanel.onShowMap(event=None, new=False)
-                # print('Processed File ', thispanel)
+                thispanel.onROIMap(event=None, new=False)
 
     def process_file(self, filename):
         """Request processing of map file.
@@ -2901,7 +2899,6 @@ class MapViewerFrame(wx.Frame):
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
-
         self.h5convert_done = True if status is 'complete' else False
 
     def onTimer(self, event=None):
@@ -2910,8 +2907,7 @@ class MapViewerFrame(wx.Frame):
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
-            if fname in self.files_in_progress:
-                self.files_in_progress.remove(fname)
+            self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
