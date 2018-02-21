@@ -20,7 +20,7 @@ from wx.richtext import RichTextCtrl
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 from wxutils import (SimpleText, pack, Button, Popup,
-                     HLine, FileSave, Choice, Check, 
+                     HLine, FileSave, Choice, Check,
                      MenuItem, GUIColors, GridPanel,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
@@ -360,8 +360,7 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
-        saveconf = Button(self, 'Save as Default Settings',
-                          size=(175, 30),
+        saveconf = Button(self, 'Save as Default Settings', size=(175, 30),
                           action=self.onSaveConfigBtn)
 
         hxline = HLine(self, size=(550, 2))
@@ -841,7 +840,8 @@ class XYFitController():
         if stacked:
             win = 2
             wintitle='Larch XYFit Fit Plot Window'
-        opts = dict(wintitle=wintitle, stacked=stacked, win=win)
+        opts = dict(wintitle=wintitle, stacked=stacked, win=win,
+                    size=(500, 600))
         out = self.symtable._plotter.get_display(**opts)
         return out
 
@@ -1046,7 +1046,7 @@ class XYFitFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, size=(950, 600), _larch=None, **kws):
+    def __init__(self, parent=None, size=(925, 675), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
