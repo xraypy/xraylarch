@@ -841,7 +841,7 @@ class XYFitController():
             win = 2
             wintitle='Larch XYFit Fit Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
-                    size=(500, 600))
+                    size=(600, 600))
         out = self.symtable._plotter.get_display(**opts)
         return out
 
@@ -1229,6 +1229,9 @@ class XYFitFrame(wx.Frame):
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
+        self.controller.plot_group(groupname=groupname, new=True)
+
+
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -1243,10 +1246,10 @@ class XYFitFrame(wx.Frame):
                                   "Open Data File",  self.onReadDialog)
 
 
-        items['file2csv'] = MenuItem(self, fmenu, "Export to CSV",
+        items['file2csv'] = MenuItem(self, fmenu, "Export Selected Groups to CSV",
                                      "Export Selected Groups to CSV", self.onData2CSV)
 
-        items['file2athena'] = MenuItem(self, fmenu, "Export to Athena Project",
+        items['file2athena'] = MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
                                         "Export Selected Groups to Athena Project", self.onData2Athena)
 
         fmenu.AppendSeparator()
@@ -1316,7 +1319,7 @@ class XYFitFrame(wx.Frame):
         deffile = "%s_%i.csv" % (groupname, len(groupnames))
         wcards  = 'CSV Files (*.csv)|*.cvs|All files (*.*)|*.*'
 
-        outfile = FileSave(self, 'Export to CSV File',
+        outfile = FileSave(self, 'Export Selected Groups to CSV File',
                            default_file=deffile, wildcard=wcards)
 
         if outfile is None:
@@ -1341,7 +1344,7 @@ class XYFitFrame(wx.Frame):
         deffile = "%s_%i.prj" % (groupname, len(groupnames))
         wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
 
-        outfile = FileSave(self, 'Export to Athena File',
+        outfile = FileSave(self, 'Export Selected Groups to Athena File',
                            default_file=deffile, wildcard=wcards)
 
         if outfile is None:
