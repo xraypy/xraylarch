@@ -421,7 +421,7 @@ class XYFitPanel(wx.Panel):
         rsizer.Add(self.savebtn, 0, LCEN, 3)
 
         rsizer.Add(Button(action_row, 'Plot Current Model',
-                          size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
+                          size=(175, -1), action=self.onShowModel), 0, LCEN, 3)
         rsizer.Add(self.plot_comps, 0, LCEN, 3)
 
         pack(action_row, rsizer)
@@ -498,8 +498,8 @@ class XYFitPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use in Fit?', size=(125, -1))
-        bkgbox = Check(panel, default=False, label='Is Background?', size=(125, -1))
+        usebox = Check(panel, default=True, label='Use in Fit?', size=(150, -1))
+        bkgbox = Check(panel, default=False, label='Is Background?', size=(150, -1))
 
         delbtn = Button(panel, 'Delete Component', size=(150, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))

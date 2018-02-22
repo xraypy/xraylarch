@@ -272,7 +272,7 @@ class ProcessPanel(wx.Panel):
         self.xas_ppeak_elo  = FloatCtrl(xas, value=-15, **opts)
         self.xas_ppeak_ehi  = FloatCtrl(xas, value=-6, **opts)
         self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
-        self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(150, 30),
+        self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(175, 30),
                                      action=self.onPreedgeBaseline)
         self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
 
@@ -360,7 +360,7 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
-        saveconf = Button(self, 'Save as Default Settings', size=(175, 30),
+        saveconf = Button(self, 'Save as Default Settings', size=(200, 30),
                           action=self.onSaveConfigBtn)
 
         hxline = HLine(self, size=(550, 2))
@@ -1138,8 +1138,8 @@ class XYFitFrame(wx.Frame):
         self.proc_panel = ProcessPanel(**panel_opts)
         self.fit_panel =  XYFitPanel(**panel_opts)
 
-        self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
-        self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
+        self.nb.AddPage(self.proc_panel,  ' XAS Normalization ',  True)
+        self.nb.AddPage(self.fit_panel,   ' Pre-edge Peak Fit ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
