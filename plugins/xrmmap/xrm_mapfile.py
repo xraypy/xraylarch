@@ -1578,6 +1578,40 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
+    def get_detchoices(self):
+        """get a list of detector groups,
+        ['mcasum', 'mca1', ..., 'scalars']
+        """
+        xrmmap = self.xrmmap
+        det_list = []
+        if version_ge(self.version, '2.0.0'):
+            for grp in xrmmap['roimap'].keys():
+                if bytes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
+                    det_list += [grp]
+            if 'scalars' in xrmmap:
+                det_list += ['scalars']
+        else:
+            for grp in xrmmap.keys():
+                if grp.startswith('det'):
+                    det_list += [grp]
+            ## allows for adding roi in new format to old files
+            for grp in xrmmap['roimap'].keys():
+                try:
+                    if bystes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
+                        if grp not in det_list:
+                            det_list += [grp]
+                except:
+                    pass
+
+        for sumname in ('detsum','mcasum'):
+           if sumname in det_list:
+               det_list.remove(sumname)
+               det_list.insert(0, sumname)
+
+        if len(det_list) < 1:
+            det_list = ['']
+
+        return det_list
 
 
     def reset_flags(self):
