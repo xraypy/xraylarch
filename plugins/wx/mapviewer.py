@@ -1556,7 +1556,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
         self.cor = Check(pane, label='Correct Deadtime?')
-        legend = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
+        legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
@@ -1670,6 +1670,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         areaname  = self._getarea()
         xrmfile  = self.owner.current_file
         xrmmap  = xrmfile.xrmmap
+        ctime = xrmfile.pixeltime
+
         area = xrmfile.get_area(name=areaname)
         amask = area.value
 
@@ -1699,31 +1701,21 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
 
             d_scas = [d for d in xrmmap['scalars']]
-            d_scas.insert(0, d_scas.pop(3)) ## put TSCALERS first in list
-
             ndet = 'mca'
-            ctime = xrmmap['scalars/TSCALER'].value
 
         else:
 
             d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
             d_names = [d for d in xrmmap['roimap/det_name']]
-
             ndet = 'det'
-            ctime = xrmmap['roimap/det_raw'][:,:,0]
 
 
-        # count times
-        if amask.shape[1] == ctime.shape[1] - 2: # hotcols
-            ctime = ctime[:,1:-1]
 
-        ctime = [1.e-6*ctime[amask]]
         for i in range(xrmmap.attrs['N_Detectors']):
             tname = '%s%i/realtime' % (ndet,i+1)
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
-            ctime.append(1.e-6*rtime[amask])
 
         if version_ge(version, '2.0.0'):
 
@@ -1732,10 +1724,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 if amask.shape[1] == d.shape[1] - 2: # hotcols
                     d = d[:,1:-1]
 
-                if scalar.startswith('TSC'):
-                    d = 1.e3*ctime[0]
-                else:
-                    d = d[amask]/ctime[0]
+                d = d[amask]/ctime
 
                 report_info(scalar,d)
 
@@ -1746,7 +1735,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     d = xrmmap['roimap'][det][roi]['raw'].value ## this matches old version
                     if amask.shape[1] == d.shape[1] - 2: # hotcols
                         d = d[:,1:-1]
-                    d = d[amask]/ctime[i]
+                    d = d[amask]/ctime
 
                     report_info(dname,d)
 
@@ -1761,12 +1750,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if len(words) > 1:
                         det = int(words[1].split('.')[0])
                 if idet == 0:
-                    d = 1.e3*ctime[0]
+                    d = ctime
                 else:
                     d = xrmmap['roimap/det_raw'][:,:,idet]
                     if amask.shape[1] == d.shape[1] - 2: # hotcols
                         d = d[:,1:-1]
-                    d = d[amask]/ctime[det]
+                    d = d[amask]/ctime
 
                 report_info(dname,d)
 
