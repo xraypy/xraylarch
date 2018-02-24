@@ -117,7 +117,7 @@ class MergeDialog(wx.Dialog):
 
         self.master_group = Choice(panel, choices=groupnames, size=(250, -1))
         self.yarray_name  = Choice(panel, choices=ychoices, size=(250, -1))
-        self.group_name   = wx.TextCtrl(panel, -1, 'merged group',  size=(250, -1))
+        self.group_name   = wx.TextCtrl(panel, -1, 'merge',  size=(250, -1))
 
         sizer.Add(SimpleText(panel, 'Match Energy to : '), (0, 0), (1, 1), labstyle, 3)
         sizer.Add(SimpleText(panel, 'Array to merge  : '), (1, 0), (1, 1), labstyle, 3)
@@ -989,6 +989,39 @@ class XYFitController():
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
+    def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
+        """merge groups"""
+        cmd = """%s = merge_groups(%s, master=%s,
+        xarray='energy', yarray='%s', kind='cubic', trim=True)"""
+        glist = "[%s]" % (', '.join(grouplist))
+        outgroup = fix_varname(outgroup.lower())
+        if outgroup is None:
+            outgroup = 'merged'
+
+        if outgroup in self.file_groups:
+            for i in range(1, 101):
+                t = "%s_%i"  % (outgroup, i)
+                if t not in self.controller.file_groups:
+                    outgroup = t
+                    break
+
+        cmd = cmd % (outgroup, glist, master, yarray)
+        self.larch.eval(cmd)
+
+        if master is None:
+            master = grouplist[0]
+        this = self.get_group(outgroup)
+        master = self.get_group(master)
+        this.proc_opts.update(master.proc_opts)
+        this.proc_opts['group']  = outgroup
+        this.datatype = master.datatype
+        this.x = this.xdat = this.energy
+        this.y = this.ydat = getattr(this, yarray)
+        this.plot_xlabel = 'energy'
+        this.plot_ylabel = yarray
+
+        return outgroup
+
     def get_cursor(self):
         try:
             xval = self.symtable._plotter.plot1_x
@@ -1410,28 +1443,29 @@ class XYFitFrame(wx.Frame):
         pass
 
     def onMergeData(self, event=None):
-        print(" Merge Data")
-
-        groups2merge = []
-        groupnames = []
+        groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
-            groupname = self.controller.file_groups[str(checked)]
-            groups2merge.append(self.controller.get_group(groupname))
-            groupnames.append(groupname)
-        if len(groupnames) < 1:
+            groups.append(self.controller.file_groups[str(checked)])
+        if len(groups) < 1:
             return
 
         master = outgroup = None
         yarray = 'raw mu(E)'
-        dlg = MergeDialog(self, groupnames)
+
+        dlg = MergeDialog(self, groups)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
             master = dlg.master_group.GetStringSelection()
             yarray = dlg.yarray_name.GetStringSelection()
             outgroup = dlg.group_name.GetValue()
         dlg.Destroy()
-        # print(" need to merge to ", master, yarray, outgroup)
-        print(groupnames)
+        if master is not None:
+            yname = 'mu'
+            if 'normal' in yarray:
+                yname = 'norm'
+            self.controller.merge_groups(groups, master=master,
+                                         yarray=yname, outgroup=outgroup)
+            self.install_group(outgroup, outgroup, overwrite=False)
 
 
     def onDeglitchData(self, event=None):
