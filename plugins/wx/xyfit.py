@@ -19,10 +19,9 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, pack, Button, Popup,
-                     HLine, FileSave, Choice, Check,
-                     MenuItem, GUIColors, GridPanel,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
+                     Choice, Check, MenuItem, GUIColors, GridPanel, CEN,
+                     RCEN, LCEN, FRAMESTYLE, Font)
 
 from larch import Interpreter, Group
 from larch.utils import index_of
@@ -30,9 +29,9 @@ from larch.utils.strutils import file2groupname
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
-from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame, ReportFrame,
-                         BitmapButton, FileCheckList, FloatCtrl, SetTip)
-
+from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
+                         ReportFrame, BitmapButton, FileCheckList,
+                         FloatCtrl, SetTip)
 
 from larch.fitting import fit_report
 
@@ -45,7 +44,7 @@ from larch_plugins.wx.athena_importer import AthenaImporter
 from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group,  fix_varname, groups2csv,
+                              gsescan_group, fix_varname, groups2csv,
                               is_athena_project, AthenaProject)
 
 from larch_plugins.xafs import pre_edge, pre_edge_baseline
@@ -95,6 +94,49 @@ XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Raw Data + Pre-edge/Post-edge', 'prelines'),
                             ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
                             ('Pre-edge Peaks, isolated', 'prepeaks')))
+
+
+class MergeDialog(wx.Dialog):
+    """popup dialog for merging groups"""
+    msg = """Merge Selected Groups"""
+    def __init__(self, parent, groupnames, **kws):
+        self.groupnames = groupnames
+
+        title = "Merge %i Selected Groups" % (len(groupnames))
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+
+        panel = wx.Panel(self)
+        sizer = wx.GridBagSizer(4, 3)
+
+        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        tstyle    = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+
+        # select master group, yarray, and group name
+        ychoices = ['raw mu(E)', 'normalized mu(E)']
+
+        self.master_group = Choice(panel, choices=groupnames, size=(250, -1))
+        self.yarray_name  = Choice(panel, choices=ychoices, size=(250, -1))
+        self.group_name   = wx.TextCtrl(panel, -1, 'merged group',  size=(250, -1))
+
+        sizer.Add(SimpleText(panel, 'Match Energy to : '), (0, 0), (1, 1), labstyle, 3)
+        sizer.Add(SimpleText(panel, 'Array to merge  : '), (1, 0), (1, 1), labstyle, 3)
+        sizer.Add(SimpleText(panel, 'New group name  : '), (2, 0), (1, 1), labstyle, 3)
+
+        sizer.Add(self.master_group, (0, 1), (1, 1), labstyle, 3)
+        sizer.Add(self.yarray_name,  (1, 1), (1, 1), labstyle, 3)
+        sizer.Add(self.group_name,   (2, 1), (1, 1), labstyle, 3)
+
+        btnsizer = wx.StdDialogButtonSizer()
+        btn = wx.Button(panel, wx.ID_OK)
+        btn.SetDefault()
+        btnsizer.AddButton(btn)
+        btnsizer.Realize()
+        sizer.Add(btnsizer, (3, 0), (1, 2),  wx.ALIGN_CENTER_VERTICAL|wx.ALL, 1)
+        pack(panel, sizer)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 0, 0, 0)
+        pack(self, sizer)
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -1265,6 +1307,14 @@ class XYFitFrame(wx.Frame):
                                             "Configure Data Processing",
                                             self.onConfigDataProcessing)
 
+        items['data_merge'] = MenuItem(self, datmenu, "Merge Selected Groups",
+                                            "Merge Selected Groups",
+                                            self.onMergeData)
+
+        items['data_deglitch'] = MenuItem(self, datmenu, "Deglitch Data Group",
+                                          "Deglitch This Group",
+                                          self.onDeglitchData)
+
         items['fit_config'] = MenuItem(self, fitmenu,
                                        "Configure Data Fitting",
                                        "Configure Data Fitting",
@@ -1293,7 +1343,7 @@ class XYFitFrame(wx.Frame):
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(datmenu, "Data")
-        self.menubar.Append(fitmenu, "Fit")
+        self.menubar.Append(fitmenu, "Fitting")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -1357,6 +1407,35 @@ class XYFitFrame(wx.Frame):
 
 
     def onConfigDataProcessing(self, event=None):
+        pass
+
+    def onMergeData(self, event=None):
+        print(" Merge Data")
+
+        groups2merge = []
+        groupnames = []
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(checked)]
+            groups2merge.append(self.controller.get_group(groupname))
+            groupnames.append(groupname)
+        if len(groupnames) < 1:
+            return
+
+        master = outgroup = None
+        yarray = 'raw mu(E)'
+        dlg = MergeDialog(self, groupnames)
+        dlg.Raise()
+        if dlg.ShowModal() == wx.ID_OK:
+            master = dlg.master_group.GetStringSelection()
+            yarray = dlg.yarray_name.GetStringSelection()
+            outgroup = dlg.group_name.GetValue()
+        dlg.Destroy()
+        # print(" need to merge to ", master, yarray, outgroup)
+        print(groupnames)
+
+
+    def onDeglitchData(self, event=None):
+        print(" Deglitch Data")
         pass
 
     def onConfigDataFitting(self, event=None):
