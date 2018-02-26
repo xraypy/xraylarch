@@ -2,22 +2,9 @@
 """
 GUI for displaying maps from HDF5 files
 
-Needed Visualizations:
-
-   2x2 grid:
-     +-------------+--------------+
-     | map1        |  2-color map |
-     +-------------+--------------+
-     | correlation |  map2        |
-     +-------------+--------------+
-
-   All subplots "live" so that selecting regions in
-   any (via box or lasso) highlights other plots
-         box in map:  show XRF spectra, highlight correlations
-         lasso in correlations:  show XRF spectra, enhance map points
 """
 
-VERSION = '9 (22-July-2015)'
+VERSION = '10 (26-Februrary-2018)'
 
 import os
 import sys
