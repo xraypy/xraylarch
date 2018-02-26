@@ -87,8 +87,7 @@ class AllParamsPanel(wx.Panel):
                 self.user_params[parname] = param
 
 
-
-class XYFitResultFrame(wx.Frame):
+class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
@@ -344,7 +343,7 @@ class XYFitResultFrame(wx.Frame):
         self.Refresh()
 
 
-class XYFitPanel(wx.Panel):
+class FitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
@@ -929,7 +928,7 @@ class XYFitPanel(wx.Panel):
         dgroup.fit_history.append(result)
 
 
-        self.parent.show_subframe('result_frame', XYFitResultFrame,
+        self.parent.show_subframe('result_frame', FitResultFrame,
                                   datagroup=dgroup,
                                   controller=self.controller)
 
@@ -953,17 +952,17 @@ class XYFitPanel(wx.Panel):
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
-        xyfitdir = os.path.join(site_config.usr_larchdir, 'xyfit')
-        if not os.path.exists(xyfitdir):
+        xasguidir = os.path.join(site_config.usr_larchdir, 'xasgui')
+        if not os.path.exists(xasguidir):
             try:
-                os.makedirs(xyfitdir)
+                os.makedirs(xasguidir)
             except OSError:
-                print("Warning: cannot create XYFit user folder")
+                print("Warning: cannot create XAS GUI user folder")
                 return
         if not HAS_MODELSAVE:
             print("Warning: cannot save model results: upgrade lmfit")
             return
         if fname is None:
             fname = 'autosave.fitresult'
-        fname = os.path.join(xyfitdir, fname)
+        fname = os.path.join(xasguidir, fname)
         save_modelresult(result, fname)

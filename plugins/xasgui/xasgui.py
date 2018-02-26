@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Scan Data File Viewer
+XANES Data Viewer and Analysis Tool
 """
 import os
 import sys
@@ -41,7 +41,7 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
+from larch_plugins.xasgui import FitPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -440,7 +440,7 @@ class ProcessPanel(wx.Panel):
 
 
     def onSaveConfigBtn(self, evt=None):
-        conf = self.controller.larch.symtable._sys.xyfit
+        conf = self.controller.larch.symtable._sys.xasgui
 
         data_proc = {}
         data_proc.update(getattr(conf, 'data_proc', {}))
@@ -774,12 +774,12 @@ class ProcessPanel(wx.Panel):
 
         self.unzoom_on_update = save_unzoom
 
-class XYFitController():
+class XASController():
     """
     class hollding the Larch session and doing the
-    processing work for Larch XYFit
+    processing work for Larch XAS GUI
     """
-    config_file = 'xyfit.conf'
+    config_file = 'xasgui.conf'
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
         self.larch = _larch
@@ -803,7 +803,7 @@ class XYFitController():
 
         _larch = self.larch
         _larch.eval("import xafs_plots")
-        _larch.symtable._sys.xyfit = Group()
+        _larch.symtable._sys.xasgui = Group()
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
@@ -816,7 +816,7 @@ class XYFitController():
                     config[sname] = val
 
         for key, value in config.items():
-            setattr(_larch.symtable._sys.xyfit, key, value)
+            setattr(_larch.symtable._sys.xasgui, key, value)
         os.chdir(config['workdir'])
 
     def make_default_config(self):
@@ -840,18 +840,18 @@ class XYFitController():
 
     def get_config(self, key, default=None):
         "get configuration setting"
-        confgroup = self.larch.symtable._sys.xyfit
+        confgroup = self.larch.symtable._sys.xasgui
         return getattr(confgroup, key, default)
 
     def save_config(self):
         """save configuration"""
-        conf = group2dict(self.larch.symtable._sys.xyfit)
+        conf = group2dict(self.larch.symtable._sys.xasgui)
         conf.pop('__name__')
         # print("Saving configuration: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
-        self.larch.symtable._sys.xyfit.workdir = os.getcwd()
+        self.larch.symtable._sys.xasgui.workdir = os.getcwd()
 
     def show_report(self, fitresult, evt=None):
         shown = False
@@ -878,10 +878,10 @@ class XYFitController():
 
     def get_display(self, stacked=False):
         win = 1
-        wintitle='Larch XYFit Array Plot Window'
+        wintitle='Larch XAS Plot Window'
         if stacked:
             win = 2
-            wintitle='Larch XYFit Fit Plot Window'
+            wintitle='Larch XAS Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
                     size=(600, 600))
         out = self.symtable._plotter.get_display(**opts)
@@ -1116,8 +1116,8 @@ class XYFitController():
         ppanel.canvas.draw()
 
 
-class XYFitFrame(wx.Frame):
-    _about = """Larch XYFit: XY Data Viewing & Curve Fitting
+class XASFrame(wx.Frame):
+    _about = """Larch XAS GUI: XAS Visualization and Analysis
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
@@ -1127,7 +1127,7 @@ class XYFitFrame(wx.Frame):
         self.last_array_sel = {}
         self.paths2read = []
 
-        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
+        title = "Larch XAS GUI: XAS Visualization and Analysis"
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -1136,7 +1136,7 @@ class XYFitFrame(wx.Frame):
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
-        self.controller = XYFitController(wxparent=self, _larch=self.larch)
+        self.controller = XASController(wxparent=self, _larch=self.larch)
 
         self.subframes = {}
         self.plotframe = None
@@ -1211,7 +1211,7 @@ class XYFitFrame(wx.Frame):
         panel_opts = dict(parent=self, controller=self.controller)
 
         self.proc_panel = ProcessPanel(**panel_opts)
-        self.fit_panel =  XYFitPanel(**panel_opts)
+        self.fit_panel =  FitPanel(**panel_opts)
 
         self.nb.AddPage(self.proc_panel,  ' XAS Normalization ',  True)
         self.nb.AddPage(self.fit_panel,   ' Pre-edge Peak Fit ',  True)
@@ -1481,7 +1481,7 @@ class XYFitFrame(wx.Frame):
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
-                               "About Larch XYFit",
+                               "About Larch XAS GUI",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -1676,7 +1676,7 @@ class XYFitFrame(wx.Frame):
         self.ShowFile(groupname=groupname)
 
 
-class XYFitViewer(wx.App):
+class XASViewer(wx.App):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
@@ -1684,7 +1684,7 @@ class XYFitViewer(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = XYFitFrame()
+        frame = XASFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -1693,15 +1693,15 @@ class XYFitViewer(wx.App):
         return True
 
 def initializeLarchPlugin(_larch=None):
-    """add XYFitFrame to _sys.gui_apps """
+    """add XAS Frame to _sys.gui_apps """
     if _larch is not None:
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['xyfit'] = ('XY Data Viewing & Fitting', XYFitFrame)
+        _sys.gui_apps['xasgui'] = ('XAS Visualization and Analysis', XASFrame)
 
 def registerLarchPlugin():
     return ('_sys.wx', {})
 
 if __name__ == "__main__":
-    XYFitViewer().run()
+    XASViewer().run()
