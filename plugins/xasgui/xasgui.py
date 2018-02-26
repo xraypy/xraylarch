@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Scan Data File Viewer
+XANES Data Viewer and Analysis Tool
 """
 import os
 import sys
@@ -19,9 +19,9 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, pack, Button, HLine, FileSave,
-                     Choice,  Check, MenuItem, GUIColors, GridPanel,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
+                     Choice, Check, MenuItem, GUIColors, GridPanel, CEN,
+                     RCEN, LCEN, FRAMESTYLE, Font)
 
 from larch import Interpreter, Group
 from larch.utils import index_of
@@ -29,9 +29,9 @@ from larch.utils.strutils import file2groupname
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
-from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame, ReportFrame,
-                         BitmapButton, FileCheckList, FloatCtrl, SetTip)
-
+from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
+                         ReportFrame, BitmapButton, FileCheckList,
+                         FloatCtrl, SetTip)
 
 from larch.fitting import fit_report
 
@@ -41,11 +41,11 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.wx.xyfit_fitpanel import XYFitPanel
+from larch_plugins.xasgui import FitPanel, MergeDialog
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group,
-                              fix_varname, is_athena_project)
+                              gsescan_group, fix_varname, groups2csv,
+                              is_athena_project, AthenaProject)
 
 from larch_plugins.xafs import pre_edge, pre_edge_baseline
 
@@ -94,6 +94,7 @@ XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Raw Data + Pre-edge/Post-edge', 'prelines'),
                             ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
                             ('Pre-edge Peaks, isolated', 'prepeaks')))
+
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
@@ -271,7 +272,7 @@ class ProcessPanel(wx.Panel):
         self.xas_ppeak_elo  = FloatCtrl(xas, value=-15, **opts)
         self.xas_ppeak_ehi  = FloatCtrl(xas, value=-6, **opts)
         self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
-        self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(150, 30),
+        self.xas_ppeak_fit  = Button(xas, 'Fit Pre edge Baseline', size=(175, 30),
                                      action=self.onPreedgeBaseline)
         self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
 
@@ -359,8 +360,7 @@ class ProcessPanel(wx.Panel):
 
         xas.pack()
 
-        saveconf = Button(self, 'Save as Default Settings',
-                          size=(175, 30),
+        saveconf = Button(self, 'Save as Default Settings', size=(200, 30),
                           action=self.onSaveConfigBtn)
 
         hxline = HLine(self, size=(550, 2))
@@ -398,7 +398,7 @@ class ProcessPanel(wx.Panel):
 
 
     def onSaveConfigBtn(self, evt=None):
-        conf = self.controller.larch.symtable._sys.xyfit
+        conf = self.controller.larch.symtable._sys.xasgui
 
         data_proc = {}
         data_proc.update(getattr(conf, 'data_proc', {}))
@@ -571,7 +571,7 @@ class ProcessPanel(wx.Panel):
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
         save_unzoom = self.unzoom_on_update
-        dgroup.special_plot_opts = {}
+        dgroup.custom_plotopts = {}
         proc_opts['xshift'] = self.xshift.GetValue()
         proc_opts['yshift'] = self.yshift.GetValue()
         proc_opts['xscale'] = self.xscale.GetValue()
@@ -676,13 +676,12 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, 'normalized $\mu$'),
                                        (dgroup.prepeaks_baseline, PLOTOPTS_2, 'pre-edge peaks baseline')]
 
-                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                            'xmax':dgroup.energy[i1+2],
-                                            'ymax':dgroup.norm[i1+2]*1.05}
-
+                jmin, jmax = max(0, i0-2), i1+3
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+                                          'xmax':dgroup.energy[jmax],
+                                          'ymax':max(dgroup.norm[jmin:jmax])*1.05}
                 dgroup.y = y4e0 = dgroup.norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
-
 
             elif pchoice == 'prepeaks' and hasattr(dgroup, 'prepeaks'):
                 ppeaks = dgroup.prepeaks
@@ -695,50 +694,50 @@ class ProcessPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1, 'normalized pre-edge peaks')]
                 dgroup.y = y4e0 = dgroup.prepeaks_norm
                 dgroup.plot_ylabel = 'normalized $\mu$'
-                dgroup.special_plot_opts = {'xmin':dgroup.energy[max(0, i0-2)],
-                                            'xmax':dgroup.energy[i1+2]}
+                jmin, jmax = max(0, i0-2), i1+3
+                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+                                          'xmax':dgroup.energy[jmax],
+                                          'ymax':max(dgroup.y[jmin:jmax])*1.05}
 
-
-            dgroup.plot_ymarkers = []
+            dgroup.plot_extras = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
-                dgroup.plot_ymarkers.append((dgroup.e0, y4e0[ie0], {'label': '_nolegend_'}))
+                dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
             if self.xas_show_ppfit.IsChecked():
-                popts = {'label': '_nolegend_', 'marker': 's'}
+                popts = {'color': '#DDDDCC'}
                 emin = dgroup.e0 + self.xas_ppeak_emin.GetValue()
                 emax = dgroup.e0 + self.xas_ppeak_emax.GetValue()
                 imin = index_of(dgroup.xdat, emin)
                 imax = index_of(dgroup.xdat, emax)
 
-                dgroup.plot_ymarkers.append((emin, y4e0[imin], popts))
-                dgroup.plot_ymarkers.append((emax, y4e0[imax], popts))
+                dgroup.plot_extras.append(('vline', emin, y4e0[imin], popts))
+                dgroup.plot_extras.append(('vline', emax, y4e0[imax], popts))
 
             if self.xas_show_ppdat.IsChecked():
-                popts = {'label': '_nolegend_', 'marker': '+'}
+                popts = {'marker': '+', 'markersize': 6}
                 elo = dgroup.e0 + self.xas_ppeak_elo.GetValue()
                 ehi = dgroup.e0 + self.xas_ppeak_ehi.GetValue()
                 ilo = index_of(dgroup.xdat, elo)
                 ihi = index_of(dgroup.xdat, ehi)
 
-                dgroup.plot_ymarkers.append((elo, y4e0[ilo], popts))
-                dgroup.plot_ymarkers.append((ehi, y4e0[ihi], popts))
+                dgroup.plot_extras.append(('marker', elo, y4e0[ilo], popts))
+                dgroup.plot_extras.append(('marker', ehi, y4e0[ihi], popts))
 
             if self.xas_show_ppcen.IsChecked() and hasattr(dgroup, 'prepeaks'):
-                popts = {'label': '_nolegend_', 'marker': 'd'}
+                popts = {'color': '#EECCCC'}
                 ecen = getattr(dgroup.prepeaks, 'centroid', -1)
                 if ecen > min(dgroup.energy):
-                    icen = index_of(dgroup.xdat, ecen)
-                    dgroup.plot_ymarkers.append((ecen, y4e0[icen], popts))
+                    dgroup.plot_extras.append(('vline', ecen, None,  popts))
 
         self.unzoom_on_update = save_unzoom
 
-class XYFitController():
+class XASController():
     """
     class hollding the Larch session and doing the
-    processing work for Larch XYFit
+    processing work for Larch XAS GUI
     """
-    config_file = 'xyfit.conf'
+    config_file = 'xasgui.conf'
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
         self.larch = _larch
@@ -762,7 +761,7 @@ class XYFitController():
 
         _larch = self.larch
         _larch.eval("import xafs_plots")
-        _larch.symtable._sys.xyfit = Group()
+        _larch.symtable._sys.xasgui = Group()
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
@@ -775,7 +774,7 @@ class XYFitController():
                     config[sname] = val
 
         for key, value in config.items():
-            setattr(_larch.symtable._sys.xyfit, key, value)
+            setattr(_larch.symtable._sys.xasgui, key, value)
         os.chdir(config['workdir'])
 
     def make_default_config(self):
@@ -799,18 +798,18 @@ class XYFitController():
 
     def get_config(self, key, default=None):
         "get configuration setting"
-        confgroup = self.larch.symtable._sys.xyfit
+        confgroup = self.larch.symtable._sys.xasgui
         return getattr(confgroup, key, default)
 
     def save_config(self):
         """save configuration"""
-        conf = group2dict(self.larch.symtable._sys.xyfit)
+        conf = group2dict(self.larch.symtable._sys.xasgui)
         conf.pop('__name__')
         # print("Saving configuration: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
-        self.larch.symtable._sys.xyfit.workdir = os.getcwd()
+        self.larch.symtable._sys.xasgui.workdir = os.getcwd()
 
     def show_report(self, fitresult, evt=None):
         shown = False
@@ -837,11 +836,12 @@ class XYFitController():
 
     def get_display(self, stacked=False):
         win = 1
-        wintitle='Larch XYFit Array Plot Window'
+        wintitle='Larch XAS Plot Window'
         if stacked:
             win = 2
-            wintitle='Larch XYFit Fit Plot Window'
-        opts = dict(wintitle=wintitle, stacked=stacked, win=win)
+            wintitle='Larch XAS Plot Window'
+        opts = dict(wintitle=wintitle, stacked=stacked, win=win,
+                    size=(600, 600))
         out = self.symtable._plotter.get_display(**opts)
         return out
 
@@ -947,6 +947,39 @@ class XYFitController():
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
+    def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
+        """merge groups"""
+        cmd = """%s = merge_groups(%s, master=%s,
+        xarray='energy', yarray='%s', kind='cubic', trim=True)"""
+        glist = "[%s]" % (', '.join(grouplist))
+        outgroup = fix_varname(outgroup.lower())
+        if outgroup is None:
+            outgroup = 'merged'
+
+        if outgroup in self.file_groups:
+            for i in range(1, 101):
+                t = "%s_%i"  % (outgroup, i)
+                if t not in self.controller.file_groups:
+                    outgroup = t
+                    break
+
+        cmd = cmd % (outgroup, glist, master, yarray)
+        self.larch.eval(cmd)
+
+        if master is None:
+            master = grouplist[0]
+        this = self.get_group(outgroup)
+        master = self.get_group(master)
+        this.proc_opts.update(master.proc_opts)
+        this.proc_opts['group']  = outgroup
+        this.datatype = master.datatype
+        this.x = this.xdat = this.energy
+        this.y = this.ydat = getattr(this, yarray)
+        this.plot_xlabel = 'energy'
+        this.plot_ylabel = yarray
+
+        return outgroup
+
     def get_cursor(self):
         try:
             xval = self.symtable._plotter.plot1_x
@@ -956,7 +989,7 @@ class XYFitController():
         return xval, yval
 
     def plot_group(self, groupname=None, title=None,
-                   new=True, unzoom=True, **kws):
+                   new=True, unzoom=True, use_yarrays=True, **kws):
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -981,7 +1014,7 @@ class XYFitController():
         if not hasattr(dgroup, 'y'):
             dgroup.y = dgroup.ydat[:]
 
-        if hasattr(dgroup, 'plot_yarrays'):
+        if use_yarrays and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
         else:
             plot_yarrays = [(dgroup.y, {}, None)]
@@ -990,7 +1023,6 @@ class XYFitController():
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
-
         unzoom = (unzoom or
                   min(dgroup.x) >= viewlims[1] or
                   max(dgroup.x) <= viewlims[0] or
@@ -1008,45 +1040,52 @@ class XYFitController():
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
-        plot_ymarkers = None
+        plot_extras = None
         if new:
             if title is None:
                 title = fname
-            plot_ymarkers = getattr(dgroup, 'plot_ymarkers', None)
+            plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
-        popts.update(dgroup.special_plot_opts)
+        if hasattr(dgroup, 'custom_plotopts'):
+            popts.update(dgroup.custom_plotopts)
         for yarr in plot_yarrays:
             popts.update(yarr[1])
-            if popts['label'] is None and yarr[2] is not None:
+            if yarr[2] is not None:
                 popts['label'] = yarr[2]
             plotcmd(dgroup.x, yarr[0], **popts)
             plotcmd = oplot
 
-        if plot_ymarkers is not None:
+        if plot_extras is not None:
             axes = ppanel.axes
-            for x, y, opts in plot_ymarkers:
-                popts = {'marker': 'o', 'markersize': 4,
-                         'markerfacecolor': 'red', 'label': '',
-                         'markeredgecolor': 'black'}
-                popts.update(opts)
-                axes.plot([x], [y], **popts)
-
+            for etype, x, y, opts in plot_extras:
+                if etype == 'marker':
+                    popts = {'marker': 'o', 'markersize': 4,
+                             'label': '_nolegend_',
+                             'markerfacecolor': 'red',
+                             'markeredgecolor': '#884444'}
+                    popts.update(opts)
+                    axes.plot([x], [y], **popts)
+                elif etype == 'vline':
+                    popts = {'ymin': 0, 'ymax': 1.0,
+                             'color': '#888888'}
+                    popts.update(opts)
+                    axes.axvline(x, **popts)
         ppanel.canvas.draw()
 
 
-class XYFitFrame(wx.Frame):
-    _about = """Larch XYFit: XY Data Viewing & Curve Fitting
+class XASFrame(wx.Frame):
+    _about = """Larch XAS GUI: XAS Visualization and Analysis
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, size=(950, 600), _larch=None, **kws):
+    def __init__(self, parent=None, size=(925, 675), _larch=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
 
         self.last_array_sel = {}
         self.paths2read = []
 
-        title = "Larch XYFit: XY Data Viewing & Curve Fitting"
+        title = "Larch XAS GUI: XAS Visualization and Analysis"
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -1055,7 +1094,7 @@ class XYFitFrame(wx.Frame):
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
-        self.controller = XYFitController(wxparent=self, _larch=self.larch)
+        self.controller = XASController(wxparent=self, _larch=self.larch)
 
         self.subframes = {}
         self.plotframe = None
@@ -1130,10 +1169,10 @@ class XYFitFrame(wx.Frame):
         panel_opts = dict(parent=self, controller=self.controller)
 
         self.proc_panel = ProcessPanel(**panel_opts)
-        self.fit_panel =  XYFitPanel(**panel_opts)
+        self.fit_panel =  FitPanel(**panel_opts)
 
-        self.nb.AddPage(self.proc_panel,  ' Data Processing ',   True)
-        self.nb.AddPage(self.fit_panel,   ' Curve Fitting ',  True)
+        self.nb.AddPage(self.proc_panel,  ' XAS Normalization ',  True)
+        self.nb.AddPage(self.fit_panel,   ' Pre-edge Peak Fit ',  True)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
@@ -1191,7 +1230,8 @@ class XYFitFrame(wx.Frame):
             dgroup = self.controller.get_group(groupname)
             if dgroup is not None:
                 self.controller.plot_group(groupname=groupname, title='',
-                                           new=newplot, label=dgroup.filename)
+                                           new=newplot, use_yarrays=False,
+                                           label=dgroup.filename)
                 newplot=False
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
@@ -1222,6 +1262,9 @@ class XYFitFrame(wx.Frame):
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
+        self.controller.plot_group(groupname=groupname, new=True)
+
+
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -1235,6 +1278,13 @@ class XYFitFrame(wx.Frame):
         items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                                   "Open Data File",  self.onReadDialog)
 
+
+        items['file2csv'] = MenuItem(self, fmenu, "Export Selected Groups to CSV",
+                                     "Export Selected Groups to CSV", self.onData2CSV)
+
+        items['file2athena'] = MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
+                                        "Export Selected Groups to Athena Project", self.onData2Athena)
+
         fmenu.AppendSeparator()
 
         items['larch_buffer'] = MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
@@ -1244,10 +1294,17 @@ class XYFitFrame(wx.Frame):
         items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
-
         items['data_config'] = MenuItem(self, datmenu, "Configure Data Processing",
                                             "Configure Data Processing",
                                             self.onConfigDataProcessing)
+
+        items['data_merge'] = MenuItem(self, datmenu, "Merge Selected Groups",
+                                            "Merge Selected Groups",
+                                            self.onMergeData)
+
+        items['data_deglitch'] = MenuItem(self, datmenu, "Deglitch Data Group",
+                                          "Deglitch This Group",
+                                          self.onDeglitchData)
 
         items['fit_config'] = MenuItem(self, fitmenu,
                                        "Configure Data Fitting",
@@ -1276,8 +1333,8 @@ class XYFitFrame(wx.Frame):
             items[m].Enable(False)
 
         self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(datmenu, "Data Processing")
-        self.menubar.Append(fitmenu, "Fit")
+        self.menubar.Append(datmenu, "Data")
+        self.menubar.Append(fitmenu, "Fitting")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -1288,7 +1345,89 @@ class XYFitFrame(wx.Frame):
         self.larch_buffer.Raise()
 
 
+    def onData2CSV(self, evt=None):
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        groups2save = []
+        groupnames = []
+        for checked in group_ids:
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            groups2save.append(dgroup)
+            groupnames.append(groupname)
+        if len(dgroup) < 1:
+            return
+
+        deffile = "%s_%i.csv" % (groupname, len(groupnames))
+        wcards  = 'CSV Files (*.csv)|*.cvs|All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Selected Groups to CSV File',
+                           default_file=deffile, wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        groups2csv(groups2save, outfile, x='energy', y='norm', _larch=self.larch)
+
+
+
+    def onData2Athena(self, evt=None):
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        groups2save = []
+        groupnames = []
+        for checked in group_ids:
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            groups2save.append(dgroup)
+            groupnames.append(groupname)
+        if len(dgroup) < 1:
+            return
+
+        deffile = "%s_%i.prj" % (groupname, len(groupnames))
+        wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Selected Groups to Athena File',
+                           default_file=deffile, wildcard=wcards)
+
+        if outfile is None:
+            return
+
+        aprj = AthenaProject(filename=outfile, _larch=self.larch)
+        for label, grp in zip(groupnames, groups2save):
+            aprj.add_group(grp, label=label)
+        aprj.save(use_gzip=True)
+
+
     def onConfigDataProcessing(self, event=None):
+        pass
+
+    def onMergeData(self, event=None):
+        groups = []
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groups.append(self.controller.file_groups[str(checked)])
+        if len(groups) < 1:
+            return
+
+        master = outgroup = None
+        yarray = 'raw mu(E)'
+
+        dlg = MergeDialog(self, groups)
+        dlg.Raise()
+        if dlg.ShowModal() == wx.ID_OK:
+            master = dlg.master_group.GetStringSelection()
+            yarray = dlg.yarray_name.GetStringSelection()
+            outgroup = dlg.group_name.GetValue()
+        dlg.Destroy()
+        if master is not None:
+            yname = 'mu'
+            if 'normal' in yarray:
+                yname = 'norm'
+            self.controller.merge_groups(groups, master=master,
+                                         yarray=yname, outgroup=outgroup)
+            self.install_group(outgroup, outgroup, overwrite=False)
+
+
+    def onDeglitchData(self, event=None):
+        print(" Deglitch Data")
         pass
 
     def onConfigDataFitting(self, event=None):
@@ -1300,7 +1439,7 @@ class XYFitFrame(wx.Frame):
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
-                               "About Larch XYFit",
+                               "About Larch XAS GUI",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -1393,7 +1532,7 @@ class XYFitFrame(wx.Frame):
         path = path.replace('\\', '/')
         do_read = True
         if path in self.controller.file_groups:
-            do_read = (wx.ID_YES == popup(self,
+            do_read = (wx.ID_YES == Popup(self,
                                           "Re-read file '%s'?" % path,
                                           'Re-read file?'))
         if do_read:
@@ -1413,7 +1552,6 @@ class XYFitFrame(wx.Frame):
                           read_ok_cb=self.onReadAthenaProject_OK)
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
-
             kwargs = dict(filename=path,
                           _larch=self.larch_buffer.larchshell,
                           last_array_sel = self.last_array_sel,
@@ -1436,6 +1574,7 @@ class XYFitFrame(wx.Frame):
         for gname in namelist:
             self.larch.eval(s.format(group=gname))
             self.install_group(gname, gname)
+            self.proc_panel.process(gname)
         self.larch.eval("del _prj")
 
 
@@ -1495,7 +1634,7 @@ class XYFitFrame(wx.Frame):
         self.ShowFile(groupname=groupname)
 
 
-class XYFitViewer(wx.App):
+class XASViewer(wx.App):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
@@ -1503,7 +1642,7 @@ class XYFitViewer(wx.App):
         self.MainLoop()
 
     def createApp(self):
-        frame = XYFitFrame()
+        frame = XASFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -1512,15 +1651,15 @@ class XYFitViewer(wx.App):
         return True
 
 def initializeLarchPlugin(_larch=None):
-    """add XYFitFrame to _sys.gui_apps """
+    """add XAS Frame to _sys.gui_apps """
     if _larch is not None:
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['xyfit'] = ('XY Data Viewing & Fitting', XYFitFrame)
+        _sys.gui_apps['xasgui'] = ('XAS Visualization and Analysis', XASFrame)
 
 def registerLarchPlugin():
     return ('_sys.wx', {})
 
 if __name__ == "__main__":
-    XYFitViewer().run()
+    XASViewer().run()
