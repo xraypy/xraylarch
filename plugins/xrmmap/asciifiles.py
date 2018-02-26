@@ -90,20 +90,20 @@ def readROIFile(hfile,xrd=False):
                 dat = [lims[0], lims[1]]
                 output.append((iroi, name.strip(), unit.strip(), dat))
         return sorted(output)
-    
+
     else:
         for a in cp.options('rois'):
             if a.lower().startswith('roi'):
                 iroi = int(a[3:])
                 name, dat = cp.get('rois',a).split('|')
                 lims = [int(i) for i in dat.split()]
-                ndet = len(lims)/2
+                ndet = int(len(lims)/2)
                 dat = []
                 for i in range(ndet):
                     dat.append((lims[i*2], lims[i*2+1]))
                 output.append((iroi, name.strip(), dat))
         roidata = sorted(output)
-                          
+
         calib = {}
 
         caldat = cp.options('calibration')
@@ -126,6 +126,6 @@ def readROIFile(hfile,xrd=False):
                         extra[attr] = [float(x) for x in tmpdat]
                     except ValueError:
                         extra[attr] = tmpdat
-    
-    
+
+
         return roidata, calib, extra

@@ -4,7 +4,7 @@ from .paths import nativepath, get_homedir
 from .closure import Closure
 from .debugtime import debugtime
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
-                      isLiteralStr, strip_comments, find_delims)
+                      isLiteralStr, strip_comments, find_delims, version_ge)
 
 from .mathutils import (linregress, polyfit, realimag, as_ndarray,
                         complex_phase, deriv, interp, interp1d,

@@ -8,6 +8,7 @@ import sys
 from base64 import b64encode, b32encode
 import hashlib
 import random
+from distutils.version import StrictVersion
 
 if sys.version[0] == '3':
     maketrans = str.maketrans
@@ -185,6 +186,10 @@ def find_delims(s, delim='"',match=None):
                 return True, j, k+len(match)-1
             p1 = s[k:k+1]
     return False, j, len(s)
+
+def version_ge(v1, v2):
+    "returns whether version string 1 >= version_string2"
+    return StrictVersion(bytes2str(v1)) >= StrictVersion(bytes2str(v2))
 
 
 def b32hash(s):
