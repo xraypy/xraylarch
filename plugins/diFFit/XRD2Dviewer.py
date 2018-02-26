@@ -345,9 +345,13 @@ class diFFit2DFrame(wx.Frame):
 
         try:
             self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
+            if self.open_image[-1].calfile is not None:
+                self.calfile = self.open_image[-1].calfile
+                self.xrd2Dviewer.on_calibration()
         except:
             self.write_message('Image failed to load.', panel=0)
             return
+
 
         self.ch_img.Set([image.label for image in self.open_image])
         self.ch_img.SetStringSelection(iname)
@@ -1349,6 +1353,8 @@ class XRDImg(Group):
         self.path  = path
         self.type  = type
 
+        self.calfile = None
+
         self.h5file = h5file
         self.image = np.zeros((1,1,PIXELS,PIXELS)) if image is None else image
 
@@ -1368,6 +1374,12 @@ class XRDImg(Group):
             self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
         else:
             self.h5xrd = self.h5file['xrmmap/xrd2D/counts']
+            try:
+                self.calfile = self.h5file['xrmmap/xrd1D'].attrs['calfile']
+                if not os.path.exists(self.calfile):
+                    self.calfile = None
+            except:
+                pass
 
             ## making an assumption that h5 map file always has multiple rows and cols
             self.jframes,self.iframes,self.xpix,self.ypix = self.h5xrd.shape

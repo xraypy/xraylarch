@@ -881,6 +881,7 @@ class GSEXRM_MapFile(object):
         ''' creata an hdf5 dataset'''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
         kws.update(self.compress_args)
         d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
@@ -1002,6 +1003,7 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
             self.initialize_xrmmap(callback=callback)

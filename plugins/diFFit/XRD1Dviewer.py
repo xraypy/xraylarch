@@ -63,6 +63,8 @@ RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
+
+BKGD_DEFAULT = {'exponent': 2,'compress': 5, 'width': 4}
 ###################################
 
 def YesNo(parent, question, caption = 'Yes or no?'):
@@ -630,7 +632,7 @@ class Fitting1DXRD(BasePanel):
 
         # Background fitting defaults
         ## old defaults: [20, 2, 4]
-        self.bkgd_kwargs = {'exponent': 2,'compress': 5, 'width': 4}
+        self.bkgd_kwargs = BKGD_DEFAULT.copy() ##{'exponent': 2,'compress': 5, 'width': 4}
         
 
 ##############################################
@@ -1499,48 +1501,45 @@ class BackgroundOptions(wx.Dialog):
         self.parent = parent
 
         self.createPanel()
+        
+        self.PanelValues()
+
+        ix,iy = self.panel.GetBestSize()
+        self.SetSize((ix+20, iy+40))
+
+    def PanelValues(self, event=None):
 
         ## Set defaults
         self.val_exp.SetValue(  str( self.parent.bkgd_kwargs['exponent'] ) )
         self.val_comp.SetValue( str( self.parent.bkgd_kwargs['compress'] ) )
         self.val_wid.SetValue(  str( self.parent.bkgd_kwargs['width']    ) )
 
-        ix,iy = self.panel.GetBestSize()
-        self.SetSize((ix+20, iy+40))
+
+    def PanelDefaults(self, event=None):
+    
+        ## Set defaults
+        self.val_exp.SetValue(  str( BKGD_DEFAULT['exponent'] ) )
+        self.val_comp.SetValue( str( BKGD_DEFAULT['compress'] ) )
+        self.val_wid.SetValue(  str( BKGD_DEFAULT['width']    ) )
 
     def createPanel(self):
 
         self.panel = wx.Panel(self)
+        sizer = wx.GridBagSizer(3, 3)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
 
         ## Exponent
-        expsizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_exp = wx.StaticText(self.panel, label='EXPONENT')
-
         self.val_exp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        expsizer.Add(ttl_exp,  flag=wx.RIGHT, border=5)
-        expsizer.Add(self.val_exp,  flag=wx.RIGHT, border=5)
 
         ## Compress
-        compsizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_comp = wx.StaticText(self.panel, label='COMPRESS')
-
         self.val_comp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        compsizer.Add(ttl_comp,  flag=wx.RIGHT, border=5)
-        compsizer.Add(self.val_comp,  flag=wx.RIGHT, border=5)
 
         ## Width
-        widsizer = wx.BoxSizer(wx.VERTICAL)
-
-        ttl_wid = wx.StaticText(self.panel, label='WIDTH')
-
         self.val_wid = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-        widsizer.Add(ttl_wid,  flag=wx.RIGHT, border=5)
-        widsizer.Add(self.val_wid,  flag=wx.RIGHT, border=5)
 
+        ## Reset button
+        btn_reset = Button(self.panel,label='reset',size=(90, -1),action=self.PanelDefaults)
 
         #####
         ## OKAY!
@@ -1552,25 +1551,94 @@ class BackgroundOptions(wx.Dialog):
 
         hlpBtn.Bind(wx.EVT_BUTTON, lambda evt: wx.TipWindow(
             self, 'These values are specific to the background fitting defined in:'
-            ' Nucl. Instrum. Methods (1987) B22, 78-81.\n'
-            ' EXPONENT : Specifies the power of polynomial which is used.\n'
-            ' COMPRESS : Compression factor to apply before fitting the background.\n'
+            ' Nucl. Instrum. Methods (1987) B22, 78-81.\n\n'
+            ' EXPONENT : Specifies the power of polynomial which is used.\n\n'
+            ' COMPRESS : Compression factor to apply before fitting the background.\n\n'
             ' WIDTH : Specifies the width of the polynomials which are concave downward.'))
 
-        oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8 )
-        oksizer.Add(canBtn,     flag=wx.RIGHT,  border=8 )
-        oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8 )
 
-        mainsizer.Add(expsizer,  flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(compsizer, flag=wx.ALL, border=5)
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
-        mainsizer.AddSpacer(15)
-        mainsizer.Add(oksizer,   flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
+        def txt(s):
+            return SimpleText(self.panel, s)
+        sizer.Add(txt('EXPONENT'),          ( 0, 0), (1, 4), ALL_CEN,  2)
+        sizer.Add(self.val_exp,             ( 0, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(txt('COMPRESS'),          ( 1, 0), (1, 4), ALL_CEN,  2)
+        sizer.Add(self.val_comp,            ( 1, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(txt('WIDTH'),             ( 2, 0), (1, 4), ALL_CEN,  2)
+        sizer.Add(self.val_wid,             ( 2, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(btn_reset,                ( 3, 4), (1, 2), ALL_LEFT, 2)
 
+        sizer.Add(hlpBtn,                   ( 5, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.okBtn,               ( 5, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(canBtn,                   ( 5, 2), (1, 2), ALL_LEFT, 2)
 
-        self.panel.SetSizer(mainsizer)
+        pack(self.panel, sizer)
+
+#         self.panel = wx.Panel(self)
+# 
+#         mainsizer = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ## Exponent
+#         expsizer = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ttl_exp = wx.StaticText(self.panel, label='EXPONENT')
+# 
+#         self.val_exp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         expsizer.Add(ttl_exp,  flag=wx.RIGHT, border=5)
+#         expsizer.Add(self.val_exp,  flag=wx.RIGHT, border=5)
+# 
+#         ## Compress
+#         compsizer = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ttl_comp = wx.StaticText(self.panel, label='COMPRESS')
+# 
+#         self.val_comp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         compsizer.Add(ttl_comp,  flag=wx.RIGHT, border=5)
+#         compsizer.Add(self.val_comp,  flag=wx.RIGHT, border=5)
+# 
+#         ## Width
+#         widsizer = wx.BoxSizer(wx.VERTICAL)
+# 
+#         ttl_wid = wx.StaticText(self.panel, label='WIDTH')
+# 
+#         self.val_wid = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
+#         widsizer.Add(ttl_wid,  flag=wx.RIGHT, border=5)
+#         widsizer.Add(self.val_wid,  flag=wx.RIGHT, border=5)
+#         
+#         ## Reset button
+#         btn_reset = wx.Button(self,label='reset')
+#         btn_reset.Bind(wx.EVT_BUTTON, self.PanelDefaults)
+# 
+#         #####
+#         ## OKAY!
+#         oksizer = wx.BoxSizer(wx.HORIZONTAL)
+# 
+#         hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
+#         self.okBtn = wx.Button(self.panel, wx.ID_OK     )
+#         canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
+# 
+#         hlpBtn.Bind(wx.EVT_BUTTON, lambda evt: wx.TipWindow(
+#             self, 'These values are specific to the background fitting defined in:'
+#             ' Nucl. Instrum. Methods (1987) B22, 78-81.\n'
+#             ' EXPONENT : Specifies the power of polynomial which is used.\n'
+#             ' COMPRESS : Compression factor to apply before fitting the background.\n'
+#             ' WIDTH : Specifies the width of the polynomials which are concave downward.'))
+# 
+#         oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8 )
+#         oksizer.Add(canBtn,     flag=wx.RIGHT,  border=8 )
+#         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8 )
+# 
+#         mainsizer.Add(expsizer,  flag=wx.ALL, border=8)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(compsizer, flag=wx.ALL, border=5)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(btn_reset,  flag=wx.ALL, border=8)
+#         mainsizer.AddSpacer(15)
+#         mainsizer.Add(oksizer,   flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
+# 
+# 
+#         self.panel.SetSizer(mainsizer)
 
 class PeakOptions(wx.Dialog):
     def __init__(self,parent,method='peakutils.indexes'):
@@ -2093,8 +2161,8 @@ class Viewer1DXRD(wx.Panel):
 
         if self.xy_data[-1].label is None:
             self.xy_data[-1].label = 'dataset %i' % len(self.xy_data)
-        else:
-            self.xy_data[-1].label = 'data: %s' % self.xy_data[-1].label
+#         else:
+#             self.xy_data[-1].label = 'data: %s' % self.xy_data[-1].label
         datalabel = self.xy_data[-1].label
 
         self.data_name.append(datalabel)
