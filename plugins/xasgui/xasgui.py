@@ -25,7 +25,7 @@ from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
 
 from larch import Interpreter, Group
 from larch.utils import index_of
-from larch.utils.strutils import file2groupname
+from larch.utils.strutils import file2groupname, unique_name
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
@@ -65,6 +65,8 @@ ICON_FILE = 'larch.ico'
 
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
+
+
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -398,7 +400,7 @@ class ProcessPanel(wx.Panel):
 
 
     def onSaveConfigBtn(self, evt=None):
-        conf = self.controller.larch.symtable._sys.xasgui
+        conf = self.controller.larch.symtable._sys.xas_viewer
 
         data_proc = {}
         data_proc.update(getattr(conf, 'data_proc', {}))
@@ -737,7 +739,7 @@ class XASController():
     class hollding the Larch session and doing the
     processing work for Larch XAS GUI
     """
-    config_file = 'xasgui.conf'
+    config_file = 'xas_viewer.conf'
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
         self.larch = _larch
@@ -761,12 +763,12 @@ class XASController():
 
         _larch = self.larch
         _larch.eval("import xafs_plots")
-        _larch.symtable._sys.xasgui = Group()
+        _larch.symtable._sys.xas_viewer = Group()
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
         for sname in config:
-            if sname in old_config:
+            if old_config is not None and sname in old_config:
                 val = old_config[sname]
                 if isinstance(val, dict):
                     config[sname].update(val)
@@ -774,7 +776,7 @@ class XASController():
                     config[sname] = val
 
         for key, value in config.items():
-            setattr(_larch.symtable._sys.xasgui, key, value)
+            setattr(_larch.symtable._sys.xas_viewer, key, value)
         os.chdir(config['workdir'])
 
     def make_default_config(self):
@@ -798,18 +800,18 @@ class XASController():
 
     def get_config(self, key, default=None):
         "get configuration setting"
-        confgroup = self.larch.symtable._sys.xasgui
+        confgroup = self.larch.symtable._sys.xas_viewer
         return getattr(confgroup, key, default)
 
     def save_config(self):
         """save configuration"""
-        conf = group2dict(self.larch.symtable._sys.xasgui)
+        conf = group2dict(self.larch.symtable._sys.xas_viewer)
         conf.pop('__name__')
         # print("Saving configuration: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
-        self.larch.symtable._sys.xasgui.workdir = os.getcwd()
+        self.larch.symtable._sys.xas_viewer.workdir = os.getcwd()
 
     def show_report(self, fitresult, evt=None):
         shown = False
@@ -956,12 +958,7 @@ class XASController():
         if outgroup is None:
             outgroup = 'merged'
 
-        if outgroup in self.file_groups:
-            for i in range(1, 101):
-                t = "%s_%i"  % (outgroup, i)
-                if t not in self.controller.file_groups:
-                    outgroup = t
-                    break
+        outgroup = unique_name(outgroup, self.file_groups, max=1000)
 
         cmd = cmd % (outgroup, glist, master, yarray)
         self.larch.eval(cmd)
@@ -1407,23 +1404,17 @@ class XASFrame(wx.Frame):
         if len(groups) < 1:
             return
 
-        master = outgroup = None
-        yarray = 'raw mu(E)'
-
-        dlg = MergeDialog(self, groups)
-        dlg.Raise()
-        if dlg.ShowModal() == wx.ID_OK:
-            master = dlg.master_group.GetStringSelection()
-            yarray = dlg.yarray_name.GetStringSelection()
-            outgroup = dlg.group_name.GetValue()
+        outgroup = unique_name(outgroup, self.controller.file_groups)
+        dlg = MergeDialog(self, groups, outgroup=outgroup)
+        res = dlg.GetResponse()
         dlg.Destroy()
-        if master is not None:
-            yname = 'mu'
-            if 'normal' in yarray:
-                yname = 'norm'
-            self.controller.merge_groups(groups, master=master,
-                                         yarray=yname, outgroup=outgroup)
-            self.install_group(outgroup, outgroup, overwrite=False)
+
+        if res.ok:
+            yname = 'norm' if res.ynorm else 'mu'
+            self.controller.merge_groups(groups, master=res.master,
+                                         yarray=yname, outgroup=res.group)
+            self.install_group(res.group, res.group, overwrite=False)
+
 
 
     def onDeglitchData(self, event=None):
@@ -1656,7 +1647,7 @@ def initializeLarchPlugin(_larch=None):
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['xasgui'] = ('XAS Visualization and Analysis', XASFrame)
+        _sys.gui_apps['xas_viewer'] = ('XAS Visualization and Analysis', XASFrame)
 
 def registerLarchPlugin():
     return ('_sys.wx', {})
