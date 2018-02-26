@@ -11,4 +11,4 @@ matplotlib.use('WXAgg')
 from larch_plugins.xasgui import XASViewer
 
 os.chdir(larch.site_config.home_dir)
-XASViewer().run()
+XASViewer().MainLoop()
