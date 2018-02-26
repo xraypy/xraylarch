@@ -27,7 +27,6 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
-from distutils.version import StrictVersion
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -83,7 +82,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import LarchPanel, LarchFrame
-from larch.utils.strutils import bytes2str
+from larch.utils.strutils import bytes2str, version_ge
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -344,31 +343,10 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         for vfile in self.varfile.values():
             vfile.SetSelection(-1)
-            
+
     def set_det_choices(self, xrmmap, varname=None):
 
-        det_list = []
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
-            for grp in xrmmap['roimap'].keys():
-                if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
-            if 'scalars' in xrmmap: det_list += ['scalars']
-        else:
-            for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]
-            ## allows for adding roi in new format to old files
-            for grp in xrmmap['roimap'].keys():
-                try:
-                    if xrmmap[grp].attrs.get('type', '').find('det') > -1:
-                        if grp not in det_list: det_list += [grp]
-                except:
-                    pass
-
-        for sumname in ('detsum','mcasum'):
-           if sumname in det_list:
-               det_list.remove(sumname)
-               det_list.insert(0,sumname)
-
-        if len(det_list) < 1: det_list = ['']
+        det_list = self.cfile.get_detchoices()
 
         if varname is None:
             for wid in self.vardet.values():
@@ -393,7 +371,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
+        if version_ge(self.cfile.version, '2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -673,7 +651,7 @@ class TomographyPanel(GridPanel):
         detname = self.det_choice[iroi].GetStringSelection()
         roiname = self.roi_choice[iroi].GetStringSelection()
 
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
+        if version_ge(self.cfile.version, '2.0.0'):
             try:
                 roi = self.cfile.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
@@ -870,26 +848,7 @@ class TomographyPanel(GridPanel):
 
     def set_det_choices(self, xrmmap):
 
-        det_list = []
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
-            for grp in xrmmap['roimap'].keys():
-                if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
-            if 'scalars' in xrmmap: det_list += ['scalars']
-        else:
-            for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]
-            ## allows for adding roi in new format to old files
-            for grp in xrmmap['roimap'].keys():
-                try:
-                    if xrmmap[grp].attrs.get('type', '').find('det') > -1:
-                        if grp not in det_list: det_list += [grp]
-                except:
-                    pass
-
-        for sumname in ('detsum','mcasum'):
-           if sumname in det_list:
-               det_list.remove(sumname)
-               det_list.insert(0,sumname)
+        det_list = self.cfile.get_detchoices()
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
@@ -917,7 +876,7 @@ class TomographyPanel(GridPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
+        if version_ge(self.cfile.version, '2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -1095,7 +1054,7 @@ class MapPanel(GridPanel):
         detname = self.det_choice[iroi].GetStringSelection()
         roiname = self.roi_choice[iroi].GetStringSelection()
 
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
+        if version_ge(self.cfile.version, '2.0.0'):
             try:
                 roi = self.cfile.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
@@ -1294,28 +1253,7 @@ class MapPanel(GridPanel):
 
     def set_det_choices(self, xrmmap):
 
-        det_list = []
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
-            for grp in xrmmap['roimap'].keys():
-                if xrmmap[grp].attrs.get('type', '').find('det') > -1: det_list += [grp]
-            if 'scalars' in xrmmap: det_list += ['scalars']
-        else:
-            for grp in xrmmap.keys():
-                if grp.startswith('det'): det_list += [grp]
-            ## allows for adding roi in new format to old files
-            for grp in xrmmap['roimap'].keys():
-                try:
-                    if xrmmap[grp].attrs.get('type', '').find('det') > -1:
-                        if grp not in det_list: det_list += [grp]
-                except:
-                    pass
-
-        for sumname in ('detsum','mcasum'):
-           if sumname in det_list:
-               det_list.remove(sumname)
-               det_list.insert(0,sumname)
-
-        if len(det_list) < 1: det_list = ['']
+        det_list = self.cfile.get_detchoices()
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
@@ -1343,7 +1281,7 @@ class MapPanel(GridPanel):
 
     def update_roi(self, detname, xrmmap):
 
-        if StrictVersion(self.cfile.version) >= StrictVersion('2.0.0'):
+        if version_ge(self.cfile.version, '2.0.0'):
             if detname == 'scalars':
                 rois = ['1'] + list(xrmmap[detname].keys())
             else:
@@ -1618,7 +1556,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
         self.cor = Check(pane, label='Correct Deadtime?')
-        legend = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
+        legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
 
         ######################################
         ## SPECIFIC TO XRD MAP AREAS
@@ -1704,13 +1642,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         # self.stats = self.xrmfile.get_area_stats(self.areaname)
         if self.report is None:
             return
-            
+
         self.choice.Disable()
         self.report.DeleteAllItems()
         self.report_data = []
-            
+
         def report_info(dname,d):
-        
+
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
@@ -1732,6 +1670,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         areaname  = self._getarea()
         xrmfile  = self.owner.current_file
         xrmmap  = xrmfile.xrmmap
+        ctime = xrmfile.pixeltime
+
         area = xrmfile.get_area(name=areaname)
         amask = area.value
 
@@ -1748,59 +1688,46 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         except:
             version = '1.0.0'
 
-        if StrictVersion(version) >= StrictVersion('2.0.0'):
+        if version_ge(version, '2.0.0'):
 
             d_dets = [d for d in xrmmap['roimap']]
             d_dets.remove('mcasum')
-            
+
             det0 = xrmmap['roimap/%s' % d_dets[0]]
-            
+
             d_rois = [d for d in det0]
             d_lims = [det0[roi]['limits'][0] for roi in d_rois]
-            
+
             d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
 
             d_scas = [d for d in xrmmap['scalars']]
-            d_scas.insert(0, d_scas.pop(3)) ## put TSCALERS first in list
-
             ndet = 'mca'
-            ctime = xrmmap['scalars/TSCALER'].value
-        
+
         else:
 
             d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
             d_names = [d for d in xrmmap['roimap/det_name']]
-
             ndet = 'det'
-            ctime = xrmmap['roimap/det_raw'][:,:,0]
 
 
-        # count times
-        if amask.shape[1] == ctime.shape[1] - 2: # hotcols
-            ctime = ctime[:,1:-1]
 
-        ctime = [1.e-6*ctime[amask]]
         for i in range(xrmmap.attrs['N_Detectors']):
             tname = '%s%i/realtime' % (ndet,i+1)
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
-            ctime.append(1.e-6*rtime[amask])
-            
-        if StrictVersion(version) >= StrictVersion('2.0.0'):
-            
+
+        if version_ge(version, '2.0.0'):
+
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
                 if amask.shape[1] == d.shape[1] - 2: # hotcols
                     d = d[:,1:-1]
-                
-                if scalar.startswith('TSC'):
-                    d = 1.e3*ctime[0]
-                else:
-                    d = d[amask]/ctime[0]
-                
+
+                d = d[amask]/ctime
+
                 report_info(scalar,d)
-            
+
             for roi in d_rois:
                 for i,det in enumerate(d_dets):
                     dname = '%s (%s)' % (roi,det)
@@ -1808,12 +1735,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     d = xrmmap['roimap'][det][roi]['raw'].value ## this matches old version
                     if amask.shape[1] == d.shape[1] - 2: # hotcols
                         d = d[:,1:-1]
-                    d = d[amask]/ctime[i]
+                    d = d[amask]/ctime
 
                     report_info(dname,d)
-     
+
         else:
-        
+
             for idet, dname in enumerate(d_names):
                 daddr = d_addrs[idet]
                 det = 0
@@ -1823,15 +1750,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if len(words) > 1:
                         det = int(words[1].split('.')[0])
                 if idet == 0:
-                    d = 1.e3*ctime[0]
+                    d = ctime
                 else:
                     d = xrmmap['roimap/det_raw'][:,:,idet]
                     if amask.shape[1] == d.shape[1] - 2: # hotcols
                         d = d[:,1:-1]
-                    d = d[amask]/ctime[det]
-                   
+                    d = d[amask]/ctime
+
                 report_info(dname,d)
-        
+
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
@@ -1842,7 +1769,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.set_area_choices(xrmmap, show_last=True)
 
         self.set_enabled_btns(xrmmap)
-        
+
         self.report.DeleteAllItems()
         self.report_data = []
         self.onSelect()
@@ -2844,7 +2771,6 @@ class MapViewerFrame(wx.Frame):
             self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
-
         try:
             xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             path = xrd1Dgrp.attrs['calfile']
@@ -2860,7 +2786,7 @@ class MapViewerFrame(wx.Frame):
             self.file_timer.Stop()
             self.message('Watching Files/Folders for Changes: Off')
         else:
-            self.file_timer.Start(10000)
+            self.file_timer.Start(5000)
             self.message('Watching Files/Folders for Changes: On')
 
 
@@ -2870,8 +2796,7 @@ class MapViewerFrame(wx.Frame):
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
                 thispanel = self.nbpanels[self.nb.GetSelection()]
-                thispanel.onShowMap(event=None, new=False)
-                # print('Processed File ', thispanel)
+                thispanel.onROIMap(event=None, new=False)
 
     def process_file(self, filename):
         """Request processing of map file.
@@ -2901,7 +2826,6 @@ class MapViewerFrame(wx.Frame):
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
-
         self.h5convert_done = True if status is 'complete' else False
 
     def onTimer(self, event=None):
@@ -2910,8 +2834,7 @@ class MapViewerFrame(wx.Frame):
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
-            if fname in self.files_in_progress:
-                self.files_in_progress.remove(fname)
+            self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
