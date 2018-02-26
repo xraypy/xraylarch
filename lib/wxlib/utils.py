@@ -1,4 +1,5 @@
 import wx
+from collections import OrderedDict
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -36,10 +37,16 @@ class FileCheckList(wx.CheckListBox):
     supply select_action for EVT_LISTBOX selection action
 
     """
-    def __init__(self, parent, main=None,
-                 select_action=None,
-                 right_click=True,
-                 remove_action=None, **kws):
+    right_click_actions = ("Move up",
+                           "Move down",
+                           "Move to Top",
+                           "Move to Bottom",
+                           "Remove from List")
+
+    def __init__(self, parent, main=None, select_action=None,
+                 right_click=True, remove_action=None,
+                 custom_actions=None, **kws):
+
         wx.CheckListBox.__init__(self, parent, **kws)
 
         self.SetDropTarget(FileDropTarget(main))
@@ -48,21 +55,25 @@ class FileCheckList(wx.CheckListBox):
         if select_action is not None:
             self.Bind(wx.EVT_LISTBOX,  select_action)
         self.remove_action = remove_action
+        self.rclick_actions = OrderedDict()
         if right_click:
             self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
-            for item in ('popup_up1', 'popup_dn1',
-                         'popup_upall', 'popup_dnall', 'popup_remove'):
-                setattr(self, item,  wx.NewId())
-                self.Bind(wx.EVT_MENU, self.onRightEvent,
-                          id=getattr(self, item))
+            for title in self.right_click_actions:
+                wid = wx.NewId()
+                self.rclick_actions[wid] = (title, None)
+                self.Bind(wx.EVT_MENU, self.onRightEvent, id=wid)
+
+        if custom_actions is not None:
+            for title, action in custom_actions:
+                wid = wx.NewId()
+                self.rclick_actions[wid] = (title, action)
+                self.Bind(wx.EVT_MENU, self.onRightEvent, id=wid)
 
     def onRightClick(self, evt=None):
         menu = wx.Menu()
-        menu.Append(self.popup_up1,    "Move up")
-        menu.Append(self.popup_dn1,    "Move down")
-        menu.Append(self.popup_upall,  "Move to top")
-        menu.Append(self.popup_dnall,  "Move to bottom")
-        menu.Append(self.popup_remove, "Remove from list")
+        for wid, val in self.rclick_actions.items():
+            menu.Append(wid, val[0])
+
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -70,19 +81,30 @@ class FileCheckList(wx.CheckListBox):
         idx = self.GetSelection()
         if idx < 0: # no item selected
             return
-        wid   = event.GetId()
         names = self.GetItems()
-        this  = names.pop(idx)
-        if wid == self.popup_up1 and idx > 0:
+        this  = names[idx] # .pop(idx)
+
+        label, action = self.rclick_actions[event.GetId()]
+        if label == "Move up" and idx > 0:
+            names.pop(idx)
             names.insert(idx-1, this)
-        elif wid == self.popup_dn1 and idx < len(names):
+        elif label == "Move down" and idx < len(names):
+            names.pop(idx)
             names.insert(idx+1, this)
-        elif wid == self.popup_upall:
+        elif label == "Move to Top":
+            names.pop(idx)
             names.insert(0, this)
-        elif wid == self.popup_dnall:
+        elif label == "Move to Bottom":
+            names.pop(idx)
             names.append(this)
-        elif wid == self.popup_remove and self.remove_action is not None:
-            self.remove_action(this)
+        elif label == "Remove from List":
+            names.pop(idx)
+            if self.remove_action is not None:
+                self.remove_action(this)
+
+        elif action is not None:
+            action(this)
+
 
         self.Clear()
         for name in names:

@@ -78,9 +78,19 @@ def return_methods():
 
     return alg0,alg1,alg2
 
-def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B, sinogram_order):
+def check_parameters(sino, center, omega, tomo_alg, sinogram_order):
 
-    method = check_method(method)
+
+    if type(tomo_alg) is str: tomo_alg = [tomo_alg]
+    try:
+        if len(tomo_alg) > 3: tomo_alg = tomo_alg[:3]
+    except:
+        tomo_alg = [tomo_alg]
+        
+    while len(tomo_alg) < 3:
+        tomo_alg += [None]
+    
+    tomo_alg[0] = check_method(tomo_alg[0])
     
     if len(np.shape(sino)) == 2:
         sino.resize((1, sino.shape[0], sino.shape[1]))
@@ -93,23 +103,23 @@ def check_parameters(sino, method, center, omega, algorithm_A, algorithm_B, sino
         else:
             omega = np.linspace(0,360,sino.shape[0])
 
-    if method.lower().startswith('scikit') and HAS_scikit:
-        if algorithm_A == 'None':
-            algorithm_A = None
-        elif algorithm_A not in SCIKIT_FILT:
-            algorithm_A = 'shepp-logan'
-        if algorithm_B not in SCIKIT_INTR:
-            algorithm_B = 'linear'
+    if tomo_alg[0].lower().startswith('scikit') and HAS_scikit:
+        if tomo_alg[1] == 'None':
+            tomo_alg[1] = None
+        elif tomo_alg[1] not in SCIKIT_FILT:
+            tomo_alg[1] = 'shepp-logan'
+        if tomo_alg[2] not in SCIKIT_INTR:
+            tomo_alg[2] = 'linear'
         npts = sino.shape[1]
 
-    elif method.lower().startswith('tomopy') and HAS_tomopy:
+    elif tomo_alg[0].lower().startswith('tomopy') and HAS_tomopy:
 
-        if algorithm_A not in TOMOPY_ALG:
-            algorithm_A = 'gridrec'
-        if algorithm_B not in TOMOPY_FILT or algorithm_B == 'None':
-            algorithm_B = None
+        if tomo_alg[1] not in TOMOPY_ALG:
+            tomo_alg[1] = 'gridrec'
+        if tomo_alg[2] not in TOMOPY_FILT or tomo_alg[2] == 'None':
+            tomo_alg[2] = None
         
-    return sino, method, center, omega, algorithm_A, algorithm_B, sinogram_order
+    return sino, center, omega, tomo_alg, sinogram_order
 
 def reshape_sinogram(A,x=[],omega=[]):
 
@@ -158,30 +168,31 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
     return sino,x,omega
             
 def tomo_reconstruction(sino, refine_center=False, center_range=None, center=None,
-                        method=None, algorithm_A=None, algorithm_B=None, omega=None,
+                        tomo_alg=[], omega=None,
                         sinogram_order=False, **args):
     '''
     INPUT ->  sino : slice, 2th, x OR 2th, slice, x (with flag sinogram_order=True/False)
     OUTPUT -> tomo : slice, x, y
     '''
 
-    check = check_parameters(sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order)
-    sino,method,center,omega,algorithm_A,algorithm_B,sinogram_order = check
+    check = check_parameters(sino,center,omega,tomo_alg,sinogram_order)
+    sino,center,omega,tomo_alg,sinogram_order = check
     
-    if method is None:
+    if tomo_alg[0] is None:
         print('No tomographic reconstruction packages available')
         return center, np.zeros((1,sino.shape[-1],sino.shape[-1]))
     
-    if method.lower().startswith('scikit') and HAS_scikit:
+    if tomo_alg[0].lower().startswith('scikit') and HAS_scikit:
 
         npts = sino.shape[2]
-        cntr = int(npts - center) # flip axis for compatibility with tomopy convention
+        center = int(center)
+        cntr = npts - center   ## switch reference direction for compatibility with tomopy convention
         if not sinogram_order: sino = np.einsum('jik->ijk',sino)
 
         args.update({'theta':omega, 
-                    'filter':algorithm_A,
-                    'interpolation':algorithm_B,
-                    'circle':True})
+                     'filter':tomo_alg[1],
+                     'interpolation':tomo_alg[2],
+                     'circle':True})
 
         if refine_center:
             print(' Refining center; start value: %i' % center)
@@ -209,13 +220,13 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
             tomo += [iradon(sino0[:,xslice].T, **args)]
         tomo = np.array(tomo)
 
-    elif method.lower().startswith('tomopy') and HAS_tomopy:
+    elif tomo_alg[0].lower().startswith('tomopy') and HAS_tomopy:
 
         if refine_center: 
             center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
 
         args.update({'center':center,
-                     'algorithm':algorithm_A,
+                     'algorithm':tomo_alg[1],
                      'sinogram_order':sinogram_order})
 
         tomo = tomopy.recon(sino, np.radians(omega),**args)
