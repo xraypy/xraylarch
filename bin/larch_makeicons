@@ -33,7 +33,7 @@ if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
 ##        Name              py script        icon name         description     is GUI App
 apps = (('Larch',          'larch',          'larch',      'Larch Command Line', False),
         ('Larch GUI',      'larch_gui',      'larch',      'Larch GUI',       True),
-        ('XYFit',          'xyfit',          'epics_scan', 'XY Data Viewer and Peak Fitter',  True),
+        ('XAS Viewer',     'xas_viewer',     'onecone',    'XAS Analysis',  True),
         ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE XRF Map Viewer',   True),
         ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display', True),
         ('2D XRD Viewer',  'diFFit2D',       'larch',      '2D XRD Viewer', True),
