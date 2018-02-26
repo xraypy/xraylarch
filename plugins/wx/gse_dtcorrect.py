@@ -26,7 +26,7 @@ from larch import Interpreter
 from larch.larchlib import read_workdir, save_workdir
 
 from larch_plugins.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
-                               is_GSEXDI)
+                               is_GSEXDI, AthenaProject, new_filename, increment_filename)
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
@@ -37,7 +37,6 @@ FILE_WILDCARDS = "Scan Data Files(*.0*,*.1*,*.dat,*.xdi)|*.0*;*.1*;*.dat;*.xdi|A
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
-WORKDIR_FILE = 'dtc_file.txt'
 
 def okcancel(panel, onOK=None, onCancel=None):
     btnsizer = wx.StdDialogButtonSizer()
@@ -50,7 +49,6 @@ def okcancel(panel, onOK=None, onCancel=None):
     btnsizer.AddButton(_no)
     btnsizer.Realize()
     return btnsizer
-
 
 class DTCorrectFrame(wx.Frame):
     _about = """GSECARS Deadtime Corrections
@@ -65,7 +63,7 @@ class DTCorrectFrame(wx.Frame):
         self.larch = _larch
         self.subframes = {}
 
-        self.SetMinSize((380, 380))
+        self.SetSize((500, 275))
         self.SetFont(Font(10))
 
         self.config = {'chdir_on_fileopen': True}
@@ -77,7 +75,6 @@ class DTCorrectFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        read_workdir(WORKDIR_FILE)
 
     def onBrowse(self, event=None):
         dlg = wx.FileDialog(parent=self,
@@ -90,12 +87,12 @@ class DTCorrectFrame(wx.Frame):
             path = dlg.GetPath()
             mdir, p = os.path.split(path)
             os.chdir(mdir)
-            roiname = self.roi_wid.GetValue().strip()
+            roiname = self.wid_roi.GetValue().strip()
             if len(roiname) < 1:
                 Popup(self,
                     'Must give ROI name!', 'No ROI name')
                 return
-            dirname = self.dir_wid.GetValue().strip()
+            dirname = self.wid_dir.GetValue().strip()
             if len(dirname) > 1 and not os.path.exists(dirname):
                 try:
                     os.mkdir(dirname)
@@ -104,44 +101,71 @@ class DTCorrectFrame(wx.Frame):
                         'Could not create directory %s' % dirname,
                         "could not create directory")
                     return
-            badchans = self.badchans_wid.GetValue().strip()
+            badchans = self.wid_bad.GetValue().strip()
             bad_channels = []
             if len(badchans)  > 0:
                 bad_channels = [int(i.strip()) for i in badchans.split(',')]
 
-            print( ' Bad Channels : ', bad_channels)
+            groups = []
             for fname in dlg.GetFilenames():
                 corr_fcn = gsescan_deadtime_correct
                 if is_GSEXDI(fname):
                     corr_fcn = gsexdi_deadtime_correct
-                corr_fcn(fname, roiname, subdir=dirname, bad=bad_channels,
-                         _larch=self.larch)
+                self.write_message("Correcting %s" % (fname))
+                out = corr_fcn(fname, roiname, subdir=dirname,
+                               bad=bad_channels, _larch=self.larch)
+                if out is not None:
+                    out.mu = out.mufluor
+                    out.filename = fname
+                    groups.append((out, fname))
+
+            athena_name = os.path.join(dirname, self.wid_ath.GetValue().strip())
+            if self.wid_autoname.IsChecked():
+                athena_name = new_filename(athena_name)
+
+            _, aname = os.path.split(athena_name)
+            self.wid_ath.SetValue(increment_filename(aname))
+
+            aprj = AthenaProject(filename=athena_name, _larch=self.larch)
+            for grp, label in groups:
+                aprj.add_group(grp, label=label, signal='mu')
+            aprj.save(use_gzip=True)
+            self.write_message("Corrected %i files, wrote %s" % (len(groups), aname))
 
     def createMainPanel(self):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(5, 4)
 
-        lab_roi = SimpleText(panel, ' Element / ROI Name')
-        lab_out = SimpleText(panel, ' Output Folder:')
+        lab_roi = SimpleText(panel, ' Element / ROI Name:')
+        lab_dir = SimpleText(panel, ' Output Folder:')
+        lab_ath = SimpleText(panel, ' Athena Project File:')
         lab_bad = SimpleText(panel, ' Bad Channels:')
         lab_sel = SimpleText(panel, ' Select Files:')
 
-        self.roi_wid = wx.TextCtrl(panel, -1, '', size=(200, -1))
-        self.dir_wid = wx.TextCtrl(panel, -1, 'DT_Corrected', size=(200, -1))
-        self.badchans_wid = wx.TextCtrl(panel, -1, ' ', size=(200, -1))
+        self.wid_roi = wx.TextCtrl(panel, -1, '', size=(200, -1))
+        self.wid_dir = wx.TextCtrl(panel, -1, 'DT_Corrected', size=(200, -1))
+        self.wid_ath = wx.TextCtrl(panel, -1, 'Athena_001.prj', size=(200, -1))
+        self.wid_bad = wx.TextCtrl(panel, -1, ' ', size=(200, -1))
+        self.wid_autoname = Check(panel, default=True,
+                                  size=(150, -1), label='auto-increment?')
 
         self.sel_wid = Button(panel, 'Browse', size=(100, -1),
                                 action=self.onBrowse)
 
         ir = 0
         sizer.Add(lab_roi,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.roi_wid, (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(self.wid_roi, (ir, 1), (1, 1), LCEN, 2)
         ir += 1
-        sizer.Add(lab_out,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.dir_wid,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(lab_dir,       (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(self.wid_dir,  (ir, 1), (1, 1), LCEN, 2)
+        ir += 1
+        sizer.Add(lab_ath,       (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(self.wid_ath,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(self.wid_autoname,  (ir, 2), (1, 1), LCEN, 2)
+
         ir += 1
         sizer.Add(lab_bad,            (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.badchans_wid,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(self.wid_bad,  (ir, 1), (1, 1), LCEN, 2)
         ir += 1
         sizer.Add(lab_sel,       (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)
@@ -156,7 +180,6 @@ class DTCorrectFrame(wx.Frame):
             self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
-
         self.SetStatusText('ready')
 
     def write_message(self, s, panel=0):
@@ -166,18 +189,12 @@ class DTCorrectFrame(wx.Frame):
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
-        #
         fmenu = wx.Menu()
-
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
-
         self.menubar.Append(fmenu, "&File")
-
-
         self.SetMenuBar(self.menubar)
 
     def onClose(self,evt):
-        save_workdir(WORKDIR_FILE)
         self.Destroy()
 
 

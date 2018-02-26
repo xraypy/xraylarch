@@ -87,8 +87,7 @@ class AllParamsPanel(wx.Panel):
                 self.user_params[parname] = param
 
 
-
-class XYFitResultFrame(wx.Frame):
+class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
@@ -344,7 +343,7 @@ class XYFitResultFrame(wx.Frame):
         self.Refresh()
 
 
-class XYFitPanel(wx.Panel):
+class FitPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
@@ -421,7 +420,7 @@ class XYFitPanel(wx.Panel):
         rsizer.Add(self.savebtn, 0, LCEN, 3)
 
         rsizer.Add(Button(action_row, 'Plot Current Model',
-                          size=(150, -1), action=self.onShowModel), 0, LCEN, 3)
+                          size=(175, -1), action=self.onShowModel), 0, LCEN, 3)
         rsizer.Add(self.plot_comps, 0, LCEN, 3)
 
         pack(action_row, rsizer)
@@ -498,29 +497,33 @@ class XYFitPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use?', size=(60, -1))
-        bkgbox = Check(panel, default=False, label='Is Background?', size=(120, -1))
+        usebox = Check(panel, default=True, label='Use in Fit?', size=(150, -1))
+        bkgbox = Check(panel, default=False, label='Is Background?', size=(150, -1))
 
-        delbtn = Button(panel, 'Delete', size=(120, -1),
+        delbtn = Button(panel, 'Delete Component', size=(150, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
 
-        pick2msg = SimpleText(panel, "    ", size=(75, -1))
-        pick2btn = Button(panel, 'Pick Data Range', size=(135, -1),
+        pick2msg = SimpleText(panel, "    ", size=(125, -1))
+        pick2btn = Button(panel, 'Pick Values from Data', size=(200, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
-        SetTip(usebox, 'Use this component in fit?')
-        SetTip(usebox, 'Label thi component as "background" when plotting?')
-        SetTip(delbtn, 'Delete this model component')
+        SetTip(usebox,   'Use this component in fit?')
+        SetTip(bkgbox,   'Label this component as "background" when plotting?')
+        SetTip(delbtn,   'Delete this model component')
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
-
 
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox)
+        panel.Add(usebox, dcol=2)
         panel.Add(bkgbox, dcol=2)
-        panel.Add(delbtn)
 
+        panel.Add(pick2btn, dcol=3, style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
+        panel.Add(delbtn, style=wx.ALIGN_LEFT)
+
+        # panel.Add((10, 10), newrow=True)
+        # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
@@ -567,21 +570,15 @@ class XYFitPanel(wx.Panel):
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
 
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=375,
+                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
                                          float_size=80, prefix=prefix,
-                                         widgets=('name', 'value', 'vary', 'expr'))
+                                         widgets=('name', 'value', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
-                panel.AddMany((pwids.value, pwids.vary))
-                panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
+                panel.Add(pwids.value)
+                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
-                pwids.vary.Disable()
 
-
-        panel.Add(HLine(panel, size=(90,  3)), style=wx.ALIGN_CENTER, newrow=True)
-
-        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_RIGHT)
-        panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
 
         # panel.Add(delbtn, dcol=2)
         # panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
@@ -931,7 +928,7 @@ class XYFitPanel(wx.Panel):
         dgroup.fit_history.append(result)
 
 
-        self.parent.show_subframe('result_frame', XYFitResultFrame,
+        self.parent.show_subframe('result_frame', FitResultFrame,
                                   datagroup=dgroup,
                                   controller=self.controller)
 
@@ -955,17 +952,17 @@ class XYFitPanel(wx.Panel):
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
-        xyfitdir = os.path.join(site_config.usr_larchdir, 'xyfit')
-        if not os.path.exists(xyfitdir):
+        xasguidir = os.path.join(site_config.usr_larchdir, 'xasgui')
+        if not os.path.exists(xasguidir):
             try:
-                os.makedirs(xyfitdir)
+                os.makedirs(xasguidir)
             except OSError:
-                print("Warning: cannot create XYFit user folder")
+                print("Warning: cannot create XAS GUI user folder")
                 return
         if not HAS_MODELSAVE:
             print("Warning: cannot save model results: upgrade lmfit")
             return
         if fname is None:
             fname = 'autosave.fitresult'
-        fname = os.path.join(xyfitdir, fname)
+        fname = os.path.join(xasguidir, fname)
         save_modelresult(result, fname)

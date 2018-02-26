@@ -426,14 +426,53 @@ def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
     xdb = get_xraydb(_larch)
     ret = []
     min_diff = 1e9
+
+    # build initial energy tables
+    if not _larch.symtable.has_symbol('%s._edges_K'  % (MODNAME)):
+        energies_k = [-1000]*200
+        energies_l3 = [-1000]*200
+        energies_l2 = [-1000]*200
+        energies_l1 = [-1000]*200
+        maxz = 0
+
+        for row in xdb.tables['xray_levels'].select().execute().fetchall():
+            ir, elem, edgename, en, eyield, xjump = row
+            iz = xdb.atomic_number(elem)
+            maxz = max(iz, maxz)
+            if edgename == 'K':
+                energies_k[iz] = en
+            elif edgename == 'L3':
+                energies_l3[iz] = en
+            elif edgename == 'L2':
+                energies_l2[iz] = en
+            elif edgename == 'L1':
+                energies_l1[iz] = en
+        energies_k = np.array(energies_k[:maxz])
+        energies_l3 = np.array(energies_l3[:maxz])
+        energies_l2 = np.array(energies_l2[:maxz])
+        energies_l1 = np.array(energies_l1[:maxz])
+        _larch.symtable.set_symbol('%s._edges_K'  % (MODNAME), energies_k)
+        _larch.symtable.set_symbol('%s._edges_L3'  % (MODNAME), energies_l3)
+        _larch.symtable.set_symbol('%s._edges_L2'  % (MODNAME), energies_l2)
+        _larch.symtable.set_symbol('%s._edges_L1'  % (MODNAME), energies_l1)
+
     for edge in edges:
         tname =  '%s._edges_%s'  % (MODNAME, edge.lower())
         if _larch.symtable.has_symbol(tname):
             energies = _larch.symtable.get_symbol(tname)
         else:
-            energies = np.array(xdb.all_xray_edges(edge))
+            energies = [-1000]*200
+            maxz = 0
+            for row in xdb.tables['xray_levels'].select().execute().fetchall():
+                ir, elem, edgename, en, eyield, xjump = row
+                iz = xdb.atomic_number(elem)
+                maxz = max(iz, maxz)
+                if edge == edgename:
+                    energies[iz] = en
+            energies = np.array(energies[:maxz])
             _larch.symtable.set_symbol(tname, energies)
-        iz = index_nearest(energies, energy)
+
+        iz = int(index_nearest(energies, energy))
         diff = energy - energies[iz]
         if diff < 0: # prefer positive errors
             diff = -2.0*diff

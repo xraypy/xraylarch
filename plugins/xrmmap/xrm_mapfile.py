@@ -881,7 +881,9 @@ class GSEXRM_MapFile(object):
         ''' creata an hdf5 dataset'''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
         kws.update(self.compress_args)
+
         d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
             for key, val in attrs.items():
@@ -894,6 +896,7 @@ class GSEXRM_MapFile(object):
         '''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
 
         group = self.xrmmap['config']
         scantext = open(os.path.join(self.folder, self.ScanFile), 'r').read()
@@ -966,6 +969,7 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
+
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
@@ -1002,6 +1006,7 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
             self.initialize_xrmmap(callback=callback)
@@ -1109,6 +1114,7 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
 
         thisrow = self.last_row + 1
 
@@ -1292,6 +1298,7 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
 
         print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
@@ -1852,6 +1859,7 @@ class GSEXRM_MapFile(object):
         '''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+
 
         base_grp = self.xrmmap
         area_grp = ensure_subgroup('areas',base_grp)
@@ -3224,6 +3232,7 @@ def read_fake1(filename, root=None):
 
 def read_fake2(filename, root=None):
     raise ValueError("cannot open %s" % filename)
+
 
 def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
