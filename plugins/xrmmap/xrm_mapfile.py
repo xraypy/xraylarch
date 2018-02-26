@@ -192,13 +192,10 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
         conf.create_group(name)
 
-<<<<<<< HEAD
-=======
     for name in ['xrd1D','xrd2D']:
         g = xrmmap.create_group(name)
     xrmmap['work'].create_group('xrdwedge')
 
->>>>>>> master
     h5root.flush()
 
 def ensure_subgroup(subgroup,group):
