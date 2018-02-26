@@ -41,7 +41,7 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import FitPanel
+from larch_plugins.xasgui import FitPanel, MergeDialog
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -95,48 +95,6 @@ XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
                             ('Pre-edge Peaks, isolated', 'prepeaks')))
 
-
-class MergeDialog(wx.Dialog):
-    """popup dialog for merging groups"""
-    msg = """Merge Selected Groups"""
-    def __init__(self, parent, groupnames, **kws):
-        self.groupnames = groupnames
-
-        title = "Merge %i Selected Groups" % (len(groupnames))
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
-
-        panel = wx.Panel(self)
-        sizer = wx.GridBagSizer(4, 3)
-
-        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        tstyle    = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
-
-        # select master group, yarray, and group name
-        ychoices = ['raw mu(E)', 'normalized mu(E)']
-
-        self.master_group = Choice(panel, choices=groupnames, size=(250, -1))
-        self.yarray_name  = Choice(panel, choices=ychoices, size=(250, -1))
-        self.group_name   = wx.TextCtrl(panel, -1, 'merge',  size=(250, -1))
-
-        sizer.Add(SimpleText(panel, 'Match Energy to : '), (0, 0), (1, 1), labstyle, 3)
-        sizer.Add(SimpleText(panel, 'Array to merge  : '), (1, 0), (1, 1), labstyle, 3)
-        sizer.Add(SimpleText(panel, 'New group name  : '), (2, 0), (1, 1), labstyle, 3)
-
-        sizer.Add(self.master_group, (0, 1), (1, 1), labstyle, 3)
-        sizer.Add(self.yarray_name,  (1, 1), (1, 1), labstyle, 3)
-        sizer.Add(self.group_name,   (2, 1), (1, 1), labstyle, 3)
-
-        btnsizer = wx.StdDialogButtonSizer()
-        btn = wx.Button(panel, wx.ID_OK)
-        btn.SetDefault()
-        btnsizer.AddButton(btn)
-        btnsizer.Realize()
-        sizer.Add(btnsizer, (3, 0), (1, 2),  wx.ALIGN_CENTER_VERTICAL|wx.ALL, 1)
-        pack(panel, sizer)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(panel, 0, 0, 0)
-        pack(self, sizer)
 
 class ProcessPanel(wx.Panel):
     def __init__(self, parent, controller=None, reporter=None, **kws):
