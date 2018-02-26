@@ -1,28 +1,25 @@
 
+
+from collections import namedtuple
+
 import wx
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
-from wxutils import (SimpleText, pack, Button,
-                     Choice, Check, MenuItem, OkCancel,
-                     GridPanel, CEN,
-                     RCEN, LCEN, FRAMESTYLE, Font)
-
+from wxutils import (SimpleText, Choice, OkCancel, GridPanel, LCEN)
 
 class MergeDialog(wx.Dialog):
-    """popup dialog for merging groups"""
+    """dialog for merging groups"""
     msg = """Merge Selected Groups"""
-    def __init__(self, parent, groupnames, **kws):
+    ychoices = ['raw mu(E)', 'normalized mu(E)']
 
+    def __init__(self, parent, groupnames, outgroup='merge', **kws):
         title = "Merge %i Selected Groups" % (len(groupnames))
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        ychoices = ['raw mu(E)', 'normalized mu(E)']
-
         self.master_group = Choice(panel, choices=groupnames, size=(250, -1))
-        self.yarray_name  = Choice(panel, choices=ychoices, size=(250, -1))
-        self.group_name   = wx.TextCtrl(panel, -1, 'merge',  size=(250, -1))
+        self.yarray_name  = Choice(panel, choices=self.ychoices, size=(250, -1))
+        self.group_name   = wx.TextCtrl(panel, -1, outgroup,  size=(250, -1))
 
         panel.Add(SimpleText(panel, 'Match Energy to : '), newrow=True)
         panel.Add(self.master_group)
@@ -37,6 +34,13 @@ class MergeDialog(wx.Dialog):
 
         panel.pack()
 
-        # sizer = wx.BoxSizer(wx.VERTICAL)
-        # sizer.Add(panel, 0, 0, 0)
-        # pack(self, sizer)
+    def GetResponse(self), master=None, gname=None, ynorm=True):
+        self.Raise()
+        response = namedtuple('MergeResponse', ('ok', 'ynorm', 'master', 'group'))
+        ok = False
+        if self.ShowModal() == wx.ID_OK:
+            master= self.master_group.GetStringSelection()
+            ynorm = 'norm' in self.yarray_name.GetStringSelection().lower()
+            gname = self.group_name.GetValue()
+            ok = True
+        return response(ok, master, ynorm, gname)
