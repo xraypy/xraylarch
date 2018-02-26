@@ -20,6 +20,8 @@ from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
 
+from larch_plugins.xrmmap import read_xrd_netcdf
+
 HAS_larch = False
 try:
     from larch import Group
@@ -298,6 +300,24 @@ class xrd1d(grpobjt):
 #             a = None
         
 
+def read_xrd_data(filepath):
+
+    if not os.path.exists(filepath):
+        return
+
+    try:
+        data = np.array(read_xrd_netcdf(filepath))
+    except TypeError:
+        try:
+            data = np.array(tifffile.imread(filepath))
+        except:
+            try:
+                data = xrd1d(file=filepath).I
+            except:
+                return
+    return data
+                
+            
 
         
 class XRD(grpobjt):
@@ -483,10 +503,7 @@ def create_xrd1d(file, _larch=None, **kws):
 
      Parameters:
      ------------
-      data2D:   2D diffraction patterns
-      data1D:   1D diffraction patterns
-      xpixels:  number of x pixels
-      ypixels:  number of y pixels
+
 
      Returns:
      ----------
