@@ -7,7 +7,7 @@ from functools import partial
 from collections import OrderedDict
 
 import numpy as np
-
+import time
 import wx
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
@@ -38,8 +38,10 @@ XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Normalized + Derivative', 'norm+deriv'),
                             ('Pre-edge subtracted', 'preedge'),
                             ('Raw Data + Pre-edge/Post-edge', 'prelines'),
+                            ('Deconvolved + Normalized',   'deconv'),
                             ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
-                            ('Pre-edge Peaks, isolated', 'prepeaks')))
+                            ('Pre-edge Peaks, isolated', 'prepeaks'))
+                           )
 
 class XASNormPanel(wx.Panel):
     """XAS normalization Panel"""
@@ -87,6 +89,9 @@ class XASNormPanel(wx.Panel):
             self.xas_ppeak_emin.SetValue(opts['ppeak_emin'])
             self.xas_ppeak_emax.SetValue(opts['ppeak_emax'])
 
+            self.deconv_form.SetStringSelection(opts['deconv_form'])
+            self.deconv_ewid.SetValue(opts['deconv_ewid'])
+
             if len(getattr(dgroup, 'centroid_msg', '')) > 3:
                 self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
 
@@ -100,13 +105,14 @@ class XASNormPanel(wx.Panel):
         gen = self.genpanel = GridPanel(self, **gopts)
         self.btns = {}
         #gen
-        opts = dict(action=self.UpdatePlot, size=(65, -1), gformat=True)
+        opts = dict(action=self.UpdatePlot)
 
-        self.eshift = FloatCtrl(gen, value=0.0, **opts)
-        self.deconv_ewid = FloatCtrl(gen, value=0, precision=1, minval=0, **opts)
+        self.eshift = FloatCtrl(gen, value=0.0, precision=3, gformat=True,
+                                size=(65, -1), **opts)
+        self.deconv_ewid = FloatCtrl(xas, value=0.0, precision=3,
+                                     minval=0, gformat=True, size=(65, -1), **opts)
 
-        opts.pop('gformat')
-        self.deconv_form = Choice(gen, choices=DECONV_OPS, **opts)
+        self.deconv_form = Choice(xas, choices=DECONV_OPS, size=(100, -1), **opts)
 
         opts = dict(action=self.onSmoothChoice, size=(30, -1))
         sm_row1 = wx.Panel(gen)
@@ -156,10 +162,6 @@ class XASNormPanel(wx.Panel):
         gen.Add(sm_row1, dcol=8)
         gen.Add(sm_row2, icol=1, dcol=7, newrow=True)
 
-
-        gen.Add(SimpleText(gen, ' Deconvolution:'), newrow=True)
-        gen.Add(self.deconv_form, dcol=2)
-        gen.Add(self.deconv_ewid,  dcol=2)
         gen.pack()
 
         #xas
@@ -197,10 +199,10 @@ class XASNormPanel(wx.Panel):
 
         opts['precision'] = 1
         opts['action'] = partial(self.UpdatePlot, setval=True)
-        self.xas_pre1 = FloatCtrl(xas, value=None, **opts)
+        self.xas_pre1 = FloatCtrl(xas, value=-np.inf, **opts)
         self.xas_pre2 = FloatCtrl(xas, value=-30, **opts)
         self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
-        self.xas_nor2 = FloatCtrl(xas, value=None, **opts)
+        self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
 
         self.xas_ppeak_emin = FloatCtrl(xas, value=-31, **opts)
         self.xas_ppeak_elo = FloatCtrl(xas, value=-15, **opts)
@@ -266,6 +268,11 @@ class XASNormPanel(wx.Panel):
 
         xas.Add((10, 1), newrow=True)
         xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
+
+        xas.Add(SimpleText(xas, ' Deconvolution:'), newrow=True)
+        xas.Add(self.deconv_form, dcol=4)
+        xas.Add(SimpleText(xas, ' E width:'), dcol=1)
+        xas.Add(self.deconv_ewid,  dcol=2)
 
         xas.Add(SimpleText(xas, 'Pre-edge Peak Baseline Removal: '),
                 dcol=6, newrow=True)
@@ -581,6 +588,14 @@ class XASNormPanel(wx.Panel):
                 y4e0 = dgroup.dmude
                 dgroup.plot_ylabel = r'$d\mu/dE$'
                 dgroup.y = dgroup.dmude
+
+            if pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
+                dgroup.plot_yarrays = [(dgroup.deconv, PLOTOPTS_1, r'deconvolved'),
+                                       (dgroup.norm, PLOTOPTS_1, r'normalized $\mu$')]
+                y4e0 = dgroup.deconv
+                dgroup.plot_ylabel = r'deconvolved and normalized $\mu$'
+                dgroup.y = dgroup.deconv
+
 
             elif pchoice == 'prepeaks+base' and hasattr(dgroup, 'prepeaks'):
                 ppeaks = dgroup.prepeaks
