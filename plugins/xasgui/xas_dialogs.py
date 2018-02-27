@@ -1,5 +1,3 @@
-
-
 from collections import namedtuple
 
 import wx
@@ -34,7 +32,7 @@ class MergeDialog(wx.Dialog):
 
         panel.pack()
 
-    def GetResponse(self), master=None, gname=None, ynorm=True):
+    def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
         response = namedtuple('MergeResponse', ('ok', 'ynorm', 'master', 'group'))
         ok = False
