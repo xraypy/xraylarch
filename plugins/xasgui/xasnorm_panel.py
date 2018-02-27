@@ -30,6 +30,7 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS = ('Lorenztian', 'Gaussian')
+DECONV_OPS = ('None', 'Lorenztian', 'Gaussian')
 
 XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Normalized', 'norm'),
@@ -60,10 +61,7 @@ class XASNormPanel(wx.Panel):
 
     def fill(self, dgroup):
         opts = self.controller.get_proc_opts(dgroup)
-        self.xshift.SetValue(opts['xshift'])
-        self.yshift.SetValue(opts['yshift'])
-        self.xscale.SetValue(opts['xscale'])
-        self.yscale.SetValue(opts['yscale'])
+        self.eshift.SetValue(opts['eshift'])
 
         self.smooth_op.SetStringSelection(opts['smooth_op'])
         self.smooth_conv.SetStringSelection(opts['smooth_conv'])
@@ -104,18 +102,11 @@ class XASNormPanel(wx.Panel):
         #gen
         opts = dict(action=self.UpdatePlot, size=(65, -1), gformat=True)
 
-        self.xshift = FloatCtrl(gen, value=0.0, **opts)
-        self.xscale = FloatCtrl(gen, value=1.0, **opts)
+        self.eshift = FloatCtrl(gen, value=0.0, **opts)
+        self.deconv_ewid = FloatCtrl(gen, value=0, precision=1, minval=0, **opts)
 
-        self.yshift = FloatCtrl(gen, value=0.0, **opts)
-        self.yscale = FloatCtrl(gen, value=1.0, **opts)
-
-        self.btns['xshift'] = BitmapButton(gen, get_icon('plus'),
-                                           action=partial(self.on_selpoint, opt='xshift'),
-                                           tooltip='use last point selected from plot')
-        self.btns['yshift'] = BitmapButton(gen, get_icon('plus'),
-                                           action=partial(self.on_selpoint, opt='yshift'),
-                                           tooltip='use last point selected from plot')
+        opts.pop('gformat')
+        self.deconv_form = Choice(gen, choices=DECONV_OPS, **opts)
 
         opts = dict(action=self.onSmoothChoice, size=(30, -1))
         sm_row1 = wx.Panel(gen)
@@ -133,6 +124,7 @@ class XASNormPanel(wx.Panel):
         self.smooth_op = Choice(sm_row1, choices=SMOOTH_OPS, **opts)
         self.smooth_op.SetSelection(0)
 
+        opts['size'] = (100, -1)
         self.smooth_conv = Choice(sm_row2, choices=CONV_OPS, **opts)
 
         self.smooth_c0.Disable()
@@ -140,6 +132,7 @@ class XASNormPanel(wx.Panel):
         self.smooth_sig.Disable()
         self.smooth_conv.SetSelection(0)
         self.smooth_conv.Disable()
+
 
         sm_siz1.Add(self.smooth_op, 0, LCEN, 1)
         sm_siz1.Add(SimpleText(sm_row1, ' n= '), 0, LCEN, 1)
@@ -155,23 +148,18 @@ class XASNormPanel(wx.Panel):
         pack(sm_row1, sm_siz1)
         pack(sm_row2, sm_siz2)
 
-        gen.Add(SimpleText(gen, ' General Data Processing', **titleopts), dcol=8)
-        gen.Add(SimpleText(gen, ' X shift:'), newrow=True)
-        gen.Add(self.btns['xshift'])
-        gen.Add(self.xshift, dcol=2)
-        gen.Add(SimpleText(gen, ' X scale:'))
-        gen.Add(self.xscale, dcol=2)
-
-        gen.Add(SimpleText(gen, ' Y shift:'), newrow=True)
-        gen.Add(self.btns['yshift'])
-        gen.Add(self.yshift, dcol=2)
-        gen.Add(SimpleText(gen, ' Y scale:'))
-        gen.Add(self.yscale, dcol=2)
+        gen.Add(SimpleText(gen, ' Data Pre-Processing', **titleopts), dcol=8)
+        gen.Add(SimpleText(gen, ' Energy shift:'), newrow=True)
+        gen.Add(self.eshift, dcol=2)
 
         gen.Add(SimpleText(gen, ' Smoothing:'), newrow=True)
         gen.Add(sm_row1, dcol=8)
         gen.Add(sm_row2, icol=1, dcol=7, newrow=True)
 
+
+        gen.Add(SimpleText(gen, ' Deconvolution:'), newrow=True)
+        gen.Add(self.deconv_form, dcol=2)
+        gen.Add(self.deconv_ewid,  dcol=2)
         gen.pack()
 
         #xas
@@ -343,10 +331,7 @@ class XASNormPanel(wx.Panel):
         data_proc = {}
         data_proc.update(getattr(conf, 'data_proc', {}))
 
-        data_proc['xshift'] = self.xshift.GetValue()
-        data_proc['yshift'] = self.yshift.GetValue()
-        data_proc['xscale'] = self.xscale.GetValue()
-        data_proc['yscale'] = self.yscale.GetValue()
+        data_proc['eshift'] = self.eshift.GetValue()
         data_proc['smooth_op'] = str(self.smooth_op.GetStringSelection())
         data_proc['smooth_c0'] = int(self.smooth_c0.GetValue())
         data_proc['smooth_c1'] = int(self.smooth_c1.GetValue())
@@ -497,8 +482,8 @@ class XASNormPanel(wx.Panel):
             self.xas_ppeak_emin.SetValue(xval-e0)
         elif opt == 'ppeak_emax':
             self.xas_ppeak_emax.SetValue(xval-e0)
-        elif opt == 'xshift':
-            self.xshift.SetValue(xval)
+        elif opt == 'eshift':
+            self.eshift.SetValue(xval)
         elif opt == 'yshift':
             self.yshift.SetValue(yval)
         else:
@@ -512,15 +497,14 @@ class XASNormPanel(wx.Panel):
         proc_opts = {}
         save_unzoom = self.unzoom_on_update
         dgroup.custom_plotopts = {}
-        proc_opts['xshift'] = self.xshift.GetValue()
-        proc_opts['yshift'] = self.yshift.GetValue()
-        proc_opts['xscale'] = self.xscale.GetValue()
-        proc_opts['yscale'] = self.yscale.GetValue()
+        proc_opts['eshift'] = self.eshift.GetValue()
         proc_opts['smooth_op'] = self.smooth_op.GetStringSelection()
         proc_opts['smooth_c0'] = int(self.smooth_c0.GetValue())
         proc_opts['smooth_c1'] = int(self.smooth_c1.GetValue())
         proc_opts['smooth_sig'] = float(self.smooth_sig.GetValue())
         proc_opts['smooth_conv'] = self.smooth_conv.GetStringSelection()
+        proc_opts['deconv_form'] = self.deconv_form.GetStringSelection()
+        proc_opts['deconv_ewid'] = self.deconv_ewid.GetValue()
 
         self.xaspanel.Enable(dgroup.datatype.startswith('xas'))
 
