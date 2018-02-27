@@ -138,14 +138,17 @@ class XASController():
                                    smooth_conv='Lorentzian',
                                    smooth_c0=2, smooth_c1=1,
                                    smooth_sig=1)
-        config['xas_proc'] = dict(e0=0, pre1=-200, pre2=-10,
+        config['xas_proc'] = dict(e0=0, pre1=-200, pre2=-25,
                                   edge_step=0, nnorm=2, norm1=25,
                                   norm2=-10, nvict=1, auto_step=True,
                                   auto_e0=True, show_e0=True,
                                   xas_op='Normalized',
-                                  ppeak_elo=-10, ppeak_ehi=-5,
-                                  ppeak_emin=-40, ppeak_emax=0,
                                   deconv_form='none', deconv_ewid=0)
+
+        config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
+                                  fit_emin=-40, fit_emax=0,
+                                  yarray='norm')
+
 
         return config
 
@@ -300,7 +303,7 @@ class XASController():
         copts = [dgroup.groupname]
         copts.append("form='lorentzian'")
         for attr in ('elo', 'ehi', 'emin', 'emax'):
-            copts.append("%s=%.4f" % (attr, opts[attr]))
+            copts.append("%s=%.4f" % (attr, popts[attr]))
         cmd = "pre_edge_baseline(%s)" % (','.join(copts))
         self.larch.eval(cmd)
         ppeaks = dgroup.prepeaks
@@ -524,7 +527,7 @@ class XASFrame(wx.Frame):
         panel_opts = dict(parent=self, controller=self.controller)
 
         self.xasnorm_panel = XASNormPanel(**panel_opts)
-        self.prepeak_panel = FitPanel(**panel_opts)
+        self.prepeak_panel = PrePeakPanel(**panel_opts)
 
         self.nb.AddPage(self.xasnorm_panel,  ' XAS Normalization ',  True)
         self.nb.AddPage(self.prepeak_panel,   ' Pre-edge Peak Fit ',  True)
