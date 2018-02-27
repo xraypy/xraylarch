@@ -231,8 +231,8 @@ class XASController():
 
         # scaling
         cmds = []
-        cmds.append("{group:s}.x = {xscale:f}*({group:s}.xdat + {xshift:f})")
-        cmds.append("{group:s}.y = {yscale:f}*({group:s}.ydat + {yshift:f})")
+        cmds.append("{group:s}.x = ({group:s}.xdat + {eshift:f})")
+        cmds.append("{group:s}.y = {group:s}.ydat")
 
         # smoothing
         smop = opts['smooth_op'].lower()
@@ -273,6 +273,12 @@ class XASController():
                 copts.append("%s=%.4f" % (attr, opts[attr]))
 
             self.larch.eval("pre_edge(%s)" % (','.join(copts)))
+
+            # deconvolution
+            deconv_form = opts['deconv_form'].lower()
+            if deconv_form is not 'none':
+                self.larch.eval("""xas_deconvolve({group:s},
+                form={deconv_form:s}, esia={deconv_ewid:f})""")
 
             opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
             opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
