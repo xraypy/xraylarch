@@ -41,7 +41,7 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import FitPanel, MergeDialog, XASNormPanel
+from larch_plugins.xasgui import PrePeakPanel, MergeDialog, XASNormPanel
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
