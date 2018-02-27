@@ -134,8 +134,7 @@ class XASController():
         """ default config, probably called on first run of program"""
         config = {'chdir_on_fileopen': True,
                   'workdir': os.getcwd()}
-        config['data_proc'] = dict(xshift=0, xscale=1, yshift=0,
-                                   yscale=1, smooth_op='None',
+        config['data_proc'] = dict(eshift=0, smooth_op='None',
                                    smooth_conv='Lorentzian',
                                    smooth_c0=2, smooth_c1=1,
                                    smooth_sig=1)
@@ -145,7 +144,8 @@ class XASController():
                                   auto_e0=True, show_e0=True,
                                   xas_op='Normalized',
                                   ppeak_elo=-10, ppeak_ehi=-5,
-                                  ppeak_emin=-40, ppeak_emax=0)
+                                  ppeak_emin=-40, ppeak_emax=0,
+                                  deconv_form='none', deconv_ewid=0)
 
         return config
 
@@ -276,9 +276,10 @@ class XASController():
 
             # deconvolution
             deconv_form = opts['deconv_form'].lower()
-            if deconv_form is not 'none':
-                self.larch.eval("""xas_deconvolve({group:s},
-                form={deconv_form:s}, esia={deconv_ewid:f})""")
+            if not deconv_form.startswith('none'):
+                cmd = """xas_deconvolve({group:s}, form='{deconv_form:s}',
+                esigma={deconv_ewid:f})"""
+                self.larch.eval(cmd.format(**opts))
 
             opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
             opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
