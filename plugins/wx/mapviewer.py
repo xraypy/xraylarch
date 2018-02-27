@@ -1643,7 +1643,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if self.report is None:
             return
 
-        self.choice.Disable()
         self.report.DeleteAllItems()
         self.report_data = []
 
@@ -1740,30 +1739,29 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     report_info(dname,d)
 
         else:
-
             for idet, dname in enumerate(d_names):
-                daddr = d_addrs[idet]
-                det = 0
+                try:
+                    daddr = h5str(d_addrs[idet])
+                except IndexError:
+                    break
+                # print(" Det: ", idet, dname)
                 if 'mca' in daddr:
                     det = 1
                     words = daddr.split('mca')
                     if len(words) > 1:
                         det = int(words[1].split('.')[0])
-                if idet == 0:
-                    d = ctime
-                else:
-                    d = xrmmap['roimap/det_raw'][:,:,idet]
-                    if amask.shape[1] == d.shape[1] - 2: # hotcols
-                        d = d[:,1:-1]
-                    d = d[amask]/ctime
 
-                report_info(dname,d)
+                d = xrmmap['roimap/det_raw'][:,:,idet]
+                if amask.shape[1] == d.shape[1] - 2: # hotcols
+                    d = d[:,1:-1]
+                # print(" Det shape: " , d.shape, amask.shape, ctime)
+                d = d[amask]/ctime
+                report_info(dname, d)
 
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
 
-        self.choice.Enable()
 
     def update_xrmmap(self, xrmmap):
         self.set_area_choices(xrmmap, show_last=True)
