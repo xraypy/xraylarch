@@ -1664,10 +1664,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         def report_info(dname,d):
 
-            ## cannot figure out why time is not being scaled properly in report
-            if dname.startswith('TSCA'):
-                d = d/1.e4
-
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
@@ -1689,7 +1685,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         areaname  = self._getarea()
         xrmfile   = self.owner.current_file
         xrmmap    = xrmfile.xrmmap
-        ctime     = [xrmfile.pixeltime]
+        ctime     = xrmfile.pixeltime
 
         area = xrmfile.get_area(name=areaname)
         amask = area.value
@@ -1728,8 +1724,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
 
             d_scas = [d for d in xrmmap['scalars']]
-            if 'TSCALER' in d_scas:
-                d_scas.insert(0, d_scas.pop(d_scas.index('TSCALER')))
             ndet = 'mca'
 
         else:
@@ -1744,19 +1738,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
-            ctime.append(1.e-6*rtime[amask])
             
         if version_ge(version, '2.0.0'):
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
                 d = match_mask_shape(d, amask)
-                report_info(scalar, d/ctime[0])
+                report_info(scalar, d/ctime)
 
             for roi in d_rois:
                 for i,det in enumerate(d_dets):
                     d = xrmmap['roimap'][det][roi]['raw'].value
                     d = match_mask_shape(d, amask)
-                    report_info('%s (%s)' % (roi, det), d/ctime[0])
+                    report_info('%s (%s)' % (roi, det), d/ctime)
 
         else:
             for idet, dname in enumerate(d_names):
@@ -1772,7 +1765,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                 d = xrmmap['roimap/det_raw'][:,:,idet]
                 d = match_mask_shape(d, amask)
-                report_info(dname, d/ctime[0])
+                report_info(dname, d/ctime)
 
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
@@ -2292,7 +2285,7 @@ class MapViewerFrame(wx.Frame):
             except:
                 if tomograph:
                     print('Need to lock center value to display reconstruction-area spectra.')
-                pass
+                return
             area  = xrmfile.xrmmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
             self.sel_mca.filename = fname
@@ -2759,8 +2752,12 @@ class MapViewerFrame(wx.Frame):
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
             if read:
-                xrmfile = GSEXRM_MapFile(filename=str(path))
-                self.add_xrmfile(xrmfile)
+                try:
+                    xrmfile = GSEXRM_MapFile(filename=str(path))
+                    self.add_xrmfile(xrmfile)
+                except:
+                    print('Error reading path: %s' % str(path))
+                    pass
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
