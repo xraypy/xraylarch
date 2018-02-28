@@ -629,8 +629,8 @@ class XASFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
-        datmenu = wx.Menu()
-        fitmenu = wx.Menu()
+        data_menu = wx.Menu()
+        ppeak_menu = wx.Menu()
         self.menuitems = items = {}
 
         items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
@@ -652,34 +652,51 @@ class XASFrame(wx.Frame):
         items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
-        items['data_config'] = MenuItem(self, datmenu, "Configure Data Processing",
-                                            "Configure Data Processing",
-                                            self.onConfigDataProcessing)
 
-        items['data_merge'] = MenuItem(self, datmenu, "Merge Selected Groups",
+        items['group_copy'] = MenuItem(self, data_menu, "Copy This Group",
+                                         "Copy This Group",
+                                         self.onConfigDataProcessing)
+
+        items['group_rename'] = MenuItem(self, data_menu, "Rename This Group",
+                                         "Rename This Group",
+                                         self.onConfigDataProcessing)
+
+        items['group_remove'] = MenuItem(self, data_menu, "Remove Selected Groups",
+                                         "Remove Selected Group",
+                                         self.onConfigDataProcessing)
+
+
+        items['data_merge'] = MenuItem(self, data_menu, "Merge Selected Groups",
                                             "Merge Selected Groups",
                                             self.onMergeData)
 
-        items['data_deglitch'] = MenuItem(self, datmenu, "Deglitch Data Group",
-                                          "Deglitch This Group",
+        data_menu.AppendSeparator()
+
+        items['data_deglitch'] = MenuItem(self, data_menu, "Deglitch Data",
+                                          "Deglitch Data for This Group",
                                           self.onDeglitchData)
 
-        items['fit_config'] = MenuItem(self, fitmenu,
-                                       "Configure Data Fitting",
-                                       "Configure Data Fitting",
-                                       self.onConfigDataFitting)
+        items['data_smooth'] = MenuItem(self, data_menu, "Smooth Data",
+                                         "Smooth Data for This Group",
+                                         self.onDeglitchData)
 
-        items['fit_readresult'] = MenuItem(self, fitmenu,
+        items['data_encalib'] = MenuItem(self, data_menu, "Recalibrate Energy",
+                                         "Recalibrate Energy for This Group",
+                                         self.onDeglitchData)
+
+
+
+        items['fit_readresult'] = MenuItem(self, ppeak_menu,
                                            "&Read Fit Result File\tCtrl+R",
                                            "Read Fit Result File",
                                            self.onReadFitResult)
 
-        items['fit_saveresult'] = MenuItem(self, fitmenu,
+        items['fit_saveresult'] = MenuItem(self, ppeak_menu,
                                            "Save Fit Result",
                                            "Save Fit Result",
                                            self.onSaveFitResult)
 
-        items['fit_export'] = MenuItem(self, fitmenu,
+        items['fit_export'] = MenuItem(self, ppeak_menu,
                                        "Export Data and Fit",
                                        "Export Data and Fit",
                                        self.onExportFitResult)
@@ -691,8 +708,8 @@ class XASFrame(wx.Frame):
             items[m].Enable(False)
 
         self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(datmenu, "Data")
-        self.menubar.Append(fitmenu, "Fitting")
+        self.menubar.Append(data_menu, "Data")
+        self.menubar.Append(ppeak_menu, "PreEdge Peaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
