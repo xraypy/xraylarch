@@ -108,7 +108,7 @@ class XASNormPanel(wx.Panel):
 
         self.eshift = FloatCtrl(gen, value=0.0, precision=3, gformat=True,
                                 size=(65, -1), **opts)
-        self.deconv_ewid = FloatCtrl(xas, value=0.0, precision=3,
+        self.deconv_ewid = FloatCtrl(xas, value=0.5, precision=3,
                                      minval=0, gformat=True, size=(65, -1), **opts)
 
         self.deconv_form = Choice(xas, choices=DECONV_OPS, size=(100, -1), **opts)
@@ -541,7 +541,6 @@ class XASNormPanel(wx.Panel):
         self.controller.process(dgroup, proc_opts=proc_opts)
 
         if dgroup.datatype.startswith('xas'):
-
             if self.xas_autoe0.IsChecked():
                 self.xas_e0.SetValue(dgroup.proc_opts['e0'], act=False)
             if self.xas_autostep.IsChecked():
@@ -557,7 +556,8 @@ class XASNormPanel(wx.Panel):
             dgroup.plot_y2label = None
             dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
             dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, dgroup.plot_ylabel)]
-            y4e0 = dgroup.mu
+
+            dgroup.ydat = dgroup.mu
 
             pchoice = XASOPChoices[self.xas_op.GetStringSelection()]
 
@@ -565,38 +565,37 @@ class XASNormPanel(wx.Panel):
                 dgroup.plot_yarrays = [(dgroup.mu, PLOTOPTS_1, r'$\mu$'),
                                        (dgroup.pre_edge, PLOTOPTS_2, 'pre edge'),
                                        (dgroup.post_edge, PLOTOPTS_2, 'post edge')]
+                dgroup.ydat = dgroup.mu
             elif pchoice == 'preedge':
                 dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
                 dgroup.plot_yarrays = [(dgroup.pre_edge_sub, PLOTOPTS_1,
                                         r'pre-edge subtracted $\mu$')]
-                y4e0 = dgroup.pre_edge_sub
+                dgroup.ydat = dgroup.pre_edge_sub
                 dgroup.plot_ylabel = r'pre-edge subtracted $\mu$'
             elif pchoice == 'norm+deriv':
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, r'normalized $\mu$'),
                                        (dgroup.dmude, PLOTOPTS_D, r'$d\mu/dE$')]
-                y4e0 = dgroup.norm
                 dgroup.plot_ylabel = r'normalized $\mu$'
                 dgroup.plot_y2label = r'$d\mu/dE$'
-                dgroup.y = dgroup.norm
+                dgroup.ydat = dgroup.norm
 
             elif pchoice == 'norm':
                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1, r'normalized $\mu$')]
-                y4e0 = dgroup.norm
                 dgroup.plot_ylabel = r'normalized $\mu$'
-                dgroup.y = dgroup.norm
+                dgroup.ydat = dgroup.norm
 
             elif pchoice == 'deriv':
                 dgroup.plot_yarrays = [(dgroup.dmude, PLOTOPTS_1, r'$d\mu/dE$')]
-                y4e0 = dgroup.dmude
                 dgroup.plot_ylabel = r'$d\mu/dE$'
-                dgroup.y = dgroup.dmude
+                dgroup.ydat = dgroup.dmude
 
             if pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
                 dgroup.plot_yarrays = [(dgroup.deconv, PLOTOPTS_1, r'deconvolved'),
                                        (dgroup.norm, PLOTOPTS_1, r'normalized $\mu$')]
-                y4e0 = dgroup.deconv
                 dgroup.plot_ylabel = r'deconvolved and normalized $\mu$'
-                dgroup.y = dgroup.deconv
+                dgroup.ydat = dgroup.deconv
+
+            y4e0 = dgroup.ydat
 
 #             elif pchoice == 'prepeaks+base' and hasattr(dgroup, 'prepeaks'):
 #                 ppeaks = dgroup.prepeaks
@@ -636,15 +635,15 @@ class XASNormPanel(wx.Panel):
 #
             dgroup.plot_extras = []
             if self.xas_showe0.IsChecked():
-                ie0 = index_of(dgroup.xdat, dgroup.e0)
+                ie0 = index_of(dgroup.energy, dgroup.e0)
                 dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
 #             if self.xas_show_ppfit.IsChecked():
 #                 popts = {'color': '#DDDDCC'}
 #                 emin = dgroup.e0 + self.xas_ppeak_emin.GetValue()
 #                 emax = dgroup.e0 + self.xas_ppeak_emax.GetValue()
-#                 imin = index_of(dgroup.xdat, emin)
-#                 imax = index_of(dgroup.xdat, emax)
+#                 imin = index_of(dgroup.energy, emin)
+#                 imax = index_of(dgroup.energy, emax)
 #
 #                 dgroup.plot_extras.append(('vline', emin, y4e0[imin], popts))
 #                 dgroup.plot_extras.append(('vline', emax, y4e0[imax], popts))
@@ -653,8 +652,8 @@ class XASNormPanel(wx.Panel):
 #                 popts = {'marker': '+', 'markersize': 6}
 #                 elo = dgroup.e0 + self.xas_ppeak_elo.GetValue()
 #                 ehi = dgroup.e0 + self.xas_ppeak_ehi.GetValue()
-#                 ilo = index_of(dgroup.xdat, elo)
-#                 ihi = index_of(dgroup.xdat, ehi)
+#                 ilo = index_of(dgroup.energy, elo)
+#                 ihi = index_of(dgroup.energy, ehi)
 #
 #                 dgroup.plot_extras.append(('marker', elo, y4e0[ilo], popts))
 #                 dgroup.plot_extras.append(('marker', ehi, y4e0[ihi], popts))
