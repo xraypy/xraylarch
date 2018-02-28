@@ -1976,16 +1976,21 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            for area in imd.panel.conf.highlight_areas:
-                for w in area.collections + area.labelTexts:
-                    w.remove()
-
-            imd.panel.conf.highlight_areas = []
-            imd.panel.redraw()
+            try:
+                for area in imd.panel.conf.highlight_areas:
+                    for w in area.collections + area.labelTexts:
+                        w.remove()
+                imd.panel.conf.highlight_areas = []
+                imd.panel.redraw()
+            except:
+                pass
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
-            imd.clear_highlight_area()
+            try:
+                imd.clear_highlight_area()
+            except:
+                pass
 
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
@@ -2284,7 +2289,7 @@ class MapViewerFrame(wx.Frame):
                 aname = self.sel_mca.areaname
             except:
                 if tomograph:
-                    print('Need to lock center value to display reconstruction-area spectra.')
+                    print('!! Data not yet saved for displaying reconstruction-area spectra !!')
                 return
             area  = xrmfile.xrmmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
