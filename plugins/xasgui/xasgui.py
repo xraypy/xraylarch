@@ -281,9 +281,9 @@ class XASController():
 
             # deconvolution
             deconv_form = opts['deconv_form'].lower()
-            if not deconv_form.startswith('none'):
-                cmd = """xas_deconvolve({group:s}, form='{deconv_form:s}',
-                esigma={deconv_ewid:f})"""
+            deconv_ewid = float(opts['deconv_ewid'])
+            if not deconv_form.startswith('none') and deconv_ewid > 1.e-3:
+                cmd = "xas_deconvolve({group:s}, form='{deconv_form:s}', esigma={deconv_ewid:f})"
                 self.larch.eval(cmd.format(**opts))
 
             opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
@@ -350,6 +350,7 @@ class XASController():
 
     def plot_group(self, groupname=None, title=None,
                    new=True, unzoom=True, use_yarrays=True, **kws):
+        # print("## plot_group ", groupname, time.ctime())
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -366,7 +367,6 @@ class XASController():
             if ((getattr(dgroup, 'plot_yarrays', None) is None or
                  getattr(dgroup, 'energy', None) is None or
                  getattr(dgroup, 'mu', None) is None)):
-                # print("-> Mode.process")
                 self.process(dgroup)
 
         if not hasattr(dgroup, 'x'):
@@ -585,13 +585,16 @@ class XASFrame(wx.Frame):
     def onPlotSel(self, evt=None):
         newplot = True
         group_ids = self.controller.filelist.GetCheckedStrings()
+        last_id = group_ids[-1]
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             if dgroup is not None:
                 self.controller.plot_group(groupname=groupname, title='',
                                            new=newplot, use_yarrays=False,
-                                           label=dgroup.filename)
+                                           label=dgroup.filename,
+                                           show_legend=True,
+                                           delay_draw=(last_id!=checked))
                 newplot=False
 
     def plot_group(self, groupname=None, title=None, new=True, **kws):
@@ -616,16 +619,15 @@ class XASFrame(wx.Frame):
 
         self.current_filename = filename
 
-
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
         self.nb.SetSelection(0)
         self.xasnorm_panel.fill(dgroup)
+        self.xasnorm_panel.needs_update = True
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
-        self.controller.plot_group(groupname=groupname, new=True)
 
 
     def createMenus(self):
@@ -784,7 +786,7 @@ class XASFrame(wx.Frame):
         groupname = self.controller.file_groups[filename]
         if not hasattr(self.larch.symtable, groupname):
             return
-        dgroup = copy.deepcopy(self.controller.get_group(groupname))
+        dgroup = self.controller.get_group(groupname)
 
         groupname = unique_name(groupname, self.controller.file_groups.keys())
         setattr(self.larch.symtable, groupname, dgroup)
@@ -804,7 +806,7 @@ class XASFrame(wx.Frame):
             self.controller.filelist.rename_item(self.current_filename, res.newname)
             dgroup = self.controller.get_group(groupname)
             dgroup.filename = self.current_filename = res.newname
-
+            self.controller.filelist.SetStringSelection(res.newname)
 
     def onMergeData(self, event=None):
         groups = []
@@ -823,6 +825,7 @@ class XASFrame(wx.Frame):
             self.controller.merge_groups(groups, master=res.master,
                                          yarray=yname, outgroup=res.group)
             self.install_group(res.group, res.group, overwrite=False)
+            self.controller.filelist.SetStringSelection(res.group)
 
     def onDeglitchData(self, event=None):
         print(" Deglitch Data")
@@ -872,7 +875,6 @@ class XASFrame(wx.Frame):
                 pass
 
         for name, wid in self.subframes.items():
-            # print (" Sub ", name,  wid)
             if wid is not None:
                 try:
                     wid.Destroy()
@@ -1030,6 +1032,7 @@ class XASFrame(wx.Frame):
             self.controller.file_groups[filename] = groupname
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname)
+        self.controller.filelist.SetStringSelection(filename)
 
 
 class XASViewer(wx.App):
