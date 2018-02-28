@@ -501,6 +501,7 @@ class XASNormPanel(wx.Panel):
         """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group 'x' and 'y' attributes to be plotted
         """
+        self.needs_update = False
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
         save_unzoom = self.unzoom_on_update
