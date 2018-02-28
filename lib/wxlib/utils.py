@@ -77,6 +77,18 @@ class FileCheckList(wx.CheckListBox):
         self.PopupMenu(menu)
         menu.Destroy()
 
+    def rename_item(self, old, new):
+        names = self.GetItems()
+        if old not in names:
+            return
+        i = names.index(old)
+        names[i] = new
+        self.Clear()
+        for name in names:
+            self.Append(name)
+
+
+
     def onRightEvent(self, event=None):
         idx = self.GetSelection()
         if idx < 0: # no item selected

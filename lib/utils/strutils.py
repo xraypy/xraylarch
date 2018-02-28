@@ -145,6 +145,26 @@ def fix_varname(s):
         t = t[:-1]
     return t
 
+def unique_name(name, nlist, max=1000):
+    """return name so that is is not in list,
+    by appending _1, _2, ... as necessary up to a max suffix
+
+    >>> unique_name('foo', ['bar, 'baz'])
+    'foo'
+
+    >>> unique_name('foo', ['foo', 'bar, 'baz'])
+    'foo_1'
+
+    """
+    out = name
+    if name in nlist:
+        for i in range(1, max+1):
+            out = "%s_%i"  % (name, i)
+            if out not in nlist:
+                break
+    return out
+
+
 def isNumber(num):
     "input is a number"
     try:
