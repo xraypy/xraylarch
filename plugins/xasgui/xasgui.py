@@ -5,6 +5,7 @@ XANES Data Viewer and Analysis Tool
 import os
 import sys
 import time
+import copy
 import numpy as np
 np.seterr(all='ignore')
 
@@ -41,7 +42,8 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import PrePeakPanel, MergeDialog, XASNormPanel
+from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
+                                  MergeDialog, RenameDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -223,7 +225,7 @@ class XASController():
         if not hasattr(dgroup, 'proc_opts'):
             dgroup.proc_opts = {}
 
-        if 'xscale' not in dgroup.proc_opts:
+        if 'escale' not in dgroup.proc_opts:
             dgroup.proc_opts.update(self.get_proc_opts(dgroup))
 
         if proc_opts is not None:
@@ -453,7 +455,7 @@ class XASFrame(wx.Frame):
         self.larch_buffer.Raise()
         self.larch=self.larch_buffer.larchshell
         self.controller = XASController(wxparent=self, _larch=self.larch)
-
+        self.current_filename = None
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -612,6 +614,9 @@ class XASFrame(wx.Frame):
         if not hasattr(self.larch.symtable, groupname):
             return
 
+        self.current_filename = filename
+
+
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
@@ -621,7 +626,6 @@ class XASFrame(wx.Frame):
             filename = dgroup.filename
         self.title.SetLabel(filename)
         self.controller.plot_group(groupname=groupname, new=True)
-
 
 
     def createMenus(self):
@@ -655,11 +659,11 @@ class XASFrame(wx.Frame):
 
         items['group_copy'] = MenuItem(self, data_menu, "Copy This Group",
                                          "Copy This Group",
-                                         self.onConfigDataProcessing)
+                                         self.onCopyGroup)
 
         items['group_rename'] = MenuItem(self, data_menu, "Rename This Group",
                                          "Rename This Group",
-                                         self.onConfigDataProcessing)
+                                         self.onRenameGroup)
 
         items['group_remove'] = MenuItem(self, data_menu, "Remove Selected Groups",
                                          "Remove Selected Group",
@@ -744,7 +748,6 @@ class XASFrame(wx.Frame):
         groups2csv(groups2save, outfile, x='energy', y='norm', _larch=self.larch)
 
 
-
     def onData2Athena(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
         groups2save = []
@@ -775,6 +778,33 @@ class XASFrame(wx.Frame):
     def onConfigDataProcessing(self, event=None):
         pass
 
+    def onCopyGroup(self, event=None):
+        filename = self.current_filename
+
+        groupname = self.controller.file_groups[filename]
+        if not hasattr(self.larch.symtable, groupname):
+            return
+        dgroup = copy.deepcopy(self.controller.get_group(groupname))
+
+        groupname = unique_name(groupname, self.controller.file_groups.keys())
+        setattr(self.larch.symtable, groupname, dgroup)
+
+        self.install_group(groupname, groupname, overwrite=False)
+        self.controller.process(dgroup)
+
+
+    def onRenameGroup(self, event=None):
+        dlg = RenameDialog(self, self.current_filename)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if res.ok:
+            groupname = self.controller.file_groups.pop(self.current_filename)
+            self.controller.file_groups[res.newname] = groupname
+            self.controller.filelist.rename_item(self.current_filename, res.newname)
+            self.current_filename = res.newname
+
+
     def onMergeData(self, event=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
@@ -792,8 +822,6 @@ class XASFrame(wx.Frame):
             self.controller.merge_groups(groups, master=res.master,
                                          yarray=yname, outgroup=res.group)
             self.install_group(res.group, res.group, overwrite=False)
-
-
 
     def onDeglitchData(self, event=None):
         print(" Deglitch Data")
