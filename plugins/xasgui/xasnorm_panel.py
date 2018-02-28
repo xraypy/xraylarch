@@ -38,10 +38,10 @@ XASOPChoices = OrderedDict((('Raw Data', 'raw'),
                             ('Normalized + Derivative', 'norm+deriv'),
                             ('Pre-edge subtracted', 'preedge'),
                             ('Raw Data + Pre-edge/Post-edge', 'prelines'),
-                            ('Deconvolved + Normalized',   'deconv'),
-                            ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
-                            ('Pre-edge Peaks, isolated', 'prepeaks'))
-                           )
+                            ('Deconvolved + Normalized',   'deconv')))
+
+                            # ('Pre-edge Peaks + Baseline', 'prepeaks+base'),
+                            # ('Pre-edge Peaks, isolated', 'prepeaks'))
 
 class XASNormPanel(wx.Panel):
     """XAS normalization Panel"""
@@ -84,16 +84,15 @@ class XASNormPanel(wx.Panel):
             self.xas_showe0.SetValue(opts['show_e0'])
             self.xas_autoe0.SetValue(opts['auto_e0'])
             self.xas_autostep.SetValue(opts['auto_step'])
-            self.xas_ppeak_elo.SetValue(opts['ppeak_elo'])
-            self.xas_ppeak_ehi.SetValue(opts['ppeak_ehi'])
-            self.xas_ppeak_emin.SetValue(opts['ppeak_emin'])
-            self.xas_ppeak_emax.SetValue(opts['ppeak_emax'])
-
             self.deconv_form.SetStringSelection(opts['deconv_form'])
             self.deconv_ewid.SetValue(opts['deconv_ewid'])
 
-            if len(getattr(dgroup, 'centroid_msg', '')) > 3:
-                self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
+            # self.xas_ppeak_elo.SetValue(opts['ppeak_elo'])
+            # self.xas_ppeak_ehi.SetValue(opts['ppeak_ehi'])
+            # self.xas_ppeak_emin.SetValue(opts['ppeak_emin'])
+            # self.xas_ppeak_emax.SetValue(opts['ppeak_emax'])
+            # if len(getattr(dgroup, 'centroid_msg', '')) > 3:
+            #    self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
 
 
     def build_display(self):
@@ -175,17 +174,17 @@ class XASNormPanel(wx.Panel):
         pack(e0opts_panel, sx)
 
         self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
-        self.xas_show_ppcen = Check(xas, default=False, label='show?', **opts)
-        self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
-        self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
+        # self.xas_show_ppcen = Check(xas, default=False, label='show?', **opts)
+        # self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
+        # self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
         opts = {'action': partial(self.UpdatePlot, setval=False, unzoom=True),
                 'size': (250, -1)}
         self.xas_op = Choice(xas, choices=list(XASOPChoices.keys()), **opts)
 
         self.xas_op.SetStringSelection('Normalized')
 
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2',
-                     'ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
+        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+            # 'ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
             bb = BitmapButton(xas, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
                               tooltip='use last point selected from plot')
@@ -204,13 +203,13 @@ class XASNormPanel(wx.Panel):
         self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
         self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
 
-        self.xas_ppeak_emin = FloatCtrl(xas, value=-31, **opts)
-        self.xas_ppeak_elo = FloatCtrl(xas, value=-15, **opts)
-        self.xas_ppeak_ehi = FloatCtrl(xas, value=-6, **opts)
-        self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
-        self.xas_ppeak_fit = Button(xas, 'Fit Pre edge Baseline', size=(175, 30),
-                                    action=self.onPreedgeBaseline)
-        self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
+        # self.xas_ppeak_emin = FloatCtrl(xas, value=-31, **opts)
+        # self.xas_ppeak_elo = FloatCtrl(xas, value=-15, **opts)
+        # self.xas_ppeak_ehi = FloatCtrl(xas, value=-6, **opts)
+        # self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
+        # self.xas_ppeak_fit = Button(xas, 'Fit Pre edge Baseline', size=(175, 30),
+        #                             action=self.onPreedgeBaseline)
+        # self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
 
         opts = {'size': (50, -1),
                 'choices': ('0', '1', '2', '3'),
@@ -266,38 +265,39 @@ class XASNormPanel(wx.Panel):
         xas.Add(self.xas_nnor)
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
-        xas.Add((10, 1), newrow=True)
-        xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
 
         xas.Add(SimpleText(xas, ' Deconvolution:'), newrow=True)
         xas.Add(self.deconv_form, dcol=4)
         xas.Add(SimpleText(xas, ' E width:'), dcol=1)
         xas.Add(self.deconv_ewid,  dcol=2)
 
-        xas.Add(SimpleText(xas, 'Pre-edge Peak Baseline Removal: '),
-                dcol=6, newrow=True)
-        xas.Add(self.xas_ppeak_fit, dcol=3, style=RCEN)
-        xas.Add(SimpleText(xas, 'Pre-edge Peak range: '), newrow=True)
+        xas.Add((10, 1), newrow=True)
+        xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
 
-        xas.Add(self.btns['ppeak_elo'])
-        xas.Add(self.xas_ppeak_elo)
-        xas.Add(SimpleText(xas, ':'))
-        xas.Add(self.btns['ppeak_ehi'])
-        xas.Add(self.xas_ppeak_ehi)
-        xas.Add(self.xas_show_ppdat, dcol=2)
-        xas.Add(CopyBtn('xas_ppeak_dat'), style=RCEN)
-
-        xas.Add(SimpleText(xas, 'Pre-edge Fit range: '), newrow=True)
-        xas.Add(self.btns['ppeak_emin'])
-        xas.Add(self.xas_ppeak_emin)
-        xas.Add(SimpleText(xas, ':'))
-        xas.Add(self.btns['ppeak_emax'])
-        xas.Add(self.xas_ppeak_emax)
-        xas.Add(self.xas_show_ppfit, dcol=2)
-        xas.Add(CopyBtn('xas_ppeak_fit'), style=RCEN)
-        xas.Add(SimpleText(xas, 'Pre-edge Centroid: '), newrow=True)
-        xas.Add(self.xas_ppeak_centroid, dcol=5)
-        xas.Add(self.xas_show_ppcen, dcol=2)
+#         xas.Add(SimpleText(xas, 'Pre-edge Peak Baseline Removal: '),
+#                 dcol=6, newrow=True)
+#         xas.Add(self.xas_ppeak_fit, dcol=3, style=RCEN)
+#         xas.Add(SimpleText(xas, 'Pre-edge Peak range: '), newrow=True)
+#
+#         xas.Add(self.btns['ppeak_elo'])
+#         xas.Add(self.xas_ppeak_elo)
+#         xas.Add(SimpleText(xas, ':'))
+#         xas.Add(self.btns['ppeak_ehi'])
+#         xas.Add(self.xas_ppeak_ehi)
+#         xas.Add(self.xas_show_ppdat, dcol=2)
+#         xas.Add(CopyBtn('xas_ppeak_dat'), style=RCEN)
+#
+#         xas.Add(SimpleText(xas, 'Pre-edge Fit range: '), newrow=True)
+#         xas.Add(self.btns['ppeak_emin'])
+#         xas.Add(self.xas_ppeak_emin)
+#         xas.Add(SimpleText(xas, ':'))
+#         xas.Add(self.btns['ppeak_emax'])
+#         xas.Add(self.xas_ppeak_emax)
+#         xas.Add(self.xas_show_ppfit, dcol=2)
+#         xas.Add(CopyBtn('xas_ppeak_fit'), style=RCEN)
+#         xas.Add(SimpleText(xas, 'Pre-edge Centroid: '), newrow=True)
+#         xas.Add(self.xas_ppeak_centroid, dcol=5)
+#         xas.Add(self.xas_show_ppcen, dcol=2)
 
         xas.pack()
 
@@ -319,18 +319,19 @@ class XASNormPanel(wx.Panel):
         pack(self, sizer)
 
     def onPreedgeBaseline(self, evt=None):
-        opts = {'elo':  self.xas_ppeak_elo.GetValue(),
-                'ehi':  self.xas_ppeak_ehi.GetValue(),
-                'emin': self.xas_ppeak_emin.GetValue(),
-                'emax': self.xas_ppeak_emax.GetValue()}
-
-        self.xas_op.SetStringSelection('Pre-edge Peaks + Baseline')
-
-        gname = self.controller.groupname
-        dgroup = self.controller.get_group(gname)
-        self.controller.xas_preedge_baseline(dgroup, opts=opts)
-        self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
-        self.process(gname)
+        pass
+#         opts = {'elo':  self.xas_ppeak_elo.GetValue(),
+#                 'ehi':  self.xas_ppeak_ehi.GetValue(),
+#                 'emin': self.xas_ppeak_emin.GetValue(),
+#                 'emax': self.xas_ppeak_emax.GetValue()}
+#
+#         self.xas_op.SetStringSelection('Pre-edge Peaks + Baseline')
+#
+#         gname = self.controller.groupname
+#         dgroup = self.controller.get_group(gname)
+#         self.controller.xas_preedge_baseline(dgroup, opts=opts)
+#         self.xas_ppeak_centroid.SetLabel(dgroup.centroid_msg)
+#         self.process(gname)
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.controller.larch.symtable._sys.xas_viewer
@@ -364,10 +365,10 @@ class XASNormPanel(wx.Panel):
             xas_proc['nvict'] = int(self.xas_vict.GetSelection())
             xas_proc['xas_op'] = str(self.xas_op.GetStringSelection())
 
-            xas_proc['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
-            xas_proc['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
-            xas_proc['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
-            xas_proc['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
+            # xas_proc['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
+            # xas_proc['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
+            # xas_proc['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
+            # xas_proc['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
             conf.xas_proc = xas_proc
 
     def onCopyParam(self, name=None, evt=None):
@@ -391,12 +392,12 @@ class XASNormPanel(wx.Panel):
             opts['nnorm'] = proc_opts['nnorm']
             opts['norm1'] = proc_opts['norm1']
             opts['norm2'] = proc_opts['norm2']
-        elif name == 'xas_ppeak_dat':
-            opts['ppeak_elo'] = proc_opts['ppeak_elo']
-            opts['ppeak_ehi'] = proc_opts['ppeak_ehi']
-        elif name == 'xas_ppeak_fit':
-            opts['ppeak_emin'] = proc_opts['ppeak_emin']
-            opts['ppeak_emax'] = proc_opts['ppeak_emax']
+#         elif name == 'xas_ppeak_dat':
+#             opts['ppeak_elo'] = proc_opts['ppeak_elo']
+#             opts['ppeak_ehi'] = proc_opts['ppeak_ehi']
+#         elif name == 'xas_ppeak_fit':
+#             opts['ppeak_emin'] = proc_opts['ppeak_emin']
+#             opts['ppeak_emax'] = proc_opts['ppeak_emax']
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -481,14 +482,14 @@ class XASNormPanel(wx.Panel):
             self.xas_nor1.SetValue(xval-e0)
         elif opt == 'nor2':
             self.xas_nor2.SetValue(xval-e0)
-        elif opt == 'ppeak_elo':
-            self.xas_ppeak_elo.SetValue(xval-e0)
-        elif opt == 'ppeak_ehi':
-            self.xas_ppeak_ehi.SetValue(xval-e0)
-        elif opt == 'ppeak_emin':
-            self.xas_ppeak_emin.SetValue(xval-e0)
-        elif opt == 'ppeak_emax':
-            self.xas_ppeak_emax.SetValue(xval-e0)
+        # elif opt == 'ppeak_elo':
+        #    self.xas_ppeak_elo.SetValue(xval-e0)
+        # elif opt == 'ppeak_ehi':
+        #    self.xas_ppeak_ehi.SetValue(xval-e0)
+        # elif opt == 'ppeak_emin':
+        #     self.xas_ppeak_emin.SetValue(xval-e0)
+        # elif opt == 'ppeak_emax':
+        #     self.xas_ppeak_emax.SetValue(xval-e0)
         elif opt == 'eshift':
             self.eshift.SetValue(xval)
         elif opt == 'yshift':
@@ -531,10 +532,10 @@ class XASNormPanel(wx.Panel):
             proc_opts['nvict'] = int(self.xas_vict.GetSelection())
             proc_opts['xas_op'] = self.xas_op.GetStringSelection()
 
-            proc_opts['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
-            proc_opts['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
-            proc_opts['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
-            proc_opts['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
+            # proc_opts['ppeak_elo'] = self.xas_ppeak_elo.GetValue()
+            # proc_opts['ppeak_ehi'] = self.xas_ppeak_ehi.GetValue()
+            # proc_opts['ppeak_emin'] = self.xas_ppeak_emin.GetValue()
+            # proc_opts['ppeak_emax'] = self.xas_ppeak_emax.GetValue()
 
         self.controller.process(dgroup, proc_opts=proc_opts)
 
@@ -596,72 +597,71 @@ class XASNormPanel(wx.Panel):
                 dgroup.plot_ylabel = r'deconvolved and normalized $\mu$'
                 dgroup.y = dgroup.deconv
 
-
-            elif pchoice == 'prepeaks+base' and hasattr(dgroup, 'prepeaks'):
-                ppeaks = dgroup.prepeaks
-                i0 = index_of(dgroup.energy, ppeaks.energy[0])
-                i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
-                dgroup.prepeaks_baseline = dgroup.norm*1.0
-                dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
-
-                dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
-                                        r'normalized $\mu$'),
-                                       (dgroup.prepeaks_baseline, PLOTOPTS_2,
-                                        'pre-edge peaks baseline')]
-
-                jmin, jmax = max(0, i0-2), i1+3
-                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
-                                          'xmax':dgroup.energy[jmax],
-                                          'ymax':max(dgroup.norm[jmin:jmax])*1.05}
-                dgroup.y = y4e0 = dgroup.norm
-                dgroup.plot_ylabel = r'normalized $\mu$'
-
-            elif pchoice == 'prepeaks' and hasattr(dgroup, 'prepeaks'):
-                ppeaks = dgroup.prepeaks
-                i0 = index_of(dgroup.energy, ppeaks.energy[0])
-                i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
-                dgroup.prepeaks_baseline = dgroup.norm*1.0
-                dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
-                dgroup.prepeaks_norm = dgroup.norm - dgroup.prepeaks_baseline
-
-                dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1,
-                                        'normalized pre-edge peaks')]
-                dgroup.y = y4e0 = dgroup.prepeaks_norm
-                dgroup.plot_ylabel = r'normalized $\mu$'
-                jmin, jmax = max(0, i0-2), i1+3
-                dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
-                                          'xmax':dgroup.energy[jmax],
-                                          'ymax':max(dgroup.y[jmin:jmax])*1.05}
-
+#             elif pchoice == 'prepeaks+base' and hasattr(dgroup, 'prepeaks'):
+#                 ppeaks = dgroup.prepeaks
+#                 i0 = index_of(dgroup.energy, ppeaks.energy[0])
+#                 i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+#                 dgroup.prepeaks_baseline = dgroup.norm*1.0
+#                 dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+#
+#                 dgroup.plot_yarrays = [(dgroup.norm, PLOTOPTS_1,
+#                                         r'normalized $\mu$'),
+#                                        (dgroup.prepeaks_baseline, PLOTOPTS_2,
+#                                         'pre-edge peaks baseline')]
+#
+#                 jmin, jmax = max(0, i0-2), i1+3
+#                 dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+#                                           'xmax':dgroup.energy[jmax],
+#                                           'ymax':max(dgroup.norm[jmin:jmax])*1.05}
+#                 dgroup.y = y4e0 = dgroup.norm
+#                 dgroup.plot_ylabel = r'normalized $\mu$'
+#
+#             elif pchoice == 'prepeaks' and hasattr(dgroup, 'prepeaks'):
+#                 ppeaks = dgroup.prepeaks
+#                 i0 = index_of(dgroup.energy, ppeaks.energy[0])
+#                 i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+#                 dgroup.prepeaks_baseline = dgroup.norm*1.0
+#                 dgroup.prepeaks_baseline[i0:i1] = ppeaks.baseline
+#                 dgroup.prepeaks_norm = dgroup.norm - dgroup.prepeaks_baseline
+#
+#                 dgroup.plot_yarrays = [(dgroup.prepeaks_norm, PLOTOPTS_1,
+#                                         'normalized pre-edge peaks')]
+#                 dgroup.y = y4e0 = dgroup.prepeaks_norm
+#                 dgroup.plot_ylabel = r'normalized $\mu$'
+#                 jmin, jmax = max(0, i0-2), i1+3
+#                 dgroup.custom_plotopts = {'xmin':dgroup.energy[jmin],
+#                                           'xmax':dgroup.energy[jmax],
+#                                           'ymax':max(dgroup.y[jmin:jmax])*1.05}
+#
             dgroup.plot_extras = []
             if self.xas_showe0.IsChecked():
                 ie0 = index_of(dgroup.xdat, dgroup.e0)
                 dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
-            if self.xas_show_ppfit.IsChecked():
-                popts = {'color': '#DDDDCC'}
-                emin = dgroup.e0 + self.xas_ppeak_emin.GetValue()
-                emax = dgroup.e0 + self.xas_ppeak_emax.GetValue()
-                imin = index_of(dgroup.xdat, emin)
-                imax = index_of(dgroup.xdat, emax)
-
-                dgroup.plot_extras.append(('vline', emin, y4e0[imin], popts))
-                dgroup.plot_extras.append(('vline', emax, y4e0[imax], popts))
-
-            if self.xas_show_ppdat.IsChecked():
-                popts = {'marker': '+', 'markersize': 6}
-                elo = dgroup.e0 + self.xas_ppeak_elo.GetValue()
-                ehi = dgroup.e0 + self.xas_ppeak_ehi.GetValue()
-                ilo = index_of(dgroup.xdat, elo)
-                ihi = index_of(dgroup.xdat, ehi)
-
-                dgroup.plot_extras.append(('marker', elo, y4e0[ilo], popts))
-                dgroup.plot_extras.append(('marker', ehi, y4e0[ihi], popts))
-
-            if self.xas_show_ppcen.IsChecked() and hasattr(dgroup, 'prepeaks'):
-                popts = {'color': '#EECCCC'}
-                ecen = getattr(dgroup.prepeaks, 'centroid', -1)
-                if ecen > min(dgroup.energy):
-                    dgroup.plot_extras.append(('vline', ecen, None, popts))
+#             if self.xas_show_ppfit.IsChecked():
+#                 popts = {'color': '#DDDDCC'}
+#                 emin = dgroup.e0 + self.xas_ppeak_emin.GetValue()
+#                 emax = dgroup.e0 + self.xas_ppeak_emax.GetValue()
+#                 imin = index_of(dgroup.xdat, emin)
+#                 imax = index_of(dgroup.xdat, emax)
+#
+#                 dgroup.plot_extras.append(('vline', emin, y4e0[imin], popts))
+#                 dgroup.plot_extras.append(('vline', emax, y4e0[imax], popts))
+#
+#             if self.xas_show_ppdat.IsChecked():
+#                 popts = {'marker': '+', 'markersize': 6}
+#                 elo = dgroup.e0 + self.xas_ppeak_elo.GetValue()
+#                 ehi = dgroup.e0 + self.xas_ppeak_ehi.GetValue()
+#                 ilo = index_of(dgroup.xdat, elo)
+#                 ihi = index_of(dgroup.xdat, ehi)
+#
+#                 dgroup.plot_extras.append(('marker', elo, y4e0[ilo], popts))
+#                 dgroup.plot_extras.append(('marker', ehi, y4e0[ihi], popts))
+#
+#             if self.xas_show_ppcen.IsChecked() and hasattr(dgroup, 'prepeaks'):
+#                 popts = {'color': '#EECCCC'}
+#                 ecen = getattr(dgroup.prepeaks, 'centroid', -1)
+#                 if ecen > min(dgroup.energy):
+#                     dgroup.plot_extras.append(('vline', ecen, None, popts))
 
         self.unzoom_on_update = save_unzoom
