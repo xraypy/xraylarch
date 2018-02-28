@@ -306,7 +306,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def onDET(self, evt, varname='a'):
 
-        self.set_roi_choices(self.xrmmap,varname=varname)
+        self.set_roi_choices(varname=varname)
 
 
     def onROI(self, evt, varname='a'):
@@ -328,13 +328,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.cfile = xrmfile
         self.xrmmap = xrmfile.xrmmap
 
-        self.set_det_choices(self.xrmmap)
+        self.set_det_choices()
         self.set_workarray_choices(self.xrmmap)
 
         for vfile in self.varfile.values():
             vfile.SetSelection(-1)
 
-    def set_det_choices(self, xrmmap, varname=None):
+    def set_det_choices(self, varname=None):
 
         det_list = self.cfile.get_detchoices()
 
@@ -343,10 +343,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 wid.SetChoices(det_list)
         else:
             self.vardet[varname].SetChoices(det_list)
-        self.set_roi_choices(xrmmap,varname=varname)
+        self.set_roi_choices(varname=varname)
 
 
-    def set_roi_choices(self, xrmmap, varname=None):
+    def set_roi_choices(self, xrmmap=None, varname=None):
+
+        if xrmmap is None:
+            xrmmap = self.xrmmap
 
         if varname is None:
             for varname in self.vardet.keys():
@@ -603,7 +606,7 @@ class TomographyPanel(GridPanel):
         self.chk_dftcor.SetValue(True)
 
         self.enable_options()
-        self.set_det_choices(self.xrmmap)
+        self.set_det_choices()
 
         try:
             self.npts = len(self.cfile.get_pos(0, mean=True))
@@ -656,7 +659,7 @@ class TomographyPanel(GridPanel):
             self.center_value.SetIncrement(0.1)
 
     def detSELECT(self,idet,event=None):
-        self.set_roi_choices(self.cfile.xrmmap,idet=idet)
+        self.set_roi_choices(idet=idet)
 
     def roiSELECT(self,iroi,event=None):
 
@@ -702,7 +705,7 @@ class TomographyPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red', 'Green', 'Blue']):
                     self.det_label[i].SetLabel(label)
-                self.set_roi_choices(self.cfile.xrmmap)
+                self.set_roi_choices()
 
     def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
         if xrmfile is None: xrmfile = self.owner.current_file
@@ -824,7 +827,7 @@ class TomographyPanel(GridPanel):
         tomo = xrmfile.get_tomograph(sino, **args)
         
         if self.resave:
-            for detname in xrmfile.xrmmap.get_detchoices():
+            for detname in xrmfile.get_detchoices():
                 if detname.lower() in ['mcasum','detsum','xrd1d']:
                      xrmfile.save_tomograph(detname, overwrite=True, tomo_alg=tomo_alg)
             self.resave = False
@@ -854,18 +857,21 @@ class TomographyPanel(GridPanel):
         self.center_value.SetValue(cen)
         self.cfile.set_tomography_center(center=cen)
 
-    def set_det_choices(self, xrmmap):
+    def set_det_choices(self):
 
-        det_list = xrmmap.get_detchoices()
+        det_list = self.cfile.get_detchoices()
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
 
-        self.set_roi_choices(xrmmap)
+        self.set_roi_choices()
 
-    def set_roi_choices(self, xrmmap, idet=None):
+    def set_roi_choices(self, xrmmap=None, idet=None):
+
+        if xrmmap is None:
+            xrmmap = self.xrmmap
 
         if idet is None:
             for idet,det_ch in enumerate(self.det_choice):
@@ -1044,7 +1050,7 @@ class MapPanel(GridPanel):
         self.chk_dftcor.SetValue(True)
 
         self.enable_options()
-        self.set_det_choices(self.xrmmap)
+        self.set_det_choices()
         self.plotSELECT()
 
     def onLimitRange(self, event=None):
@@ -1057,7 +1063,7 @@ class MapPanel(GridPanel):
 
     def detSELECT(self,idet,event=None):
 
-        self.set_roi_choices(self.cfile.xrmmap,idet=idet)
+        self.set_roi_choices(idet=idet)
 
     def roiSELECT(self,iroi,event=None):
 
@@ -1100,7 +1106,7 @@ class MapPanel(GridPanel):
                     self.roi_choice[i].Enable()
                 for i,label in enumerate(['Red', 'Green', 'Blue']):
                     self.det_label[i].SetLabel(label)
-                self.set_roi_choices(self.cfile.xrmmap)
+                self.set_roi_choices()
             elif 'correl' in plot_type:
                 self.det_choice[1].Enable()
                 self.roi_choice[1].Enable()
@@ -1108,7 +1114,7 @@ class MapPanel(GridPanel):
                 self.roi_choice[2].Disable()
                 for i,label in enumerate([' X ',' Y ', '']):
                     self.det_label[i].SetLabel(label)
-                self.set_roi_choices(self.cfile.xrmmap)
+                self.set_roi_choices()
 
     def onClose(self):
         for p in self.plotframes:
@@ -1261,7 +1267,7 @@ class MapPanel(GridPanel):
         else:
             self.ShowMap(new=new)
 
-    def set_det_choices(self, xrmmap):
+    def set_det_choices(self):
 
         det_list = self.cfile.get_detchoices()
 
@@ -1270,9 +1276,12 @@ class MapPanel(GridPanel):
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
 
-        self.set_roi_choices(xrmmap)
+        self.set_roi_choices()
 
-    def set_roi_choices(self, xrmmap, idet=None):
+    def set_roi_choices(self, xrmmap=None, idet=None):
+
+        if xrmmap is None:
+            xrmmap = self.xrmmap
 
         if idet is None:
             for idet,det_ch in enumerate(self.det_choice):
@@ -1655,12 +1664,16 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         def report_info(dname,d):
 
+            ## cannot figure out why time is not being scaled properly in report
+            if dname.startswith('TSCA'):
+                d = d/1.e4
+
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
             except ValueError:
                 hmean, gmean, skew, kurtosis = 0, 0, 0, 0
-
+                
             smode = '--'
             fmt = '{:,.1f}'.format # use thousands commas, 1 decimal place
             mode = stats.mode(d)
@@ -1674,9 +1687,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.report.AppendItem(dat)
 
         areaname  = self._getarea()
-        xrmfile  = self.owner.current_file
-        xrmmap  = xrmfile.xrmmap
-        ctime = xrmfile.pixeltime
+        xrmfile   = self.owner.current_file
+        xrmmap    = xrmfile.xrmmap
+        ctime     = [xrmfile.pixeltime]
 
         area = xrmfile.get_area(name=areaname)
         amask = area.value
@@ -1715,6 +1728,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
 
             d_scas = [d for d in xrmmap['scalars']]
+            if 'TSCALER' in d_scas:
+                d_scas.insert(0, d_scas.pop(d_scas.index('TSCALER')))
             ndet = 'mca'
 
         else:
@@ -1735,13 +1750,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
                 d = match_mask_shape(d, amask)
-                report_info(scalar, d/ctime)
+                report_info(scalar, d/ctime[0])
 
             for roi in d_rois:
                 for i,det in enumerate(d_dets):
                     d = xrmmap['roimap'][det][roi]['raw'].value
                     d = match_mask_shape(d, amask)
-                    report_info('%s (%s)' % (roi, det), d/ctime)
+                    report_info('%s (%s)' % (roi, det), d/ctime[0])
 
         else:
             for idet, dname in enumerate(d_names):
@@ -1757,7 +1772,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                 d = xrmmap['roimap/det_raw'][:,:,idet]
                 d = match_mask_shape(d, amask)
-                report_info(dname, d/ctime)
+                report_info(dname, d/ctime[0])
 
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
@@ -1771,13 +1786,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         
         self.set_area_choices(xrmmap, show_last=True)
 
-        self.set_enabled_btns(xrmmap)
+        self.set_enabled_btns(xrmfile=xrmfile)
 
         self.report.DeleteAllItems()
         self.report_data = []
         self.onSelect()
 
-    def set_enabled_btns(self,xrmfile):
+    def set_enabled_btns(self, xrmfile=None):
+
+        if xrmfile is None: xrmfile = self.owner.current_file
 
         xrmfile.reset_flags()
         flag1dxrd = xrmfile.flag_xrd1d
