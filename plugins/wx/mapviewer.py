@@ -1956,18 +1956,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas'][aname]
         label = bytes2str(area.attrs.get('description', aname))
-        tomo_area = area.attrs.get('tomograph',False)
-        #if tomo_area:
+
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
             try:
                 imd.add_highlight_area(area.value, label=label)
             except:
                 pass
-        if not tomo_area:
-            if len(self.owner.im_displays) > 0:
-                imd = self.owner.im_displays[-1]
+        
+        if len(self.owner.im_displays) > 0:
+            imd = self.owner.im_displays[-1]
+            try:
                 imd.panel.add_highlight_area(area.value, label=label)
+            except:
+                pass
 
     def onDelete(self, event=None):
         aname = self._getarea()
