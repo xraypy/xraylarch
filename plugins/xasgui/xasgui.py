@@ -145,7 +145,7 @@ class XASController():
                                   norm2=-10, nvict=1, auto_step=True,
                                   auto_e0=True, show_e0=True,
                                   xas_op='Normalized',
-                                  deconv_form='none', deconv_ewid=0)
+                                  deconv_form='none', deconv_ewid=0.5)
 
         config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
                                   fit_emin=-40, fit_emax=0,
@@ -231,39 +231,33 @@ class XASController():
         if proc_opts is not None:
             dgroup.proc_opts.update(proc_opts)
 
-        opts = {'group': dgroup.groupname}
+        opts = {}
         opts.update(dgroup.proc_opts)
+        opts['group'] = dgroup.groupname
 
-        # scaling
-        cmds = []
-        cmds.append("{group:s}.x = ({group:s}.xdat + {eshift:f})")
-        cmds.append("{group:s}.y = {group:s}.ydat")
 
         # smoothing
         smop = opts['smooth_op'].lower()
         smcmd = None
         if smop.startswith('box'):
             opts['smooth_c0'] = int(opts['smooth_c0'])
-            smcmd = "boxcar({group:s}.y, {smooth_c0:d})"
+            smcmd = "boxcar({group:s}.ydat, {smooth_c0:d})"
         elif smop.startswith('savit'):
             opts['smooth_c0'] = int(opts['smooth_c0'])
             opts['smooth_c1'] = int(opts['smooth_c1'])
-            smcmd = "savitzky_golay({group:s}.y, {smooth_c0:d}, {smooth_c1:d})"
+            smcmd = "savitzky_golay({group:s}.ydat, {smooth_c0:d}, {smooth_c1:d})"
         elif smop.startswith('conv'):
             cform = str(opts['smooth_conv'].lower())
-            smcmd = "smooth({group:s}.x, {group:s}.y, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
+            smcmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
 
         if smcmd is not None:
-            cmds.append("{group:s}.y = " + smcmd)
-
-        for cmd in cmds:
+            cmd = "{group:s}.y = " + smcmd
             self.larch.eval(cmd.format(**opts))
+
 
 
         # xas
         if dgroup.datatype.startswith('xas'):
-            dgroup.energy = dgroup.x*1.0
-            dgroup.mu = dgroup.y*1.0
 
             copts = [dgroup.groupname]
             if not opts['auto_e0']:
@@ -295,9 +289,6 @@ class XASController():
     def xas_preedge_baseline(self, dgroup, opts=None):
         if not dgroup.datatype.startswith('xas'):
             return
-
-        dgroup.energy = dgroup.x*1.0
-        dgroup.norm = dgroup.y*1.0
 
         popts = {'group': dgroup.groupname}
         popts.update(opts)
@@ -333,8 +324,8 @@ class XASController():
         this.proc_opts.update(master.proc_opts)
         this.proc_opts['group']  = outgroup
         this.datatype = master.datatype
-        this.x = this.xdat = this.energy
-        this.y = this.ydat = getattr(this, yarray)
+        this.xdat = 1.0*this.energy
+        this.ydat = 1.0*getattr(this, yarray)
         this.plot_xlabel = 'energy'
         this.plot_ylabel = yarray
 
@@ -369,25 +360,20 @@ class XASController():
                  getattr(dgroup, 'mu', None) is None)):
                 self.process(dgroup)
 
-        if not hasattr(dgroup, 'x'):
-            dgroup.x = dgroup.xdat[:]
-        if not hasattr(dgroup, 'y'):
-            dgroup.y = dgroup.ydat[:]
-
         if use_yarrays and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
         else:
-            plot_yarrays = [(dgroup.y, {}, None)]
+            plot_yarrays = [(dgroup.ydat, {}, None)]
 
         popts = kws
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
         unzoom = (unzoom or
-                  min(dgroup.x) >= viewlims[1] or
-                  max(dgroup.x) <= viewlims[0] or
-                  min(dgroup.y) >= viewlims[3] or
-                  max(dgroup.y) <= viewlims[2])
+                  min(dgroup.xdat) >= viewlims[1] or
+                  max(dgroup.xdat) <= viewlims[0] or
+                  min(dgroup.ydat) >= viewlims[3] or
+                  max(dgroup.ydat) <= viewlims[2])
 
         if not unzoom:
             popts['xmin'] = viewlims[0]
@@ -413,7 +399,7 @@ class XASController():
             popts.update(yarr[1])
             if yarr[2] is not None:
                 popts['label'] = yarr[2]
-            plotcmd(dgroup.x, yarr[0], **popts)
+            plotcmd(dgroup.xdat, yarr[0], **popts)
             plotcmd = oplot
 
         if plot_extras is not None:
@@ -617,8 +603,6 @@ class XASFrame(wx.Frame):
         if not hasattr(self.larch.symtable, groupname):
             return
 
-        self.current_filename = filename
-
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
@@ -628,7 +612,7 @@ class XASFrame(wx.Frame):
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
-
+        self.current_filename = filename
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -776,27 +760,49 @@ class XASFrame(wx.Frame):
             aprj.add_group(grp, label=label)
         aprj.save(use_gzip=True)
 
-
     def onConfigDataProcessing(self, event=None):
         pass
 
     def onCopyGroup(self, event=None):
-        filename = self.current_filename
+        fname = self.current_filename
+        if fname is None:
+            fname = self.current_filename = self.controller.filelist.GetStringSelection()
 
-        groupname = self.controller.file_groups[filename]
+        groupname = self.controller.file_groups[fname]
         if not hasattr(self.larch.symtable, groupname):
             return
-        dgroup = self.controller.get_group(groupname)
+        ogroup = self.controller.get_group(groupname)
 
-        groupname = unique_name(groupname, self.controller.file_groups.keys())
-        setattr(self.larch.symtable, groupname, dgroup)
+        ngroup = Group(datatype=ogroup.datatype,
+                       energy=1.0*ogroup.energy,
+                       mu=1.0*ogroup.mu,
+                       xdat=1.0*ogroup.energy,
+                       ydat=1.0*ogroup.mu)
 
-        self.install_group(groupname, groupname, overwrite=False)
-        self.controller.process(dgroup)
+        for attr in dir(ogroup):
+            if attr in ('i0', 'data' 'yerr'):
+                val = getattr(ogroup, attr)*1.0
+            if attr in ('norm', 'flat', 'deriv', 'deconv', 'post_edge', 'pre_edge'):
+                pass
+            else:
+                try:
+                    val = copy.deepcopy(getattr(ogroup, attr))
+                except ValueError:
+                    val = None
+            setattr(ngroup, attr, val)
 
+        new_fname = unique_name(fname,     self.controller.file_groups.keys())
+        new_gname = unique_name(groupname, self.controller.file_groups.values())
+        setattr(self.larch.symtable, new_gname, ngroup)
+        self.install_group(new_gname, new_fname, overwrite=False)
+        self.controller.process(ngroup)
+        self.ShowFile(groupname=new_gname)
 
     def onRenameGroup(self, event=None):
-        dlg = RenameDialog(self, self.current_filename)
+        if fname is None:
+            fname = self.current_filename = self.controller.filelist.GetStringSelection()
+
+        dlg = RenameDialog(self, fame)
         res = dlg.GetResponse()
         dlg.Destroy()
 
@@ -965,8 +971,8 @@ class XASFrame(wx.Frame):
 
         s = """{group:s} = _prj.{group:s}
         {group:s}.datatype = 'xas'
-        {group:s}.x = {group:s}.xdat = {group:s}.energy
-        {group:s}.y = {group:s}.ydat = {group:s}.mu
+        {group:s}.xdat = 1.0*{group:s}.energy
+        {group:s}.ydat = 1.0*{group:s}.mu*
         {group:s}.yerr = 1.0
         {group:s}.plot_ylabel = 'mu'
         {group:s}.plot_xlabel = 'energy'
