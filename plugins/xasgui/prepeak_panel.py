@@ -60,33 +60,6 @@ FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
 MIN_CORREL = 0.0010
 
-class AllParamsPanel(wx.Panel):
-    """Panel containing simple list of all Parameters"""
-    def __init__(self, parent=None, controller=None, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
-        self.parent = parent
-        self.fit_params = OrderedDict()
-        self.user_params = OrderedDict()
-
-    def add_parameter(self, param):
-        """add a parameter"""
-        # print( "add parameter ", param)
-
-    def del_parameter(self, param):
-        """delete a parameter"""
-        print( "del parameter ", param)
-
-    def show_parameters(self, fit_params=None, user_params=None):
-        if fit_params is not None:
-            self.fit_params = OrderedDict()
-            for parname, param in fit_params.items():
-                self.fit_params[parname] = param
-        if user_params is not None:
-            self.user_params = OrderedDict()
-            for parname, param in user_params.items():
-                self.user_params[parname] = param
-
-
 class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, controller=None, datagroup=None, **kws):
 
@@ -342,7 +315,6 @@ class FitResultFrame(wx.Frame):
 
         self.Refresh()
 
-
 class PrePeakPanel(wx.Panel):
     def __init__(self, parent=None, controller=None, **kws):
 
@@ -377,90 +349,109 @@ class PrePeakPanel(wx.Panel):
         self.mod_nb.SetActiveTabTextColour(wx.Colour(128,0,0))
         self.mod_nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
 
-        self.param_panel = AllParamsPanel(self, controller=self.controller)
-        # self.mod_nb.AddPage(self.param_panel, 'Parameters', True)
+        pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
 
-        range_row = wx.Panel(self)
-        rsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.btns = {}
+        for name in ('ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
+            bb = BitmapButton(pan, get_icon('plus'),
+                              action=partial(self.on_selpoint, opt=name),
+                              tooltip='use last point selected from plot')
+            self.btns[name] = bb
 
-        xmin_sel = BitmapButton(range_row, get_icon('plus'),
-                                action=partial(self.on_selpoint, opt='xmin'),
-                                tooltip='use last point selected from plot')
-        xmax_sel = BitmapButton(range_row, get_icon('plus'),
-                                action=partial(self.on_selpoint, opt='xmax'),
-                                tooltip='use last point selected from plot')
+        opts = dict(size=(65, -1), gformat=True, precision=1,
+                    # action=self.UpdatePlot,
+                    )
 
-        opts = {'size': (70, -1), 'gformat': True}
-        self.xmin = FloatCtrl(range_row, value=-np.inf, **opts)
-        self.xmax = FloatCtrl(range_row, value=np.inf, **opts)
+        self.ppeak_emin = FloatCtrl(pan, value=-30, **opts)
+        self.ppeak_emax = FloatCtrl(pan, value=0, **opts)
+        self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
+        self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
-        rsizer.Add(xmin_sel, 0, LCEN, 3)
-        rsizer.Add(self.xmin, 0, LCEN, 3)
-        rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
-        rsizer.Add(xmax_sel, 0, LCEN, 3)
-        rsizer.Add(self.xmax, 0, LCEN, 3)
-        rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
-        rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
-                          action=self.onResetRange), 0, LCEN, 3)
+        self.ppeak_bkgfit = Button(pan, 'Fit Pre-edge Baseline', size=(175, 30),
+                                   action=self.onPreedgeBaseline)
 
-        pack(range_row, rsizer)
+        self.model_type = Choice(pan, size=(100, -1),
+                                 choices=ModelTypes,
+                                 action=self.onModelTypes)
 
-        action_row = wx.Panel(self)
-        rsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.model_func = Choice(pan, size=(200, -1),
+                                 choices=ModelChoices['peaks'],
+                                 action=self.addModel)
 
-        self.plot_comps = Check(action_row, label='Plot Components?',
-                                default=True, size=(150, -1))
+        pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
+        pan.Add(self.btns['ppeak_emin'])
+        pan.Add(self.ppeak_emin)
+        pan.Add(SimpleText(pan, ':'))
+        pan.Add(self.btns['ppeak_emax'])
+        pan.Add(self.ppeak_emax)
 
-        rsizer.Add(Button(action_row, 'Run Fit',
-                          size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
-        self.savebtn = Button(action_row, 'Save Fit',
-                              size=(100, -1), action=self.onSaveFitResult)
-        self.savebtn.Disable()
-        rsizer.Add(self.savebtn, 0, LCEN, 3)
+        t = SimpleText(pan, 'Pre-edge Peak Range: ')
+        t.SetToolTip('Range used as mask for background')
 
-        rsizer.Add(Button(action_row, 'Plot Current Model',
-                          size=(175, -1), action=self.onShowModel), 0, LCEN, 3)
-        rsizer.Add(self.plot_comps, 0, LCEN, 3)
+        pan.Add(t, newrow=True)
+        pan.Add(self.btns['ppeak_elo'])
+        pan.Add(self.ppeak_elo)
+        pan.Add(SimpleText(pan, ':'))
+        pan.Add(self.btns['ppeak_ehi'])
+        pan.Add(self.ppeak_ehi)
+        pan.Add(self.ppeak_bkgfit)
 
-        pack(action_row, rsizer)
+        pan.Add(SimpleText(pan, ' Add Model Type: '), newrow=True)
+        pan.Add(self.model_type, dcol=3)
+        pan.Add(SimpleText(pan, ' Model: '), dcol=2)
+        pan.Add(self.model_func)
 
-        models_row = wx.Panel(self)
-        rsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.model_choice = Choice(models_row, size=(200, -1),
-                                   choices=ModelChoices['peaks'],  action=self.addModel)
+        pan.pack()
 
-        rsizer.Add(SimpleText(models_row, ' Add Model Type: '), 0, LCEN, 3)
+#         rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
+#         rsizer.Add(xmin_sel, 0, LCEN, 3)
+#         rsizer.Add(self.xmin, 0, LCEN, 3)
+#         rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
+#         rsizer.Add(xmax_sel, 0, LCEN, 3)
+#         rsizer.Add(self.xmax, 0, LCEN, 3)
+#         rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
+#         rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
+#                           action=self.onResetRange), 0, LCEN, 3)
+#          pack(range_row, rsizer)
 
-        rsizer.Add(Choice(models_row, size=(100, -1), choices=ModelTypes,
-                          action=self.onModelTypes), 0, LCEN, 3)
 
-        rsizer.Add(SimpleText(models_row, ' Model: '), 0, LCEN, 3)
-
-        rsizer.Add(self.model_choice, 0, LCEN, 3)
-
-        pack(models_row, rsizer)
+#         self.plot_comps = Check(pan, label='Plot Components?',
+#                                 default=True, size=(150, -1))
+#
+#         rsizer.Add(Button(a, 'Run Fit',
+#                           size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
+#         self.savebtn = Button(action_row, 'Save Fit',
+#                               size=(100, -1), action=self.onSaveFitResult)
+#         self.savebtn.Disable()
+#         rsizer.Add(self.savebtn, 0, LCEN, 3)
+#
+#         rsizer.Add(Button(action_row, 'Plot Current Model',
+#                           size=(175, -1), action=self.onShowModel), 0, LCEN, 3)
+#         rsizer.Add(self.plot_comps, 0, LCEN, 3)
+#
+#         pack(action_row, rsizer)
+#
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([(range_row, 0, LCEN,  4), ((9, 9), 0, LCEN, 4),
-                       (models_row, 0, LCEN, 4), ((9, 9), 0, LCEN, 4),
-                       (action_row, 0, LCEN, 4), ((9, 9), 0, LCEN, 4),
+        sizer.AddMany([((10, 10), 0, LCEN, 10), (pan,      0, LCEN, 10),
+                       ((10, 10), 0, LCEN, 10),
                        (HLine(self, size=(550, 3)), 0, LCEN, 4),
                        ((10,10), 0, LCEN, 2),
                        (self.mod_nb,  1, LCEN|wx.GROW, 10)])
 
         pack(self, sizer)
 
+    def onPreedgeBaseline(self, evt=None):
+        print(" on preedge baseline")
+
+
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
-        if self.mod_nb.GetPage(idx) is self.param_panel:
-            self.build_fitmodel()
-            self.param_panel.show_parameters(self.fit_params, self.user_added_params)
 
     def onModelTypes(self, event=None):
         modtype = event.GetString().lower()
-        self.model_choice.SetChoices(ModelChoices[modtype])
+        self.model_func.SetChoices(ModelChoices[modtype])
 
     def addModel(self, event=None, model=None):
         if model is None and event is not None:
