@@ -802,7 +802,8 @@ class XASFrame(wx.Frame):
             groupname = self.controller.file_groups.pop(self.current_filename)
             self.controller.file_groups[res.newname] = groupname
             self.controller.filelist.rename_item(self.current_filename, res.newname)
-            self.current_filename = res.newname
+            dgroup = self.controller.get_group(groupname)
+            dgroup.filename = self.current_filename = res.newname
 
 
     def onMergeData(self, event=None):
