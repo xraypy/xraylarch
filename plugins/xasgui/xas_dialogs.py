@@ -42,3 +42,32 @@ class MergeDialog(wx.Dialog):
             gname = self.group_name.GetValue()
             ok = True
         return response(ok, master, ynorm, gname)
+
+class RenameDialog(wx.Dialog):
+    """dialog for renaming group"""
+    msg = """Rename Group"""
+
+    def __init__(self, parent, oldname,  **kws):
+        title = "Rename Group %s" % (oldname)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.newname   = wx.TextCtrl(panel, -1, oldname,  size=(250, -1))
+
+        panel.Add(SimpleText(panel, 'Old Name : '), newrow=True)
+        panel.Add(SimpleText(panel, oldname))
+        panel.Add(SimpleText(panel, 'New Name : '), newrow=True)
+        panel.Add(self.newname)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+
+        panel.pack()
+
+    def GetResponse(self, newname=None):
+        self.Raise()
+        response = namedtuple('RenameResponse', ('ok', 'newname'))
+        ok = False
+        if self.ShowModal() == wx.ID_OK:
+            newname = self.newname.GetValue()
+            ok = True
+        return response(ok, newname)
