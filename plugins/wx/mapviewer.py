@@ -1650,7 +1650,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if self.report is None:
             return
 
-        self.choice.Disable()
         self.report.DeleteAllItems()
         self.report_data = []
 
@@ -1681,6 +1680,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         area = xrmfile.get_area(name=areaname)
         amask = area.value
+
+        def match_mask_shape(det, mask):
+           if mask.shape[1] == det.shape[1] - 2: # hotcols
+              det = det[:,1:-1]
+           if mask.shape[0] < det.shape[0]:
+              det = det[:mask.shape[0]]
+           return det[mask]
+
 
         if 'roistats' in area.attrs:
            for dat in json.loads(area.attrs['roistats']):
@@ -1717,7 +1724,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             ndet = 'det'
 
 
-
         for i in range(xrmmap.attrs['N_Detectors']):
             tname = '%s%i/realtime' % (ndet,i+1)
             rtime = xrmmap[tname].value
@@ -1728,49 +1734,35 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if version_ge(version, '2.0.0'):
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
-                if amask.shape[1] == d.shape[1] - 2: # hotcols
-                    d = d[:,1:-1]
-
-                d = d[amask]/ctime
-
-                report_info(scalar,d)
+                d = match_mask_shape(d, amask)
+                report_info(scalar, d/ctime)
 
             for roi in d_rois:
                 for i,det in enumerate(d_dets):
-                    dname = '%s (%s)' % (roi,det)
-                    # d = xrmmap['roimap'][det][roi]['cor'].value
-                    d = xrmmap['roimap'][det][roi]['raw'].value ## this matches old version
-                    if amask.shape[1] == d.shape[1] - 2: # hotcols
-                        d = d[:,1:-1]
-                    d = d[amask]/ctime
-
-                    report_info(dname,d)
+                    d = xrmmap['roimap'][det][roi]['raw'].value
+                    d = match_mask_shape(d, amask)
+                    report_info('%s (%s)' % (roi, det), d/ctime)
 
         else:
-
             for idet, dname in enumerate(d_names):
-                daddr = d_addrs[idet]
-                det = 0
+                try:
+                    daddr = h5str(d_addrs[idet])
+                except IndexError:
+                    break
                 if 'mca' in daddr:
                     det = 1
                     words = daddr.split('mca')
                     if len(words) > 1:
                         det = int(words[1].split('.')[0])
-                if idet == 0:
-                    d = ctime
-                else:
-                    d = xrmmap['roimap/det_raw'][:,:,idet]
-                    if amask.shape[1] == d.shape[1] - 2: # hotcols
-                        d = d[:,1:-1]
-                    d = d[amask]/ctime
 
-                report_info(dname,d)
+                d = xrmmap['roimap/det_raw'][:,:,idet]
+                d = match_mask_shape(d, amask)
+                report_info(dname, d/ctime)
 
         if False and 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
 
-        self.choice.Enable()
 
     def update_xrmmap(self, xrmfile=None):
         
