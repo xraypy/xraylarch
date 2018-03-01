@@ -34,7 +34,7 @@ class MergeDialog(wx.Dialog):
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
-        response = namedtuple('MergeResponse', ('ok', 'ynorm', 'master', 'group'))
+        response = namedtuple('MergeResponse', ('ok', 'master', 'ynorm', 'group'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
             master= self.master_group.GetStringSelection()
