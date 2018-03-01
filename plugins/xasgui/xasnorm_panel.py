@@ -69,9 +69,17 @@ class XASNormPanel(wx.Panel):
         self.proc_timer.Start(100)
         self.build_display()
 
-    def edit_config(self, event=None):
-        """edit config"""
-        pass
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            print(" Fill xasnorm panel from group ", fname, gname, dgroup)
+            self.fill(dgroup)
+        except:
+            print(" Cannot fill xasnorm panel .. no data?")
+
 
     def fill(self, dgroup):
         opts = self.controller.get_proc_opts(dgroup)

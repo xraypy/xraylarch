@@ -72,6 +72,7 @@ class FitResultFrame(wx.Frame):
         self.build()
         self.show()
 
+
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
         sizer.SetVGap(2)
@@ -339,8 +340,17 @@ class PrePeakPanel(wx.Panel):
         self.pick2erase_panel = None
         self.Bind(wx.EVT_TIMER, self.onPick2EraseTimer, self.pick2erase_timer)
 
-    def build_display(self):
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            print(" Fill prepeak panel from group ", fname, gname, dgroup)
+        except:
+            print(" Cannot Fill prepeak panel from group ")
 
+    def build_display(self):
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
         self.mod_nb.SetTabAreaColour(wx.Colour(250,250,250))
         self.mod_nb.SetActiveTabColour(wx.Colour(254,254,195))

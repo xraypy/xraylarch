@@ -480,13 +480,14 @@ class XASFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        panel_opts = dict(parent=self, controller=self.controller)
+        self.xasnorm_panel = XASNormPanel(parent=self, controller=self.controller)
+        self.prepeak_panel = PrePeakPanel(parent=self, controller=self.controller)
 
-        self.xasnorm_panel = XASNormPanel(**panel_opts)
-        self.prepeak_panel = PrePeakPanel(**panel_opts)
-
-        self.nb.AddPage(self.xasnorm_panel,  ' XAS Normalization ',  True)
-        self.nb.AddPage(self.prepeak_panel,   ' Pre-edge Peak Fit ',  True)
+        self.nb_panels = []
+        for pname, ppan in ((' XAS Normalization ', self.xasnorm_panel),
+                            (' Pre-edge Peak Fit ', self.prepeak_panel)):
+            self.nb.AddPage(ppan, pname, True)
+            self.nb_panels.append(ppan)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
@@ -499,7 +500,13 @@ class XASFrame(wx.Frame):
 
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
-        #if idx == 0:   # data processing menu
+        pan = self.nb_panels[idx]
+        print("NB Changed ", idx, pan, hasattr(pan, 'onPanelExposed'))
+
+        callback = getattr(pan, 'onPanelExposed', None)
+        if callable(callback):
+            callback()
+
 
     def onSelAll(self, event=None):
         self.controller.filelist.SetCheckedStrings(self.controller.file_groups.keys())
