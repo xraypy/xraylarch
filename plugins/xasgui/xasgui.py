@@ -139,13 +139,14 @@ class XASController():
         config['data_proc'] = dict(eshift=0, smooth_op='None',
                                    smooth_conv='Lorentzian',
                                    smooth_c0=2, smooth_c1=1,
-                                   smooth_sig=1)
-        config['xas_proc'] = dict(e0=0, pre1=-200, pre2=-25,
-                                  edge_step=0, nnorm=2, norm1=25,
-                                  norm2=-10, nvict=1, auto_step=True,
-                                  auto_e0=True, show_e0=True,
-                                  xas_op='Normalized',
-                                  deconv_form='none', deconv_ewid=0.5)
+                                   smooth_sig=1,
+                                   e0=0, pre1=-200, pre2=-25,
+                                   edge_step=0, nnorm=2, norm1=25,
+                                   norm2=-10, nvict=1, auto_step=True,
+                                   auto_e0=True, show_e0=True,
+                                   plotone_op='Normalized',
+                                   plotsel_op='Normalized',
+                                   deconv_form='none', deconv_ewid=0.5)
 
         config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
                                   fit_emin=-40, fit_emax=0,
@@ -214,8 +215,6 @@ class XASController():
     def get_proc_opts(self, dgroup):
         opts = {}
         opts.update(self.get_config('data_proc', default={}))
-        if dgroup.datatype == 'xas':
-            opts.update(self.get_config('xas_proc', {}))
 
         if hasattr(dgroup, 'proc_opts'):
             opts.update(dgroup.proc_opts)
@@ -224,9 +223,6 @@ class XASController():
     def process(self, dgroup, proc_opts=None):
         if not hasattr(dgroup, 'proc_opts'):
             dgroup.proc_opts = {}
-
-        if 'escale' not in dgroup.proc_opts:
-            dgroup.proc_opts.update(self.get_proc_opts(dgroup))
 
         if proc_opts is not None:
             dgroup.proc_opts.update(proc_opts)
@@ -237,22 +233,22 @@ class XASController():
 
 
         # smoothing
-        smop = opts['smooth_op'].lower()
-        smcmd = None
-        if smop.startswith('box'):
-            opts['smooth_c0'] = int(opts['smooth_c0'])
-            smcmd = "boxcar({group:s}.ydat, {smooth_c0:d})"
-        elif smop.startswith('savit'):
-            opts['smooth_c0'] = int(opts['smooth_c0'])
-            opts['smooth_c1'] = int(opts['smooth_c1'])
-            smcmd = "savitzky_golay({group:s}.ydat, {smooth_c0:d}, {smooth_c1:d})"
-        elif smop.startswith('conv'):
-            cform = str(opts['smooth_conv'].lower())
-            smcmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
-
-        if smcmd is not None:
-            cmd = "{group:s}.y = " + smcmd
-            self.larch.eval(cmd.format(**opts))
+#         smop = opts['smooth_op'].lower()
+#         smcmd = None
+#         if smop.startswith('box'):
+#             opts['smooth_c0'] = int(opts['smooth_c0'])
+#             smcmd = "boxcar({group:s}.ydat, {smooth_c0:d})"
+#         elif smop.startswith('savit'):
+#             opts['smooth_c0'] = int(opts['smooth_c0'])
+#             opts['smooth_c1'] = int(opts['smooth_c1'])
+#             smcmd = "savitzky_golay({group:s}.ydat, {smooth_c0:d}, {smooth_c1:d})"
+#         elif smop.startswith('conv'):
+#             cform = str(opts['smooth_conv'].lower())
+#             smcmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
+#
+#         if smcmd is not None:
+#             cmd = "{group:s}.y = " + smcmd
+#             self.larch.eval(cmd.format(**opts))
 
 
 
@@ -307,7 +303,7 @@ class XASController():
         """merge groups"""
         cmd = """%s = merge_groups(%s, master=%s,
         xarray='energy', yarray='%s', kind='cubic', trim=True)"""
-        print("Merge groups " , master, outgroup, yarray)
+        # print("Merge groups " , master, outgroup, yarray)
         glist = "[%s]" % (', '.join(grouplist))
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
@@ -340,9 +336,9 @@ class XASController():
             xval, yval = None, None
         return xval, yval
 
-    def plot_group(self, groupname=None, title=None,
-                   new=True, zoom_out=True, use_yarrays=True, **kws):
-        # print("## plot_group ", groupname, zoom_out, time.ctime())
+    def plot_group(self, groupname=None, title=None, plot_yarrays=None,
+                   new=True, zoom_out=True, **kws):
+        # print("## XAS Controller plot_group ", groupname, zoom_out, plot_yarrays, time.ctime())
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -355,16 +351,13 @@ class XASController():
         if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)
 
-        if dgroup.datatype == 'xas':
-            if ((getattr(dgroup, 'plot_yarrays', None) is None or
-                 getattr(dgroup, 'energy', None) is None or
-                 getattr(dgroup, 'mu', None) is None)):
-                self.process(dgroup)
+        if ((getattr(dgroup, 'plot_yarrays', None) is None or
+             getattr(dgroup, 'energy', None) is None or
+             getattr(dgroup, 'mu', None) is None)):
+            self.process(dgroup)
 
-        if use_yarrays and hasattr(dgroup, 'plot_yarrays'):
+        if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
-        else:
-            plot_yarrays = [(dgroup.ydat, {}, None)]
 
         popts = kws
         path, fname = os.path.split(dgroup.filename)
@@ -396,12 +389,17 @@ class XASController():
         popts['title'] = title
         if hasattr(dgroup, 'custom_plotopts'):
             popts.update(dgroup.custom_plotopts)
-        for yarr in plot_yarrays:
-            popts.update(yarr[1])
-            if yarr[2] is not None:
-                popts['label'] = yarr[2]
 
-            plotcmd(dgroup.xdat, yarr[0], **popts)
+        narr = len(plot_yarrays) - 1
+        for i, pydat in enumerate(plot_yarrays):
+            print("plot ", i, pydat)
+            yaname, yopts, yalabel = pydat
+            popts.update(yopts)
+            if yalabel is not None:
+                popts['label'] = yalabel
+            popts['delay_draw'] = (i != narr)
+
+            plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = oplot
 
         if plot_extras is not None:
@@ -472,8 +470,6 @@ class XASFrame(wx.Frame):
             b.SetFont(Font(10))
             return b
 
-        plot_one = Btn('Plot One',      120, self.onPlotOne)
-        plot_sel = Btn('Plot Selected', 120, self.onPlotSel)
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
@@ -482,12 +478,9 @@ class XASFrame(wx.Frame):
                                                  remove_action=self.RemoveFile)
         self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        tsizer = wx.GridBagSizer(1, 1)
-        tsizer.Add(plot_one, (0, 0), (1, 1), LCEN, 2)
-        tsizer.Add(plot_sel, (0, 1), (1, 1), LCEN, 2)
-        tsizer.Add(sel_none, (1, 0), (1, 1), LCEN, 2)
-        tsizer.Add(sel_all,  (1, 1), (1, 1), LCEN, 2)
-
+        tsizer = wx.BoxSizer(wx.HORIZONTAL)
+        tsizer.Add(sel_none, 1, LCEN|wx.GROW, 1)
+        tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
         pack(ltop, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -561,33 +554,6 @@ class XASFrame(wx.Frame):
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
-
-    def onPlotOne(self, evt=None, groupname=None):
-        if groupname is None:
-            groupname = self.controller.groupname
-
-        dgroup = self.controller.get_group(groupname)
-        if dgroup is not None:
-            self.controller.plot_group(groupname=groupname, new=True)
-
-    def onPlotSel(self, evt=None):
-        newplot = True
-        group_ids = self.controller.filelist.GetCheckedStrings()
-        last_id = group_ids[-1]
-        for checked in group_ids:
-            groupname = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(groupname)
-            if dgroup is not None:
-                self.controller.plot_group(groupname=groupname, title='',
-                                           new=newplot, use_yarrays=False,
-                                           label=dgroup.filename,
-                                           show_legend=True,
-                                           delay_draw=(last_id!=checked))
-                newplot=False
-
-    def plot_group(self, groupname=None, title=None, new=True, **kws):
-        self.controller.plot_group(groupname=groupname, title=title, new=new, **kws)
-        self.Raise()
 
     def RemoveFile(self, fname=None, **kws):
         if fname is not None:
@@ -853,7 +819,6 @@ class XASFrame(wx.Frame):
         dlg = MergeDialog(self, groups, outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
-        print("MergeDialog res=", res.ok, res.master, res.ynorm, res.group)
 
         if res.ok:
             yname = 'norm' if res.ynorm else 'mu'
