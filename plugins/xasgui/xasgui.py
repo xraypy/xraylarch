@@ -207,7 +207,7 @@ class XASController():
         if groupname is None:
             groupname = self.groupname
         grp = getattr(self.symtable, groupname, None)
-        if not hasattr(grp, 'proc_opts'):
+        if grp is not None and not hasattr(grp, 'proc_opts'):
             grp.proc_opts = {}
         return grp
 
@@ -307,6 +307,7 @@ class XASController():
         """merge groups"""
         cmd = """%s = merge_groups(%s, master=%s,
         xarray='energy', yarray='%s', kind='cubic', trim=True)"""
+        print("Merge groups " , master, outgroup, yarray)
         glist = "[%s]" % (', '.join(grouplist))
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
@@ -848,10 +849,11 @@ class XASFrame(wx.Frame):
         if len(groups) < 1:
             return
 
-        outgroup = unique_name(outgroup, self.controller.file_groups)
+        outgroup = unique_name('merge', self.controller.file_groups)
         dlg = MergeDialog(self, groups, outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
+        print("MergeDialog res=", res.ok, res.master, res.ynorm, res.group)
 
         if res.ok:
             yname = 'norm' if res.ynorm else 'mu'
