@@ -43,7 +43,7 @@ from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
-                                  MergeDialog, RenameDialog)
+                                  MergeDialog, RenameDialog, RemoveDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -656,7 +656,7 @@ class XASFrame(wx.Frame):
 
         items['group_remove'] = MenuItem(self, data_menu, "Remove Selected Groups",
                                          "Remove Selected Group",
-                                         self.onConfigDataProcessing)
+                                         self.onRemoveGroups)
 
 
         items['data_merge'] = MenuItem(self, data_menu, "Merge Selected Groups",
@@ -817,6 +817,30 @@ class XASFrame(wx.Frame):
             dgroup.filename = self.current_filename = res.newname
             self.controller.filelist.SetStringSelection(res.newname)
 
+    def onRemoveGroups(self, event=None):
+        groups = []
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groups.append(self.controller.file_groups[str(checked)])
+        if len(groups) < 1:
+            return
+
+        dlg = RemoveDialog(self, groups)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if res.ok:
+            filelist = self.controller.filelist
+            all_fnames = filelist.GetItems()
+            for fname in groups:
+                gname = self.controller.file_groups.pop(fname)
+                delattr(self.controller.symtable, gname)
+                all_fnames.remove(fname)
+
+            filelist.Clear()
+            for name in all_fnames:
+                filelist.Append(name)
+
+
     def onMergeData(self, event=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
@@ -835,6 +859,7 @@ class XASFrame(wx.Frame):
                                          yarray=yname, outgroup=res.group)
             self.install_group(res.group, res.group, overwrite=False)
             self.controller.filelist.SetStringSelection(res.group)
+
 
     def onDeglitchData(self, event=None):
         print(" Deglitch Data")
