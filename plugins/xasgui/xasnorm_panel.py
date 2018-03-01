@@ -51,7 +51,7 @@ class XASNormPanel(wx.Panel):
         self.controller = controller
         self.reporter = reporter
         self.needs_update = False
-        self.unzoom_on_update = True
+        self.zoom_out_on_update = True
         self.proc_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
         self.proc_timer.Start(100)
@@ -177,7 +177,7 @@ class XASNormPanel(wx.Panel):
         # self.xas_show_ppcen = Check(xas, default=False, label='show?', **opts)
         # self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
         # self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
-        opts = {'action': partial(self.UpdatePlot, setval=False, unzoom=True),
+        opts = {'action': partial(self.UpdatePlot, setval=False, zoom_out=True),
                 'size': (250, -1)}
         self.xas_op = Choice(xas, choices=list(XASOPChoices.keys()), **opts)
 
@@ -446,23 +446,23 @@ class XASNormPanel(wx.Panel):
     def onSet_XASE0(self, evt=None, value=None):
         self.xas_autoe0.SetValue(0)
         self.needs_update = True
-        self.unzoom_on_update = False
+        self.zoom_out_on_update = False
 
     def onSet_XASStep(self, evt=None, value=None):
         self.xas_autostep.SetValue(0)
         self.needs_update = True
-        self.unzoom_on_update = False
+        self.zoom_out_on_update = False
 
     def onProcessTimer(self, evt=None):
         if self.needs_update and self.controller.groupname is not None:
             self.process(self.controller.groupname)
             self.controller.plot_group(groupname=self.controller.groupname,
-                                       new=True, unzoom=self.unzoom_on_update)
+                                       new=True, zoom_out=self.zoom_out_on_update)
             self.needs_update = False
 
-    def UpdatePlot(self, evt=None, unzoom=True, setval=True, value=None, **kws):
+    def UpdatePlot(self, evt=None, zoom_out=True, setval=True, value=None, **kws):
         if not setval:
-            self.unzoom_on_update = unzoom
+            self.zoom_out_on_update = zoom_out
         self.needs_update = True
 
     def on_selpoint(self, evt=None, opt='e0'):
@@ -504,7 +504,7 @@ class XASNormPanel(wx.Panel):
         self.needs_update = False
         dgroup = self.controller.get_group(gname)
         proc_opts = {}
-        save_unzoom = self.unzoom_on_update
+        save_zoom_out = self.zoom_out_on_update
         dgroup.custom_plotopts = {}
         proc_opts['eshift'] = self.eshift.GetValue()
         proc_opts['smooth_op'] = self.smooth_op.GetStringSelection()
@@ -551,7 +551,6 @@ class XASNormPanel(wx.Panel):
             self.xas_nor1.SetValue(dgroup.proc_opts['norm1'])
             self.xas_nor2.SetValue(dgroup.proc_opts['norm2'])
 
-            dgroup.orig_ylabel = dgroup.plot_ylabel
             dgroup.plot_ylabel = r'$\mu$'
             dgroup.plot_y2label = None
             dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
@@ -664,4 +663,4 @@ class XASNormPanel(wx.Panel):
 #                 if ecen > min(dgroup.energy):
 #                     dgroup.plot_extras.append(('vline', ecen, None, popts))
 
-        self.unzoom_on_update = save_unzoom
+        self.zoom_out_on_update = save_zoom_out

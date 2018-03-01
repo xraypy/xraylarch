@@ -340,8 +340,8 @@ class XASController():
         return xval, yval
 
     def plot_group(self, groupname=None, title=None,
-                   new=True, unzoom=True, use_yarrays=True, **kws):
-        # print("## plot_group ", groupname, time.ctime())
+                   new=True, zoom_out=True, use_yarrays=True, **kws):
+        # print("## plot_group ", groupname, zoom_out, time.ctime())
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
@@ -369,13 +369,13 @@ class XASController():
         path, fname = os.path.split(dgroup.filename)
         if not 'label' in popts:
             popts['label'] = dgroup.plot_ylabel
-        unzoom = (unzoom or
+        zoom_out = (zoom_out or
                   min(dgroup.xdat) >= viewlims[1] or
                   max(dgroup.xdat) <= viewlims[0] or
                   min(dgroup.ydat) >= viewlims[3] or
                   max(dgroup.ydat) <= viewlims[2])
 
-        if not unzoom:
+        if not zoom_out:
             popts['xmin'] = viewlims[0]
             popts['xmax'] = viewlims[1]
             popts['ymin'] = viewlims[2]
@@ -399,6 +399,7 @@ class XASController():
             popts.update(yarr[1])
             if yarr[2] is not None:
                 popts['label'] = yarr[2]
+
             plotcmd(dgroup.xdat, yarr[0], **popts)
             plotcmd = oplot
 
@@ -609,6 +610,8 @@ class XASFrame(wx.Frame):
         self.nb.SetSelection(0)
         self.xasnorm_panel.fill(dgroup)
         self.xasnorm_panel.needs_update = True
+        self.xasnorm_panel.zoom_out_on_update = True
+
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
