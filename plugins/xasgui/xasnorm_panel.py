@@ -211,6 +211,7 @@ class XASNormPanel(wx.Panel):
         xas.Add(self.deconv_form, dcol=4)
         xas.Add(SimpleText(xas, ' E width:'), dcol=1)
         xas.Add(self.deconv_ewid,  dcol=2)
+        xas.Add(CopyBtn('deconv'), style=RCEN)
 
         xas.Add((10, 1), newrow=True)
         xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
@@ -291,24 +292,24 @@ class XASNormPanel(wx.Panel):
         proc_opts = self.controller.group.proc_opts
         opts = {}
         name = str(name)
+        def copy_attrs(*args):
+            for a in args:
+                opts[a] = proc_opts[a]
+
         if name == 'plotone_op':
-            opts['plotone_op'] = proc_opts['plotone_op']
+            copy_attrs('plotone_op')
         elif name == 'xas_e0':
-            opts['e0'] = proc_opts['e0']
-            opts['show_e0'] = proc_opts['show_e0']
+            copy_attrs('e0', 'show_e0')
             opts['auto_e0'] = False
         elif name == 'xas_step':
-            opts['edge_step'] = proc_opts['edge_step']
+            copy_attrs('edge_step')
             opts['auto_step'] = False
         elif name == 'xas_pre':
-            opts['nvict'] = proc_opts['nvict']
-            opts['pre1'] = proc_opts['pre1']
-            opts['pre2'] = proc_opts['pre2']
+            copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'xas_norm':
-            opts['nnorm'] = proc_opts['nnorm']
-            opts['norm1'] = proc_opts['norm1']
-            opts['norm2'] = proc_opts['norm2']
-
+            copy_attrs('nnorm', 'norm1', 'norm2')
+        elif name == 'deconv':
+            copy_attrs('deconv_form', 'deconv_ewid')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -437,7 +438,7 @@ class XASNormPanel(wx.Panel):
             lab2 = PlotLabels['deconv']
             dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab2),
                                    ('norm', PLOTOPTS_1, lab1)]
-            lab = lab1 + lab2
+            lab = lab1 + ' + ' + lab2
 
         dgroup.plot_ylabel = lab
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
