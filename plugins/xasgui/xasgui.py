@@ -231,56 +231,32 @@ class XASController():
         opts.update(dgroup.proc_opts)
         opts['group'] = dgroup.groupname
 
+        copts = [dgroup.groupname]
+        if not opts['auto_e0']:
+            _e0 = opts['e0']
+            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
+                copts.append("e0=%.4f" % float(_e0))
 
-        # smoothing
-#         smop = opts['smooth_op'].lower()
-#         smcmd = None
-#         if smop.startswith('box'):
-#             opts['smooth_c0'] = int(opts['smooth_c0'])
-#             smcmd = "boxcar({group:s}.ydat, {smooth_c0:d})"
-#         elif smop.startswith('savit'):
-#             opts['smooth_c0'] = int(opts['smooth_c0'])
-#             opts['smooth_c1'] = int(opts['smooth_c1'])
-#             smcmd = "savitzky_golay({group:s}.ydat, {smooth_c0:d}, {smooth_c1:d})"
-#         elif smop.startswith('conv'):
-#             cform = str(opts['smooth_conv'].lower())
-#             smcmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={smooth_sig:f}, form='{smooth_conv:s}')"
-#
-#         if smcmd is not None:
-#             cmd = "{group:s}.y = " + smcmd
-#             self.larch.eval(cmd.format(**opts))
+        if not opts['auto_step']:
+            copts.append("step=%.4f" % opts['edge_step'])
 
+        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+            copts.append("%s=%.4f" % (attr, opts[attr]))
 
+        self.larch.eval("pre_edge(%s)" % (','.join(copts)))
 
-        # xas
-        if dgroup.datatype.startswith('xas'):
+        # deconvolution
+        deconv_form = opts['deconv_form'].lower()
+        deconv_ewid = float(opts['deconv_ewid'])
+        if not deconv_form.startswith('none') and deconv_ewid > 1.e-3:
+            cmd = "xas_deconvolve({group:s}, form='{deconv_form:s}', esigma={deconv_ewid:f})"
+            self.larch.eval(cmd.format(**opts))
 
-            copts = [dgroup.groupname]
-            if not opts['auto_e0']:
-                _e0 = opts['e0']
-                if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                    copts.append("e0=%.4f" % float(_e0))
-
-            if not opts['auto_step']:
-                copts.append("step=%.4f" % opts['edge_step'])
-
-            for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                copts.append("%s=%.4f" % (attr, opts[attr]))
-
-            self.larch.eval("pre_edge(%s)" % (','.join(copts)))
-
-            # deconvolution
-            deconv_form = opts['deconv_form'].lower()
-            deconv_ewid = float(opts['deconv_ewid'])
-            if not deconv_form.startswith('none') and deconv_ewid > 1.e-3:
-                cmd = "xas_deconvolve({group:s}, form='{deconv_form:s}', esigma={deconv_ewid:f})"
-                self.larch.eval(cmd.format(**opts))
-
-            opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
-            opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
-            for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-                opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
-            dgroup.proc_opts.update(opts)
+        opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
+        opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
+        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
+            opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
+        dgroup.proc_opts.update(opts)
 
     def xas_preedge_baseline(self, dgroup, opts=None):
         if not dgroup.datatype.startswith('xas'):
@@ -303,7 +279,6 @@ class XASController():
         """merge groups"""
         cmd = """%s = merge_groups(%s, master=%s,
         xarray='energy', yarray='%s', kind='cubic', trim=True)"""
-        # print("Merge groups " , master, outgroup, yarray)
         glist = "[%s]" % (', '.join(grouplist))
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
@@ -338,7 +313,6 @@ class XASController():
 
     def plot_group(self, groupname=None, title=None, plot_yarrays=None,
                    new=True, zoom_out=True, **kws):
-        # print("## XAS Controller plot_group ", groupname, zoom_out, plot_yarrays, time.ctime())
         ppanel = self.get_display(stacked=False).panel
         newplot = ppanel.plot
         oplot   = ppanel.oplot
