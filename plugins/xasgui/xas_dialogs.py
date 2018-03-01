@@ -71,3 +71,30 @@ class RenameDialog(wx.Dialog):
             newname = self.newname.GetValue()
             ok = True
         return response(ok, newname)
+
+class RemoveDialog(wx.Dialog):
+    """dialog for removing groups"""
+    msg = """Remove Selected Group"""
+
+    def __init__(self, parent, grouplist,  **kws):
+        title = "Remove %i Selected Group" % len(grouplist)
+        self.grouplist = grouplist
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        panel.Add(SimpleText(panel, 'Remove %i Selected Grous?' % (len(grouplist))),
+                  newrow=True, dcol=2)
+
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+
+        panel.pack()
+
+    def GetResponse(self, ngroups=None):
+        self.Raise()
+        response = namedtuple('RemoveResponse', ('ok','ngroups'))
+        ok = False
+        if self.ShowModal() == wx.ID_OK:
+            ngroups = len(self.grouplist)
+            ok = True
+        return response(ok, ngroups)
