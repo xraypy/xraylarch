@@ -392,7 +392,6 @@ class XASController():
 
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
-            print("plot ", i, pydat)
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
