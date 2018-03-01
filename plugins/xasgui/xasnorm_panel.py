@@ -33,19 +33,27 @@ CONV_OPS = ('Lorenztian', 'Gaussian')
 DECONV_OPS = ('None', 'Lorenztian', 'Gaussian')
 
 PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
-                             ('Normalized', 'norm'),
-                             ('Derivative', 'dmude'),
-                             ('Normalized + Derivative', 'norm+deriv'),
-                             ('Pre-edge subtracted', 'preedge'),
-                             ('Raw Data + Pre-edge/Post-edge', 'prelines'),
-                             ('Deconvolved + Normalized',   'deconv+norm'),
-                             ('Deconvolved',   'deconv')
-                             ))
+                               ('Normalized', 'norm'),
+                               ('Derivative', 'dmude'),
+                               ('Normalized + Derivative', 'norm+deriv'),
+                               ('Flattened', 'flat'),
+                               ('Pre-edge subtracted', 'preedge'),
+                               ('Raw Data + Pre-edge/Post-edge', 'prelines'),
+                               ('Deconvolved + Normalized',   'deconv+norm'),
+                               ('Deconvolved',   'deconv')
+                               ))
 
 PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
+                               ('Flattened', 'flat'),
                                ('Derivative', 'dmude')))
 
+
+PlotLabels = {'mu': r'$\mu(E)',
+              'norm': r'normalized $\mu(E)$',
+              'flat': r'flattened $\mu(E)$',
+              'deconv': r'deconvolved $\mu(E)$',
+              'dmude': r'$d\mu/dE$'}
 
 class XASNormPanel(wx.Panel):
     """XAS normalization Panel"""
@@ -234,14 +242,18 @@ class XASNormPanel(wx.Panel):
     def onPlotSel(self, evt=None):
         newplot = True
         group_ids = self.controller.filelist.GetCheckedStrings()
-        yarray_name  = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
         if len(group_ids) < 1:
             return
         last_id = group_ids[-1]
+
+        yarray_name  = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
+        ylabel = PlotLabels[yarray_name]
+
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             plot_yarrays = [(yarray_name, PLOTOPTS_1, dgroup.filename)]
+            dgroup.plot_ylabel = ylabel
             if dgroup is not None:
                 dgroup.plot_extras = []
                 self.controller.plot_group(groupname=groupname,
@@ -397,7 +409,8 @@ class XASNormPanel(wx.Panel):
         pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
 
         if pchoice == 'prelines':
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, r'$\mu$'),
+            lab = PlotLabels['mu']
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
             dgroup.ydat = dgroup.mu
@@ -408,36 +421,49 @@ class XASNormPanel(wx.Panel):
             dgroup.ydat = dgroup.pre_edge_sub
             dgroup.plot_ylabel = r'pre-edge subtracted $\mu$'
         elif pchoice == 'norm+deriv':
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, r'normalized $\mu$'),
-                                   ('dmude', PLOTOPTS_D, r'$d\mu/dE$')]
-            dgroup.plot_ylabel = r'normalized $\mu$'
-            dgroup.plot_y2label = r'$d\mu/dE$'
+            lab1 = PlotLabels['norm']
+            lab2 = PlotLabels['dmude']
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab1),
+                                   ('dmude', PLOTOPTS_D, lab2)]
+            dgroup.plot_ylabel = lab1
+            dgroup.plot_y2label = lab2
             dgroup.ydat = dgroup.norm
-
         elif pchoice == 'mu':
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, r'$\mu$')]
-            dgroup.plot_ylabel = r'$\mu$'
+            lab = PlotLabels['mu']
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab)]
+            dgroup.plot_ylabel = lab
             dgroup.ydat = dgroup.mu
 
         elif pchoice == 'norm':
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, r'normalized $\mu$')]
-            dgroup.plot_ylabel = r'normalized $\mu$'
+            lab = PlotLabels['norm']
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
+            dgroup.plot_ylabel = lab
             dgroup.ydat = dgroup.norm
 
+        elif pchoice == 'flat':
+            lab = PlotLabels['flat']
+            dgroup.plot_yarrays = [('flat', PLOTOPTS_1, lab)]
+            dgroup.plot_ylabel = lab
+            dgroup.ydat = dgroup.flat
+
         elif pchoice == 'dmude':
-            dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, r'$d\mu/dE$')]
-            dgroup.plot_ylabel = r'$d\mu/dE$'
+            lab = PlotLabels['dmude']
+            dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, lab)]
+            dgroup.plot_ylabel = lab
             dgroup.ydat = dgroup.dmude
 
         elif pchoice == 'deconv+norm' and hasattr(dgroup, 'deconv'):
-            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, r'deconvolved'),
-                                   ('norm', PLOTOPTS_1, r'normalized $\mu$')]
-            dgroup.plot_ylabel = r'deconvolved and normalized $\mu$'
+            lab1 = PlotLabels['norm']
+            lab2 = PlotLabels['deconv']
+            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab2),
+                                   ('norm', PLOTOPTS_1, lab1)]
+            dgroup.plot_ylabel = lab1 + lab2
             dgroup.ydat = dgroup.deconv
 
         elif pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
-            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, r'deconvolved $\mu')]
-            dgroup.plot_ylabel = r'deconvolved $\mu$'
+            lab = PlotLabels['deconv']
+            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab)]
+            dgroup.plot_ylabel = lab
             dgroup.ydat = dgroup.deconv
 
         y4e0 = dgroup.ydat
