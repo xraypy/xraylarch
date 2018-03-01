@@ -34,7 +34,7 @@ DECONV_OPS = ('None', 'Lorenztian', 'Gaussian')
 
 PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
                              ('Normalized', 'norm'),
-                             ('Derivative', 'deriv'),
+                             ('Derivative', 'dmude'),
                              ('Normalized + Derivative', 'norm+deriv'),
                              ('Pre-edge subtracted', 'preedge'),
                              ('Raw Data + Pre-edge/Post-edge', 'prelines'),
@@ -44,7 +44,7 @@ PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
 
 PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
-                               ('Derivative', 'deriv')))
+                               ('Derivative', 'dmude')))
 
 
 class XASNormPanel(wx.Panel):
@@ -179,13 +179,13 @@ class XASNormPanel(wx.Panel):
         # self.xas_show_ppfit = Check(xas, default=False, label='show?', **opts)
         # self.xas_show_ppdat = Check(xas, default=False, label='show?', **opts)
 
-        opts = {'action': partial(self.UpdatePlot, setval=False, zoom_out=True),
-                'size': (200, -1)}
-
-        self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()), **opts)
+        self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
+                                 action=partial(self.UpdatePlot, setval=False, zoom_out=True),
+                                 size=(200, -1))
         self.plotone_op.SetStringSelection('Normalized')
 
-        self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()), size=(200, -1))
+        self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
+                                 action=self.onPlotSel, size=(200, -1))
         self.plotsel_op.SetStringSelection('Normalized')
 
         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
@@ -208,24 +208,13 @@ class XASNormPanel(wx.Panel):
         self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
         self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
 
-        self.plot_sel = Button(xas, 'Plot Selected Groups', size=(150, 30),
-                               action=self.onPlotSel)
+        plot_sel = Button(xas, 'Plot Selected Groups', size=(150, 30),
+                          action=self.onPlotSel)
 
-        self.plot_one = Button(xas, 'Plot This Group', size=(150, 30),
-                               action=self.onPlotOne)
+        plot_one = Button(xas, 'Plot This Group', size=(150, 30),
+                          action=self.onPlotOne)
 
-        #                             action=self.onPreedgeBaseline)
-
-        # self.xas_ppeak_emin = FloatCtrl(xas, value=-31, **opts)
-        # self.xas_ppeak_elo = FloatCtrl(xas, value=-15, **opts)
-        # self.xas_ppeak_ehi = FloatCtrl(xas, value=-6, **opts)
-        # self.xas_ppeak_emax = FloatCtrl(xas, value=-2, **opts)
-        # self.xas_ppeak_fit = Button(xas, 'Fit Pre edge Baseline', size=(175, 30),
-        #                             action=self.onPreedgeBaseline)
-        # self.xas_ppeak_centroid = SimpleText(xas, label='         ', size=(200, -1))
-
-        opts = {'size': (50, -1),
-                'choices': ('0', '1', '2', '3'),
+        opts = {'size': (50, -1), 'choices': ('0', '1', '2', '3'),
                 'action': partial(self.UpdatePlot, setval=True)}
         self.xas_vict = Choice(xas, **opts)
         self.xas_nnor = Choice(xas, **opts)
@@ -238,9 +227,11 @@ class XASNormPanel(wx.Panel):
 
         xas.Add(SimpleText(xas, ' XAS Data Processing', **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
-        xas.Add(self.plot_sel, dcol=1, newrow=True)
+
+        xas.Add(plot_sel, newrow=True)
         xas.Add(self.plotsel_op, dcol=6)
-        xas.Add(self.plot_one, newrow=True)
+
+        xas.Add(plot_one, newrow=True)
         xas.Add(self.plotone_op, dcol=6)
         xas.Add((10, 10))
         xas.Add(CopyBtn('plotone_op'), style=RCEN)
@@ -366,6 +357,7 @@ class XASNormPanel(wx.Panel):
             dgroup = self.controller.get_group(groupname)
             plot_yarrays = [(yarray_name, PLOTOPTS_1, dgroup.filename)]
             if dgroup is not None:
+                dgroup.plot_extras = []
                 self.controller.plot_group(groupname=groupname,
                                            title='',
                                            new=newplot,
@@ -618,7 +610,7 @@ class XASNormPanel(wx.Panel):
             dgroup.plot_ylabel = r'normalized $\mu$'
             dgroup.ydat = dgroup.norm
 
-        elif pchoice == 'deriv':
+        elif pchoice == 'dmude':
             dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, r'$d\mu/dE$')]
             dgroup.plot_ylabel = r'$d\mu/dE$'
             dgroup.ydat = dgroup.dmude
