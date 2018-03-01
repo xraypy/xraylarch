@@ -399,74 +399,48 @@ class XASNormPanel(wx.Panel):
         self.xas_nor1.SetValue(dgroup.proc_opts['norm1'])
         self.xas_nor2.SetValue(dgroup.proc_opts['norm2'])
 
-        dgroup.plot_ylabel = r'$\mu$'
+        #
+        lab = PlotLabels['norm']
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
-        dgroup.plot_yarrays = [('mu', PLOTOPTS_1, dgroup.plot_ylabel)]
-
-        dgroup.ydat = dgroup.mu
+        dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
         pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
 
-        if pchoice == 'prelines':
-            lab = PlotLabels['mu']
+        if pchoice in ('mu', 'norm', 'flat', 'dmude'):
+            lab = PlotLabels[pchoice]
+            dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
+
+        elif pchoice == 'prelines':
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
-            dgroup.ydat = dgroup.mu
         elif pchoice == 'preedge':
             dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
             dgroup.plot_yarrays = [('pre_edge_sub', PLOTOPTS_1,
                                     r'pre-edge subtracted $\mu$')]
-            dgroup.ydat = dgroup.pre_edge_sub
-            dgroup.plot_ylabel = r'pre-edge subtracted $\mu$'
+            lab = r'pre-edge subtracted $\mu$'
+
         elif pchoice == 'norm+deriv':
-            lab1 = PlotLabels['norm']
-            lab2 = PlotLabels['dmude']
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab1),
-                                   ('dmude', PLOTOPTS_D, lab2)]
-            dgroup.plot_ylabel = lab1
-            dgroup.plot_y2label = lab2
-            dgroup.ydat = dgroup.norm
-        elif pchoice == 'mu':
-            lab = PlotLabels['mu']
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab)]
-            dgroup.plot_ylabel = lab
-            dgroup.ydat = dgroup.mu
-
-        elif pchoice == 'norm':
             lab = PlotLabels['norm']
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
-            dgroup.plot_ylabel = lab
-            dgroup.ydat = dgroup.norm
+            lab2 = PlotLabels['dmude']
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
+                                   ('dmude', PLOTOPTS_D, lab2)]
+            dgroup.plot_y2label = lab2
 
-        elif pchoice == 'flat':
-            lab = PlotLabels['flat']
-            dgroup.plot_yarrays = [('flat', PLOTOPTS_1, lab)]
-            dgroup.plot_ylabel = lab
-            dgroup.ydat = dgroup.flat
-
-        elif pchoice == 'dmude':
-            lab = PlotLabels['dmude']
-            dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, lab)]
-            dgroup.plot_ylabel = lab
-            dgroup.ydat = dgroup.dmude
+        elif pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
+            lab = PlotLabels['deconv']
+            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab)]
 
         elif pchoice == 'deconv+norm' and hasattr(dgroup, 'deconv'):
             lab1 = PlotLabels['norm']
             lab2 = PlotLabels['deconv']
             dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab2),
                                    ('norm', PLOTOPTS_1, lab1)]
-            dgroup.plot_ylabel = lab1 + lab2
-            dgroup.ydat = dgroup.deconv
+            lab = lab1 + lab2
 
-        elif pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
-            lab = PlotLabels['deconv']
-            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab)]
-            dgroup.plot_ylabel = lab
-            dgroup.ydat = dgroup.deconv
-
-        y4e0 = dgroup.ydat
+        dgroup.plot_ylabel = lab
+        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
         if self.xas_showe0.IsChecked():
             ie0 = index_of(dgroup.energy, dgroup.e0)
