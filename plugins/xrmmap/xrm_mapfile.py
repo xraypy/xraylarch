@@ -1982,14 +1982,18 @@ class GSEXRM_MapFile(object):
 
         return self.get_pos(0, mean=True)
 
-    def get_rotation_axis(self):
+    def get_rotation_axis(self,axis=None):
         posnames = [n.lower() for n in self.xrmmap['positions/name']]
-        if 'theta' in posnames:
+        if axis is not None:
+            if axis in posnames or type(axis) == int:
+                return self.get_pos(axis, mean=True)
+        elif 'theta' in posnames:
             return self.get_pos('theta', mean=True)
-        if 'omega' in posnames:
+        elif 'omega' in posnames:
             return self.get_pos('omega', mean=True)
 
-        return self.get_pos(0, mean=True)
+        #return self.get_pos(0, mean=True)
+        return
 
     def set_tomography_status(self,key=True):
 
@@ -2061,6 +2065,10 @@ class GSEXRM_MapFile(object):
 
         if omega is None: omega = self.get_rotation_axis()
         if center is None: center = self.get_tomography_center()
+        
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
+            return
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
         self.set_tomography_center(center=center)
@@ -2095,9 +2103,14 @@ class GSEXRM_MapFile(object):
             pass
         detgrp = ensure_subgroup(detname,tomogrp)
 
-        omega = self.get_rotation_axis()
-        x = self.get_translation_axis()
-        center = self.get_tomography_center()
+        omega,x = self.get_rotation_axis(),self.get_translation_axis()
+        center = self.get_tomography_center(),
+        
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
+            return
+        
+
         try:
             raw_sino = self.xrmmap[detname]['counts']
         except:

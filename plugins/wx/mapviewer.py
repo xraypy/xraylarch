@@ -605,6 +605,11 @@ class TomographyPanel(GridPanel):
         self.chk_hotcols.SetValue(hotcol)
         self.chk_dftcor.SetValue(True)
 
+        if self.cfile.get_rotation_axis() is None:
+            self.center_value.SetValue(0)
+            self.disable_options()
+            return
+
         self.enable_options()
         self.set_det_choices()
 
@@ -756,6 +761,10 @@ class TomographyPanel(GridPanel):
 
         if xrmfile is None: xrmfile = self.owner.current_file
         x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
+        
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
+            return
 
         r_map,sino_order = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
         if plt3:
