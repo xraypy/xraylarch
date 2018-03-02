@@ -346,7 +346,7 @@ class PrePeakPanel(wx.Panel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            print(" Fill prepeak panel from group ", fname, gname, dgroup)
+            # print(" Fill prepeak panel from group ", fname, gname, dgroup)
             self.ppeak_e0.SetValue(dgroup.e0)
         except:
             print(" Cannot Fill prepeak panel from group ")
@@ -466,11 +466,37 @@ class PrePeakPanel(wx.Panel):
         gname = self.controller.groupname
         dgroup = self.controller.get_group(gname)
         self.controller.xas_preedge_baseline(dgroup, opts=opts)
+        # print(" Ran xas_preedge ", self.controller)
         # dgroup.proc_opts.update(opts)
 
-        print(" -> preeedge centroid ", dgroup.centroid_msg)
-        self.process(gname)
-        print(" on preedge baseline")
+        # print(" -> preeedge centroid ", dgroup.centroid_msg)
+        # print(" ", dgroup.prepeaks)
+        # print(" ", dir(dgroup.prepeaks))
+        # print(" ", dgroup.prepeaks.fit_details.params)
+
+        if 'bkg_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='bkg_')
+
+        bkg = self.fit_components['bkg_']
+        bkg.bkgbox.SetValue(1)
+        allparwids = {}
+        for name, parwids in bkg.parwids.items():
+            allparwids[name] = parwids
+        for pname, par in dgroup.prepeaks.fit_details.params.items():
+            pname = "bkg_" + pname
+            if pname in allparwids:
+                wids = allparwids[pname]
+                if wids.minval is not None:
+                    wids.minval.SetValue(par.min)
+                if wids.maxval is not None:
+                    wids.maxval.SetValue(par.max)
+                wids.value.SetValue(par.value)
+                varstr = 'vary' if par.vary else 'fix'
+                if par.expr is not None:
+                    wids.expr.SetValue(par.expr)
+                    varstr = 'constrain'
+                if wids.vary is not None:
+                    wids.vary.SetStringSelection(varstr)
 
 
     def onNBChanged(self, event=None):
@@ -480,22 +506,23 @@ class PrePeakPanel(wx.Panel):
         modtype = event.GetString().lower()
         self.model_func.SetChoices(ModelChoices[modtype])
 
-    def addModel(self, event=None, model=None):
+    def addModel(self, event=None, model=None, prefix=None):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
             return
 
-        p = model[0].lower()
-        curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
-        for comp in self.fit_components:
-            if comp in curmodels:
-                curmodels.remove(comp)
+        if prefix is None:
+            p = model[0].lower()
+            curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
+            for comp in self.fit_components:
+                if comp in curmodels:
+                    curmodels.remove(comp)
 
-        prefix = curmodels[0]
+            prefix = curmodels[0]
 
         label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s" % (prefix[:-1], (model+' '*8)[:8])
+        title = "%s: %s " % (prefix[:-1], model)
         mclass_kws = {'prefix': prefix}
         if 'step' in model.lower():
             form = model.lower().replace('step', '').strip()
@@ -604,7 +631,8 @@ class PrePeakPanel(wx.Panel):
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
                        mclass_kws=mclass_kws, usebox=usebox, panel=panel,
                        parwids=parwids, float_size=65, expr_size=150,
-                       pick2_msg=pick2msg)
+                       pick2_msg=pick2msg, bkgbox=bkgbox)
+
 
         self.fit_components[prefix] = fgroup
         panel.pack()
