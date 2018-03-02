@@ -555,6 +555,10 @@ class XASFrame(wx.Frame):
         self.controller.group = dgroup
         self.controller.groupname = groupname
         self.nb.SetSelection(0)
+        current_nbpanel = self.nb_panels[self.nb.GetSelection()]
+        #print(" ShowFile: nb= ", self.nb.GetSelection(), current_nbpanel)
+        # current_nbpanel.onPanelExposed()
+
         self.xasnorm_panel.fill(dgroup)
         self.xasnorm_panel.needs_update = True
         self.xasnorm_panel.zoom_out_on_update = True
