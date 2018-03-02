@@ -11,7 +11,7 @@ Downloading and Installation
 .. _Larch Installers (cars.uchicago.edu): http://cars.uchicago.edu/xraylarch/downloads
 .. _Larch for 64bit Windows:  http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86_64.exe
 .. _Larch for 32bit Windows:  http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86.exe
-.. _Larch for Mac OSX :       http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-MacOSX-x86_64.sh
+.. _Larch for MacOSX :       http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-MacOSX-x86_64.sh
 .. _Larch for Linux:          http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Linux-x86_64.sh
 
 
@@ -25,7 +25,7 @@ X-ray microprobes is working and ready for use.
 Single-File Installers
 =========================
 
-For Windows, Mac OSX, and Linux, Larch now comes with simple installers,
+For Windows, MacOSX, and Linux, Larch now comes with simple installers,
 available at `Larch Installers (cars.uchicago.edu)`_.  These are
 self-contained files that will install a complete Python environment from
 Anaconda Python and all of X-rayLarch onto your computer.  Installing Larch
@@ -48,15 +48,15 @@ space.
   +----------------------+----------------------------------------+
   | Windows (32bit)      | `Larch for 32bit Windows`_             |
   +----------------------+----------------------------------------+
-  | Mac OSX (64bit)      | `Larch for Mac OSX`_                   |
+  | Mac OSX (64bit)      | `Larch for MacOSX`_                    |
   +----------------------+----------------------------------------+
   | Linux (64bit)        | `Larch for Linux`_                     |
   +----------------------+----------------------------------------+
 
 For Windows, download the appropriate executable installer corresponding to
 the architecture of your OS, and run it.  Most modern computers (including
-Windows 10) will be running 64-bit Windows, but a 32-bit version is
-provided for older systems.
+Windows 10) will be running 64-bit Windows. A 32-bit version is provided
+for older systems, but support for this may be dropped in late 2018.
 
 For Mac OSX or Linux, download the appropriate file then open a Terminal
 (Applications->Utilities->Terminal on Mac OSX), use `cd` to move to the
@@ -121,7 +121,15 @@ to install Larch.  On Windows or Mac OSX, then type::
     larch_makeicons
 
 to make a `Larch` folder on your desktop with shortcuts (Windows) or
-Applications (Mac OSX) for the main Larch applications.
+Applications (MacOS) for the main Larch applications.
+
+One advantage of Anaconda Python is that it makes updates very easy.  As new
+releases of Larch and the required packages are released, you can get the
+latest versions with::
+
+   conda update --all
+
+
 
 
 Python Versions: 2.7 or 3.6?
@@ -153,23 +161,41 @@ Prerequisites
 Larch requires Python version 2.7 or 3.6. In addiion, the following Python
 packages are all required for Larch to work:
 
-    numpy, scipy, matplotlib, h5py, sqlalchemy, six, lmfit, wxPython,
-    wxmplot, wxutils, asteval.
+    numpy, scipy, matplotlib, h5py, peakutils, pillow, psutil, requests,
+    sqlalchemy, six, termcolor, wxPython, lmfit, asteval, wxmplot, wxutils.
 
-These are all widely available, either from PyPI or for Anaconda Python 2.7 and
-3.6.  Those packages not included with core Anaconda packages can be installed
-from the GSECARS conda channel, and will be installed with `conda install -c
-GSECARS xraylarch`.  If you're installing from source or using a Python
-distribution other than Anaconda, all these packages are also available from
-PyPI and can be installed with `pip install`
+These are all available from PyPI (the Python Package Index), and for
+Anaconda Python 2.7 and 3.6.  The packages not included with core Anaconda
+packages are available on the GSECARS conda channel, and will be installed
+with `conda install -c GSECARS xraylarch`.  If you're installing from
+source or using a Python distribution other than Anaconda, all these
+packages are also available from PyPI and can be installed with  `pip
+install <packagename>` or `conda install -c GSECARS <packagename>`.
 
-There are a few packages that are required for some of the advanced and
-in-development X-ray diffraction analysis capabilities.  These include
+Optional Modules
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   fabio, pyfai, pycifrw
+There are a few packages that are required only for some more specialized
+uses of Larch that may not be important for everyone using Larch. For
+example, the advanced and in-development X-ray diffraction analysis
+capabilities require the following packages:
+
+   fabio, pyFAI, PyCifRw
+
+Some x-ray computed tomography capabilities are available, and require the
+packages:
+
+   tomopy, scikit-image
+
+Some Epics-based data collection tools use Larch, and require:
+
+   pyepics, psycopg2, epicsscan
 
 As with the other packages listed above, these are either available from the
 GSECARS anaconda channel or from PyPI.
+
+To be clear, Larch will work fine without these modules installed, but the
+corresponding functionality will not be available.
 
 
 Installation from Source
