@@ -1,158 +1,27 @@
 Installation instructions for Larch
 ========================================
 
-To install the Larch, use::
+These instructions describe how to install Larch on any supported platforms:
+Windows, MacOS, or Linux.
 
-   python setup.py build
+The easiest approach is to install Larch using the latest pre-packaged
+installers from http://cars.uchicago.edu/xraylarch/downloads.
+
+If you would like to install from the source code in this folder, you will
+need Python 2.7, 3.5, or 3.6 and several required Python packages.  With those
+packages installed, you should be able to install Larch with
+
    python setup.py install
 
-On modern linux and OS X systems, you will probably need to install with super-user
-privileges, as with::
+If you are using the system-installed Python on Linux or MacOS, you will
+probably need to install with super-user privileges, as with::
 
-   python setup.py build
    sudo python setup.py install
 
-Requirements and Dependencies
-===============================
 
-Python:
-~~~~~~~
+Further details are given in doc/installation.rst
 
-Larch requires Python 2.6 or higher.  Python 2.7 is *STRONGLY* recommended,
-unless you have no choice.  Moderate testing has been done with Python 3.2,
-but not all modules (notably, wx) are available for it at this writing
-(Jan 2013).  At some point in the future, Larch will probably switch to
-Python 3, possibly to only supporting use from Python 3.
-
-Several Python packages are needed for Larch.  All of these are easily
-installed, either as binary installs for Windows or Mac OS X, or as part of
-your systems Package Management System for linux.  In addition, most of
-these are easily installed from source or using Python's easy_install
-script (see Using easy_install below)
-
-Note that some Python distributions come with many of the required and
-strongly recommended modules already installed.
-
-Using easy_install
-~~~~~~~~~~~~~~~~~~~~
-
-Python has an easy-to-use program to install libraries called easy_install.
-If you don't have easy_install already installed, it is also easy to
-install.  For Windows, there is an executable installer
-setuptools-06c11.win32-py2.7.exe, and for Linux and Mac OS X there is a
-setuptools-0.6c11.tar.gz file in the dependencies directory.  For Linux and
-Mac OS X, do:
-    ~> cd dependencies
-    ~> tar xvzf setuptools-0.6c11.tar.gz
-    ~> cd setuptools-0.6c11
-    ~> python setup.py build
-    ~> sudo python setup.py install
-
-For windows, easy_install is installed in C:\Python2.7\Scripts\easy_install.exe
-for linux, it is put in /usr/bin, and for Mac OS X, somewhere like
-/Library/Frameworks/Python.framework/Versions/Current/bin/easy_install
-
-If this is placed in your path (or copied to your path), then many python
-packages can be installed with
-    ~> easy_install -U packagename
-
-For Windows, many packages have binary installers -- these are generally
-preferred, as easy_install will try to compile any C or Fortran parts of
-the library.
-
-Required Modules: Numpy and Scipy and Docutils
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Numpy and Scipy Packages are both required for Larch to work.
-These are available from http://scipy.org.  For Windows, install binaries.
-
-Docutils can be found at http://pypi.python.org/pypi/docutils, and can be
-installed via easy_install.
-
-Strongly Recommended Modules: wxPython, matplotlib, and wxmplot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-These modules are required for plotting data.
-
-They are all available as simple installs:
-
-  wxPython:   http://www.wxpython.org/download.php
-  matplotlib: http://sourceforge.net/projects/matplotlib/files/matplotlib/
-  wxmplot:    https://github.com/newville/wxmplot
-
-The wxPython 2.8 series is required.  The 2.9 series is recommended, and is required
-on 64-bit Mac OS X.
-
-Matplotlib can be installed from binaries or via easy_install, but does need a C compiler.
-
-WXMplot is pure python and can be install as binaries or with easy_install
-on all systems.
-
-Recommended Modules: sqlalchemy, h5py, epics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In order to use data from the x-ray databases, the SQLAlchemy module must
-be installed.  This con be installed with
-   ~>easy_install -U sqlalchemy
-
-In order to read HDF5 files, the h5py package is needed. See
-http://code.google.com/p/h5py/.  This can be installed with:
-   ~>easy_install -U h5py
-
-though this needs working C (and Fortran?) compilers.
-
-Optional Modules: epics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The PyEpics module provides support for interacting with the Epics control system.
-The python module is pure Python (and so can be installed with easy_install), but
-requires the base Epics Channel Access library to be installed to actually work.
-
-What is Installed
-===========================
-
-The Larch installation process puts several files and directories on your computer.
-A basic set of Python modules will be placed in the standard Python location on your
-machine, at locations like these:
-
-  /usr/lib/python2.7/site-packages/larch   on linux
-  C:\Python2.7\libs\site-packages\larch    on Windows
-  /Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/larch   on Mac OS X
-
-The larch executable (or larch.bat) will be installed to
-
-  /usr/bin/larch               on linux
-  C:\Python2.7\bin\larch.bat   on Windows
-  /Library/Frameworks/Python.framework/Versions/2.7/bin/larch on Mac OS X
-
-In addition, a directory is made for system-wide larch files, including
-larch modules and plugins.  This directory will be
-
-   /usr/share/larch/           on linux and Mac OS X
-   C:\Program Files\larch      on Windows
-
-and will contain larch modules in a modules subdirectoy, and several larch
-plugins in the plugins sub-directory.
-
-Finally, a directory is made for user-specific larch files, including an
-initialization script, 'init.lar', to be run at startup, a history file,
-'history.lar', containing the command history for past larch sessions, and
-folders named 'matplotlib', 'modules', and 'plugins'.  The 'matplotlib'
-folder may be used by the plotting libraries, for example to store fonts.
-The 'modules' and 'plugins' folders are the place to put user-specific
-modules and plugins, respectively.
-
-On linux and Mac OS X, the larch directory will be called '.larch'.  On
-Windows it will be 'larch'.The exact location of your larch directory
-varies from system to system, but should be in one of
-
-  /Users/USERRNAME/.larch
-  /home/USERNAME/.larch
-  C:\Users\USERNAME\larch
-  C:\ProgramData\larch
-
-
-Customization of Installation
+Customization
 ===============================
 
 The location of the the system-wide and per-user larch directories can be
@@ -169,6 +38,4 @@ You can customize the installed locations by adjusting these values prior
 to installation.
 
 Matt Newville <newville@cars.uchicago.edu>
-Last Update:  28-Jan-2013
-
-
+Last Update:  28-Feb-2018

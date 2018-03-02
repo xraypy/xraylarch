@@ -40,7 +40,8 @@ required_modules = {'numpy': 'numpy',
                     'psutil': 'psutil',
                     'peakutils': 'peakutils',
                     'PIL' : 'pillow',
-                    'lmfit': 'lmfit'}
+                    'lmfit': 'lmfit',
+                    'termcolor': 'termcolor'}
 
 
 graphics_modules = {'wx': 'wxPython',
@@ -54,20 +55,16 @@ tomo_modules = {'tomopy': 'tomopy',
                 'skimage': 'scikit-image'}
 
 epics_modules = {'epics': 'pyepics'}
-epicsscan_modules = {'epicsscan': 'epicsscan',
-                     'psycopg2': 'psycopg2'}
+scan_modules = {'epicsscan': 'epicsscan', 'psycopg2': 'psycopg2'}
 
-terminal_modules = {'termcolor': 'termcolor'}
-
-testing_modules = {'nose': 'nose'}
+testing_modules = {'nose': 'nose', 'pytest': 'pytest'}
 
 all_modules = (('basic analysis', required_modules),
            ('graphics and plotting', graphics_modules),
            ('xrd modules', xrd_modules),
            ('tomography modules', tomo_modules),
            ('connecting to the EPICS control system', epics_modules),
-           ('scanning with EpicsScan', epicsscan_modules),
-           ('color-enhanced error messages', terminal_modules),
+           ('scanning with EpicsScan', scan_modules),
            ('testing tools',  testing_modules))
 
 
@@ -309,20 +306,19 @@ if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
         fix_darwin_dylibs()
 
 if len(missing) > 0:
-    msg = """
-#=========================================================================#
+    dl = "#%s#" % ("="*75)
+    msg = """%s
  Warning: Some optional Python Packages were not found. Some functionality
  will not be available without these packages:
 
      Package Name              Needed for
-     ----------------          -------------------------------
+     ----------------          ----------------------------------
 %s
-     ----------------          -------------------------------
+     ----------------          ----------------------------------
 
- If you need some of these capabilities, you may be able to use
- `pip install <Package Name>` or `conda install <Package Name>`
- to install these packages.
+ If you need some of these capabilities, you can install them with
+    `pip install <Package Name>` or `conda install <Package Name>`
 
- See the Optional Modules section of INSTALL for more information.
-#=========================================================================#"""
-    print(msg %  '\n'.join(missing))
+ See the Optional Modules section of doc/installation.rst for more details.
+%s"""
+    print(msg % (dl, '\n'.join(missing), dl))

@@ -72,6 +72,7 @@ class FitResultFrame(wx.Frame):
         self.build()
         self.show()
 
+
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
         sizer.SetVGap(2)
@@ -339,8 +340,18 @@ class PrePeakPanel(wx.Panel):
         self.pick2erase_panel = None
         self.Bind(wx.EVT_TIMER, self.onPick2EraseTimer, self.pick2erase_timer)
 
-    def build_display(self):
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            print(" Fill prepeak panel from group ", fname, gname, dgroup)
+            self.ppeak_e0.SetValue(dgroup.e0)
+        except:
+            print(" Cannot Fill prepeak panel from group ")
 
+    def build_display(self):
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
         self.mod_nb.SetTabAreaColour(wx.Colour(250,250,250))
         self.mod_nb.SetActiveTabColour(wx.Colour(254,254,195))
@@ -352,16 +363,15 @@ class PrePeakPanel(wx.Panel):
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
 
         self.btns = {}
-        for name in ('ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
+        for name in ('ppeak_e0', 'ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
             bb = BitmapButton(pan, get_icon('plus'),
                               action=partial(self.on_selpoint, opt=name),
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = dict(size=(65, -1), gformat=True, precision=1,
-                    # action=self.UpdatePlot,
-                    )
+        opts = dict(size=(65, -1), gformat=True, precision=1)
 
+        self.ppeak_e0   = FloatCtrl(pan, value=0, **opts)
         self.ppeak_emin = FloatCtrl(pan, value=-30, **opts)
         self.ppeak_emax = FloatCtrl(pan, value=0, **opts)
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
@@ -378,6 +388,9 @@ class PrePeakPanel(wx.Panel):
                                  choices=ModelChoices['peaks'],
                                  action=self.addModel)
 
+        pan.Add(SimpleText(pan, 'E0: '), newrow=True)
+        pan.Add(self.btns['ppeak_e0'])
+        pan.Add(self.ppeak_e0)
         pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
         pan.Add(self.btns['ppeak_emin'])
         pan.Add(self.ppeak_emin)
@@ -443,6 +456,20 @@ class PrePeakPanel(wx.Panel):
         pack(self, sizer)
 
     def onPreedgeBaseline(self, evt=None):
+        e0 = self.ppeak_e0.GetValue()
+        opts = {'elo':  self.ppeak_elo.GetValue(),
+                'ehi':  self.ppeak_ehi.GetValue(),
+                'emin': self.ppeak_emin.GetValue(),
+                'emax': self.ppeak_emax.GetValue()}
+
+
+        gname = self.controller.groupname
+        dgroup = self.controller.get_group(gname)
+        self.controller.xas_preedge_baseline(dgroup, opts=opts)
+        # dgroup.proc_opts.update(opts)
+
+        print(" -> preeedge centroid ", dgroup.centroid_msg)
+        self.process(gname)
         print(" on preedge baseline")
 
 
@@ -760,12 +787,14 @@ class PrePeakPanel(wx.Panel):
         try:
             xval = self.larch.symtable._plotter.plot1_x
         except:
-            xval = None
-        if xval is not None:
-            if opt == 'xmin':
-                self.xmin.SetValue(xval)
-            elif opt == 'xmax':
-                self.xmax.SetValue(xval)
+            return
+        e0 = float(self.ppeak_e0.GetValue())
+        wid = getattr(self, opt, None)
+        if opt == 'ppeak_e0':
+            wid.SetValue(xval)
+        elif wid is not None:
+            wid.SetValue(xval - e0)
+
 
     def get_datagroup(self):
         dgroup = None
