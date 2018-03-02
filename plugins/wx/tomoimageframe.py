@@ -502,8 +502,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             if self.ydata is not None:
                 pos = '%s %s=%.4g,' % (pos, self.ylabel, self.ydata[iy])
 
-            msg = 'Pixel [%i, %i],%s %s=%.4g' % (ix, iy, pos,
-                                                 frame.label, frame.map[iy, ix])
+            if len(frame.map.shape) > 2:
+                msg = 'Pixel [%i, %i],%s %s=(%.4g, %.4g, %.4g)' % (ix, iy, pos,
+                                                  frame.label,        frame.map[iy,ix,0],
+                                                  frame.map[iy,ix,1], frame.map[iy,ix,2])
+            else:
+                msg = 'Pixel [%i, %i],%s %s=%.4g' % (ix, iy, pos,
+                                                     frame.label, frame.map[iy, ix])
             self.write_message(msg, panel=0)
 
             #if callable(self.cursor_callback):
@@ -795,7 +800,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         panel = None
         swmask = np.swapaxes(mask,0,1)
         for iframe in self.tomo_frame:
-            if iframe.map.shape == mask.shape or iframe.map.shape == swmask.shape:
+            imap_size = iframe.map.shape[:2]
+            if imap_size == mask.shape or imap_size == swmask.shape:
                 panel = iframe.panel
 
         if panel is not None:
