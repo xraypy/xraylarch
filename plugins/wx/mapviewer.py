@@ -1776,15 +1776,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         
         if xrmfile is None: xrmfile = self.owner.current_file        
         xrmmap = xrmfile.xrmmap
-        
-        self.set_area_choices(xrmmap, show_last=True)
 
+        self.set_area_choices(xrmmap, show_last=True)
         self.set_enabled_btns(xrmfile=xrmfile)
 
         self.report.DeleteAllItems()
         self.report_data = []
         self.onSelect()
-
+        
     def set_enabled_btns(self, xrmfile=None):
 
         if xrmfile is None: xrmfile = self.owner.current_file
@@ -1815,8 +1814,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 btn.Disable()
 
 
+    def clear_area_choices(self):
+    
+        self.info1.SetLabel('')
+        self.info2.SetLabel('')
+        self.info3.SetLabel('')
+        self.desc.SetValue('')
+        self.choice.Clear()
+
     def set_area_choices(self, xrmmap, show_last=False):
+
+        self.clear_area_choices()
+
         areas = xrmmap['areas']
+        
         c = self.choice
         c.Clear()
         self.choices = {}
