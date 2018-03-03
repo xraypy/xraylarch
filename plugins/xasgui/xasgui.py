@@ -136,17 +136,6 @@ class XASController():
         """ default config, probably called on first run of program"""
         config = {'chdir_on_fileopen': True,
                   'workdir': os.getcwd()}
-        config['data_proc'] = dict(eshift=0, smooth_op='None',
-                                   smooth_conv='Lorentzian',
-                                   smooth_c0=2, smooth_c1=1,
-                                   smooth_sig=1,
-                                   e0=0, pre1=-200, pre2=-25,
-                                   edge_step=0, nnorm=2, norm1=25,
-                                   norm2=-10, nvict=1, auto_step=True,
-                                   auto_e0=True, show_e0=True,
-                                   plotone_op='Normalized',
-                                   plotsel_op='Normalized',
-                                   deconv_form='none', deconv_ewid=0.5)
 
         config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
                                   fit_emin=-40, fit_emax=0,
@@ -204,59 +193,13 @@ class XASController():
         out = self.symtable._plotter.get_display(**opts)
         return out
 
-    def get_group(self, groupname):
+    def get_group(self, groupname=None):
         if groupname is None:
             groupname = self.groupname
-        grp = getattr(self.symtable, groupname, None)
-        if grp is not None and not hasattr(grp, 'proc_opts'):
-            grp.proc_opts = {}
-        return grp
-
-    def get_proc_opts(self, dgroup):
-        opts = {}
-        opts.update(self.get_config('data_proc', default={}))
-
-        if hasattr(dgroup, 'proc_opts'):
-            opts.update(dgroup.proc_opts)
-        return opts
+        return getattr(self.symtable, groupname, None)
 
     def process(self, dgroup, proc_opts=None):
-        if not hasattr(dgroup, 'proc_opts'):
-            dgroup.proc_opts = {}
-
-        if proc_opts is not None:
-            dgroup.proc_opts.update(proc_opts)
-
-        opts = {}
-        opts.update(dgroup.proc_opts)
-        opts['group'] = dgroup.groupname
-
-        copts = [dgroup.groupname]
-        if not opts['auto_e0']:
-            _e0 = opts['e0']
-            if _e0 < max(dgroup.energy) and _e0 > min(dgroup.energy):
-                copts.append("e0=%.4f" % float(_e0))
-
-        if not opts['auto_step']:
-            copts.append("step=%.4f" % opts['edge_step'])
-
-        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            copts.append("%s=%.4f" % (attr, opts[attr]))
-
-        self.larch.eval("pre_edge(%s)" % (','.join(copts)))
-
-        # deconvolution
-        deconv_form = opts['deconv_form'].lower()
-        deconv_ewid = float(opts['deconv_ewid'])
-        if not deconv_form.startswith('none') and deconv_ewid > 1.e-3:
-            cmd = "xas_deconvolve({group:s}, form='{deconv_form:s}', esigma={deconv_ewid:f})"
-            self.larch.eval(cmd.format(**opts))
-
-        opts['e0']        = getattr(dgroup, 'e0', dgroup.energy[0])
-        opts['edge_step'] = getattr(dgroup, 'edge_step', 1.0)
-        for attr in  ('pre1', 'pre2', 'norm1', 'norm2'):
-            opts[attr] = getattr(dgroup.pre_edge_details, attr, 0.0)
-        dgroup.proc_opts.update(opts)
+        print("...process in controller")
 
     def xas_preedge_baseline(self, dgroup, opts=None):
         if not dgroup.datatype.startswith('xas'):
@@ -540,7 +483,7 @@ class XASFrame(wx.Frame):
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
 
-    def ShowFile(self, evt=None, groupname=None, **kws):
+    def ShowFile(self, evt=None, groupname=None, with_plot=True, **kws):
         filename = None
         if evt is not None:
             filename = str(evt.GetString())
@@ -555,13 +498,10 @@ class XASFrame(wx.Frame):
         self.controller.groupname = groupname
         self.nb.SetSelection(0)
         current_nbpanel = self.nb_panels[self.nb.GetSelection()]
-        #print(" ShowFile: nb= ", self.nb.GetSelection(), current_nbpanel)
-        # current_nbpanel.onPanelExposed()
 
-        self.xasnorm_panel.fill(dgroup)
-        self.xasnorm_panel.needs_update = True
-        self.xasnorm_panel.zoom_out_on_update = True
-
+        self.xasnorm_panel.fill_form(dgroup)
+        if with_plot:
+            self.xasnorm_panel.plot(dgroup)
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
@@ -884,7 +824,7 @@ class XASFrame(wx.Frame):
             self.subframes[name] = frameclass(self, **opts)
 
     def onSelectColumns(self, event=None):
-        dgroup = self.controller.get_group(self.controller.groupname)
+        dgroup = self.controller.get_group()
         self.show_subframe('readfile', ColumnDataFileFrame,
                            group=dgroup.raw,
                            last_array_sel=self.last_array_sel,
@@ -949,18 +889,20 @@ class XASFrame(wx.Frame):
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
 
-        s = """{group:s} = _prj.{group:s}
+        s = """
+        {group:s} = _prj.{group:s}
         {group:s}.datatype = 'xas'
         {group:s}.xdat = 1.0*{group:s}.energy
-        {group:s}.ydat = 1.0*{group:s}.mu*
+        {group:s}.ydat = 1.0*{group:s}.mu
         {group:s}.yerr = 1.0
         {group:s}.plot_ylabel = 'mu'
         {group:s}.plot_xlabel = 'energy'
         """
         for gname in namelist:
             self.larch.eval(s.format(group=gname))
-            self.install_group(gname, gname)
-            self.xasnorm_panel.process(gname)
+            dgroup = self.install_group(gname, gname, with_plot=False)
+            # self.xasnorm_panel.fill_form(dgroup)
+        self.xasnorm_panel.plot(dgroup)
         self.larch.eval("del _prj")
 
 
@@ -997,7 +939,7 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path))
             self.install_group(gname, filename, overwrite=True)
 
-    def install_group(self, groupname, filename, overwrite=False):
+    def install_group(self, groupname, filename, overwrite=False, with_plot=True):
         """add groupname / filename to list of available data groups"""
 
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -1017,11 +959,12 @@ class XASFrame(wx.Frame):
             self.controller.filelist.Append(filename)
             self.controller.file_groups[filename] = groupname
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname)
+        self.ShowFile(groupname=groupname, with_plot=with_plot)
         self.controller.filelist.SetStringSelection(filename)
+        return thisgroup
 
 
-class XASViewer(wx.App,wx.lib.mixins.inspection.InspectionMixin):
+class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
