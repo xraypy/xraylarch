@@ -151,10 +151,10 @@ class XASNormPanel(wx.Panel):
         self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
         self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
 
-        plot_sel = Button(xas, 'Plot Selected Groups', size=(150, 30),
+        plot_sel = Button(xas, 'Plot Selected Groups', size=(125, 30),
                           action=self.onPlotSel)
 
-        plot_one = Button(xas, 'Plot This Group', size=(150, 30),
+        plot_one = Button(xas, 'Plot This Group', size=(125, 30),
                           action=self.onPlotOne)
 
         opts = {'size': (50, -1), 'choices': ('0', '1', '2', '3'),
