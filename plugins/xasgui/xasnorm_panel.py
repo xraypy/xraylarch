@@ -75,10 +75,10 @@ class XASNormPanel(wx.Panel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            print(" Fill xasnorm panel from group ", fname, gname, dgroup)
+            # print(" Fill xasnorm panel from group ", fname, gname, dgroup)
             self.fill(dgroup)
         except:
-            print(" Cannot fill xasnorm panel .. no data?")
+            pass # print(" Cannot fill xasnorm panel .. no data?")
 
 
     def fill(self, dgroup):
@@ -164,11 +164,15 @@ class XASNormPanel(wx.Panel):
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(1)
 
+        saveconf = Button(xas, 'Save as Default Settings', size=(200, 30),
+                          action=self.onSaveConfigBtn)
+
         def CopyBtn(name):
             return Button(xas, 'Copy', size=(50, 30),
                           action=partial(self.onCopyParam, name))
 
-        xas.Add(SimpleText(xas, ' XAS Data Processing', **titleopts), dcol=6)
+        xas.Add(SimpleText(xas, ' XAS Data Normalization and Processing',
+                           **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
 
         xas.Add(plot_sel, newrow=True)
@@ -221,22 +225,15 @@ class XASNormPanel(wx.Panel):
         xas.Add(self.deconv_ewid,  dcol=2)
         xas.Add(CopyBtn('deconv'), style=RCEN)
 
-        xas.Add((10, 1), newrow=True)
-        xas.Add(HLine(xas, size=(250, 2)), dcol=7, style=CEN)
+        xas.Add(saveconf, dcol=6, newrow=True)
         xas.pack()
 
-        saveconf = Button(self, 'Save as Default Settings', size=(200, 30),
-                          action=self.onSaveConfigBtn)
-
-        hxline = HLine(self, size=(550, 2))
-
         sizer = wx.BoxSizer(wx.VERTICAL)
-
-        sizer.AddMany([((10, 10), 0, LCEN, 10), (hxline,   0, LCEN, 10),
-                       ((10, 10), 0, LCEN, 10), (xas,      0, LCEN, 10),
-                       ((10, 10), 0, LCEN, 10), (saveconf, 0, LCEN, 10),
-                       ])
-
+        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
+        sizer.Add(xas,   0, LCEN, 3)
+        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
         pack(self, sizer)
 
 
