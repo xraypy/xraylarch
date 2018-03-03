@@ -140,8 +140,6 @@ class XASController():
         config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
                                   fit_emin=-40, fit_emax=0,
                                   yarray='norm')
-
-
         return config
 
     def get_config(self, key, default=None):
@@ -153,7 +151,6 @@ class XASController():
         """save configuration"""
         conf = group2dict(self.larch.symtable._sys.xas_viewer)
         conf.pop('__name__')
-        # print("Saving configuration: ", self.config_file, conf)
         save_config(self.config_file, conf)
 
     def set_workdir(self):
@@ -197,9 +194,6 @@ class XASController():
         if groupname is None:
             groupname = self.groupname
         return getattr(self.symtable, groupname, None)
-
-    def process(self, dgroup, proc_opts=None):
-        print("...process in controller")
 
     def xas_preedge_baseline(self, dgroup, opts=None):
         if not dgroup.datatype.startswith('xas'):
