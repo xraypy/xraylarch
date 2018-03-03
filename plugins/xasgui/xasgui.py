@@ -501,7 +501,6 @@ class XASFrame(wx.Frame):
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
         pan = self.nb_panels[idx]
-        print("NB Changed ", idx, pan, hasattr(pan, 'onPanelExposed'))
 
         callback = getattr(pan, 'onPanelExposed', None)
         if callable(callback):
@@ -593,6 +592,8 @@ class XASFrame(wx.Frame):
                                          'Show Larch Programming Buffer',
                                          self.onShowLarchBuffer)
 
+        items['filex'] = MenuItem(self, fmenu, "&Inspect \tCtrl+I",
+                                  "e",  self.showInspectionTool)
         items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
@@ -819,9 +820,9 @@ class XASFrame(wx.Frame):
     def onConfigDataFitting(self, event=None):
         pass
 
-    # def showInspectionTool(self, event=None):
-    #    app = wx.GetApp()
-    #    app.ShowInspectionTool()
+    def showInspectionTool(self, event=None):
+        app = wx.GetApp()
+        app.ShowInspectionTool()
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,
@@ -1020,7 +1021,7 @@ class XASFrame(wx.Frame):
         self.controller.filelist.SetStringSelection(filename)
 
 
-class XASViewer(wx.App):
+class XASViewer(wx.App,wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
