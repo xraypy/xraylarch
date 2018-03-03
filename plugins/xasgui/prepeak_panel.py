@@ -56,7 +56,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
-PlotChoices = OrderedDict((('Data + Background', 'bkg'),
+PlotChoices = OrderedDict((('Data + Baseline', 'bkg'),
                            ('Data + Fit', 'fit')))
 
 
@@ -353,7 +353,7 @@ class PrePeakPanel(wx.Panel):
             # print(" Fill prepeak panel from group ", fname, gname, dgroup)
             self.ppeak_e0.SetValue(dgroup.e0)
         except:
-            print(" Cannot Fill prepeak panel from group ")
+            pass # print(" Cannot Fill prepeak panel from group ")
 
     def build_display(self):
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
@@ -381,36 +381,38 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        bkgbtn = Button(pan, 'Fit Background', size=(125, 30),
-                        action=self.onPreedgeBaseline)
-        runbtn = Button(pan, 'Run Fit', size=(125, -1), action=self.onRunFit)
-        savbtn = Button(pan, 'Save Fit', size=(125, -1), action=self.onSaveFitResult)
-        savbtn.Disable()
-        self.savebtn = savbtn
+        fitbkg_btn = Button(pan, 'Fit Baseline', size=(125, -1),
+                            action=self.onPreedgeBaseline)
+        fitmodel_btn = Button(pan, 'Fit Full Model', size=(125, -1), action=self.onRunFit)
+        savefit_btn  = Button(pan, 'Save Fit', size=(125, -1), action=self.onSaveFitResult)
+        plotbkg_btn = Button(pan, 'Plot Baseline', size=(125, -1), action=self.onShowModel)
+        plotfit_btn = Button(pan, 'Plot Fit', size=(125, -1), action=self.onShowModel)
 
-        #self.model_type = Choice(pan, size=(100, -1),
-        #                         choices=ModelTypes,
-        #                         action=self.onModelTypes)
+        savefit_btn.Disable()
+        fitmodel_btn.Disable()
+        plotfit_btn.Disable()
+
+        self.savefit_btn = savefit_btn
+        self.fitmodel_btn = fitmodel_btn
+        self.plotfit_btn = plotfit_btn
+
         self.model_func = Choice(pan, size=(150, -1),
                                  choices=ModelChoices['peaks'],
                                  action=self.addModel)
 
-        self.plot_choice = Choice(pan, size=(125, -1),
-                                  choices=list(PlotChoices.keys()),
-                                  action=self.onShowModel)
-
         opts = dict(default=True, size=(150, -1))
         self.plot_comps = Check(pan, label='Plot Components?', **opts)
-        self.plot_subbkg = Check(pan, label='Subtract Background?', **opts)
+        self.plot_subbkg = Check(pan, label='Subtract Baseline?', **opts)
 
         self.show_peakrange = Check(pan, label='show?', **opts)
 
         self.show_fitrange = Check(pan, label='show?', **opts)
         self.show_e0 = Check(pan, label='show?', **opts)
 
+        titleopts = dict(font=Font(11), colour='#AA0000')
+        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=6)
 
-
-        pan.Add(SimpleText(pan, 'E0: '))
+        pan.Add(SimpleText(pan, 'E0: '), newrow=True)
         pan.Add(self.btns['ppeak_e0'])
         pan.Add(self.ppeak_e0)
         pan.Add(self.show_e0, dcol=5)
@@ -434,60 +436,32 @@ class PrePeakPanel(wx.Panel):
         pan.Add(self.ppeak_ehi)
         pan.Add(self.show_peakrange, dcol=2)
 
-        pan.Add(SimpleText(pan, 'Fit : '), newrow=True)
-        pan.Add(bkgbtn, dcol=4)
-        pan.Add(runbtn, dcol=2)
-        pan.Add(savbtn, dcol=2)
+        ts = wx.BoxSizer(wx.HORIZONTAL)
+        ts.Add(fitbkg_btn, 0)
+        ts.Add(fitmodel_btn, 0)
+        ts.Add(savefit_btn, 0)
 
-        pan.Add(SimpleText(pan, 'Plot : '), newrow=True)
-        pan.Add(self.plot_choice, dcol=4)
-        pan.Add(self.plot_comps, dcol=2)
-        pan.Add(self.plot_subbkg, dcol=2)
+        pan.Add(ts, dcol=8, newrow=True)
 
+        ts = wx.BoxSizer(wx.HORIZONTAL)
+        ts.Add(plotbkg_btn, 0)
+        ts.Add(plotfit_btn, 0)
+        ts.Add(self.plot_comps, 0)
+        ts.Add(self.plot_subbkg, 0)
+        pan.Add(ts, dcol=8, newrow=True)
 
-        pan.Add(SimpleText(pan, ' Add Model Type: '), newrow=True)
+        pan.Add(SimpleText(pan, ' Add Peak: '), newrow=True)
         pan.Add(self.model_func, dcol=7)
-        # pan.Add(self.model_type, dcol=4)
-        # pan.Add(SimpleText(pan, ' Model: '), dcol=1)
-
-#         self.plot_comps = Check(pan, label='Plot Components?',
-#                                 default=True, size=(150, -1))
-#
-#         rsizer.Add(Button(a, 'Run Fit',
-#                           size=(100, -1), action=self.onRunFit), 0, RCEN, 3)
-#         self.savebtn = Button(action_row, 'Save Fit',
-#                               size=(100, -1), action=self.onSaveFitResult)
-#         self.savebtn.Disable()
-#         rsizer.Add(self.savebtn, 0, LCEN, 3)
-#
-#         rsizer.Add(Button(action_row, 'Plot Current Model',
-#                           size=(175, -1), action=self.onShowModel), 0, LCEN, 3)
-#         rsizer.Add(self.plot_comps, 0, LCEN, 3)
-#
-#         pack(action_row, rsizer)
-
         pan.pack()
 
-#         rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
-#         rsizer.Add(xmin_sel, 0, LCEN, 3)
-#         rsizer.Add(self.xmin, 0, LCEN, 3)
-#         rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
-#         rsizer.Add(xmax_sel, 0, LCEN, 3)
-#         rsizer.Add(self.xmax, 0, LCEN, 3)
-#         rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
-#         rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
-#                           action=self.onResetRange), 0, LCEN, 3)
-#          pack(range_row, rsizer)
-
-
-#
-
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([((10, 10), 0, LCEN, 10), (pan,      0, LCEN, 10),
-                       ((10, 10), 0, LCEN, 10),
-                       (HLine(self, size=(550, 3)), 0, LCEN, 4),
-                       ((10,10), 0, LCEN, 2),
-                       (self.mod_nb,  1, LCEN|wx.GROW, 10)])
+        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
+        sizer.Add(pan,   0, LCEN, 3)
+        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
+        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(self.mod_nb,  1, LCEN|wx.GROW, 10)
 
         pack(self, sizer)
 
@@ -579,7 +553,7 @@ class PrePeakPanel(wx.Panel):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
         usebox = Check(panel, default=True, label='Use in Fit?', size=(150, -1))
-        bkgbox = Check(panel, default=False, label='Is Background?', size=(150, -1))
+        bkgbox = Check(panel, default=False, label='Is Baseline?', size=(150, -1))
 
         delbtn = Button(panel, 'Delete Component', size=(150, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
