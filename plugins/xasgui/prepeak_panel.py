@@ -56,11 +56,23 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
+Array_Choices = OrderedDict((('Raw Data', 'mu'),
+                             ('Normalized', 'norm'),
+                             ('Flattened', 'flat'),
+                             ('Derivative', 'dmude')))
+
 PlotChoices = OrderedDict((('Data + Baseline', 'bkg'),
                            ('Data + Fit', 'fit')))
 
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
+
+
+
+def default_prepeaks_config():
+    return dict(mask_elo=-10, mask_ehi=-5,
+                fit_emin=-40, fit_emax=0,
+                yarray='norm')
 
 MIN_CORREL = 0.0010
 
@@ -76,6 +88,9 @@ class FitResultFrame(wx.Frame):
         self.build()
         self.show()
 
+    def larch_eval(self, cmd):
+        """eval"""
+        self.controller.larch.eval(cmd)
 
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
@@ -396,6 +411,11 @@ class PrePeakPanel(wx.Panel):
         self.fitmodel_btn = fitmodel_btn
         self.plotfit_btn = plotfit_btn
 
+        self.array_choice = Choice(pan, size=(125, -1),
+                                   choices=list(Array_Choices.keys()))
+        self.array_choice.SetSelection(1)
+
+
         self.model_func = Choice(pan, size=(150, -1),
                                  choices=ModelChoices['peaks'],
                                  action=self.addModel)
@@ -411,6 +431,9 @@ class PrePeakPanel(wx.Panel):
 
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=6)
+
+        pan.Add(SimpleText(pan, 'Array: '), newrow=True)
+        pan.Add(self.array_choice, dcol=5)
 
         pan.Add(SimpleText(pan, 'E0: '), newrow=True)
         pan.Add(self.btns['ppeak_e0'])
@@ -552,14 +575,14 @@ class PrePeakPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
                                size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use in Fit?', size=(150, -1))
-        bkgbox = Check(panel, default=False, label='Is Baseline?', size=(150, -1))
+        usebox = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
+        bkgbox = Check(panel, default=False, label='Is Baseline?', size=(125, -1))
 
-        delbtn = Button(panel, 'Delete Component', size=(150, -1),
+        delbtn = Button(panel, 'Delete Component', size=(125, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
 
         pick2msg = SimpleText(panel, "    ", size=(125, -1))
-        pick2btn = Button(panel, 'Pick Values from Data', size=(200, -1),
+        pick2btn = Button(panel, 'Pick Values from Data', size=(150, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
@@ -570,12 +593,12 @@ class PrePeakPanel(wx.Panel):
 
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox, dcol=2)
-        panel.Add(bkgbox, dcol=2)
+        panel.Add(usebox, dcol=1)
+        panel.Add(bkgbox, dcol=3, style=LCEN)
 
-        panel.Add(pick2btn, dcol=3, style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
-        panel.Add(delbtn, style=wx.ALIGN_LEFT)
+        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
+        panel.Add(delbtn, dcol=2, style=wx.ALIGN_LEFT)
 
         # panel.Add((10, 10), newrow=True)
         # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
@@ -583,8 +606,7 @@ class PrePeakPanel(wx.Panel):
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
                        SLabel("  Min", size=(60, -1)),
-                       SLabel("  Max", size=(60, -1)),
-                       SLabel("  Expression")))
+                       SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
 
         parwids = OrderedDict()
         parnames = sorted(minst.param_names)
@@ -610,7 +632,7 @@ class PrePeakPanel(wx.Panel):
             if 'expr' in hints:
                 par.expr = hints['expr']
 
-            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=175,
+            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=125,
                                      float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
@@ -625,13 +647,13 @@ class PrePeakPanel(wx.Panel):
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
 
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
+                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=225,
                                          float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
                 panel.Add(pwids.value)
-                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
+                panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
 
 
