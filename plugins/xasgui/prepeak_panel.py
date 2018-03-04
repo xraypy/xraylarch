@@ -44,12 +44,10 @@ CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
-ModelTypes = ('Peaks', 'General', 'Steps')
-
-ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
+ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
+                          'Quadratic', 'Exponential', 'PowerLaw'
+                          'Linear Step', 'Arctan Step',
                           'ErrorFunction Step', 'Logistic Step', 'Rectangle'),
-                'general': ('<Generalr Models>', 'Constant', 'Linear',
-                            'Quadratic', 'Exponential', 'PowerLaw'),
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
                           'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
@@ -81,20 +79,15 @@ def default_prepeaks_config():
 MIN_CORREL = 0.0010
 
 class FitResultFrame(wx.Frame):
-    def __init__(self, parent=None, controller=None, datagroup=None, **kws):
+    def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
                           style=FRAMESTYLE, size=(600, 675), **kws)
         self.parent = parent
-        self.controller = controller
-        self.larch = controller.larch
+        self.peakframe = peakframe
         self.datagroup = datagroup
         self.build()
         self.show()
-
-    def larch_eval(self, cmd):
-        """eval"""
-        self.controller.larch.eval(cmd)
 
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
@@ -287,7 +280,7 @@ class FitResultFrame(wx.Frame):
 
     def onCopyParams(self, evt=None):
         fit_history = getattr(self.datagroup, 'fit_history', [])
-        self.parent.fit_panel.update_start_values(fit_history[-1])
+        self.peakframe.update_start_values(fit_history[-1])
 
     def show(self, datagroup=None):
         if datagroup is not None:
@@ -423,9 +416,15 @@ class PrePeakPanel(wx.Panel):
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
-        self.model_func = Choice(pan, size=(150, -1),
-                                 choices=ModelChoices['peaks'],
-                                 action=self.addModel)
+        models_peaks = Choice(pan, size=(150, -1),
+                              choices=ModelChoices['peaks'],
+                              action=self.addModel)
+
+        models_other = Choice(pan, size=(150, -1),
+                              choices=ModelChoices['other'],
+                              action=self.addModel)
+
+        self.message = SimpleText(pan, ' fit baseline, then add peaks or other models ')
 
         opts = dict(default=True, size=(150, -1))
         self.show_comps = Check(pan, label='Plot Components?', **opts)
@@ -480,9 +479,16 @@ class PrePeakPanel(wx.Panel):
         ts.Add(self.show_subbkg, 0)
         pan.Add(ts, dcol=8, newrow=True)
 
-        pan.Add(SimpleText(pan, ' Add Peak: '), newrow=True)
-        pan.Add(self.model_func, dcol=7)
+        ts = wx.BoxSizer(wx.HORIZONTAL)
+        ts.Add(models_peaks)
+        ts.Add(models_other)
+        pan.Add(SimpleText(pan, ' Add Function: '), newrow=True)
+        pan.Add(ts, dcol=7)
+
+        pan.Add(self.message, dcol=8, newrow=True)
+
         pan.pack()
+
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5,5), 0, LCEN, 3)
@@ -546,7 +552,8 @@ class PrePeakPanel(wx.Panel):
 
         cmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
 pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
-form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
+form='{baseline_form:s}', with_line=True,
+elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 """
         self.larch_eval(cmd.format(**opts))
 
@@ -555,23 +562,27 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
+        self.message.SetLabel(dgroup.centroid_msg)
+
         if 'bkg_' not in self.fit_components:
             self.addModel(model='Lorentzian', prefix='bkg_')
+            self.addModel(model='Linear', prefix='l_')
 
-        bkg = self.fit_components['bkg_']
-        bkg.bkgbox.SetValue(1)
-        self.fill_model_params(dgroup, 'bkg_')
+        for prefix in ('bkg_', 'l_'):
+            bkg = self.fit_components[prefix]
+            bkg.bkgbox.SetValue(1)
+            self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
+
         self.fill_form(dgroup)
-
         self.fitmodel_btn.Enable()
         self.plotfit_btn.Enable()
 
         self.onPlotBaseline()
 
-    def fill_model_params(self, dgroup, prefix):
+    def fill_model_params(self, dgroup, prefix, fit_details):
         comp = self.fit_components[prefix]
         parwids = comp.parwids
-        for pname, par in dgroup.prepeaks.fit_details.params.items():
+        for pname, par in fit_details.params.items():
             pname = prefix + pname
             if pname in parwids:
                 wids = parwids[pname]
@@ -671,10 +682,6 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
 
-    def onModelTypes(self, event=None):
-        modtype = event.GetString().lower()
-        self.model_func.SetChoices(ModelChoices[modtype])
-
     def addModel(self, event=None, model=None, prefix=None):
         if model is None and event is not None:
             model = event.GetString()
@@ -730,11 +737,11 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(usebox, dcol=1)
-        panel.Add(bkgbox, dcol=3, style=LCEN)
+        panel.Add(bkgbox, dcol=2, style=LCEN)
+        panel.Add(delbtn, dcol=1, style=wx.ALIGN_LEFT)
 
         panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
-        panel.Add(delbtn, dcol=2, style=wx.ALIGN_LEFT)
 
         # panel.Add((10, 10), newrow=True)
         # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
@@ -1121,11 +1128,10 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
 
 
         self.parent.show_subframe('result_frame', FitResultFrame,
-                                  datagroup=dgroup,
-                                  controller=self.controller)
+                                  datagroup=dgroup, peakframe=self)
 
         # self.update_start_values(result)
-        self.savebtn.Enable()
+        self.savefit_btn.Enable()
 
         for m in self.parent.afterfit_menus:
             self.parent.menuitems[m].Enable(True)
