@@ -640,13 +640,8 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
             if ecen > min(dgroup.energy):
                 plot_extras.append(('vline', ecen, None,  popts))
 
-        #print("Would plot with: ", plot_ylabel)
-        #print(plot_yarrays)
-        #print(plotopts)
-        #print(plot_extras)
 
         ppanel = self.controller.get_display().panel
-
         plotopts.update(PLOTOPTS_1)
         ppanel.plot(dgroup.energy, dgroup.ydat, delay_draw=True, **plotopts)
 
@@ -916,7 +911,7 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         self.pick2_timer.Start(250)
 
     def onSaveFitResult(self, event=None):
-        dgroup = self.get_datagroup()
+        dgroup = self.controller.get_group()
         deffile = dgroup.filename.replace('.', '_') + '.fitresult'
         wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
 
@@ -949,39 +944,30 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         print(" Loading Model (work in progress) ", model)
 
     def onExportFitResult(self, event=None):
-        dgroup = self.get_datagroup()
+        dgroup = self.controller.get_group()
         deffile = dgroup.filename.replace('.', '_') + '_result.xdi'
         wcards = 'All files (*.*)|*.*'
 
         outfile = FileSave(self, 'Export Fit Result',
-                           default_file=deffile,
-                           wildcard=wcards)
+                           default_file=deffile, wildcard=wcards)
 
-        if outfile is None:
-            return
+        if outfile is not None:
+            i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+            x = dgroup.xdat[slice(i1, i2)]
+            y = dgroup.ydat[slice(i1, i2)]
+            yerr = None
+            if hasattr(dgroup, 'yerr'):
+                yerr = dgroup.yerr
+                if not isinstance(yerr, np.ndarray):
+                    yerr = yerr * np.ones(len(y))
+                else:
+                    yerr = yerr[slice(i1, i2)]
 
-        dgroup = self.get_datagroup()
+            export_modelresult(dgroup.fit_history[-1],
+                               filename=outfile,
+                               datafile=dgroup.filename,
+                               ydata=y, yerr=yerr, x=x)
 
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-        x = dgroup.xdat[slice(i1, i2)]
-        y = dgroup.ydat[slice(i1, i2)]
-        yerr = None
-        if hasattr(dgroup, 'yerr'):
-            yerr = dgroup.yerr
-            if not isinstance(yerr, np.ndarray):
-                yerr = yerr * np.ones(len(y))
-            else:
-                yerr = yerr[slice(i1, i2)]
-
-        export_modelresult(dgroup.fit_history[-1], filename=outfile,
-                           datafile=dgroup.filename,
-                           ydata=y, yerr=yerr, x=x)
-
-
-    def onResetRange(self, event=None):
-        dgroup = self.get_datagroup()
-        self.xmin.SetValue(min(dgroup.xdat))
-        self.xmax.SetValue(max(dgroup.xdat))
 
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
@@ -993,22 +979,13 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         if wid is not None:
             wid.SetValue(xval)
 
-
-    def get_datagroup(self):
-        dgroup = None
-        if self.controller.groupname is not None:
-            try:
-                dgroup = getattr(self.larch.symtable,
-                                 self.controller.groupname)
-            except:
-                pass
-        return dgroup
-
     def get_xranges(self, x):
+        opts = self.read_form()
+        _xmin = opts['emin']
+        _xmax = opts['emax']
+
         xmin, xmax = min(x), max(x)
         i1, i2 = 0, len(x)
-        _xmin = self.xmin.GetValue()
-        _xmax = self.xmax.GetValue()
         if _xmin > min(x):
             i1 = index_of(x, _xmin)
             xmin = x[i1]
@@ -1021,7 +998,7 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
 
     def build_fitmodel(self):
         """ use fit components to build model"""
-        dgroup = self.get_datagroup()
+        dgroup = self.controller.get_group()
         fullmodel = None
         params = Parameters()
         self.summary = {'components': [], 'options': {}}
@@ -1061,7 +1038,7 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
         if dgroup is None:
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-        ysel = dgroup.y[slice(i1, i2)]
+        ysel = dgroup.ydat[slice(i1, i2)]
 
         plotframe = self.controller.get_display(stacked=True)
         plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
@@ -1101,7 +1078,7 @@ form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={e
             return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
         dgroup.xfit = dgroup.xdat[slice(i1, i2)]
-        ysel = dgroup.y[slice(i1, i2)]
+        ysel = dgroup.ydat[slice(i1, i2)]
         weights = np.ones(len(ysel))
 
         if hasattr(dgroup, 'yerr'):
