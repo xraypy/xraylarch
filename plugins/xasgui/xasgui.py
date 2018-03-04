@@ -136,10 +136,6 @@ class XASController():
         """ default config, probably called on first run of program"""
         config = {'chdir_on_fileopen': True,
                   'workdir': os.getcwd()}
-
-        config['prepeaks'] = dict(mask_elo=-10, mask_ehi=-5,
-                                  fit_emin=-40, fit_emax=0,
-                                  yarray='norm')
         return config
 
     def get_config(self, key, default=None):
@@ -194,23 +190,6 @@ class XASController():
         if groupname is None:
             groupname = self.groupname
         return getattr(self.symtable, groupname, None)
-
-    def xas_preedge_baseline(self, dgroup, opts=None):
-        if not dgroup.datatype.startswith('xas'):
-            return
-
-        popts = {'group': dgroup.groupname}
-        popts.update(opts)
-
-        copts = [dgroup.groupname]
-        copts.append("form='lorentzian'")
-        for attr in ('elo', 'ehi', 'emin', 'emax'):
-            copts.append("%s=%.4f" % (attr, popts[attr]))
-        cmd = "pre_edge_baseline(%s)" % (','.join(copts))
-        self.larch.eval(cmd)
-        ppeaks = dgroup.prepeaks
-        dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
-                                                    ppeaks.delta_centroid)
 
     def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
         """merge groups"""
