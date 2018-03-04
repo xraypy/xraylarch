@@ -17,7 +17,6 @@ from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 np.seterr(all='ignore')
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
@@ -70,9 +69,6 @@ class XASNormPanel(wx.Panel):
         self.controller = controller
         self.reporter = reporter
         self.skip_process = False
-        self.proc_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onProcessTimer, self.proc_timer)
-        # self.proc_timer.Start(100)
         self.build_display()
 
     def onPanelExposed(self, **kws):
@@ -81,11 +77,9 @@ class XASNormPanel(wx.Panel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            # print(" Fill xasnorm panel from group ", fname, gname, dgroup)
             self.fill_form(dgroup)
         except:
-            pass # print(" Cannot fill xasnorm panel .. no data?")
-
+            pass
 
     def larch_eval(self, cmd):
         """eval"""
@@ -114,8 +108,9 @@ class XASNormPanel(wx.Panel):
         self.btns = {}
 
         opts = dict(action=self.onReprocess)
-        self.deconv_ewid = FloatCtrl(xas, value=0.5, precision=3,
-                                     minval=0, gformat=True, size=(65, -1), **opts)
+
+        self.deconv_ewid = FloatCtrl(xas, value=0.5, precision=2,
+                                     minval=0, size=(50, -1), **opts)
 
         self.deconv_form = Choice(xas, choices=DECONV_OPS, size=(100, -1), **opts)
 
@@ -136,19 +131,20 @@ class XASNormPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        self.xas_pre1 = FloatCtrl(xas, value=-np.inf, precision=1, **opts)
-        self.xas_pre2 = FloatCtrl(xas, value=-30, precision=1, **opts)
-        self.xas_nor1 = FloatCtrl(xas, value=50, precision=1, **opts)
-        self.xas_nor2 = FloatCtrl(xas, value=np.inf, precision=1, **opts)
-
-        opts.update({'size': (50, -1), 'choices': ('0', '1', '2', '3')})
-        self.xas_vict = Choice(xas, **opts)
-        self.xas_nnor = Choice(xas, **opts)
+        opts['size'] = (50, -1)
+        self.xas_vict = Choice(xas, choices=('0', '1', '2', '3'), **opts)
+        self.xas_nnor = Choice(xas, choices=('0', '1', '2', '3'), **opts)
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(1)
 
-        opts = {'size': (65, -1), 'gformat': True}
+        opts.update({'size': (75, -1), 'precision': 1})
 
+        self.xas_pre1 = FloatCtrl(xas, value=-np.inf, **opts)
+        self.xas_pre2 = FloatCtrl(xas, value=-30, **opts)
+        self.xas_nor1 = FloatCtrl(xas, value=50,   **opts)
+        self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
+
+        opts = {'size': (75, -1), 'gformat': True}
         self.xas_e0 = FloatCtrl(xas, value=0, action=self.onSet_XASE0, **opts)
         self.xas_step = FloatCtrl(xas, value=0, action=self.onSet_XASStep, **opts)
 
@@ -160,7 +156,7 @@ class XASNormPanel(wx.Panel):
             return Button(xas, 'Copy', size=(50, -1),
                           action=partial(self.onCopyParam, name))
 
-        xas.Add(SimpleText(xas, ' XAS Data Normalization and Processing',
+        xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
                            **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
 
@@ -203,14 +199,14 @@ class XASNormPanel(wx.Panel):
         xas.Add(SimpleText(xas, ':'))
         xas.Add(self.btns['nor2'])
         xas.Add(self.xas_nor2)
-        xas.Add(SimpleText(xas, 'PolyOrder:'))
+        xas.Add(SimpleText(xas, 'Poly Order:'))
         xas.Add(self.xas_nnor)
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
         xas.Add(SimpleText(xas, ' Deconvolution:'), newrow=True)
-        xas.Add(self.deconv_form, dcol=4)
-        xas.Add(SimpleText(xas, ' E width:'), dcol=1)
-        xas.Add(self.deconv_ewid,  dcol=2)
+        xas.Add(self.deconv_form, dcol=5)
+        xas.Add(SimpleText(xas, 'Energy width:'))
+        xas.Add(self.deconv_ewid)
         xas.Add(CopyBtn('deconv'), style=RCEN)
 
         xas.Add(saveconf, dcol=6, newrow=True)
@@ -356,14 +352,6 @@ class XASNormPanel(wx.Panel):
         self.xas_autostep.SetValue(0)
         self.onReprocess()
 
-    def onProcessTimer(self, evt=None):
-        x = """
-        if self.needs_update and self.controller.groupname is not None:
-            dgroup = self.controller.get_group()
-            self.needs_update = False
-            self.process(dgroup)
-            self.plot(dgroup)
-            """
     def onReprocess(self, evt=None, value=None, **kws):
         if self.skip_process:
             return
@@ -395,8 +383,7 @@ class XASNormPanel(wx.Panel):
             print(" unknown selection point ", opt)
 
     def process(self, dgroup, **kws):
-        """ handle process (pre-edge/normalize) XAS data from XAS form, overwriting
-        larch group 'x' and 'y' attributes to be plotted
+        """ handle process (pre-edge/normalize, deconvolve) of XAS data from XAS form
         """
         if self.skip_process:
             return
