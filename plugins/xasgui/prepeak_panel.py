@@ -59,6 +59,7 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
 Array_Choices = OrderedDict((('Raw Data', 'mu'),
                              ('Normalized', 'norm'),
                              ('Flattened', 'flat'),
+                             ('Deconvolved', 'deconv'),
                              ('Derivative', 'dmude')))
 
 PlotChoices = OrderedDict((('Data + Baseline', 'bkg'),
@@ -67,6 +68,9 @@ PlotChoices = OrderedDict((('Data + Baseline', 'bkg'),
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
+PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
+PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
+                  marker='None', markersize=4)
 
 
 def default_prepeaks_config():
@@ -366,9 +370,13 @@ class PrePeakPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             # print(" Fill prepeak panel from group ", fname, gname, dgroup)
-            self.ppeak_e0.SetValue(dgroup.e0)
+            self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
+
+    def larch_eval(self, cmd):
+        """eval"""
+        self.controller.larch.eval(cmd)
 
     def build_display(self):
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
@@ -397,10 +405,10 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
         fitbkg_btn = Button(pan, 'Fit Baseline', size=(125, -1),
-                            action=self.onPreedgeBaseline)
+                            action=self.onFitBaseline)
         fitmodel_btn = Button(pan, 'Fit Full Model', size=(125, -1), action=self.onRunFit)
         savefit_btn  = Button(pan, 'Save Fit', size=(125, -1), action=self.onSaveFitResult)
-        plotbkg_btn = Button(pan, 'Plot Baseline', size=(125, -1), action=self.onShowModel)
+        plotbkg_btn = Button(pan, 'Plot Baseline', size=(125, -1), action=self.onPlotBaseline)
         plotfit_btn = Button(pan, 'Plot Fit', size=(125, -1), action=self.onShowModel)
 
         savefit_btn.Disable()
@@ -415,14 +423,13 @@ class PrePeakPanel(wx.Panel):
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
-
         self.model_func = Choice(pan, size=(150, -1),
                                  choices=ModelChoices['peaks'],
                                  action=self.addModel)
 
         opts = dict(default=True, size=(150, -1))
-        self.plot_comps = Check(pan, label='Plot Components?', **opts)
-        self.plot_subbkg = Check(pan, label='Subtract Baseline?', **opts)
+        self.show_comps = Check(pan, label='Plot Components?', **opts)
+        self.show_subbkg = Check(pan, label='Subtract Baseline?', **opts)
 
         self.show_peakrange = Check(pan, label='show?', **opts)
 
@@ -432,7 +439,7 @@ class PrePeakPanel(wx.Panel):
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=6)
 
-        pan.Add(SimpleText(pan, 'Array: '), newrow=True)
+        pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
         pan.Add(self.array_choice, dcol=5)
 
         pan.Add(SimpleText(pan, 'E0: '), newrow=True)
@@ -469,8 +476,8 @@ class PrePeakPanel(wx.Panel):
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(plotbkg_btn, 0)
         ts.Add(plotfit_btn, 0)
-        ts.Add(self.plot_comps, 0)
-        ts.Add(self.plot_subbkg, 0)
+        ts.Add(self.show_comps, 0)
+        ts.Add(self.show_subbkg, 0)
         pan.Add(ts, dcol=8, newrow=True)
 
         pan.Add(SimpleText(pan, ' Add Peak: '), newrow=True)
@@ -488,37 +495,86 @@ class PrePeakPanel(wx.Panel):
 
         pack(self, sizer)
 
-    def onPreedgeBaseline(self, evt=None):
-        e0 = self.ppeak_e0.GetValue()
-        opts = {'elo':  self.ppeak_elo.GetValue(),
-                'ehi':  self.ppeak_ehi.GetValue(),
-                'emin': self.ppeak_emin.GetValue(),
-                'emax': self.ppeak_emax.GetValue()}
+    def get_config(self, dgroup=None):
+        """get processing configuration for a group"""
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
+        conf = getattr(dgroup, 'prepeak_config', {})
+        if 'e0' not in conf:
+            conf = default_prepeak_config()
+        if not hasattr(dgroup, 'prepeaks'):
+            dgroup.prepeaks = Group()
+        dgroup.prepeaks.config = conf
+        return conf
+
+    def fill_form(self, dgroup):
+        self.ppeak_e0.SetValue(dgroup.e0)
+        if hasattr(dgroup, 'prepeaks'):
+            self.ppeak_emin.SetValue(dgroup.prepeaks.emin)
+            self.ppeak_emax.SetValue(dgroup.prepeaks.emax)
+            self.ppeak_elo.SetValue(dgroup.prepeaks.elo)
+            self.ppeak_ehi.SetValue(dgroup.prepeaks.ehi)
+
+    def read_form(self):
+        "read for, returning dict of values"
+        dgroup = self.controller.get_group()
+        array_desc = self.array_choice.GetStringSelection()
+        form_opts = {'gname': dgroup.groupname,
+                     'group': dgroup,
+                     'array_desc': array_desc.lower(),
+                     'array_name': Array_Choices[array_desc],
+                     'baseline_form': 'lorentzian'}
+
+        form_opts['e0'] = self.ppeak_e0.GetValue()
+        form_opts['emin'] = self.ppeak_emin.GetValue()
+        form_opts['emax'] = self.ppeak_emax.GetValue()
+        form_opts['elo'] = self.ppeak_elo.GetValue()
+        form_opts['ehi'] = self.ppeak_ehi.GetValue()
+        form_opts['show_centroid'] = True
+        form_opts['show_comp'] = self.show_comps.IsChecked()
+        form_opts['show_subbkg'] = self.show_subbkg.IsChecked()
+        form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
+        form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
+        form_opts['show_e0'] = self.show_e0.IsChecked()
+
+        return form_opts
 
 
-        gname = self.controller.groupname
-        dgroup = self.controller.get_group(gname)
-        self.controller.xas_preedge_baseline(dgroup, opts=opts)
-        # print(" Ran xas_preedge ", self.controller)
-        # dgroup.proc_opts.update(opts)
+    def onFitBaseline(self, evt=None):
+        opts = self.read_form()
 
-        # print(" -> preeedge centroid ", dgroup.centroid_msg)
-        # print(" ", dgroup.prepeaks)
-        # print(" ", dir(dgroup.prepeaks))
-        # print(" ", dgroup.prepeaks.fit_details.params)
+        cmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
+pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
+form='{baseline_form:s}', elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
+"""
+        self.larch_eval(cmd.format(**opts))
+
+        dgroup = opts['group']
+        ppeaks = dgroup.prepeaks
+        dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
+                                                    ppeaks.delta_centroid)
 
         if 'bkg_' not in self.fit_components:
             self.addModel(model='Lorentzian', prefix='bkg_')
 
         bkg = self.fit_components['bkg_']
         bkg.bkgbox.SetValue(1)
-        allparwids = {}
-        for name, parwids in bkg.parwids.items():
-            allparwids[name] = parwids
+        self.fill_model_params(dgroup, 'bkg_')
+        self.fill_form(dgroup)
+
+        self.fitmodel_btn.Enable()
+        self.plotfit_btn.Enable()
+
+        self.onPlotBaseline()
+
+    def fill_model_params(self, dgroup, prefix):
+        comp = self.fit_components[prefix]
+        parwids = comp.parwids
         for pname, par in dgroup.prepeaks.fit_details.params.items():
-            pname = "bkg_" + pname
-            if pname in allparwids:
-                wids = allparwids[pname]
+            pname = prefix + pname
+            if pname in parwids:
+                wids = parwids[pname]
                 if wids.minval is not None:
                     wids.minval.SetValue(par.min)
                 if wids.maxval is not None:
@@ -530,6 +586,91 @@ class PrePeakPanel(wx.Panel):
                     varstr = 'constrain'
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
+
+    def onPlotBaseline(self, evt=None):
+        opts = self.read_form()
+        dgroup = self.controller.get_group()
+        opts = self.read_form()
+        ppeaks = dgroup.prepeaks
+        i0 = index_of(dgroup.energy, ppeaks.energy[0])
+        i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+
+        baseline = dgroup.ydat*1.0
+        baseline[i0:i1] = ppeaks.baseline
+
+        jmin, jmax = max(0, i0-2), i1+3
+        ydat = dgroup.ydat[jmin:jmax]
+        yrange = max(ydat) - min(ydat)
+
+        array_desc = self.array_choice.GetStringSelection()
+
+        plotopts = {'xmin': dgroup.energy[jmin],
+                    'xmax': dgroup.energy[jmax],
+                    'ymax': max(ydat) + 0.05 * yrange,
+                    'ymin': min(ydat) - 0.05 * yrange,
+                    'title': 'Pre-edge baseline: %s' % opts['gname'],
+                    'xlabel': 'Energy (eV)',
+                    'ylabel': '%s $\mu$' % opts['array_desc'],
+                    'label': '%s $\mu$' % opts['array_desc']}
+
+        plot_extras = []
+        if opts['show_fitrange']:
+            popts = {'color': '#DDDDCC'}
+            emin = opts['emin']
+            emax = opts['emax']
+            imin = index_of(dgroup.xdat, emin)
+            imax = index_of(dgroup.xdat, emax)
+
+            plot_extras.append(('vline', emin, None, popts))
+            plot_extras.append(('vline', emax, None, popts))
+
+        if opts['show_peakrange']:
+            popts = {'marker': '+', 'markersize': 6}
+            elo = opts['elo']
+            ehi = opts['ehi']
+            ilo = index_of(dgroup.xdat, elo)
+            ihi = index_of(dgroup.xdat, ehi)
+
+            plot_extras.append(('marker', elo, dgroup.ydat[ilo], popts))
+            plot_extras.append(('marker', ehi, dgroup.ydat[ihi], popts))
+
+        if opts['show_centroid']:
+            popts = {'color': '#EECCCC'}
+            ecen = getattr(dgroup.prepeaks, 'centroid', -1)
+            if ecen > min(dgroup.energy):
+                plot_extras.append(('vline', ecen, None,  popts))
+
+        #print("Would plot with: ", plot_ylabel)
+        #print(plot_yarrays)
+        #print(plotopts)
+        #print(plot_extras)
+
+        ppanel = self.controller.get_display().panel
+
+        plotopts.update(PLOTOPTS_1)
+        ppanel.plot(dgroup.energy, dgroup.ydat, delay_draw=True, **plotopts)
+
+        plotopts.update(PLOTOPTS_2)
+        plotopts['label'] = 'baseline'
+
+        ppanel.oplot(dgroup.energy, baseline, **plotopts)
+
+        axes = ppanel.axes
+        for etype, x, y, opts in plot_extras:
+            # print(" plot extra ", etype, x, y, opts)
+            if etype == 'marker':
+                popts = {'marker': 'o', 'markersize': 4,
+                         'label': '_nolegend_',
+                         'markerfacecolor': 'red',
+                         'markeredgecolor': '#884444'}
+                popts.update(opts)
+                axes.plot([x], [y], **popts)
+            elif etype == 'vline':
+                popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888'}
+                popts.update(opts)
+                axes.axvline(x, **popts)
+        ppanel.canvas.draw()
+
 
 
     def onNBChanged(self, event=None):
@@ -731,10 +872,10 @@ class PrePeakPanel(wx.Panel):
         xmin, xmax = min(xcur), max(xcur)
 
         dgroup = getattr(self.larch.symtable, self.controller.groupname)
-        x, y = dgroup.x, dgroup.y
-        i0 = index_of(dgroup.x, xmin)
-        i1 = index_of(dgroup.x, xmax)
-        x, y = dgroup.x[i0:i1+1], dgroup.y[i0:i1+1]
+        x, y = dgroup.xdat, dgroup.ydat
+        i0 = index_of(dgroup.xdat, xmin)
+        i1 = index_of(dgroup.xdat, xmax)
+        x, y = dgroup.xdat[i0:i1+1], dgroup.ydat[i0:i1+1]
 
         mod = self.pick2_group.mclass(prefix=self.pick2_group.prefix)
         parwids = self.pick2_group.parwids
@@ -747,10 +888,10 @@ class PrePeakPanel(wx.Panel):
             if name in parwids:
                 parwids[name].value.SetValue(param.value)
 
-        dgroup._tmp = mod.eval(guesses, x=dgroup.x)
+        dgroup._tmp = mod.eval(guesses, x=dgroup.xdat)
         plotframe = self.controller.get_display(stacked=False)
         plotframe.cursor_hist = []
-        plotframe.oplot(dgroup.x, dgroup._tmp)
+        plotframe.oplot(dgroup.xdat, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
 
         self.pick2erase_timer.Start(5000)
@@ -821,9 +962,9 @@ class PrePeakPanel(wx.Panel):
 
         dgroup = self.get_datagroup()
 
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        x = dgroup.x[slice(i1, i2)]
-        y = dgroup.y[slice(i1, i2)]
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+        x = dgroup.xdat[slice(i1, i2)]
+        y = dgroup.ydat[slice(i1, i2)]
         yerr = None
         if hasattr(dgroup, 'yerr'):
             yerr = dgroup.yerr
@@ -839,8 +980,8 @@ class PrePeakPanel(wx.Panel):
 
     def onResetRange(self, event=None):
         dgroup = self.get_datagroup()
-        self.xmin.SetValue(min(dgroup.x))
-        self.xmax.SetValue(max(dgroup.x))
+        self.xmin.SetValue(min(dgroup.xdat))
+        self.xmax.SetValue(max(dgroup.xdat))
 
     def on_selpoint(self, evt=None, opt='xmin'):
         xval = None
@@ -848,12 +989,9 @@ class PrePeakPanel(wx.Panel):
             xval = self.larch.symtable._plotter.plot1_x
         except:
             return
-        e0 = float(self.ppeak_e0.GetValue())
         wid = getattr(self, opt, None)
-        if opt == 'ppeak_e0':
+        if wid is not None:
             wid.SetValue(xval)
-        elif wid is not None:
-            wid.SetValue(xval - e0)
 
 
     def get_datagroup(self):
@@ -902,8 +1040,8 @@ class PrePeakPanel(wx.Panel):
         self.fit_params = params
 
         if dgroup is not None:
-            i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-            xsel = dgroup.x[slice(i1, i2)]
+            i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+            xsel = dgroup.xdat[slice(i1, i2)]
             dgroup.xfit = xsel
             dgroup.yfit = self.fit_model.eval(self.fit_params, x=xsel)
             dgroup.ycomps = self.fit_model.eval_components(params=self.fit_params,
@@ -913,7 +1051,7 @@ class PrePeakPanel(wx.Panel):
     def onShowModel(self, event=None):
         dgroup = self.build_fitmodel()
         if dgroup is not None:
-            with_components = (self.plot_comps.IsChecked() and
+            with_components = (self.show_comps.IsChecked() and
                                len(dgroup.ycomps) > 1)
 
             self.plot_fitmodel(dgroup, show_resid=False,
@@ -922,7 +1060,7 @@ class PrePeakPanel(wx.Panel):
     def plot_fitmodel(self, dgroup, show_resid=False, with_components=None):
         if dgroup is None:
             return
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
         ysel = dgroup.y[slice(i1, i2)]
 
         plotframe = self.controller.get_display(stacked=True)
@@ -937,7 +1075,7 @@ class PrePeakPanel(wx.Panel):
                        marker='o', markersize=4, linewidth=1, panel='bot')
 
         if with_components is None:
-            with_components = (self.plot_comps.IsChecked() and
+            with_components = (self.show_comps.IsChecked() and
                                len(dgroup.ycomps) > 1)
         if with_components:
             for label, _y in dgroup.ycomps.items():
@@ -949,10 +1087,10 @@ class PrePeakPanel(wx.Panel):
         plotframe.panel_bot.axes.axhline(0, **line_opts)
         axvline = plotframe.panel.axes.axvline
         if i1 > 0:
-            axvline(dgroup.x[i1], **line_opts)
+            axvline(dgroup.xdat[i1], **line_opts)
 
-        if i2 < len(dgroup.x):
-            axvline(dgroup.x[i2-1], **line_opts)
+        if i2 < len(dgroup.xdat):
+            axvline(dgroup.xdat[i2-1], **line_opts)
 
         plotframe.panel.canvas.draw()
 
@@ -961,8 +1099,8 @@ class PrePeakPanel(wx.Panel):
         dgroup = self.build_fitmodel()
         if dgroup is None:
             return
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.x)
-        dgroup.xfit = dgroup.x[slice(i1, i2)]
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+        dgroup.xfit = dgroup.xdat[slice(i1, i2)]
         ysel = dgroup.y[slice(i1, i2)]
         weights = np.ones(len(ysel))
 
@@ -993,12 +1131,9 @@ class PrePeakPanel(wx.Panel):
                                                        x=dgroup.xfit)
 
 
-        with_components = (self.plot_comps.IsChecked() and len(dgroup.ycomps) > 1)
+        with_components = (self.show_comps.IsChecked() and len(dgroup.ycomps) > 1)
 
         self.plot_fitmodel(dgroup, show_resid=True, with_components=with_components)
-
-        # print(" == fit model == ", self.fit_model)
-        # print(" == fit result == ", result)
 
         result.model_repr = self.fit_model._reprstring(long=True)
 
