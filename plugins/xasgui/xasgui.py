@@ -752,11 +752,7 @@ class XASFrame(wx.Frame):
             return
 
         self.controller.save_config()
-        self.xasnorm_panel.proc_timer.Stop()
-        time.sleep(0.05)
-
-        plotframe = self.controller.get_display(stacked=False)
-        plotframe.Destroy()
+        self.controller.get_display().Destroy()
 
         if self.larch_buffer is not None:
             try:
