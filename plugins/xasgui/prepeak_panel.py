@@ -56,6 +56,10 @@ ModelChoices = {'steps': ('<Steps Models>', 'Linear Step', 'Arctan Step',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
+PlotChoices = OrderedDict((('Data + Background', 'bkg'),
+                           ('Data + Fit', 'fit')))
+
+
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
 MIN_CORREL = 0.0010
@@ -346,7 +350,7 @@ class PrePeakPanel(wx.Panel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            print(" Fill prepeak panel from group ", fname, gname, dgroup)
+            # print(" Fill prepeak panel from group ", fname, gname, dgroup)
             self.ppeak_e0.SetValue(dgroup.e0)
         except:
             print(" Cannot Fill prepeak panel from group ")
@@ -377,26 +381,47 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        self.ppeak_bkgfit = Button(pan, 'Fit Pre-edge Baseline', size=(175, 30),
-                                   action=self.onPreedgeBaseline)
+        bkgbtn = Button(pan, 'Fit Background', size=(125, 30),
+                        action=self.onPreedgeBaseline)
+        runbtn = Button(pan, 'Run Fit', size=(125, -1), action=self.onRunFit)
+        savbtn = Button(pan, 'Save Fit', size=(125, -1), action=self.onSaveFitResult)
+        savbtn.Disable()
+        self.savebtn = savbtn
 
-        self.model_type = Choice(pan, size=(100, -1),
-                                 choices=ModelTypes,
-                                 action=self.onModelTypes)
-
-        self.model_func = Choice(pan, size=(200, -1),
+        #self.model_type = Choice(pan, size=(100, -1),
+        #                         choices=ModelTypes,
+        #                         action=self.onModelTypes)
+        self.model_func = Choice(pan, size=(150, -1),
                                  choices=ModelChoices['peaks'],
                                  action=self.addModel)
 
-        pan.Add(SimpleText(pan, 'E0: '), newrow=True)
+        self.plot_choice = Choice(pan, size=(125, -1),
+                                  choices=list(PlotChoices.keys()),
+                                  action=self.onShowModel)
+
+        opts = dict(default=True, size=(150, -1))
+        self.plot_comps = Check(pan, label='Plot Components?', **opts)
+        self.plot_subbkg = Check(pan, label='Subtract Background?', **opts)
+
+        self.show_peakrange = Check(pan, label='show?', **opts)
+
+        self.show_fitrange = Check(pan, label='show?', **opts)
+        self.show_e0 = Check(pan, label='show?', **opts)
+
+
+
+        pan.Add(SimpleText(pan, 'E0: '))
         pan.Add(self.btns['ppeak_e0'])
         pan.Add(self.ppeak_e0)
+        pan.Add(self.show_e0, dcol=5)
+
         pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
         pan.Add(self.btns['ppeak_emin'])
         pan.Add(self.ppeak_emin)
         pan.Add(SimpleText(pan, ':'))
         pan.Add(self.btns['ppeak_emax'])
         pan.Add(self.ppeak_emax)
+        pan.Add(self.show_fitrange, dcol=2)
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         t.SetToolTip('Range used as mask for background')
@@ -407,27 +432,23 @@ class PrePeakPanel(wx.Panel):
         pan.Add(SimpleText(pan, ':'))
         pan.Add(self.btns['ppeak_ehi'])
         pan.Add(self.ppeak_ehi)
-        pan.Add(self.ppeak_bkgfit)
+        pan.Add(self.show_peakrange, dcol=2)
+
+        pan.Add(SimpleText(pan, 'Fit : '), newrow=True)
+        pan.Add(bkgbtn, dcol=4)
+        pan.Add(runbtn, dcol=2)
+        pan.Add(savbtn, dcol=2)
+
+        pan.Add(SimpleText(pan, 'Plot : '), newrow=True)
+        pan.Add(self.plot_choice, dcol=4)
+        pan.Add(self.plot_comps, dcol=2)
+        pan.Add(self.plot_subbkg, dcol=2)
+
 
         pan.Add(SimpleText(pan, ' Add Model Type: '), newrow=True)
-        pan.Add(self.model_type, dcol=3)
-        pan.Add(SimpleText(pan, ' Model: '), dcol=2)
-        pan.Add(self.model_func)
-
-
-        pan.pack()
-
-#         rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
-#         rsizer.Add(xmin_sel, 0, LCEN, 3)
-#         rsizer.Add(self.xmin, 0, LCEN, 3)
-#         rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
-#         rsizer.Add(xmax_sel, 0, LCEN, 3)
-#         rsizer.Add(self.xmax, 0, LCEN, 3)
-#         rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
-#         rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
-#                           action=self.onResetRange), 0, LCEN, 3)
-#          pack(range_row, rsizer)
-
+        pan.Add(self.model_func, dcol=7)
+        # pan.Add(self.model_type, dcol=4)
+        # pan.Add(SimpleText(pan, ' Model: '), dcol=1)
 
 #         self.plot_comps = Check(pan, label='Plot Components?',
 #                                 default=True, size=(150, -1))
@@ -444,6 +465,21 @@ class PrePeakPanel(wx.Panel):
 #         rsizer.Add(self.plot_comps, 0, LCEN, 3)
 #
 #         pack(action_row, rsizer)
+
+        pan.pack()
+
+#         rsizer.Add(SimpleText(range_row, 'Fit Range X=[ '), 0, LCEN, 3)
+#         rsizer.Add(xmin_sel, 0, LCEN, 3)
+#         rsizer.Add(self.xmin, 0, LCEN, 3)
+#         rsizer.Add(SimpleText(range_row, ' : '), 0, LCEN, 3)
+#         rsizer.Add(xmax_sel, 0, LCEN, 3)
+#         rsizer.Add(self.xmax, 0, LCEN, 3)
+#         rsizer.Add(SimpleText(range_row, ' ]  '), 0, LCEN, 3)
+#         rsizer.Add(Button(range_row, 'Full Data Range', size=(150, -1),
+#                           action=self.onResetRange), 0, LCEN, 3)
+#          pack(range_row, rsizer)
+
+
 #
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -466,11 +502,37 @@ class PrePeakPanel(wx.Panel):
         gname = self.controller.groupname
         dgroup = self.controller.get_group(gname)
         self.controller.xas_preedge_baseline(dgroup, opts=opts)
+        # print(" Ran xas_preedge ", self.controller)
         # dgroup.proc_opts.update(opts)
 
-        print(" -> preeedge centroid ", dgroup.centroid_msg)
-        self.process(gname)
-        print(" on preedge baseline")
+        # print(" -> preeedge centroid ", dgroup.centroid_msg)
+        # print(" ", dgroup.prepeaks)
+        # print(" ", dir(dgroup.prepeaks))
+        # print(" ", dgroup.prepeaks.fit_details.params)
+
+        if 'bkg_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='bkg_')
+
+        bkg = self.fit_components['bkg_']
+        bkg.bkgbox.SetValue(1)
+        allparwids = {}
+        for name, parwids in bkg.parwids.items():
+            allparwids[name] = parwids
+        for pname, par in dgroup.prepeaks.fit_details.params.items():
+            pname = "bkg_" + pname
+            if pname in allparwids:
+                wids = allparwids[pname]
+                if wids.minval is not None:
+                    wids.minval.SetValue(par.min)
+                if wids.maxval is not None:
+                    wids.maxval.SetValue(par.max)
+                wids.value.SetValue(par.value)
+                varstr = 'vary' if par.vary else 'fix'
+                if par.expr is not None:
+                    wids.expr.SetValue(par.expr)
+                    varstr = 'constrain'
+                if wids.vary is not None:
+                    wids.vary.SetStringSelection(varstr)
 
 
     def onNBChanged(self, event=None):
@@ -480,22 +542,23 @@ class PrePeakPanel(wx.Panel):
         modtype = event.GetString().lower()
         self.model_func.SetChoices(ModelChoices[modtype])
 
-    def addModel(self, event=None, model=None):
+    def addModel(self, event=None, model=None, prefix=None):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
             return
 
-        p = model[0].lower()
-        curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
-        for comp in self.fit_components:
-            if comp in curmodels:
-                curmodels.remove(comp)
+        if prefix is None:
+            p = model[0].lower()
+            curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
+            for comp in self.fit_components:
+                if comp in curmodels:
+                    curmodels.remove(comp)
 
-        prefix = curmodels[0]
+            prefix = curmodels[0]
 
         label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s" % (prefix[:-1], (model+' '*8)[:8])
+        title = "%s: %s " % (prefix[:-1], model)
         mclass_kws = {'prefix': prefix}
         if 'step' in model.lower():
             form = model.lower().replace('step', '').strip()
@@ -604,7 +667,8 @@ class PrePeakPanel(wx.Panel):
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
                        mclass_kws=mclass_kws, usebox=usebox, panel=panel,
                        parwids=parwids, float_size=65, expr_size=150,
-                       pick2_msg=pick2msg)
+                       pick2_msg=pick2msg, bkgbox=bkgbox)
+
 
         self.fit_components[prefix] = fgroup
         panel.pack()
