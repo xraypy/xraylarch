@@ -746,11 +746,11 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         icol = 0
         if self.config_mode == 'rgb':
             for iframe in self.tomo_frame:
-                for i,col in enumerate(RGB_COLORS):
+                for ic,col in enumerate(RGB_COLORS):
                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
                                                             iframe.panel,
                                                             title='%s - %s: ' % (iframe.label,col.title()),
-                                                            color=i,
+                                                            color=ic,
                                                             default=col,
                                                             colormap_list=None)
 
@@ -980,8 +980,9 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onEnhanceContrast(self, event=None):
         '''change image contrast, using scikit-image exposure routines'''
+        
         for iframe in self.tomo_frame:
-            self.iframe.panel.conf.auto_contrast = event.IsChecked()
+            iframe.panel.conf.auto_contrast = event.IsChecked()
         self.set_contrast_levels()
         for iframe in self.tomo_frame:
             iframe.panel.redraw()
@@ -991,50 +992,47 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         according to value of iframe.panel.conf.auto_contrast
         '''
 
+        def set_panel_contrast(icol,conf,ix=-1):
+
+            if ix < 0:
+                ix = icol
+                img  = conf.data
+            else:
+                img = conf.data[:,:,ix]
+
+            jmin = imin = img.min()
+            jmax = imax = img.max()
+
+            self.cmap_panels[icol].imin_val.SetValue('%.4g' % imin)
+            self.cmap_panels[icol].imax_val.SetValue('%.4g' % imax)
+            conf.int_lo[ix] = imin
+            conf.int_hi[ix] = imax
+
+            if conf.auto_contrast:
+                jmin, jmax = np.percentile(img, [      conf.auto_contrast_level,
+                                                 100.0-conf.auto_contrast_level])
+            if imax == imin:
+                imax = imin + 0.5
+            conf.cmap_lo[ix] = xlo = (jmin-imin)*conf.cmap_range/(imax-imin)
+            conf.cmap_hi[ix] = xhi = (jmax-imin)*conf.cmap_range/(imax-imin)
+            self.cmap_panels[icol].cmap_hi.SetValue(xhi)
+            self.cmap_panels[icol].cmap_lo.SetValue(xlo)
+            
+            str = 'Shown: [ %.4g :  %.4g ]' % (jmin, jmax)
+            self.cmap_panels[icol].islider_range.SetLabel(str)
+            self.cmap_panels[icol].redraw_cmap()
+
         icol = 0
         for iframe in self.tomo_frame:
             conf = iframe.panel.conf
-            img  = iframe.panel.conf.data
-            enhance = conf.auto_contrast
-            clevel = conf.auto_contrast_level
-            if len(img.shape) == 2: # intensity map
-                jmin = imin = img.min()
-                jmax = imax = img.max()
-                self.cmap_panels[icol].imin_val.SetValue('%.4g' % imin)
-                self.cmap_panels[icol].imax_val.SetValue('%.4g' % imax)
-                if enhance:
-                    jmin, jmax = np.percentile(img, [clevel, 100.0-clevel])
-                if imax == imin:
-                    imax = imin + 0.5
-                conf.cmap_lo[icol] = xlo = (jmin-imin)*conf.cmap_range/(imax-imin)
-                conf.cmap_hi[icol] = xhi = (jmax-imin)*conf.cmap_range/(imax-imin)
-
-                # print('Set contrast level =', conf.cmap_hi, conf.cmap_range)
-
-                self.cmap_panels[icol].cmap_hi.SetValue(xhi)
-                self.cmap_panels[icol].cmap_lo.SetValue(xlo)
-                self.cmap_panels[icol].islider_range.SetLabel('Shown: [ %.4g :  %.4g ]' % (jmin, jmax))
-                self.cmap_panels[icol].redraw_cmap()
+            if len(conf.data.shape) == 2: # intensity map
+                set_panel_contrast(icol,conf)
                 icol += 1
-
-            if len(img.shape) == 3: # rgb map
+            elif len(conf.data.shape) == 3: # rgb map
                 for ix in range(3):
-                    jmin = imin = img[:,:,ix].min()
-                    jmax = imax = img[:,:,ix].max()
-                    self.cmap_panels[icol].imin_val.SetValue('%.4g' % imin)
-                    self.cmap_panels[icol].imax_val.SetValue('%.4g' % imax)
-                    if enhance:
-                        jmin, jmax = np.percentile(img[:,:,ix], [1, 99])
-                    if imax == imin:
-                        imax = imin + 0.5
-                    conf.cmap_lo[ix] = xlo = (jmin-imin)*conf.cmap_range/(imax-imin)
-                    conf.cmap_hi[ix] = xhi = (jmax-imin)*conf.cmap_range/(imax-imin)
-                    self.cmap_panels[icol].cmap_hi.SetValue(xhi)
-                    self.cmap_panels[icol].cmap_lo.SetValue(xlo)
-
-                    self.cmap_panels[icol].islider_range.SetLabel('Shown: [ %.4g :  %.4g ]' % (jmin, jmax))
-                    self.cmap_panels[icol].redraw_cmap()
+                    set_panel_contrast(icol,conf,ix=ix)
                     icol += 1
+            iframe.panel.redraw()
 
     def onLogScale(self, event=None):
         

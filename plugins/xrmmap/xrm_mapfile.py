@@ -1642,6 +1642,42 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
+    def build_detector_dictionary(self,refine=False):
+    
+        xrmmap = self.xrmmap
+        data_detectors = []
+        
+        for det in xrmmap.keys():
+            title    = None
+            raw_path = None
+            cor_path = None
+            dtf_path = None
+
+            if bytes2str(xrmmap[det].attrs.get('type', '')).find('det') > -1:
+                    
+                if det == 'scalars':
+                    for chan in xrmmap[det].keys():
+                        if 'raw' not in chan:
+                            title=chan
+                            raw_path = '%s/%s_raw' % (det,chan)
+                            cor_path = '%s/%s' % (det,chan)
+                else:
+                    title = det
+                    raw_path = '%s/counts' % det
+                    data = xrmmap[raw_path]
+                    try:
+                        xrmmap[det]['dtfactor']
+                        dtf_path = '%s/dtfactor' % det
+                    except:
+                        pass
+            
+                data_detectors += [DetectorDictionary(title    = title,
+                                                      raw_path = raw_path,
+                                                      cor_path = cor_path,
+                                                      dtf_path = dtf_path)]
+        
+        return data_detectors
+
     def get_detchoices(self):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
@@ -1982,28 +2018,18 @@ class GSEXRM_MapFile(object):
 
         return self.get_pos(0, mean=True)
 
-    def get_rotation_axis(self):
+    def get_rotation_axis(self,axis=None):
         posnames = [n.lower() for n in self.xrmmap['positions/name']]
-        if 'theta' in posnames:
+        if axis is not None:
+            if axis in posnames or type(axis) == int:
+                return self.get_pos(axis, mean=True)
+        elif 'theta' in posnames:
             return self.get_pos('theta', mean=True)
-        if 'omega' in posnames:
+        elif 'omega' in posnames:
             return self.get_pos('omega', mean=True)
 
-        return self.get_pos(0, mean=True)
-
-    def set_tomography_status(self,key=True):
-
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        tomogrp.attrs['status'] = key
-        
-        self.h5root.flush()
-
-    def get_tomography_status(self):
-
-        try:
-            return self.xrmmap['tomo'].attrs['status']
-        except:
-            return False
+        #return self.get_pos(0, mean=True)
+        return
 
     def get_tomography_center(self):
 
@@ -2061,13 +2087,17 @@ class GSEXRM_MapFile(object):
 
         if omega is None: omega = self.get_rotation_axis()
         if center is None: center = self.get_tomography_center()
+        
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
+            return
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
         self.set_tomography_center(center=center)
         
         return tomo
 
-    def save_tomograph(self, detname, overwrite=True, tomo_alg=[], **kws):
+    def save_tomograph(self, detname, overwrite=True, tomo_alg=[], dtfactor=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
@@ -2076,10 +2106,6 @@ class GSEXRM_MapFile(object):
         if detname not in detlist:
             print("Detector '%s' not found in data." % detname)
             print('Known detectors: %s' % detlist)
-            #detname = 'detsum'
-            #if version_ge(self.version, '2.0.0'):
-            #    detname = detname.replace('det','mca')
-            #print("** using '%s' instead. **\n" % detname)
             return
 
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
@@ -2095,37 +2121,51 @@ class GSEXRM_MapFile(object):
             pass
         detgrp = ensure_subgroup(detname,tomogrp)
 
-        omega = self.get_rotation_axis()
-        x = self.get_translation_axis()
-        center = self.get_tomography_center()
-        try:
-            raw_sino = self.xrmmap[detname]['counts']
-        except:
-            print('unable to find path self.xrmmap[%s][counts]' % detname)
-            return
-        sino,order = reshape_sinogram(raw_sino,x,omega)
-
-        center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-                                          sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
-
-        detgrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
-        detgrp.attrs['center'] = '%0.2f pixels' % (center)
+        omega,x = self.get_rotation_axis(),self.get_translation_axis()
+        center = self.get_tomography_center(),
         
-        detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
-        for data_tag in ('energy','q'):
-            try:
-                detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
-            except:
-                pass
-        for attr_tag in self.xrmmap[detname].attrs.keys():
-            try:
-                detgrp.attrs[attr_tag] = self.xrmmap[detname].attrs[attr_tag]
-            except:
-                pass
+        if omega is None:
+            print('\n** Cannot compute tomography: no rotation axis specified in map. **')
+            return
 
-        self.set_tomography_status(key=True)
-        print("Tomography data saved for '%s' successfully." % detname)
-        self.h5root.flush()
+#         print ('this path will not work for xrd1D or mcasum; right?')
+#         if dtfactor
+# 
+#             if 'sum' in detname:
+# 
+#                 sino = 
+#         
+#         
+#         if dtfactor:
+#             raw_sino = self.xrmmap[detname]['counts']
+#             dtf_sino = self.xrmmap[detname]['dtfactor']
+#             
+#             sino = raw_sino * dtf_sino
+#                 
+#         else:
+#             sino = self.xrmmap[detname]['counts']            
+# 
+#         sino,order = reshape_sinogram(sino,x,omega)
+# 
+#         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
+#                                           sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
+# 
+#         detgrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
+#         detgrp.attrs['center'] = '%0.2f pixels' % (center)
+#         
+#         detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
+#         for data_tag in ('energy','q'):
+#             try:
+#                 detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
+#             except:
+#                 pass
+#         for attr_tag in self.xrmmap[detname].attrs.keys():
+#             try:
+#                 detgrp.attrs[attr_tag] = self.xrmmap[detname].attrs[attr_tag]
+#             except:
+#                 pass
+# 
+#         self.h5root.flush()
 
     def claim_hostid(self):
         "claim ownership of file"
@@ -3219,6 +3259,29 @@ def read_xrfmap(filename, root=None):
     return GSEXRM_MapFile(**kws)
 
 read_xrmmap = read_xrfmap
+
+
+class DetectorDictionary(object):
+
+    def __init__(self, title=None, raw_path=None, cor_path=None, dtf_path=None,
+             _larch=None, **kws):
+
+        self.title    = title
+        self.raw_path = raw_path
+        self.cor_path = cor_path
+        self.dtf_path = dtf_path
+
+#         if HAS_larch:
+#             Group.__init__(self)
+
+    def __repr__(self):
+        
+        form = 'NAME %s' % self.title
+        for path in (self.raw_path,self.cor_path,self.dtf_path):
+           if path is not None:
+               form = '%s\n     %s' % (form,path)
+        return form 
+
 
 
 def read_fake1(filename, root=None):
