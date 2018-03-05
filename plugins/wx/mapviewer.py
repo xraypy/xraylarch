@@ -509,7 +509,7 @@ class TomographyPanel(GridPanel):
 
         self.refine_center.SetValue(False)
         
-        self.tomo_det    = Choice(self, size=(125, -1))
+        self.tomo_det    = Choice(self, size=(250, -1))
         self.chk_dftcor2 = wx.CheckBox(self, label='Correct Deadtime?')
         self.tomo_save   = Button(self, 'Save reconstruction',     size=(150, -1),
                                action=self.onSaveTomograph)
@@ -553,9 +553,9 @@ class TomographyPanel(GridPanel):
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
         #################################################################################
-        self.AddMany((SimpleText(self,'Detector:'),self.tomo_det),
-                                                               style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,''),                      dcol=1, style=RIGHT)
+        self.Add(SimpleText(self,'Detector:'),         dcol=1, style=LEFT, newrow=True)
+        self.Add(self.tomo_det,                        dcol=2, style=LEFT)
+        ##self.Add(SimpleText(self,''),                      dcol=1, style=RIGHT)
         self.Add(self.tomo_save,                        dcol=1, style=LEFT)
 
         #################################################################################
@@ -801,18 +801,26 @@ class TomographyPanel(GridPanel):
 
     def onSaveTomograph(self, event=None):
     
-        detname = self.tomo_det.GetStringSelection()
+        detpath = self.tomo_det.GetStringSelection()
         #tomo_center = self.center_value.GetValue()
+        
+        ## sets center (if not already in file)
+        tomo_center = self.center_value.GetValue()
 
         dtcorrect = self.chk_dftcor.GetValue()
+        if not dtcorrect and 'scalars' in detpath:
+            detpath = '%s_raw' % detpath
 
         tomo_alg = [self.alg_choice[0].GetStringSelection(),
                     self.alg_choice[1].GetStringSelection(),
                     self.alg_choice[2].GetStringSelection()]
 
-        print (' Saving...')
-        self.owner.current_file.save_tomograph(detname, overwrite=True, tomo_alg=tomo_alg)
-        print ('Saved.')
+        print ('Saving tomographic reconstruction for %s ' % detpath)
+        self.owner.current_file.save_tomograph(detpath, tomo_alg=tomo_alg, 
+                                               center=tomo_center,
+                                               overwrite=True,
+                                               dtcorrect=dtcorrect)
+        print (' Finished.')
 
 
     def onShowTomograph(self, event=None, new=True):
@@ -870,7 +878,7 @@ class TomographyPanel(GridPanel):
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
-        self.tomo_det.SetChoices(det_list)
+        self.tomo_det.SetChoices(self.cfile.list_raw_data_detectors())
 
         self.set_roi_choices()
 

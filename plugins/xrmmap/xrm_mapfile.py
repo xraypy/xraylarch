@@ -200,13 +200,35 @@ def ensure_subgroup(subgroup,group):
     except:
         return group.create_group(subgroup)
 
-def get_detectors(group):
+def build_raw_data_detector_list(xrmmap):
+
+    det_list = []
+
+    def check_detector(group):
+
+        sub_list = []
+        is_det = bytes2str(group.attrs.get('type', '')).find('det') > -1
+        if is_det and isinstance(group,h5py.Group):
+            if 'counts' in group.keys():
+                sub_list += [group['counts'].name]
+            if group.name.find('scal') > -1:
+                for key,val in dict(group).iteritems():
+                    sub_list += [group[key].name]
+        return sub_list
+
+    for keyi,vali in dict(xrmmap).iteritems():
+        for det in check_detector(xrmmap[keyi]):
+            det_list += [det]
+    return det_list
+
+
+def return_group_detectors(group):
 
     detlist = []
     for key in group.keys():
-        if 'type' in group[key].attrs.keys():
-            if 'detector' in group[key].attrs['type'] and key not in detlist:
-                detlist += [key]
+        is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
+        if is_det and key not in detlist:
+            detlist += [key]
 
     return detlist
 
@@ -1642,41 +1664,13 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
-    def build_detector_dictionary(self,refine=False):
+    def list_raw_data_detectors(self,all=False):
     
-        xrmmap = self.xrmmap
-        data_detectors = []
+        det_list = sorted(build_raw_data_detector_list(self.xrmmap))
+        if not all:
+           return [det for det in det_list if not det.lower().endswith('raw')]
         
-        for det in xrmmap.keys():
-            title    = None
-            raw_path = None
-            cor_path = None
-            dtf_path = None
-
-            if bytes2str(xrmmap[det].attrs.get('type', '')).find('det') > -1:
-                    
-                if det == 'scalars':
-                    for chan in xrmmap[det].keys():
-                        if 'raw' not in chan:
-                            title=chan
-                            raw_path = '%s/%s_raw' % (det,chan)
-                            cor_path = '%s/%s' % (det,chan)
-                else:
-                    title = det
-                    raw_path = '%s/counts' % det
-                    data = xrmmap[raw_path]
-                    try:
-                        xrmmap[det]['dtfactor']
-                        dtf_path = '%s/dtfactor' % det
-                    except:
-                        pass
-            
-                data_detectors += [DetectorDictionary(title    = title,
-                                                      raw_path = raw_path,
-                                                      cor_path = cor_path,
-                                                      dtf_path = dtf_path)]
-        
-        return data_detectors
+        return det_list
 
     def get_detchoices(self):
         """get a list of detector groups,
@@ -1719,7 +1713,7 @@ class GSEXRM_MapFile(object):
         mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
 
-        detlist = get_detectors(self.xrmmap)
+        detlist = return_group_detectors(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
             
@@ -2097,46 +2091,91 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, detname, overwrite=True, tomo_alg=[], dtfactor=False, **kws):
+    def save_tomograph(self, detpath, tomo_alg=[], center=None,
+                       overwrite=False, dtcorrect=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
        
-        detlist = get_detectors(self.xrmmap)
-        if detname not in detlist:
-            print("Detector '%s' not found in data." % detname)
+        ## check to make sure the selected detector exists for reconstructions
+        detlist = self.list_raw_data_detectors(all=True)
+        if detpath not in detlist:
+            print("Detector '%s' not found in data." % detpath)
             print('Known detectors: %s' % detlist)
             return
+        detgrp = self.xrmmap[detpath]
 
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        try:
-            detgrp = tomogrp[detname]
-            if overwrite:
-                del tomogrp[detname]
-                self.h5root.flush()
-            else:
-                print('%s already exists in xrmmap/tomo. Need to force overwrite.' % detname)
-                return
-        except:
-            pass
-        detgrp = ensure_subgroup(detname,tomogrp)
+        print ('\n\nwe are collecting information')
+        print (detpath)
+        print (detgrp)
+        print (detgrp.shape)
+        print ()
 
+        ## check to make sure there is data to perform tomographic reconstruction
         omega,x = self.get_rotation_axis(),self.get_translation_axis()
-        center = self.get_tomography_center(),
-        
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
+            
+        ## set center in file if different than provided, set from file if not provided
+        if center is None:
+            center = self.get_tomography_center()
+        elif center != self.get_tomography_center():
+            self.set_tomography_center(center=center)
+        
+        ## build path for saving data in tomo-group, overwrite if exists and allowed
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+
+        tomodetpath = detpath.replace('/xrmmap','/tomo')
+        if tomodetpath.endswith('counts'):
+            tomodetpath = os.path.split(tomodetpath)[0]
+        elif tomodetpath.endswith('raw'):
+            tomodetpath = tomodetpath.replace('_raw','')
+            dtcorrect = False
+        tomodatapath = 'cor' if dtcorrect else 'raw'
+            
+        self.h5root.flush()
+        print (tomogrp)
+        print (tomogrp.name)
+        print (tomogrp.keys())
+        print ()
+        print (tomodetpath)
+        print ()
+
+        try:
+            tomodetgrp = tomogrp.create_group(os.path.split(tomodetpath)[0])
+        except:
+            if overwrite:
+                del tomogrp[os.path.split(tomodetpath)[0]]
+            else:
+                print ('gross')
+                return
+        self.h5root.flush()
+        
+        print (tomogrp)
+        print (tomogrp.name)
+        print (tomogrp.keys())
+        print ()
+        print (tomodetpath)
+        print ()
+        print (tomodetgrp)
+        print (tomodetgrp.name)
+        print (tomodetgrp.keys())
+        print ()
+        print (center)
+        print (len(x),len(omega))
+        print ()
+
 
 #         print ('this path will not work for xrd1D or mcasum; right?')
-#         if dtfactor
+#         if dtcorrect
 # 
 #             if 'sum' in detname:
 # 
 #                 sino = 
 #         
 #         
-#         if dtfactor:
+#         if dtcorrect:
 #             raw_sino = self.xrmmap[detname]['counts']
 #             dtf_sino = self.xrmmap[detname]['dtfactor']
 #             
@@ -2369,7 +2408,7 @@ class GSEXRM_MapFile(object):
                     detname = detname.replace('det','mca')
 
             ## builds detector list
-            detlist = get_detectors(self.xrmmap['tomo'])
+            detlist = return_group_detectors(self.xrmmap['tomo'])
     
             if detname in detlist:
                 dgroup = 'tomo/%s' % detname
@@ -3259,30 +3298,6 @@ def read_xrfmap(filename, root=None):
     return GSEXRM_MapFile(**kws)
 
 read_xrmmap = read_xrfmap
-
-
-class DetectorDictionary(object):
-
-    def __init__(self, title=None, raw_path=None, cor_path=None, dtf_path=None,
-             _larch=None, **kws):
-
-        self.title    = title
-        self.raw_path = raw_path
-        self.cor_path = cor_path
-        self.dtf_path = dtf_path
-
-#         if HAS_larch:
-#             Group.__init__(self)
-
-    def __repr__(self):
-        
-        form = 'NAME %s' % self.title
-        for path in (self.raw_path,self.cor_path,self.dtf_path):
-           if path is not None:
-               form = '%s\n     %s' % (form,path)
-        return form 
-
-
 
 def read_fake1(filename, root=None):
     raise GSEXRM_Exception("GSEXMAP Error: %s" % filename)
