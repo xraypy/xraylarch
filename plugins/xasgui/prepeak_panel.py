@@ -397,18 +397,24 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        fitbkg_btn = Button(pan, 'Fit Baseline', size=(125, -1),
-                            action=self.onFitBaseline)
-        fitmodel_btn = Button(pan, 'Fit Full Model', size=(125, -1), action=self.onRunFit)
-        savefit_btn  = Button(pan, 'Save Fit', size=(125, -1), action=self.onSaveFitResult)
-        plotbkg_btn = Button(pan, 'Plot Baseline', size=(125, -1), action=self.onPlotBaseline)
-        plotfit_btn = Button(pan, 'Plot Fit', size=(125, -1), action=self.onShowModel)
+        fitbkg_btn = Button(pan,'Fit Baseline', action=self.onFitBaseline, size=(125, -1))
+        fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel, size=(125, -1))
 
-        savefit_btn.Disable()
+        plotbkg_btn = Button(pan, 'Plot Baseline', action=self.onPlotBaseline, size=(125, -1))
+        plotfit_btn = Button(pan, 'Plot Model',  action=self.onPlotModel, size=(125, -1))
+
+        # fitbkg_btn.SetForegroundColour((200, 200, 120, 0))
+        # fitbkg_btn.SetBackgroundColour((200, 20, 20, 0))
+        # print(fitbkg_btn.GetBackgroundColour(), fitbkg_btn.GetForegroundColour())
+
+        fitbkg_btn.SetForegroundColour((200, 200, 120, 0))
+        fitmodel_btn.SetBackgroundColour("yellow")
+        fitmodel_btn.SetBackgroundColour("cyan")
+
         fitmodel_btn.Disable()
         plotfit_btn.Disable()
 
-        self.savefit_btn = savefit_btn
+        # self.savefit_btn = savefit_btn
         self.fitmodel_btn = fitmodel_btn
         self.plotfit_btn = plotfit_btn
 
@@ -465,18 +471,10 @@ class PrePeakPanel(wx.Panel):
         pan.Add(self.ppeak_ehi)
         pan.Add(self.show_peakrange, dcol=2)
 
+        # fit buttons
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(fitbkg_btn, 0)
         ts.Add(fitmodel_btn, 0)
-        ts.Add(savefit_btn, 0)
-
-        pan.Add(ts, dcol=8, newrow=True)
-
-        ts = wx.BoxSizer(wx.HORIZONTAL)
-        ts.Add(plotbkg_btn, 0)
-        ts.Add(plotfit_btn, 0)
-        ts.Add(self.show_comps, 0)
-        ts.Add(self.show_subbkg, 0)
         pan.Add(ts, dcol=8, newrow=True)
 
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -484,6 +482,15 @@ class PrePeakPanel(wx.Panel):
         ts.Add(models_other)
         pan.Add(SimpleText(pan, ' Add Function: '), newrow=True)
         pan.Add(ts, dcol=7)
+
+        #  plot buttons
+        ts = wx.BoxSizer(wx.HORIZONTAL)
+        ts.Add(plotbkg_btn, 0)
+        ts.Add(plotfit_btn, 0)
+        ts.Add(self.show_comps, 0)
+        ts.Add(self.show_subbkg, 0)
+        pan.Add(ts, dcol=8, newrow=True)
+
 
         pan.Add(self.message, dcol=8, newrow=True)
 
@@ -562,7 +569,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
-        self.message.SetLabel(dgroup.centroid_msg)
+        self.message.SetLabel("Centroid of Peaks = %s " % dgroup.centroid_msg)
 
         if 'bkg_' not in self.fit_components:
             self.addModel(model='Lorentzian', prefix='bkg_')
@@ -602,7 +609,10 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         opts = self.read_form()
         dgroup = self.controller.get_group()
         opts = self.read_form()
-        ppeaks = dgroup.prepeaks
+
+        ppeaks = getattr(dgroup, 'prepeaks', None)
+        if ppeaks is None:
+            return
         i0 = index_of(dgroup.energy, ppeaks.energy[0])
         i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
 
@@ -663,7 +673,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         axes = ppanel.axes
         for etype, x, y, opts in plot_extras:
-            # print(" plot extra ", etype, x, y, opts)
             if etype == 'marker':
                 popts = {'marker': 'o', 'markersize': 4,
                          'label': '_nolegend_',
@@ -933,22 +942,31 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 print('could not write %s' % outfile)
 
     def onLoadFitResult(self, event=None):
-
         wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
 
         mfile = FileOpen(self, 'Load Fit Result',
                          default_file='', wildcard=wcards)
-        model = None
-
+        modresult = None
         if mfile is not None:
             try:
-                model = load_modelresult(mfile)
+                modresult = load_modelresult(mfile)
             except IOError:
                 print('could not read model result %s' % mfile)
                 return
-        if model is None:
+            except ValueError:
+                print('could not interpret model result from  %s' % mfile)
+                return
+        if modresult is None:
             return
-        print(" Loading Model (work in progress) ", model)
+        print(" Loading Model (work in progress) ", modresult)
+        print(" Parameters: ")
+        for pname, par in modresult.params.items():
+            print("-- ", pname, par)
+
+        print(" Components: ")
+        for comp in modresult.model.components:
+            print("-- ", comp.func.__name__, comp.prefix, comp.param_hints)
+        print("##")
 
     def onExportFitResult(self, event=None):
         dgroup = self.controller.get_group()
@@ -1032,57 +1050,47 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                                            x=xsel)
         return dgroup
 
-    def onShowModel(self, event=None):
+    def onPlotModel(self, event=None):
         dgroup = self.build_fitmodel()
         if dgroup is not None:
-            with_components = (self.show_comps.IsChecked() and
-                               len(dgroup.ycomps) > 1)
+            self.plot_fitmodel()
 
-            self.plot_fitmodel(dgroup, show_resid=False,
-                               with_components=with_components)
+    def plot_fitmodel(self):
+        opts = self.read_form()
+        dgroup = opts['group']
 
-    def plot_fitmodel(self, dgroup, show_resid=False, with_components=None):
-        if dgroup is None:
-            return
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
         ysel = dgroup.ydat[slice(i1, i2)]
 
-        plotframe = self.controller.get_display(stacked=True)
-        plotframe.plot(dgroup.xfit, ysel, new=True, panel='top',
+        ppanel = self.controller.get_display().panel
+        ppanel.plot(dgroup.xfit, ysel, new=True, panel='top',
                        xmin=xv1, xmax=xv2, label='data',
                        xlabel=dgroup.plot_xlabel, ylabel=dgroup.plot_ylabel,
                        title='Fit: %s' % dgroup.filename )
 
-        plotframe.oplot(dgroup.xfit, dgroup.yfit, label='fit')
+        ppanel.oplot(dgroup.xfit, dgroup.yfit, label='fit')
 
-        plotframe.plot(dgroup.xfit, ysel-dgroup.yfit, grid=False,
-                       marker='o', markersize=4, linewidth=1, panel='bot')
-
-        if with_components is None:
-            with_components = (self.show_comps.IsChecked() and
-                               len(dgroup.ycomps) > 1)
-        if with_components:
+        if opts['show_comp']:
             for label, _y in dgroup.ycomps.items():
-                plotframe.oplot(dgroup.xfit, _y, label=label,
+                ppanel.oplot(dgroup.xfit, _y, label=label,
                                 style='short dashed')
 
         line_opts = dict(color='#AAAAAA', label='_nolegend_',
                     linewidth=1, zorder=-5)
-        plotframe.panel_bot.axes.axhline(0, **line_opts)
-        axvline = plotframe.panel.axes.axvline
+        ppanel.axes.axhline(0, **line_opts)
+        axvline = ppanel.axes.axvline
         if i1 > 0:
             axvline(dgroup.xdat[i1], **line_opts)
 
         if i2 < len(dgroup.xdat):
             axvline(dgroup.xdat[i2-1], **line_opts)
 
-        plotframe.panel.canvas.draw()
+        ppanel.canvas.draw()
 
-
-    def onRunFit(self, event=None):
+    def onFitModel(self, event=None):
         dgroup = self.build_fitmodel()
-        if dgroup is None:
-            return
+        opts = self.read_form()
+
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
         dgroup.xfit = dgroup.xdat[slice(i1, i2)]
         ysel = dgroup.ydat[slice(i1, i2)]
@@ -1115,24 +1123,19 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                                        x=dgroup.xfit)
 
 
-        with_components = (self.show_comps.IsChecked() and len(dgroup.ycomps) > 1)
-
-        self.plot_fitmodel(dgroup, show_resid=True, with_components=with_components)
-
         result.model_repr = self.fit_model._reprstring(long=True)
 
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
         dgroup.fit_history.append(result)
+        self.plot_fitmodel()
 
 
         self.parent.show_subframe('result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
 
-        # self.update_start_values(result)
         self.savefit_btn.Enable()
-
         for m in self.parent.afterfit_menus:
             self.parent.menuitems[m].Enable(True)
 
