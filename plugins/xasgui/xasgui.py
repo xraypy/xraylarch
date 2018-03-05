@@ -433,8 +433,6 @@ class XASFrame(wx.Frame):
         self.SetStatusText('initializing Larch')
         self.title.SetLabel('')
 
-        self.prepeak_panel.larch = self.controller.larch
-
         self.controller.init_larch()
 
         plotframe = self.controller.get_display(stacked=False)
@@ -662,7 +660,7 @@ class XASFrame(wx.Frame):
         new_gname = unique_name(groupname, self.controller.file_groups.values())
         setattr(self.larch.symtable, new_gname, ngroup)
         self.install_group(new_gname, new_fname, overwrite=False)
-        self.controller.process(ngroup)
+        self.xasnorm_panel.process(ngroup)
         self.ShowFile(groupname=new_gname)
 
     def onRenameGroup(self, event=None):
