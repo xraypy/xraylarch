@@ -194,11 +194,15 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
 
     h5root.flush()
 
-def ensure_subgroup(subgroup,group):
+def ensure_subgroup(subgroup,group,overwrite=False):
     try:
-        return group[subgroup]
+        grp = group[subgroup]
+        if overwrite:
+            del grp
+            grp = group.create_group(subgroup)
     except:
-        return group.create_group(subgroup)
+        grp = group.create_group(subgroup)
+    return grp    
 
 def build_raw_data_detector_list(xrmmap):
 
@@ -2125,7 +2129,7 @@ class GSEXRM_MapFile(object):
         
         ## build path for saving data in tomo-group, overwrite if exists and allowed
         tomogrp = ensure_subgroup('tomo',self.xrmmap)
-
+        
         tomodetpath = detpath.replace('/xrmmap','/tomo')
         if tomodetpath.endswith('counts'):
             tomodetpath = os.path.split(tomodetpath)[0]
@@ -2133,23 +2137,8 @@ class GSEXRM_MapFile(object):
             tomodetpath = tomodetpath.replace('_raw','')
             dtcorrect = False
         tomodatapath = 'cor' if dtcorrect else 'raw'
-            
-        self.h5root.flush()
-        print (tomogrp)
-        print (tomogrp.name)
-        print (tomogrp.keys())
-        print ()
-        print (tomodetpath)
-        print ()
 
-        try:
-            tomodetgrp = tomogrp.create_group(os.path.split(tomodetpath)[0])
-        except:
-            if overwrite:
-                del tomogrp[os.path.split(tomodetpath)[0]]
-            else:
-                print ('gross')
-                return
+        tomodetgrp = ensure_subgroup(os.path.split(tomodetpath)[0]),tomogrp)
         self.h5root.flush()
         
         print (tomogrp)
