@@ -368,8 +368,8 @@ class XASFrame(wx.Frame):
         self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(sel_none, 1, LCEN|wx.GROW, 1)
         tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
+        tsizer.Add(sel_none, 1, LCEN|wx.GROW, 1)
         pack(ltop, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
