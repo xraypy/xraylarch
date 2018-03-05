@@ -392,7 +392,7 @@ class PrePeakPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = dict(size=(65, -1), gformat=True, precision=1)
+        opts = dict(size=(75, -1), gformat=True, precision=1)
 
         self.ppeak_e0   = FloatCtrl(pan, value=0, **opts)
         self.ppeak_emin = FloatCtrl(pan, value=-30, **opts)
@@ -602,7 +602,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         print(" On Plot ", plot_type, opts['show_subbkg'])
         if plot_type == 'bkg':
             self.plot_baseline()
-
 
     def plot_baseline(self):
         opts = self.read_form()
