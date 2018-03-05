@@ -469,7 +469,6 @@ class XASFrame(wx.Frame):
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
-        self.nb.SetSelection(0)
         current_nbpanel = self.nb_panels[self.nb.GetSelection()]
 
         self.xasnorm_panel.fill_form(dgroup)
