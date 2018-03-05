@@ -60,15 +60,17 @@ Array_Choices = OrderedDict((('Raw Data', 'mu'),
                              ('Deconvolved', 'deconv'),
                              ('Derivative', 'dmude')))
 
-PlotChoices = OrderedDict((('Data + Baseline', 'bkg'),
-                           ('Data + Fit', 'fit')))
+PlotChoices = OrderedDict((('Baseline', 'bkg'),
+                           ('Total Fit (only)', 'fit'),
+                           ('Fit + Components', 'comps'),
+                           ('Fit + residual', 'resid'),
+                           ))
 
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
-                  marker='None', markersize=4)
+PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
 
 
 def default_prepeaks_config():
@@ -77,6 +79,7 @@ def default_prepeaks_config():
                 yarray='norm')
 
 MIN_CORREL = 0.0010
+
 
 class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
@@ -397,26 +400,9 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        fitbkg_btn = Button(pan,'Fit Baseline', action=self.onFitBaseline, size=(125, -1))
+        plot_btn  = Button(pan,'Plot ', action=self.onPlot, size=(125, -1))
+        fitbkg_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline, size=(125, -1))
         fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel, size=(125, -1))
-
-        plotbkg_btn = Button(pan, 'Plot Baseline', action=self.onPlotBaseline, size=(125, -1))
-        plotfit_btn = Button(pan, 'Plot Model',  action=self.onPlotModel, size=(125, -1))
-
-        # fitbkg_btn.SetForegroundColour((200, 200, 120, 0))
-        # fitbkg_btn.SetBackgroundColour((200, 20, 20, 0))
-        # print(fitbkg_btn.GetBackgroundColour(), fitbkg_btn.GetForegroundColour())
-
-        fitbkg_btn.SetForegroundColour((200, 200, 120, 0))
-        fitmodel_btn.SetBackgroundColour("yellow")
-        fitmodel_btn.SetBackgroundColour("cyan")
-
-        fitmodel_btn.Disable()
-        plotfit_btn.Disable()
-
-        # self.savefit_btn = savefit_btn
-        self.fitmodel_btn = fitmodel_btn
-        self.plotfit_btn = plotfit_btn
 
         self.array_choice = Choice(pan, size=(125, -1),
                                    choices=list(Array_Choices.keys()))
@@ -430,16 +416,21 @@ class PrePeakPanel(wx.Panel):
                               choices=ModelChoices['other'],
                               action=self.addModel)
 
+        self.plot_choice = Choice(pan, size=(150, -1),
+                                  choices=list(PlotChoices.keys()),
+                                  action=self.onPlot)
+
+
         self.message = SimpleText(pan, ' fit baseline, then add peaks or other models ')
 
-        opts = dict(default=True, size=(150, -1))
-        self.show_comps = Check(pan, label='Plot Components?', **opts)
-        self.show_subbkg = Check(pan, label='Subtract Baseline?', **opts)
-
+        opts = dict(default=True, size=(75, -1), action=self.onPlot)
         self.show_peakrange = Check(pan, label='show?', **opts)
-
         self.show_fitrange = Check(pan, label='show?', **opts)
         self.show_e0 = Check(pan, label='show?', **opts)
+
+        opts = dict(default=False, size=(150, -1), action=self.onPlot)
+        self.show_subbkg = Check(pan, label='Subtract Baseline for Plot?', **opts)
+
 
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=6)
@@ -477,20 +468,21 @@ class PrePeakPanel(wx.Panel):
         ts.Add(fitmodel_btn, 0)
         pan.Add(ts, dcol=8, newrow=True)
 
+        #  plot buttons
+        ts = wx.BoxSizer(wx.HORIZONTAL)
+        ts.Add(self.plot_choice)
+        ts.Add(self.show_subbkg)
+
+        pan.Add(plot_btn, newrow=True)
+        pan.Add(ts, dcol=7)
+
+        #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(models_peaks)
         ts.Add(models_other)
+
         pan.Add(SimpleText(pan, ' Add Function: '), newrow=True)
         pan.Add(ts, dcol=7)
-
-        #  plot buttons
-        ts = wx.BoxSizer(wx.HORIZONTAL)
-        ts.Add(plotbkg_btn, 0)
-        ts.Add(plotfit_btn, 0)
-        ts.Add(self.show_comps, 0)
-        ts.Add(self.show_subbkg, 0)
-        pan.Add(ts, dcol=8, newrow=True)
-
 
         pan.Add(self.message, dcol=8, newrow=True)
 
@@ -545,7 +537,6 @@ class PrePeakPanel(wx.Panel):
         form_opts['elo'] = self.ppeak_elo.GetValue()
         form_opts['ehi'] = self.ppeak_ehi.GetValue()
         form_opts['show_centroid'] = True
-        form_opts['show_comp'] = self.show_comps.IsChecked()
         form_opts['show_subbkg'] = self.show_subbkg.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
@@ -573,6 +564,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         if 'bkg_' not in self.fit_components:
             self.addModel(model='Lorentzian', prefix='bkg_')
+        if 'l_' not in self.fit_components:
             self.addModel(model='Linear', prefix='l_')
 
         for prefix in ('bkg_', 'l_'):
@@ -581,10 +573,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
         self.fill_form(dgroup)
-        self.fitmodel_btn.Enable()
-        self.plotfit_btn.Enable()
-
-        self.onPlotBaseline()
+        self.plot_choice.SetStringSelection('Baseline')
+        self.onPlot()
 
     def fill_model_params(self, dgroup, prefix, fit_details):
         comp = self.fit_components[prefix]
@@ -605,7 +595,15 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
 
-    def onPlotBaseline(self, evt=None):
+    def onPlot(self, evt=None):
+        plot_type = PlotChoices[self.plot_choice.GetStringSelection()]
+        opts = self.read_form()
+        print(" On Plot ", plot_type, opts['show_subbkg'])
+        if plot_type == 'bkg':
+            self.plot_baseline()
+
+
+    def plot_baseline(self):
         opts = self.read_form()
         dgroup = self.controller.get_group()
         opts = self.read_form()
@@ -616,19 +614,24 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         i0 = index_of(dgroup.energy, ppeaks.energy[0])
         i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
 
-        baseline = dgroup.ydat*1.0
+        ydat = 1.0*dgroup.ydat
+        baseline = 1.0*dgroup.ydat
         baseline[i0:i1] = ppeaks.baseline
 
+        if opts['show_subbkg']:
+            ydat = ydat - baseline
+
         jmin, jmax = max(0, i0-2), i1+3
-        ydat = dgroup.ydat[jmin:jmax]
-        yrange = max(ydat) - min(ydat)
+
+        _ys = ydat[jmin:jmax]
+        yrange = max(_ys) - min(_ys)
 
         array_desc = self.array_choice.GetStringSelection()
 
         plotopts = {'xmin': dgroup.energy[jmin],
                     'xmax': dgroup.energy[jmax],
-                    'ymax': max(ydat) + 0.05 * yrange,
-                    'ymin': min(ydat) - 0.05 * yrange,
+                    'ymax': max(_ys) + 0.05 * yrange,
+                    'ymin': min(_ys) - 0.05 * yrange,
                     'title': 'Pre-edge baseline: %s' % opts['gname'],
                     'xlabel': 'Energy (eV)',
                     'ylabel': '%s $\mu$' % opts['array_desc'],
@@ -652,8 +655,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             ilo = index_of(dgroup.xdat, elo)
             ihi = index_of(dgroup.xdat, ehi)
 
-            plot_extras.append(('marker', elo, dgroup.ydat[ilo], popts))
-            plot_extras.append(('marker', ehi, dgroup.ydat[ihi], popts))
+            plot_extras.append(('marker', elo, ydat[ilo], popts))
+            plot_extras.append(('marker', ehi, ydat[ihi], popts))
 
         if opts['show_centroid']:
             popts = {'color': '#EECCCC'}
@@ -664,12 +667,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         ppanel = self.controller.get_display().panel
         plotopts.update(PLOTOPTS_1)
-        ppanel.plot(dgroup.energy, dgroup.ydat, delay_draw=True, **plotopts)
+        ppanel.plot(dgroup.energy, ydat, delay_draw=True, **plotopts)
 
-        plotopts.update(PLOTOPTS_2)
-        plotopts['label'] = 'baseline'
-
-        ppanel.oplot(dgroup.energy, baseline, **plotopts)
+        if not opts['show_subbkg']:
+            plotopts.update(PLOTOPTS_2)
+            plotopts['label'] = 'baseline'
+            ppanel.oplot(dgroup.energy, baseline, **plotopts)
 
         axes = ppanel.axes
         for etype, x, y, opts in plot_extras:
@@ -1070,7 +1073,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         ppanel.oplot(dgroup.xfit, dgroup.yfit, label='fit')
 
-        if opts['show_comp']:
+        if opts['show_comps']:
             for label, _y in dgroup.ycomps.items():
                 ppanel.oplot(dgroup.xfit, _y, label=label,
                                 style='short dashed')
