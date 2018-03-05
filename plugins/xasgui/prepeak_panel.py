@@ -400,7 +400,7 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        plot_btn  = Button(pan,'Plot ', action=self.onPlot, size=(125, -1))
+        # plot_btn  = Button(pan,'Plot ', action=self.onPlot, size=(125, -1))
         fitbkg_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline, size=(125, -1))
         fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel, size=(125, -1))
 
@@ -428,7 +428,7 @@ class PrePeakPanel(wx.Panel):
         self.show_fitrange = Check(pan, label='show?', **opts)
         self.show_e0 = Check(pan, label='show?', **opts)
 
-        opts = dict(default=False, size=(150, -1), action=self.onPlot)
+        opts = dict(default=False, size=(200, -1), action=self.onPlot)
         self.show_subbkg = Check(pan, label='Subtract Baseline for Plot?', **opts)
 
 
@@ -466,14 +466,15 @@ class PrePeakPanel(wx.Panel):
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(fitbkg_btn, 0)
         ts.Add(fitmodel_btn, 0)
-        pan.Add(ts, dcol=8, newrow=True)
+        pan.Add(SimpleText(pan, 'Fit: '), newrow=True)
+        pan.Add(ts, dcol=7)
 
         #  plot buttons
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(self.plot_choice)
         ts.Add(self.show_subbkg)
 
-        pan.Add(plot_btn, newrow=True)
+        pan.Add(SimpleText(pan, 'Plot: '), newrow=True)
         pan.Add(ts, dcol=7)
 
         #  add model
@@ -579,6 +580,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
     def fill_model_params(self, dgroup, prefix, fit_details):
         comp = self.fit_components[prefix]
         parwids = comp.parwids
+        print(" Fill Model Params!! ")
         for pname, par in fit_details.params.items():
             pname = prefix + pname
             if pname in parwids:
@@ -590,7 +592,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 wids.value.SetValue(par.value)
                 varstr = 'vary' if par.vary else 'fix'
                 if par.expr is not None:
-                    wids.expr.SetValue(par.expr)
                     varstr = 'constrain'
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
@@ -801,7 +802,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             pname = "%s%s" % (prefix, sname)
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
-
                 pwids = ParameterWidgets(panel, par, name_size=100, expr_size=225,
                                          float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'expr'))
@@ -962,13 +962,15 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if modresult is None:
             return
         print(" Loading Model (work in progress) ", modresult)
-        print(" Parameters: ")
-        for pname, par in modresult.params.items():
-            print("-- ", pname, par)
 
         print(" Components: ")
         for comp in modresult.model.components:
             print("-- ", comp.func.__name__, comp.prefix, comp.param_hints)
+
+        print(" Parameters: ")
+        for pname, par in modresult.params.items():
+            print("-- ", pname, par)
+
         print("##")
 
     def onExportFitResult(self, event=None):
@@ -1073,7 +1075,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         ppanel.oplot(dgroup.xfit, dgroup.yfit, label='fit')
 
-        if opts['show_comps']:
+        if True: # opts['show_comps']:
             for label, _y in dgroup.ycomps.items():
                 ppanel.oplot(dgroup.xfit, _y, label=label,
                                 style='short dashed')
