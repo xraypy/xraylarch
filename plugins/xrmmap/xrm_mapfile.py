@@ -2382,27 +2382,32 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
         if tomo:
-            ## checks detector names
-            if det is not None:
-                if (type(det) is str and det.isdigit()) or type(det) is int:
-                    det = int(det)
-                    detname = 'det%i' % det
-                else:
-                    detname = det
-            else:
-                detname = 'detsum'
-            if version_ge(self.version, '2.0.0'):
-                if detname is not None:
-                    detname = detname.replace('det','mca')
-
-            ## builds detector list
             detlist = return_group_detectors(self.xrmmap['tomo'])
-    
-            if detname in detlist:
-                dgroup = 'tomo/%s' % detname
+            if len(detlist) < 1:
+                return
+
+            if det in detlist:
+                detname = det
+            elif det is None:
+                detname = detlist[0]
+            elif (type(det) is str and det.isdigit()) or type(det) is int:
+                det = int(det)
+                detname = 'det%i' % det
+                if version_ge(self.version, '2.0.0'):
+                    detname = detname.replace('det','mca')
             else:
                 return
-            mapdat = self.xrmmap[dgroup]
+
+            if dtcorrect:
+               dgroup = 'tomo/%s/cor' % detname
+            else:
+               dgroup = 'tomo/%s/raw' % detname
+
+            try:
+                mapdat = self.xrmmap[dgroup]
+            except:
+                return
+
         else:
             dgroup = self._det_name(det)
             mapdat = self._det_group(det)
