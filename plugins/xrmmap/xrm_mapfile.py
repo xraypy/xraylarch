@@ -2138,7 +2138,6 @@ class GSEXRM_MapFile(object):
             dtcorrect = False
         elif tpath.endswith('counts'):
             tpath = os.path.split(tpath)[0]
-        tomodatapath = 'cor' if dtcorrect else 'raw'
  
         ## build path for saving data in tomo-group
         grp = self.xrmmap
@@ -2175,19 +2174,19 @@ class GSEXRM_MapFile(object):
         tomogrp.attrs['center'] = '%0.2f pixels' % (center)
         
         try:
-            del tomogrp[tomodatapath]
+            tomogrp.create_dataset('counts', data=np.swapaxes(tomo,0,2), **self.compress_args)
         except:
-            pass
-            
-        tomogrp.create_dataset(tomodatapath, data=np.swapaxes(tomo,0,2), **self.compress_args)
+            del tomogrp['counts']
+            tomogrp.create_dataset('counts', data=np.swapaxes(tomo,0,2), **self.compress_args)
         
         for data_tag in ('energy','q'):
             if data_tag in detgroup.keys():
                 try:
+                    tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
                     del tomogrp[data_tag]
                 except:
-                    pass
-                tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
+                    del tomogrp[data_tag]
+                    tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
 
         for key,val in dict(detgroup.attrs).iteritems():
             tomogrp.attrs[key] = val
@@ -2397,14 +2396,12 @@ class GSEXRM_MapFile(object):
                     detname = detname.replace('det','mca')
             else:
                 return
-
-            if dtcorrect:
-               dgroup = 'tomo/%s/cor' % detname
-            else:
-               dgroup = 'tomo/%s/raw' % detname
+                
+            dgroup = 'tomo/%s' % detname
 
             try:
                 mapdat = self.xrmmap[dgroup]
+                dtcorrect = False
             except:
                 return
 
@@ -2430,7 +2427,7 @@ class GSEXRM_MapFile(object):
                     callback(1, 1, nx*ny)
                 counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
                                            mapdat=mapdat, area=area,
-                                           dtcorrect=dtcorrect, tomo=tomo)
+                                           dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
@@ -2444,7 +2441,7 @@ class GSEXRM_MapFile(object):
                         callback(i, step, (x2-x1)*ny)
                     counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
                                                 det=det, area=area,
-                                                dtcorrect=dtcorrect, tomo=tomo)
+                                                dtcorrect=dtcorrect)
             else:
                 for i in range(step+1):
                     y1 = ymin + int(i*ny/step)
@@ -2454,7 +2451,7 @@ class GSEXRM_MapFile(object):
                         callback(i, step, nx*(y2-y1))
                     counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
                                                 det=det, area=area,
-                                                dtcorrect=dtcorrect, tomo=tomo)
+                                                dtcorrect=dtcorrect)
 
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
@@ -2492,7 +2489,7 @@ class GSEXRM_MapFile(object):
                             real_time=rtime, live_time=ltime)
 
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                     area=None, dtcorrect=True, tomo=False):
+                        area=None, dtcorrect=True, tomo=False):
         '''return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2522,7 +2519,9 @@ class GSEXRM_MapFile(object):
         ## needs to be improved - but skips deadtime correction for xrd data
         ## mkak 2018.01.29
         if mapdat.attrs['type'].startswith('xrd'):
-            tomo = True
+            dtcorrect = False
+        elif tomo:
+            dtcorrect = False
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2541,42 +2540,38 @@ class GSEXRM_MapFile(object):
         else:
             counts = counts.reshape(ny, nx, nchan)
         
-        if not tomo:
-            if dtcorrect:
-                if det in range(1, self.ndet+1):
-                    cell   = mapdat['dtfactor'].regionref[sy, sx]
-                    dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-                    dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts = counts * dtfact
-                elif det is None: # indicating sum of deadtime-corrected spectra
-                    _md    = self._det_group(self.ndet)
+        if dtcorrect:
+            if det in range(1, self.ndet+1):
+                cell   = mapdat['dtfactor'].regionref[sy, sx]
+                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
+            elif det is None: # indicating sum of deadtime-corrected spectra
+                _md    = self._det_group(self.ndet)
+                cell   = _md['counts'].regionref[sy, sx, :]
+                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
+                cell   = _md['dtfactor'].regionref[sy, sx]
+                dtfact = _md['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = _cts * dtfact
+                for _idet in range(1, self.ndet):
+                    _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     cell   = _md['dtfactor'].regionref[sy, sx]
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts = _cts * dtfact
-                    for _idet in range(1, self.ndet):
-                        _md    = self._det_group(_idet)
-                        cell   = _md['counts'].regionref[sy, sx, :]
-                        _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                        cell   = _md['dtfactor'].regionref[sy, sx]
-                        dtfact = _md['dtfactor'][cell].reshape(ny, nx)
-                        dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                        counts += _cts * dtfact
+                    counts += _cts * dtfact
 
-            elif det is None: # indicating sum un-deadtime-corrected spectra
-                _md    = self._det_group(self.ndet)
+        elif det is None: # indicating sum un-deadtime-corrected spectra
+            _md    = self._det_group(self.ndet)
+            cell   = _md['counts'].regionref[sy, sx, :]
+            counts = _md['counts'][cell].reshape(ny, nx, nchan)
+            for _idet in range(1, self.ndet):
+                _md    = self._det_group(_idet)
                 cell   = _md['counts'].regionref[sy, sx, :]
-                counts = _md['counts'][cell].reshape(ny, nx, nchan)
-                for _idet in range(1, self.ndet):
-                    _md    = self._det_group(_idet)
-                    cell   = _md['counts'].regionref[sy, sx, :]
-                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                    counts += _cts
-        else:
-            if dtcorrect:
-                print ('not yet using deadtime correction for this type of data')
+                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
+                counts += _cts
 
         if area is not None:
             counts = counts[area[sy, sx]]
