@@ -576,6 +576,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             cmp.bkgbox.SetValue(1)
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
+        dgroup.yfit = dgroup.xfit = 0.0*dgroup.ydat
+
         self.fill_form(dgroup)
         self.plot_choice.SetStringSelection('Baseline')
         self.onPlot()
@@ -608,7 +610,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         opts = self.read_form()
         dgroup = self.controller.get_group()
-        dgroup = self.build_fitmodel()
+
         ppeaks = getattr(dgroup, 'prepeaks', None)
         if ppeaks is None:
             return
@@ -620,12 +622,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         baseline = 1.0*dgroup.ydat
         baseline[i0:i1] = ppeaks.baseline
 
-        print(" PLOT:  ", len(dgroup.xfit),
-              len(dgroup.yfit),
-              len(ppeaks.energy),
-              len(ppeaks.baseline),
-              len(dgroup.energy),
-              len(dgroup.ydat))
+#         print(" PLOT:  ", len(dgroup.xfit),
+#               len(dgroup.yfit),
+#               len(ppeaks.energy),
+#               len(ppeaks.baseline),
+#               len(dgroup.energy),
+#               len(dgroup.ydat))
 
 
         if opts['sub_baseline']:
