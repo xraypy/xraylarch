@@ -815,12 +815,11 @@ class TomographyPanel(GridPanel):
                     self.alg_choice[1].GetStringSelection(),
                     self.alg_choice[2].GetStringSelection()]
 
-        print ('Saving tomographic reconstruction for %s ' % detpath)
+        print('\nSaving tomographic reconstruction for %s ...' % detpath)
         self.owner.current_file.save_tomograph(detpath, tomo_alg=tomo_alg, 
                                                center=tomo_center,
-                                               overwrite=True,
                                                dtcorrect=dtcorrect)
-        print (' Finished.')
+        print(' Saved.')
 
 
     def onShowTomograph(self, event=None, new=True):
@@ -2108,7 +2107,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     filename = dlg.GetPath().replace('\\', '/')
                 dlg.Destroy()
 
-                print('Saving 1D XRD in file: %s' % (filename))
+                print('\nSaving 1D XRD in file: %s' % (filename))
                 save1D(filename, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile)
             xrd1d = False  ## turns off flag since it has already been displayed/saved
 
@@ -2133,7 +2132,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                     if dlg.ShowModal() == wx.ID_OK:
                         filename = dlg.GetPath().replace('\\', '/')
                     dlg.Destroy()
-                    print('Saving 2D XRD in file: %s' % (filename))
+                    print('\nSaving 2D XRD in file: %s' % (filename))
                     self._xrd.save_2D(file=filename,verbose=True)
 
                 if show:

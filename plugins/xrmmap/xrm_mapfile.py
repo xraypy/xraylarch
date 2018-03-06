@@ -194,15 +194,24 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
 
     h5root.flush()
 
-def ensure_subgroup(subgroup,group,overwrite=False):
-    try:
-        grp = group[subgroup]
-        if overwrite:
-            del grp
-            grp = group.create_group(subgroup)
-    except:
-        grp = group.create_group(subgroup)
-    return grp    
+def ensure_subgroup(subgroup,group):
+    
+    if subgroup not in group.keys():
+        return group.create_group(subgroup)
+    else:
+        return group[subgroup]
+
+# def ensure_subgroup(subgroup,group,overwrite=False):
+#     
+#     if subgroup not in group.keys():
+#         grp = group.create_group(subgroup)
+#     elif overwrite:
+#         del group[subgroup]
+#         grp = group.create_group(subgroup)
+#     else:
+#         grp = group[subgroup]
+#         
+#     return grp    
 
 def build_raw_data_detector_list(xrmmap):
 
@@ -2095,105 +2104,95 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, detpath, tomo_alg=[], center=None,
-                       overwrite=False, dtcorrect=False, **kws):
+    def save_tomograph(self, datapath, tomo_alg=[], dtcorrect=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
        
         ## check to make sure the selected detector exists for reconstructions
         detlist = self.list_raw_data_detectors(all=True)
-        if detpath not in detlist:
-            print("Detector '%s' not found in data." % detpath)
+        if datapath not in detlist:
+            print("Detector '%s' not found in data." % datapath)
             print('Known detectors: %s' % detlist)
             return
-        detgrp = self.xrmmap[detpath]
-
-        print ('\n\nwe are collecting information')
-        print (detpath)
-        print (detgrp)
-        print (detgrp.shape)
-        print ()
+        datagroup = self.xrmmap[datapath]
 
         ## check to make sure there is data to perform tomographic reconstruction
+        center = self.get_tomography_center()
         omega,x = self.get_rotation_axis(),self.get_translation_axis()
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
-            
-        ## set center in file if different than provided, set from file if not provided
-        if center is None:
-            center = self.get_tomography_center()
-        elif center != self.get_tomography_center():
-            self.set_tomography_center(center=center)
         
-        ## build path for saving data in tomo-group, overwrite if exists and allowed
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        
-        tomodetpath = detpath.replace('/xrmmap','/tomo')
-        if tomodetpath.endswith('counts'):
-            tomodetpath = os.path.split(tomodetpath)[0]
-        elif tomodetpath.endswith('raw'):
-            tomodetpath = tomodetpath.replace('_raw','')
+        ## define detector path
+        detgroup  = datagroup
+        while isinstance(detgroup,h5py.Dataset):
+            detgroup = detgroup.parent
+            detpath = detgroup.name
+
+        ## create path for saving data
+        tpath = datapath.replace('/xrmmap','/tomo')
+        tpath = tpath.replace('/scalars','')
+        if tpath.endswith('raw'):
+            tpath = tpath.replace('_raw','')
             dtcorrect = False
+        elif tpath.endswith('counts'):
+            tpath = os.path.split(tpath)[0]
         tomodatapath = 'cor' if dtcorrect else 'raw'
-
-        tomodetgrp = ensure_subgroup(os.path.split(tomodetpath)[0]),tomogrp)
-        self.h5root.flush()
+ 
+        ## build path for saving data in tomo-group
+        grp = self.xrmmap
+        for kpath in tpath.split('/'):
+            if len(kpath) > 0:
+                grp = ensure_subgroup(kpath,grp)
+        tomogrp = grp
         
-        print (tomogrp)
-        print (tomogrp.name)
-        print (tomogrp.keys())
-        print ()
-        print (tomodetpath)
-        print ()
-        print (tomodetgrp)
-        print (tomodetgrp.name)
-        print (tomodetgrp.keys())
-        print ()
-        print (center)
-        print (len(x),len(omega))
-        print ()
+        ## define sino group from datapath
+        if 'scalars' in datapath or 'xrd' in datapath:
+            sino = datagroup.value
+        elif dtcorrect:
+            if 'sum' in datapath:
+                sino = np.zeros(np.shape(np.einsum('jki->ijk', datagroup.value)))
+                for i in range(4):
+                ##for i in range(self.ndet):
+                    idatapath = datapath.replace('sum',str(i+1))
+                    idatagroup = self.xrmmap[idatapath]
+                    idetpath  = detpath.replace('sum',str(i+1))
+                    idetgroup = self.xrmmap[idetpath]
+                    sino += np.einsum('jki->ijk', idatagroup.value) * idetgroup['dtfactor'].value
+                
+            else:
+                sino = np.einsum('jki->ijk', datagroup.value) * detgroup['dtfactor'].value
+        else:
+            sino = datagroup.value
 
+        sino,order = reshape_sinogram(sino,x,omega)
 
-#         print ('this path will not work for xrd1D or mcasum; right?')
-#         if dtcorrect
-# 
-#             if 'sum' in detname:
-# 
-#                 sino = 
-#         
-#         
-#         if dtcorrect:
-#             raw_sino = self.xrmmap[detname]['counts']
-#             dtf_sino = self.xrmmap[detname]['dtfactor']
-#             
-#             sino = raw_sino * dtf_sino
-#                 
-#         else:
-#             sino = self.xrmmap[detname]['counts']            
-# 
-#         sino,order = reshape_sinogram(sino,x,omega)
-# 
-#         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-#                                           sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
-# 
-#         detgrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
-#         detgrp.attrs['center'] = '%0.2f pixels' % (center)
-#         
-#         detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
-#         for data_tag in ('energy','q'):
-#             try:
-#                 detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
-#             except:
-#                 pass
-#         for attr_tag in self.xrmmap[detname].attrs.keys():
-#             try:
-#                 detgrp.attrs[attr_tag] = self.xrmmap[detname].attrs[attr_tag]
-#             except:
-#                 pass
-# 
-#         self.h5root.flush()
+        center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
+                                          sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
+
+        tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
+        tomogrp.attrs['center'] = '%0.2f pixels' % (center)
+        
+        try:
+            del tomogrp[tomodatapath]
+        except:
+            pass
+            
+        tomogrp.create_dataset(tomodatapath, data=np.swapaxes(tomo,0,2), **self.compress_args)
+        
+        for data_tag in ('energy','q'):
+            if data_tag in detgroup.keys():
+                try:
+                    del tomogrp[data_tag]
+                except:
+                    pass
+                tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
+
+        for key,val in dict(detgroup.attrs).iteritems():
+            tomogrp.attrs[key] = val
+
+        self.h5root.flush()
 
     def claim_hostid(self):
         "claim ownership of file"
