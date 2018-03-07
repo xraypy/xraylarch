@@ -299,6 +299,7 @@ class XASNormPanel(wx.Panel):
             dgroup.plot_ylabel = ylabel
             if dgroup is not None:
                 dgroup.plot_extras = []
+                # print("Plot Sel ", checked, (last_id!=checked))
                 self.plot(dgroup, title='', new=newplot,
                           plot_yarrays=plot_yarrays,
                           show_legend=True, with_extras=False,
@@ -541,6 +542,7 @@ class XASNormPanel(wx.Panel):
             plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
+        popts['delay_draw'] = popts.get('delay_draw', False)
         if hasattr(dgroup, 'custom_plotopts'):
             popts.update(dgroup.custom_plotopts)
 
@@ -550,8 +552,8 @@ class XASNormPanel(wx.Panel):
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-            popts['delay_draw'] = (i != narr)
-
+            popts['delay_draw'] = popts.get('delay_draw', False) or (i != narr)
+            # print(" plot with delay_draw = ", popts['delay_draw'])
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = oplot
 
@@ -559,15 +561,17 @@ class XASNormPanel(wx.Panel):
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
-                    popts = {'marker': 'o', 'markersize': 4,
+                    xpopts = {'marker': 'o', 'markersize': 4,
                              'label': '_nolegend_',
                              'markerfacecolor': 'red',
                              'markeredgecolor': '#884444'}
-                    popts.update(opts)
-                    axes.plot([x], [y], **popts)
+                    xpopts.update(opts)
+                    axes.plot([x], [y], **xpopts)
                 elif etype == 'vline':
-                    popts = {'ymin': 0, 'ymax': 1.0,
+                    xpopts = {'ymin': 0, 'ymax': 1.0,
+                             'label': '_nolegend_',
                              'color': '#888888'}
-                    popts.update(opts)
-                    axes.axvline(x, **popts)
-        ppanel.canvas.draw()
+                    xpopts.update(opts)
+                    axes.axvline(x, **xpopts)
+        if not popts['delay_draw']:
+            ppanel.canvas.draw()
