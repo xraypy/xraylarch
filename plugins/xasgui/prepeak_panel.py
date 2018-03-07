@@ -619,9 +619,11 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         i0 = index_of(dgroup.energy, ppeaks.energy[0])
         i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
 
+        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+
         ydat = 1.0*dgroup.ydat
         yfit = 1.0*dgroup.yfit
-        baseline = 1.0*dgroup.ydat
+        baseline = 1.0*ydat
         baseline[i0:i1] = ppeaks.baseline
 
         print(" PLOT:  ",
@@ -632,9 +634,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
               len(dgroup.energy),
               len(dgroup.ydat))
 
+
+
         if opts['sub_baseline']:
             ydat = ydat - baseline
             yfit = yfit - baseline
+
 
         jmin, jmax = max(0, i0-2), i1+3
         _ys = ydat[jmin:jmax]
