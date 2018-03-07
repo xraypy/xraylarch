@@ -789,7 +789,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             iframe.panel.redraw()
 
 
-    def add_highlight_area(self, mask, label=None, col=0):
+    def add_highlight_area(self, mask0, label=None, col=0):
         """add a highlighted area -- outline an arbitrarily shape --
         as if drawn from a Lasso event.
 
@@ -798,14 +798,22 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         """
         
         panel = None
-        swmask = np.swapaxes(mask,0,1)
+
+        print '\nmask',mask0.shape
+        print 'swap',np.swapaxes(mask0,0,1).shape
+        
         for iframe in self.tomo_frame:
             imap_size = iframe.map.shape[:2]
-            if imap_size == mask.shape or imap_size == swmask.shape:
-                panel = iframe.panel
+            for imask in (mask0,np.swapaxes(mask0,0,1)):
+               if imap_size == imask.shape:
+                  panel = iframe.panel
+                  mask = imask
+                  print 'MASK',mask.shape
+#             if imap_size == mask.shape or imap_size == swmask.shape:
+#                 panel = iframe.panel
 
         if panel is not None:
-            mask = swmask # np.swapaxes(mask,0,1)
+#             mask = swmask # np.swapaxes(mask,0,1)
             patch = mask * np.ones(mask.shape) * 0.9
             cmap = panel.conf.cmap[col]
             area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])
@@ -825,7 +833,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     l.set_color(col)
 
             panel.canvas.draw()
-
 
     def CustomConfig(self, panel, sizer=None, irow=0):
         '''

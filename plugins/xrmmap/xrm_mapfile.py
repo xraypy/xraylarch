@@ -862,6 +862,9 @@ class GSEXRM_MapFile(object):
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
+            
+        if self.ndet is None:
+            self.ndet = self.xrmmap.attrs.get('N_Detectors', None)
 
     def close(self):
         if self.check_hostid():
@@ -1944,12 +1947,12 @@ class GSEXRM_MapFile(object):
             outname = '%s_%s' % (aname, othername)
             self.add_area(amask, name=outname, desc=outname, tomo=tomo)
 
-    def get_area(self, name=None, desc=None, tomo=False):
+    def get_area(self, name=None, desc=None):
         '''
         get area group by name or description
         '''
-        base_grp = self.xrmmap
-        area_grp = ensure_subgroup('areas',base_grp)
+
+        area_grp = ensure_subgroup('areas',self.xrmmap)
 
         if name is not None and name in area_grp:
             return area_grp[name]
@@ -2334,11 +2337,18 @@ class GSEXRM_MapFile(object):
         "return  XRMMAP group for a detector"
 
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
-        dgroup = '%ssum' % mcastr
-        if self.ndet is None:
-            self.ndet =  self.xrmmap.attrs['N_Detectors']
-        if det in range(1, self.ndet+1):
-            dgroup = '%s%i' % (mcastr,det)
+
+        dgroup = '%ssum' % mcastr   
+        if det in return_group_detectors(self.xrmmap):
+            dgroup = det
+        else:
+            try:
+               det = int(det)
+               if det in range(1, self.ndet+1):
+                   dgroup = '%s%i' % (mcastr,det)
+            except:
+                pass
+
         return dgroup
 
     def _det_group(self, det=None):
@@ -2376,7 +2386,7 @@ class GSEXRM_MapFile(object):
         '''
 
         try:
-            area = self.get_area(areaname, tomo=tomo).value
+            area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
@@ -2541,12 +2551,8 @@ class GSEXRM_MapFile(object):
             counts = counts.reshape(ny, nx, nchan)
         
         if dtcorrect:
-            if det in range(1, self.ndet+1):
-                cell   = mapdat['dtfactor'].regionref[sy, sx]
-                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = counts * dtfact
-            elif det is None: # indicating sum of deadtime-corrected spectra
+            if det is None or 'sum' in str(det):
+                # use sum of deadtime-corrected spectra 
                 _md    = self._det_group(self.ndet)
                 cell   = _md['counts'].regionref[sy, sx, :]
                 _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
@@ -2562,6 +2568,11 @@ class GSEXRM_MapFile(object):
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
                     counts += _cts * dtfact
+            else: #elif det in range(1, self.ndet+1):
+                cell   = mapdat['dtfactor'].regionref[sy, sx]
+                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
 
         elif det is None: # indicating sum un-deadtime-corrected spectra
             _md    = self._det_group(self.ndet)
@@ -2608,7 +2619,7 @@ class GSEXRM_MapFile(object):
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        if det is None:
+        if det is None or 'sum' in str(det):
             livetime = np.zeros((ny, nx))
             realtime = np.zeros((ny, nx))
             for d in range(1, self.ndet+1):

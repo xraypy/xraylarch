@@ -510,7 +510,6 @@ class TomographyPanel(GridPanel):
         self.refine_center.SetValue(False)
         
         self.tomo_det    = Choice(self, size=(250, -1))
-        self.chk_dftcor2 = wx.CheckBox(self, label='Correct Deadtime?')
         self.tomo_save   = Button(self, 'Save reconstruction',     size=(150, -1),
                                action=self.onSaveTomograph)
         
@@ -826,6 +825,7 @@ class TomographyPanel(GridPanel):
 
         xrmfile = self.owner.current_file
         tomo_center = self.center_value.GetValue()
+        det = None
         
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
@@ -855,14 +855,18 @@ class TomographyPanel(GridPanel):
         else:
             title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
 
+        ## for one color plot
+        if sino.shape[0] == 1 and tomo.shape[0] == 1:
+            sino = sino[0]
+            tomo = tomo[0]
+            det = self.det_choice[0].GetStringSelection()
+
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
 
-        ## for one color plot
-        if sino.shape[0] == 1: sino = sino[0]
-        if tomo.shape[0] == 1: tomo = tomo[0]
 
-        self.owner.display_tomo(sino,tomo,title=title)                               
+
+        self.owner.display_tomo(sino,tomo,title=title,det=det)                               
 
     def set_center(self,cen):
 
@@ -1702,6 +1706,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         area = xrmfile.get_area(name=areaname)
         amask = area.value
+        
+        ## do not calculate yet for tomography areas
+        ## will need to calculate each ROI, as well
+        ## mkak 2018.03.07
+        tomo_area = area.attrs.get('tomograph',False)
+        if tomo_area:
+           return
 
         def match_mask_shape(det, mask):
            if mask.shape[1] == det.shape[1] - 2: # hotcols
@@ -1719,22 +1730,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
            self.choice.Enable()
            return
 
-        try:
-            version = xrmmap.attrs['Version']
-        except:
-            version = '1.0.0'
+        version = xrmmap.attrs.get('Version','1.0.0')
 
         if version_ge(version, '2.0.0'):
 
-            d_dets = [d for d in xrmmap['roimap']]
-            d_dets.remove('mcasum')
+            d_dets = [d for d in xrmmap['roimap'] if 'sum' not in d and 'xrd' not in d]
 
-            det0 = xrmmap['roimap/%s' % d_dets[0]]
+            det0 = xrmmap['roimap'][d_dets[0]]
 
             d_rois = [d for d in det0]
             d_lims = [det0[roi]['limits'][0] for roi in d_rois]
 
             d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
+            d_lims =  [lim for lim,roi in sorted(zip(d_lims,d_rois))]
 
             d_scas = [d for d in xrmmap['scalars']]
             ndet = 'mca'
@@ -1795,7 +1803,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.report.DeleteAllItems()
         self.report_data = []
-        self.onSelect()
+        # print 'this got commented out... return it?'
+        #self.onSelect()
         
     def set_enabled_btns(self, xrmfile=None):
 
@@ -1881,6 +1890,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
 
+        print '>>> Trigger 1'
         mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
         dtime = mca.real_time
         info_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
@@ -1934,6 +1944,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
+            print '>>> Trigger 2'
             mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
             dtime = mca.real_time
         except:
@@ -1973,6 +1984,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas'][aname]
         label = bytes2str(area.attrs.get('description', aname))
+        tomo_area = bytes2str(area.attrs.get('tomograph', False))
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
@@ -1980,11 +1992,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 imd.add_highlight_area(area.value, label=label)
             except:
                 pass
-        
+
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
+            (a,b,c,d) = imd.panel.get_viewlimits()
             try:
-                imd.panel.add_highlight_area(area.value, label=label)
+                if (d,b) == area.shape:
+                    imd.panel.add_highlight_area(area.value, label=label)
             except:
                 pass
 
@@ -2017,6 +2031,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 pass
 
     def _getmca_area(self, areaname, **kwargs):
+        print '>>> Trigger 3'
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
     def _getxrd_area(self, areaname, **kwargs):
@@ -2278,13 +2293,14 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask, tomo=tomo)
+        print '>>> Trigger 4'
         self.sel_mca = xrmfile.get_mca_area(aname, det=det, tomo=tomo)
 
-    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None, **kws):
+    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
+                     tomo=False, **kws):
         
         if xrmfile is None:
             xrmfile = self.current_file
-        tomograph = False
 
         ny, nx = xrmfile.get_shape()
         
@@ -2292,7 +2308,7 @@ class MapViewerFrame(wx.Frame):
             if mask.shape == (nx, ny): ## sinogram
                 mask = np.swapaxes(mask,0,1)
             elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
-                tomograph = True
+                tomo = True
             else:
                 ym, xm = mask.shape
                 tmask = np.zeros((ny, nx)).astype(bool)
@@ -2300,7 +2316,7 @@ class MapViewerFrame(wx.Frame):
                     tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
                 mask = tmask
 
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomograph)
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomo)
         mca_thread = Thread(target=self.get_mca_area,
                             args=(mask,), kwargs=kwargs)
         mca_thread.start()
@@ -2309,11 +2325,12 @@ class MapViewerFrame(wx.Frame):
 
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
+            
             try:
                 aname = self.sel_mca.areaname
             except:
-                if tomograph:
-                    print('!! Data not yet saved for displaying reconstruction-area spectra !!')
+                if tomo:
+                    print('\nNo tomograph data for detector %s saved!\n' % det)
                 return
             area  = xrmfile.xrmmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
@@ -2443,7 +2460,10 @@ class MapViewerFrame(wx.Frame):
 
     def add_tomodisplay(self, title, det=None, _lassocallback=True):
 
-        lasso_cb = partial(self.lassoHandler, det=det) if _lassocallback else None
+        if _lassocallback:
+             lasso_cb = partial(self.lassoHandler, det=det)
+        else:
+             lasso_cb = None
 
         imframe = TomographyFrame(output_title   = title,
                                   lasso_callback = lasso_cb)
@@ -2455,7 +2475,10 @@ class MapViewerFrame(wx.Frame):
                     _lassocallback=True):
         
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _lassocallback else None
+        if _lassocallback:
+             lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+        else:
+             lasso_cb = None
 
         while not displayed:
             try:
