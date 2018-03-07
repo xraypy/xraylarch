@@ -616,33 +616,34 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         ppeaks = getattr(dgroup, 'prepeaks', None)
         if ppeaks is None:
             return
-        i0 = index_of(dgroup.energy, ppeaks.energy[0])
-        i1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
+        j0 = index_of(dgroup.energy, ppeaks.energy[0])
+        j1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
 
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
 
         ydat = 1.0*dgroup.ydat
-        yfit = 1.0*dgroup.yfit
-        baseline = 1.0*ydat
-        baseline[i0:i1] = ppeaks.baseline
+        yfit = 1.0*dgroup.ydat
+        baseline = 1.0*dgroup.ydat
+        xdat = 1.0*dgroup.energy
+        yfit[j0:j1] = dgroup.yfit
+        baseline[j0:j1] = ppeaks.baseline
 
-        print(" PLOT:  ",
-              len(dgroup.xfit),
-              len(dgroup.yfit),
-              len(ppeaks.energy),
-              len(ppeaks.baseline),
-              len(dgroup.energy),
-              len(dgroup.ydat))
+        # print(" PLOT:  ", j0, j1, i1, i2)
 
+        # print(len(dgroup.yfit), len(ppeaks.energy), len(ppeaks.baseline),
+        # len(dgroup.energy), len(dgroup.ydat))
 
+        # print(" xdat, ydat: ", len(xdat), len(ydat), len(yfit))
+        # print(" en, base: ", len(dgroup.energy), len(baseline))
+        # print(" xfit, yfit ",   len(yfit))
 
         if opts['sub_baseline']:
             ydat = ydat - baseline
             yfit = yfit - baseline
 
 
-        jmin, jmax = max(0, i0-2), i1+3
-        _ys = ydat[jmin:jmax]
+        jmin, jmax = max(0, j0-2), j1+3
+        _ys = dgroup.ydat[jmin:jmax]
         yrange = max(_ys) - min(_ys)
 
         array_desc = self.array_choice.GetStringSelection()
@@ -685,14 +686,14 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         ppanel = self.controller.get_display().panel
         plotopts.update(PLOTOPTS_1)
-        ppanel.plot(dgroup.energy, ydat, delay_draw=True, **plotopts)
+        ppanel.plot(xdat, ydat, delay_draw=True, **plotopts)
 
         if plot_type == 'baseline' and not opts['sub_baseline']:
             ppanel.oplot(dgroup.energy, baseline,
                          label='baseline', **PLOTOPTS_2)
 
         else:
-            ppanel.oplot(dgroup.xfit, yfit,
+            ppanel.oplot(dgroup.energy, yfit,
                          label='fit', **PLOTOPTS_1)
 
             if plot_type == 'residual':
@@ -701,15 +702,16 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 scale = int(np.log10(_range/2.0))
                 scale = 10**(min(6, max(-1, scale)))
                 label = y2label = "residual (%dx)" % scale
-                ppanel.oplot(dgroup.xfit, scale*resid, label=label,
+                ppanel.oplot(dgroup.energy, scale*resid, label=label,
                              y2label=y2label, **PLOTOPTS_D)
             elif plot_type == 'components':
-                print(" Components: ", dgroup.ycomps.keys())
+                # print(" Components: ", dgroup.ycomps.keys())
                 for label, ycomp in dgroup.ycomps.items():
                     fcomp = self.fit_components[label]
-                    print(" Component: ", label, fcomp, fcomp.bkgbox.IsChecked() , opts['sub_baseline'])
+                    # print(" Component: ", label, fcomp, fcomp.bkgbox.IsChecked() , opts['sub_baseline'])
                     if not (fcomp.bkgbox.IsChecked() and opts['sub_baseline']):
-                        ppanel.oplot(dgroup.xfit, ycomp, label=label,
+                        # print(" -- ", len(ycomp), len(ppeaks.energy))
+                        ppanel.oplot(ppeaks.energy, ycomp, label=label,
                                      style='short dashed')
 
         axes = ppanel.axes
