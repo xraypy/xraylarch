@@ -799,21 +799,14 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         
         panel = None
 
-        print '\nmask',mask0.shape
-        print 'swap',np.swapaxes(mask0,0,1).shape
-        
         for iframe in self.tomo_frame:
             imap_size = iframe.map.shape[:2]
             for imask in (mask0,np.swapaxes(mask0,0,1)):
                if imap_size == imask.shape:
                   panel = iframe.panel
                   mask = imask
-                  print 'MASK',mask.shape
-#             if imap_size == mask.shape or imap_size == swmask.shape:
-#                 panel = iframe.panel
 
         if panel is not None:
-#             mask = swmask # np.swapaxes(mask,0,1)
             patch = mask * np.ones(mask.shape) * 0.9
             cmap = panel.conf.cmap[col]
             area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])

@@ -1803,8 +1803,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.report.DeleteAllItems()
         self.report_data = []
-        # print 'this got commented out... return it?'
-        #self.onSelect()
+        self.onSelect()
         
     def set_enabled_btns(self, xrmfile=None):
 
@@ -1890,7 +1889,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
 
-        print '>>> Trigger 1'
         mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
         dtime = mca.real_time
         info_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
@@ -1944,7 +1942,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
-            print '>>> Trigger 2'
             mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
             dtime = mca.real_time
         except:
@@ -2031,7 +2028,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 pass
 
     def _getmca_area(self, areaname, **kwargs):
-        print '>>> Trigger 3'
+
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
     def _getxrd_area(self, areaname, **kwargs):
@@ -2293,7 +2290,6 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask, tomo=tomo)
-        print '>>> Trigger 4'
         self.sel_mca = xrmfile.get_mca_area(aname, det=det, tomo=tomo)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
