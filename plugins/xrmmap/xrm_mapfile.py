@@ -1782,25 +1782,27 @@ class GSEXRM_MapFile(object):
             g.resize((nrow, npts, nx))
 
             for g in self.xrmmap.values():
-                if g.attrs.get('type', '').startswith('scalar det'):
-                    for aname in g.keys():
-                        oldnrow, npts = g[aname].shape
-                        g[aname].resize((nrow, npts))
-                elif g.attrs.get('type', '').startswith('mca det'):
-                    oldnrow, npts, nchan = g['counts'].shape
-                    g['counts'].resize((nrow, npts, nchan))
-                    for aname in ('livetime', 'realtime',
-                                  'inpcounts', 'outcounts', 'dtfactor'):
-                        g[aname].resize((nrow, npts))
-                elif g.attrs.get('type', '').startswith('virtual mca det'):
-                    oldnrow, npts, nchan = g['counts'].shape
-                    g['counts'].resize((nrow, npts, nchan))
-                elif g.attrs.get('type', '').startswith('xrd2D detector'):
-                    oldnrow, npts, xpixx, xpixy = g['counts'].shape
-                    g['counts'].resize((nrow, npts, xpixx, xpixy))
-                elif g.attrs.get('type', '').startswith('xrd1D detector'):
-                    oldnrow, npts, qstps = g['counts'].shape
-                    g['counts'].resize((nrow, npts, qstps))
+                type_attr = g.attrs.get('type', '')
+                if type_attr.find('det') > -1:
+                    if type_attr.startswith('scalar'):
+                        for aname in g.keys():
+                            oldnrow, npts = g[aname].shape
+                            g[aname].resize((nrow, npts))
+                    elif type_attr.startswith('mca'):
+                        oldnrow, npts, nchan = g['counts'].shape
+                        g['counts'].resize((nrow, npts, nchan))
+                        for aname in ('livetime', 'realtime',
+                                      'inpcounts', 'outcounts', 'dtfactor'):
+                            g[aname].resize((nrow, npts))
+                    elif type_attr.startswith('virtual mca'):
+                        oldnrow, npts, nchan = g['counts'].shape
+                        g['counts'].resize((nrow, npts, nchan))
+                    elif type_attr.startswith('xrd2D'):
+                        oldnrow, npts, xpixx, xpixy = g['counts'].shape
+                        g['counts'].resize((nrow, npts, xpixx, xpixy))
+                    elif type_attr.startswith('xrd1D'):
+                        oldnrow, npts, qstps = g['counts'].shape
+                        g['counts'].resize((nrow, npts, qstps))
 
             if self.azwdgs > 1:
                 for g in self.xrmmap['work/xrdwedge'].values():
@@ -1818,16 +1820,18 @@ class GSEXRM_MapFile(object):
             virtmca_groups = []
             for g in self.xrmmap.values():
                 # include both real and virtual mca detectors!
-                if g.attrs.get('type', '').startswith('mca det'):
-                    realmca_groups.append(g)
-                elif g.attrs.get('type', '').startswith('virtual mca'):
-                    virtmca_groups.append(g)
-                elif g.attrs.get('type', '').startswith('xrd2D detector'):
-                    oldnrow, npts, xpixx, xpixy = g['counts'].shape
-                    g['counts'].resize((nrow, npts, xpixx, xpixy))
-                elif g.attrs.get('type', '').startswith('xrd1D detector'):
-                    oldnrow, npts, qstps = g['counts'].shape
-                    g['counts'].resize((nrow, npts, qstps))
+                type_attr = g.attrs.get('type', '')
+                if type_attr.find('det') > -1 or type_attr.find('mca') > -1:
+                    if type_attr.startswith('mca'):
+                        realmca_groups.append(g)
+                    elif type_attr.startswith('virtual mca'):
+                        virtmca_groups.append(g)
+                    elif type_attr.startswith('xrd2D'):
+                        oldnrow, npts, xpixx, xpixy = g['counts'].shape
+                        g['counts'].resize((nrow, npts, xpixx, xpixy))
+                    elif type_attr.startswith('xrd1D'):
+                        oldnrow, npts, qstps = g['counts'].shape
+                        g['counts'].resize((nrow, npts, qstps))
 
             if self.azwdgs > 1:
                 for g in self.xrmmap['work/xrdwedge'].values():
