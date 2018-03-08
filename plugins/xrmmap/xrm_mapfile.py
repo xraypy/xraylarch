@@ -2046,12 +2046,13 @@ class GSEXRM_MapFile(object):
 
     def get_tomography_center(self):
 
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
-            return self.xrmmap['tomo/center'].value
+            return tomogrp['center'].value
         except:
             self.set_tomography_center()
 
-        return self.xrmmap['tomo/center'].value
+        return tomogrp['center'].value
 
     def set_tomography_center(self,center=None):
         if center is None:
@@ -2392,7 +2393,8 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
         if tomo:
-            detlist = build_detector_list(self.xrmmap['tomo'])
+            tomogrp = ensure_subgroup('tomo',self.xrmmap)
+            detlist = build_detector_list(tomogrp)
             if len(detlist) < 1:
                 return
 
