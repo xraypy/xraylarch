@@ -243,6 +243,8 @@ def build_detector_list(group):
     det_list = []
     for key in group.keys():
         is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
+        if not is_det:
+            is_det = bytes2str(group[key].attrs.get('type', '')).find('mca') > -1
         if is_det and key not in det_list:
             det_list += [key]
     det_list = sorted(det_list)
@@ -1705,23 +1707,19 @@ class GSEXRM_MapFile(object):
         xrmmap = self.xrmmap
         det_list = []
         if version_ge(self.version, '2.0.0'):
-            for grp in xrmmap['roimap'].keys():
-                if bytes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
-                    det_list += [grp]
+            det_list = build_detector_list(xrmmap['roimap'])
             if 'scalars' in xrmmap:
                 det_list += ['scalars']
         else:
-            for grp in xrmmap.keys():
-                if grp.startswith('det'):
+            det_list = build_detector_list(xrmmap)
+            for det in ('scalars','xrd1D','xrd2D'):
+                 try:
+                     det_list.pop(det_list.index(det))
+                 except:
+                     pass
+            for det in build_detector_list(xrmmap['roimap']):
+                if det not in det_list:
                     det_list += [grp]
-            ## allows for adding roi in new format to old files
-            for grp in xrmmap['roimap'].keys():
-                try:
-                    if bystes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
-                        if grp not in det_list:
-                            det_list += [grp]
-                except:
-                    pass
 
         if len(det_list) < 1:
             det_list = ['']
