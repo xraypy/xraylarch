@@ -213,37 +213,45 @@ def ensure_subgroup(subgroup,group):
 #         
 #     return grp    
 
-def build_raw_data_detector_list(xrmmap):
 
-    det_list = []
 
-    def check_detector(group):
+
+def build_datapath_list(xrmmap):
+
+    det_list = build_detector_list(xrmmap)
+    data_list = []
+
+    def find_detector(group):
 
         sub_list = []
-        is_det = bytes2str(group.attrs.get('type', '')).find('det') > -1
-        if is_det and isinstance(group,h5py.Group):
-            if 'counts' in group.keys():
-                sub_list += [group['counts'].name]
-            if group.name.find('scal') > -1:
-                for key,val in dict(group).iteritems():
-                    sub_list += [group[key].name]
+        if 'counts' in group.keys():
+            sub_list += [group['counts'].name]
+        elif 'scal' in group.name:
+            for key,val in dict(group).iteritems():
+                sub_list += [group[key].name]
         return sub_list
 
-    for keyi,vali in dict(xrmmap).iteritems():
-        for det in check_detector(xrmmap[keyi]):
-            det_list += [det]
-    return det_list
+    for det in det_list:
+        for idet in find_detector(xrmmap[det]):
+            data_list += [idet]
+
+    return data_list
 
 
-def return_group_detectors(group):
+def build_detector_list(group):
 
-    detlist = []
+    det_list = []
     for key in group.keys():
         is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
-        if is_det and key not in detlist:
-            detlist += [key]
+        if is_det and key not in det_list:
+            det_list += [key]
+    det_list = sorted(det_list)
+            
+    for i,det in enumerate(det_list):
+        if 'sum' in det.lower():
+            det_list = [det_list[i]] + det_list[:i] + det_list[i+1:]
 
-    return detlist
+    return det_list
 
 class GSEXRM_Exception(Exception):
     '''GSEXRM Exception: General Errors'''
@@ -1680,15 +1688,17 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
-    def list_raw_data_detectors(self,all=False):
+    def get_datapath_list(self,remove='raw'):
     
-        det_list = sorted(build_raw_data_detector_list(self.xrmmap))
-        if not all:
-           return [det for det in det_list if not det.lower().endswith('raw')]
+        det_list = build_datapath_list(self.xrmmap)
         
-        return det_list
+        ## remove instances of detector with 'raw' in title
+        if isinstance(remove,str):
+            return [det for det in det_list if remove not in det]
+        else:
+            return det_list
 
-    def get_detchoices(self):
+    def get_detector_list(self):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
         """
@@ -1713,11 +1723,6 @@ class GSEXRM_MapFile(object):
                 except:
                     pass
 
-        for sumname in ('detsum','mcasum'):
-           if sumname in det_list:
-               det_list.remove(sumname)
-               det_list.insert(0, sumname)
-
         if len(det_list) < 1:
             det_list = ['']
 
@@ -1729,7 +1734,7 @@ class GSEXRM_MapFile(object):
         mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
 
-        detlist = return_group_detectors(self.xrmmap)
+        detlist = build_detector_list(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
             
@@ -2113,7 +2118,7 @@ class GSEXRM_MapFile(object):
         '''
        
         ## check to make sure the selected detector exists for reconstructions
-        detlist = self.list_raw_data_detectors(all=True)
+        detlist = self.get_datapath_list(remove=None)
         if datapath not in detlist:
             print("Detector '%s' not found in data." % datapath)
             print('Known detectors: %s' % detlist)
@@ -2337,17 +2342,15 @@ class GSEXRM_MapFile(object):
         "return  XRMMAP group for a detector"
 
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
+        dgroup = '%ssum' % mcastr
 
-        dgroup = '%ssum' % mcastr   
-        if det in return_group_detectors(self.xrmmap):
-            dgroup = det
-        else:
-            try:
-               det = int(det)
-               if det in range(1, self.ndet+1):
-                   dgroup = '%s%i' % (mcastr,det)
-            except:
-                pass
+        if isinstance(det,str):
+            for d in build_detector_list(self.xrmmap):
+                if det.lower() == d.lower():
+                    dgroup = d
+        elif isinstance(det,int):
+            if det in range(1, self.ndet+1):
+                dgroup = '%s%i' % (mcastr,det)
 
         return dgroup
 
@@ -2391,7 +2394,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
         if tomo:
-            detlist = return_group_detectors(self.xrmmap['tomo'])
+            detlist = build_detector_list(self.xrmmap['tomo'])
             if len(detlist) < 1:
                 return
 

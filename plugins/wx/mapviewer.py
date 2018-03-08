@@ -336,7 +336,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def set_det_choices(self, varname=None):
 
-        det_list = self.cfile.get_detchoices()
+        det_list = self.cfile.get_detector_list()
 
         if varname is None:
             for wid in self.vardet.values():
@@ -509,7 +509,7 @@ class TomographyPanel(GridPanel):
 
         self.refine_center.SetValue(False)
         
-        self.tomo_det    = Choice(self, size=(250, -1))
+        self.sino_data   = Choice(self, size=(250, -1))
         self.tomo_save   = Button(self, 'Save reconstruction',     size=(150, -1),
                                action=self.onSaveTomograph)
         
@@ -536,26 +536,25 @@ class TomographyPanel(GridPanel):
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
         #################################################################################
-        self.Add(SimpleText(self,'Algorithm: '),       dcol=1, style=RIGHT, newrow=True)
+        self.Add(SimpleText(self,'Algorithm: '),       dcol=1, style=LEFT,  newrow=True)
         self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
-        self.Add(SimpleText(self,'Center: '),          dcol=1, style=RIGHT, newrow=True)
+        self.Add(SimpleText(self,'Center: '),          dcol=1, style=LEFT,  newrow=True)
         self.AddMany((self.center_value,self.refine_center,self.center_range),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,''),                  dcol=1, style=LEFT,  newrow=True)
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
         #################################################################################
-        self.Add(SimpleText(self,'Display:'),          dcol=1, style=RIGHT, newrow=True)
+        self.Add(SimpleText(self,'Display:'),          dcol=1, style=LEFT,  newrow=True)
         self.Add(self.tomo_show[0],                    dcol=1, style=LEFT)
         self.Add(self.tomo_show[1],                    dcol=1, style=LEFT)
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
         #################################################################################
-        self.Add(SimpleText(self,'Detector:'),         dcol=1, style=LEFT, newrow=True)
-        self.Add(self.tomo_det,                        dcol=2, style=LEFT)
-        ##self.Add(SimpleText(self,''),                      dcol=1, style=RIGHT)
-        self.Add(self.tomo_save,                        dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Data:'),             dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.sino_data,                       dcol=2, style=LEFT)
+        self.Add(self.tomo_save,                       dcol=1, style=LEFT)
 
         #################################################################################
         self.pack()
@@ -565,12 +564,17 @@ class TomographyPanel(GridPanel):
 
     def disable_options(self):
 
-        all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+self.alg_choice+[self.oper]+[self.tomo_det]
-        for chc in all_choices: chc.Disable()
+        all_choices = [self.plot_choice]+[self.oper]+[self.sino_data]
+        all_choices += self.alg_choice+self.det_choice+self.roi_choice
+        for chc in all_choices:
+            chc.Disable()
+
         for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center):
             chk.Disable()
-        for btn in (self.tomo_show+[self.tomo_save]): #(self.sino_show+self.tomo_show):
+
+        for btn in (self.tomo_show+[self.tomo_save]):
             btn.Disable()
+
         self.center_value.Disable()
         self.center_range.Disable()
         
@@ -581,7 +585,7 @@ class TomographyPanel(GridPanel):
 
         self.det_choice[0].Enable()
         self.det_choice[-1].Enable()
-        self.tomo_det.Enable()
+        self.sino_data.Enable()
         self.roi_choice[0].Enable()
         self.roi_choice[-1].Enable()
 
@@ -800,7 +804,7 @@ class TomographyPanel(GridPanel):
 
     def onSaveTomograph(self, event=None):
     
-        detpath = self.tomo_det.GetStringSelection()
+        detpath = self.sino_data.GetStringSelection()
         #tomo_center = self.center_value.GetValue()
         
         ## sets center (if not already in file)
@@ -875,13 +879,15 @@ class TomographyPanel(GridPanel):
 
     def set_det_choices(self):
 
-        det_list = self.cfile.get_detchoices()
+        det_list = self.cfile.get_detector_list()
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
-        self.tomo_det.SetChoices(self.cfile.list_raw_data_detectors())
+
+        data_list = self.cfile.get_datapath_list(remove='raw')
+        self.sino_data.SetChoices(data_list)
 
         self.set_roi_choices()
 
@@ -1286,7 +1292,7 @@ class MapPanel(GridPanel):
 
     def set_det_choices(self):
 
-        det_list = self.cfile.get_detchoices()
+        det_list = self.cfile.get_detector_list()
 
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
