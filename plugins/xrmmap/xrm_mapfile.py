@@ -242,9 +242,12 @@ def build_detector_list(group):
 
     det_list = []
     for key in group.keys():
-        is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
-        if not is_det:
-            is_det = bytes2str(group[key].attrs.get('type', '')).find('mca') > -1
+        try:
+            is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
+            if not is_det:
+               is_det = bytes2str(group[key].attrs.get('type', '')).find('mca') > -1
+        except:
+            is_det = False
         if is_det and key not in det_list:
             det_list += [key]
     det_list = sorted(det_list)
@@ -1700,6 +1703,41 @@ class GSEXRM_MapFile(object):
         else:
             return det_list
 
+
+    def get_roi_list(self,detname):
+        """get a list of rois from detector
+        """ 
+
+        detname = self._det_name(detname)
+        roigrp = ensure_subgroup('roimap',self.xrmmap)
+        
+        def sort_roi_limits(roidetgrp):
+            roi_name, roi_limits = [],[]            
+            for name in roidetgrp.keys():
+                roi_name   += [name]
+                roi_limits += [list(roidetgrp[name]['limits'][:])]
+            return [x for (y,x) in sorted(zip(roi_limits,roi_name))]
+        
+        rois = ['1']
+
+        if version_ge(self.version, '2.0.0'):
+            if detname in roigrp.keys():
+                rois = sort_roi_limits(roigrp[detname])
+
+            elif detname.lower().startswith('scal'):
+                rois = rois+list(self.xrmmap[detname].keys())
+                
+        else:
+            if detname in self.xrmmap.keys():
+                rois += list(roigrp['sum_name'])
+            try:
+                rois += sort_roi_limits(roigrp[detname])
+            except:
+                pass
+                
+        return rois
+        
+
     def get_detector_list(self):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
@@ -2347,7 +2385,7 @@ class GSEXRM_MapFile(object):
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         dgroup = '%ssum' % mcastr
 
-        if isinstance(det,str):
+        if isinstance(det,str) or isinstance(det, unicode):
             for d in build_detector_list(self.xrmmap):
                 if det.lower() == d.lower():
                     dgroup = d

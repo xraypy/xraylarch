@@ -346,45 +346,22 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.set_roi_choices(varname=varname)
 
 
-    def set_roi_choices(self, xrmmap=None, varname=None):
-
-        if xrmmap is None:
-            xrmmap = self.xrmmap
+    def set_roi_choices(self, varname=None):
 
         if varname is None:
             for varname in self.vardet.keys():
                 dname = self.vardet[varname].GetStringSelection()
-                rois = self.update_roi(dname,xrmmap)
+                rois = self.update_roi(dname)
                 self.varroi[varname].SetChoices(rois)
         else:
             dname = self.vardet[varname].GetStringSelection()
-            rois = self.update_roi(dname,xrmmap)
+            rois = self.update_roi(dname)
             self.varroi[varname].SetChoices(rois)
 
 
-    def update_roi(self, detname, xrmmap):
+    def update_roi(self, detname):
 
-        if version_ge(self.cfile.version, '2.0.0'):
-            if detname == 'scalars':
-                rois = ['1'] + list(xrmmap[detname].keys())
-            else:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois = [x for (y,x) in sorted(zip(limits,names))]
-        else:
-            rois = ['1']
-            if detname in xrmmap.keys():
-                rois += list(xrmmap['roimap/sum_name'])
-            try:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois += [x for (y,x) in sorted(zip(limits,names))]
-            except:
-                pass
-
-        return rois
+        return self.cfile.get_roi_list(detname)
 
     def set_workarray_choices(self, xrmmap):
 
@@ -891,50 +868,28 @@ class TomographyPanel(GridPanel):
 
         self.set_roi_choices()
 
-    def set_roi_choices(self, xrmmap=None, idet=None):
-
-        if xrmmap is None:
-            xrmmap = self.xrmmap
+    def set_roi_choices(self, idet=None):
 
         if idet is None:
             for idet,det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
-                rois = self.update_roi(detname,xrmmap)
+                rois = self.update_roi(detname)
 
                 self.roi_choice[idet].SetChoices(rois)
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
-            rois = self.update_roi(detname,xrmmap)
+            rois = self.update_roi(detname)
 
             self.roi_choice[idet].SetChoices(rois)
             self.roiSELECT(idet)
 
 
-    def update_roi(self, detname, xrmmap):
+    def update_roi(self, detname):
 
-        if version_ge(self.cfile.version, '2.0.0'):
-            if detname == 'scalars':
-                rois = ['1'] + list(xrmmap[detname].keys())
-            else:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois = [x for (y,x) in sorted(zip(limits,names))]
-        else:
-            rois = ['1']
-            if detname in xrmmap.keys():
-                rois += list(xrmmap['roimap/sum_name'])
-            try:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois += [x for (y,x) in sorted(zip(limits,names))]
-            except:
-                pass
-
-        return rois
-
+        return self.cfile.get_roi_list(detname)
+        
+        
 ##################################
 class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
@@ -1301,50 +1256,27 @@ class MapPanel(GridPanel):
 
         self.set_roi_choices()
 
-    def set_roi_choices(self, xrmmap=None, idet=None):
-
-        if xrmmap is None:
-            xrmmap = self.xrmmap
+    def set_roi_choices(self, idet=None):
 
         if idet is None:
             for idet,det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
-                rois = self.update_roi(detname,xrmmap)
+                rois = self.update_roi(detname)
 
                 self.roi_choice[idet].SetChoices(rois)
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
-            rois = self.update_roi(detname,xrmmap)
+            rois = self.update_roi(detname)
 
             self.roi_choice[idet].SetChoices(rois)
             self.roiSELECT(idet)
 
 
-    def update_roi(self, detname, xrmmap):
+    def update_roi(self, detname):
 
-        if version_ge(self.cfile.version, '2.0.0'):
-            if detname == 'scalars':
-                rois = ['1'] + list(xrmmap[detname].keys())
-            else:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois = [x for (y,x) in sorted(zip(limits,names))]
-        else:
-            rois = ['1']
-            if detname in xrmmap.keys():
-                rois += list(xrmmap['roimap/sum_name'])
-            try:
-                limits,names = [],xrmmap['roimap'][detname].keys()
-                for name in names:
-                    limits += [list(xrmmap['roimap'][detname][name]['limits'][:])]
-                rois += [x for (y,x) in sorted(zip(limits,names))]
-            except:
-                pass
-
-        return rois
-
+        return self.cfile.get_roi_list(detname)
+        
 class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
     label  = 'Map Info'
