@@ -16,8 +16,6 @@ import matplotlib
 if HAS_WXPYTHON:
     matplotlib.use("WXAgg")
 
-from ..symboltable import Group, isgroup
-
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d, ufloat, correlated_values)
@@ -25,7 +23,8 @@ from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
 from lmfit.minimizer import eval_stderr, MinimizerResult
 from lmfit.model import ModelResult
 from lmfit.confidence import f_compare
-from lmfit.asteval import Interpreter
+
+from ..symboltable import Group, isgroup
 
 def isParameter(x):
     return (isinstance(x, Parameter) or
