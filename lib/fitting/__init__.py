@@ -25,7 +25,7 @@ from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
 from lmfit.minimizer import eval_stderr, MinimizerResult
 from lmfit.model import ModelResult
 from lmfit.confidence import f_compare
-from lmfit.asteval import Interpreter
+from asteval import Interpreter
 
 def isParameter(x):
     return (isinstance(x, Parameter) or
