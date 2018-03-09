@@ -404,23 +404,23 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
         fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                             size=(150, -1))
+                             size=(100, -1))
         fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel,
-                              size=(150, -1))
+                              size=(100, -1))
 
         self.array_choice = Choice(pan, size=(125, -1),
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
-        models_peaks = Choice(pan, size=(150, -1),
+        models_peaks = Choice(pan, size=(125, -1),
                               choices=ModelChoices['peaks'],
                               action=self.addModel)
 
-        models_other = Choice(pan, size=(150, -1),
+        models_other = Choice(pan, size=(125, -1),
                               choices=ModelChoices['other'],
                               action=self.addModel)
 
-        self.plot_choice = Choice(pan, size=(130, -1),
+        self.plot_choice = Choice(pan, size=(125, -1),
                                   choices=list(PlotChoices.keys()),
                                   action=self.onPlot)
 
@@ -436,15 +436,19 @@ class PrePeakPanel(wx.Panel):
         self.sub_baseline = Check(pan, label='Subtract Baseline for Plot?', **opts)
 
         titleopts = dict(font=Font(11), colour='#AA0000')
-        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=6)
+        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=7)
+        pan.Add(SimpleText(pan, ' Fit: '))
 
         pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
         pan.Add(self.array_choice, dcol=5)
 
+
         pan.Add(SimpleText(pan, 'E0: '), newrow=True)
         pan.Add(self.btns['ppeak_e0'])
         pan.Add(self.ppeak_e0)
-        pan.Add(self.show_e0, dcol=5)
+        pan.Add(self.show_e0, dcol=4)
+
+        pan.Add(fitbline_btn)
 
         pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
         pan.Add(self.btns['ppeak_emin'])
@@ -452,7 +456,9 @@ class PrePeakPanel(wx.Panel):
         pan.Add(SimpleText(pan, ':'))
         pan.Add(self.btns['ppeak_emax'])
         pan.Add(self.ppeak_emax)
-        pan.Add(self.show_fitrange, dcol=2)
+        pan.Add(self.show_fitrange, dcol=1)
+        pan.Add(fitmodel_btn)
+
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         t.SetToolTip('Range used as mask for background')
@@ -463,14 +469,8 @@ class PrePeakPanel(wx.Panel):
         pan.Add(SimpleText(pan, ':'))
         pan.Add(self.btns['ppeak_ehi'])
         pan.Add(self.ppeak_ehi)
-        pan.Add(self.show_peakrange, dcol=2)
+        pan.Add(self.show_peakrange, dcol=1)
 
-        # fit buttons
-        ts = wx.BoxSizer(wx.HORIZONTAL)
-        ts.Add(fitbline_btn, 0)
-        ts.Add(fitmodel_btn, 0)
-        pan.Add(SimpleText(pan, 'Fit: '), newrow=True)
-        pan.Add(ts, dcol=7)
 
         #  plot buttons
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -577,8 +577,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.energy)
-
-        dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[slice(i1, i2)]
+        dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
         self.fill_form(dgroup)
         self.plot_choice.SetStringSelection('Baseline')
@@ -616,19 +615,20 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         ppeaks = getattr(dgroup, 'prepeaks', None)
         if ppeaks is None:
             return
-        j0 = index_of(dgroup.energy, ppeaks.energy[0])
-        j1 = index_of(dgroup.energy, ppeaks.energy[-1]) + 1
 
         i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
+        i2 = len(ppeaks.baseline) + i1
+        print(" Indexes : ", len(dgroup.energy), len(dgroup.yfit), len(ppeaks.baseline))
+        print(" i1, i2: ", i1, i2)
 
+        xdat = 1.0*dgroup.energy
         ydat = 1.0*dgroup.ydat
         yfit = 1.0*dgroup.ydat
         baseline = 1.0*dgroup.ydat
-        xdat = 1.0*dgroup.energy
-        yfit[j0:j1] = dgroup.yfit
-        baseline[j0:j1] = ppeaks.baseline
+        yfit[i1:i2] = dgroup.yfit
+        baseline[i1:i2] = ppeaks.baseline
 
-        # print(" PLOT:  ", j0, j1, i1, i2)
+        # print(" PLOT:  ",  i1, i2)
 
         # print(len(dgroup.yfit), len(ppeaks.energy), len(ppeaks.baseline),
         # len(dgroup.energy), len(dgroup.ydat))
@@ -642,7 +642,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             yfit = yfit - baseline
 
 
-        jmin, jmax = max(0, j0-2), j1+3
+        jmin, jmax = max(0, i1-2), i2+3
         _ys = dgroup.ydat[jmin:jmax]
         yrange = max(_ys) - min(_ys)
 
@@ -688,24 +688,43 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         plotopts.update(PLOTOPTS_1)
         ppanel.plot(xdat, ydat, delay_draw=True, **plotopts)
 
-        if plot_type == 'baseline' and not opts['sub_baseline']:
-            ppanel.oplot(dgroup.energy, baseline,
-                         label='baseline', **PLOTOPTS_2)
+        print("Plot : ", len(xdat), len(ydat), plot_type, opts['sub_baseline'])
+
+
+        if plot_type == 'baseline':
+            if not opts['sub_baseline']:
+                print(" plot baseline ....")
+                ppanel.oplot(dgroup.energy, baseline,
+                             label='baseline', **PLOTOPTS_2)
 
         else:
+            print(" plot yfit....", len(dgroup.energy), len(yfit))
             ppanel.oplot(dgroup.energy, yfit,
                          label='fit', **PLOTOPTS_1)
 
             if plot_type == 'residual':
                 resid = ydat - yfit
+                print(" plot yfit....", len(dgroup.energy), len(resid))
                 _range = (max(ydat) - min(ydat))/(max(resid) - min(resid))
                 scale = int(np.log10(_range/2.0))
                 scale = 10**(min(6, max(-1, scale)))
                 label = y2label = "residual (%dx)" % scale
-                ppanel.oplot(dgroup.energy, scale*resid, label=label,
-                             y2label=y2label, **PLOTOPTS_D)
+
+                resid = resid*scale
+                rrange = max(resid) - min(resid)
+
+
+                plot2opts = {'xmin': dgroup.energy[jmin],
+                             'xmax': dgroup.energy[jmax],
+                             'ymax': max(resid) + 0.05 * rrange,
+                             'ymin': min(resid) - 0.05 * rrange}
+                plot2opts.update(PLOTOPTS_D)
+
+
+                ppanel.oplot(dgroup.energy, resid, label=label,
+                             y2label=y2label, **plot2opts)
             elif plot_type == 'components':
-                # print(" Components: ", dgroup.ycomps.keys())
+                print(" plot components: ", dgroup.ycomps.keys())
                 for label, ycomp in dgroup.ycomps.items():
                     fcomp = self.fit_components[label]
                     # print(" Component: ", label, fcomp, fcomp.bkgbox.IsChecked() , opts['sub_baseline'])
