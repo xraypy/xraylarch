@@ -23,7 +23,7 @@ install:
     - conda install h5py matplotlib pandas nose pytest sphinx sqlalchemy libgfortran
     - conda install pillow requests yaml pango pcre psutil peakutils
     - conda install wxmplot wxutils
-    - conda install lmfit termcolor pyepics fabio pyfai pycifrw
+    - conda install asteval lmfit termcolor pyepics fabio pyfai pycifrw
     - python setup.py install
 
 script:
