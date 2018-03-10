@@ -96,14 +96,14 @@ class XASNormPanel(wx.Panel):
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
                                  action=self.onPlotSel, size=(200, -1))
 
-        # plot_one = Button(xas, 'Plot This Group', size=(125, -1),
-        #                  action=self.onPlotOne)
-
-        # plot_sel = Button(xas, 'Plot Selected Groups', size=(125, -1),
-        #                  action=self.onPlotSel)
-
         self.plotone_op.SetStringSelection('Normalized')
         self.plotsel_op.SetStringSelection('Normalized')
+
+        plot_one = Button(xas, 'Plot This Group', size=(125, -1),
+                         action=self.onPlotOne)
+
+        plot_sel = Button(xas, 'Plot Selected Groups', size=(125, -1),
+                         action=self.onPlotSel)
 
         self.btns = {}
 
@@ -160,10 +160,10 @@ class XASNormPanel(wx.Panel):
                            **titleopts), dcol=6)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
 
-        xas.Add(SimpleText(xas, 'Plot Selected Groups'), newrow=True)
+        xas.Add(plot_sel, newrow=True)
         xas.Add(self.plotsel_op, dcol=6)
 
-        xas.Add(SimpleText(xas, 'Plot This Group'), newrow=True)
+        xas.Add(plot_one, newrow=True)
         xas.Add(self.plotone_op, dcol=6)
         xas.Add((10, 10))
         xas.Add(CopyBtn('plotone_op'), style=RCEN)
