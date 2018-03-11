@@ -542,14 +542,14 @@ class XASFrame(wx.Frame):
 
 
 
-        items['fit_readresult'] = MenuItem(self, ppeak_menu,
-                                           "&Read Fit Result File\tCtrl+R",
-                                           "Read Fit Result File",
-                                           self.onReadFitResult)
+        items['fit_loadresult'] = MenuItem(self, ppeak_menu,
+                                           "&Read Fit Result\tCtrl+R",
+                                           "Read Fit Result from File",
+                                           self.onLoadFitResult)
 
         items['fit_saveresult'] = MenuItem(self, ppeak_menu,
                                            "Save Fit Result",
-                                           "Save Fit Result",
+                                           "Save Fit Result to File",
                                            self.onSaveFitResult)
 
         items['fit_export'] = MenuItem(self, ppeak_menu,
@@ -799,7 +799,7 @@ class XASFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-    def onReadFitResult(self, event=None):
+    def onLoadFitResult(self, event=None):
         self.prepeak_panel.onLoadFitResult(event=event)
 
     def onSaveFitResult(self, event=None):
