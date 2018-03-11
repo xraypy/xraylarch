@@ -19,7 +19,9 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 
 from lmfit import Parameter, Parameters, fit_report
 try:
-    from lmfit.model import save_modelresult, load_modelresult
+    from lmfit.model import (save_modelresult, load_modelresult,
+                             save_model, load_model)
+
     HAS_MODELSAVE = True
 except ImportError:
     HAS_MODELSAVE = False
@@ -368,7 +370,7 @@ class PrePeakPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             # print(" Fill prepeak panel from group ", fname, gname, dgroup)
-            self.fill_form(dgroup)
+            self.fill_form_from_group(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -518,7 +520,7 @@ class PrePeakPanel(wx.Panel):
         dgroup.prepeaks.config = conf
         return conf
 
-    def fill_form(self, dgroup):
+    def fill_form_from_group(self, dgroup):
         self.ppeak_e0.SetValue(dgroup.e0)
         if hasattr(dgroup, 'prepeaks'):
             self.ppeak_emin.SetValue(dgroup.prepeaks.emin)
@@ -577,7 +579,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             cmp.bkgbox.SetValue(1)
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
-        self.fill_form(dgroup)
+        self.fill_form_from_group(dgroup)
         self.fitmodel_btn.Enable()
 
         i1, i2 = self.get_xranges(dgroup.energy)
@@ -621,7 +623,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         if len(dgroup.yfit) > len(ppeaks.baseline):
             i2 = i1 + len(ppeaks.baseline)
-        print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
+        # print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
 
         xdat = 1.0*dgroup.energy
         ydat = 1.0*dgroup.ydat
@@ -630,12 +632,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         yfit[i1:i2] = dgroup.yfit[:i2-i1]
         baseline[i1:i2] = ppeaks.baseline[:i2-i1]
 
-        # print(" PLOT:  ",  i1, i2)
 
-        # print(len(dgroup.yfit), len(ppeaks.energy), len(ppeaks.baseline),
-        # len(dgroup.energy), len(dgroup.ydat))
-
-        ### plot_types = ('data+baseline', 'data only', 'data+fit', 'residual')
         if opts['plot_sub_bline']:
             ydat = ydat - baseline
             if plot_type in ('data+fit', 'residual'):
@@ -699,9 +696,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         plotopts.update(PLOTOPTS_1)
 
 
-        # print("Plot : ", len(xdat), len(ydat), plot_type, opts['plot_sub_bline'])
-
-        ### plot_types = ('data+baseline', 'data only', 'data+fit', 'residual')
         ppanel.plot(xdat, ydat, **plotopts)
         if plot_type == 'data only':
             pass # we're done!
@@ -719,12 +713,10 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 for label, ycomp in dgroup.ycomps.items():
                     icomp +=1
                     fcomp = self.fit_components[label]
-                    print("ycomp: ", plot_type, label, len(ycomp), fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
+                    # print("ycomp: ", plot_type, label, len(ycomp), fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
                         ppanel.oplot(ppeaks.energy, ycomp, label=label,
                                      delay_draw=(icomp!=ncomp), style='short dashed')
-                    else:
-                        print("suppressed component=", label)
 
             if plot_type == 'residual':
                 _ys = resid
@@ -737,9 +729,9 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
                 pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
                 pframe.Show()
-                print(" RESIDUAL PLOT  margins: ")
-                print(" top : ", pframe.panel.conf.margins)
-                print(" bot : ", pframe.panel_bot.conf.margins)
+                # print(" RESIDUAL PLOT  margins: ")
+                # print(" top : ", pframe.panel.conf.margins)
+                # print(" bot : ", pframe.panel_bot.conf.margins)
 
 
         for etype, x, y, opts in plot_extras:
@@ -994,6 +986,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.pick2_t0 = time.time()
         self.pick2_timer.Start(250)
 
+
     def onSaveFitResult(self, event=None):
         dgroup = self.controller.get_group()
         deffile = dgroup.filename.replace('.', '_') + '.fitresult'
@@ -1033,7 +1026,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             print("-- ", comp.func.__name__, comp.prefix, comp.param_hints)
 
         print(" Parameters: ")
-        for pname, par in modresult.params.items():
+        for pname, par in modresult.init_params.items():
             print("-- ", pname, par)
 
         print("##")
@@ -1120,7 +1113,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         i1, i2 = self.get_xranges(dgroup.xdat)
         dgroup.xfit = dgroup.xdat[i1:i2]
         ysel = dgroup.ydat[i1:i2]
-        print('onFit Model : xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
+        # print('onFit Model : xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
         weights = np.ones(len(ysel))
 
         if hasattr(dgroup, 'yerr'):
@@ -1144,18 +1137,18 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             self.summary[attr] = getattr(result, attr)
         self.summary['params'] = result.params
 
-
-
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
                                                        x=dgroup.xfit)
 
-
         result.model_repr = self.fit_model._reprstring(long=True)
+        # hack:
+        result.user_options = opts
 
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
+
         dgroup.fit_history.append(result)
         self.plot_choice.SetStringSelection('Data and Fit')
         self.onPlot()
@@ -1193,4 +1186,5 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if fname is None:
             fname = 'autosave.fitresult'
         fname = os.path.join(xasguidir, fname)
+
         save_modelresult(result, fname)
