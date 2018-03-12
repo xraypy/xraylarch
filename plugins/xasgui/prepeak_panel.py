@@ -19,7 +19,9 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 
 from lmfit import Parameter, Parameters, fit_report
 try:
-    from lmfit.model import save_modelresult, load_modelresult
+    from lmfit.model import (save_modelresult, load_modelresult,
+                             save_model, load_model)
+
     HAS_MODELSAVE = True
 except ImportError:
     HAS_MODELSAVE = False
@@ -60,14 +62,14 @@ Array_Choices = OrderedDict((('Raw Data', 'mu'),
                              ('Deconvolved', 'deconv'),
                              ('Derivative', 'dmude')))
 
-PlotChoices = OrderedDict((('Baseline', 'baseline'),
-                           ('Fit + components', 'components'),
-                           ('Fit + residual', 'residual'),
-                           ('Fit only', 'fitonly'),
-                           ))
+PlotChoices = OrderedDict((('Data and Baseline',    'data+baseline'),
+                           ('Data only',            'data only'),
+                           ('Data and Fit',         'data+fit'),
+                           ('Data, Fit, Residual',  'residual')))
 
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
+ModelWcards = 'Fit Models(*.modl)|*.modl|All files (*.*)|*.*'
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
@@ -369,7 +371,7 @@ class PrePeakPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             # print(" Fill prepeak panel from group ", fname, gname, dgroup)
-            self.fill_form(dgroup)
+            self.fill_form_from_group(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -407,6 +409,8 @@ class PrePeakPanel(wx.Panel):
                              size=(100, -1))
         fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel,
                               size=(100, -1))
+        fitmodel_btn.Disable()
+        self.fitmodel_btn = fitmodel_btn
 
         self.array_choice = Choice(pan, size=(125, -1),
                                    choices=list(Array_Choices.keys()))
@@ -425,7 +429,7 @@ class PrePeakPanel(wx.Panel):
                                   action=self.onPlot)
 
 
-        self.message = SimpleText(pan, ' fit baseline, then add peaks or other models ')
+        self.message = SimpleText(pan, 'first fit baseline, then add peaks or other models and fit full model ')
 
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
         self.show_peakrange = Check(pan, label='show?', **opts)
@@ -433,11 +437,11 @@ class PrePeakPanel(wx.Panel):
         self.show_e0 = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        self.sub_baseline = Check(pan, label='Subtract Baseline for Plot?', **opts)
+        self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
 
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=7)
-        pan.Add(SimpleText(pan, ' Fit: '))
+        pan.Add(SimpleText(pan, ' Run Fit:'), style=RCEN)
 
         pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
         pan.Add(self.array_choice, dcol=5)
@@ -475,7 +479,7 @@ class PrePeakPanel(wx.Panel):
         #  plot buttons
         ts = wx.BoxSizer(wx.HORIZONTAL)
         ts.Add(self.plot_choice)
-        ts.Add(self.sub_baseline)
+        ts.Add(self.plot_sub_bline)
 
         pan.Add(SimpleText(pan, 'Plot: '), newrow=True)
         pan.Add(ts, dcol=7)
@@ -485,7 +489,7 @@ class PrePeakPanel(wx.Panel):
         ts.Add(models_peaks)
         ts.Add(models_other)
 
-        pan.Add(SimpleText(pan, ' Add Function: '), newrow=True)
+        pan.Add(SimpleText(pan, 'Add Function: '), newrow=True)
         pan.Add(ts, dcol=7)
 
         pan.Add(self.message, dcol=8, newrow=True)
@@ -517,7 +521,7 @@ class PrePeakPanel(wx.Panel):
         dgroup.prepeaks.config = conf
         return conf
 
-    def fill_form(self, dgroup):
+    def fill_form_from_group(self, dgroup):
         self.ppeak_e0.SetValue(dgroup.e0)
         if hasattr(dgroup, 'prepeaks'):
             self.ppeak_emin.SetValue(dgroup.prepeaks.emin)
@@ -541,7 +545,7 @@ class PrePeakPanel(wx.Panel):
         form_opts['elo'] = self.ppeak_elo.GetValue()
         form_opts['ehi'] = self.ppeak_ehi.GetValue()
         form_opts['show_centroid'] = True
-        form_opts['sub_baseline'] = self.sub_baseline.IsChecked()
+        form_opts['plot_sub_bline'] = self.plot_sub_bline.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
         form_opts['show_e0'] = self.show_e0.IsChecked()
@@ -576,11 +580,14 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             cmp.bkgbox.SetValue(1)
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.energy)
-        dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
+        self.fill_form_from_group(dgroup)
+        self.fitmodel_btn.Enable()
 
-        self.fill_form(dgroup)
-        self.plot_choice.SetStringSelection('Baseline')
+        i1, i2 = self.get_xranges(dgroup.energy)
+        dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
+        print('onFit Baselnie: xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
+
+        self.plot_choice.SetStringSelection('Data and Baseline')
         self.onPlot()
 
     def fill_model_params(self, dgroup, prefix, fit_details):
@@ -605,10 +612,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if plot_type is None:
             plot_type = PlotChoices[self.plot_choice.GetStringSelection()]
 
-        title = ' pre-edge fit'
-        if plot_type == 'baseline':
-            title = ' pre-edge baseline'
-
         opts = self.read_form()
         dgroup = self.controller.get_group()
 
@@ -616,53 +619,56 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if ppeaks is None:
             return
 
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-        i2 = len(ppeaks.baseline) + i1
-        print(" Indexes : ", len(dgroup.energy), len(dgroup.yfit), len(ppeaks.baseline))
-        print(" i1, i2: ", i1, i2)
+        i1, i2 = self.get_xranges(dgroup.xdat)
+        # i2 = len(ppeaks.baseline) + i1
+
+        if len(dgroup.yfit) > len(ppeaks.baseline):
+            i2 = i1 + len(ppeaks.baseline)
+        # print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
 
         xdat = 1.0*dgroup.energy
         ydat = 1.0*dgroup.ydat
         yfit = 1.0*dgroup.ydat
         baseline = 1.0*dgroup.ydat
-        yfit[i1:i2] = dgroup.yfit
-        baseline[i1:i2] = ppeaks.baseline
+        yfit[i1:i2] = dgroup.yfit[:i2-i1]
+        baseline[i1:i2] = ppeaks.baseline[:i2-i1]
 
-        # print(" PLOT:  ",  i1, i2)
 
-        # print(len(dgroup.yfit), len(ppeaks.energy), len(ppeaks.baseline),
-        # len(dgroup.energy), len(dgroup.ydat))
-
-        # print(" xdat, ydat: ", len(xdat), len(ydat), len(yfit))
-        # print(" en, base: ", len(dgroup.energy), len(baseline))
-        # print(" xfit, yfit ",   len(yfit))
-
-        if opts['sub_baseline']:
+        if opts['plot_sub_bline']:
             ydat = ydat - baseline
-            yfit = yfit - baseline
-
+            if plot_type in ('data+fit', 'residual'):
+                yfit = yfit - baseline
+        if plot_type == 'residual':
+            resid = ydat - yfit
 
         jmin, jmax = max(0, i1-2), i2+3
+        pxmin, pxmax = dgroup.energy[jmin], dgroup.energy[jmax]
         _ys = dgroup.ydat[jmin:jmax]
         yrange = max(_ys) - min(_ys)
+        pymin = min(_ys) - 0.05 * yrange
+        pymax = max(_ys) + 0.05 * yrange
+
+        title = ' pre-edge fit'
+        if plot_type == 'data+baseline':
+            title = ' pre-edge baseline'
 
         array_desc = self.array_choice.GetStringSelection()
-        plotopts = {'xmin': dgroup.energy[jmin],
-                    'xmax': dgroup.energy[jmax],
-                    'ymax': max(_ys) + 0.05 * yrange,
-                    'ymin': min(_ys) - 0.05 * yrange,
+
+        plotopts = {'xmin': pxmin, 'xmax': pxmax,
+                    'ymin': pymin, 'ymax': pymax,
                     'title': '%s: %s' % (opts['gname'], title),
                     'xlabel': 'Energy (eV)',
                     'ylabel': '%s $\mu$' % opts['array_desc'],
-                    'label': '%s $\mu$' % opts['array_desc']}
+                    'label': '%s $\mu$' % opts['array_desc'],
+                    'delay_draw': True}
 
         plot_extras = []
         if opts['show_fitrange']:
             popts = {'color': '#DDDDCC'}
             emin = opts['emin']
             emax = opts['emax']
-            imin = index_of(dgroup.xdat, emin)
-            imax = index_of(dgroup.xdat, emax)
+            imin = index_of(dgroup.energy, emin)
+            imax = index_of(dgroup.energy, emax)
 
             plot_extras.append(('vline', emin, None, popts))
             plot_extras.append(('vline', emax, None, popts))
@@ -684,56 +690,52 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 plot_extras.append(('vline', ecen, None,  popts))
 
 
-        ppanel = self.controller.get_display().panel
+        pframe = self.controller.get_display(stacked=(plot_type=='residual'))
+        ppanel = pframe.panel
+        axes = ppanel.axes
+
         plotopts.update(PLOTOPTS_1)
-        ppanel.plot(xdat, ydat, delay_draw=True, **plotopts)
 
-        print("Plot : ", len(xdat), len(ydat), plot_type, opts['sub_baseline'])
+        ppanel.plot(xdat, ydat, **plotopts)
+        if plot_type == 'data only':
+            pass # we're done!
+        elif plot_type == 'data+baseline':
+            ppanel.oplot(dgroup.prepeaks.energy,
+                         dgroup.prepeaks.baseline,
+                         label='baseline', **PLOTOPTS_2)
 
-
-        if plot_type == 'baseline':
-            if not opts['sub_baseline']:
-                print(" plot baseline ....")
-                ppanel.oplot(dgroup.energy, baseline,
-                             label='baseline', **PLOTOPTS_2)
-
-        else:
-            print(" plot yfit....", len(dgroup.energy), len(yfit))
+        elif plot_type in ('data+fit', 'residual'):
             ppanel.oplot(dgroup.energy, yfit,
                          label='fit', **PLOTOPTS_1)
 
-            if plot_type == 'residual':
-                resid = ydat - yfit
-                print(" plot yfit....", len(dgroup.energy), len(resid))
-                _range = (max(ydat) - min(ydat))/(max(resid) - min(resid))
-                scale = int(np.log10(_range/2.0))
-                scale = 10**(min(6, max(-1, scale)))
-                label = y2label = "residual (%dx)" % scale
-
-                resid = resid*scale
-                rrange = max(resid) - min(resid)
-
-
-                plot2opts = {'xmin': dgroup.energy[jmin],
-                             'xmax': dgroup.energy[jmax],
-                             'ymax': max(resid) + 0.05 * rrange,
-                             'ymin': min(resid) - 0.05 * rrange}
-                plot2opts.update(PLOTOPTS_D)
-
-
-                ppanel.oplot(dgroup.energy, resid, label=label,
-                             y2label=y2label, **plot2opts)
-            elif plot_type == 'components':
-                print(" plot components: ", dgroup.ycomps.keys())
+            if hasattr(dgroup, 'ycomps'):
+                ncomp = len(dgroup.ycomps)
+                icomp = 0
                 for label, ycomp in dgroup.ycomps.items():
+                    icomp +=1
                     fcomp = self.fit_components[label]
-                    # print(" Component: ", label, fcomp, fcomp.bkgbox.IsChecked() , opts['sub_baseline'])
-                    if not (fcomp.bkgbox.IsChecked() and opts['sub_baseline']):
-                        # print(" -- ", len(ycomp), len(ppeaks.energy))
-                        ppanel.oplot(ppeaks.energy, ycomp, label=label,
-                                     style='short dashed')
+                    print("ycomp: ", plot_type, label, len(ycomp), len(dgroup.xfit),
+                          fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
+                    if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
+                        ppanel.oplot(dgroup.xfit, ycomp, label=label,
+                                     delay_draw=(icomp!=ncomp), style='short dashed')
 
-        axes = ppanel.axes
+            if plot_type == 'residual':
+                _ys = resid
+                yrange = max(_ys) - min(_ys)
+                plotopts['ymin'] = min(_ys) - 0.05 * yrange
+                plotopts['ymax'] = max(_ys) + 0.05 * yrange
+                plotopts['delay_draw'] = False
+                plotopts['ylabel'] = 'data-fit'
+                plotopts['label'] = '_nolegend_',
+
+                pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
+                pframe.Show()
+                # print(" RESIDUAL PLOT  margins: ")
+                # print(" top : ", pframe.panel.conf.margins)
+                # print(" bot : ", pframe.panel_bot.conf.margins)
+
+
         for etype, x, y, opts in plot_extras:
             if etype == 'marker':
                 popts = {'marker': 'o', 'markersize': 4,
@@ -986,49 +988,58 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.pick2_t0 = time.time()
         self.pick2_timer.Start(250)
 
+
     def onSaveFitResult(self, event=None):
         dgroup = self.controller.get_group()
-        deffile = dgroup.filename.replace('.', '_') + '.fitresult'
-        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
+        deffile = dgroup.filename.replace('.', '_') + '.modl'
 
         outfile = FileSave(self, 'Save Fit Result',
                            default_file=deffile,
-                           wildcard=wcards)
+                           wildcard=ModelWcards)
 
         if outfile is not None:
             try:
-                save_modelresult(dgroup.fit_history[-1], outfile)
+                self.save_modelresult(dgroup.fit_history[-1], outfile)
             except IOError:
                 print('could not write %s' % outfile)
 
     def onLoadFitResult(self, event=None):
-        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
-
         mfile = FileOpen(self, 'Load Fit Result',
-                         default_file='', wildcard=wcards)
+                         default_file='', wildcard=ModelWcards)
         modresult = None
         if mfile is not None:
-            try:
-                modresult = load_modelresult(mfile)
-            except IOError:
-                print('could not read model result %s' % mfile)
-                return
-            except ValueError:
-                print('could not interpret model result from  %s' % mfile)
-                return
-        if modresult is None:
-            return
+            modresult = self.load_modelresult(mfile)
+
         print(" Loading Model (work in progress) ", modresult)
+
+    def save_modelresult(self, fitresult, outfile):
+        """saves a customized ModelResult"""
+        fitresult.user_options = self.read_form()
+        with open(outfile, 'w') as fout:
+            fitresult.dump(fout)
+        # print("Saved result to ", fout)
+
+    def load_modelresult(inpfile):
+        """read a customized ModelResult"""
+        with open(outfile, 'w') as fh:
+            tmpval = json.loads(fp.read())
+            user_options = tmpval['user_options']
+            print(" user options ", type(user_options), user_options)
+        fh.close()
+
+        modresult = load_modelresult(inpfile)
 
         print(" Components: ")
         for comp in modresult.model.components:
             print("-- ", comp.func.__name__, comp.prefix, comp.param_hints)
 
         print(" Parameters: ")
-        for pname, par in modresult.params.items():
+        for pname, par in modresult.init_params.items():
             print("-- ", pname, par)
 
         print("##")
+        return modresult
+
 
     def onExportFitResult(self, event=None):
         dgroup = self.controller.get_group()
@@ -1039,16 +1050,16 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                            default_file=deffile, wildcard=wcards)
 
         if outfile is not None:
-            i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-            x = dgroup.xdat[slice(i1, i2)]
-            y = dgroup.ydat[slice(i1, i2)]
+            i1, i2 = self.get_xranges(dgroup.xdat)
+            x = dgroup.xdat[i1:i2]
+            y = dgroup.ydat[i1:i2]
             yerr = None
             if hasattr(dgroup, 'yerr'):
-                yerr = dgroup.yerr
+                yerr = 1.0*dgroup.yerr
                 if not isinstance(yerr, np.ndarray):
                     yerr = yerr * np.ones(len(y))
                 else:
-                    yerr = yerr[slice(i1, i2)]
+                    yerr = yerr[i1:i2]
 
             export_modelresult(dgroup.fit_history[-1],
                                filename=outfile,
@@ -1068,20 +1079,13 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
     def get_xranges(self, x):
         opts = self.read_form()
-        _xmin = opts['emin']
-        _xmax = opts['emax']
 
-        xmin, xmax = min(x), max(x)
-        i1, i2 = 0, len(x)
-        if _xmin > min(x):
-            i1 = index_of(x, _xmin)
-            xmin = x[i1]
-        if _xmax < max(x):
-            i2 = index_of(x, _xmax) + 1
-            xmax = x[i2]
-        xv1 = max(min(x), xmin - (xmax-xmin)/5.0)
-        xv2 = min(max(x), xmax + (xmax-xmin)/5.0)
-        return i1, i2, xv1, xv2
+        dgroup = self.controller.get_group()
+        en_eps = min(np.diff(dgroup.energy)) / 5.
+
+        i1 = index_of(x, opts['emin'] + en_eps)
+        i2 = index_of(x, opts['emax'] + en_eps) + 1
+        return i1, i2
 
     def build_fitmodel(self):
         """ use fit components to build model"""
@@ -1104,8 +1108,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.fit_params = params
 
         if dgroup is not None:
-            i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-            xsel = dgroup.xdat[slice(i1, i2)]
+            i1, i2 = self.get_xranges(dgroup.xdat)
+            xsel = dgroup.xdat[i1:i2]
             dgroup.xfit = xsel
             dgroup.yfit = self.fit_model.eval(self.fit_params, x=xsel)
             dgroup.ycomps = self.fit_model.eval_components(params=self.fit_params,
@@ -1116,17 +1120,18 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         dgroup = self.build_fitmodel()
         opts = self.read_form()
 
-        i1, i2, xv1, xv2 = self.get_xranges(dgroup.xdat)
-        dgroup.xfit = dgroup.xdat[slice(i1, i2)]
-        ysel = dgroup.ydat[slice(i1, i2)]
+        i1, i2 = self.get_xranges(dgroup.xdat)
+        dgroup.xfit = dgroup.xdat[i1:i2]
+        ysel = dgroup.ydat[i1:i2]
+        # print('onFit Model : xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
         weights = np.ones(len(ysel))
 
         if hasattr(dgroup, 'yerr'):
-            yerr = dgroup.yerr
+            yerr = 1.0*dgroup.yerr
             if not isinstance(yerr, np.ndarray):
                 yerr = yerr * np.ones(len(ysel))
             else:
-                yerr = yerr[slice(i1, i2)]
+                yerr = yerr[i1:i2]
             yerr_min = 1.e-9*ysel.mean()
             yerr[np.where(yerr < yerr_min)] = yerr_min
             weights = 1.0/yerr
@@ -1134,28 +1139,29 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         result = self.fit_model.fit(ysel, params=self.fit_params,
                                     x=dgroup.xfit, weights=weights,
                                     method='leastsq')
-        self.summary['xmin'] = xv1
-        self.summary['xmax'] = xv2
+        self.summary['xmin'] = dgroup.xdat[i1]
+        self.summary['xmax'] = dgroup.xdat[i2]
         for attr in ('aic', 'bic', 'chisqr', 'redchi', 'ci_out', 'covar',
                      'flatchain', 'success', 'nan_policy', 'nfev', 'ndata',
                      'nfree', 'nvarys', 'init_values'):
             self.summary[attr] = getattr(result, attr)
         self.summary['params'] = result.params
 
-
         dgroup.yfit = result.best_fit
         dgroup.ycomps = self.fit_model.eval_components(params=result.params,
                                                        x=dgroup.xfit)
 
-
         result.model_repr = self.fit_model._reprstring(long=True)
+        # hack:
+        result.user_options = opts
 
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
+
         dgroup.fit_history.append(result)
-        self.plot_choice.SetSelection(1)
-        self.onPlot(plot_type='components')
+        self.plot_choice.SetStringSelection('Data and Fit')
+        self.onPlot()
 
         self.parent.show_subframe('result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
@@ -1190,4 +1196,5 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if fname is None:
             fname = 'autosave.fitresult'
         fname = os.path.join(xasguidir, fname)
+
         save_modelresult(result, fname)

@@ -44,7 +44,6 @@ from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
                                   MergeDialog, RenameDialog, RemoveDialog)
-
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
                               is_athena_project, AthenaProject)
@@ -64,6 +63,9 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right',  marker='None', markersize=4)
 
 ICON_FILE = 'larch.ico'
+
+XASVIEW_SIZE = (900, 550)
+PLOTWIN_SIZE = (550, 550)
 
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
@@ -182,7 +184,7 @@ class XASController():
             win = 2
             wintitle='Larch XAS Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
-                    size=(600, 600))
+                    size=PLOTWIN_SIZE)
         out = self.symtable._plotter.get_display(**opts)
         return out
 
@@ -314,8 +316,8 @@ class XASFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, size=(925, 675), _larch=None, **kws):
-        wx.Frame.__init__(self, parent, -1, size=size, style=FRAMESTYLE)
+    def __init__(self, parent=None, _larch=None, **kws):
+        wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
 
         self.last_array_sel = {}
         self.paths2read = []
@@ -334,9 +336,8 @@ class XASFrame(wx.Frame):
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
-        self.SetSize(size)
+        self.SetSize(XASVIEW_SIZE)
         self.SetFont(Font(10))
-
         self.larch_buffer.Hide()
 
         self.createMainPanel()
@@ -438,7 +439,7 @@ class XASFrame(wx.Frame):
         plotframe = self.controller.get_display(stacked=False)
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
-        plotframe.SetPosition((xpos+xsiz, ypos))
+        plotframe.SetPosition((xpos+xsiz+5, ypos))
 
         self.SetStatusText('ready')
         self.Raise()
@@ -541,14 +542,14 @@ class XASFrame(wx.Frame):
 
 
 
-        items['fit_readresult'] = MenuItem(self, ppeak_menu,
-                                           "&Read Fit Result File\tCtrl+R",
-                                           "Read Fit Result File",
-                                           self.onReadFitResult)
+        items['fit_loadresult'] = MenuItem(self, ppeak_menu,
+                                           "&Read Fit Result\tCtrl+R",
+                                           "Read Fit Result from File",
+                                           self.onLoadFitResult)
 
         items['fit_saveresult'] = MenuItem(self, ppeak_menu,
                                            "Save Fit Result",
-                                           "Save Fit Result",
+                                           "Save Fit Result to File",
                                            self.onSaveFitResult)
 
         items['fit_export'] = MenuItem(self, ppeak_menu,
@@ -798,7 +799,7 @@ class XASFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-    def onReadFitResult(self, event=None):
+    def onLoadFitResult(self, event=None):
         self.prepeak_panel.onLoadFitResult(event=event)
 
     def onSaveFitResult(self, event=None):
