@@ -69,6 +69,7 @@ PlotChoices = OrderedDict((('Data and Baseline',    'data+baseline'),
 
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
+ModelWcards = 'Fit Models(*.modl)|*.modl|All files (*.*)|*.*'
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
@@ -695,12 +696,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         plotopts.update(PLOTOPTS_1)
 
-
         ppanel.plot(xdat, ydat, **plotopts)
         if plot_type == 'data only':
             pass # we're done!
         elif plot_type == 'data+baseline':
-            ppanel.oplot(dgroup.energy, baseline,
+            ppanel.oplot(dgroup.prepeaks.energy,
+                         dgroup.prepeaks.baseline,
                          label='baseline', **PLOTOPTS_2)
 
         elif plot_type in ('data+fit', 'residual'):
@@ -713,9 +714,10 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 for label, ycomp in dgroup.ycomps.items():
                     icomp +=1
                     fcomp = self.fit_components[label]
-                    # print("ycomp: ", plot_type, label, len(ycomp), fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
+                    print("ycomp: ", plot_type, label, len(ycomp), len(dgroup.xfit),
+                          fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
-                        ppanel.oplot(ppeaks.energy, ycomp, label=label,
+                        ppanel.oplot(dgroup.xfit, ycomp, label=label,
                                      delay_draw=(icomp!=ncomp), style='short dashed')
 
             if plot_type == 'residual':
@@ -989,37 +991,43 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
     def onSaveFitResult(self, event=None):
         dgroup = self.controller.get_group()
-        deffile = dgroup.filename.replace('.', '_') + '.fitresult'
-        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
+        deffile = dgroup.filename.replace('.', '_') + '.modl'
 
         outfile = FileSave(self, 'Save Fit Result',
                            default_file=deffile,
-                           wildcard=wcards)
+                           wildcard=ModelWcards)
 
         if outfile is not None:
             try:
-                save_modelresult(dgroup.fit_history[-1], outfile)
+                self.save_modelresult(dgroup.fit_history[-1], outfile)
             except IOError:
                 print('could not write %s' % outfile)
 
     def onLoadFitResult(self, event=None):
-        wcards = 'Fit Results(*.fitresult)|*.fitresult|All files (*.*)|*.*'
-
         mfile = FileOpen(self, 'Load Fit Result',
-                         default_file='', wildcard=wcards)
+                         default_file='', wildcard=ModelWcards)
         modresult = None
         if mfile is not None:
-            try:
-                modresult = load_modelresult(mfile)
-            except IOError:
-                print('could not read model result %s' % mfile)
-                return
-            except ValueError:
-                print('could not interpret model result from  %s' % mfile)
-                return
-        if modresult is None:
-            return
+            modresult = self.load_modelresult(mfile)
+
         print(" Loading Model (work in progress) ", modresult)
+
+    def save_modelresult(self, fitresult, outfile):
+        """saves a customized ModelResult"""
+        fitresult.user_options = self.read_form()
+        with open(outfile, 'w') as fout:
+            fitresult.dump(fout)
+        # print("Saved result to ", fout)
+
+    def load_modelresult(inpfile):
+        """read a customized ModelResult"""
+        with open(outfile, 'w') as fh:
+            tmpval = json.loads(fp.read())
+            user_options = tmpval['user_options']
+            print(" user options ", type(user_options), user_options)
+        fh.close()
+
+        modresult = load_modelresult(inpfile)
 
         print(" Components: ")
         for comp in modresult.model.components:
@@ -1030,6 +1038,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             print("-- ", pname, par)
 
         print("##")
+        return modresult
+
 
     def onExportFitResult(self, event=None):
         dgroup = self.controller.get_group()
