@@ -468,9 +468,9 @@ class XASFrame(wx.Frame):
         self.controller.groupname = groupname
         current_nbpanel = self.nb_panels[self.nb.GetSelection()]
 
-        self.nb_panel[0].fill_form(dgroup)
+        self.nb_panels[0].fill_form(dgroup)
         if with_plot:
-            self.nb_panel[0].plot(dgroup)
+            self.nb_panels[0].plot(dgroup)
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
@@ -659,7 +659,7 @@ class XASFrame(wx.Frame):
         new_gname = unique_name(groupname, self.controller.file_groups.values())
         setattr(self.larch.symtable, new_gname, ngroup)
         self.install_group(new_gname, new_fname, overwrite=False)
-        self.nb_panel[0].process(ngroup)
+        self.nb_panels[0].process(ngroup)
         self.ShowFile(groupname=new_gname)
 
     def onRenameGroup(self, event=None):
@@ -867,8 +867,8 @@ class XASFrame(wx.Frame):
         for gname in namelist:
             self.larch.eval(s.format(group=gname))
             dgroup = self.install_group(gname, gname, with_plot=False)
-            # self.nb_panel[0].fill_form(dgroup)
-        self.nb_panel[0].plot(dgroup)
+            # self.nb_panels[0].fill_form(dgroup)
+        self.nb_panels[0].plot(dgroup)
         self.larch.eval("del _prj")
 
 
