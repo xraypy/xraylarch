@@ -64,7 +64,7 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 ICON_FILE = 'larch.ico'
 
-XASVIEW_SIZE = (925, 550)
+XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
