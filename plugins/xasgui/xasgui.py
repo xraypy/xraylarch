@@ -70,6 +70,8 @@ PLOTWIN_SIZE = (550, 550)
 SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
+NB_PANELS = (('XAS Normalization', XASNormPanel),
+             ('Pre-edge Peak Fit', PrePeakPanel))
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -397,14 +399,11 @@ class XASFrame(wx.Frame):
         self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
         self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
 
-        self.xasnorm_panel = XASNormPanel(parent=self, controller=self.controller)
-        self.prepeak_panel = PrePeakPanel(parent=self, controller=self.controller)
-
         self.nb_panels = []
-        for pname, ppan in ((' XAS Normalization ', self.xasnorm_panel),
-                            (' Pre-edge Peak Fit ', self.prepeak_panel)):
-            self.nb.AddPage(ppan, pname, True)
-            self.nb_panels.append(ppan)
+        for name, creator in NB_PANELS:
+            _panel = creator(parent=self, controller=self.controller)
+            self.nb.AddPage(_panel," %s " % name, True)
+            self.nb_panels.append(_panel)
 
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
@@ -422,7 +421,6 @@ class XASFrame(wx.Frame):
         callback = getattr(pan, 'onPanelExposed', None)
         if callable(callback):
             callback()
-
 
     def onSelAll(self, event=None):
         self.controller.filelist.SetCheckedStrings(self.controller.file_groups.keys())
@@ -470,9 +468,9 @@ class XASFrame(wx.Frame):
         self.controller.groupname = groupname
         current_nbpanel = self.nb_panels[self.nb.GetSelection()]
 
-        self.xasnorm_panel.fill_form(dgroup)
+        self.nb_panel[0].fill_form(dgroup)
         if with_plot:
-            self.xasnorm_panel.plot(dgroup)
+            self.nb_panel[0].plot(dgroup)
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
@@ -661,7 +659,7 @@ class XASFrame(wx.Frame):
         new_gname = unique_name(groupname, self.controller.file_groups.values())
         setattr(self.larch.symtable, new_gname, ngroup)
         self.install_group(new_gname, new_fname, overwrite=False)
-        self.xasnorm_panel.process(ngroup)
+        self.nb_panel[0].process(ngroup)
         self.ShowFile(groupname=new_gname)
 
     def onRenameGroup(self, event=None):
@@ -800,13 +798,14 @@ class XASFrame(wx.Frame):
                                               overwrite=True))
 
     def onLoadFitResult(self, event=None):
-        self.prepeak_panel.onLoadFitResult(event=event)
+        self.nb.SetSelection(1)
+        self.nb_panels[1].onLoadFitResult(event=event)
 
     def onSaveFitResult(self, event=None):
-        self.prepeak_panel.onSaveFitResult(event=event)
+        self.nb_panels[1].onSaveFitResult(event=event)
 
     def onExportFitResult(self, event=None):
-        self.prepeak_panel.onExportFitResult(event=event)
+        self.nb_panels[1].onExportFitResult(event=event)
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
@@ -868,8 +867,8 @@ class XASFrame(wx.Frame):
         for gname in namelist:
             self.larch.eval(s.format(group=gname))
             dgroup = self.install_group(gname, gname, with_plot=False)
-            # self.xasnorm_panel.fill_form(dgroup)
-        self.xasnorm_panel.plot(dgroup)
+            # self.nb_panel[0].fill_form(dgroup)
+        self.nb_panel[0].plot(dgroup)
         self.larch.eval("del _prj")
 
 
