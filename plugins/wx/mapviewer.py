@@ -2040,7 +2040,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         kwargs = dict(filename=self.owner.current_file.filename,
                       npixels = len(area.value[np.where(area.value)]),
-                      energy = self.owner.current_energy, steps = 5001,
+                      energy = self.owner.current_energy,
                       calfile = ponifile, title = title, xrd = '1D')
 
         if xrd1d and xrmfile.flag_xrd1d:

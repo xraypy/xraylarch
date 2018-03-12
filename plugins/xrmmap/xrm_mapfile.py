@@ -2570,9 +2570,8 @@ class GSEXRM_MapFile(object):
         
         if mapdat is None:
             mapdat = self._det_group(det)
+        det = os.path.split(mapdat.name)[-1]
 
-        ## needs to be improved - but skips deadtime correction for xrd data
-        ## mkak 2018.01.29
         if mapdat.attrs['type'].startswith('xrd'):
             dtcorrect = False
         elif tomo:
@@ -2594,17 +2593,10 @@ class GSEXRM_MapFile(object):
             counts = counts.reshape(ny, nx, pixx, pixy)
         else:
             counts = counts.reshape(ny, nx, nchan)
-        
-        if dtcorrect:
-            if det is None or 'sum' in str(det):
-                # use sum of deadtime-corrected spectra 
-                _md    = self._det_group(self.ndet)
-                cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                cell   = _md['dtfactor'].regionref[sy, sx]
-                dtfact = _md['dtfactor'][cell].reshape(ny, nx)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = _cts * dtfact
+
+        if mapdat is None or 'sum' in det:
+            counts = np.zeros(counts.shape)
+            if dtcorrect:
                 for _idet in range(1, self.ndet):
                     _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
@@ -2613,21 +2605,21 @@ class GSEXRM_MapFile(object):
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
                     counts += _cts * dtfact
-            else: #elif det in range(1, self.ndet+1):
+            else:
+                for _idet in range(1, self.ndet):
+                    _md    = self._det_group(_idet)
+                    cell   = _md['counts'].regionref[sy, sx, :]
+                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
+                    counts += _cts
+        elif mapdat is not None:
+            if dtcorrect:
                 cell   = mapdat['dtfactor'].regionref[sy, sx]
                 dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
                 dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
                 counts = counts * dtfact
-
-        elif det is None: # indicating sum un-deadtime-corrected spectra
-            _md    = self._det_group(self.ndet)
-            cell   = _md['counts'].regionref[sy, sx, :]
-            counts = _md['counts'][cell].reshape(ny, nx, nchan)
-            for _idet in range(1, self.ndet):
-                _md    = self._det_group(_idet)
-                cell   = _md['counts'].regionref[sy, sx, :]
-                _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                counts += _cts
+            #else:
+            #    cell   = mapdat['counts'].regionref[sy, sx, :]
+            #    counts = mapdat['counts'][cell].reshape(ny, nx)
 
         if area is not None:
             counts = counts[area[sy, sx]]
@@ -2778,7 +2770,7 @@ class GSEXRM_MapFile(object):
         xrddir   = 'xrd1D' if '1' in xrd else 'xrd2D'
         mapdat   = self.xrmmap[xrddir]
         xrdshape = mapdat['counts'].shape
-        mapname  = mapdat.name        
+        mapname  = mapdat.name 
 
         try:
             qdat = mapdat['q']

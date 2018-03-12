@@ -341,7 +341,7 @@ class XRD(grpobjt):
     def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
                        data1D=None, nwedge=0, title=None,
                        steps=5001, name='xrd', filename=None,
-                       calfile=None, energy=None, wavelength=None
+                       calfile=None, energy=None, wavelength=None,
                        npixels=None, _larch=None, **kws):
 
         self.name    = name
