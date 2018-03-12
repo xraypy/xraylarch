@@ -56,17 +56,42 @@ ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
+
+# map of lmfit function name to Model Class
+ModelFuncs = {'constant': 'ConstantModel',
+              'linear': 'LinearModel',
+              'parabolic': 'QuadraticModel',
+              'polynomial': 'PolynomialModel',
+              'gaussian': 'GaussianModel',
+              'lorentzian': 'LorentzianModel',
+              'voigt': 'VoigtModel',
+              'pvoigt': 'PseudoVoigtModel',
+              'moffat': 'MoffatModel',
+              'pearson7': 'Pearson7Model',
+              'students_t': 'StudentsTModel',
+              'breit_wigner': 'BreitWignerModel',
+              'lognormal': 'LognormalModel',
+              'damped_oscillator': 'DampedOscillatorModel',
+              'dho': 'DampedHarmonicOscillatorModel',
+              'expgaussian': 'ExponentialGaussianModel',
+              'skewed_gaussian': 'SkewedGaussianModel',
+              'donaich': 'DonaichModel',
+              'powerlaw': 'PowerLawModel',
+              'exponential': 'ExponentialModel',
+              'step': 'StepModel',
+              'rectangle': 'RectangleModel'}
+
+
 Array_Choices = OrderedDict((('Raw Data', 'mu'),
                              ('Normalized', 'norm'),
                              ('Flattened', 'flat'),
                              ('Deconvolved', 'deconv'),
                              ('Derivative', 'dmude')))
 
-PlotChoices = OrderedDict((('Data and Baseline',    'data+baseline'),
-                           ('Data only',            'data only'),
-                           ('Data and Fit',         'data+fit'),
-                           ('Data, Fit, Residual',  'residual')))
-
+PLOT_BASELINE = 'Data+Baseline'
+PLOT_FIT      = 'Data+Fit'
+PLOT_RESID    = 'Data+Reidual'
+PlotChoices = [PLOT_BASELINE, PLOT_FIT, PLOT_RESID]
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 ModelWcards = 'Fit Models(*.modl)|*.modl|All files (*.*)|*.*'
@@ -425,11 +450,11 @@ class PrePeakPanel(wx.Panel):
                               action=self.addModel)
 
         self.plot_choice = Choice(pan, size=(125, -1),
-                                  choices=list(PlotChoices.keys()),
+                                  choices=PlotChoices,
                                   action=self.onPlot)
 
-
-        self.message = SimpleText(pan, 'first fit baseline, then add peaks or other models and fit full model ')
+        self.message = SimpleText(pan,
+                                  'first fit baseline, then add peaks or other models and fit full model ')
 
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
         self.show_peakrange = Check(pan, label='show?', **opts)
@@ -489,7 +514,7 @@ class PrePeakPanel(wx.Panel):
         ts.Add(models_peaks)
         ts.Add(models_other)
 
-        pan.Add(SimpleText(pan, 'Add Function: '), newrow=True)
+        pan.Add(SimpleText(pan, 'Add Component: '), newrow=True)
         pan.Add(ts, dcol=7)
 
         pan.Add(self.message, dcol=8, newrow=True)
@@ -529,12 +554,23 @@ class PrePeakPanel(wx.Panel):
             self.ppeak_elo.SetValue(dgroup.prepeaks.elo)
             self.ppeak_ehi.SetValue(dgroup.prepeaks.ehi)
 
+    def fill_form_from_dict(self, data):
+        self.ppeak_e0.SetValue(data['e0'])
+        self.ppeak_emin.SetValue(data['emin'])
+        self.ppeak_emax.SetValue(data['emax'])
+        self.ppeak_elo.SetValue(data['elo'])
+        self.ppeak_ehi.SetValue(data['ehi'])
+        self.array_choice.SetStringSelection(data['array_desc'])
+        self.show_e0.Enable(data['show_e0'])
+        self.show_fitrange.Enable(data['show_fitrange'])
+        self.show_peakrange.Enable(data['show_peakrange'])
+        self.plot_sub_bline.Enable(data['plot_sub_bline'])
+
     def read_form(self):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
         array_desc = self.array_choice.GetStringSelection()
         form_opts = {'gname': dgroup.groupname,
-                     'group': dgroup,
                      'array_desc': array_desc.lower(),
                      'array_name': Array_Choices[array_desc],
                      'baseline_form': 'lorentzian'}
@@ -563,21 +599,21 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 """
         self.larch_eval(cmd.format(**opts))
 
-        dgroup = opts['group']
+        dgroup = self.controller.get_group()
         ppeaks = dgroup.prepeaks
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
         self.message.SetLabel("Centroid of Peaks = %s " % dgroup.centroid_msg)
 
-        if 'bl_' not in self.fit_components:
-            self.addModel(model='Lorentzian', prefix='bl_')
-        if 'l_' not in self.fit_components:
-            self.addModel(model='Linear', prefix='l_')
+        if 'bas_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='bas_', isbkg=True)
+        if 'lin_' not in self.fit_components:
+            self.addModel(model='Linear', prefix='lin_', isbkg=True)
 
-        for prefix in ('bl_', 'l_'):
+        for prefix in ('bas_', 'lin_'):
             cmp = self.fit_components[prefix]
-            cmp.bkgbox.SetValue(1)
+            # cmp.bkgbox.SetValue(1)
             self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
 
         self.fill_form_from_group(dgroup)
@@ -585,7 +621,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
-        print('onFit Baselnie: xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
 
         self.plot_choice.SetStringSelection('Data and Baseline')
         self.onPlot()
@@ -608,9 +643,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
 
-    def onPlot(self, evt=None, plot_type=None):
-        if plot_type is None:
-            plot_type = PlotChoices[self.plot_choice.GetStringSelection()]
+    def onPlot(self, evt=None):
+        plot_choice = self.plot_choice.GetStringSelection()
 
         opts = self.read_form()
         dgroup = self.controller.get_group()
@@ -636,9 +670,9 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         if opts['plot_sub_bline']:
             ydat = ydat - baseline
-            if plot_type in ('data+fit', 'residual'):
+            if plot_choice in (PLOT_FIT, PLOT_RESID):
                 yfit = yfit - baseline
-        if plot_type == 'residual':
+        if plot_choice == PLOT_RESID:
             resid = ydat - yfit
 
         jmin, jmax = max(0, i1-2), i2+3
@@ -649,7 +683,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         pymax = max(_ys) + 0.05 * yrange
 
         title = ' pre-edge fit'
-        if plot_type == 'data+baseline':
+        if plot_choice == PLOT_BASELINE:
             title = ' pre-edge baseline'
 
         array_desc = self.array_choice.GetStringSelection()
@@ -690,21 +724,19 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 plot_extras.append(('vline', ecen, None,  popts))
 
 
-        pframe = self.controller.get_display(stacked=(plot_type=='residual'))
+        pframe = self.controller.get_display(stacked=(plot_choice==PLOT_RESID))
         ppanel = pframe.panel
         axes = ppanel.axes
 
         plotopts.update(PLOTOPTS_1)
 
         ppanel.plot(xdat, ydat, **plotopts)
-        if plot_type == 'data only':
-            pass # we're done!
-        elif plot_type == 'data+baseline':
+        if plot_choice == PLOT_BASELINE:
             ppanel.oplot(dgroup.prepeaks.energy,
                          dgroup.prepeaks.baseline,
                          label='baseline', **PLOTOPTS_2)
 
-        elif plot_type in ('data+fit', 'residual'):
+        elif plot_choice in (PLOT_FIT, PLOT_RESID):
             ppanel.oplot(dgroup.energy, yfit,
                          label='fit', **PLOTOPTS_1)
 
@@ -714,13 +746,13 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 for label, ycomp in dgroup.ycomps.items():
                     icomp +=1
                     fcomp = self.fit_components[label]
-                    print("ycomp: ", plot_type, label, len(ycomp), len(dgroup.xfit),
-                          fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
+                    # print("ycomp: ", plot_choice, label, len(ycomp), len(dgroup.xfit),
+                    #       fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
                         ppanel.oplot(dgroup.xfit, ycomp, label=label,
                                      delay_draw=(icomp!=ncomp), style='short dashed')
 
-            if plot_type == 'residual':
+            if plot_choice == PLOT_RESID:
                 _ys = resid
                 yrange = max(_ys) - min(_ys)
                 plotopts['ymin'] = min(_ys) - 0.05 * yrange
@@ -754,14 +786,14 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
 
-    def addModel(self, event=None, model=None, prefix=None):
+    def addModel(self, event=None, model=None, prefix=None, isbkg=False):
         if model is None and event is not None:
             model = event.GetString()
         if model is None or model.startswith('<'):
             return
 
         if prefix is None:
-            p = model[0].lower()
+            p = model[:2].lower()
             curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
             for comp in self.fit_components:
                 if comp in curmodels:
@@ -771,6 +803,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         label = "%s(prefix='%s')" % (model, prefix)
         title = "%s: %s " % (prefix[:-1], model)
+        title = prefix[:-1]
         mclass_kws = {'prefix': prefix}
         if 'step' in model.lower():
             form = model.lower().replace('step', '').strip()
@@ -782,7 +815,11 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             mclass_kws['form'] = form
             minst = mclass(form=form, prefix=prefix)
         else:
-            mclass = getattr(lm_models, model+'Model')
+            if model in ModelFuncs:
+                mclass = getattr(lm_models, ModelFuncs[model])
+            else:
+                mclass = getattr(lm_models, model+'Model')
+
             minst = mclass(prefix=prefix)
 
         panel = GridPanel(self.mod_nb, ncols=1, nrows=1, pad=1, itemstyle=CEN)
@@ -792,6 +829,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                size=size, style=wx.ALIGN_LEFT, **kws)
         usebox = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         bkgbox = Check(panel, default=False, label='Is Baseline?', size=(125, -1))
+        if isbkg:
+            bkgbox.Enable(True)
 
         delbtn = Button(panel, 'Delete Component', size=(125, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
@@ -869,10 +908,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 panel.Add(pwids.value)
                 panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
-
-
-        # panel.Add(delbtn, dcol=2)
-        # panel.Add(HLine(panel, size=(250, 3)), dcol=3, style=wx.ALIGN_CENTER)
 
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
                        mclass_kws=mclass_kws, usebox=usebox, panel=panel,
@@ -999,47 +1034,44 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         if outfile is not None:
             try:
-                self.save_modelresult(dgroup.fit_history[-1], outfile)
+                self.save_fit_result(dgroup.fit_history[-1], outfile)
             except IOError:
                 print('could not write %s' % outfile)
 
     def onLoadFitResult(self, event=None):
         mfile = FileOpen(self, 'Load Fit Result',
                          default_file='', wildcard=ModelWcards)
-        modresult = None
         if mfile is not None:
-            modresult = self.load_modelresult(mfile)
+            self.load_modelresult(mfile)
 
-        print(" Loading Model (work in progress) ", modresult)
-
-    def save_modelresult(self, fitresult, outfile):
+    def save_fit_result(self, fitresult, outfile):
         """saves a customized ModelResult"""
-        fitresult.user_options = self.read_form()
-        with open(outfile, 'w') as fout:
-            fitresult.dump(fout)
-        # print("Saved result to ", fout)
+        save_modelresult(fitresult, outfile)
 
-    def load_modelresult(inpfile):
+    def load_modelresult(self, inpfile):
         """read a customized ModelResult"""
-        with open(outfile, 'w') as fh:
-            tmpval = json.loads(fp.read())
-            user_options = tmpval['user_options']
-            print(" user options ", type(user_options), user_options)
-        fh.close()
+        result = load_modelresult(inpfile)
 
-        modresult = load_modelresult(inpfile)
+        for prefix in self.fit_components:
+            print(" .. delete component ", prefix)
+            self.onDeleteComponent(self, prefix=prefix)
 
         print(" Components: ")
-        for comp in modresult.model.components:
-            print("-- ", comp.func.__name__, comp.prefix, comp.param_hints)
+        for comp in result.model.components:
+            print(" add component  ", comp.func.__name__, comp.prefix)
+            isbkg = comp.prefix in result.user_options['bkg_components']
+            self.addModel(model=comp.func.__name__, prefix=comp.prefix,
+                          isbkg=isbkg)
+
 
         print(" Parameters: ")
-        for pname, par in modresult.init_params.items():
+        for pname, par in result.init_params.items():
             print("-- ", pname, par)
 
         print("##")
-        return modresult
-
+        print(" User options: ",  result.user_options)
+        self.fill_form_from_dict(result.user_options)
+        return result
 
     def onExportFitResult(self, event=None):
         dgroup = self.controller.get_group()
@@ -1079,7 +1111,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
     def get_xranges(self, x):
         opts = self.read_form()
-
         dgroup = self.controller.get_group()
         en_eps = min(np.diff(dgroup.energy)) / 5.
 
@@ -1152,15 +1183,21 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                                        x=dgroup.xfit)
 
         result.model_repr = self.fit_model._reprstring(long=True)
-        # hack:
+
+        ## hacks to save user options
         result.user_options = opts
+        bkg_comps = []
+        for label, comp in self.fit_components.items():
+            if comp.bkgbox.IsChecked():
+                bkg_comps.append(label)
+        result.user_options['bkg_components'] = bkg_comps
 
         self.autosave_modelresult(result)
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
 
         dgroup.fit_history.append(result)
-        self.plot_choice.SetStringSelection('Data and Fit')
+        self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
 
         self.parent.show_subframe('result_frame', FitResultFrame,
@@ -1197,4 +1234,5 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             fname = 'autosave.fitresult'
         fname = os.path.join(xasguidir, fname)
 
-        save_modelresult(result, fname)
+        print("--> save_modelresult ", fname, result)
+        self.save_fit_result(result, fname)
