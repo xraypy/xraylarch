@@ -99,10 +99,10 @@ class XASNormPanel(wx.Panel):
         self.plotone_op.SetStringSelection('Normalized')
         self.plotsel_op.SetStringSelection('Normalized')
 
-        plot_one = Button(xas, 'Plot This Group', size=(125, -1),
+        plot_one = Button(xas, 'Plot This Group', size=(150, -1),
                          action=self.onPlotOne)
 
-        plot_sel = Button(xas, 'Plot Selected Groups', size=(125, -1),
+        plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
                          action=self.onPlotSel)
 
         self.btns = {}
