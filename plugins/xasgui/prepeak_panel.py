@@ -313,7 +313,7 @@ class FitResultFrame(wx.Frame):
 
     def onCopyParams(self, evt=None):
         fit_history = getattr(self.datagroup, 'fit_history', [])
-        self.peakframe.update_start_values(fit_history[-1])
+        self.peakframe.update_start_values(fit_history[-1].params)
 
     def show(self, datagroup=None):
         if datagroup is not None:
@@ -614,7 +614,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for prefix in ('bas_', 'lin_'):
             cmp = self.fit_components[prefix]
             # cmp.bkgbox.SetValue(1)
-            self.fill_model_params(dgroup, prefix, dgroup.prepeaks.fit_details)
+            self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
 
         self.fill_form_from_group(dgroup)
         self.fitmodel_btn.Enable()
@@ -625,10 +625,11 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.plot_choice.SetStringSelection('Data and Baseline')
         self.onPlot()
 
-    def fill_model_params(self, dgroup, prefix, fit_details):
+    def fill_model_params(self, prefix, params):
+        print("FILL MODEL PARAMS ", prefix, params.keys())
         comp = self.fit_components[prefix]
         parwids = comp.parwids
-        for pname, par in fit_details.params.items():
+        for pname, par in params.items():
             pname = prefix + pname
             if pname in parwids:
                 wids = parwids[pname]
@@ -830,7 +831,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         usebox = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         bkgbox = Check(panel, default=False, label='Is Baseline?', size=(125, -1))
         if isbkg:
-            bkgbox.Enable(True)
+            bkgbox.SetValue(1)
 
         delbtn = Button(panel, 'Delete Component', size=(125, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
@@ -1056,17 +1057,34 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             print(" .. delete component ", prefix)
             self.onDeleteComponent(self, prefix=prefix)
 
-        print(" Components: ")
-        for comp in result.model.components:
-            print(" add component  ", comp.func.__name__, comp.prefix)
-            isbkg = comp.prefix in result.user_options['bkg_components']
-            self.addModel(model=comp.func.__name__, prefix=comp.prefix,
-                          isbkg=isbkg)
-
 
         print(" Parameters: ")
-        for pname, par in result.init_params.items():
+        for pname, par in result.params.items():
             print("-- ", pname, par)
+        print(" Init Values : ",   result.init_values)
+
+        print(" Components: ")
+        print(" bkg: ", result.user_options['bkg_components'])
+        for comp in result.model.components:
+            isbkg = comp.prefix in result.user_options['bkg_components']
+            print(" add component  ", comp.func.__name__, comp.prefix, isbkg)
+            self.addModel(model=comp.func.__name__,
+                          prefix=comp.prefix, isbkg=isbkg)
+
+        print(" Fill Parameters: ")
+        for comp in result.model.components:
+            parwids = self.fit_components[comp.prefix].parwids
+            for pname, par in result.params.items():
+                print(pname, par, pname in parwids)
+                # pname = comp.prefix + pname
+                if pname in parwids:
+                    wids = parwids[pname]
+                    if wids.minval is not None:
+                        wids.minval.SetValue(par.min)
+                    if wids.maxval is not None:
+                        wids.maxval.SetValue(par.max)
+                    wids.value.SetValue(par.value)
+
 
         print("##")
         print(" User options: ",  result.user_options)
@@ -1206,7 +1224,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for m in self.parent.afterfit_menus:
             self.parent.menuitems[m].Enable(True)
 
-    def update_start_values(self, result):
+    def update_start_values(self, params):
         """fill parameters with best fit values"""
         allparwids = {}
         for comp in self.fit_components.values():
@@ -1214,7 +1232,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 for name, parwids in comp.parwids.items():
                     allparwids[name] = parwids
 
-        for pname, par in result.params.items():
+        for pname, par in params.items():
             if pname in allparwids:
                 allparwids[pname].value.SetValue(par.value)
 
