@@ -1939,12 +1939,16 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onDelete(self, event=None):
         aname = self._getarea()
-        erase = Popup(self.owner, self.delstr % aname,
-                      'Delete Area?', style=wx.YES_NO)
+        erase = (wx.ID_YES == Popup(self.owner, self.delstr % aname,
+                                    'Delete Area?', style=wx.YES_NO))
+
         if erase:
             xrmmap = self.owner.current_file.xrmmap
             del xrmmap['areas/%s' % aname]
+
             self.set_area_choices(xrmmap)
+
+            self.onSelect()
 
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
