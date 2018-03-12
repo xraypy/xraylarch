@@ -2751,7 +2751,7 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def get_xrd_area(self, areaname, xrd='2D', callback=None):
+    def get_xrd_area(self, areaname, xrd='2D', callback=None, **kws):
         '''return 1D or 2D XRD pattern for a pre-defined area
 
         Parameters
@@ -2823,17 +2823,17 @@ class GSEXRM_MapFile(object):
         if qdat is not None:
             counts = np.array([qdat,counts])
 
-        return self._getXRD(mapname, counts, areaname, xrddir)
+        return self._getXRD(mapname, counts, areaname, xrddir, **kws)
 
-    def _getXRD(self, mapname, data, areaname, xrddir):
+    def _getXRD(self, mapname, data, areaname, xrddir, **kws):
 
         name = '%s : %s' % (xrddir,areaname)
         
         if xrddir == 'xrd1D':
-            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name)
+            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name, **kws)
         else: #elif  xrddir == 'xrd2D':
             xpix,ypix = data.shape
-            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name)
+            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name, **kws)
 
         _xrd.areaname = _xrd.title = name
         path, fname = os.path.split(self.filename)

@@ -15,6 +15,7 @@ try:
 except:
     PyDeadObjectError = Exception
 import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.scrolledpanel as scrolled
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -692,53 +693,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def Build_ConfigPanel(self):
         '''config panel for left-hand-side of frame: RGB Maps'''
-
-# #         FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-# # 
-# #         bsizer = wx.BoxSizer(wx.VERTICAL)
-# #         nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
-# #         
-# #         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-# # 
-# #         icol = 0
-# #         if self.config_mode == 'rgb':
-# #             for iframe in self.tomo_frame:
-# #                 csizer = wx.BoxSizer(wx.VERTICAL)
-# #                 for i,col in enumerate(RGB_COLORS):
-# #                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                             iframe.panel,
-# #                                                             title='%s - %s: ' % (iframe.label,col.title()),
-# #                                                             color=i,
-# #                                                             default=col,
-# #                                                             colormap_list=None)
-# # 
-# #                     csizer.Add(self.cmap_panels[icol], 0, lsty, 2)
-# #                     csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
-# #                                             style=wx.LI_HORIZONTAL), 0, lsty, 2)
-# #                     icol += 1
-# # #                 nb.AddPage(csizer, iframe.label)
-# # 
-# # 
-# #         else:
-# #             for iframe in self.tomo_frame:
-# #                 csizer = wx.BoxSizer(wx.VERTICAL)
-# #                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                         iframe.panel,
-# #                                                         title='%s: ' % iframe.label,
-# #                                                         default='gray',
-# #                                                         colormap_list=ColorMap_List)
-# # 
-# #                 csizer.Add(self.cmap_panels[icol],  0, lsty, 1)
-# #                 csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
-# #                                         style=wx.LI_HORIZONTAL), 0, lsty, 2)
-# #                 icol += 1
-# # #                 nb.AddPage(csizer, iframe.label)
-# # 
-# #         bsizer.Add(nb, 0, lsty, 1)
-# #         cust = self.CustomConfig(self.config_panel, None, 0)
-# #         if cust is not None:
-# #             bsizer.Add(cust, 0, lsty, 1)
-# #         pack(self.config_panel, bsizer)
         
         csizer = wx.BoxSizer(wx.VERTICAL)
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND

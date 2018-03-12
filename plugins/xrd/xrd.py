@@ -338,8 +338,11 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0, 
-                 steps=5001, name='xrd', _larch=None, **kws):
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
+                       data1D=None, nwedge=0, title=None,
+                       steps=5001, name='xrd', filename=None,
+                       calfile=None, energy=None, wavelength=None
+                       npixels=None, _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
@@ -350,14 +353,23 @@ class XRD(grpobjt):
         self.data1D  = data1D
         self.data2D  = data2D
         self.cake    = None
+
+        self.calfile    = calfile
         
-        self.energy     = None
-        self.wavelength = None
-        self.calfile    = None
+        if energy is None and wavelength is not None:
+            self.wavelegth = wavelength
+            self.energy = E_from_lambda(wavelength)
+        elif energy is not None and wavelength is None:
+            self.energy = energy
+            self.wavelength = lambda_from_E(self.energy)
+        else:
+            self.energy     = energy
+            self.wavelength = wavelength
+
         
-        self.filename = None
-        self.title    = None
-        self.npixels  = None
+        self.filename = filename
+        self.title    = title
+        self.npixels  = npixels
 
         if HAS_larch:
             Group.__init__(self)

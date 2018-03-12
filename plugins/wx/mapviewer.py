@@ -1975,6 +1975,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def _getxrd_area(self, areaname, **kwargs):
 
+        self._xrd = None
         self._xrd = self.owner.current_file.get_xrd_area(areaname, **kwargs)
 
     def onXRF(self, event=None, as_mca2=False):
@@ -2037,14 +2038,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             path,stem = os.path.split(self.owner.current_file.filename)
             stem = '%s_%s' % (stem,title)
 
+        kwargs = dict(filename=self.owner.current_file.filename,
+                      npixels = len(area.value[np.where(area.value)]),
+                      energy = self.owner.current_energy, steps = 5001,
+                      calfile = ponifile, title = title, xrd = '1D')
+
         if xrd1d and xrmfile.flag_xrd1d:
-            self._xrd  = None
-            self._getxrd_area(aname,xrd='1D') ## creates self._xrd group of type XRD
-            self._xrd.filename = self.owner.current_file.filename
-            self._xrd.title = title
-            self._xrd.npixels = len(area.value[np.where(area.value)])
-            self._xrd.energy = self.owner.current_energy
-            self._xrd.wavelength = lambda_from_E(self._xrd.energy)
+            kwargs['xrd'] = '1D'
+            self._getxrd_area(aname,**kwargs)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
@@ -2063,17 +2064,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
                 print('\nSaving 1D XRD in file: %s' % (filename))
                 save1D(filename, self._xrd.data1D[0], self._xrd.data1D[1], calfile=ponifile)
-            xrd1d = False  ## turns off flag since it has already been displayed/saved
+
+            ## turns off flag since it has already been displayed/saved
+            xrd1d = False
 
 
         if xrmfile.flag_xrd2d and (xrd2d or xrd1d):
-            self._xrd  = None
-            self._getxrd_area(aname,xrd='2D') ## creates self._xrd group of type XRD
-            self._xrd.filename = self.owner.current_file.filename
-            self._xrd.title = title
-            self._xrd.npixels = len(area.value[np.where(area.value)])
-            self._xrd.energy = self.owner.current_energy
-            self._xrd.wavelength = lambda_from_E(self.owner.current_energy)
+            kwargs['xrd'] = '2D'
+            self._getxrd_area(aname,**kwargs)
 
             if xrd2d:
                 if save:
@@ -2095,15 +2093,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                              flip=True)
 
             if xrd1d and ponifile is not None:
-                self._xrd.calfile = ponifile
-                self._xrd.steps = 5001
                 self._xrd.calc_1D(save=save,verbose=True)
 
                 if show:
                     label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
                     self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=label)
-
-
 
 
 class MapViewerFrame(wx.Frame):
