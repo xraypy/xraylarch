@@ -606,12 +606,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         self.message.SetLabel("Centroid of Peaks = %s " % dgroup.centroid_msg)
 
-        if 'bas_' not in self.fit_components:
-            self.addModel(model='Lorentzian', prefix='bas_', isbkg=True)
-        if 'lin_' not in self.fit_components:
-            self.addModel(model='Linear', prefix='lin_', isbkg=True)
+        if 'loren_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='loren_', isbkg=True)
+        if 'line_' not in self.fit_components:
+            self.addModel(model='Linear', prefix='line_', isbkg=True)
 
-        for prefix in ('bas_', 'lin_'):
+        for prefix in ('loren_', 'line_'):
             cmp = self.fit_components[prefix]
             # cmp.bkgbox.SetValue(1)
             self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
@@ -626,7 +626,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.onPlot()
 
     def fill_model_params(self, prefix, params):
-        print("FILL MODEL PARAMS ", prefix, params.keys())
         comp = self.fit_components[prefix]
         parwids = comp.parwids
         for pname, par in params.items():
@@ -794,7 +793,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             return
 
         if prefix is None:
-            p = model[:2].lower()
+            p = model[:5].lower()
             curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
             for comp in self.fit_components:
                 if comp in curmodels:
@@ -938,9 +937,9 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         self.fit_components.pop(prefix)
 
-        sx,sy = self.GetSize()
-        self.SetSize((sx, sy+1))
-        self.SetSize((sx, sy))
+        # sx,sy = self.GetSize()
+        # self.SetSize((sx, sy+1))
+        # self.SetSize((sx, sy))
 
     def onPick2EraseTimer(self, evt=None):
         """erases line trace showing automated 'Pick 2' guess """
@@ -1053,41 +1052,26 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         """read a customized ModelResult"""
         result = load_modelresult(inpfile)
 
-        for prefix in self.fit_components:
-            print(" .. delete component ", prefix)
+        for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(self, prefix=prefix)
 
-
-        print(" Parameters: ")
-        for pname, par in result.params.items():
-            print("-- ", pname, par)
-        print(" Init Values : ",   result.init_values)
-
-        print(" Components: ")
-        print(" bkg: ", result.user_options['bkg_components'])
         for comp in result.model.components:
             isbkg = comp.prefix in result.user_options['bkg_components']
-            print(" add component  ", comp.func.__name__, comp.prefix, isbkg)
             self.addModel(model=comp.func.__name__,
                           prefix=comp.prefix, isbkg=isbkg)
 
-        print(" Fill Parameters: ")
         for comp in result.model.components:
             parwids = self.fit_components[comp.prefix].parwids
             for pname, par in result.params.items():
-                print(pname, par, pname in parwids)
-                # pname = comp.prefix + pname
                 if pname in parwids:
                     wids = parwids[pname]
                     if wids.minval is not None:
                         wids.minval.SetValue(par.min)
                     if wids.maxval is not None:
                         wids.maxval.SetValue(par.max)
-                    wids.value.SetValue(par.value)
+                    val = result.init_values.get(pname, par.value)
+                    wids.value.SetValue(val)
 
-
-        print("##")
-        print(" User options: ",  result.user_options)
         self.fill_form_from_dict(result.user_options)
         return result
 
@@ -1252,5 +1236,4 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             fname = 'autosave.fitresult'
         fname = os.path.join(xasguidir, fname)
 
-        print("--> save_modelresult ", fname, result)
         self.save_fit_result(result, fname)
